@@ -82,6 +82,44 @@ When skill A and skill B share trigger vocabulary, A's description should explic
 | `ywc-incident-postmortem` | Proactive security audit → `ywc-security-audit`; general code review → `ywc-impl-review`; release notes after patch → `ywc-changelog-release-notes` |
 | `ywc-changelog-release-notes` | PR list generation → `ywc-release-pr-list`; committing changelog → `ywc-commit`; creating release PR → `ywc-create-pr`; incident postmortem → `ywc-incident-postmortem` |
 
+## Flag Propagation Patterns
+
+When skill A delegates to skill B and both implement the same side effect (e.g., updating a document, running a check), the delegated call must include an explicit skip flag so the side effect does not run twice. This is the **flag propagation contract**.
+
+### Canonical pattern
+
+```
+Caller (skill A) — performs side effect in its own Step X
+   │
+   │  delegates with --skip-<side-effect>
+   ▼
+Callee (skill B) — Step Y that performs the same side effect is no-op'd
+```
+
+The skip flag is named after the action being skipped, not the caller (e.g., `--skip-ubiquitous-update`, not `--skip-from-create-pr`). This keeps the contract semantic rather than positional — new callers can adopt the same flag without changing the callee.
+
+### Documented production examples
+
+| Caller → Callee | Skip flag | Reason |
+|---|---|---|
+| `ywc-finish-branch` → `ywc-create-pr` | `--skip-post-ci-check` | `ywc-finish-branch` Step 4 runs its own CI + bot review check |
+| `ywc-finish-branch` → `ywc-create-pr` | `--skip-ubiquitous-update` | `ywc-finish-branch` Step 1.5 already ran the UL update |
+| `ywc-create-pr` → `ywc-commit` | `--skip-ubiquitous-update` | `ywc-create-pr` Step 0.5 already ran the UL update |
+
+### Rules for adding a new propagated flag
+
+1. **The callee defines the flag**, not the caller. The callee owns the side effect, so it owns the off-switch.
+2. **Document the flag in the callee's `## Arguments` table**, with the caller listed as a known invoker.
+3. **Document the propagation in both `tools/claude-code/skills/CLAUDE.md`** (in a "Calling `<callee>` from Other Skills" subsection) and in the callee's README under `## Integration`.
+4. **Add a Rationalization Defense row to the callee** for "the caller already did X, mine would duplicate" — this catches the regression where a future refactor of the caller forgets to pass the flag.
+5. **The flag must be passed in every delegation hop**. If A → B → C and the side effect is owned by C, then A → B passes the flag AND B → C passes it. Inference across hops is unsafe because the intermediate skill may not know whether the upstream caller already ran the side effect.
+
+### When to introduce flag propagation vs. a sub-skill split
+
+If the side effect can plausibly be skipped by **any caller** of the callee (e.g., the side effect is a heavy network call), use flag propagation.
+
+If the side effect is **only ever skipped** because a specific upstream skill ran it, consider extracting the side effect into a third skill that both A and B invoke conditionally. Flag propagation is right when the side effect is logically owned by the callee but contextually skipped.
+
 ## How to Use This Graph When Writing a New Skill
 
 1. **Find the closest existing skill.** If your new skill's purpose is within ~80% of an existing one, **do not create a new skill** — extend the existing one. Splitting an over-similar pair causes activation collision.

@@ -77,6 +77,7 @@ These improve quality but are not strictly required.
 | B5 | Add `## Validation` or `## Common Mistakes` | Skill has well-known failure modes |
 | B6 | Reference an Advisor Pattern (A / B / C) from `../references/advisor-pattern.md` | Skill uses Opus advisor for cost-bounded escalation |
 | B7 | Add `## Banned Output Patterns` table | Skill generates code or other parseable artifacts |
+| B8 | Define a `--skip-<side-effect>` flag and document propagation in `## Arguments` + `## Integration` + `tools/claude-code/skills/CLAUDE.md` | Skill performs a side effect (UL update, CI check, etc.) that an upstream caller may have already performed. See [references/cross-skill-graph.md#flag-propagation-patterns](references/cross-skill-graph.md) for the canonical pattern. |
 
 ## Format Conventions
 
@@ -134,7 +135,7 @@ Repeat until the agent cannot find a loophole.
 | [references/skill-template.md](references/skill-template.md) | Drafting a brand-new ywc-* skill |
 | [references/rationalization-defense-cookbook.md](references/rationalization-defense-cookbook.md) | Writing or expanding the Rationalization Defense table |
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
-| [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `requires:` declarations and "Do not use for..." cross-pointers |
+| [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `requires:` declarations, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
 
 ## Validation Checklist
 
