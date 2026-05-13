@@ -34,6 +34,8 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
+| `--mode` | `--mode standard\|socratic` | `--mode socratic` | Output style. `standard` (default) returns the finding report and gate verdict; `socratic` returns learning questions instead. See [references/socratic-mode.md](references/socratic-mode.md). |
+| `--focus` | `--focus <area>` | `--focus architecture` | Optional focus hint. When Council Escalation triggers, the generic 4 voices are replaced with domain expert profiles for the chosen area. Valid: `requirements`, `architecture`, `testing`, `compliance`. See [references/expert-profiles.md](references/expert-profiles.md). |
 
 ## Execution Steps
 
@@ -50,9 +52,11 @@ When tempted to skip a step, check this table first:
 
 3. **Check Code Compatibility** — Use Grep/Glob to search for related DB schemas, API routes, and type definitions to detect conflicts with the spec. Scope the search to the directories identified in Step 1.
 
-4. **Perform 4-Dimension Review** — Analyze against the Review Dimensions below.
+4. **Perform 4-Dimension Review** — Analyze against the Review Dimensions below. The 4-Dimension analysis runs the same way regardless of `--mode`; the mode only changes how findings are presented in step 5.
 
-5. **Output Severity-Classified Report**
+5. **Output Report — Branch on `--mode`**
+   - `standard` (default): emit the severity-classified finding report in the format below.
+   - `socratic`: emit a learning-question list per [references/socratic-mode.md](references/socratic-mode.md). Findings still drive question selection — they are just reshaped from "fix X" into "what would happen if X?". Completion Status is `SOCRATIC` and the gate score is informational only.
 
 ## Review Dimensions
 
@@ -94,6 +98,7 @@ When tempted to skip a step, check this table first:
 | `DONE_WITH_CONCERNS` | Review complete but Critical issues were found — the spec needs revision before task decomposition |
 | `BLOCKED` | Review cannot proceed — spec file missing, or a Phase 2 advisor returned an inconclusive verdict |
 | `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
+| `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
 
 ## Advisor Escalation Policy
 
@@ -149,6 +154,19 @@ When a finding involves a genuine architectural trade-off — where two reasonab
 - Critic: {verdict, ≤2 sentences}
 Consensus: {agreed recommendation, or "No consensus — strongest dissent: <voice>: <reason>"}
 ```
+
+### Profile Override (Focus-Specific Voices)
+
+When `--focus <area>` is set on the invocation and Council Escalation triggers, replace the 4 generic voices above with 3–4 domain expert profiles from [references/expert-profiles.md](references/expert-profiles.md). The Anti-anchoring rule, output format, and budget rule all apply unchanged — only the voice labels and heuristics change.
+
+| `--focus` value | Profiles to use (in order) |
+|---|---|
+| `requirements` | Requirements Quality + Specification by Example + Use Case Modeling |
+| `architecture` | Interface Design + Service Boundaries + Integration Patterns + Production Resilience |
+| `testing` | Risk-Based Testing + Three Amigos + Quality Attribute |
+| `compliance` | Production Resilience + Cloud-Native Operations + Audit Trail |
+
+Use generic Council (no `--focus`) when the trade-off spans two or more areas, or when the spec covers multiple domains and no single focus dominates. Mixing generic voices and focus profiles within a single Council session breaks anti-anchoring — pick one mode per session.
 
 Council escalation consumes the full 2-advisor budget. Do not use council and single-advisor escalation in the same invocation.
 
