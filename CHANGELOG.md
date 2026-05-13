@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.2.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.1.0...v1.2.0) (2026-05-13)
+
+
+### ### Added
+
+* **skills:** UL hook for ywc-commit, socratic mode for ywc-spec-validate, and flag propagation patterns ([#12](https://github.com/yongwoon/ywc-agent-toolkit/issues/12)) ([3e65dc7](https://github.com/yongwoon/ywc-agent-toolkit/commit/3e65dc7b601496cbad34647b514c8bc5ec161f90))
+
 ## [1.1.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.0.1...v1.1.0) (2026-05-13)
 
 
