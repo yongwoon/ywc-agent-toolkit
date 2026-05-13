@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.1.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.0.1...v1.1.0) (2026-05-13)
+
+
+### ### Added
+
+* add 7 hook scripts and hooks-registry.json to claude-code/hooks ([25981d7](https://github.com/yongwoon/ywc-agent-toolkit/commit/25981d7aed7b653e20a4f241a48058b0691344a2))
+* add hook installer to install.sh with idempotent settings.json merge ([6216c3d](https://github.com/yongwoon/ywc-agent-toolkit/commit/6216c3d6b4f043339c4150c822a94e4a22aa6809))
+
+
+### ### Fixed
+
+* address CodeRabbit review - atomic tmp, env override, orphan settings cleanup, jq guard ([b346409](https://github.com/yongwoon/ywc-agent-toolkit/commit/b34640950230bdddf35d9d8f3a28b3cf2d920df7))
+* allow git push at start of command in tag-only heuristic sed pattern ([ae29702](https://github.com/yongwoon/ywc-agent-toolkit/commit/ae29702d25bbb39953db82eff35a67c8e8a5d905))
+* correct table separator spacing and code block blank line in hooks README ([19b5057](https://github.com/yongwoon/ywc-agent-toolkit/commit/19b50574f38b96b1644d1e63655552730fa409a2))
+* extend curl-pipe-sh pattern to catch sudo and absolute path shell variants ([73dd7b4](https://github.com/yongwoon/ywc-agent-toolkit/commit/73dd7b49173a3acb3d78941e23ab946b6ff4fc03))
+* extend rm-home/rm-home-var patterns to match trailing path and glob variants ([6f53783](https://github.com/yongwoon/ywc-agent-toolkit/commit/6f537837246b156aca5da2f710698258c4776657))
+* remove allowlist check from bash command path to prevent bypass ([13792cf](https://github.com/yongwoon/ywc-agent-toolkit/commit/13792cfb0d778e843e84fe52b298136018d381c3))
+* remove Write/Edit/MultiEdit from auto-allow and block shell metachar chaining ([714de62](https://github.com/yongwoon/ywc-agent-toolkit/commit/714de62c4c451b903d262d87e82d2b6e439502a3))
+* suppress SC2016 for intentional jq --arg single-quoted filter ([61b5ecf](https://github.com/yongwoon/ywc-agent-toolkit/commit/61b5ecfeeda41f52749c5242f5ff1261813887a3))
+* use lookaheads for order-independent force-push-to-main detection ([cb8d67b](https://github.com/yongwoon/ywc-agent-toolkit/commit/cb8d67b755d8ab91f59dd98f60c87e0c6cde4543))
+* use word boundary for env-dump pattern to catch chained env calls ([7df6d06](https://github.com/yongwoon/ywc-agent-toolkit/commit/7df6d0693cc8faa5df001ae9de1d1013071b0744))
+* validate webhook scheme (https-only) and use project basename for cwd in Slack payload ([366c40f](https://github.com/yongwoon/ywc-agent-toolkit/commit/366c40f9af567e0162e7208ceb1aad289a99e6ce))
+
+
+### ### Changed
+
+* fix .gitignore typo and ignore tasks/ and docs/ywc-plans ([fa28491](https://github.com/yongwoon/ywc-agent-toolkit/commit/fa284919edd477ac0d468ffd272798286a34e7d4))
+* ignore ywc executor state files in .gitignore ([475ac1a](https://github.com/yongwoon/ywc-agent-toolkit/commit/475ac1ab7577e416e1a5044463078281b8b53987))
+* mark 000001-010-infra-add-hook-source-assets as completed ([b039b3a](https://github.com/yongwoon/ywc-agent-toolkit/commit/b039b3a03633d7dda939b12a67224080bbd2451d))
+* mark 000002-010-infra-implement-hook-installer as completed ([660ab86](https://github.com/yongwoon/ywc-agent-toolkit/commit/660ab864f4fd476e468ee9fd432407df68f7cc6a))
+* mark 000003-010-infra-update-toolkit-readme as completed ([c75a8d6](https://github.com/yongwoon/ywc-agent-toolkit/commit/c75a8d6b7f868fec88e82cea29dcbefcfe1b5b68))
+* retrigger release-please after label fix ([49725ba](https://github.com/yongwoon/ywc-agent-toolkit/commit/49725bad31f483f78ce3e3b4353897a0406664a2))
+* trigger release-please for v1.1.0 ([cabd9e1](https://github.com/yongwoon/ywc-agent-toolkit/commit/cabd9e11b80c1484cafdfb1b01c19765546dab94))
+
+
+### ### Documentation
+
+* add Hook installation section to root README.md ([86d4dce](https://github.com/yongwoon/ywc-agent-toolkit/commit/86d4dce4fd33173101580aed2d071becade3109f))
+
 ## [1.0.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.0.0...v1.0.1) (2026-05-13)
 
 
