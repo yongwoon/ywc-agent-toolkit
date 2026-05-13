@@ -51,11 +51,20 @@ authentication 관련 파일만 commit해줘
 ## Workflow
 
 ```text
+Step 0: Arguments 파싱
+  └─ --skip-ubiquitous-update 등 caller skill 이 전달한 flag 처리
+
+Step 0.5: Ubiquitous Language Update (조건부 자동 ON)
+  └─ docs/ubiquitous-language.md 존재 시 ywc-ubiquitous-language --mode update 호출
+  └─ 파일이 없으면 silent skip
+  └─ --skip-ubiquitous-update flag 있으면 skip (중복 호출 방지)
+
 Step 1: 현재 상태 파악
   └─ git status, git diff, git log (스타일 학습), 브랜치 확인
 
 Step 2: 변경 파일 분류
   └─ IN (세션 관련) / UNKNOWN (출처 불명) / OUT (무관)
+  └─ Step 0.5 에서 갱신된 docs/ubiquitous-language.md 는 IN 으로 분류
   └─ UNKNOWN/OUT 있으면 사용자에게 분류 목록 제시 후 승인 요청
 
 Step 3: 논리 단위로 commit 분리
@@ -77,6 +86,14 @@ Step 7: Push (요청된 경우만)
   └─ 기본 push, upstream 없으면 -u 플래그 사용
   └─ force-push는 명시적 요청 시만
 ```
+
+## Arguments
+
+| Flag | Default | 동작 |
+| --- | --- | --- |
+| `--skip-ubiquitous-update` | off | Step 0.5 (Ubiquitous Language update) skip. ywc-create-pr / ywc-finish-branch 등 caller skill 이 이미 update 를 수행한 경우 전달하여 중복 호출을 방지합니다. |
+
+Direct 호출 (`/ywc-commit`) 시에는 flag 없이도 정상 동작합니다.
 
 ## Commit 메시지 형식
 
@@ -120,7 +137,9 @@ commit 완료 후 다음 형식으로 보고합니다:
 
 이 Skill은 다음 Skill과 연동됩니다:
 
-- **ywc-create-pr** — commit 후 PR 생성이 필요한 경우, ywc-create-pr의 Step 3에서 내부적으로 사용
+- **ywc-ubiquitous-language** — Step 0.5 에서 `--mode update` 로 호출하여 domain glossary 를 commit 직전에 동기화
+- **ywc-create-pr** — commit 후 PR 생성이 필요한 경우, ywc-create-pr 의 Step 4 에서 `--skip-ubiquitous-update` flag 와 함께 내부적으로 사용
+- **ywc-finish-branch** — Branch lifecycle 종료 흐름에서 ywc-create-pr 을 경유해 간접적으로 호출
 - **ywc-sequential-executor** — Task 실행 중 commit 단계에서 참조 가능
 
 ## Example Prompt
@@ -130,4 +149,12 @@ commit 완료 후 다음 형식으로 보고합니다:
 커밋 해줘
 commit and push
 지금까지 한 작업 커밋푸쉬 ㄱㄱ
+/ywc-commit --skip-ubiquitous-update  # caller skill 위임 시
 ```
+
+## 번역본
+
+- [English](./README.md)
+- [Japanese](./README.ja.md)
+- [Spanish](./README.es.md)
+- [Chinese](./README.zh.md)

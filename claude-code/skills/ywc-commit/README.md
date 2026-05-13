@@ -1,26 +1,22 @@
 # Commit Skill (ywc-commit)
 
-현재 세션에서 작업한 변경 사항을 안전하게 Git commit(및 선택적으로 push)하는 Claude Code Skill입니다.
+A Claude Code Skill that safely stages, commits, and optionally pushes changes from the current session.
 
-## 개요
+## Overview
 
-이 Skill은 다음을 자동으로 처리합니다:
+This Skill handles the following automatically:
 
-- 세션과 관련된 파일만 선별하여 stage
-- 논리적으로 다른 성격의 변경을 별도 commit으로 분리
-- 프로젝트의 기존 commit 스타일(type/scope/message)을 `git log`에서 학습하여 일관된 메시지 작성
-- commit 결과 요약 보고
+- Selects only session-relevant files to stage
+- Splits logically distinct changes into separate commits
+- Learns the project's commit style (type/scope/message) from `git log` and applies it consistently
+- Reports a concise summary of all commits created
 
-## 사용 방법
+## Usage
 
-자연어로 다음과 같이 요청합니다:
+Request in natural language or with a slash command:
 
 ```text
 /ywc-commit
-```
-
-```text
-커밋 해줘
 ```
 
 ```text
@@ -28,132 +24,130 @@ commit and push
 ```
 
 ```text
-지금까지 한 작업 커밋푸쉬 ㄱㄱ
+commit only the authentication-related files
 ```
 
-```text
-authentication 관련 파일만 commit해줘
-```
+Korean phrases are also recognized: `커밋 해줘`, `커밋푸쉬 ㄱㄱ`, `지금까지 한 작업 커밋`.
 
-## 주요 규칙
+## Core Rules
 
-| 규칙 | 내용 |
+| Rule | Detail |
 | --- | --- |
-| 세션 관련 파일만 stage | 이번 대화에서 수정/생성/논의된 파일만 대상 |
-| 논리 단위로 commit 분리 | 한 commit = 한 목적 |
-| push는 명시적 요청 시만 | "push", "푸쉬", "올려줘" 등이 포함된 경우만 실행 |
-| `--no-verify` 금지 | Hook 실패 시 원인 수정 또는 사용자에게 보고 |
-| `git add .` 금지 | 항상 파일 경로를 명시하여 stage |
-| main/master 직접 commit 전 확인 | 거의 항상 실수이므로 먼저 확인 |
-| 비밀값·산출물 제외 | `.env*`, `dist/`, `build/` 등은 의도한 경우가 아니면 제외 |
-| 도구 전용 co-author trailer 기본 금지 | 저장소 관례 또는 사용자 명시 요청이 있을 때만 포함 |
+| Stage only session-relevant files | Only files created, modified, or discussed during this conversation |
+| Split commits by logical unit | One commit = one purpose |
+| Push only when explicitly requested | Triggered by "push", "푸쉬", "올려줘", or equivalent |
+| `--no-verify` is forbidden | Fix hook failures or report them — never bypass |
+| `git add .` is forbidden | Always stage files by explicit path |
+| Confirm before committing to main/master | Almost always a mistake — ask first |
+| Exclude secrets and build artifacts | Skip `.env*`, `dist/`, `build/` unless intentionally added |
+| No tool-specific co-author trailer by default | Include one only when repository convention or the user explicitly asks for it |
 
 ## Workflow
 
 ```text
-Step 0: Arguments 파싱
-  └─ --skip-ubiquitous-update 등 caller skill 이 전달한 flag 처리
+Step 0: Parse arguments
+  └─ Handle flags passed by caller skills (e.g., --skip-ubiquitous-update)
 
-Step 0.5: Ubiquitous Language Update (조건부 자동 ON)
-  └─ docs/ubiquitous-language.md 존재 시 ywc-ubiquitous-language --mode update 호출
-  └─ 파일이 없으면 silent skip
-  └─ --skip-ubiquitous-update flag 있으면 skip (중복 호출 방지)
+Step 0.5: Ubiquitous Language Update (conditionally auto-ON)
+  └─ If docs/ubiquitous-language.md exists → invoke ywc-ubiquitous-language --mode update
+  └─ If file is absent → silent skip
+  └─ If --skip-ubiquitous-update flag is set → skip (prevents double invocation)
 
-Step 1: 현재 상태 파악
-  └─ git status, git diff, git log (스타일 학습), 브랜치 확인
+Step 1: Assess current state
+  └─ git status, git diff, git log (learn style), check branch
 
-Step 2: 변경 파일 분류
-  └─ IN (세션 관련) / UNKNOWN (출처 불명) / OUT (무관)
-  └─ Step 0.5 에서 갱신된 docs/ubiquitous-language.md 는 IN 으로 분류
-  └─ UNKNOWN/OUT 있으면 사용자에게 분류 목록 제시 후 승인 요청
+Step 2: Classify changed files
+  └─ IN (session-relevant) / UNKNOWN (unclear origin) / OUT (unrelated)
+  └─ docs/ubiquitous-language.md updated in Step 0.5 is classified as IN
+  └─ Show classification table to user and get approval if any UNKNOWN/OUT found
 
-Step 3: 논리 단위로 commit 분리
-  └─ 성격이 다른 변경은 별도 commit으로 계획
-  └─ 필요 시 git add -p로 hunk 단위 stage
-  └─ 계획(파일 + 메시지 초안)을 사용자에게 보여주고 승인
+Step 3: Split into logical commits
+  └─ Plan separate commits for logically distinct changes
+  └─ Use git add -p for hunk-level staging when needed
+  └─ Show planned commits (files + draft messages) to user for approval
 
-Step 4: commit 메시지 작성
-  └─ git log에서 프로젝트 스타일 학습 후 동일 형식 적용
-  └─ co-author trailer는 저장소 관례 또는 사용자 요청이 있을 때만 포함
+Step 4: Write commit messages
+  └─ Learn project style from git log and apply it exactly
+  └─ Include a co-author trailer only when repository convention or the user asks for it
 
 Step 5: Stage & Commit
-  └─ 명시적 경로로 stage → diff 확인 → heredoc으로 commit
+  └─ Stage by explicit path → verify diff → commit with heredoc
 
-Step 6: 결과 확인
-  └─ git log, git status로 누락/잔여 변경 확인
+Step 6: Verify result
+  └─ Check git log and git status for missing commits or unexpected changes
 
-Step 7: Push (요청된 경우만)
-  └─ 기본 push, upstream 없으면 -u 플래그 사용
-  └─ force-push는 명시적 요청 시만
+Step 7: Push (only when requested)
+  └─ Default push; use -u flag if no upstream is set
+  └─ Force-push only when explicitly requested
 ```
 
 ## Arguments
 
-| Flag | Default | 동작 |
+| Flag | Default | Behavior |
 | --- | --- | --- |
-| `--skip-ubiquitous-update` | off | Step 0.5 (Ubiquitous Language update) skip. ywc-create-pr / ywc-finish-branch 등 caller skill 이 이미 update 를 수행한 경우 전달하여 중복 호출을 방지합니다. |
+| `--skip-ubiquitous-update` | off | Skips Step 0.5 (Ubiquitous Language update). Pass this when a caller skill (e.g., `ywc-create-pr`, `ywc-finish-branch`) has already run the update, to prevent a duplicate invocation. |
 
-Direct 호출 (`/ywc-commit`) 시에는 flag 없이도 정상 동작합니다.
+No flags are needed when invoking directly via `/ywc-commit`.
 
-## Commit 메시지 형식
+## Commit Message Format
 
-프로젝트의 기존 `git log` 스타일을 따릅니다. 일반적인 형식:
+Matches the project's existing `git log` style. General format:
 
 ```text
 <type>(<scope>): <summary>
 
-<body — 필요할 때만>
+<body — only when needed>
 ```
 
-**type 예시** (프로젝트에서 관찰된 것만 사용):
+**Common types** (use only what this repository already uses):
 `feat`, `fix`, `refactor`, `perf`, `chore`, `docs`, `test`
 
-**scope**: `git log`에서 관찰된 패턴 사용 (패키지명, 모듈명 등). 여러 영역에 걸치면 생략.
+**Scope**: derived from `git log` patterns (package name, module name, etc.). Omit when the change spans multiple areas.
 
-`Co-Authored-By` trailer는 기본으로 추가하지 않습니다. 최근 commit 이력에서 AI co-author trailer가 일관되게 사용되거나 사용자가 명시적으로 요청한 경우에만 해당 저장소의 관례를 따릅니다. 저장소 관례가 없고 사용자가 co-author trailer를 요청한 경우 `Co-Authored-By: Claude <noreply@anthropic.com>`를 사용합니다.
+Do not add a `Co-Authored-By` trailer by default. Add one only when recent commit history consistently uses an AI co-author trailer or the user explicitly requests it. If there is no repository convention and the user asks for one, use `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
-## 보고 형식
+## Report Format
 
-commit 완료 후 다음 형식으로 보고합니다:
+After all commits are done:
 
 ```text
-✅ N개 commit 생성 [+ push 여부]
+✅ N commit(s) created [+ pushed]
   1. <hash> <type>(<scope>): <summary>
   2. <hash> <type>(<scope>): <summary>
-제외한 파일: <있으면 나열, 없으면 생략>
+Excluded files: <list if any, omit if none>
 ```
 
 ## Error Handling
 
 | Situation | Behavior |
 | --- | --- |
-| UNKNOWN 파일 발견 | 분류 목록을 사용자에게 보여주고 승인 후 진행 |
-| Hook 실패 | `--no-verify` 사용 금지, 원인 보고 후 중단 |
-| main/master에 직접 commit | 먼저 사용자에게 확인 요청 |
-| Non-fast-forward push 거절 | 상황 설명 후 옵션 제시, force-push는 명시 요청 시만 |
-| 비밀값/산출물 파일 발견 | 사용자에게 알리고 제외 |
+| UNKNOWN file found | Show classification table to user and wait for approval |
+| Hook failure | Never use `--no-verify`; report root cause and stop |
+| Direct commit to main/master | Ask user for confirmation first |
+| Non-fast-forward push rejected | Explain the situation and present options; force-push only on explicit request |
+| Secret or artifact file found | Inform user and exclude from commit |
 
 ## Integration
 
-이 Skill은 다음 Skill과 연동됩니다:
+This Skill integrates with:
 
-- **ywc-ubiquitous-language** — Step 0.5 에서 `--mode update` 로 호출하여 domain glossary 를 commit 직전에 동기화
-- **ywc-create-pr** — commit 후 PR 생성이 필요한 경우, ywc-create-pr 의 Step 4 에서 `--skip-ubiquitous-update` flag 와 함께 내부적으로 사용
-- **ywc-finish-branch** — Branch lifecycle 종료 흐름에서 ywc-create-pr 을 경유해 간접적으로 호출
-- **ywc-sequential-executor** — Task 실행 중 commit 단계에서 참조 가능
+- **ywc-ubiquitous-language** — Called in Step 0.5 with `--mode update` to sync the domain glossary before committing
+- **ywc-create-pr** — Step 4 of `ywc-create-pr` delegates to this skill with `--skip-ubiquitous-update` after running the UL update itself
+- **ywc-finish-branch** — Invoked indirectly via `ywc-create-pr` during branch lifecycle completion
+- **ywc-sequential-executor** — May reference this skill during the commit phase of task execution
 
-## Example Prompt
+## Example Prompts
 
 ```text
 /ywc-commit
-커밋 해줘
 commit and push
-지금까지 한 작업 커밋푸쉬 ㄱㄱ
-/ywc-commit --skip-ubiquitous-update  # caller skill 위임 시
+commit only the authentication-related files
+/ywc-commit --skip-ubiquitous-update  # when delegated from a caller skill
 ```
 
-## 번역본
+## Translations
 
-- [English](./README.en.md)
-- [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Japanese](./README.ja.md)
+- [Spanish](./README.es.md)
+- [Chinese](./README.zh.md)

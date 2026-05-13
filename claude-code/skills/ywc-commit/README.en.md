@@ -45,11 +45,20 @@ Korean phrases are also recognized: `커밋 해줘`, `커밋푸쉬 ㄱㄱ`, `지
 ## Workflow
 
 ```text
+Step 0: Parse arguments
+  └─ Handle flags passed by caller skills (e.g., --skip-ubiquitous-update)
+
+Step 0.5: Ubiquitous Language Update (conditionally auto-ON)
+  └─ If docs/ubiquitous-language.md exists → invoke ywc-ubiquitous-language --mode update
+  └─ If file is absent → silent skip
+  └─ If --skip-ubiquitous-update flag is set → skip (prevents double invocation)
+
 Step 1: Assess current state
   └─ git status, git diff, git log (learn style), check branch
 
 Step 2: Classify changed files
   └─ IN (session-relevant) / UNKNOWN (unclear origin) / OUT (unrelated)
+  └─ docs/ubiquitous-language.md updated in Step 0.5 is classified as IN
   └─ Show classification table to user and get approval if any UNKNOWN/OUT found
 
 Step 3: Split into logical commits
@@ -71,6 +80,14 @@ Step 7: Push (only when requested)
   └─ Default push; use -u flag if no upstream is set
   └─ Force-push only when explicitly requested
 ```
+
+## Arguments
+
+| Flag | Default | Behavior |
+| --- | --- | --- |
+| `--skip-ubiquitous-update` | off | Skips Step 0.5 (Ubiquitous Language update). Pass this when a caller skill (e.g., `ywc-create-pr`, `ywc-finish-branch`) has already run the update, to prevent a duplicate invocation. |
+
+No flags are needed when invoking directly via `/ywc-commit`.
 
 ## Commit Message Format
 
@@ -112,10 +129,12 @@ Excluded files: <list if any, omit if none>
 
 ## Integration
 
-This Skill is used together with:
+This Skill integrates with:
 
-- **ywc-create-pr** — called internally in Step 3 when uncommitted changes need to be committed before PR creation
-- **ywc-sequential-executor** — can be referenced during the commit step of task execution
+- **ywc-ubiquitous-language** — Called in Step 0.5 with `--mode update` to sync the domain glossary before committing
+- **ywc-create-pr** — Step 4 of `ywc-create-pr` delegates to this skill with `--skip-ubiquitous-update` after running the UL update itself
+- **ywc-finish-branch** — Invoked indirectly via `ywc-create-pr` during branch lifecycle completion
+- **ywc-sequential-executor** — May reference this skill during the commit phase of task execution
 
 ## Example Prompts
 
@@ -123,4 +142,5 @@ This Skill is used together with:
 /ywc-commit
 commit and push
 commit only the authentication-related files
+/ywc-commit --skip-ubiquitous-update  # when delegated from a caller skill
 ```
