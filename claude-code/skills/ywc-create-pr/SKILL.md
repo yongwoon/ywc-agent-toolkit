@@ -103,8 +103,9 @@ If either scan returns exit 1, warn the user and show the script output. Do not 
 ### 4. Commit Uncommitted Changes
 
 - Check uncommitted changes with `git status` and `git diff`
-- If there are uncommitted changes, delegate to `$ywc-commit`:
-  - `$ywc-commit` classifies every changed file as IN / UNKNOWN / OUT relative to the current session, splits logically distinct changes into separate commits, and learns the project's commit message style from `git log`
+- If there are uncommitted changes, delegate to `ywc-commit` with `--skip-ubiquitous-update`:
+  - **Why the flag**: Step 0.5 of this skill already invoked `ywc-ubiquitous-language --mode update` (unless this skill itself was called with `--skip-ubiquitous-update` by an upstream caller like `ywc-finish-branch`). Without the flag, `ywc-commit`'s own Step 0.5 would run the update a second time. The flag must always be passed in this delegation — even when this skill's Step 0.5 was skipped, because the upstream caller is the one responsible for the UL update in that scenario.
+  - `ywc-commit` classifies every changed file as IN / UNKNOWN / OUT relative to the current session, splits logically distinct changes into separate commits, and learns the project's commit message style from `git log`
   - It will confirm with the user before staging any UNKNOWN or OUT files — do not skip that confirmation
   - Follow the repository's observed co-author trailer convention; do not force-add a trailer if the repository does not already use one
 - If there are no uncommitted changes: skip this step

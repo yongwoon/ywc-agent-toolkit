@@ -30,8 +30,18 @@ When tempted to skip a rule, check this table first:
 | "This is just main, one direct commit is OK" | Direct commits to main are almost always wrong. Confirm first. |
 | "The summary message captures both refactor and feature" | Two purposes = two commits. Always. |
 | "I will write a co-author trailer because this looks like a Claude project" | Only if the repo's recent commits already use one. Do not fabricate convention. |
+| "The UL update adds noise to a small commit, skip it" | If `docs/ubiquitous-language.md` exists, the project has committed to keeping its glossary synchronized with code. A commit that introduces a new domain term without updating the glossary silently degrades every downstream LLM prompt that reads the file. Skip only when the caller already ran the update (signaled by `--skip-ubiquitous-update`) or the file does not exist. |
+| "ywc-create-pr already runs UL update, mine would duplicate" | Correct — that is exactly why callers must pass `--skip-ubiquitous-update` when delegating. Without the flag, ywc-commit will re-run the update. Read `$ARGUMENTS` in Step 0 before deciding. |
 
 **Violating the letter of these rules is violating the spirit.** If you find yourself rephrasing a rule to make an exception, stop and ask the user.
+
+## Arguments
+
+| Parameter | Format | Default | Description |
+|-----------|--------|---------|-------------|
+| `--skip-ubiquitous-update` | flag | off | Skip Step 0.5 (Ubiquitous Language Update). Passed by callers that have already run `ywc-ubiquitous-language` themselves (e.g., `ywc-create-pr`, `ywc-finish-branch`) to prevent double invocation. |
+
+All other behavior is controlled by the user's natural-language request (e.g., "push", "커밋만", "authentication 관련만"). The skill does not introduce extra flags beyond what is needed for delegation safety — keeping the surface minimal so direct users do not have to remember syntax.
 
 ## Core Rules (Never Violate)
 
@@ -45,6 +55,29 @@ When tempted to skip a rule, check this table first:
 8. **Do not add tool-specific co-author trailers by default.** Follow the repository's observed commit conventions. Add an AI co-author trailer only when the repository already requires one or the user explicitly asks for it.
 
 ## Workflow
+
+### Step 0 — Parse arguments
+
+Inspect `$ARGUMENTS` for the flags listed in the [Arguments](#arguments) table. Store the parsed values for use in later steps:
+
+- `--skip-ubiquitous-update` → if present, skip Step 0.5 entirely.
+
+The skill remains fully usable without any flag — direct invocations (`/ywc-commit`, "커밋 해줘") proceed with all defaults.
+
+### Step 0.5 — Ubiquitous Language Update (optional)
+
+**Skip this step if `--skip-ubiquitous-update` is present in `$ARGUMENTS`.** Callers that already invoked `ywc-ubiquitous-language` (e.g., `ywc-create-pr` Step 0.5, `ywc-finish-branch` Step 1.5) pass this flag to avoid duplicate work.
+
+Check whether the project has established a ubiquitous language document:
+
+```bash
+test -f docs/ubiquitous-language.md
+```
+
+- **Exists**: Invoke `ywc-ubiquitous-language --mode update`. Any resulting changes to `docs/ubiquitous-language.md` flow naturally into Step 2 (Classify changed files) as IN, since the file was modified during this session.
+- **Not exists**: Skip silently — the project has not yet adopted a ubiquitous language document. Do not prompt the user to create one; that is the job of `ywc-ubiquitous-language` itself when invoked directly.
+
+**Rationale**: Domain vocabulary drift is hard to detect after the fact. Catching it at the commit boundary keeps the glossary aligned with the codebase incrementally, rather than as a separate "vocabulary cleanup" effort later. The check is cheap when the file is absent (one `test -f`) and bounded when present (the skill's `update` mode produces no diff when nothing changed).
 
 ### Step 1 — Assess current state
 
@@ -196,6 +229,8 @@ Excluded files: <list if any, omit if none>
 - ❌ Including changes from a previous session or unrelated working tree modifications
 - ❌ Pushing without an explicit push request from the user
 - ❌ Bypassing hooks with `--no-verify`
+- ❌ Skipping Step 0.5 when `docs/ubiquitous-language.md` exists and no `--skip-ubiquitous-update` flag was passed
+- ❌ Running Step 0.5 a second time when the caller already passed `--skip-ubiquitous-update`
 
 ## Example Invocations
 
@@ -204,6 +239,7 @@ Excluded files: <list if any, omit if none>
 - `commit and push`
 - `지금까지 한 작업 커밋푸쉬 ㄱㄱ`
 - `authentication 관련 파일만 commit해줘`
+- `/ywc-commit --skip-ubiquitous-update` (delegated invocation from another skill that already ran the UL update)
 
 ## Validation Scenarios
 
@@ -212,3 +248,6 @@ Excluded files: <list if any, omit if none>
 3. **UNKNOWN file found** — user is shown the classification table and asked to confirm before any staging occurs.
 4. **Push requested** — commits created first, then pushed; force-push is never used unless explicitly asked.
 5. **Hook failure** — `--no-verify` is never used; root cause is reported to the user.
+6. **UL document present, direct invocation** — Step 0.5 runs `ywc-ubiquitous-language --mode update`; any resulting `docs/ubiquitous-language.md` changes are classified as IN in Step 2 and folded into the appropriate logical commit (typically the same commit as the domain-code change that introduced the new term).
+7. **UL document present, delegated invocation** — Caller passes `--skip-ubiquitous-update`; Step 0.5 is skipped; no double invocation occurs.
+8. **UL document absent** — Step 0.5 silently skips after `test -f`; user is not prompted to create the file.
