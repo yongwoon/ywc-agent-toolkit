@@ -66,6 +66,9 @@ codex/skills/<skill-name>/
 ├── agents/
 │   └── openai.yaml   # required — Codex UI metadata
 └── references/       # optional — reference documents loaded by the skill
+
+codex/skills/references/  # shared reference documents used by multiple Codex skills
+codex/skills/scripts/     # shared helper scripts installed alongside Codex skills
 ```
 
 ### SKILL.md frontmatter (required fields)

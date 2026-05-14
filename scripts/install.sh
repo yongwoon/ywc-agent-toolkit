@@ -80,6 +80,22 @@ install_skill() {
   echo "  ✓ $name"
 }
 
+install_support_dir() {
+  local src_dir="$1"
+  local dest_dir="$2"
+  local name
+  name="$(basename "$src_dir")"
+  [ -d "$src_dir" ] || return 0
+  rm -rf "${dest_dir:?}/$name"
+  cp -R "$src_dir" "$dest_dir/$name"
+  echo "  ✓ $name/"
+}
+
+install_codex_support_dirs() {
+  install_support_dir "$CODEX_SRC/references" "$CODEX_DEST"
+  install_support_dir "$CODEX_SRC/scripts" "$CODEX_DEST"
+}
+
 prune_orphans() {
   local dest="$1"
   local manifest="$2"
@@ -159,6 +175,7 @@ run_codex_install() {
   local skills=("$@")
   mkdir -p "$CODEX_DEST"
   echo "Codex → $CODEX_DEST"
+  install_codex_support_dirs
 
   local current
   current="$(list_skills "$CODEX_SRC")"

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repository Is
 
-A skill distribution toolkit for **Claude Code** (26 skills) and **Codex** (26 skills). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
+A skill distribution toolkit for **Claude Code** (26 skills) and **Codex** (27 skills). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
 
 ## Key Commands
 
@@ -41,6 +41,8 @@ codex/skills/<skill-name>/         # one directory per Codex skill
   SKILL.md                         # required — Codex-compatible frontmatter + skill body
   agents/openai.yaml               # recommended — Codex UI metadata
   references/                      # optional — long reference docs extracted from SKILL.md
+codex/skills/references/           # shared Codex reference docs linked by multiple skills
+codex/skills/scripts/              # shared Codex helper scripts installed with skills
 scripts/
   install.sh                       # install/prune/list entry point
   validate.sh                      # local CI mirror
@@ -51,7 +53,7 @@ scripts/
   translation-check.yml            # informational warning, does not block merge
 ```
 
-Codex skills mirror the Claude Code `ywc-*` skill set, but Codex `SKILL.md` frontmatter must keep only `name` and `description`.
+Codex skills mostly mirror the Claude Code `ywc-*` skill set, with Codex-specific additions where useful. Codex `SKILL.md` frontmatter must keep only `name` and `description`.
 
 ## Skill Authoring Rules
 

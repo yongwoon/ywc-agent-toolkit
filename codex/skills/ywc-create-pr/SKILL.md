@@ -245,7 +245,7 @@ If `gh pr checks` exits 1, at least one check failed. Apply fixes in the loop be
 > **Action required**: Read [`codex/skills/references/pr-bot-polling.md`](../references/pr-bot-polling.md) before proceeding. The canonical polling procedure and parameters are defined there.
 
 ```bash
-bash codex/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
+bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" "$PR_NUMBER"
 # exit 0 → BOT_COUNT > 0 (bot reviews posted)
 # exit 1 → BOT_COUNT == 0 (no bot reviews within polling window)
 ```

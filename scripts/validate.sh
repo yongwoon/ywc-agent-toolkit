@@ -5,6 +5,10 @@ set -euo pipefail
 
 ERRORS=0
 
+is_skill_dir() {
+  [ -f "$1/SKILL.md" ]
+}
+
 check_skill_dir() {
   local dir="$1"
   local name
@@ -73,6 +77,38 @@ check_codex_skill_dir() {
   fi
 }
 
+check_codex_support_dirs() {
+  local ref
+
+  if [ ! -d codex/skills/references ]; then
+    echo "ERROR: codex/skills/references is missing"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -d codex/skills/scripts ]; then
+    echo "ERROR: codex/skills/scripts is missing"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -x codex/skills/scripts/poll-pr-reviews.sh ]; then
+    echo "ERROR: codex/skills/scripts/poll-pr-reviews.sh is missing or not executable"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  while IFS= read -r ref; do
+    [ -n "$ref" ] || continue
+    if [ ! -f "codex/skills/references/$ref" ]; then
+      echo "ERROR: codex shared reference is missing: references/$ref"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done < <(
+    {
+      rg -o '\.\./references/[A-Za-z0-9._-]+' codex/skills || true
+      rg -o 'codex/skills/references/[A-Za-z0-9._-]+' codex/skills || true
+    } | sed -E 's#^.*references/##' | sort -u
+  )
+}
+
 echo "==> Validating claude-code skills..."
 for dir in claude-code/skills/*/; do
   if [ -d "$dir" ]; then
@@ -83,8 +119,11 @@ done
 
 echo "==> Validating codex skills..."
 for dir in codex/skills/*/; do
-  [ -d "$dir" ] && check_codex_skill_dir "$dir"
+  [ -d "$dir" ] || continue
+  is_skill_dir "$dir" || continue
+  check_codex_skill_dir "$dir"
 done
+check_codex_support_dirs
 
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null

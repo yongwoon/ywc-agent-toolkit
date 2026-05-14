@@ -9,7 +9,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Tool | Skills | Install path |
 |------|--------|-------------|
 | Claude Code | 26 | `~/.claude/skills/` |
-| Codex | 26 | `~/.codex/skills/` |
+| Codex | 27 | `~/.codex/skills/` |
 
 ## Installation
 
@@ -124,8 +124,8 @@ Restart Claude Code or Codex after installation for skills to take effect.
 
 ## Codex Skills
 
-Codex mirrors the Claude Code `ywc-*` skill set with Codex-compatible
-frontmatter and tool guidance.
+Codex includes the Claude Code `ywc-*` skill set with Codex-compatible
+frontmatter and tool guidance, plus Codex-specific team assembly support.
 
 ### Planning & Spec
 
@@ -145,6 +145,7 @@ frontmatter and tool guidance.
 | `ywc-sequential-executor` | Execute tasks sequentially (Branch → Implement → Commit → PR → Merge) |
 | `ywc-parallel-executor` | Execute tasks in parallel using Git worktree isolation |
 | `ywc-code-gen` | Generate Backend + Frontend + QA code in parallel |
+| `ywc-team-assemble` | Split explicitly authorized work across specialist Codex subagents |
 
 ### Review & Verification
 
