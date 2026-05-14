@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.2.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.2.0...v1.2.1) (2026-05-14)
+
+
+### ### Fixed
+
+* **ywc-create-pr:** use AskUserQuestion for language selection prompt ([#14](https://github.com/yongwoon/ywc-agent-toolkit/issues/14)) ([7edd043](https://github.com/yongwoon/ywc-agent-toolkit/commit/7edd0439003724bb6641e348c019679c91421be7))
+
 ## [1.2.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.1.0...v1.2.0) (2026-05-13)
 
 
