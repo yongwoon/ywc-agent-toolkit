@@ -50,19 +50,22 @@ bash scripts/install.sh --codex ywc-plan
 ```
 claude-code/skills/<skill-name>/
 ├── SKILL.md          # required — skill definition
-├── README.md         # required — English usage guide
-├── README.ja.md      # optional — Japanese
-├── README.ko.md      # optional — Korean
-├── README.zh.md      # optional — Chinese
-├── README.es.md      # optional — Spanish
+├── README.md         # required — Korean default usage guide
+├── README.en.md      # required — English source for generated translations
+├── README.ja.md      # required — Japanese
+├── README.ko.md      # required — Korean
+├── README.zh.md      # generated Tier 2 — Chinese
+├── README.es.md      # generated Tier 2 — Spanish
 └── references/       # optional — reference documents loaded by the skill
 
 codex/skills/<skill-name>/
 ├── SKILL.md          # required — Codex-compatible skill definition
-├── README.md         # required — Korean usage guide
-├── README.en.md      # required — English canonical source
+├── README.md         # required — Korean default usage guide
+├── README.en.md      # required — English source for generated translations
 ├── README.ja.md      # required — Japanese
 ├── README.ko.md      # required — Korean
+├── README.zh.md      # generated Tier 2 — Chinese
+├── README.es.md      # generated Tier 2 — Spanish
 ├── agents/
 │   └── openai.yaml   # required — Codex UI metadata
 └── references/       # optional — reference documents loaded by the skill
@@ -127,7 +130,7 @@ Tier 2 files include an auto-generation notice at the top:
 
 1. Find a `README.md` that has not yet been translated into your language
 2. Create `README.<lang>.md` in the same directory
-3. Translate the full content from `README.md`
+3. For skill docs, translate the full content from `README.en.md`; for root docs, translate from `README.md`
 4. Submit a PR with the label `i18n:<lang>`
 
 ### How to regenerate Tier 2 translations
@@ -162,7 +165,7 @@ bash scripts/translate.sh --dry-run
 
 ### Translation sync
 
-When an English source (`README.md`) changes, CI posts an informational warning on PRs that update English without also updating translations. The comment distinguishes Tier 1 (manual update recommended) from Tier 2 (run the script). You are not required to update all languages in a single PR — the warning is informational only.
+When a root or skill `README.md` changes, CI posts an informational warning if matching translations were not updated. The comment distinguishes Tier 1 (manual update recommended) from Tier 2 (run the script). You are not required to update all languages in a single PR — the warning is informational only.
 
 ---
 

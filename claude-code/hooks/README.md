@@ -10,7 +10,7 @@
 | `check-claude-md-freshness.sh` | `PreToolUse` | `Bash` | git push 전 CLAUDE.md 최신성 검사 |
 | `cost-tracker.py` | `PostToolUse` + `Stop` | `*` / (없음) | tool 호출 로깅 및 세션 summary |
 | `notify-permission.py` | `Notification` | (없음) | permission 대기 시 Slack 알림 |
-| `permission_request.py` | `PermissionRequest` | (없음) | 안전한 tool 자동 승인 |
+| `permission_request.py` | `PermissionRequest` | (없음) | 읽기 전용 tool 및 안전한 Bash 자동 승인 |
 | `protect-secrets.py` | `PreToolUse` | `Read\|Edit\|Write\|Bash` | 비밀 파일 접근 차단 |
 | `session_start.py` | `SessionStart` | (없음) | 세션 시작 시 context 주입 |
 
@@ -97,8 +97,8 @@ export CCH_SLA_WEBHOOK="https://hooks.slack.com/services/..."
 
 `PermissionRequest` / matcher: (없음)
 
-`Read`, `Write`, `Edit`, `Glob`, `Grep` 등 안전한 tool에 대한 permission 요청을 자동 승인한다.
-`Bash`, `WebFetch` 등 위험 가능성이 있는 tool은 여전히 사용자 확인을 요청한다.
+`Read`, `Glob`, `Grep`와 allowlist에 포함된 안전한 `Bash` 명령에 대한 permission 요청을 자동 승인한다.
+`Write`, `Edit`, `MultiEdit`, `WebFetch` 등 쓰기 또는 외부 접근 가능성이 있는 tool은 여전히 사용자 확인을 요청한다.
 
 **의존성**: `uv`, Python 3.11+
 

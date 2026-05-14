@@ -34,7 +34,7 @@
       "matcher": "",
       "command_global": "uv run ~/.claude/hooks/permission_request.py --auto-allow",
       "command_local": "uv run $CLAUDE_PROJECT_DIR/.claude/hooks/permission_request.py --auto-allow",
-      "description": "Read/Write/Edit 등 안전한 tool 자동 승인"
+      "description": "Read/Glob/Grep 및 안전한 Bash 자동 승인"
     },
     "protect-secrets": {
       "event": "PreToolUse",

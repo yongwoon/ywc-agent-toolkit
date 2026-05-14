@@ -34,12 +34,15 @@ Override install paths via environment variables:
 ```
 claude-code/skills/<skill-name>/   # one directory per skill
   SKILL.md                         # required — frontmatter + skill body
-  README.md                        # required — English usage guide
-  README.ja.md / README.ko.md ...  # optional translations
+  README.md                        # required — Korean default usage guide
+  README.en.md                     # required — English source for generated translations
+  README.ja.md / README.ko.md      # required Tier 1 translations
   references/                      # optional — long reference docs extracted from SKILL.md
 codex/skills/<skill-name>/         # one directory per Codex skill
   SKILL.md                         # required — Codex-compatible frontmatter + skill body
-  agents/openai.yaml               # recommended — Codex UI metadata
+  README.md / README.en.md         # required Korean default + English source
+  README.ja.md / README.ko.md      # required Tier 1 translations
+  agents/openai.yaml               # required — Codex UI metadata
   references/                      # optional — long reference docs extracted from SKILL.md
 codex/skills/references/           # shared Codex reference docs linked by multiple skills
 codex/skills/scripts/              # shared Codex helper scripts installed with skills
@@ -49,7 +52,7 @@ scripts/
 .github/workflows/
   validate.yml                     # skill structure + shellcheck + dry-run
   markdownlint.yml                 # README*.md lint
-  release.yml                      # GitHub Release on v* tags (reads CHANGELOG.md)
+  release-please.yml               # creates/updates Release PRs and GitHub Releases
   translation-check.yml            # informational warning, does not block merge
 ```
 
@@ -59,7 +62,8 @@ Codex skills mostly mirror the Claude Code `ywc-*` skill set, with Codex-specifi
 
 Every skill directory must contain:
 1. `SKILL.md` with `name:` and `description:` YAML frontmatter
-2. `README.md` with usage examples in English for distributed skills
+2. `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md`
+3. Codex skills must also contain `agents/openai.yaml`
 
 The `description:` field drives activation — it must include trigger phrases users will type AND explicit "Do not use for..." anti-triggers to prevent false matches against sibling skills.
 
@@ -72,12 +76,12 @@ Do not reference other skills with `@skill-name` (force-load) — it consumes ex
 | Workflow | What it checks |
 |----------|---------------|
 | `validate` | Each skill has required frontmatter and README locale files; Codex skills also have `agents/openai.yaml` and no Claude-only frontmatter; shellcheck on `scripts/`; `--list` dry run |
-| `markdownlint` | `README*.md` and `CONTRIBUTING*.md` pass MD formatting (MD013, MD033, MD041 disabled) |
-| `translation-check` | Informational only — warns if English README updated without translation update |
+| `markdownlint` | Root, skill, and contributing README files pass MD formatting with project-specific rule disables |
+| `translation-check` | Informational only — warns if root or skill `README.md` changes without matching translation updates |
 
 ## Release Process
 
-Releases are triggered by pushing a `v*` tag. The workflow extracts the matching `## [version]` section from `CHANGELOG.md` as the release body. Pre-release if tag contains `-` (e.g., `v1.1.0-beta.1`).
+Releases are managed by Release Please on pushes to `main`. It creates or updates a Release PR that bumps `.release-please-manifest.json` and prepends `CHANGELOG.md`. Merging that PR creates the git tag and GitHub Release.
 
 ## Commit Conventions
 

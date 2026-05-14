@@ -17,7 +17,7 @@ Closes #
 
 - [ ] CI passes (skill validation, shellcheck, markdownlint)
 - [ ] `SKILL.md` has `name:` and `description:` frontmatter (for new/modified skills)
-- [ ] `README.md` (English) is included or updated
+- [ ] Skill README locale set is included or updated (`README.md`, `README.en.md`, `README.ja.md`, `README.ko.md`)
 - [ ] Skill is general-purpose (not project-specific)
 - [ ] `bash scripts/install.sh --list` still works
 
@@ -25,7 +25,7 @@ Closes #
 
 <!-- Skip this section if your PR does not change skill README files. -->
 
-If you updated `README.md`, have you also updated translations?
+If you updated skill documentation, have you also updated translations?
 
 | Language | Updated? |
 |----------|----------|
