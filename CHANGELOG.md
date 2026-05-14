@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.5.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.5.0...v1.5.1) (2026-05-14)
+
+
+### ### Documentation
+
+* streamline repository documentation ([#22](https://github.com/yongwoon/ywc-agent-toolkit/issues/22)) ([8029d78](https://github.com/yongwoon/ywc-agent-toolkit/commit/8029d7823e03ef166621ef5460b66ade0ea601b7))
+
 ## [1.5.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.4.0...v1.5.0) (2026-05-14)
 
 
