@@ -13,7 +13,19 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 ## Installation
 
-### Quick install
+### Via Claude Code plugin marketplace (recommended)
+
+```bash
+# Register as a marketplace (one-time setup)
+/plugin marketplace add ywc github:yongwoon/ywc-agent-toolkit
+
+# Install all 26 Claude Code skills
+/plugin install ywc-agent-toolkit@ywc
+```
+
+No cloning or bash required. Skills are installed to `~/.claude/skills/` automatically.
+
+### Via bash script
 
 ```bash
 git clone https://github.com/yongwoon/ywc-agent-toolkit.git
