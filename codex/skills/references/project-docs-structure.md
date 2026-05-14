@@ -189,6 +189,6 @@ Before creating any document, verify:
 
 1. **Existing document check** — if a document on the same topic already exists, **update it** (do not create a new one).
 2. **Directory selection** — confirm the appropriate directory using the routing rules above.
-3. **Cross-references** — when related documents exist, add bidirectional links (new → existing, existing → new).
+3. **Cross-references** — when related documents exist, link from the newer/lower-level document to the higher-order baseline document.
 4. **Official vs. draft** — pre-confirmation content goes in `todo/`; confirmed content moves to the official folder.
 5. **CLAUDE.md rule** — generate documents only when the user explicitly requests them.

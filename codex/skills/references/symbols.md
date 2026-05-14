@@ -104,7 +104,8 @@ is concatenated into a query string. Should be parameterized.
 
 ## 7. Rules of Use
 
-- **One symbol per concept per line.** Do not stack symbols (`✅✅` or `🚨🛡️`) — pick the most specific.
+- **Do not duplicate symbols for the same concept.** Avoid repeated status or severity markers such as `✅✅` or `🚨🚨`.
+- **Domain marker combinations are allowed when they add filtering value.** If needed, combine one severity marker with one optional domain marker, separated by a space and in consistent order, for example `🚨 🛡️`. Do not stack multiple domain markers on one finding.
 - **Symbols supplement structure, not replace it.** Severity and step IDs still carry meaning; the symbol is a visual marker that lets the reader scan.
 - **Plain-text fallback is always allowed.** A skill writing a Slack message or a non-rendering target may emit `[CRITICAL]` instead of `🚨`. Pick one mode per output and stay consistent within that output.
 - **Do not use symbols inside generated code, commit messages, or PR titles.** They belong in skill *output* (reports, summaries, status traces), not in artifacts the skill produces for downstream tools.

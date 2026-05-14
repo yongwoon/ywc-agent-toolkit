@@ -1,10 +1,10 @@
 # ywc-team-assemble
 
-Skill de Codex para cuando el usuario pide explicitamente un specialist team, subagent delegation o parallel agent work.
+Skill de Codex para cuando el usuario pide explícitamente un specialist team, subagent delegation o parallel agent work.
 
 ## Cuándo usarlo
 
-- El usuario pide explicitamente formar un team, delegar a agents o ejecutar en parallel.
+- El usuario pide explícitamente formar un team, delegar a agents o ejecutar en parallel.
 - El trabajo tiene al menos dos workstreams independientes.
 - Los write scopes pueden separarse y el parent agent puede revisar y sintetizar los resultados.
 
