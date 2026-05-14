@@ -14,6 +14,18 @@
         { "type": "ci",       "section": "### CI",            "hidden": true  },
         { "type": "refactor", "section": "### Internal",      "hidden": true  },
         { "type": "test",     "section": "### Tests",         "hidden": true  }
+      ],
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "plugin.json",
+          "jsonpath": "$.version"
+        }
       ]
     }
   }
