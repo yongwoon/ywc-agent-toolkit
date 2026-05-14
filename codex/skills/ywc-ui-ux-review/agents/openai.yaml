@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI UX Review"
+  short_description: "the user wants a UI/UX review combining static code analysis with live UI exploration (available browser tooling) covering informatio..."
+  default_prompt: "Use $ywc-ui-ux-review to handle this request following the skill workflow, loading bundled references or scripts only when needed."

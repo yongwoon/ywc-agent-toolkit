@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan"
+  short_description: "the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment..."
+  default_prompt: "Use $ywc-plan to handle this request following the skill workflow, loading bundled references or scripts only when needed."

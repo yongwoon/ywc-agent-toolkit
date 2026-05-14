@@ -6,7 +6,7 @@
 #   bash scripts/translate.sh                          Translate all skills (tier2 languages)
 #   bash scripts/translate.sh --lang es               Translate to Spanish only
 #   bash scripts/translate.sh --skill ywc-plan        Translate a single skill
-#   bash scripts/translate.sh --codex                 Translate Codex bundle only
+#   bash scripts/translate.sh --codex                 Translate Codex skills only
 #   bash scripts/translate.sh --dry-run               Print what would be translated
 #
 # Requirements:
@@ -36,7 +36,7 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 check_deps() {
   command -v jq   >/dev/null 2>&1 || die "jq is required (brew install jq)"
   command -v curl >/dev/null 2>&1 || die "curl is required"
-  [ -n "${ANTHROPIC_API_KEY:-}" ]  || die "ANTHROPIC_API_KEY is not set"
+  $DRY_RUN || [ -n "${ANTHROPIC_API_KEY:-}" ] || die "ANTHROPIC_API_KEY is not set"
   [ -f "$TRANSLATIONS_JSON" ]      || die "translations.json not found at $TRANSLATIONS_JSON"
 }
 
@@ -145,38 +145,44 @@ fi
 echo "Languages: ${LANGS[*]}"
 echo ""
 
-# ---- Codex bundle -----------------------------------------------------------
+# ---- skill translation ------------------------------------------------------
 
-if $CODEX_ONLY || [ -z "$TARGET_SKILL" ]; then
-  codex_src="$CODEX_SRC/README.en.md"
-  if [ -f "$codex_src" ]; then
-    echo "=== Codex bundle ==="
+translate_skill_tree() {
+  local label="$1"
+  local src_root="$2"
+
+  echo "=== $label skills ==="
+  local found=false
+  local skill_dir
+  for skill_dir in "$src_root"/*/; do
+    [ -d "$skill_dir" ] || continue
+
+    local skill_name
+    skill_name="$(basename "$skill_dir")"
+    [ -n "$TARGET_SKILL" ] && [ "$skill_name" != "$TARGET_SKILL" ] && continue
+
+    local src="${skill_dir%/}/README.en.md"
+    [ -f "$src" ] || continue
+
+    found=true
+    echo "[$skill_name]"
     for lang in "${LANGS[@]}"; do
-      translate_file "$codex_src" "$lang"
+      translate_file "$src" "$lang"
     done
-    echo ""
-  fi
-fi
-
-$CODEX_ONLY && exit 0
-
-# ---- Claude Code skills -----------------------------------------------------
-
-echo "=== Claude Code skills ==="
-for skill_dir in "$CC_SRC"/*/; do
-  [ -d "$skill_dir" ] || continue
-
-  skill_name="$(basename "$skill_dir")"
-  [ -n "$TARGET_SKILL" ] && [ "$skill_name" != "$TARGET_SKILL" ] && continue
-
-  src="$skill_dir/README.en.md"
-  [ -f "$src" ] || continue
-
-  echo "[$skill_name]"
-  for lang in "${LANGS[@]}"; do
-    translate_file "$src" "$lang"
   done
-done
+
+  if ! $found && [ -n "$TARGET_SKILL" ]; then
+    echo "  ! $TARGET_SKILL not found under $src_root" >&2
+  fi
+  echo ""
+}
+
+if $CODEX_ONLY; then
+  translate_skill_tree "Codex" "$CODEX_SRC"
+else
+  translate_skill_tree "Codex" "$CODEX_SRC"
+  translate_skill_tree "Claude Code" "$CC_SRC"
+fi
 
 echo ""
 echo "Done."

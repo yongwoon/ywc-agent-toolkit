@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merge Dependabot"
+  short_description: "the user wants to merge Dependabot PRs, batch-process dependency updates, or clean up accumulated Dependabot PRs. Triggers: \"me..."
+  default_prompt: "Use $ywc-merge-dependabot to handle this request following the skill workflow, loading bundled references or scripts only when needed."

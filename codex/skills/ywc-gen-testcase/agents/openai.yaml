@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gen Testcase"
+  short_description: "generating a manual verification testsheet (developer + QA gate) from a PR, task directory, git range, or diff. Triggers: \"gene..."
+  default_prompt: "Use $ywc-gen-testcase to handle this request following the skill workflow, loading bundled references or scripts only when needed."

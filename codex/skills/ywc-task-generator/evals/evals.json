@@ -1,0 +1,59 @@
+{
+  "skill_name": "ywc-task-generator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "다음 spec을 한국어로 task 분해해줘. 각 task는 나중에 git worktree 와 별도 Codex 또는 Codex session 에서 병렬 실행할 수 있다고 가정해.\n\n## 사용자 인증 기능\n- Email/Password 기반 회원가입\n- JWT Token 기반 Login/Logout\n- Password 재설정 (Email 발송)\n- 기술스택: Next.js + Supabase",
+      "expected_output": "한국어로 작성된 tasks/ directory 구조. Technical 용어는 영어 유지. Phase별로 db, lib, api, ui task가 dependency 순서대로 생성된다. 각 README.md 에 Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify 가 포함된다. task.md 에 Allowed Edit Scope, Stop Conditions, Task Verify 가 포함된다. dependency-graph.md 에 Parallel Execution Notes 가 포함된다.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "以下のSpecからタスクを日本語で生成してください。各タスクは後で git worktree と分離された Codex または Codex session で parallel execution される可能性があります。\n\n## 商品管理機能\n- 商品のCRUD API\n- 画像Upload (S3)\n- Category別フィルタリング\n- 技術Stack: Hono + Kysely + PostgreSQL",
+      "expected_output": "日本語で作成されたtasks/ directory構造。Technical用語は英語維持。Phase別にdb, lib, api taskがdependency順序で生成される。各README.mdにOwnership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verifyが含まれる。task.mdにAllowed Edit Scope, Stop Conditions, Task Verifyが含まれる。dependency-graph.mdにParallel Execution Notesが含まれる。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Break down this spec into tasks in English. Assume the tasks may later be executed in parallel via git worktrees and separate Codex sessions.\n\n## Notification System\n- Real-time WebSocket notifications\n- Email notification queue (Bull + Redis)\n- User notification preferences\n- Read/unread status tracking\n- Stack: Node.js + Express + PostgreSQL + Redis",
+      "expected_output": "English tasks/ directory structure. Phased tasks with db, lib, api, worker categories in dependency order. Each task README includes Ownership, Shared Surfaces, Conflicts With, Parallelizable After, and Task Verify. Each task.md includes Allowed Edit Scope, Stop Conditions, and Task Verify. dependency-graph.md includes Parallel Execution Notes describing ready sets, newly runnable tasks, and conflict-based non-parallel pairs.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Refine this existing task set for parallel worktree execution in English.\n\nExisting tasks:\n- 001010-db-create-orders-table\n- 001020-api-order-crud\n- 001030-ui-order-management\n- 001040-api-order-export\n- 002010-test-order-flow",
+      "expected_output": "Refined English task set that preserves the existing naming unless a split is necessary. Each task includes explicit parallel execution metadata, especially Ownership and Conflicts With. The result narrows edit boundaries instead of using vague ownership. dependency-graph.md includes Parallel Execution Notes showing which existing tasks can run together and which must be serialized due to shared API contracts or schema boundaries.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "다음 간단한 요구사항을 task로 만들어줘. 한국어로.\n\n## 기존 User API에 프로필 이미지 업로드 추가\n- 기술스택: Next.js + Supabase Storage\n- 이미 User table과 API가 존재함\n- 프로필 이미지 upload endpoint 하나만 추가하면 됨",
+      "expected_output": "소규모 spec이므로 Task 1~2개, 단일 Phase로 생성. 무리하게 Phase를 나누거나 과도한 Task 분할을 하지 않아야 함. 기존 User table/API가 있으므로 db migration task가 필요할 수도 있지만 최소한으로 유지.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Break down this large spec into tasks in English. Assume parallel worktree execution.\n\n## E-commerce Platform MVP\n- User auth (email/password, OAuth)\n- Product catalog with categories and search\n- Shopping cart and checkout\n- Payment integration (Stripe)\n- Order management and status tracking\n- Email notifications (order confirmation, shipping)\n- Admin dashboard (product CRUD, order management, user management)\n- Review and rating system\n- Inventory management\n- Stack: Next.js + PostgreSQL + Redis + S3",
+      "expected_output": "대규모 spec이므로 20개 초과 Task가 예상됨. Skill이 spec을 여러 Feature로 분리하는 것을 사용자에게 제안해야 함. 무조건 20개 이상의 task를 한 번에 생성하지 않아야 함.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "기존 tasks/ directory에 이미 다음 task들이 있어:\n- tasks/001010-db-create-user-table/\n- tasks/001020-api-user-registration/\n- tasks/001030-api-user-login/\n\n여기에 비밀번호 재설정 기능을 추가하는 task를 한국어로 생성해줘.\n기술스택: Next.js + Supabase, Email 발송은 Resend 사용.",
+      "expected_output": "기존 Task numbering(001010~001030)과 충돌하지 않는 번호로 생성. 기존 Task에 대한 dependency(예: 001010 user table에 의존)가 Depends On에 명시됨. 새 library(Resend) 도입이 별도 Task로 분리됨. Phase는 기존 001에 이어서 또는 새 Phase로 적절히 배치. 신규 task naming 은 000001-010 형식의 새 convention 을 사용하되, 기존 001010 형식 task 와의 dependency link 는 기존 이름 그대로 참조.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "다음 spec을 한국어로 task 분해해줘. Granularity mode는 llm으로 설정해줘.\n\n## 사용자 프로필 관리 기능\n- 프로필 조회 / 수정 API\n- 프로필 이미지 upload (S3)\n- 기술스택: Next.js + Supabase",
+      "expected_output": "llm mode 특성이 반영된 task set. Vertical bundling 으로 human mode 대비 task 수가 적음 (예: domain + api 가 한 task 에 묶임). 단, DB migration 과 Library 도입은 여전히 독립 task 로 분리되어 Safety Invariant 가 유지됨. Task naming 은 000001-010 형식의 6-digit phase + hyphen + 3-digit sequence. Ownership 은 feature 단위 (예: src/features/profile/**). Implementation Steps 는 3–7 top-level bullets + sub-bullets 구조.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "기존 tasks/ directory에 legacy format (`001010-*`) task 가 이미 있고, 지금부터 신규 task 는 new format (`000001-010-*`) 으로 생성하고 싶어. 다음 spec 을 한국어로 분해해줘. 기존 task 와의 dependency 도 표시해줘. Granularity mode 는 human 으로.\n\n기존 tasks:\n- tasks/001010-db-create-orders-table/\n- tasks/001020-api-order-crud/\n\n새 기능:\n- 주문 status 변경 시 email 발송 (Resend)\n- 주문 취소 기능 (환불 제외)",
+      "expected_output": "신규 task 는 000002-010-* 형식으로 생성 (기존 Phase 001 에 이어 Phase 000002 로 시작). 기존 legacy task 는 이름 그대로 Depends On 에 참조하여 전환기 공존 가능. 새 library (Resend) 도입은 독립 task 로 분리. dependency-graph.md 에 legacy format (`001010`, `001020`) 과 new format (`000002-010` 등) 이 함께 표시됨. Safety Invariant 유지 (DB migration 및 library 도입 분리).",
+      "files": []
+    }
+  ]
+}

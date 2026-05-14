@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Gen"
+  short_description: "the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: \"\ucf54\ub4dc \uc0dd\uc131\", \"c..."
+  default_prompt: "Use $ywc-code-gen to handle this request following the skill workflow, loading bundled references or scripts only when needed."

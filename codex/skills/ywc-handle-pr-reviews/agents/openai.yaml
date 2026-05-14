@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handle PR Reviews"
+  short_description: "handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: \"handle PR r..."
+  default_prompt: "Use $ywc-handle-pr-reviews to handle this request following the skill workflow, loading bundled references or scripts only when needed."

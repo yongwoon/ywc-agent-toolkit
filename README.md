@@ -9,7 +9,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Tool | Skills | Install path |
 |------|--------|-------------|
 | Claude Code | 26 | `~/.claude/skills/` |
-| Codex | 1 | `~/.codex/skills/` |
+| Codex | 26 | `~/.codex/skills/` |
 
 ## Installation
 
@@ -45,7 +45,7 @@ bash scripts/install.sh --all
 
 ```bash
 bash scripts/install.sh --cc ywc-plan ywc-commit ywc-create-pr
-bash scripts/install.sh --codex ywc-ui-ux-review
+bash scripts/install.sh --codex ywc-plan ywc-commit ywc-ui-ux-review
 ```
 
 ### List available skills
@@ -68,6 +68,64 @@ Restart Claude Code or Codex after installation for skills to take effect.
 ---
 
 ## Claude Code Skills
+
+### Codex Planning & Spec
+
+| Skill | Description |
+|-------|-------------|
+| `ywc-plan` | Convert a rough idea into `plan.md` (Small) or a Spec document (Medium/Large) |
+| `ywc-spec-writer` | Write and update spec documents (`docs/specification/`) |
+| `ywc-spec-validate` | Validate spec quality (Completeness / Consistency / Feasibility) |
+| `ywc-tech-research` | Research libraries and compare technical approaches |
+| `ywc-ubiquitous-language` | Create and maintain a domain ubiquitous language dictionary |
+
+### Codex Task & Execution
+
+| Skill | Description |
+|-------|-------------|
+| `ywc-task-generator` | Decompose a spec into dependency-safe tasks |
+| `ywc-sequential-executor` | Execute tasks sequentially (Branch → Implement → Commit → PR → Merge) |
+| `ywc-parallel-executor` | Execute tasks in parallel using Git worktree isolation |
+| `ywc-code-gen` | Generate Backend + Frontend + QA code in parallel |
+
+### Codex Review & Verification
+
+| Skill | Description |
+|-------|-------------|
+| `ywc-impl-review` | Verify implementation across Spec / Security / QA axes |
+| `ywc-security-audit` | Security audit based on OWASP Top 10 |
+| `ywc-ui-ux-review` | UI/UX review (IA + Visual design + WCAG 2.2 AA) |
+| `ywc-product-review` | Product feedback across 5 business dimensions |
+| `ywc-gen-testcase` | Generate test sheets from PRs or tasks |
+| `ywc-e2e-test-strategy` | Design Playwright E2E test strategy |
+
+### Codex Git & Release
+
+| Skill | Description |
+|-------|-------------|
+| `ywc-commit` | Stage and commit session work |
+| `ywc-create-pr` | Commit and create a Draft PR |
+| `ywc-handle-pr-reviews` | Automate PR review responses |
+| `ywc-finish-branch` | Full branch delivery (CI → merge → cleanup) |
+| `ywc-merge-dependabot` | Auto-merge Dependabot PRs |
+| `ywc-release-pr-list` | Summarize PRs included in a release |
+| `ywc-changelog-release-notes` | Generate CHANGELOG entries and user-facing release notes |
+
+### Codex Documentation & Other
+
+| Skill | Description |
+|-------|-------------|
+| `ywc-project-scaffold` | Generate directory structure for any language/framework |
+| `ywc-project-docs` | Generate project documentation in Korean or Japanese |
+| `ywc-incident-postmortem` | Write a structured postmortem after a production incident |
+| `ywc-skill-author` | (Meta) Rules for authoring new `ywc-*` skills |
+
+---
+
+## Codex Skills
+
+Codex mirrors the Claude Code `ywc-*` skill set with Codex-compatible
+frontmatter and tool guidance.
 
 ### Planning & Spec
 
@@ -119,14 +177,6 @@ Restart Claude Code or Codex after installation for skills to take effect.
 | `ywc-project-docs` | Generate project documentation in Korean or Japanese |
 | `ywc-incident-postmortem` | Write a structured postmortem after a production incident |
 | `ywc-skill-author` | (Meta) Rules for authoring new `ywc-*` skills |
-
----
-
-## Codex Skills
-
-| Skill | Description |
-|-------|-------------|
-| `ywc-ui-ux-review` | UI/UX review (IA + Visual design + WCAG 2.2 AA) |
 
 ---
 

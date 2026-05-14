@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit"
+  short_description: "the user says \"commit\", \"\ucee4\ubc0b\", \"\ucee4\ubc0b \ud574\uc918\", \"commit push\", \"push\", \"\uc9c0\uae08\uae4c\uc9c0 \ud55c \uc791\uc5c5 \ucee4\ubc0b\", or any phrase indicating intent to stage, commit,..."
+  default_prompt: "Use $ywc-commit to handle this request following the skill workflow, loading bundled references or scripts only when needed."

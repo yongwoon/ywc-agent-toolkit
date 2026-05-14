@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ubiquitous Language"
+  short_description: "creating, extracting, or updating a project's ubiquitous language document (shared domain vocabulary between developers, domain..."
+  default_prompt: "Use $ywc-ubiquitous-language to handle this request following the skill workflow, loading bundled references or scripts only when needed."

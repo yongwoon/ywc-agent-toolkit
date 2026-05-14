@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tech Research"
+  short_description: "comparing libraries, investigating implementation approaches, evaluating technology options, or gathering best practices before..."
+  default_prompt: "Use $ywc-tech-research to handle this request following the skill workflow, loading bundled references or scripts only when needed."

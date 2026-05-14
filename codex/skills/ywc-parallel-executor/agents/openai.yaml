@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parallel Executor"
+  short_description: "multiple independent tasks from tasks/ can run simultaneously and the user wants faster execution via Git Worktree isolation. T..."
+  default_prompt: "Use $ywc-parallel-executor to handle this request following the skill workflow, loading bundled references or scripts only when needed."

@@ -38,6 +38,7 @@ git checkout -b feat/your-skill-name
 # Test the install script locally
 bash scripts/install.sh --list
 bash scripts/install.sh --cc ywc-plan   # install a single skill for testing
+bash scripts/install.sh --codex ywc-plan
 ```
 
 ---
@@ -55,6 +56,16 @@ claude-code/skills/<skill-name>/
 ├── README.zh.md      # optional — Chinese
 ├── README.es.md      # optional — Spanish
 └── references/       # optional — reference documents loaded by the skill
+
+codex/skills/<skill-name>/
+├── SKILL.md          # required — Codex-compatible skill definition
+├── README.md         # required — Korean usage guide
+├── README.en.md      # required — English canonical source
+├── README.ja.md      # required — Japanese
+├── README.ko.md      # required — Korean
+├── agents/
+│   └── openai.yaml   # required — Codex UI metadata
+└── references/       # optional — reference documents loaded by the skill
 ```
 
 ### SKILL.md frontmatter (required fields)
@@ -64,19 +75,25 @@ claude-code/skills/<skill-name>/
 name: ywc-your-skill-name
 description: >
   One or two sentences describing WHEN this skill activates and WHAT it does.
-  Include trigger phrases so Claude can match user intent.
+  Include trigger phrases so the tool can match user intent.
 ---
 ```
 
+Codex `SKILL.md` frontmatter must contain only `name` and `description`.
+Claude Code skills may include extra metadata such as `version`, `category`,
+`phase`, or `requires`, but those fields must not be copied into Codex skills.
+
 ### Naming conventions
 
-- Skill directory: `ywc-<kebab-case>` (Claude Code) or `<kebab-case>` (Codex general skills)
+- Skill directory: `ywc-<kebab-case>` for distributed Claude Code and Codex skills
 - Follow the patterns in [ywc-skill-author](claude-code/skills/ywc-skill-author/SKILL.md)
 
 ### Before submitting a new skill PR
 
 - [ ] `SKILL.md` has `name:` and `description:` frontmatter
-- [ ] `README.md` (English) is included with usage examples
+- [ ] `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md` are included
+- [ ] Codex skills include `agents/openai.yaml`
+- [ ] Codex `SKILL.md` frontmatter has no Claude-only metadata fields
 - [ ] The skill is general-purpose (not specific to a single project)
 - [ ] `bash scripts/install.sh --list` still works after your change
 
@@ -125,6 +142,9 @@ ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh --lang es
 
 # Regenerate a single skill
 ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh --skill ywc-plan
+
+# Regenerate Codex skills only
+ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh --codex
 
 # Preview what would be generated (no API calls)
 bash scripts/translate.sh --dry-run
@@ -187,7 +207,7 @@ All PRs must pass:
 
 | Check | What it verifies |
 |-------|-----------------|
-| `validate` | Every skill has `SKILL.md` with `name:` and `description:` frontmatter |
+| `validate` | Every skill has required frontmatter, README locale files, and Codex `agents/openai.yaml` metadata |
 | `shellcheck` | `scripts/install.sh` has no shell script errors |
 | `markdownlint` | README files pass basic Markdown formatting rules |
 

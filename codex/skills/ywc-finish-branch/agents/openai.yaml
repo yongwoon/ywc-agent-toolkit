@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finish Branch"
+  short_description: "delivering a single completed feature branch to the base branch \u2014 covers mark-PR-ready, CI wait + bot review polling, merge (PR..."
+  default_prompt: "Use $ywc-finish-branch to handle this request following the skill workflow, loading bundled references or scripts only when needed."

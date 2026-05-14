@@ -1,0 +1,4 @@
+interface:
+  display_name: "Task Generator"
+  short_description: "converting a specification into implementation tasks. Triggers: \"task \uc0dd\uc131\", \"\u30bf\u30b9\u30af\u751f\u6210\", \"spec to tasks\", \"task breakdown\", \"\uc791\uc5c5 \ubd84\ud574\",..."
+  default_prompt: "Use $ywc-task-generator to handle this request following the skill workflow, loading bundled references or scripts only when needed."

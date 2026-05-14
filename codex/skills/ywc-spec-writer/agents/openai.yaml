@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec Writer"
+  short_description: "creating or updating a project specification (\uc0ac\uc591\uc11c) in docs/specification/. Triggers: \"spec \uc791\uc131\", \"\uc0ac\uc591\uc11c \uc791\uc131\", \"\uc0ac\uc591\uc11c \uc5c5\ub370\uc774\ud2b8\", \"specific..."
+  default_prompt: "Use $ywc-spec-writer to handle this request following the skill workflow, loading bundled references or scripts only when needed."

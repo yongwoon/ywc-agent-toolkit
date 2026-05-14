@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Scaffold"
+  short_description: "the user wants to scaffold a new project structure, design a folder layout, or organize files for a specific tech stack. Trigge..."
+  default_prompt: "Use $ywc-project-scaffold to handle this request following the skill workflow, loading bundled references or scripts only when needed."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Incident Postmortem"
+  short_description: "a production incident has occurred and you need a structured postmortem: timeline reconstruction, root cause analysis (5 Whys),..."
+  default_prompt: "Use $ywc-incident-postmortem to handle this request following the skill workflow, loading bundled references or scripts only when needed."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "UI/UX Review"
-  short_description: "Audit a project's IA, visual design, usability, and accessibility with code and live UI evidence"
-  default_prompt: "Use $ywc-ui-ux-review to audit the scoped project UI/UX with static code evidence and live browser evidence where available, then produce a prioritized Markdown report with Critical, High, Medium, and Low findings tied to heuristics and concrete recommendations."

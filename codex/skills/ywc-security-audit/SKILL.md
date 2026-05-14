@@ -1,0 +1,111 @@
+---
+name: ywc-security-audit
+description: (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), or for code that does not touch auth/external input/sensitive data.
+---
+
+# ywc-security-audit
+
+**Announce at start:** "I'm using the ywc-security-audit skill to inspect the code against OWASP Top 10 and project-specific threats."
+
+Security Agent Skill for deep security analysis.
+
+## Rationalization Defense
+
+When tempted to skip a step, check this table first:
+
+| Excuse | Reality |
+|---|---|
+| "Code looks clean, OWASP scan is overkill" | Clean code can still leak. Walk OWASP Top 10 in order — every item, every time. |
+| "This is internal-only, threat surface is low" | Internal-only ≠ trusted. Insider threat and lateral movement are real. Audit anyway. |
+| "Auth library is well-known, trust it blindly" | Misuse of a good library is the #1 cause of auth bugs. Audit how it is configured. |
+| "Severity feels High, mark it Critical to be safe" | Inflated severity wastes triage time. Use Critical only when exploit + impact are both demonstrable. |
+| "User input is validated upstream, no need at this layer" | Defense in depth. Validate at every trust boundary, not just at the gateway. |
+| "Token/secret/key is just for dev, exposure is fine" | Never. Dev secrets get committed, leak, and become prod credentials. Always flag. |
+| "I cannot exploit it locally, finding is theoretical" | Theoretical findings still belong in the report. Mark as `unverified — theoretical` rather than dropping. |
+
+**Violating the letter of these rules is violating the spirit.** A clean security report without honest dimensional coverage is dangerous.
+
+## Arguments
+
+| Parameter | Format | Example | Description |
+|-----------|--------|---------|-------------|
+| `--code` | `--code <path>` | `--code api/src/middleware/` | Code path to audit (required) |
+
+## Execution Steps
+
+1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify tech stack. Pay special attention to authentication method, deployment environment (internal/external), and security libraries in use
+2. **Read Target Code Files** — Read all source files under the `--code` path
+3. **Deep Analysis Against OWASP Top 10** — Inspect each item in the Audit Checklist below, in order. For each item:
+   - Use Grep/AST search to detect relevant patterns
+   - Trace data flow of discovered code (input → processing → output)
+   - Apply project context (internal service communication vs externally exposed endpoints)
+4. **Determine Severity** — Classify according to these criteria:
+   - **Critical**: Immediately exploitable vulnerability (SQL injection, auth bypass, hardcoded secrets)
+   - **High**: Conditionally exploitable (SSRF with internal network access, improper authorization checks)
+   - **Medium**: Potential risk (verbose errors, insufficient rate limiting)
+   - **Low**: Best practice violation (timing attack potential, unnecessary information disclosure)
+5. **Output Severity-Classified Security Report**
+
+## Audit Checklist (OWASP Top 10)
+
+1. Injection (SQL, Command, LDAP)
+2. Broken Authentication (Token, Session management)
+3. Sensitive Data Exposure (Logging, API Response, Storage)
+4. XSS (Reflected, Stored, DOM-based)
+5. Broken Access Control (Missing Auth Middleware, Privilege Escalation)
+6. Security Misconfiguration (Default Config, Verbose Errors)
+7. SSRF (Unvalidated URLs, Internal Service Access)
+8. Input Validation (Missing Validation, Type Coercion)
+9. Rate Limiting (Missing Rate Limits on Sensitive Endpoints)
+10. Timing Attacks (Non-constant-time Comparisons for Secrets)
+
+## Output Format
+
+```text
+## Security Audit Result: {target path}
+
+### Summary
+- Critical: N, High: M, Medium: K, Low: L
+
+### Findings
+1. [{severity}] {file}:{line}
+   - Issue: ...
+   - Risk: ...
+   - Recommended Fix: ...
+
+### Overall Assessment
+(Comprehensive security posture summary)
+```
+
+## Advisor Escalation Policy
+
+This skill runs the full OWASP Top 10 deep analysis on a single inherited-model executor. Because security findings are the highest-stakes output category in this repository, the executor applies a **permissive** escalation bar: when a suspected Critical or High finding has indirect evidence, escalate rather than risk mislabeling. This follows **Pattern A** from [advisor-pattern.md](../references/advisor-pattern.md) — frontier judgment applied at the specific decision points where it carries real value.
+
+**Budget**: up to 3 high-capability advisor calls per invocation. Security gets a slightly larger budget than spec-review because the downside cost of a missed vulnerability is much higher than the downside cost of a missed spec gap. Unused budget is still good; the bar for escalation must still be met.
+
+**Escalation conditions** — a finding is an advisor candidate when it matches any of the following:
+
+1. **Indirect exploit chain** — A parameter flow could enable SSRF, auth bypass, or injection, but the exploit requires two or more hops through functions the executor did not fully trace. The key question for Opus is whether the chain is actually reachable.
+2. **Two OWASP categories compete** — The same evidence fits two categories equally (for example A01 Broken Access Control and A07 Auth Failures). The correct category affects severity and remediation, so the choice is irreversible once reported.
+3. **Business logic flaw (A04)** — A04 is the hardest category to judge mechanically because it depends on domain knowledge, not pattern matching. When a suspected business logic flaw has any ambiguity, escalate.
+4. **Crypto decision (A02)** — The code makes a hashing or encryption choice and the executor cannot tell whether it is appropriate without knowing the threat model and data sensitivity. Frontier judgment with the spec excerpt is the right call.
+5. **Critical severity with indirect evidence** — Any Critical-suspected finding where the unsafe path requires interpretation rather than direct observation. Direct means the unsafe call sits on a single visible line; indirect means the tainted value flows through multiple transformations before reaching the dangerous sink.
+
+**Context payload rules** (critical for cost discipline):
+- Forward only the decision point: the suspect code chain, the spec or threat-model excerpt, and 2-3 bullet points sketching the hypothesized exploit (≤100 lines total).
+- Do NOT forward: the full audit target, the full project config, secrets, or the entire CLAUDE.md.
+- The advisor returns a short verdict (≤200 words) containing confirmed severity, a one-line rationale, and either "confirmed" or "adjusted" with the new severity.
+- Never include the full file, the full project config, or secrets. If the exploit chain needs information outside the snippet, summarize that information in 1-2 sentences rather than pasting it.
+
+**Non-goals** — do NOT escalate for these:
+- Trivial OWASP pattern matches — hardcoded secrets, raw string concatenation in SQL queries, unfiltered user strings assigned to innerHTML-style sinks. These are Critical and unambiguous; report them as Phase 1 confirmed findings.
+- Missing standard hardening — no rate limit on an endpoint, missing security headers, absent CORS tightening. These are A05 misconfigurations with clear remediation.
+- Low-severity best practice notes — timing attack potential, overly verbose error messages. Advisor adds no value at this severity.
+- Well-understood vulnerable dependencies (A06) — a pinned CVE version is a mechanical finding.
+
+Report escalations in the output: mark Phase 2 findings with `[P2]` prefix and include the advisor's verdict. This preserves auditability of which security calls involved frontier judgment and lets the user calibrate their trust in the severity assignments.
+
+## Integration
+
+- **upstream**: After implementation or periodic review
+- **downstream**: Fix implementation → PR

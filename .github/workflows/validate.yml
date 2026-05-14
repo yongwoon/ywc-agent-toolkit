@@ -13,48 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate Claude Code skills
+      - name: Validate skills
         run: |
-          failed=0
-          for skill_dir in claude-code/skills/*/; do
-            [ -d "$skill_dir" ] || continue
-            skill_name="$(basename "$skill_dir")"
-            skill_md="${skill_dir}SKILL.md"
-            if [ ! -f "$skill_md" ]; then
-              echo "ERROR: $skill_name is missing SKILL.md"
-              failed=1
-              continue
-            fi
-            if ! grep -q "^name:" "$skill_md"; then
-              echo "ERROR: $skill_name/SKILL.md is missing 'name:' in frontmatter"
-              failed=1
-            fi
-            if ! grep -q "^description:" "$skill_md"; then
-              echo "ERROR: $skill_name/SKILL.md is missing 'description:' in frontmatter"
-              failed=1
-            fi
-          done
-          exit $failed
-
-      - name: Validate Codex skills
-        run: |
-          # codex/skills/ is a single skill bundle, not per-subdirectory
-          skill_md="codex/skills/SKILL.md"
-          failed=0
-          if [ ! -f "$skill_md" ]; then
-            echo "ERROR: codex/skills is missing SKILL.md"
-            failed=1
-          else
-            if ! grep -q "^name:" "$skill_md"; then
-              echo "ERROR: codex/skills/SKILL.md is missing 'name:' in frontmatter"
-              failed=1
-            fi
-            if ! grep -q "^description:" "$skill_md"; then
-              echo "ERROR: codex/skills/SKILL.md is missing 'description:' in frontmatter"
-              failed=1
-            fi
-          fi
-          exit $failed
+          bash scripts/validate.sh
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master

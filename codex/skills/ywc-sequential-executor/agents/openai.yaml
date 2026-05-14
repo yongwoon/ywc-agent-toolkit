@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sequential Executor"
+  short_description: "executing tasks from the tasks/ directory in strict order through their full lifecycle (branch \u2192 implement \u2192 commit \u2192 PR \u2192 CI \u2192..."
+  default_prompt: "Use $ywc-sequential-executor to handle this request following the skill workflow, loading bundled references or scripts only when needed."

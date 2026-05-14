@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Author"
+  short_description: "creating a new ywc-* skill, restructuring an existing one's frontmatter/body sections/references, or auditing existing ywc-* sk..."
+  default_prompt: "Use $ywc-skill-author to handle this request following the skill workflow, loading bundled references or scripts only when needed."

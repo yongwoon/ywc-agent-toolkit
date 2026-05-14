@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repository Is
 
-A skill distribution toolkit for **Claude Code** (26 skills) and **Codex** (31 skills). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
+A skill distribution toolkit for **Claude Code** (26 skills) and **Codex** (26 skills). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
 
 ## Key Commands
 
@@ -37,8 +37,10 @@ claude-code/skills/<skill-name>/   # one directory per skill
   README.md                        # required — English usage guide
   README.ja.md / README.ko.md ...  # optional translations
   references/                      # optional — long reference docs extracted from SKILL.md
-codex/skills/                      # single bundle (not per-subdirectory)
-  SKILL.md                         # root-level, covers all Codex skills
+codex/skills/<skill-name>/         # one directory per Codex skill
+  SKILL.md                         # required — Codex-compatible frontmatter + skill body
+  agents/openai.yaml               # recommended — Codex UI metadata
+  references/                      # optional — long reference docs extracted from SKILL.md
 scripts/
   install.sh                       # install/prune/list entry point
   validate.sh                      # local CI mirror
@@ -49,17 +51,17 @@ scripts/
   translation-check.yml            # informational warning, does not block merge
 ```
 
-**Critical distinction**: `claude-code/skills/` uses one subdirectory per skill; `codex/skills/` is a single flat bundle. The validation scripts and install logic handle these differently — do not treat them as symmetric.
+Codex skills mirror the Claude Code `ywc-*` skill set, but Codex `SKILL.md` frontmatter must keep only `name` and `description`.
 
 ## Skill Authoring Rules
 
-Every `claude-code` skill directory must contain:
+Every skill directory must contain:
 1. `SKILL.md` with `name:` and `description:` YAML frontmatter
-2. `README.md` with usage examples in English
+2. `README.md` with usage examples in English for distributed skills
 
 The `description:` field drives activation — it must include trigger phrases users will type AND explicit "Do not use for..." anti-triggers to prevent false matches against sibling skills.
 
-Skill names follow `ywc-<kebab-case>` for all Claude Code skills. Keep SKILL.md under ~500 lines; extract long sections to `references/`.
+Skill names follow `ywc-<kebab-case>` for all distributed skills. Keep SKILL.md under ~500 lines; extract long sections to `references/`.
 
 Do not reference other skills with `@skill-name` (force-load) — it consumes excessive context. Reference by skill name only.
 
@@ -67,7 +69,7 @@ Do not reference other skills with `@skill-name` (force-load) — it consumes ex
 
 | Workflow | What it checks |
 |----------|---------------|
-| `validate` | Each `claude-code/skills/*/SKILL.md` exists with `name:` and `description:`; `codex/skills/SKILL.md` exists with same; shellcheck on `scripts/`; `--list` dry run |
+| `validate` | Each skill has required frontmatter and README locale files; Codex skills also have `agents/openai.yaml` and no Claude-only frontmatter; shellcheck on `scripts/`; `--list` dry run |
 | `markdownlint` | `README*.md` and `CONTRIBUTING*.md` pass MD formatting (MD013, MD033, MD041 disabled) |
 | `translation-check` | Informational only — warns if English README updated without translation update |
 

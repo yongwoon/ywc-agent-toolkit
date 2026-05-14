@@ -1,0 +1,4 @@
+interface:
+  display_name: "Impl Review"
+  short_description: "Use after implementation is complete and before creating a PR, when the user wants to validate code matches the spec, check imp..."
+  default_prompt: "Use $ywc-impl-review to handle this request following the skill workflow, loading bundled references or scripts only when needed."
