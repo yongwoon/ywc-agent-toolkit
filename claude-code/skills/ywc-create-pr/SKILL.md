@@ -46,7 +46,7 @@ Follow the steps below to commit and create a PR.
 ### 0. Language and Title Initialization
 
 1. **Title**: Check `$ARGUMENTS` for `--title "<value>"`. If present, store it as the PR title — it will be used verbatim in Step 7 (skip self-generated title).
-2. **Language**: Check `$ARGUMENTS` for a language hint (e.g., `--lang ja`, `--lang en`, `--language korean`). If not specified and no `--title` was provided, ask the user: "What language should the PR title and description be written in? (Default: English)". If `--title` was provided, infer the language from its content or default to English — do not prompt.
+2. **Language**: Check `$ARGUMENTS` for a language hint (e.g., `--lang ja`, `--lang en`, `--language korean`). If not specified and no `--title` was provided, use the `AskUserQuestion` tool to ask: "What language should the PR title and description be written in?" with options English / Japanese / Korean — then **immediately continue to Step 0.5 in the same turn**; do not end the turn or wait for further input after receiving the answer. If `--title` was provided, infer the language from its content or default to English — do not prompt.
 3. Apply the chosen language consistently when writing the PR description in Step 7.
 4. **Post-CI check**: Check `$ARGUMENTS` for `--skip-post-ci-check`. If present, skip Step 8 (Remote CI & Bot Review). This flag is passed by `ywc-finish-branch`, which handles CI verification independently in its own Step 4.
 5. **Ubiquitous Language update**: Check `$ARGUMENTS` for `--skip-ubiquitous-update`. Store the flag — it controls Step 0.5.
