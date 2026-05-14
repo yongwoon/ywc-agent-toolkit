@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.6.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.5.1...v1.6.0) (2026-05-14)
+
+
+### ### Added
+
+* add marketplace.json for Claude Code plugin marketplace support ([6fa7b4b](https://github.com/yongwoon/ywc-agent-toolkit/commit/6fa7b4bcbc60825d6f19c1d1f4497275d29277ec))
+
+
+### ### Documentation
+
+* fix marketplace install commands and add to translated READMEs ([fc060b1](https://github.com/yongwoon/ywc-agent-toolkit/commit/fc060b1901388700ac73f6f14d6106904720f343))
+
 ## [1.5.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.5.0...v1.5.1) (2026-05-14)
 
 

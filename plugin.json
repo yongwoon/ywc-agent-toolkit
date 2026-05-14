@@ -1,6 +1,6 @@
 {
   "name": "ywc-agent-toolkit",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "Claude Code & Codex skills for development workflow automation — planning, spec, task generation, code generation, review, and delivery.",
   "author": {
     "name": "yongwoon",
