@@ -9,6 +9,8 @@
 面向 Claude Code 和 Codex 的开发工作流自动化技能集合。
 涵盖计划制定、规格书撰写、任务分解、代码生成、审查和发布的完整开发流程。
 
+目前包含 26 个 Claude Code skill 和 27 个 Codex skill。
+
 ## 安装
 
 ```bash

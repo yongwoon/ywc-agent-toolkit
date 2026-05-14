@@ -8,6 +8,8 @@
 
 Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de trabajo de desarrollo completo — desde la planificación y escritura de especificaciones hasta la generación de código, revisión y lanzamiento.
 
+Actualmente incluye 26 skills para Claude Code y 27 skills para Codex.
+
 ## Instalación
 
 ```bash
