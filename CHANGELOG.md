@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.5.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.4.0...v1.5.0) (2026-05-14)
+
+
+### ### Added
+
+* add Codex shared skill support ([#20](https://github.com/yongwoon/ywc-agent-toolkit/issues/20)) ([7ce11e4](https://github.com/yongwoon/ywc-agent-toolkit/commit/7ce11e4c58d4a15f295148176d6104f6159994e7))
+
 ## [1.4.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.3.0...v1.4.0) (2026-05-14)
 
 
