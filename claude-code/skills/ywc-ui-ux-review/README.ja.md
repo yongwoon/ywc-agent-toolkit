@@ -10,6 +10,7 @@
 
 - Hybrid Review: 静的 Code 分析 + Live UI 探索
 - 重点 Domain: Information Architecture, Visual Design
+- Phase 4 並列 Subagent: IA Reviewer と Visual Design Reviewer が同時実行（各 Sonnet）、Phase 4b でマージ
 - Critical / High / Medium / Low の 4 段階出力
 - すべての finding に location と heuristic citation を付与
 - Chrome DevTools MCP の accessibility tree snapshot により Token 効率を確保

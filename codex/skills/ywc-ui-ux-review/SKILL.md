@@ -21,6 +21,7 @@ When tempted to skip a step, check this table first:
 | "Severity feels Critical, mark it Critical regardless of impact" | Critical = blocks core flow or violates accessibility law. Reserve it. Inflated severity buries real critical findings. |
 | "Visual taste is subjective, do not flag design inconsistency" | Inconsistency in tokens (color, spacing, typography) is objective. Always flag. |
 | "Live exploration is risky on production, skip it" | Use a staging or preview URL. Skipping live exploration drops half the value of this skill. |
+| "IA and Visual Design share context, run them together" | They share evidence but use distinct checklists; parallel subagents each read only one checklist, reducing context load and preventing cross-domain finding drift. |
 
 **Violating the letter of these rules is violating the spirit.** Static-only review with no live UI is design auditing on paper.
 
@@ -77,20 +78,24 @@ Recommended browser evidence sequence:
 
 For each piece of evidence record: URL, breakpoint, screenshot reference, snapshot excerpt.
 
-### Phase 4 — Per-Domain Review
+### Phase 4 — Per-Domain Review (Parallel)
 
-Apply checklists in this order:
+Use the Task tool to spawn 2 Sonnet subagents in parallel. Pass each subagent the code reconnaissance notes from Phase 2 and the live UI evidence from Phase 3:
 
-1. **Information Architecture** → load `references/ia-checklist.md`
-2. **Visual Design** → load `references/visual-design-checklist.md`
-3. Cross-check each finding against `references/heuristics-combined.md` to attach an authoritative citation (Nielsen / WCAG / Material / HIG / internal design system) to every issue.
+| Subagent | Model | Reference |
+|---|---|---|
+| IA Reviewer | sonnet | `references/ia-checklist.md` |
+| Visual Design Reviewer | sonnet | `references/visual-design-checklist.md` |
 
-Every issue must include:
-
+Each subagent returns findings with:
 - Concrete location (file path + line number, OR screen + selector)
 - Observed behavior
 - Expected behavior (per heuristic)
-- Heuristic citation (which framework, which item)
+- Preliminary heuristic citation
+
+### Phase 4b — Merge & Cross-Check
+
+Combine findings from both subagents. Cross-check each finding against `references/heuristics-combined.md` to attach an authoritative citation (Nielsen / WCAG / Material / HIG / internal design system). Deduplicate findings that share the same location.
 
 ### Phase 5 — Severity Triage
 
@@ -106,7 +111,7 @@ Generate the report using `assets/report-template.md` as the structural template
 |---|---|
 | `references/ia-checklist.md` | Phase 4, IA review |
 | `references/visual-design-checklist.md` | Phase 4, Visual Design review |
-| `references/heuristics-combined.md` | Phase 4, attaching authoritative citation |
+| `references/heuristics-combined.md` | Phase 4b, attaching authoritative citation |
 | `references/severity-rubric.md` | Phase 5, severity classification |
 | `assets/report-template.md` | Phase 6, report scaffolding |
 

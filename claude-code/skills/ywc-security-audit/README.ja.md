@@ -23,7 +23,17 @@
 
 ## 実行 Agent
 
-- **Security Agent** (claude-opus-4-20250514)
+### Phase 1 — 並列 OWASP 分析（Sonnet × 3）
+
+| Subagent | OWASP 項目 |
+|---|---|
+| Auth & Data Subagent | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
+| Web Layer Subagent | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration |
+| Infra & Input Subagent | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+
+### Phase 2 — Advisor（Opus、最大 3 回）
+
+間接的な証拠を持つ Critical/High の Finding に限り Opus Advisor が判断を提供します。
 
 ## 特に実行を推奨する状況
 

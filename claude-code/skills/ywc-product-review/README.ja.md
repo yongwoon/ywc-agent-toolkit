@@ -72,7 +72,10 @@ User: ユーザー価値の観点から不足している点を分析して
 ```
 Context 収集（README + コードベース）
     ↓
-5つの観点別 Checklist 適用
+Phase 1: 5つの観点 Subagent を並列実行（各 Sonnet）
+├── User Value  ├── UX Flow  ├── Growth  ├── Risk  └── Market
+    ↓
+Phase 2: Opus Advisor（クロス観点の競合時、最大 2 回）
     ↓
 優先度分類（High / Medium / Low）
     ↓
@@ -153,12 +156,13 @@ Claude: プロジェクト構造と README を確認します。
 
 [コードベースおよび文書の分析実行]
 
-5つの観点で分析を開始します:
-- User Value: Job-to-be-Done の明確さを確認中...
-- UX Flow: Onboarding とコアフローを分析中...
-- Growth: Retention と Viral メカニズムを確認中...
-- Risk: 未解決 Pain Point を探索中...
-- Market: 競合 Gap とタイミングを分析中...
+Phase 1: 5つの Subagent を並列実行中...
+[User Value Subagent] Job-to-be-Done の明確さを確認中
+[UX Flow Subagent] Onboarding とコアフローを分析中
+[Growth Subagent] Retention と Viral メカニズムを確認中
+[Risk Subagent] 未解決 Pain Point を探索中
+[Market Subagent] 競合 Gap とタイミングを分析中
+Phase 2: Opus Advisor がクロス観点の競合をレビュー中...
 
 ## Product Review Report: My Project
 

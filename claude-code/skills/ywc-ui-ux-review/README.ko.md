@@ -10,6 +10,7 @@
 
 - Hybrid Review: 정적 Code 분석 + Live UI 탐색
 - 중점 영역: Information Architecture, Visual Design
+- Phase 4 병렬 Subagent: IA Reviewer와 Visual Design Reviewer 동시 실행 (각 Sonnet), Phase 4b에서 병합
 - Critical / High / Medium / Low 4단계 출력
 - 모든 finding에 location과 heuristic citation 부착
 - Chrome DevTools MCP의 accessibility tree snapshot 사용으로 Token 효율 확보

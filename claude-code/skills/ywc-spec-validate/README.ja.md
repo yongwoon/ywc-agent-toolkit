@@ -19,7 +19,18 @@
 
 ## 実行 Agent
 
-- **Spec Reviewer Agent** (claude-opus-4-20250514)
+### Phase 1 — 並列分析（Sonnet × 4）
+
+| Subagent | 担当観点 |
+|---|---|
+| Completeness Subagent | 完成度 |
+| Consistency Subagent | 一貫性 |
+| Feasibility Subagent | 実現可能性 |
+| Code Compatibility Subagent | 既存 Code との整合性 |
+
+### Phase 2 — Advisor（Opus、最大 2 回）
+
+曖昧な Finding に限り Opus Advisor が判断を提供します。
 
 ## 出力形式
 

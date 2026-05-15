@@ -19,7 +19,18 @@ A Spec Reviewer Agent Skill that validates specification quality after writing s
 
 ## Execution Agent
 
-- **Spec Reviewer Agent** (claude-opus-4-20250514)
+### Phase 1 — Parallel Analysis (Sonnet × 4)
+
+| Subagent | Dimension |
+|---|---|
+| Completeness Subagent | Completeness |
+| Consistency Subagent | Consistency |
+| Feasibility Subagent | Feasibility |
+| Code Compatibility Subagent | Code Compatibility |
+
+### Phase 2 — Advisor (Opus, up to 2 calls)
+
+Opus Advisor provides judgment for ambiguous findings only.
 
 ## Output Format
 

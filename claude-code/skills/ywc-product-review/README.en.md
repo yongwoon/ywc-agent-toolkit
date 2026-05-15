@@ -72,11 +72,14 @@ User: Analyze gaps in user value
 ```
 Gather context (README + codebase)
     ↓
-Apply checklists for each of the 5 perspectives
+Phase 1: 5 perspective subagents run in parallel (each Sonnet)
+├── User Value  ├── UX Flow  ├── Growth  ├── Risk  └── Market
+    ↓
+Phase 2: Opus Advisor (cross-perspective conflicts, max 2 calls)
     ↓
 Classify by priority (High / Medium / Low)
     ↓
-Generate report + Executive Summary
+Generate report + Executive summary
 ```
 
 ---
@@ -153,12 +156,13 @@ Claude: Reading project structure and README...
 
 [Codebase and documentation analysis]
 
-Analyzing across 5 perspectives:
-- User Value: Reviewing Job-to-be-Done clarity...
-- UX Flow: Analyzing onboarding and core flows...
-- Growth: Reviewing retention and viral mechanisms...
-- Risk: Identifying unresolved pain points...
-- Market: Analyzing competitive gaps and timing...
+Phase 1: Running 5 subagents in parallel...
+[User Value Subagent] Reviewing Job-to-be-Done clarity
+[UX Flow Subagent] Analyzing onboarding and core flows
+[Growth Subagent] Reviewing retention and viral mechanisms
+[Risk Subagent] Identifying unresolved pain points
+[Market Subagent] Analyzing competitive gaps and timing
+Phase 2: Opus Advisor reviewing cross-perspective conflicts...
 
 ## Product Review Report: My Project
 

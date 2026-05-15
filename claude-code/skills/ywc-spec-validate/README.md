@@ -19,7 +19,18 @@
 
 ## 실행 Agent
 
-- **Spec Reviewer Agent** (claude-opus-4-20250514)
+### Phase 1 — 병렬 분석 (Sonnet × 4)
+
+| Subagent | 담당 관점 |
+|---|---|
+| Completeness Subagent | 완성도 |
+| Consistency Subagent | 일관성 |
+| Feasibility Subagent | 실현 가능성 |
+| Code Compatibility Subagent | 기존 코드 정합성 |
+
+### Phase 2 — Advisor (Opus, 최대 2회)
+
+모호한 Findings에 한해 Opus Advisor가 판단을 제공합니다.
 
 ## 출력 형식
 

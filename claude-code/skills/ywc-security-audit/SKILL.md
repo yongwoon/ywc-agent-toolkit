@@ -27,6 +27,7 @@ When tempted to skip a step, check this table first:
 | "User input is validated upstream, no need at this layer" | Defense in depth. Validate at every trust boundary, not just at the gateway. |
 | "Token/secret/key is just for dev, exposure is fine" | Never. Dev secrets get committed, leak, and become prod credentials. Always flag. |
 | "I cannot exploit it locally, finding is theoretical" | Theoretical findings still belong in the report. Mark as `unverified — theoretical` rather than dropping. |
+| "OWASP scan is too fine-grained to parallelize" | Grouping into 3 domain clusters lets each Sonnet subagent focus deeply on 3-4 items; it also prevents cross-category contamination that degrades severity classification in a monolithic pass. |
 
 **Violating the letter of these rules is violating the spirit.** A clean security report without honest dimensional coverage is dangerous.
 
@@ -40,16 +41,29 @@ When tempted to skip a step, check this table first:
 
 1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify tech stack. Pay special attention to authentication method, deployment environment (internal/external), and security libraries in use
 2. **Read Target Code Files** — Read all source files under the `--code` path
-3. **Deep Analysis Against OWASP Top 10** — Inspect each item in the Audit Checklist below, in order. For each item:
-   - Use Grep/AST search to detect relevant patterns
-   - Trace data flow of discovered code (input → processing → output)
-   - Apply project context (internal service communication vs externally exposed endpoints)
-4. **Determine Severity** — Classify according to these criteria:
-   - **Critical**: Immediately exploitable vulnerability (SQL injection, auth bypass, hardcoded secrets)
-   - **High**: Conditionally exploitable (SSRF with internal network access, improper authorization checks)
+3. **Phase 1 — Parallel OWASP Analysis** — Use the Task tool to spawn 3 Sonnet subagents in parallel. Each covers a grouped slice of OWASP Top 10. For each item in their slice, subagents must: Grep/AST search for patterns, trace data flow (input → processing → output), and apply project context.
+
+   | Subagent | Model | OWASP Items |
+   |---|---|---|
+   | Auth & Data | sonnet | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
+   | Web Layer | sonnet | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration |
+   | Infra & Input | sonnet | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+
+   Each subagent classifies its findings:
+   - **Critical**: Immediately exploitable (SQL injection, auth bypass, hardcoded secrets)
+   - **High**: Conditionally exploitable (SSRF with internal network access, improper auth checks)
    - **Medium**: Potential risk (verbose errors, insufficient rate limiting)
    - **Low**: Best practice violation (timing attack potential, unnecessary information disclosure)
-5. **Output Severity-Classified Security Report**
+
+   Each subagent returns:
+   - **Confirmed findings** — severity, file:line, issue, risk, recommended fix
+   - **Advisor candidates** — findings meeting the Advisor Escalation Policy conditions below (suspect code chain + hypothesized exploit, ≤100 lines each)
+
+4. **Aggregate Phase 1 Results** — Combine findings from all 3 subagents. Deduplicate by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 3), prioritizing Critical > High. Log any dropped candidates in the report.
+
+5. **Phase 2 — Advisor Pass** — For each surviving advisor candidate, follow the **Advisor Escalation Policy** section below. Spawn a short Opus subagent via the Task tool with only the bounded excerpt (≤100 lines). Merge verdicts into the findings list.
+
+6. **Output Severity-Classified Security Report**
 
 ## Audit Checklist (OWASP Top 10)
 

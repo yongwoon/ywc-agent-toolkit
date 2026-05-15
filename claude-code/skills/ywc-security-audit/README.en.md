@@ -23,7 +23,17 @@ A Security Agent Skill for performing security audits when authentication, payme
 
 ## Execution Agent
 
-- **Security Agent** (claude-opus-4-20250514)
+### Phase 1 — Parallel OWASP Analysis (Sonnet × 3)
+
+| Subagent | OWASP Items |
+|---|---|
+| Auth & Data Subagent | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
+| Web Layer Subagent | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration |
+| Infra & Input Subagent | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+
+### Phase 2 — Advisor (Opus, up to 3 calls)
+
+Opus Advisor provides judgment for Critical/High findings with indirect evidence only.
 
 ## Recommended Scenarios
 

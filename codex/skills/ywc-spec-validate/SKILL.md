@@ -21,6 +21,7 @@ When tempted to skip a step, check this table first:
 | "Spec uses internal jargon, infer the intent" | If a term is undefined, that is a completeness gap. Flag it. |
 | "Architecture decision is implicit, do not flag it" | Implicit ≠ specified. Surface implicit assumptions for explicit confirmation. |
 | "The spec contradicts CLAUDE.md, follow the spec" | Surface the conflict. Do not silently let the spec override project rules. |
+| "4-dimension review is fast enough sequentially" | Phase 1 fan-out cuts latency on large specs; each Sonnet subagent handles one dimension, reducing per-call context and preventing cross-dimension finding contamination. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
 
@@ -47,7 +48,22 @@ When tempted to skip a step, check this table first:
 
 3. **Check Code Compatibility** — Use `rg`, `rg --files`, and targeted file searches to search for related DB schemas, API routes, and type definitions to detect conflicts with the spec. Scope the search to the directories identified in Step 1.
 
-4. **Perform 4-Dimension Review** — Analyze against the Review Dimensions below. The 4-Dimension analysis runs the same way regardless of `--mode`; the mode only changes how findings are presented in step 5.
+4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
+
+   | Subagent | Model | Dimension | Focus |
+   |---|---|---|---|
+   | Completeness | sonnet | Completeness | Missing required items, edge cases, pagination |
+   | Consistency | sonnet | Consistency | Terminology mismatches; Synonyms-to-Avoid violations |
+   | Feasibility | sonnet | Feasibility | Implementable with current stack and dependencies |
+   | Code Compatibility | sonnet | Code Compatibility | Conflicts with existing schema, API routes, type definitions |
+
+   Each subagent returns:
+   - **Confirmed findings** — dimension label, severity (Critical / Warning / Suggestion), file:line, description, improvement
+   - **Advisor candidates** — findings where two reasonable interpretations exist (include the specific choice and its consequence, ≤100 lines per candidate)
+
+   **Step 4b — Aggregate**: Combine and deduplicate findings by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 2), prioritizing Critical over Warning. Log any dropped candidates in the report.
+
+   The 4-dimension analysis runs the same way regardless of `--mode`; the mode only changes how findings are presented in step 5.
 
 5. **Output Report — Branch on `--mode`**
    - `standard` (default): emit the severity-classified finding report in the format below.
@@ -97,7 +113,7 @@ When tempted to skip a step, check this table first:
 
 ## Advisor Escalation Policy
 
-This skill runs the full 4-dimension review on a single inherited-model executor. For a small number of **genuinely ambiguous** findings, the executor may escalate to an high-capability advisor using the Codex subagent tools with the strongest available model when explicitly allowed. This follows **Pattern A** from [advisor-pattern.md](../references/advisor-pattern.md) — escalation inside a single subagent, with frontier judgment applied only where it actually matters.
+This skill runs Phase 1 as 4 parallel Sonnet subagents (one per dimension) and aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, the orchestrator escalates to an Opus advisor using the Task tool with `model: opus`. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.
 
 **Budget**: up to 2 high-capability advisor calls per invocation. Unused budget is good. Spec review is smaller in scope than impl-review, so the cap is tighter.
 

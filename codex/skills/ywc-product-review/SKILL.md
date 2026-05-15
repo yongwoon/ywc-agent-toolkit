@@ -21,6 +21,7 @@ When tempted to skip a step, check this table first:
 | "Priority is roughly High, do not specify P0/P1/P2" | Always emit explicit priority. Without it, the report becomes a wishlist instead of a plan. |
 | "Risks are speculative, drop them from the report" | Risk is a perspective. Speculative risks are still findings — mark `unverified`, do not drop. |
 | "I have no live access, infer growth metrics from code" | If a perspective cannot be assessed (no live data), state the gap. Do not fabricate. |
+| "Running 5 perspectives sequentially is fine" | Phase 1 fan-out reduces total latency; each Sonnet subagent sees only one perspective's checklist, lowering per-call context and improving analysis depth. |
 
 **Violating the letter of these rules is violating the spirit.** A product review with cherry-picked perspectives misses the most expensive problems.
 
@@ -47,17 +48,36 @@ Read the following in order:
 
 Focus on: what the service **does**, who it serves, and what the main user flows are.
 
-### Step 2: Analyze Each Perspective
+### Step 2: Phase 1 — Parallel Perspective Review
 
-For each of the 5 perspectives, read the corresponding reference file and apply its checklist to the gathered context.
+Use the Task tool to spawn 5 Sonnet subagents in parallel — one per perspective. Pass each subagent a brief context summary (service name, target user, main flows) and the corresponding reference file to read:
 
-Load all 5 reference files unless the user specifies a subset. Classify each finding:
+| Subagent | Model | Reference |
+|---|---|---|
+| User Value | sonnet | `references/user-value.md` |
+| UX Flow | sonnet | `references/ux-flow.md` |
+| Growth | sonnet | `references/growth.md` |
+| Risk | sonnet | `references/risk.md` |
+| Market | sonnet | `references/market-timing.md` |
 
+Each subagent classifies its findings:
 - **High**: Directly blocks or degrades core user value, causes churn, or represents a significant missed opportunity
 - **Medium**: Meaningfully improves experience, growth, or differentiation with moderate effort
 - **Low**: Incremental improvement, nice-to-have, or long-term consideration
 
-### Step 3: Generate Report
+Each subagent returns two artifacts:
+- **Confirmed findings** — perspective tag, problem statement, evidence, improvement suggestion
+- **Advisor candidates** — cross-perspective conflicts where two reasonable positions exist (include conflicting finding excerpts + one-sentence reason for escalation)
+
+### Step 2b: Aggregate Phase 1 Results
+
+Combine findings from all 5 subagents. Deduplicate by evidence source. Select up to `advisor_budget` (default: 2) advisor candidates, prioritizing High over Medium findings.
+
+### Step 3: Phase 2 — Advisor Pass
+
+Follow the **Advisor Escalation Policy** section below. For each surviving candidate, spawn a short Opus subagent via the Task tool. Pass only the conflicting finding excerpts (≤100 lines total). Merge Phase 2 verdicts into the confirmed findings list.
+
+### Step 4: Generate Report
 
 Use `references/report-template.md` as the output structure.
 

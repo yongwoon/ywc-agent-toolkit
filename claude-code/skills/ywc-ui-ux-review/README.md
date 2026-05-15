@@ -10,6 +10,7 @@
 
 - **Hybrid Review**: Code 정적 분석 + Live UI 탐색 결합
 - **중점 영역**: Information Architecture, Visual Design
+- Phase 4 병렬 Subagent: IA Reviewer와 Visual Design Reviewer 동시 실행 (각 Sonnet), Phase 4b에서 병합
 - **Multi-Heuristic**: Nielsen 10, WCAG 2.2 AA, Material 3, Apple HIG, Internal Design System
 - **우선순위 기반 출력**: Critical / High / Medium / Low 4단계 분류
 - **Evidence 기반**: 모든 finding에 file:line 또는 screen:selector + heuristic citation 부착
@@ -44,7 +45,8 @@ Live URL이 없으면 code-only review로 자동 전환되며, 그 사실은 rep
 | 1 | Scope & Context 확인 | (대화) |
 | 2 | Code Reconnaissance | `Read`, `Grep`, `Glob` |
 | 3 | Live UI Exploration | Chrome DevTools MCP |
-| 4 | Per-Domain Review (IA → Visual) | `references/*-checklist.md` |
+| 4 | Per-Domain Review (IA · Visual — 병렬) | `references/*-checklist.md` |
+| 4b | Merge & Cross-Check | `references/heuristics-combined.md` |
 | 5 | Severity Triage | `references/severity-rubric.md` |
 | 6 | Report Generation | `assets/report-template.md` |
 
@@ -106,7 +108,7 @@ ywc-ui-ux-review/
 | --- | --- | --- |
 | `ia-checklist.md` | Phase 4 | Information Architecture 점검 |
 | `visual-design-checklist.md` | Phase 4 | Visual Design 점검 |
-| `heuristics-combined.md` | Phase 4 | 모든 finding에 citation 부착 |
+| `heuristics-combined.md` | Phase 4b | 모든 finding에 citation 부착 |
 | `severity-rubric.md` | Phase 5 | 4단계 severity 분류 |
 
 ## Live UI 도구 선택

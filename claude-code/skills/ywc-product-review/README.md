@@ -72,7 +72,10 @@ User: 사용자 가치 관점에서 부족한 점을 분석해줘
 ```
 Context 수집 (README + 코드베이스)
     ↓
-5가지 관점별 체크리스트 적용
+Phase 1: 5가지 관점 Subagent 병렬 실행 (각 Sonnet)
+├── User Value  ├── UX Flow  ├── Growth  ├── Risk  └── Market
+    ↓
+Phase 2: Opus Advisor (크로스 관점 충돌 시, 최대 2회)
     ↓
 우선순위 분류 (High / Medium / Low)
     ↓
@@ -153,12 +156,13 @@ Claude: 프로젝트 구조와 README를 확인합니다.
 
 [코드베이스 및 문서 분석 수행]
 
-5가지 관점에서 분석을 시작합니다:
-- User Value: Job-to-be-Done 명확성 검토 중...
-- UX Flow: Onboarding 및 핵심 Flow 분석 중...
-- Growth: Retention 및 Viral 메커니즘 검토 중...
-- Risk: 미해결 Pain Point 탐색 중...
-- Market: 경쟁사 Gap 및 타이밍 분석 중...
+Phase 1: 5개 Subagent 병렬 실행 중...
+[User Value Subagent] Job-to-be-Done 명확성 검토 중
+[UX Flow Subagent] Onboarding 및 핵심 Flow 분석 중
+[Growth Subagent] Retention 및 Viral 메커니즘 검토 중
+[Risk Subagent] 미해결 Pain Point 탐색 중
+[Market Subagent] 경쟁사 Gap 및 타이밍 분석 중
+Phase 2: Opus Advisor로 크로스 관점 충돌 검토 중...
 
 ## Product Review Report: My Project
 

@@ -10,6 +10,7 @@ This Skill answers "where should we improve UX first?" with evidence-backed find
 
 - Hybrid review: static code analysis + live UI exploration
 - Focus areas: Information Architecture, Visual Design
+- Phase 4 parallel subagents: IA Reviewer and Visual Design Reviewer run simultaneously (each Sonnet), merged in Phase 4b
 - Four-tier severity output: Critical / High / Medium / Low
 - Every finding carries a location and a heuristic citation
 - Token-efficient via Chrome DevTools MCP accessibility-tree snapshots
