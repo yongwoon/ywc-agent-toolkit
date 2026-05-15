@@ -190,3 +190,14 @@ The gate score must appear in the report header alongside the Critical/High/Medi
 - **Secondary upstream** — `ywc-plan`: can validate feature plan documents in `docs/ywc-plans/`. Completeness and consistency dimensions apply; feasibility and code compatibility apply partially because plan documents are less implementation-specific.
 - **Not applicable** — `ywc-task-generator` output (`tasks/`): task-generator *consumes* a validated spec; it does not produce one. Passing a task directory as `--spec` is a misuse.
 - **Downstream**: `ywc-task-generator` — hand off only when completion status is `DONE`. `DONE_WITH_CONCERNS` requires spec revision first.
+
+### Programmatic Consumer Policy
+
+When consumed by an orchestrator that cannot prompt for human input (e.g., ywc-agentic):
+
+| Completion Status | Action |
+| --- | --- |
+| DONE | Proceed to ywc-task-generator |
+| DONE_WITH_CONCERNS | Re-invoke ywc-plan with --update-spec + --failure-context (max 1 retry), then re-validate |
+| BLOCKED | Stop execution and report to user |
+| NEEDS_CONTEXT | Stop execution and report to user |

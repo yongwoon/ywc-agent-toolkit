@@ -88,6 +88,7 @@ versions include Codex-compatible frontmatter and tool guidance.
 | `ywc-sequential-executor` | Execute tasks sequentially (Branch → Implement → Commit → PR → Merge) |
 | `ywc-parallel-executor` | Execute tasks in parallel using Git worktree isolation |
 | `ywc-code-gen` | Generate Backend + Frontend + QA code in parallel |
+| `ywc-agentic` | Autonomously orchestrate the ywc-* pipeline from a goal (Plan → Execute → Evaluate → Repeat, max 3 iterations) |
 
 ### Review & Verification
 

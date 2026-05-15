@@ -51,6 +51,7 @@ Parse `$ARGUMENTS` for the following parameters:
 | `--dry-run` | flag | | Show the execution plan (task order, dependencies, modes) without executing anything |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no mode explanations, no advisor notes |
 | `--review` | flag | | Auto-run /ywc-impl-review after each task, before PR creation or merge |
+| `--run-tests-locally` | flag | | Before merging in `--local-merge` mode, detect and run the project's test command. On failure: mark task FAIL and do not merge. Ignored in PR-based modes. |
 
 **Flag conflicts**: `--local-merge`, `--draft`, and `--skip-ci-wait` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want. The reason is that `--local-merge` skips PRs entirely while the other two assume a PR exists — silently picking one would surprise the user.
 
@@ -62,6 +63,8 @@ Example:
 ```
 
 `--review` can be combined with any delivery mode flag.
+
+`--run-tests-locally` has no effect without `--local-merge` (PR CI handles tests in PR-based modes).
 
 If no task specifier is given, detect the next executable task from the dependency graph.
 
@@ -291,6 +294,8 @@ Run verification in three layers, from narrowest to broadest. Each layer must pa
 If any layer fails: **fix the code, never the test** — no `skip`/`xit`/`.only`, no commented-out or relaxed assertions. Re-run the failing layer plus any earlier layer the fix could invalidate. For a failure in a test unrelated to the current task, investigate whether the task actually caused it (shared state, fixtures, ordering) before dismissing as flaky. **Layer 4 lint/format exception**: running the project's auto-fix command is step zero and does not count toward the 2-attempt limit — the limit starts only if auto-fix leaves residual errors. After **2 fix attempts** (post-auto-fix for Layer 4, or 2 direct attempts for other layers), stop and report layer + failing test name(s) + error output + attempts made. Never proceed to Step 5 with a failing full suite — local catch saves a CI round trip and keeps `main` healthy.
 
 **Checkpoint**: Update `.ywc-run-state.json` — set `current_step` to `4`, `last_checkpoint` to current UTC time.
+
+**`--run-tests-locally` gate (applies only when `--run-tests-locally` is set AND `--local-merge` is active)**: After all four verification layers pass, detect the project's test command from CLAUDE.md or `package.json` (scripts field). Run it before proceeding to Step 5 (merge). On failure: mark the task FAIL and do not merge — surface the test output to the user and stop. If no test command can be detected: emit a warning and proceed to Step 5 without blocking.
 
 ### Step 4.5: Implementation Review (optional)
 

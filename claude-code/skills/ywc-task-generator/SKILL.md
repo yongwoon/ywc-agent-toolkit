@@ -32,9 +32,18 @@ When tempted to bend a rule, check this table first:
 
 **Violating the letter of these rules is violating the spirit.** Safety invariants (DB migration separation, library introduction separation, phase hard gates) have no exceptions.
 
+## Arguments
+
+| Argument | Default | Description |
+|---|---|---|
+| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english`. |
+| `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
+
 ## Language Option
 
-This skill supports `korean` | `japanese` | `english` (default: `english`) for task document output. If the user does not specify a language, **ask for confirmation** before generating any tasks.
+When `--lang` is not specified, this skill first attempts to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails does it ask the user.
+
+This skill supports `korean` | `japanese` | `english` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
 
 For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean or Japanese output. English output does not require reading this reference.
 

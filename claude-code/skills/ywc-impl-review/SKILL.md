@@ -35,7 +35,8 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
-| `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review (required) |
+| `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review (required). `--code` and `--git-range` are mutually exclusive |
+| `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. `--code` and `--git-range` are mutually exclusive |
 | `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where frontier judgment on ambiguous findings is not worth the latency |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 Opus calls. Default: 5. Applies across all categories combined |
 
@@ -49,7 +50,7 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
 1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Reviewer subagent must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term.
 
-2. **Read Spec + Code** — Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
+2. **Read Spec + Code** — When `--git-range` is provided instead of `--code`: run `git diff --name-only <range>` to obtain the changed-file list and treat those files as the review target. Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
 
 3. **Phase 1 — Parallel Executor Review** — Use the Task tool to spawn three subagents in parallel. Pass `model` explicitly on each call so the executor layer stays at Sonnet or Haiku cost:
    - **Reviewer subagent** (`model: sonnet`) — Spec conformance, code quality, pattern consistency, completeness. Reference: `references/reviewer-agent.md`.

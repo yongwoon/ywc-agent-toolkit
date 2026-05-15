@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agentic"
+  short_description: "the user provides a high-level natural-language goal and wants the existing ywc-* skills orchestrated autonomously through..."
+  default_prompt: "Use $ywc-agentic to handle this request following the skill workflow, loading bundled references or scripts only when needed."
