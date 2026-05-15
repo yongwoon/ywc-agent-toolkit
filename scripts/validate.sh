@@ -111,10 +111,10 @@ check_codex_support_dirs() {
 
 echo "==> Validating claude-code skills..."
 for dir in claude-code/skills/*/; do
-  if [ -d "$dir" ]; then
-    check_skill_dir "$dir"
-    check_readme_set "$dir"
-  fi
+  [ -d "$dir" ] || continue
+  is_skill_dir "$dir" || continue
+  check_skill_dir "$dir"
+  check_readme_set "$dir"
 done
 
 echo "==> Validating codex skills..."

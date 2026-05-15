@@ -9,6 +9,9 @@
 
 .pi/hooks-logs/
 **/.pi/hooks-logs/
+
+# Claude Code hook runtime logs (skill-stop diagnostics; per-machine, not portable)
+.claude/logs/
 docs/ywc-plans
 tasks/
 .ywc-run-state.json

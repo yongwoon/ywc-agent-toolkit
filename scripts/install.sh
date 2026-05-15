@@ -91,6 +91,10 @@ install_support_dir() {
   echo "  ✓ $name/"
 }
 
+install_cc_support_dirs() {
+  install_support_dir "$CC_SRC/references" "$CC_DEST"
+}
+
 install_codex_support_dirs() {
   install_support_dir "$CODEX_SRC/references" "$CODEX_DEST"
   install_support_dir "$CODEX_SRC/scripts" "$CODEX_DEST"
@@ -136,6 +140,7 @@ run_cc_install() {
   local skills=("$@")
   mkdir -p "$CC_DEST"
   echo "Claude Code → $CC_DEST"
+  install_cc_support_dirs
 
   local current
   current="$(list_skills "$CC_SRC")"

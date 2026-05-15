@@ -151,6 +151,15 @@
             "command": "tracepilot hook"
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-skill-stop.sh"
+          }
+        ]
       }
     ],
     "Stop": [
