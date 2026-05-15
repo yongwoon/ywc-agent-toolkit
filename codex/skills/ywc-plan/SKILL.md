@@ -13,9 +13,9 @@ This skill converts a rough idea, vague request, or partially-formed change desc
 
 | Flag | Type | Description |
 |---|---|---|
-| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
-| `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used with `--failure-context`. Mutually exclusive with normal spec generation. |
-| `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec` to identify which parts of the spec need amendment. |
+| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If **What** is absent from the user's initial message, stop immediately with `NEEDS_CONTEXT` — planning is impossible without a concrete change description. Fill missing anchors with defaults: Why = `"not specified"`, Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
+| `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used together with `--failure-context`. If provided without `--failure-context`, stop immediately with `BLOCKED` and report the missing flag. Mutually exclusive with normal spec generation. |
+| `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec`. If provided without `--update-spec`, stop immediately with `BLOCKED` and report the missing flag. |
 | `--output <path>` | string | Explicit output path for the generated spec or plan (e.g., `--output docs/ywc-plans/agentic-iteration-1.md`). When omitted, defaults to `./plan.md` (Small) or `docs/ywc-plans/<slug>.md` (Medium/Large). |
 
 ## Rationalization Defense
@@ -55,7 +55,7 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. Handle missing anchors as follows: if **What** is absent, stop immediately with `NEEDS_CONTEXT` (planning is impossible without a concrete change description); fill **Why** with `"not specified"`, **Out of Scope** with `"nothing explicitly excluded"`, and **Done When** with `"all tasks merged and ywc-impl-review returns DONE"` when those anchors are missing. Proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 
@@ -124,7 +124,7 @@ For **Large** scale, also surface this advisory before writing the spec:
 
 ### Step 4c: Re-plan Mode
 
-Activated when `--update-spec <path>` and `--failure-context <text>` are both provided. This mode is mutually exclusive with normal spec generation (Steps 4a and 4b).
+Activated when `--update-spec <path>` and `--failure-context <text>` are both provided. If exactly one is provided without the other, stop immediately with `BLOCKED` and report the missing flag. This mode is mutually exclusive with normal spec generation (Steps 4a and 4b).
 
 **Behavior:**
 

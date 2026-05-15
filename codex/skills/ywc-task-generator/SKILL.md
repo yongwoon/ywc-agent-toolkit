@@ -120,7 +120,7 @@ Review the specification for completeness and verify that sufficient information
 
 ### Step 4: Confirm Language
 
-If the user has not specified an output language, ask:
+If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails or is ambiguous, ask:
 
 > "Which language should the task documents be written in? (korean / japanese / english)"
 
@@ -338,7 +338,7 @@ Write structured scenario-based tests (Steps + Expected Result).
 
 ### Step 10: Generate Dependency Graph
 
-After generating all tasks, create `tasks/dependency-graph.md` at the top level. This file serves as the single source of truth for execution order.
+After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 
@@ -388,9 +388,9 @@ After generating all tasks, verify the following:
 The final output includes:
 
 1. **Task list summary**: A table organizing all tasks by phase
-2. **Directory generation**: Task directories and files created under `tasks/`
-3. **Dependency Graph**: `tasks/dependency-graph.md` generated — single source of truth for execution order
-4. **Parallel Execution Notes**: Included in `tasks/dependency-graph.md` when parallel worktree execution is expected
+2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default: `tasks/`)
+3. **Dependency Graph**: `<tasks-dir>/dependency-graph.md` generated — single source of truth for execution order
+4. **Parallel Execution Notes**: Included in `<tasks-dir>/dependency-graph.md` when parallel worktree execution is expected
 
 When parallel execution is expected, verify that each task is safe for isolated worktree or agent execution.
 

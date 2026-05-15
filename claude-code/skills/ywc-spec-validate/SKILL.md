@@ -203,6 +203,7 @@ When consumed by an orchestrator that cannot prompt for human input (e.g., ywc-a
 | Completion Status | Action |
 | --- | --- |
 | DONE | Proceed to ywc-task-generator |
-| DONE_WITH_CONCERNS | Re-invoke ywc-plan with --update-spec + --failure-context (max 1 retry), then re-validate |
-| BLOCKED | Stop execution and report to user |
-| NEEDS_CONTEXT | Stop execution and report to user |
+| DONE_WITH_CONCERNS | Re-invoke ywc-plan with --update-spec + --failure-context + --non-interactive (max 1 retry), then re-validate |
+| BLOCKED | Stop execution; surface a structured triage report containing: (1) attempted triage steps, (2) verbatim blocker text, (3) proposed default action |
+| NEEDS_CONTEXT | Stop execution; surface a structured triage report containing: (1) attempted triage steps, (2) verbatim blocker text, (3) proposed default action |
+| SOCRATIC | Stop execution and report to user — SOCRATIC output is not a handoff signal; re-run without `--mode socratic` to obtain a gate verdict |
