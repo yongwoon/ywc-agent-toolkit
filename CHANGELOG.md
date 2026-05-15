@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.7.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.6.0...v1.7.0) (2026-05-15)
+
+
+### ### Added
+
+* add ywc-agentic skill and mitigate fan-out ctx saturation ([#25](https://github.com/yongwoon/ywc-agent-toolkit/issues/25)) ([ca838cf](https://github.com/yongwoon/ywc-agent-toolkit/commit/ca838cf36ea72970f0318b3f3efc1daf87aa18b5))
+
 ## [1.6.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.5.1...v1.6.0) (2026-05-14)
 
 
