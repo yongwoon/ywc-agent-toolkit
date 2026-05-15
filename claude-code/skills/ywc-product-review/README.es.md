@@ -76,7 +76,10 @@ Usuario: Analiza las brechas en el valor para el usuario
 ```
 Recopilar contexto (README + código)
     ↓
-Aplicar checklists para cada una de las 5 perspectivas
+Phase 1: 5 subagentes de perspectiva en paralelo (cada uno Sonnet)
+├── User Value  ├── UX Flow  ├── Growth  ├── Risk  └── Market
+    ↓
+Phase 2: Opus Advisor (conflictos entre perspectivas, máx. 2 llamadas)
     ↓
 Clasificar por prioridad (Alta / Media / Baja)
     ↓
@@ -157,12 +160,13 @@ Claude: Leyendo la estructura del proyecto y el README...
 
 [Análisis del código y la documentación]
 
-Analizando desde 5 perspectivas:
-- User Value: Revisando claridad del Job-to-be-Done...
-- UX Flow: Analizando onboarding y flujos principales...
-- Growth: Revisando mecanismos de retención y virales...
-- Risk: Identificando puntos de dolor no resueltos...
-- Market: Analizando brechas competitivas y timing...
+Phase 1: Ejecutando 5 subagentes en paralelo...
+[User Value Subagent] Revisando claridad del Job-to-be-Done
+[UX Flow Subagent] Analizando onboarding y flujos principales
+[Growth Subagent] Revisando mecanismos de retención y virales
+[Risk Subagent] Identificando puntos de dolor no resueltos
+[Market Subagent] Analizando brechas competitivas y timing
+Phase 2: Opus Advisor revisando conflictos entre perspectivas...
 
 ## Informe de Revisión de Producto: Mi Proyecto
 

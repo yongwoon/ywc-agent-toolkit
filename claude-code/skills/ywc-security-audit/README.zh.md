@@ -27,7 +27,17 @@
 
 ## 执行代理
 
-- **Security Agent**（claude-opus-4-20250514）
+### Phase 1 — 并行 OWASP 分析（Sonnet × 3）
+
+| Subagent | OWASP 项目 |
+|---|---|
+| Auth & Data Subagent | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
+| Web Layer Subagent | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration |
+| Infra & Input Subagent | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+
+### Phase 2 — Advisor（Opus，最多 3 次）
+
+仅对具有间接证据的 Critical/High 发现，由 Opus Advisor 提供判断。
 
 ## 推荐使用场景
 
