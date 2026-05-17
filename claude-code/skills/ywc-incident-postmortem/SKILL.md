@@ -36,6 +36,7 @@ description: >
 | `--draft` | Interactive mode — asks questions and builds postmortem step by step (default) |
 | `--template` | Output a blank postmortem template without asking questions |
 | `--client` | Append a sanitized client-facing incident summary (no internal details) |
+| `--format <markdown\|html>` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
 ## Dynamic Context
 
@@ -91,6 +92,8 @@ Produces one or two Markdown documents:
 
 See [references/postmortem-template.md](references/postmortem-template.md) for the full internal template.
 See [references/client-report-template.md](references/client-report-template.md) for the sanitized client template.
+
+> **HTML mode (`--format html`)** — writes the postmortem as a self-contained HTML report instead of Markdown: a color-coded severity banner, a collapsible event timeline, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). When `--client` is also set, the sanitized client report is produced as a separate HTML file. The Markdown surface is preserved inside each file, so downstream integration is unaffected.
 
 ## Integration
 

@@ -36,6 +36,7 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--code` | `--code <path>` | `--code api/src/middleware/` | Code path to audit (required) |
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
 ## Execution Steps
 
@@ -95,6 +96,8 @@ When tempted to skip a step, check this table first:
 ### Overall Assessment
 (Comprehensive security posture summary)
 ```
+
+> **HTML mode (`--format html`)** — emits the same findings as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
 ## Advisor Escalation Policy
 

@@ -63,6 +63,7 @@ Parse `$ARGUMENTS`.
 | `--force-single` | flag | | Bypass the L-tier split suggestion and always produce one file |
 | `--no-toc` | flag | | Suppress TOC auto-insertion for M/L tier |
 | `--dry-run` | flag | | Show plan (tier, filenames, section counts) without writing |
+| `--format` | `markdown`\|`html` | `--format html` | Output format. Default `markdown`. With `html`, writes an interactive HTML testsheet (see Step 5). |
 
 **Flag conflicts**: `--split` and `--force-single` cannot coexist — stop and ask. `--audience dev|qa` implies a single-audience file; `--split` in that combination is redundant and is silently ignored. **Range input** is mutually exclusive with PR, Task, and `--from-diff` — stop and ask if more than one is given. Range accepts only the two-dot `A..B` form; three-dot `A...B` is rejected because its merge-base semantics silently change scope and surprise the tester.
 
@@ -212,6 +213,20 @@ Explicit flags override the tier default:
 - `--no-toc` → suppress TOC even in M/L
 
 ## Step 5: Write the Testsheet
+
+### Output format
+
+Default is a Markdown testsheet (`.md`) — keep this for the existing `-v<N>`
+append and front-matter sign-off workflow. With `--format html`, write an
+**interactive HTML testsheet** instead, following
+[html-output.md](../references/html-output.md): each scenario checkbox is
+clickable, sign-off state (tester name, Pass/Fail/Blocked, notes) persists in
+the browser via `localStorage`, and a `Copy as Markdown` button exports the
+current sign-off state back to the Markdown testsheet format so the result can
+be pasted into a PR or committed. HTML mode is recommended when the testsheet
+will be handed to a QA/PM who signs off in a browser; the filename follows the
+Default filename table below with an `.html` extension. The Markdown surface
+(front matter included) is preserved inside the file.
 
 ### Default filename
 

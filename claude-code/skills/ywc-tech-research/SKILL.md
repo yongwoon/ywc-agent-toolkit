@@ -38,6 +38,7 @@ Parse `$ARGUMENTS` for:
 | Topic | free text | `"Hono SSE implementation"` | Research topic (required) |
 | `--compare` | `--compare "A,B"` | `--compare "Redis,Valkey"` | Comma-separated list of options to compare in parallel |
 | `--depth` | `--depth 25\|50\|75\|100` | `--depth 50` | Output depth level (default: 50). 25=summary-only; 50=standard; 75=detailed with evidence; 100=exhaustive with full source excerpts and gap analysis |
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
 ## Execution Steps
 
@@ -147,6 +148,8 @@ Output depth is controlled by `--depth` (default: 50):
 | `DONE_WITH_CONCERNS` | Research complete but with caveats — stale sources, missing benchmark data, or a recommendation that depends on unstated requirements |
 | `BLOCKED` | Cannot research the topic — context7 returned nothing and no official docs are publicly accessible |
 | `NEEDS_CONTEXT` | Topic is too vague to produce a useful recommendation without clarification from the user |
+
+> **HTML mode (`--format html`)** — emits the same report as a self-contained HTML file: the comparative analysis rendered as a side-by-side option grid, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
 ## Integration
 

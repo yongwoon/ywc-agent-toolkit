@@ -39,3 +39,20 @@ bash scripts/install.sh --all
 ```
 
 Consulte [README.md](README.md) para más detalles.
+
+---
+
+## Modo de salida HTML para Review Skills
+
+Ocho skills de revisión y reporte soportan un flag opt-in `--format html` que genera un informe HTML autocontenido y listo para el navegador, en lugar de Markdown.
+
+**Skills compatibles:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`
+
+**Motivación:** Los documentos Markdown de más de ~100 líneas generados por IA raramente se leen de principio a fin — un informe que nadie lee no puede impulsar una decisión. HTML añade color, codificación de severidad, pestañas y controles interactivos (casillas, `Copy as Markdown`), para que quien lo recibe realmente lo lea y actúe en consecuencia.
+
+```bash
+/ywc-impl-review --spec docs/spec.md --code src/ --format html
+/ywc-gen-testcase 250 --format html   # hoja de pruebas interactiva con sign-off en localStorage
+```
+
+> **⚠️ Coste en tokens** — La salida HTML consume 2-4× más tokens de salida que Markdown y tarda más en generarse. El valor predeterminado es `markdown`; active HTML solo para informes que un humano leerá en un navegador.

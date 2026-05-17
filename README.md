@@ -130,6 +130,26 @@ versions include Codex-compatible frontmatter and tool guidance.
 
 ---
 
+## HTML Output Mode for Review Skills
+
+Eight review and report skills support an opt-in `--format html` flag that produces a self-contained, browser-ready HTML report instead of Markdown.
+
+**Supported skills:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`
+
+**Why HTML?** AI-generated Markdown documents longer than ~100 lines are rarely read end to end — an unread report cannot drive a decision. HTML adds color, severity coding, tabs, and interactive controls (checkboxes, `Copy as Markdown`), so the human on the other end actually reads and acts on the output.
+
+```bash
+/ywc-impl-review --spec docs/spec.md --code src/ --format html
+/ywc-security-audit --code api/src/ --format html
+/ywc-gen-testcase 250 --format html   # interactive testsheet with localStorage sign-off
+```
+
+> **⚠️ Token cost** — HTML output uses 2–4× the output tokens of Markdown and takes longer to generate. The default is `markdown`; enable HTML only for reports a human will read in a browser.
+
+Details: [`references/html-output.md`](claude-code/skills/references/html-output.md).
+
+---
+
 ## Recommended Development Pipeline
 
 ```

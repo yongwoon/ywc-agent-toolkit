@@ -37,6 +37,7 @@ When tempted to skip a step, check this table first:
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
 | `--mode` | `--mode standard\|socratic` | `--mode socratic` | Output style. `standard` (default) returns the finding report and gate verdict; `socratic` returns learning questions instead. See [references/socratic-mode.md](references/socratic-mode.md). |
 | `--focus` | `--focus <area>` | `--focus architecture` | Optional focus hint. When Council Escalation triggers, the generic 4 voices are replaced with domain expert profiles for the chosen area. Valid: `requirements`, `architecture`, `testing`, `compliance`. See [references/expert-profiles.md](references/expert-profiles.md). |
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md). Orthogonal to `--mode` |
 
 ## Execution Steps
 
@@ -115,6 +116,8 @@ When tempted to skip a step, check this table first:
 | `BLOCKED` | Review cannot proceed — spec file missing, or a Phase 2 advisor returned an inconclusive verdict |
 | `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
 | `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
+
+> **HTML mode (`--format html`)** — emits the same findings as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
 ## Advisor Escalation Policy
 

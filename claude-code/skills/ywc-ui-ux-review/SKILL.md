@@ -110,6 +110,8 @@ Load `references/severity-rubric.md` and classify every finding into one of: Cri
 
 Generate the report using `assets/report-template.md` as the structural template. Fill all placeholders. Default output path: `claudedocs/ui-ux-review-{YYYY-MM-DD}.md` unless the user specifies otherwise.
 
+**Output format** — Default is a Markdown report. When the user passes `--format html` (parsed from `$ARGUMENTS`), emit a self-contained HTML report (`claudedocs/ui-ux-review-{YYYY-MM-DD}.html`) instead, following [html-output.md](../references/html-output.md): four severity tabs, color-coded finding cards, screenshots from Phase 3 embedded inline as `data:` URIs, and a `Copy as Markdown` button. The Markdown surface is preserved inside the file, so downstream integration is unaffected.
+
 ## Reference Files
 
 | File | When to load |

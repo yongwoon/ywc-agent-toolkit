@@ -90,6 +90,8 @@ Use `references/report-template.md` as the output structure.
 - Each finding must include: perspective tag, problem statement, evidence from codebase/docs, improvement suggestion
 - End with a 3-item executive summary: biggest opportunity, most urgent issue, long-term direction
 
+**Output format** — Default is a Markdown report. When the user passes `--format html` (parsed from `$ARGUMENTS`), emit the report as a self-contained HTML file in `claudedocs/` instead, following [html-output.md](../references/html-output.md): one tab per perspective, priority color coding, and a `Copy as Markdown` button. The Markdown surface is preserved inside the file, so downstream integration is unaffected.
+
 ## Advisor Escalation Policy
 
 **Budget**: up to **2 Opus advisor calls per invocation**.

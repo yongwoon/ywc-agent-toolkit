@@ -39,6 +39,7 @@ When tempted to skip a step, check this table first:
 | `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Required unless `--code` is provided. Run `git diff --name-only <range>` to obtain changed files. Mutually exclusive with `--code`. |
 | `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where frontier judgment on ambiguous findings is not worth the latency |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 Opus calls. Default: 5. Applies across all categories combined |
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
 ## Advisor Pattern
 
@@ -139,6 +140,8 @@ For the Confidence Gate score in the report header, use the band marker from [sy
 | `NEEDS_CONTEXT` | Spec and code paths are ambiguous; cannot determine what conformance means without clarification |
 
 `[P1]` marks findings confirmed entirely by the Phase 1 executor. `[P2]` marks findings that went through the Phase 2 advisor. This distinction matters when the user calibrates trust in the output — Phase 2 items represent the decisions the executor deemed genuinely ambiguous.
+
+> **HTML mode (`--format html`)** — emits the same findings as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
 ## Agent Prompt References
 

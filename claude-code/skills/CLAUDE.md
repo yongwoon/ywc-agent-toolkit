@@ -28,3 +28,28 @@ halt. Generic "halted, awaiting input" surfaces are a regression. See
 New fan-out skills must link `references/subagent-status-actions.md` and
 inject the Return Payload Contract directive verbatim into each subagent
 prompt.
+
+## HTML Output Mode
+
+Eight review and report skills (`ywc-impl-review`, `ywc-security-audit`,
+`ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`,
+`ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`) support an
+opt-in `--format html` flag that emits a self-contained HTML report instead
+of Markdown. The canonical convention — single-file rule, severity color
+tokens, document structure, and the embedded `Copy as Markdown` surface — is
+defined in `references/html-output.md`.
+
+Rules for skills that adopt this mode:
+
+- The default must stay `markdown`. HTML output costs 2–4× the output tokens,
+  so it is opt-in, not a new default.
+- Do not inline the HTML skeleton or conventions in a SKILL.md body — link
+  `references/html-output.md` with a one-line pointer.
+- Never apply HTML output to version-controlled canonical documents
+  (`docs/specification/`, `tasks/`, CHANGELOG, the ubiquitous-language
+  glossary) — HTML diff noise outweighs the benefit. Those skills do not
+  expose `--format`.
+
+When authoring a new review or report skill whose output a human reads to
+make a decision, add the `--format` flag and the `html-output.md` pointer
+following the eight skills above.
