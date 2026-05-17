@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.8.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.7.0...v1.8.0) (2026-05-17)
+
+
+### ### Added
+
+* add HTML output mode to 8 review and report skills ([#28](https://github.com/yongwoon/ywc-agent-toolkit/issues/28)) ([c33e698](https://github.com/yongwoon/ywc-agent-toolkit/commit/c33e698f321abfd82834c1977cc5193a09d0284a))
+
 ## [1.7.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.6.0...v1.7.0) (2026-05-15)
 
 
