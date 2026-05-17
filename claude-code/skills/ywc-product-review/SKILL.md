@@ -40,6 +40,12 @@ When tempted to skip a step, check this table first:
 | `[Risk]` | User pain points, churn drivers, unsolved problems | `references/risk.md` |
 | `[Market]` | Feature prioritization, market trends, competitive gaps | `references/market-timing.md` |
 
+## Arguments
+
+| Parameter | Format | Example | Description |
+|-----------|--------|---------|-------------|
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
+
 ## Workflow
 
 ### Step 1: Gather Context

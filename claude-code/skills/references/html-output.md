@@ -221,6 +221,14 @@ The embedded Markdown must be the exact report the skill would have produced in
 `--format markdown` mode. Generate the Markdown report first, then wrap it in
 the HTML — never let the two drift.
 
+**Exception — interactive testsheets (`ywc-gen-testcase`):** The embedded
+Markdown is the original testsheet template (identical to `--format markdown`
+output). The `Copy as Markdown` button assembles the *current* state on the
+fly — original content with sign-off front-matter (tester name, per-scenario
+Pass/Fail/Blocked, notes) drawn from `localStorage` — so the exported Markdown
+reflects the reviewer's completed work, not the blank template. This is the
+only case where the exported surface diverges from the embedded template.
+
 ## 7. Accessibility
 
 The report is for a human; an inaccessible report fails its one job. The

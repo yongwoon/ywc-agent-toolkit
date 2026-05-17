@@ -221,12 +221,14 @@ append and front-matter sign-off workflow. With `--format html`, write an
 **interactive HTML testsheet** instead, following
 [html-output.md](../references/html-output.md): each scenario checkbox is
 clickable, sign-off state (tester name, Pass/Fail/Blocked, notes) persists in
-the browser via `localStorage`, and a `Copy as Markdown` button exports the
-current sign-off state back to the Markdown testsheet format so the result can
-be pasted into a PR or committed. HTML mode is recommended when the testsheet
-will be handed to a QA/PM who signs off in a browser; the filename follows the
-Default filename table below with an `.html` extension. The Markdown surface
-(front matter included) is preserved inside the file.
+the browser via `localStorage`. The embedded Markdown block is the original
+testsheet template (identical to `--format markdown` output). The `Copy as
+Markdown` button assembles the *current* state on the fly — original content
+with sign-off annotations drawn from `localStorage` — so the exported Markdown
+reflects the reviewer's completed work and can be pasted into a PR or
+committed. HTML mode is recommended when the testsheet will be handed to a
+QA/PM who signs off in a browser; the filename follows the Default filename
+table below with an `.html` extension.
 
 ### Default filename
 

@@ -39,6 +39,12 @@ When tempted to skip a step, check this table first:
 - Pre-release UX checks against WCAG 2.2 AA
 - Cross-cutting design review against an internal design system
 
+## Arguments
+
+| Parameter | Format | Example | Description |
+|-----------|--------|---------|-------------|
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
+
 ## Workflow
 
 Run the six phases in order. Skip a phase only with explicit user consent.
