@@ -59,7 +59,12 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill defaults for **all four anchors** automatically:
+- What = `"implement the user-requested change as described in the initial prompt"`
+- Why = `"address the user-requested need described in the initial prompt"`
+- Out of Scope = `"nothing explicitly excluded"`
+- Done When = `"all tasks merged and ywc-impl-review returns DONE"`
+Proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 

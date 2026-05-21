@@ -21,4 +21,4 @@ The first release intentionally excludes:
 > "We do not need a perfect product. We need a product that prevents the
 > next double-booking phone call." — operations lead
 
-See [the Features section](#) for the prioritized capability list.
+See [the Features section](02-features.md) for the prioritized capability list.
