@@ -53,7 +53,7 @@ _STRONG = re.compile(r"\*\*([^\*]+)\*\*|__([^_]+)__")
 _EMPH = re.compile(r"(?<![*_])\*([^*\n]+)\*(?!\*)|(?<![*_])_([^_\n]+)_(?!_)")
 _LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)(?:\s+\"([^\"]+)\")?\)")
 _IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"([^\"]+)\")?\)")
-_AUTOLINK = re.compile(r"<((?:https?|mailto):[^>]+)>")
+_AUTOLINK = re.compile(r"&lt;((?:https?|mailto):.+?)&gt;")
 
 
 def _protect_codespans(text: str) -> Tuple[str, List[str]]:
@@ -85,10 +85,10 @@ def _inline(text: str) -> str:
     # Images come before links because both open with `[`.
     text = _IMAGE.sub(
         lambda m: '<img src="{src}" alt="{alt}"{title}>'.format(
-            src=html.escape(m.group(2), quote=True),
-            alt=html.escape(m.group(1), quote=True),
+            src=html.escape(html.unescape(m.group(2)), quote=True),
+            alt=html.escape(html.unescape(m.group(1)), quote=True),
             title=(
-                f' title="{html.escape(m.group(3), quote=True)}"'
+                f' title="{html.escape(html.unescape(m.group(3)), quote=True)}"'
                 if m.group(3)
                 else ""
             ),
@@ -97,10 +97,10 @@ def _inline(text: str) -> str:
     )
     text = _LINK.sub(
         lambda m: '<a href="{href}"{title}>{label}</a>'.format(
-            href=html.escape(m.group(2), quote=True),
+            href=html.escape(html.unescape(m.group(2)), quote=True),
             label=m.group(1),
             title=(
-                f' title="{html.escape(m.group(3), quote=True)}"'
+                f' title="{html.escape(html.unescape(m.group(3)), quote=True)}"'
                 if m.group(3)
                 else ""
             ),
@@ -108,8 +108,9 @@ def _inline(text: str) -> str:
         text,
     )
     text = _AUTOLINK.sub(
-        lambda m: f'<a href="{html.escape(m.group(1), quote=True)}">'
-        f"{m.group(1)}</a>",
+        lambda m: (
+            lambda u: f'<a href="{html.escape(u, quote=True)}">{html.escape(u)}</a>'
+        )(html.unescape(m.group(1))),
         text,
     )
     # ** must run before * so bold wins over italic.
