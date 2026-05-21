@@ -43,6 +43,21 @@ docs/specification/
 └── 07-glossary.md         # 用語集
 ```
 
+## 非開発者への共有 (HTML Export)
+
+`docs/specification/` は version controlled canonical document であるため markdown のまま維持されます。PM・client・非開発者の stakeholder に共有する際は、read-only な export script を使用します:
+
+```bash
+python3 tools/scripts/spec-to-html.py
+# 出力: claudedocs/spec-export-YYYY-MM-DD.html
+```
+
+- Self-contained な HTML 1 file（Section ごとの tab + Copy as Markdown）
+- 外部 dependency なし（Python 3 stdlib のみ）
+- Canonical markdown source は変更されない — 一方向 derivation
+
+Skill 自体には `--format html` を追加しません。Canonical doc に HTML を emit しない規約は [references/html-output.md](../references/html-output.md) §1 に定義されています。
+
 ## 関連 Skill
 
 - `ywc-plan` — 機能計画を立てて仕様書作成の input を提供

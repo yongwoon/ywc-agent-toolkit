@@ -43,6 +43,21 @@ docs/specification/
 └── 07-glossary.md         # Glossary
 ```
 
+## Sharing With Non-Developers (HTML Export)
+
+`docs/specification/` is a version-controlled canonical document and stays in markdown. For sharing with PMs, clients, or other non-developer stakeholders, use the read-only export script:
+
+```bash
+python3 tools/scripts/spec-to-html.py
+# Produces: claudedocs/spec-export-YYYY-MM-DD.html
+```
+
+- Single self-contained HTML file (one tab per section + Copy as Markdown)
+- No external dependencies (Python 3 stdlib only)
+- Canonical markdown source is never modified — one-way derivation
+
+The skill itself does **not** expose `--format html`. The convention forbidding HTML output for canonical documents is defined in [references/html-output.md](../references/html-output.md) §1.
+
 ## Related Skills
 
 - `ywc-plan` — produces feature specs that feed into this skill
