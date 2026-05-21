@@ -111,6 +111,15 @@ When tempted to skip a step, check this table first:
 | `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
 | `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
 
+**Re-plan handoff on `DONE_WITH_CONCERNS`** — after printing the report body, append the following one-liner so the user (or an interactive orchestrator) can resolve findings via `ywc-plan` Re-plan Mode instead of rewriting the spec from scratch:
+
+```
+To address the Critical findings above without losing validated sections, run:
+/ywc-plan --update-spec <spec-path> --failure-context "<one-paragraph summary of the Critical findings>"
+```
+
+This routes findings into the `## Iteration N Amendments` append flow described in `ywc-plan` Step 4c, preserving validated portions of the spec. Print this line only on `DONE_WITH_CONCERNS` — `DONE`, `BLOCKED`, `NEEDS_CONTEXT`, and `SOCRATIC` do not benefit from Re-plan Mode. For programmatic consumers (e.g., `ywc-agentic`), the Programmatic Consumer Policy below already invokes the equivalent flow; this surface is for interactive users who would otherwise re-write from scratch.
+
 ## Advisor Escalation Policy
 
 This skill runs Phase 1 as 4 parallel Sonnet subagents (one per dimension) and aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, the orchestrator escalates to an Opus advisor using the Task tool with `model: opus`. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.

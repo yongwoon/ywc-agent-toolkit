@@ -1,6 +1,7 @@
 ---
 name: ywc-plan
-description: (ywc) Use when the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment and routing to the right downstream skill. Triggers: "plan 세워줘", "계획 세워", "어떻게 진행할지", "plan this", "make a plan", "계획", "プラン作成", "計画立てて", "ywc-plan", "task 만들기 전 plan", "before task generator". Do not use for spec quality validation on an existing spec (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), product/business reasoning (use ywc-product-review), or architecture-only design without implementation intent (use ywc-tech-research).
+description: >-
+  (ywc) Use when the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment and routing to the right downstream skill. Triggers: "plan 세워줘", "계획 세워", "어떻게 진행할지", "plan this", "make a plan", "계획", "プラン作成", "計画立てて", "ywc-plan", "task 만들기 전 plan", "before task generator". Do not use for spec quality validation on an existing spec (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), product/business reasoning (use ywc-product-review), or architecture-only design without implementation intent (use ywc-tech-research).
 category: planning
 phase: pre-implementation
 requires: []
@@ -17,9 +18,9 @@ This skill converts a rough idea, vague request, or partially-formed change desc
 
 | Flag | Type | Description |
 |---|---|---|
-| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If **What** is absent from the user's initial message, stop immediately with `NEEDS_CONTEXT` — planning is impossible without a concrete change description. Fill missing anchors with defaults: Why = `"not specified"`, Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
-| `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used together with `--failure-context`. If provided without `--failure-context`, stop immediately with `BLOCKED` and report the missing flag. Mutually exclusive with normal spec generation. |
-| `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec`. If provided without `--update-spec`, stop immediately with `BLOCKED` and report the missing flag. |
+| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
+| `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used with `--failure-context`. Mutually exclusive with normal spec generation. |
+| `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec` to identify which parts of the spec need amendment. |
 | `--output <path>` | string | Explicit output path for the generated spec or plan (e.g., `--output docs/ywc-plans/agentic-iteration-1.md`). When omitted, defaults to `./plan.md` (Small) or `docs/ywc-plans/<slug>.md` (Medium/Large). |
 
 ## Rationalization Defense
@@ -37,6 +38,9 @@ When tempted to bypass a rule, check this table first:
 | "User mentioned 'auto-execute', I'll skip the spec for Medium too" | Auto-execute via `ywc-parallel-executor` or `ywc-sequential-executor` does not remove the spec requirement — those executors consume task directories produced by `ywc-task-generator`, which itself requires a reviewed spec. The shortcut does not exist. |
 | "The idea is clear enough, I'll write the spec directly" | For Medium/Large changes, unverified design assumptions are the most expensive rework source. Before drafting the spec, surface at least the key branching decisions: data model shape, API boundary, error handling strategy, and any third-party integration scope. Assumptions that seem obvious now become the reason the spec is rewritten during implementation. |
 | "The spec-writing process is overhead — let's get to the tasks faster" | Design investment is not overhead — it IS the task. Every hour spent clarifying scope and surfacing assumptions prevents 3–5 hours of rework during implementation. Kent Beck: "Invest in the design of the system every day." The spec is today's investment. |
+| "The spec says it follows existing component X, that's good enough — no need to read X" | "Follows X" is a *claim*, not a *spec*. Code Compatibility findings are the largest single category of spec-validate Critical findings, and the majority trace to a "follows X" claim where the author never opened X. Read X end-to-end and transcribe its behavior into **Existing Constraints Touched** with `file:line` citations. The reviewer cannot verify what was never written down. |
+| "AC and the API Contract probably agree, I won't cross-check" | Cross-section drift between AC, FR, Data Model, and API Contract is the #2 source of Critical findings (after Code Compatibility). Step 4b.5 is mandatory for Medium/Large precisely because authors trust their own consistency and reviewers find it broken. Run the cross-check; the cost is ~5 minutes, the cost of skipping it is one full re-plan iteration. |
+| "Validation came back DONE_WITH_CONCERNS, I'll rewrite the spec from scratch and re-run" | Use **Re-plan Mode** (`--update-spec <path> --failure-context "<findings>"`) instead. Re-plan appends an `## Iteration N Amendments` section that addresses only the failing items, preserving the rest of the spec verbatim. Rewriting from scratch loses the validated portions and produces cosmetic diffs that reviewers must re-validate. |
 
 **Violating the letter of these rules is violating the spirit.** Safety Invariants (DB migration separation, library introduction separation, mandatory spec review for Medium/Large) have no exceptions, regardless of urgency.
 
@@ -59,11 +63,13 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. Handle missing anchors as follows: if **What** is absent, stop immediately with `NEEDS_CONTEXT` (planning is impossible without a concrete change description); fill **Why** with `"not specified"`, **Out of Scope** with `"nothing explicitly excluded"`, and **Done When** with `"all tasks merged and ywc-impl-review returns DONE"` when those anchors are missing. Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 
-Read targeted files to ground the plan in actual project state. **Mandatory minimum:**
+Read targeted files to ground the plan in actual project state. Step 2 is organized into four parts: what to **always** read, what to read **conditionally**, what triggers a **deeper** read, and **when to stop**.
+
+#### Always read
 
 - `CLAUDE.md` and `AGENTS.md` (or `CODEX.md`) at repo root — language policy, conventions, CI commands
 - `package.json`, `pyproject.toml`, `Makefile`, `go.mod` etc. — actual lint/test/build commands
@@ -72,13 +78,30 @@ Read targeted files to ground the plan in actual project state. **Mandatory mini
 - Relevant `docs/ywc-plans/`, `docs/architecture/`, `docs/product/` if the project uses the LLM development guide layout
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and their "Synonyms to Avoid"; spec text and Out of Scope items must use canonical terms and never use synonym identifiers
 
-**Conditional reads (only when relevant to the request):**
+#### Conditional reads (only when relevant to the request)
 
-- For DB-touching requests: existing schema/migration files
-- For API-touching requests: existing route definitions and OpenAPI/contract files
-- For UI-touching requests: existing component patterns
+- DB-touching requests: existing schema/migration files
+- API-touching requests: existing route definitions and OpenAPI/contract files
+- UI-touching requests: existing component patterns
 
-Stop investigating once you have enough context to assess scale and write the artifact. **Do not perform open-ended codebase exploration** — that is `gstack-investigate`'s job, not this skill's.
+#### Trigger-based deep reads
+
+Three triggers force a deeper read than the lists above. Each fires independently — if more than one applies, do all of them.
+
+1. **Explicit "follows existing X" claim.** When the user's request — or your own draft of Scope / Functional Requirements / Data Model — uses phrases like *"踏襲 / follows / based on / extends / 同じパターンで / similar to / mirrors / 参考に"* and names a specific component, you **must read that component end-to-end** (not just its location, not just nearby patterns). The new spec inherits not only the pattern but every actual behavior — response headers, status codes, timeout values, parser limits, cascade rules. Capture each inherited behavior under **Existing Constraints Touched** with a `file:line` citation. This rule exists because Code Compatibility findings dominate spec-validate Critical counts — and the majority trace back to a "踏襲" claim whose author never opened the referenced file.
+
+2. **Implicit reference to existing types/models.** The "follows X" rule fires on prose claims, but the more common failure is the *implicit* reference — the spec never says "follows X", it just uses an identifier or shape that already exists. Trigger a deep read whenever the spec:
+   - **Uses a property accessor on an existing domain type by name** not declared in your own Data Model (e.g., `tenantSlug`, `userEmail`, `orderId.short`, `submission.actor.user_id`) — every such accessor is a claim that the property exists with the expected shape
+   - **Names an existing audit log, event, DTO, or error type by category** without inlining its shape (e.g., "writes an audit log", "emits a `UserCreated` event", "returns a `ConflictError`") — the spec must either inline the shape with a `file:line` citation or explicitly reference the existing type, never invent a parallel shape
+   - **Introduces a new column whose name or semantics overlap a field already present elsewhere** — either reuse the existing field/enum or justify the divergence
+
+   For each implicit reference, grep the existing schema/types (`grep -n "<identifier>" backend/prisma/schema.prisma`, `grep -rn "<TypeName>" backend/src/lib/`) and either capture the verified shape under **Existing Constraints Touched** or declare the schema change explicitly. This rule exists because findings like "field absent on existing model" and "shape mismatch with existing type" arise from variable-name use, not from any prose claim of "踏襲".
+
+3. **Stack-primitive section about to be written.** Before drafting Data Model, API Contract, or any section that touches DB / middleware / framework primitives, skim [references/common-pitfalls.md](references/common-pitfalls.md). It enumerates the recurring traps spec-validate flags (global vs route-scoped middleware, `@HttpCode` vs documented status, error-handling discipline, etc.). The schema-side rules live separately in [references/schema-invariants.md](references/schema-invariants.md). Skimming both at Step 2 is cheaper than discovering each trap individually in validation.
+
+#### When to stop
+
+Stop investigating once you can confidently (a) pick a scale using Step 3's rubric, (b) name concrete files in the plan or spec, and (c) state the project's actual lint/test/build commands. Going beyond this is `gstack-investigate`'s job — defer to that skill if the user explicitly wants deep investigation.
 
 ### Step 3: Assess Scale
 
@@ -128,7 +151,7 @@ For **Large** scale, also surface this advisory before writing the spec:
 
 ### Step 4c: Re-plan Mode
 
-Activated when `--update-spec <path>` and `--failure-context <text>` are both provided. If exactly one is provided without the other, stop immediately with `BLOCKED` and report the missing flag. This mode is mutually exclusive with normal spec generation (Steps 4a and 4b).
+Activated when `--update-spec <path>` and `--failure-context <text>` are both provided. This mode is mutually exclusive with normal spec generation (Steps 4a and 4b).
 
 **Behavior:**
 
@@ -137,12 +160,61 @@ Activated when `--update-spec <path>` and `--failure-context <text>` are both pr
 3. Using `--failure-context` as the input (the "Fix Priority" section text from `ywc-impl-review`), draft amendment content that addresses only the failing areas.
 4. **Append** `## Iteration N Amendments` to the end of the existing spec file. Do NOT create a new file, do NOT modify any completed sections above the new section.
 5. The appended section must include: which requirements failed (from `--failure-context`), the amended approach, and updated Acceptance Criteria for the affected items only.
+6. **Re-run Step 4b.5 on the whole spec** (original sections + the new amendment) before printing the handoff. An amendment frequently introduces fresh drift — a new status code that conflicts with an original AC, a new field absent from the original API Contract, a new state value without a write site. Without the re-run, that drift surfaces as a *fresh* Critical at the next `ywc-spec-validate` pass and forces yet another iteration. Re-running 4b.5 here is what makes Re-plan Mode actually converge.
 
 **Constraints:**
 
 - Never overwrite or reorder existing content.
 - Never create a new spec file — only append to the file at `<path>`.
 - `--output` is ignored in Re-plan Mode (output path is always the `--update-spec` path).
+
+### Step 4b.5: Pre-Handoff Self-Consistency Pass (Medium/Large only)
+
+Before printing the handoff message in Step 5, run this mechanical check on the spec you just wrote. Step 5's `Validation` list checks **structural** items (sections exist, anchors answered); Step 4b.5 catches the **semantic drift** the author introduces between sections — which is what dominates `ywc-spec-validate` Critical findings.
+
+The check is organized into three passes, each catching a different class of drift. Run all three. For each row, scan the spec end-to-end and answer with a concrete pointer (section heading or `file:line`). If the answer is "I'm not sure" or "probably yes", edit the spec until the answer becomes "yes, see <pointer>" before printing the handoff.
+
+Examples below are tagged *(past session, this codebase)* — they are real failures observed during the LP form / publish spec work that motivated this skill, included because concrete examples teach better than abstract rules. The **Rule** column is the universal principle and applies to any feature family.
+
+#### Pass A — Cross-section consistency (within this spec)
+
+Catches drift between AC / FR / API Contract / Data Model of the same spec.
+
+| Rule | Example failure (past session, this codebase) |
+|---|---|
+| Every Acceptance Criterion maps to ≥1 Functional Requirement; every Functional Requirement is motivated by ≥1 AC | Orphan ACs (tests for unspecified behavior); orphan FRs (unmotivated work) |
+| Every HTTP status code mentioned anywhere (AC, FR, Edge Case, NFR) also appears in the API Contract — and the API Contract has no orphan codes | AC3 says `202`, AC6 says `200`, controller enforces `@HttpCode(202)` → silent contradiction |
+| Every field name in API Contract request/response is either declared in Data Model **or** explicitly marked as "derived from X" / "server-side snapshot from Y" | `consentText` appears in DB columns but is missing from the request body — reviewer cannot tell whether the field is client-supplied (spoofable PII) or server-snapshotted |
+| Every Acceptance Criterion is in the form `When <trigger>, system does <behavior>, observable as <concrete check>` — not a bare behavior name | "e2e: form submission の golden path" is a section name; becomes an AC only when it specifies request shape → expected status → DB row state |
+| Every new state value (enum value, status flag, lifecycle column) declared in Data Model has ≥1 Functional Requirement writing it, **and** Edge Cases enumerate every state combination it introduces (A→B→A, delete-then-recreate, partial-then-resume) | `LandingPage.status='PUBLISHED'` added to the enum without a transaction writing it; `unpublish → delete LpFormConfig → republish` is a 3-step path the spec never enumerates |
+
+#### Pass B — Claim ↔ reality verification (this spec vs existing code / sibling specs)
+
+Catches the failure mode where the spec asserts something about the world that turns out to be false at implementation time.
+
+| Rule | Example failure (past session, this codebase) |
+|---|---|
+| Every "踏襲 / follows / based on / extends X" claim carries a `file:line` citation, **and** the cited code's actual behavior is transcribed into **Existing Constraints Touched** | "`LpFormCorsInterceptor` follows `BeaconSiteCorsInterceptor`" — the cited interceptor unconditionally sets `Allow-Credentials: true`, contradicting AC1 |
+| Every "no change to existing X" / "§Y そのまま採用" claim is verified — replace with "based on X, with diffs: A, B, C" the moment any diff exists | Data Model header says "§5 そのまま" while silently changing `isActive` default and adding `consentText` columns |
+| Every Edge Case threshold (size, time, rate) is verified against the actual enforcing code, not assumed | "body > 32kb → 413" sounds observable; `main.ts` actually enforces 6mb globally — the spec is a wish, not an assertion, until the limit is path-scoped |
+| Every function signature, shared type, prerequisite, or shared constant that crosses a sibling spec in the same feature family appears identically in both — or one spec explicitly declares "owned by spec X, referenced here" with the canonical signature inlined | `injectBeaconMarkers(html, formKey)` is untyped 2-arg in form spec but `(html: string, formKey: string \| null): string` in publish spec; publish spec depends on `LpFormConfig` from form spec without naming the prerequisite in Dependencies |
+
+#### Pass C — Schema invariants (Data Model mechanical rules)
+
+Catches Data Model omissions that make the migration fail at `prisma generate`, the first delete attempt, or the first concurrent insert. The two highest-frequency Criticals are inline; the full ruleset (NOT NULL backfill, FK index, composite uniqueness, multi-tenant scope, enum domain, `timestamptz`) is in [references/schema-invariants.md](references/schema-invariants.md).
+
+| Rule | Example failure (past session, this codebase) |
+|---|---|
+| Every new DB `@relation` has the reverse-relation field declared on the other model **in this spec** (even if the other model already exists in `schema.prisma`) | `@relation` on `LpFormSubmission` pointing at `LandingPage` without adding `lpFormSubmissions LpFormSubmission[]` on `LandingPage` → `prisma generate` fails |
+| Every `onDelete` rule (`Restrict / Cascade / SetNull / NoAction`) has its API consequence specified in the API Contract (typically `409 Conflict` for `Restrict`, a destructive-side-effect note for `Cascade`) | `onDelete: Restrict` on submissions, but `DELETE /api/lp-forms/:id` lacks `409 Conflict` and the operator UX for "delete submissions first" |
+
+For the full Data Model self-check, run the checklist at the end of [schema-invariants.md](references/schema-invariants.md).
+
+---
+
+This step is **mandatory for the Medium/Large path** (Step 4b) and **for the appended amendment in Re-plan Mode** (Step 4c). For the Small path (Step 4a), Step 5's structural checks suffice — Small plans rarely span enough sections for cross-section drift.
+
+If any pass surfaces ≥1 issue, fix and re-run **that pass**. The loop terminates only when every row answers "yes, see <pointer>". This investment is what prevents `ywc-spec-validate` from returning `DONE_WITH_CONCERNS` and forcing a Re-plan iteration — the cost is paid once here instead of being amplified across the spec-validate fan-out and the re-plan amendment.
 
 ### Step 5: Handoff
 
@@ -184,8 +256,13 @@ Before declaring the skill's task complete, verify:
 
 - [ ] Step 1 produced explicit answers to all four anchors (What, Why, Out of Scope, Done When)
 - [ ] Step 2 read at minimum `CLAUDE.md` (or equivalent) and the project's build/test command source
+- [ ] Step 2 deep-read **every component the spec claims to "踏襲 / follow / extend"** (not just located them)
+- [ ] Step 2 grepped every **implicit reference** (property accessor on existing type, named audit/event/DTO/error type, mirrored column name) to confirm the existing schema/types match the spec's use
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly
 - [ ] If scale = Small, none of the hard-disqualifiers apply (re-check DB / library / API contract / cross-cutting)
+- [ ] If scale = Medium/Large, the spec includes an **Existing Constraints Touched** section with `file:line` citations for every inherited behavior
+- [ ] If scale = Medium/Large, **Step 4b.5 Self-Consistency Pass** ran (all three passes A/B/C) and every row resolved to a concrete pointer
+- [ ] If Re-plan Mode (Step 4c) ran, **Step 4b.5 was re-run on the whole spec** (original + amendment) before handoff
 - [ ] Output file written at a concrete path (no `<placeholder>` slugs)
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
@@ -193,10 +270,11 @@ Before declaring the skill's task complete, verify:
 
 ## Common Mistakes
 
-- **Skipping Step 2 because the request "sounds simple"** — the request always sounds simpler than it is. Read `CLAUDE.md` and the project tree at minimum, even for one-line changes. Cost: 30 seconds. Benefit: avoiding plans that conflict with project conventions.
+(Procedural failure modes specific to this skill. Behavioral / rationalization failures are in the Rationalization Defense table above — do not duplicate here.)
+
 - **Conflating ywc-plan with ywc-tech-research** — `ywc-plan` assumes the technology choice is settled or out of scope for this request. If the user is asking *what library to use* or *what architecture to adopt*, route to `ywc-tech-research` first, then return to `ywc-plan` after.
-- **Writing Out of Scope as a single line "everything else"** — that is not Out of Scope; that is laziness. List concrete adjacent features that might look related but are deferred (e.g., "User profile editing — separate spec", "Password reset flow — already covered in spec X").
 - **Forgetting the handoff message** — without an explicit handoff, the user is left guessing which downstream skill to run. The handoff is the contract that this skill is a planner, not an executor.
+- **Treating Step 4b.5 as a single pass instead of three** — Pass A, B, and C catch different classes of drift. Skipping any one of them is the most common way Step 4b.5 fails to prevent a Critical. The cost of running all three is ~5 minutes; the cost of skipping one is a full re-plan iteration.
 
 ## Integration
 

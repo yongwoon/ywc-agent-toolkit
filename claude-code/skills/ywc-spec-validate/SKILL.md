@@ -117,6 +117,15 @@ When tempted to skip a step, check this table first:
 | `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
 | `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
 
+**Re-plan handoff on `DONE_WITH_CONCERNS`** — after printing the report body, append the following one-liner so the user (or an interactive orchestrator) can resolve findings via `ywc-plan` Re-plan Mode instead of rewriting the spec from scratch:
+
+```
+To address the Critical findings above without losing validated sections, run:
+/ywc-plan --update-spec <spec-path> --failure-context "<one-paragraph summary of the Critical findings>"
+```
+
+This routes findings into the `## Iteration N Amendments` append flow described in `ywc-plan` Step 4c, preserving validated portions of the spec. Print this line only on `DONE_WITH_CONCERNS` — `DONE`, `BLOCKED`, `NEEDS_CONTEXT`, and `SOCRATIC` do not benefit from Re-plan Mode. For programmatic consumers (e.g., `ywc-agentic`), the Programmatic Consumer Policy below already invokes the equivalent flow; this surface is for interactive users who would otherwise re-write from scratch.
+
 > **HTML mode (`--format html`)** — emits the same findings as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
 ## Advisor Escalation Policy
