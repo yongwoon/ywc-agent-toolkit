@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.9.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.8.0...v1.9.0) (2026-05-21)
+
+
+### ### Added
+
+* add spec-to-html exporter and tighten ywc-plan spec planning rigor ([#30](https://github.com/yongwoon/ywc-agent-toolkit/issues/30)) ([8719f6f](https://github.com/yongwoon/ywc-agent-toolkit/commit/8719f6f3a80c8253d95f2ef4d8dd7dc1a4dc6c11))
+
 ## [1.8.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.7.0...v1.8.0) (2026-05-17)
 
 
