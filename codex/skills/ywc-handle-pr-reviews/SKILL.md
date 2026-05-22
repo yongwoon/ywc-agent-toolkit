@@ -1,13 +1,14 @@
 ---
 name: ywc-handle-pr-reviews
-description: (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), or for changes outside an open PR context.
+description: >-
+  (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), or for changes outside an open PR context.
 ---
 
 # Handle PR Review Comments
 
 **Announce at start:** "I'm using the ywc-handle-pr-reviews skill to address review comments and reply to each thread."
 
-Review PR comments, fix issues where needed, and reply to each comment.
+Review PR review artifacts, fix issues where needed, and reply with an addressed marker for each artifact.
 
 ## Rationalization Defense
 
@@ -22,6 +23,8 @@ When tempted to skip a step, check this table first:
 | "Conflict in suggestions, pick one and move on" | Surface the conflict to the user. Do not silently choose between reviewer A and reviewer B. |
 | "PR not found for this branch, scan recent PRs" | Stop and ask. Acting on a wrong PR overwrites unrelated reviewer threads. |
 | "All review comments are addressed — CI is a separate concern" | Fixes to source code (refactors, new imports, logic changes) can break CI. Always re-verify CI after pushing review fixes. A PR with all comments addressed but failing CI is still blocked from merging. |
+| "The poller found a top-level review/check, but the line-comment script returned empty" | Top-level reviews, PR comments, and review-like checks are first-class review artifacts. Fetch the artifact list and block merge until each one is fixed, answered, or explicitly deferred. |
+| "I replied but did not include the marker" | The polling gate is marker-based for non-threaded artifacts. Every reply must include `<!-- <review_comment_addressed:<fingerprint>> -->` so the next poll can distinguish handled feedback from unresolved feedback. |
 
 **Violating the letter of these rules is violating the spirit.** Code review is a conversation, not a checklist.
 
@@ -46,33 +49,54 @@ Resolve `{owner}/{repo}` dynamically at this stage — it's used throughout the 
 gh repo view --json nameWithOwner --jq .nameWithOwner
 ```
 
-### 2. Retrieve and Filter Comments
+### 2. Retrieve and Filter Review Artifacts
 
-Retrieve all PR review comments and filter out those that don't need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
+Retrieve all unresolved PR review artifacts and filter out those that do not need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
 
 ```bash
-bash codex/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
-  {owner}/{repo} {pr_number}
-# exit 0 → JSON array of unresolved threads on stdout (may be [])
-# exit 1 → gh CLI error (not authenticated or PR not found)
+bash tools/codex-skill/skills/scripts/fetch-pr-review-artifacts.sh {pr_number}
+# exit 0 -> JSON array of unresolved artifacts on stdout (may be [])
+# exit 2 -> usage error
+# exit 3 -> GitHub fetch/parse error
 ```
 
-The script fetches paginated comments, groups them into threads, and applies the skip conditions automatically: threads containing `<!-- <review_comment_addressed> -->` are dropped, and threads where your reply is newer than the latest reviewer comment are dropped. The output JSON array contains only actionable threads — each element has `id`, `body`, `path`, `line`, `user`, `created_at`, and `thread_comment_count`. If the array is `[]`, skip to Step 7 and report "no unresolved comments".
+Output artifact types:
+
+| Type | Source | Reply target |
+|---|---|---|
+| `review_thread` | Line-level PR review thread | Reply to the line comment |
+| `pr_comment` | General PR comment | Add a PR comment referencing the artifact |
+| `review_submission` | Top-level review body/state | Add a PR comment referencing the artifact |
+| `status_check` | Review-like failed check run | Fix the code/check failure; no reply is required unless a human-readable explanation is useful |
+
+Each artifact has `fingerprint`, `body`, `path`, `line`, `user`, `reply_api`, and optional `url`/`state`/`conclusion`. If the array is `[]`, skip to Step 7 and report "no unresolved review artifacts".
+
+Legacy line-comment-only fallback, used only if the artifact script is unavailable:
+
+```bash
+bash tools/codex-skill/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
+  {owner}/{repo} {pr_number}
+# exit 0 -> JSON array of unresolved review_thread artifacts on stdout (may be [])
+# exit 1 -> gh CLI error (not authenticated or PR not found)
+# exit 3 -> GitHub fetch/parse error from the shared artifact fetcher
+```
+
+The artifact script applies skip conditions automatically: artifacts with a matching `<!-- <review_comment_addressed:<fingerprint>> -->` marker are dropped, and legacy line threads containing `<!-- <review_comment_addressed> -->` are also dropped for backward compatibility.
 
 ### 3. Group and Analyze Comments
 
-Before fixing anything, group all remaining comments by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth.
+Before fixing anything, group all remaining artifacts by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth. Keep pathless artifacts (`pr_comment`, `review_submission`, `status_check`) in a separate "PR-level" group and inspect their body/check URL before deciding whether code changes are required.
 
 **Processing strategy:**
 
-1. Collect all unresolved comments and group by target file path
+1. Collect all unresolved artifacts and group by target file path
 2. For each file, read the file once and analyze all related comments together
 3. Apply fixes for that file and commit as a unit
-4. Move to the next file
+4. Process PR-level artifacts after file-specific artifacts, using the linked body/check output as the source of truth
 
-### 4. Classify and Fix Comments
+### 4. Classify and Fix Artifacts
 
-For each comment, classify it into one of four categories:
+For each artifact, classify it into one of these categories:
 
 | Category                                                                                                   | Action                                                                                                                                                                                  |
 | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,6 +104,7 @@ For each comment, classify it into one of four categories:
 | **Clear code change request** (the fix is straightforward and unambiguous)                                 | Apply the fix                                                                                                                                                                           |
 | **Controversial or ambiguous change request** (disagreement, architectural concern, or trade-off involved) | Do NOT auto-fix. Present the comment to the user with context, explain the trade-off, and ask for a decision. Reviewer feedback deserves thoughtful consideration, not blind acceptance |
 | **Question only** (no code change implied)                                                                 | Reply with an explanation — no fix needed                                                                                                                                               |
+| **Failed review-like status check**                                                                        | Inspect the check URL/logs, fix the underlying issue if clear, then push and re-run CI/review polling. If the check output is inaccessible or unclear, return `BLOCKED`                 |
 
 **Security guardrails (never auto-apply, always defer to user):**
 
@@ -102,7 +127,15 @@ For each comment, classify it into one of four categories:
 
 ### 5. Reply to Comments
 
-Reply to every processed comment so the reviewer knows their feedback was addressed. Use the thread reply API to keep conversations organized:
+**Attitude layer (mandatory)**: every reply must go through the discipline defined in [`ywc-receive-review`](../ywc-receive-review/SKILL.md) — verify each artifact against the codebase before agreeing; replies state the fix or a technical pushback ending in a question; the forbidden vocabulary list ("You're absolutely right!", "Great point!", "Thanks!") applies to all `body` content surfaced via the reply API below.
+
+Reply to every processed artifact that has `reply_api != "none"` so the reviewer knows the feedback was addressed. Every reply must include the exact marker for that artifact:
+
+```markdown
+<!-- <review_comment_addressed:{fingerprint}> -->
+```
+
+For `review_thread`, use the thread reply API to keep conversations organized:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{in_reply_to_id}/replies -F body=@- <<'REPLY_BODY'
@@ -110,18 +143,27 @@ gh api repos/{owner}/{repo}/pulls/{pull_number}/comments/{in_reply_to_id}/replie
 REPLY_BODY
 ```
 
+For `pr_comment` and `review_submission`, add a PR-level comment that references the artifact author/type and includes the marker:
+
+```bash
+gh pr comment {pull_number} --body-file -
+```
+
+For `status_check`, do not add a marker-only reply unless no code change is needed and the check is known to be a false positive. A failed review-like status check normally remains unresolved until the check passes.
+
 **Reply language:** Match the language of the original comment. If the reviewer wrote in Korean, reply in Korean. If in English, reply in English.
 
 **Reply format by category:**
 
 - **Fixed:**
   ```markdown
+  <!-- <review_comment_addressed:{fingerprint}> -->
   Fixed: [commit-hash](https://github.com/{owner}/{repo}/pull/{pr}/commits/{full_sha})
   Description of what was changed and why
   ```
-- **Deferred to user:** `This requires a decision — I've flagged it for the PR author.`
-- **No fix needed:** Reply explaining the reasoning (e.g., intentional design choice, already handled elsewhere)
-- **Outdated comment:** `This code has been updated since the review. The concern no longer applies because [reason].`
+- **Deferred to user:** Do not include the marker before the user decides; return `NEEDS_CONTEXT` with the artifact `fingerprint`, reviewer, and trade-off.
+- **No fix needed:** Include the marker and explain the reasoning (e.g., intentional design choice, already handled elsewhere)
+- **Outdated comment:** Include the marker and explain why the concern no longer applies.
 
 ### 6. Error Handling
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Onboard Repo"
+  short_description: "Reconnoiter an unfamiliar repo in 4 phases and emit an Onboarding Guide + Starter AGENTS.md"
+  default_prompt: "Use $ywc-onboard-repo to run the 4-phase cold-start (Reconnaissance via Glob+Grep, Architecture mapping verified from source, Convention detection with >=3 supporting examples, Generate the Onboarding Guide + Starter AGENTS.md). Existing AGENTS.md is enhanced in place, never overwritten. Use ywc-project-scaffold instead when the goal is to create a new repo from scratch."

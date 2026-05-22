@@ -1,6 +1,7 @@
 ---
 name: ywc-code-gen
-description: (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, or when no specification exists.
+description: >-
+  (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, or when no specification exists.
 ---
 
 # ywc-code-gen
@@ -42,9 +43,9 @@ When tempted to skip a step, check this table first:
 
 ## Advisor Pattern
 
-This skill uses **Pattern B (Two-Phase)** from [advisor-pattern.md](../references/advisor-pattern.md). Code generation decisions range from mechanical (scaffold a CRUD endpoint following the project's existing pattern) to genuinely design-heavy (choose between repository pattern vs service layer vs direct query, pick a state management boundary, decide a test seam). Running every generation agent on Opus wastes frontier capacity on the mechanical cases; running every agent on Sonnet undersells the design-heavy ones. Phase 1 generates the obvious cases at default-model cost; Phase 2 escalates only the genuinely ambiguous design decisions to a short high-capability advisor pass.
+This skill uses **Pattern B (Two-Phase)** from [advisor-pattern.md](../references/advisor-pattern.md). Code generation decisions range from mechanical (scaffold a CRUD endpoint following the project's existing pattern) to genuinely design-heavy (choose between repository pattern vs service layer vs direct query, pick a state management boundary, decide a test seam). Running every generation worker at maximum reasoning depth wastes frontier capacity on the mechanical cases; running every worker at low reasoning depth undersells the design-heavy ones. Phase 1 generates the obvious cases with normal Codex workers; Phase 2 escalates only the genuinely ambiguous design decisions to a short higher-capability advisor pass.
 
-**Budget**: up to 5 Opus design-advisor calls per invocation, shared across all three agents. Most generation tasks should use fewer — Phase 2 is reserved for decisions where more than one valid implementation exists and the correct choice depends on project-specific context.
+**Budget**: up to 5 design-advisor calls per invocation, shared across all three agents. Most generation tasks should use fewer — Phase 2 is reserved for decisions where more than one valid implementation exists and the correct choice depends on project-specific context.
 
 ## Continuous Execution Rule
 
@@ -88,34 +89,48 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    | **Compose** | Multiple existing fragments each cover one slice; composition is cleaner than new code | Generate a thin composition layer |
    | **Build** | No existing artifact covers >40%, or existing code would require invasive changes | Proceed to Phase 1 generation |
 
-   Search scope: (1) `rg` for symbols related to `--feature` in the current repo; (2) scan `package.json` / `pyproject.toml` for already-installed libraries that solve the problem. If the decision is **Adopt**, **Extend**, or **Compose**, report the finding and stop unless the user confirms they want full generation anyway.
+   Search scope: (1) `Grep` for symbols related to `--feature` in the current repo; (2) scan `package.json` / `pyproject.toml` for already-installed libraries that solve the problem. If the decision is **Adopt**, **Extend**, or **Compose**, report the finding and stop unless the user confirms they want full generation anyway.
 
-1. **Collect Project Context** — Read `CLAUDE.md`, `package.json`, and directory structure to identify tech stack, project structure, and conventions. If `docs/ubiquitous-language.md` exists, read it — canonical term names and "Synonyms to Avoid" entries must flow into every subagent's context payload; generated code must use canonical terms and never use synonym identifiers. This context stays with the parent; do not forward it wholesale to Phase 2.
+1. **Collect Project Context** — Read `AGENTS.md`, `CODEX.md`, `package.json`, and directory structure where present to identify tech stack, project structure, and conventions. If `docs/ubiquitous-language.md` exists, read it — canonical term names and "Synonyms to Avoid" entries must flow into every subagent's context payload; generated code must use canonical terms and never use synonym identifiers. This context stays with the parent; do not forward it wholesale to Phase 2.
 
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
-3. **Phase 1 — Parallel Generation** — Use Codex subagent tools to spawn three subagents in parallel. Use the default inherited Codex model unless the user explicitly requests a different model:
-   - **Backend subagent** (`model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Role reference: `references/backend-agent.md`.
-   - **Frontend subagent** (`model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Role reference: `references/frontend-agent.md`.
-   - **QA subagent** (`model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
+3. **Phase 1 — Parallel Generation** — Use Codex subagent delegation to spawn three workers in parallel when the environment supports subagents. Do not pass Claude Code-only named dispatch fields; Codex workers receive their role from the prompt and the layer reference file:
+   - **Backend worker** — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Include [references/backend-generation.md](references/backend-generation.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
+   - **Frontend worker** — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Include [references/frontend-generation.md](references/frontend-generation.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
+   - **QA worker** — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Include [references/qa-generation.md](references/qa-generation.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
 
-   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (CLAUDE.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/<role>-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
+   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (AGENTS.md / CODEX.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/backend-generation.md`, `references/frontend-generation.md`, or `references/qa-generation.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
    **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Do not silently retry on the same input.
+
+   ## Status Routing
+
+   Codex worker subagents return payloads per [../references/subagent-status-actions.md](../references/subagent-status-actions.md) §3.5. Apply the following routing table to every Phase 1 subagent return:
+
+   | Returned status | Caller action |
+   |---|---|
+   | `DONE` | Proceed to Step 4 (aggregate Phase 2 candidates) and Phase 2 advisor pass |
+   | `DONE_WITH_CONCERNS` | Continue; accumulate concerns into Phase 2 advisor input or the Completion Report depending on whether they raise correctness or observation issues |
+   | `BLOCKED` | Run the four-step triage (context → reasoning → scope → plan), surface to user, halt generation for the blocked lane |
+   | `NEEDS_CONTEXT` | Provide the missing context and re-dispatch the same subagent at the same model class — do not silently infer |
+   | Status absent or unparseable | Treat as implicit `BLOCKED`; surface the raw payload to the user without re-dispatch |
 
 4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all three subagents:
    - Deduplicate candidates that point to the same decision (for example, Backend and QA both flagging the repository interface shape).
    - Cap the total at 5 per invocation. If candidates exceed the cap, prioritize: architecture-level > shared contract > single-layer decisions.
    - Log dropped candidates in the final report so the user can see what was not escalated.
 
-5. **Phase 2 — Design Advisor Pass** — For each surviving candidate, spawn a short high-capability subagent when explicitly allowed via Codex subagent tools with `model: opus`:
+5. **Phase 2 — Design Advisor Pass** — For each surviving candidate, spawn a short higher-capability advisor subagent:
    - **Context payload**: only the decision point, the alternatives, the spec excerpt, the relevant existing-project pattern, and the tech-stack essentials. Do **not** forward the full spec, the full generated code from other agents, or Phase 1 transcripts.
    - **Expected output**: a short verdict (≤200 words) containing the recommended alternative, a one-line rationale, and any constraints the executor should apply when finalizing the code (for example, "use the existing UserRepository interface; do not add a new abstraction").
-   - Opus calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
+   - Advisor calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
 
 6. **Finalize and Output** — Apply the Phase 2 verdicts to the Phase 1 generated code. Reconcile shared type/interface conflicts. Verify import path consistency and confirm file placement matches the project directory structure. Mark each file in the final report with its provenance: `[P1]` for files Phase 1 generated with confidence, `[P2]` for files whose design was adjusted by a Phase 2 advisor verdict.
 
-7. **Verification Gate** — After writing all generated files, run these checks in order. If a check fails, attempt one fix and re-run that layer. If it still fails after the fix attempt, stop and report before declaring DONE. Do not stop at first failure without attempting a fix:
+7. **Verification Gate** — After writing all generated files, run these checks in order. If a check fails, attempt one fix and re-run that layer. If it still fails after the fix attempt, stop and report before declaring DONE. Do not stop at first failure without attempting a fix.
+
+   **Surface format**: every verification result in this gate must follow `ywc-verify-done` — the verification block (command, output excerpt, exit code) appears **before** the Completion Status line, no `should` / `probably` / `seems` language in the claim, and a failing check is surfaced as `DONE_WITH_CONCERNS` (or routed to `ywc-debug-rootcause` when ≥2 fixes fail on the same layer) rather than a bare "Done" with the failure tucked below.
 
    | Phase | Command (adapt to project tooling) | Pass Condition |
    |-------|------------------------------------|----------------|
@@ -132,6 +147,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    - After any cleanup or refactor: `git commit -m "refactor: clean up <feature>"`.
    - If tests do not fail in RED state, that is a test authoring error — stop and report `DONE_WITH_CONCERNS`.
 
+   The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined in [`ywc-tdd-ritual`](../ywc-tdd-ritual/SKILL.md). When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
+
 ## Output Format
 
 ```text
@@ -140,7 +157,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 ### Summary
 - Reuse gate decision: {Adopt|Extend|Compose|Build} — {one-line rationale}
 - Phase 1 generated files: Backend N, Frontend M, QA K
-- Phase 2 advisor calls (Opus): X of 5 budget used
+- Phase 2 advisor calls: X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
 
@@ -204,13 +221,13 @@ Any subagent output containing the following patterns is treated as a failed gen
 
 Read the corresponding reference file when spawning each agent and include it in the agent prompt:
 
-- `references/backend-agent.md` — Backend Agent role, generation targets, coding standards
-- `references/frontend-agent.md` — Frontend Agent role, generation targets, accessibility standards
-- `references/qa-agent.md` — QA Agent role, test strategy (Happy Path / Edge Case / Error Path)
+- `references/backend-generation.md` — Backend generation targets, coding standards, and output checklist
+- `references/frontend-generation.md` — Frontend generation targets, accessibility standards, and output checklist
+- `references/qa-generation.md` — QA generation targets, test strategy, and output checklist
 
 ## Confidence Gate
 
-This skill applies the [Confidence Gate](../references/confidence-gate.md) before emitting generated code as a final artifact. The gate is evaluated by the Phase 2 (Opus) advisor when one is invoked, or by the executor itself otherwise.
+This skill applies the [Confidence Gate](../references/confidence-gate.md) before emitting generated code as a final artifact. The gate is evaluated by the Phase 2 advisor when one is invoked, or by the executor itself otherwise.
 
 **Required dimensions** (must each score ≥ 70):
 
@@ -230,5 +247,5 @@ The gate score must appear in the completion summary together with the Backend /
 ## Integration
 
 - **upstream**: After specification is finalized
-- **downstream**: Implementation review (/ywc-impl-review), PR creation
+- **downstream**: Implementation review (ywc-impl-review), PR creation
 - **relationship**: Complementary to sequential-executor (independent layer parallel generation)

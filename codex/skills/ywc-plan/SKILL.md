@@ -25,7 +25,7 @@ When tempted to bypass a rule, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, `CLAUDE.md`, or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
+| "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, project guidance, or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
 | "Scale looks ambiguous, I'll default to Small to keep things light" | Default to **Medium** when ambiguous, not Small. Small path skips spec review and task decomposition — wrong scale call cascades into untracked scope creep. The cost of writing a spec for an actually-Small change is one wasted hour; the cost of skipping a spec for an actually-Medium change is rework across multiple sessions. |
 | "DB migration is part of the change, I'll bundle it into the Small plan" | Any change touching `migrations/`, `prisma/schema.prisma`, `*.sql`, or equivalent is **never Small**. DB migration must be its own task — escalate to Medium path so `ywc-task-generator` can split it. Safety invariant — same rule as `ywc-task-generator`. |
 | "User wants to start coding now, I'll skip ywc-spec-validate on the Medium spec" | The Medium/Large path **must** route through `ywc-spec-validate` before `ywc-task-generator`. Skipping spec review is the failure mode `ywc-task-generator`'s `requires: [ywc-spec-validate]` exists to prevent. Run review even when the user is impatient. |
@@ -44,6 +44,27 @@ When tempted to bypass a rule, check this table first:
 
 The skill executes five steps. Steps 1–2 are mandatory; Steps 3–5 branch on the scale assessment.
 
+### Step 1.0: Brainstorm Gate
+
+Before extracting anchors, evaluate whether the request is concrete enough for direct planning. Some requests arrive as design conversations rather than plan inputs; those must run through `ywc-brainstorm` first.
+
+| Signal | Route |
+|---|---|
+| Request includes a concrete change description, files / surfaces touched, and an observable Done condition | Proceed to Step 1 — anchors will extract cleanly. |
+| Request is conversational ("I'm thinking about X", "wouldn't it be nice if…", "let's explore Y", "어떻게 만들지", "アイディアがある") | **Delegate to `ywc-brainstorm`** — it surfaces the four anchors via Socratic dialogue and presents 2–3 approaches; resume `ywc-plan` from Step 1 with the brainstorm handoff as input. |
+| Request describes multiple independent subsystems (e.g., "a platform with auth, chat, billing, analytics") | **Delegate to `ywc-brainstorm`** for decomposition before any anchor extraction. Each subsystem gets its own brainstorm → plan cycle. |
+| Two or more of (What / Why / Out of Scope / Done When) are completely missing from the request | **Delegate to `ywc-brainstorm`** — extracting two missing anchors at once produces shallow answers; ywc-brainstorm collects them one at a time with explicit approach trade-offs. |
+
+When delegating, surface this verbatim before transferring control:
+
+> "This request needs intent clarification before planning. Switching to `ywc-brainstorm` to surface the four anchors and approach choice. After the design is approved, returning to `ywc-plan` Step 1 with the brainstorm handoff as input."
+
+When `ywc-brainstorm` completes, its handoff message includes the four anchors and the chosen approach. Re-enter `ywc-plan` Step 1 with that handoff as the effective user input — the anchors should already be filled, so Step 1 typically reduces to a one-sentence confirmation.
+
+`--non-interactive` mode skips the delegation: when the flag is present, treat ambiguity as Medium scale (Step 3) and fill missing anchors with defaults rather than routing to `ywc-brainstorm`.
+
+After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-writer`, `ywc-task-generator`, `ywc-code-gen`, executor), invoke `ywc-confidence-gate` with the chosen approach as input. The gate's PROCEED / REVIEW / STOP band determines whether the plan is ready for handoff; a REVIEW band surfaces alternatives to the user, a STOP band routes back here for additional investigation before re-attempting handoff. The 5-dimension score becomes part of the plan's completion summary so downstream skills inherit a comparable confidence number.
+
 ### Step 1: Clarify the Request
 
 **Prerequisite:** If `docs/ubiquitous-language.md` exists, read it before asking any questions. The vocabulary defined there must frame the clarification dialogue itself — use canonical terms in your questions and note any "Synonyms to Avoid" so the user's answers are captured in the right terms from the start.
@@ -59,12 +80,7 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill defaults for **all four anchors** automatically:
-- What = `"implement the user-requested change as described in the initial prompt"`
-- Why = `"address the user-requested need described in the initial prompt"`
-- Out of Scope = `"nothing explicitly excluded"`
-- Done When = `"all tasks merged and ywc-impl-review returns DONE"`
-Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 
@@ -72,7 +88,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 
 #### Always read
 
-- `CLAUDE.md` and `AGENTS.md` (or `CODEX.md`) at repo root — language policy, conventions, CI commands
+- `AGENTS.md`, `CODEX.md`, and `CLAUDE.md` at repo root where present — language policy, conventions, CI commands
 - `package.json`, `pyproject.toml`, `Makefile`, `go.mod` etc. — actual lint/test/build commands
 - Project tree (top 2 levels of `src/`, `apps/`, or equivalent) — module placement and existing patterns
 - Existing `tasks/` directory if present — phase numbering and dependency context
@@ -135,8 +151,8 @@ After writing the plan, surface this handoff message to the user:
 
 > "Plan ready at `<path>`. To execute, you can:
 > 1. Implement directly in this session, or
-> 2. Run `/ywc-code-gen` with the plan as context, or
-> 3. Hand off to `/ywc-sequential-executor` if you prefer Branch + PR isolation."
+> 2. Run `$ywc-code-gen` with the plan as context, or
+> 3. Hand off to `$ywc-sequential-executor` if you prefer Branch + PR isolation."
 
 ### Step 4b: Medium/Large Path — Spec Document
 
@@ -225,7 +241,7 @@ Always end with an explicit handoff instruction matching the path taken.
 
 ```text
 ✅ Plan ready: <path>
-Next: implement directly, or run /ywc-code-gen, or /ywc-sequential-executor
+Next: implement directly, or run $ywc-code-gen, or $ywc-sequential-executor
 ```
 
 **Medium/Large path handoff:**
@@ -233,9 +249,9 @@ Next: implement directly, or run /ywc-code-gen, or /ywc-sequential-executor
 ```text
 ✅ Spec drafted: <path>
 Next:
-  1. /ywc-spec-validate --spec <path>
-  2. (after review passes) /ywc-task-generator <path>
-  3. (after tasks generated) /ywc-sequential-executor or /ywc-parallel-executor
+  1. $ywc-spec-validate --spec <path>
+  2. (after review passes) $ywc-task-generator <path>
+  3. (after tasks generated) $ywc-sequential-executor or $ywc-parallel-executor
 ```
 
 Never proceed past the handoff. The user decides which downstream skill runs next — this skill is the planner, not the executor.
@@ -256,7 +272,7 @@ For the exact templates, see [references/small-plan-template.md](references/smal
 Before declaring the skill's task complete, verify:
 
 - [ ] Step 1 produced explicit answers to all four anchors (What, Why, Out of Scope, Done When)
-- [ ] Step 2 read at minimum `CLAUDE.md` (or equivalent) and the project's build/test command source
+- [ ] Step 2 read project guidance (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent) and the project's build/test command source
 - [ ] Step 2 deep-read **every component the spec claims to "踏襲 / follow / extend"** (not just located them)
 - [ ] Step 2 grepped every **implicit reference** (property accessor on existing type, named audit/event/DTO/error type, mirrored column name) to confirm the existing schema/types match the spec's use
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly

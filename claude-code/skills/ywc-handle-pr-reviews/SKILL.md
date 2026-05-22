@@ -1,7 +1,8 @@
 ---
 name: ywc-handle-pr-reviews
 version: 1.0.0
-description: (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), or for changes outside an open PR context.
+description: >-
+  (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), or for changes outside an open PR context.
 category: release
 phase: release
 requires: [ywc-create-pr]
@@ -107,6 +108,8 @@ For each comment, classify it into one of four categories:
 - Push to remote after all commits are ready — pushing once at the end is cleaner than pushing after each commit
 
 ### 5. Reply to Comments
+
+**Attitude layer (mandatory)**: every reply must go through the discipline defined in [`ywc-receive-review`](../ywc-receive-review/SKILL.md) — verify each comment against the codebase before agreeing; replies state the fix or a technical pushback ending in a question; the forbidden vocabulary list ("You're absolutely right!", "Great point!", "Thanks!") applies to all `body` content surfaced via the reply API below.
 
 Reply to every processed comment so the reviewer knows their feedback was addressed. Use the thread reply API to keep conversations organized:
 

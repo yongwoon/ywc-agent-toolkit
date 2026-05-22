@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refactor Clean"
+  short_description: "Remove dead code under SAFE/CAUTION/DANGER tiers with per-batch verification"
+  default_prompt: "Use $ywc-refactor-clean to detect dead code with knip/depcheck/ts-prune (or the per-language equivalent), classify each finding into SAFE/CAUTION/DANGER, delete per-item with a scoped test run before and after, and close with a ywc-verify-done evidence block. Behavior-changing refactors route to ywc-tdd-ritual + ywc-code-gen."

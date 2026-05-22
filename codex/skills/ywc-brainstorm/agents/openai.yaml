@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brainstorm"
+  short_description: "Turn rough ideas into approved designs"
+  default_prompt: "Use $ywc-brainstorm to clarify intent, constraints, success criteria, and alternative approaches before handing the approved design to $ywc-plan."

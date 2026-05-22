@@ -1,7 +1,7 @@
 ---
 name: ywc-project-scaffold
 version: 1.0.0
-description: "(ywc) Use when the user wants to scaffold a new project structure, design a folder layout, or organize files for a specific tech stack. Triggers: 'project structure', 'scaffold a new project', 'folder layout', 'project skeleton', '프로젝트 구조', '디렉토리 구조', 'folder structure', 'project layout', 'プロジェクト構成', or any request combining a language/framework with 'structure' or 'scaffold'. Do not use for modifying existing project structure, generating individual files, or for creating tasks (use ywc-task-generator)."
+description: "(ywc) Use when the user wants to scaffold a new project structure, design a folder layout, or organize files for a specific tech stack. Triggers: 'project structure', 'scaffold a new project', 'folder layout', 'project skeleton', '프로젝트 구조', '디렉토리 구조', 'folder structure', 'project layout', 'プロジェクト構成', or any request combining a language/framework with 'structure' or 'scaffold'. Do not use for modifying existing project structure, generating individual files, for creating tasks (use ywc-task-generator), or for surveying an existing repo and generating its CLAUDE.md (use ywc-onboard-repo — the inverse direction)."
 category: spec
 phase: planning
 requires: []

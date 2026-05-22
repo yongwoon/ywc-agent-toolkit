@@ -1,6 +1,6 @@
 ---
 name: ywc-project-scaffold
-description: "(ywc) Use when the user wants to scaffold a new project structure, design a folder layout, or organize files for a specific tech stack. Triggers: 'project structure', 'scaffold a new project', 'folder layout', 'project skeleton', '프로젝트 구조', '디렉토리 구조', 'folder structure', 'project layout', 'プロジェクト構成', or any request combining a language/framework with 'structure' or 'scaffold'. Do not use for modifying existing project structure, generating individual files, or for creating tasks (use ywc-task-generator)."
+description: "(ywc) Use when the user wants to scaffold a new project structure, design a folder layout, or organize files for a specific tech stack. Triggers: 'project structure', 'scaffold a new project', 'folder layout', 'project skeleton', '프로젝트 구조', '디렉토리 구조', 'folder structure', 'project layout', 'プロジェクト構成', or any request combining a language/framework with 'structure' or 'scaffold'. Do not use for modifying existing project structure, generating individual files, for creating tasks (use ywc-task-generator), or for surveying an existing repo and generating its AGENTS.md (use ywc-onboard-repo — the inverse direction)."
 ---
 
 # Project Scaffold - Directory Structure Generator
@@ -28,7 +28,7 @@ When tempted to skip a step, check this table first:
 
 - New project initialization with a specific tech stack
 - Directory structure design for language + framework + protocol combinations
-- Project restructuring or refactoring of folder layout
+- Planning a not-yet-created folder layout before implementation begins
 - "Create a project structure with this stack", "scaffold a FastAPI project"
 
 ## Usage
@@ -47,7 +47,7 @@ When tempted to skip a step, check this table first:
 
 ## Input Analysis
 
-Identify the following elements from user input. Use reasonable defaults for unspecified items, but confirm important choices with the user.
+Identify the following elements from user input. Ask a focused clarification when language, framework, or scale is missing; use defaults only for protocol and domain when the user does not care.
 
 | Element | Example | Default |
 |---------|---------|---------|

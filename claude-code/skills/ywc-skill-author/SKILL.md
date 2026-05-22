@@ -14,7 +14,7 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-skill-author skill to apply the canonical ywc-* skill rules."
 
-This skill captures the conventions that every `ywc-*` skill must follow, derived from analyzing the 18 production skills in `tools/claude-code/skills/`. Use it whenever authoring or restructuring a ywc-* skill so that new work matches the established quality bar without manual cross-referencing of sibling skills.
+This skill captures the conventions that every `ywc-*` skill must follow, derived from the synchronized Claude Code, Codex, and Pi skill bundles. Use it whenever authoring or restructuring a ywc-* skill so that new work matches the established quality bar without manual cross-referencing of sibling skills.
 
 ## Rationalization Defense
 
@@ -27,7 +27,7 @@ When tempted to bypass a rule, check this table first:
 | "Rationalization Defense table is generic, I'll copy from another skill" | Each table must be **domain-specific**. Generic tables become noise that the agent ignores. |
 | "References are optional, keep everything inline" | Body >500 lines violates progressive disclosure. Extract long sections to `references/`. |
 | "Skill name does not need `ywc-` prefix" | Always `ywc-` prefix. Differentiates from upstream skills and signals project ownership. |
-| "Cross-references can use `@` for force-load" | Never use `@`. It burns 200k+ context. Always reference by skill name only. |
+| "Cross-references can use tool-specific force-load syntax" | Never force-load sibling skills from documentation. It causes unnecessary context loading and unintended activation. Always reference by skill name only. |
 | "Korean README only, English/Japanese later" | Always create the full `README.md` / `README.en.md` / `README.ja.md` / `README.ko.md` set together. |
 
 **Violating the letter of these rules is violating the spirit.** Inconsistent ywc-* skills degrade the activation accuracy of every other ywc-* skill.
@@ -61,8 +61,36 @@ These rules apply to **every** ywc-* skill without exception.
 | # | Rule |
 |---|---|
 | A11 | Each skill MUST ship the full README locale set: `README.md` (Korean), `README.en.md`, `README.ja.md`, `README.ko.md` |
-| A12 | Long-form content goes under `references/`. Reusable templates use `.template` suffix (e.g., `task.md.template`) |
+| A12 | Long-form content goes under `references/`. Reusable templates use `.template` suffix (e.g., `task.md.template`) — see Progressive Disclosure §A14 for extraction criteria |
 | A13 | Test scenarios under `evals/evals.json` when the skill has objectively verifiable outputs |
+| A14 | Tier 3 extraction MUST trigger when any single inline section exceeds **30 lines of static content** (lookup tables, decision trees, vocabulary lists, code-block templates). Workflow / step prose stays in Tier 2 even when long, so the agent reads it on activation. See [references/progressive-disclosure.md](references/progressive-disclosure.md) for the full decision tree |
+
+## Progressive Disclosure (3-Tier Loading Model)
+
+Every ywc-* skill is consumed by the agent in **three tiers**, each with different load semantics and different cost profiles. Skill design must respect what loads when:
+
+| Tier | What | Cap | When loaded |
+|---|---|---|---|
+| **1 — Metadata** | YAML frontmatter `description` (and Triggers list it contains) | Trigger-matching only, no workflow summary | Always, into the auto-trigger cache — every conversation pays the cost |
+| **2 — SKILL.md body** | Rules, workflow steps, anti-patterns, validation checklist | ≤500 lines (A8) | Only when the skill activates (description matched or `Skill` tool invoked) |
+| **3 — references/** | Lookup tables, decision trees, vocabulary lists, full templates, worked examples | No cap (loaded on demand) | Only when SKILL.md body explicitly directs the agent to read a specific file |
+
+The cost asymmetry is the entire reason for the model. Tier 1 cost is paid every turn, so descriptions must stay trigger-focused (anti-pattern: workflow summary). Tier 2 cost is paid once per activation, so workflow steps and rules belong here. Tier 3 cost is paid only when a deep dive is genuinely needed, so the per-language tool matrices, full classification rubrics, and templates go here.
+
+**Decision tree (inline vs. extract to Tier 3)** — see [references/progressive-disclosure.md](references/progressive-disclosure.md) for the full version with worked examples from `ywc-refactor-clean`, `ywc-onboard-repo`, and `ywc-code-gen`. Quick form:
+
+```text
+Is the section >30 lines of static content (lookup table / decision tree / template)?
+├─ YES → extract to references/<topic>.md with one-line pointer in SKILL.md body
+└─ NO → keep inline
+     │
+     └─ Is the content workflow / step / rule prose?
+        ├─ YES → MUST stay inline regardless of length (the agent needs it
+        │        on activation to execute the skill correctly)
+        └─ NO → keep inline if <30 lines, extract otherwise
+```
+
+The Workflow / Rationalization Defense / Validation Checklist sections are **Tier 2 by definition** — never extract them to Tier 3, even when they grow. The agent must read them on activation, not on demand.
 
 ## Recommended Rules
 
@@ -75,15 +103,15 @@ These improve quality but are not strictly required.
 | B3 | Add `## Workflow` or `## Execution Steps` numbered list | Skill performs a multi-step process |
 | B4 | Add `## Output Format` block with sample | Skill emits a structured report or artifact |
 | B5 | Add `## Validation` or `## Common Mistakes` | Skill has well-known failure modes |
-| B6 | Reference an Advisor Pattern (A / B / C) from `../references/advisor-pattern.md` | Skill uses Opus advisor for cost-bounded escalation |
+| B6 | Reference an Advisor Pattern (A / B / C) from the bundle-level `references/advisor-pattern.md` | Skill uses an advisor/escalation pass for cost-bounded review |
 | B7 | Add `## Banned Output Patterns` table | Skill generates code or other parseable artifacts |
-| B8 | Define a `--skip-<side-effect>` flag and document propagation in `## Arguments` + `## Integration` + `tools/claude-code/skills/CLAUDE.md` | Skill performs a side effect (UL update, CI check, etc.) that an upstream caller may have already performed. See [references/cross-skill-graph.md#flag-propagation-patterns](references/cross-skill-graph.md#flag-propagation-patterns) for the canonical pattern. |
+| B8 | Define a `--skip-<side-effect>` flag and document propagation in `## Arguments` + `## Integration` + the relevant bundle instruction file | Skill performs a side effect (UL update, CI check, etc.) that an upstream caller may have already performed. See [references/cross-skill-graph.md#flag-propagation-patterns](references/cross-skill-graph.md) for the canonical pattern. |
 
 ## Format Conventions
 
 | Area | Rule |
 |---|---|
-| Korean prose | Keep technical terms in English (Database, API, Backend, etc.). See [tools/claude-code/skills/CLAUDE.md](../CLAUDE.md). |
+| Korean prose | Keep technical terms in English (Database, API, Backend, etc.). Follow the active repository or bundle instruction file (`AGENTS.md`, `CLAUDE.md`, or Pi bundle guidance). |
 | Comparisons | Use markdown tables, not bullet lists |
 | Multilingual triggers in description | Quoted form: `"키워드", "key", "キーワード"` |
 | Multi-line shell commands | Use heredoc (`git commit -m "$(cat <<'EOF' ... EOF\n)"`) |
@@ -94,9 +122,9 @@ These improve quality but are not strictly required.
 
 | Anti-pattern | Why bad | Replace with |
 |---|---|---|
-| Description summarizing the workflow | Claude follows description shortcut, skips SKILL.md body | Trigger conditions only |
+| Description summarizing the workflow | The agent may follow the description shortcut and skip SKILL.md body discipline | Trigger conditions only |
 | `// TODO`, `// ...rest`, stub implementations in examples | A stub committed today is a runtime crash tomorrow | Complete examples or marked PAUSE |
-| `@skill-name` cross-reference | Force-loads context, burns 200k+ tokens | Plain skill name reference |
+| Tool-specific force-load cross-reference | Causes unnecessary context loading or unintended activation | Plain skill name reference |
 | Long bullet lists for decisions | Hard to scan | Markdown table |
 | Vague language ("appropriate", "as needed") | Cannot be operationalized | Explicit threshold or condition |
 | Empty section | Reader cannot tell if forgotten or absent | `N/A — <reason>` |
@@ -136,6 +164,7 @@ Repeat until the agent cannot find a loophole.
 | [references/rationalization-defense-cookbook.md](references/rationalization-defense-cookbook.md) | Writing or expanding the Rationalization Defense table |
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
 | [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `requires:` declarations, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
+| [references/progressive-disclosure.md](references/progressive-disclosure.md) | Deciding whether a section stays inline (Tier 2) or extracts to `references/` (Tier 3); auditing existing skills for tier compliance |
 
 ## Validation Checklist
 
@@ -157,18 +186,24 @@ Before merging a new or modified ywc-* skill, verify:
 
 **Filesystem**
 - [ ] Full README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`
-- [ ] Long sections (>30 lines of static content) extracted to `references/`
+- [ ] Long sections (>30 lines of static content) extracted to `references/` (Tier 3 — A14)
 - [ ] `evals/evals.json` exists if outputs are objectively verifiable
 
+**Progressive Disclosure (Tier compliance)**
+- [ ] Description (Tier 1) contains trigger conditions only — no workflow summary
+- [ ] Workflow / Rationalization Defense / Validation Checklist / Common Mistakes are in SKILL.md body (Tier 2), not in `references/`
+- [ ] Every `references/*.md` file has at least one explicit pointer from the SKILL.md body
+- [ ] No `references/*.md` file is <30 lines (over-extraction)
+
 **Catalog Sync**
-- [ ] `tools/claude-code/skills/README.md` Skill 목록 table updated
-- [ ] `tools/claude-code/skills/README.md` Skill Routing Guide updated (if user-facing)
+- [ ] Relevant bundle catalog updated (`tools/claude-code/skills/README.md`, `tools/codex-skill/skills/README.md`, or `tools/pi-skills/README.md`)
+- [ ] Relevant routing guide updated if the bundle has one and the skill is user-facing
 - [ ] If skill is part of a pipeline, the 표준 개발 Pipeline diagram updated
 
 ## Cross-Skill Etiquette
 
 - If skill A's purpose overlaps with skill B's responsibility, declare `requires: [ywc-B]` and add `(use ywc-B)` to A's `Do not use for...` line.
-- For shared conventions across multiple skills (e.g., Advisor Pattern), extract to `tools/claude-code/skills/references/<topic>.md` rather than duplicating.
+- For shared conventions across multiple skills (e.g., Advisor Pattern), extract to the bundle-level `references/<topic>.md` rather than duplicating.
 - New skill that supersedes an existing one: do **not** silently delete the old skill in the same PR. Add a deprecation note pointing to the successor, then delete in a later PR after a soak period.
 
 ## Common Mistakes

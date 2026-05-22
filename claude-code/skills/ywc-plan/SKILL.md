@@ -48,6 +48,27 @@ When tempted to bypass a rule, check this table first:
 
 The skill executes five steps. Steps 1–2 are mandatory; Steps 3–5 branch on the scale assessment.
 
+### Step 1.0: Brainstorm Gate
+
+Before extracting anchors, evaluate whether the request is concrete enough for direct planning. Some requests arrive as design conversations rather than plan inputs; those must run through `ywc-brainstorm` first.
+
+| Signal | Route |
+|---|---|
+| Request includes a concrete change description, files / surfaces touched, and an observable Done condition | Proceed to Step 1 — anchors will extract cleanly. |
+| Request is conversational ("I'm thinking about X", "wouldn't it be nice if…", "let's explore Y", "어떻게 만들지", "アイディアがある") | **Delegate to `ywc-brainstorm`** — it surfaces the four anchors via Socratic dialogue and presents 2–3 approaches; resume `ywc-plan` from Step 1 with the brainstorm handoff as input. |
+| Request describes multiple independent subsystems (e.g., "a platform with auth, chat, billing, analytics") | **Delegate to `ywc-brainstorm`** for decomposition before any anchor extraction. Each subsystem gets its own brainstorm → plan cycle. |
+| Two or more of (What / Why / Out of Scope / Done When) are completely missing from the request | **Delegate to `ywc-brainstorm`** — extracting two missing anchors at once produces shallow answers; ywc-brainstorm collects them one at a time with explicit approach trade-offs. |
+
+When delegating, surface this verbatim before transferring control:
+
+> "This request needs intent clarification before planning. Switching to `ywc-brainstorm` to surface the four anchors and approach choice. After the design is approved, returning to `ywc-plan` Step 1 with the brainstorm handoff as input."
+
+When `ywc-brainstorm` completes, its handoff message includes the four anchors and the chosen approach. Re-enter `ywc-plan` Step 1 with that handoff as the effective user input — the anchors should already be filled, so Step 1 typically reduces to a one-sentence confirmation.
+
+`--non-interactive` mode skips the delegation: when the flag is present, treat ambiguity as Medium scale (Step 3) and fill missing anchors with defaults rather than routing to `ywc-brainstorm`.
+
+After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-writer`, `ywc-task-generator`, `ywc-code-gen`, executor), invoke `ywc-confidence-gate` with the chosen approach as input. The gate's PROCEED / REVIEW / STOP band determines whether the plan is ready for handoff; a REVIEW band surfaces alternatives to the user, a STOP band routes back here for additional investigation before re-attempting handoff. The 5-dimension score becomes part of the plan's completion summary so downstream skills inherit a comparable confidence number.
+
 ### Step 1: Clarify the Request
 
 **Prerequisite:** If `docs/ubiquitous-language.md` exists, read it before asking any questions. The vocabulary defined there must frame the clarification dialogue itself — use canonical terms in your questions and note any "Synonyms to Avoid" so the user's answers are captured in the right terms from the start.
@@ -63,12 +84,7 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill defaults for **all four anchors** automatically:
-- What = `"implement the user-requested change as described in the initial prompt"`
-- Why = `"address the user-requested need described in the initial prompt"`
-- Out of Scope = `"nothing explicitly excluded"`
-- Done When = `"all tasks merged and ywc-impl-review returns DONE"`
-Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 

@@ -1,13 +1,14 @@
 ---
 name: ywc-impl-review
-description: (ywc) Use after implementation is complete and before creating a PR, when the user wants to validate code matches the spec, check implementation quality, or run a comprehensive review. Triggers: "구현 검증", "impl review", "implementation review", "사양 적합성", "코드 리뷰", "구현 리뷰", "PR 전 검증", "check my implementation", "実装レビュー". Do not use during active code generation, for spec-only review (use ywc-spec-validate), or for product/business-level review (use ywc-product-review).
+description: >-
+  (ywc) Use after implementation is complete and before creating a PR, when the user wants to validate code matches the spec, check implementation quality, or run a comprehensive review. Triggers: "구현 검증", "impl review", "implementation review", "사양 적합성", "코드 리뷰", "구현 리뷰", "PR 전 검증", "check my implementation", "実装レビュー". Do not use during active code generation, for spec-only review (use ywc-spec-validate), or for product/business-level review (use ywc-product-review).
 ---
 
 # ywc-impl-review
 
-**Announce at start:** "I'm using the ywc-impl-review skill to run a three-axis (spec / security / QA) implementation review."
+**Announce at start:** "I'm using the ywc-impl-review skill to run a five-axis (architecture / design / devex / security / QA) implementation review."
 
-Implementation conformance review skill. Runs three parallel Sonnet reviewers (Phase 1) and escalates only ambiguous findings to a short high-capability advisor pass (Phase 2). See [Advisor Pattern](../references/advisor-pattern.md) for why this shape is used.
+Implementation conformance review skill. Runs five parallel Codex review workers (Phase 1) and escalates only ambiguous findings to a short higher-capability advisor pass (Phase 2). The four code-review aspects (architecture / design / devex / security) stay separate so each worker has a bounded review surface. QA stays as a separate axis because coverage analysis is mostly mechanical. See [Advisor Pattern](../references/advisor-pattern.md) for why this shape is used.
 
 ## Rationalization Defense
 
@@ -16,11 +17,11 @@ When tempted to skip a step, check this table first:
 | Excuse | Reality |
 |---|---|
 | "Phase 1 had no findings, the spec is satisfied" | Absence of findings ≠ proof of conformance. State what was checked, not what was missing. |
-| "This finding looks ambiguous, send it all to Opus" | Phase 2 budget is 5. Reserve for genuinely ambiguous cases — not first-pass uncertainty. |
-| "Forwarding the full spec gives Opus better context" | Never forward full files or full project context. Only the finding text + bounded snippet + spec excerpt. |
+| "This finding looks ambiguous, send it all to the advisor" | Phase 2 budget is 5. Reserve for genuinely ambiguous cases — not first-pass uncertainty. |
+| "Forwarding the full spec gives the advisor better context" | Never forward full files or full project context. Only the finding text + bounded snippet + spec excerpt. |
 | "Severity feels somewhere between High and Medium" | Pick based on impact, not feeling. If truly between, that is a Phase 2 candidate. |
 | "`--no-advisor` saves time on this review" | Skip Phase 2 only on throwaway/prototype code. Production review needs ambiguity escalation. |
-| "Reviewer agents agree, so the finding is correct" | Three Sonnet agents drawing the same wrong conclusion is still wrong. Escalate when stakes are high. |
+| "Reviewer workers agree, so the finding is correct" | Multiple workers drawing the same wrong conclusion is still wrong. Escalate when stakes are high. |
 | "User wants a quick review, severity ratings are optional" | Without severity, the user cannot triage. Always rate Critical / High / Medium / Low. |
 
 **Violating the letter of these rules is violating the spirit.** Review without honest severity is theater.
@@ -30,45 +31,48 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
-| `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review. Required unless `--git-range` is provided. Mutually exclusive with `--git-range`. |
-| `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Required unless `--code` is provided. Run `git diff --name-only <range>` to obtain changed files. Mutually exclusive with `--code`. |
-| `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where frontier judgment on ambiguous findings is not worth the latency |
-| `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 Opus calls. Default: 5. Applies across all categories combined |
+| `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review (required). `--code` and `--git-range` are mutually exclusive |
+| `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. `--code` and `--git-range` are mutually exclusive |
+| `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where higher-capability advisor judgment on ambiguous findings is not worth the latency |
+| `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 advisor calls. Default: 5. Applies across all categories combined |
+| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
 ## Advisor Pattern
 
-This skill uses **Pattern B (Two-Phase Review)** from [advisor-pattern.md](../references/advisor-pattern.md). The rationale: review findings range from mechanical (hardcoded secret, missing null check, trivial OWASP match) to genuinely ambiguous (architectural judgment call, severity debate between two OWASP categories, spec-conformance question with more than one reasonable reading). Running every reviewer on Opus wastes frontier capacity on the mechanical cases; running every reviewer on Sonnet undersells the ambiguous ones. Phase 1 handles the mechanical cases at Sonnet/Haiku cost; Phase 2 escalates only the ambiguous ones to Opus with tightly bounded context.
+This skill uses **Pattern B (Two-Phase Review)** from [advisor-pattern.md](../references/advisor-pattern.md). The rationale: review findings range from mechanical (hardcoded secret, missing null check, trivial OWASP match) to genuinely ambiguous (architectural judgment call, severity debate between two OWASP categories, spec-conformance question with more than one reasonable reading). Running every reviewer at maximum reasoning depth wastes advisor capacity on the mechanical cases; running every reviewer at ordinary depth undersells the ambiguous ones. Phase 1 handles the mechanical cases with bounded Codex workers; Phase 2 escalates only the ambiguous ones to a higher-capability advisor with tightly bounded context.
 
-Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per invocation, shared across all categories. Use fewer when possible. Never forward full files or full project context to the Phase 2 advisor — only the finding text, a bounded snippet, and the relevant spec excerpt.
+Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls per invocation, shared across all categories. Use fewer when possible. Never forward full files or full project context to the Phase 2 advisor — only the finding text, a bounded snippet, and the relevant spec excerpt.
 
 ## Execution Steps
 
-1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Reviewer subagent must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term.
+1. **Collect Project Context** — Read `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, and `package.json` where present to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Design worker must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term.
 
-2. **Validate Inputs and Read Spec + Code** — First validate: exactly one of `--code` or `--git-range` must be provided (XOR). If neither is provided, stop immediately with `NEEDS_CONTEXT`. If both are provided, stop immediately with `BLOCKED`. When `--git-range` is provided: run `git diff --name-only <range>` to obtain the changed-file list and treat those files as the review target. Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
+2. **Read Spec + Code** — When `--git-range` is provided instead of `--code`: run `git diff --name-only <range>` to obtain the changed-file list and treat those files as the review target. Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
 
-3. **Phase 1 — Parallel Executor Review** — Use Codex subagent tools to spawn three subagents in parallel. Use the default inherited Codex model unless the user explicitly requests a different model:
-   - **Reviewer subagent** (`model: sonnet`) — Spec conformance, code quality, pattern consistency, completeness. Reference: `references/reviewer-agent.md`.
-   - **Security subagent** (`model: sonnet`) — OWASP Top 10 analysis. Reference: `references/security-agent.md`.
-   - **QA subagent** (`model: haiku`) — Test coverage gaps and missing test cases. Reference: `references/qa-agent.md`. Haiku is appropriate because coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration) and does not typically require frontier reasoning.
+3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five review workers in parallel. Do not pass Claude Code-only `model` fields; each worker receives its role from the prompt and matching reference file:
+   - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`.
+   - **Design worker** — API/interface design, naming, signatures, error models, return shapes, public-surface discipline, contract spec conformance. Reference: `references/design-agent.md`.
+   - **Devex worker** — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
+   - **Security worker** — OWASP Top 10 analysis. Reference: `references/security-agent.md`.
+   - **QA worker** — Test coverage gaps and missing test cases. Reference: `references/qa-agent.md`. Coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration), so keep the prompt narrow and evidence-based.
 
-   Each subagent must return two artifacts:
+   Each worker must return two artifacts:
    - **Confirmed findings** — issues the executor is confident about (Phase 1 complete, no escalation needed).
    - **Advisor candidates** — findings the executor flags for Phase 2 review. Each candidate must include: the finding text, a bounded code snippet (≤100 lines), the relevant spec excerpt (if any), and a one-sentence reason the executor wants a second opinion.
 
-   Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category.
+   Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The four code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
 
-4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all three subagents:
+4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all five workers:
    - Deduplicate findings that share `{file}:{line}` across categories.
-   - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Security > Spec Conformance > QA.
+   - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Security > Architecture > Design > Devex > QA. (Architecture / Design / Devex order reflects irreversibility — structural decisions are hardest to walk back, then contracts, then operator UX.)
    - Log the candidates that were dropped due to the cap in the final report so the user can see what was not escalated.
 
-5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, spawn a short high-capability subagent when explicitly allowed via Codex subagent tools with `model: opus`:
+5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, run a short higher-capability advisor pass:
    - **Context payload**: only the candidate's finding text, the bounded snippet, the spec excerpt, and the category-specific severity rubric from the matching reference file. Do **not** forward the full spec, the full file, or the Phase 1 transcripts.
    - **Expected output**: a short verdict (≤200 words) containing: confirmed severity, a one-line rationale, and either "confirmed" or "adjusted" (with the adjustment if any). The 200-word cap is tighter than [advisor-pattern.md §3](../references/advisor-pattern.md)'s observed ceiling of "typically <500 words" — 200 is an operational choice for this skill. If a genuinely complex candidate needs more room, invoke the §6 override: exceed the cap and justify the overrun in the final report's `Advisor Budget Report` section.
-   - Opus calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
+   - Advisor calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
 
-6. **Merge and Output Report** — Combine Phase 1 confirmed findings with Phase 2 verdicts. Mark each finding in the final report with its provenance (Phase 1 vs Phase 2) so the user can see which decisions involved frontier judgment.
+6. **Merge and Output Report** — Combine Phase 1 confirmed findings with Phase 2 verdicts. Mark each finding in the final report with its provenance (Phase 1 vs Phase 2) so the user can see which decisions involved higher-capability advisor judgment.
 
 ## Output Format
 
@@ -76,11 +80,19 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 ## Implementation Review Result: {spec} vs {code}
 
 ### Summary
-- Phase 1 findings (Sonnet/Haiku executor): Reviewer N, Security M, QA K
-- Phase 2 advisor calls (Opus): X of Y budget used
+- Phase 1 findings: Architecture A, Design D, Devex V, Security M, QA K
+- Phase 2 advisor calls: X of Y budget used
 - Phase 2 adjustments: N confirmed as-is, M severity-adjusted
 
-### Spec Conformance (Reviewer)
+### Architecture
+1. [severity] [P1|P2] {file}:{line} — Description
+   (if P2) Advisor verdict: {one-line rationale}
+
+### Design
+1. [severity] [P1|P2] {file}:{line} — Description
+   (if P2) Advisor verdict: {one-line rationale}
+
+### Developer Experience (Devex)
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
 
@@ -135,11 +147,15 @@ For the Confidence Gate score in the report header, use the band marker from [sy
 
 `[P1]` marks findings confirmed entirely by the Phase 1 executor. `[P2]` marks findings that went through the Phase 2 advisor. This distinction matters when the user calibrates trust in the output — Phase 2 items represent the decisions the executor deemed genuinely ambiguous.
 
-## Agent Prompt References
+> **HTML mode (`--format html`)** — emits the same findings as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
-Read the corresponding reference file when spawning each subagent and include the relevant section in the subagent prompt. The reference files describe both the standard review dimensions **and** the "advisor candidate" criteria specific to each category:
+## Worker Prompt References
 
-- `references/reviewer-agent.md` — Reviewer's review dimensions, severity criteria, and advisor-escalation triggers
+Read the corresponding reference file when spawning each worker and include the relevant section in the worker prompt. The reference files describe both the standard review dimensions **and** the "advisor candidate" criteria specific to each category:
+
+- `references/architecture-agent.md` — Architecture's review dimensions (structural spec conformance, pattern consistency, module interface, simplicity, surgical changes) + advisor triggers
+- `references/design-agent.md` — Design's review dimensions (contract spec conformance, naming, signatures, error model, return shapes, public-surface discipline) + advisor triggers
+- `references/devex-agent.md` — Devex's review dimensions (readability, error messages, logging, documentation, debuggability, config UX) + advisor triggers
 - `references/security-agent.md` — Security's OWASP Top 10 checklist and advisor-escalation triggers
 - `references/qa-agent.md` — QA's coverage analysis and advisor-escalation triggers
 
@@ -148,6 +164,8 @@ If a reference file does not yet contain an "Advisor Candidate Criteria" section
 ## Confidence Gate
 
 This skill applies the [Confidence Gate](../references/confidence-gate.md) to the aggregated review output before emitting the final report. The gate sits between Phase 2 advisor consolidation and report emission.
+
+In addition, when the report's gate band lands in **PROCEED** and findings include a `DONE` (or `DONE_WITH_CONCERNS`) completion claim against the implementation, the surface must follow `ywc-verify-done`: the verification block (command, output excerpt, exit code) appears before the status line, no `should` / `probably` / `seems` wording appears in the conclusion, and any "this finding's fix was verified" claim cites the fresh command output that proves it. A report that reads "all clear, looks good" without an evidence block is not a Confidence-Gate PROCEED — downgrade to REVIEW until the evidence is attached.
 
 **Required dimensions** (must each score ≥ 70):
 

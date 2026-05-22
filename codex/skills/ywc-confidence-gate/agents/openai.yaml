@@ -1,0 +1,4 @@
+interface:
+  display_name: "Confidence Gate"
+  short_description: "Score readiness in 5 dimensions before implementing"
+  default_prompt: "Use $ywc-confidence-gate to score readiness across scope clarity, architecture compliance, evidence quality, reuse verified, and root cause identified before invoking any implementation skill."

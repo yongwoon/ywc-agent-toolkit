@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Done"
+  short_description: "Gate completion claims with fresh evidence"
+  default_prompt: "Use $ywc-verify-done to run fresh verification and attach evidence before claiming work is complete, tests pass, a bug is fixed, or a handoff is ready."

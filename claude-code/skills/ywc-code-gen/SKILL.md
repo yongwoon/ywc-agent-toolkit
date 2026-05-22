@@ -1,7 +1,8 @@
 ---
 name: ywc-code-gen
 version: 1.0.0
-description: (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, or when no specification exists.
+description: >-
+  (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, or when no specification exists.
 category: implementation
 phase: execution
 requires: [ywc-task-generator]
@@ -99,14 +100,26 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
-3. **Phase 1 — Parallel Generation** — Use the Task tool to spawn three subagents in parallel. Pass `model` explicitly on each call so the executor layer stays at Sonnet cost:
-   - **Backend subagent** (`model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Role reference: `references/backend-agent.md`.
-   - **Frontend subagent** (`model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Role reference: `references/frontend-agent.md`.
-   - **QA subagent** (`model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
+3. **Phase 1 — Parallel Generation** — Use the Task tool to spawn three subagents in parallel. Pass `subagent_type` and `model` explicitly on each call so the executor layer dispatches to the canonical Tier-1 worker agents at Sonnet cost:
+   - **Backend subagent** (`subagent_type: ywc-backend-coder`, `model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). The persona lives in [`tools/claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md); the dispatch prompt only carries the task brief (spec excerpt, project context, ubiquitous-language table, and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md)). Role reference for historical authoring guidance: `references/backend-agent.md`.
+   - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`tools/claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
+   - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`tools/claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
 
    **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (CLAUDE.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/<role>-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
    **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Do not silently retry on the same input.
+
+   ## Status Routing
+
+   The named worker subagents return payloads per [../references/subagent-status-actions.md](../references/subagent-status-actions.md) §3.5. Apply the following routing table to every Phase 1 subagent return:
+
+   | Returned status | Caller action |
+   |---|---|
+   | `DONE` | Proceed to Step 4 (aggregate Phase 2 candidates) and Phase 2 advisor pass |
+   | `DONE_WITH_CONCERNS` | Continue; accumulate concerns into Phase 2 advisor input or the Completion Report depending on whether they raise correctness or observation issues |
+   | `BLOCKED` | Run the four-step triage (context → reasoning → scope → plan), surface to user, halt generation for the blocked lane |
+   | `NEEDS_CONTEXT` | Provide the missing context and re-dispatch the same subagent at the same model class — do not silently infer |
+   | Status absent or unparseable | Treat as implicit `BLOCKED`; surface the raw payload to the user without re-dispatch |
 
 4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all three subagents:
    - Deduplicate candidates that point to the same decision (for example, Backend and QA both flagging the repository interface shape).
@@ -120,7 +133,9 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 6. **Finalize and Output** — Apply the Phase 2 verdicts to the Phase 1 generated code. Reconcile shared type/interface conflicts. Verify import path consistency and confirm file placement matches the project directory structure. Mark each file in the final report with its provenance: `[P1]` for files Phase 1 generated with confidence, `[P2]` for files whose design was adjusted by a Phase 2 advisor verdict.
 
-7. **Verification Gate** — After writing all generated files, run these checks in order. If a check fails, attempt one fix and re-run that layer. If it still fails after the fix attempt, stop and report before declaring DONE. Do not stop at first failure without attempting a fix:
+7. **Verification Gate** — After writing all generated files, run these checks in order. If a check fails, attempt one fix and re-run that layer. If it still fails after the fix attempt, stop and report before declaring DONE. Do not stop at first failure without attempting a fix.
+
+   **Surface format**: every verification result in this gate must follow `ywc-verify-done` — the verification block (command, output excerpt, exit code) appears **before** the Completion Status line, no `should` / `probably` / `seems` language in the claim, and a failing check is surfaced as `DONE_WITH_CONCERNS` (or routed to `ywc-debug-rootcause` when ≥2 fixes fail on the same layer) rather than a bare "Done" with the failure tucked below.
 
    | Phase | Command (adapt to project tooling) | Pass Condition |
    |-------|------------------------------------|----------------|
@@ -136,6 +151,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    - After implementing code that makes tests pass (GREEN state): `git commit -m "feat: implement <feature>"`.
    - After any cleanup or refactor: `git commit -m "refactor: clean up <feature>"`.
    - If tests do not fail in RED state, that is a test authoring error — stop and report `DONE_WITH_CONCERNS`.
+
+   The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined in [`ywc-tdd-ritual`](../ywc-tdd-ritual/SKILL.md). When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
 
 ## Output Format
 
