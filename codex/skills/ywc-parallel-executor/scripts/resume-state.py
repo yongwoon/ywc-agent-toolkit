@@ -17,6 +17,8 @@ JSON schema (exit 0):
     "pending_tasks": ["<task-1>", ...],
     "merged_in_wave": ["<task-N>", ...],
     "mode": "local-merge|draft|per-task-pr",
+    "worktree_root": "<absolute resolved root>",
+    "root_kind": "standard|legacy",
     "warnings": ["<warning text>", ...]
   }
 
@@ -54,6 +56,70 @@ def completed_on_disk(tasks_dir: str) -> list[str]:
     if not completed_path.exists():
         return []
     return [d.name for d in completed_path.iterdir() if d.is_dir()]
+
+
+def git_repo_root() -> Path:
+    try:
+        output = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        if output:
+            return Path(output)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+    return Path.cwd()
+
+
+def trim(value: str) -> str:
+    return value.strip()
+
+
+def claude_worktree_root(repo_root: Path) -> str:
+    claude_md = repo_root / "CLAUDE.md"
+    if not claude_md.exists():
+        return ""
+
+    for line in claude_md.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("worktree_root"):
+            continue
+        key, sep, value = stripped.partition(":")
+        if sep and key.strip() == "worktree_root":
+            return trim(value)
+    return ""
+
+
+def absolute_path(repo_root: Path, value: str) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    return repo_root / path
+
+
+def resolve_worktree_root(state: dict) -> tuple[Path, str]:
+    repo_root = git_repo_root()
+
+    recorded_root = state.get("worktree_root")
+    if recorded_root:
+        return absolute_path(repo_root, str(recorded_root)), state.get("root_kind", "standard")
+
+    in_repo_root = repo_root / ".worktrees"
+    if in_repo_root.is_dir():
+        return in_repo_root.resolve(), "standard"
+
+    claude_root = claude_worktree_root(repo_root)
+    if claude_root:
+        return absolute_path(repo_root, claude_root), "standard"
+
+    return repo_root.parent, "legacy"
+
+
+def worktree_path_for(task: str, worktree_root: Path, root_kind: str) -> Path:
+    if root_kind == "legacy":
+        return worktree_root / f"worktree-{task}"
+    return worktree_root / task
 
 
 def fail(msg: str, as_json: bool, hint: str = "") -> None:
@@ -99,6 +165,7 @@ def main() -> None:
         )
 
     tasks_dir = state.get("tasks_dir", "tasks/")
+    worktree_root, root_kind = resolve_worktree_root(state)
     warnings: list[str] = []
 
     waves = state.get("waves", [])
@@ -112,7 +179,7 @@ def main() -> None:
 
         # Validate worktrees for pending tasks
         for task in pending:
-            wt_path = f"../worktree-{task}"
+            wt_path = worktree_path_for(task, worktree_root, root_kind)
             if not worktree_exists(wt_path):
                 warnings.append(
                     f"Worktree for '{task}' not found at {wt_path}. "
@@ -149,6 +216,8 @@ def main() -> None:
         "merged_in_wave": merged_in_wave,
         "mode": state.get("mode", "unknown"),
         "tasks_dir": tasks_dir,
+        "worktree_root": str(worktree_root),
+        "root_kind": root_kind,
         "warnings": warnings,
     }
 
@@ -163,6 +232,7 @@ def main() -> None:
         print(f"  Already done : {merged_in_wave} (merged in this wave)")
     print(f"  Pending      : {pending}")
     print(f"  Mode         : {result['mode']}")
+    print(f"  Worktree root: {worktree_root} ({root_kind})")
     if warnings:
         print()
         print("  Warnings:")

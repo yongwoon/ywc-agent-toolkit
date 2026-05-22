@@ -22,7 +22,8 @@ lifecycle 관리 skill. Worktree priority resolution (`.worktrees/` > CLAUDE.md
 | `scripts/audit-worktrees.sh` | `--mode audit` 의 핵심 검증 logic |
 | `scripts/cleanup-worktree.sh` | `--mode prune` 의 핵심 cleanup + branch deletion logic |
 
-두 script 는 `ywc-parallel-executor/scripts/` 에서 `git mv` 로 이전되어 history 가 보존되었습니다.
+두 script 는 이 skill 아래에 centralized 되어 caller 가 서로 다른 worktree
+audit / cleanup logic 을 유지하지 않도록 합니다.
 
 ## Design Source
 
@@ -38,8 +39,8 @@ self-contained runtime 정책이므로 superpowers skill 은 runtime dispatch �
   (Step 5 / 8 cleanup)
 - **downstream**: 없음 (leaf operation skill)
 
-## 3-Root Sync
+## Bundle Scope
 
-이 skill 은 universal worktree management 기능이므로 3 root (claude-code /
-codex-skill / pi-skills) 모두에 동일 내용으로 sync 됩니다. `is_diverged()`
-대상이 아닙니다.
+이 Codex skill 은 Claude Code 대응 skill 과 같은 worktree lifecycle contract 를
+따르되, Codex bundle 경로(`codex/skills/ywc-worktrees/`) 안의 script 와 metadata
+를 기준으로 유지됩니다.

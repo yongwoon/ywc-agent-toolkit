@@ -25,8 +25,8 @@ For the full argument table and priority resolution chain, see
 | `scripts/audit-worktrees.sh` | Core audit logic for `--mode audit` |
 | `scripts/cleanup-worktree.sh` | Core cleanup and branch deletion logic for `--mode prune` |
 
-Both scripts were moved from `ywc-parallel-executor/scripts/` via `git mv` to
-preserve their commit history.
+Both scripts are centralized under this skill so callers do not maintain
+divergent worktree audit or cleanup logic.
 
 ## Design Source
 
@@ -44,8 +44,8 @@ dispatched at runtime.
   [`ywc-finish-branch`](../ywc-finish-branch/) (Step 5 / 8 cleanup)
 - **downstream**: none (leaf-operation skill)
 
-## 3-Root Sync
+## Bundle Scope
 
-This skill ships identical content to all three skill roots (claude-code,
-codex-skill, pi-skills) because worktree management is a universal feature.
-It is **not** in `is_diverged()`.
+This Codex skill follows the same worktree lifecycle contract as the Claude
+Code counterpart, while using the Codex bundle path
+(`codex/skills/ywc-worktrees/`) as the source for scripts and metadata.

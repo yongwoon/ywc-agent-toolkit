@@ -90,10 +90,10 @@ Verify the following conditions before starting:
 2. **On base branch** — Must be on main/develop/master
 3. **Tasks directory exists** — `dependency-graph.md` and task subdirectories must be present
 4. **gh CLI authenticated** (PR creation modes only) — `gh auth status` must succeed
-5. **No stale worktrees from previous runs** — Run the bundled audit (prunes stale metadata first, then reports any remaining `worktree-*` paths):
+5. **No stale worktrees from previous runs** — Delegate to `ywc-worktrees --mode audit` (or run its bundled audit script directly). This applies the project worktree priority chain before pruning stale metadata and reporting any remaining drift:
 
    ```bash
-   bash codex/skills/ywc-parallel-executor/scripts/audit-worktrees.sh --prune
+   bash codex/skills/ywc-worktrees/scripts/audit-worktrees.sh --prune
    # exit 0 = clean; exit 1 = stale worktrees detected — details on stdout
    ```
 
@@ -132,7 +132,7 @@ test -f .ywc-run-state.json && cat .ywc-run-state.json || echo "no-state"
 If the file exists:
 1. **Executor check** — `executor` must be `"parallel"`. If `"sequential"`, warn: *"State belongs to sequential-executor. Cannot resume as parallel."* Stop until user deletes the file.
 2. **Age check** — if `last_checkpoint` is older than 48 hours, treat as stale. Ask: *"Stale checkpoint found (<date>). Delete and start fresh? [Y/n]"*
-3. **Worktree validation** — for each task in the in-progress wave's `pending` list, check whether `../worktree-<task-name>` exists. If a worktree is missing, add a warning: the agent must recreate it in Step 4a before implementation can continue.
+3. **Worktree validation** — for each task in the in-progress wave's `pending` list, validate the resolved path from `ywc-worktrees` (project `.worktrees/`, `CLAUDE.md worktree_root`, recorded state root, or legacy fallback). If a worktree is missing, add a warning: the agent must recreate it in Step 4a before implementation can continue.
 4. **Offer resume**:
    ```
    Resumable run found:
@@ -155,6 +155,8 @@ Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
   "args": "<original arguments>",
   "mode": "local-merge|draft|per-task-pr",
   "tasks_dir": "tasks/",
+  "worktree_root": "<absolute resolved root from ywc-worktrees>",
+  "root_kind": "standard|legacy",
   "current_wave": 0,
   "waves": [
     {
@@ -254,10 +256,22 @@ If an Agent Hint is specified in the task's README.md, it overrides the mapping 
 
 Repeat the following for each wave. **Each task must have its own independent worktree and branch** — never execute multiple tasks on a single branch. The worktree model structurally guarantees this, but ensure agents do not work outside their assigned worktree.
 
-**4a. Create Worktrees** — For each task in the wave:
-```bash
-git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
+**4a. Create Worktrees** — For each task in the wave, delegate to `ywc-worktrees` and capture the resolved path it returns. Do not hardcode `../worktree-*`; the project may use `.worktrees/` or `CLAUDE.md worktree_root`.
+
+```text
+$ywc-worktrees --mode create \
+  --task-name <task-name> \
+  --branch feature/<task-name> \
+  --base-branch <base-branch>
 ```
+
+If implementing the operation inline, first apply the `ywc-worktrees` priority chain, then run:
+
+```bash
+git worktree add <resolved-worktree-path> -b feature/<task-name> <base-branch>
+```
+
+Record the resolved root (`worktree_root`) and root kind (`standard` or `legacy`) in `.ywc-run-state.json` so resume validation checks the same location that creation used.
 
 **Checkpoint**: Update `.ywc-run-state.json` — set the current wave `status` to `in_progress`, populate `pending` with all task names in this wave, `last_checkpoint` to current UTC time.
 
@@ -333,7 +347,7 @@ $ywc-finish-branch \
   [--defer-push only when parallel mode is --draft or --per-task-pr — controls only the Mark-Complete commit push, never PR creation, merge, or any earlier step]
 ```
 
-`--keep-branch` is required: the branch is checked out in `../worktree-<task-name>`, so `git branch -d` would fail until Step 4g releases the worktree. `--bot-action parallel` is the right setting because bot reviews (when applicable) are already handled in (a); finish-branch's CI re-gate is for sequential's post-merge polling, not for the parallel wave loop.
+`--keep-branch` is required: the branch is checked out in the resolved per-task worktree, so `git branch -d` would fail until Step 4g releases the worktree. `--bot-action parallel` is the right setting because bot reviews (when applicable) are already handled in (a); finish-branch's CI re-gate is for sequential's post-merge polling, not for the parallel wave loop.
 
 **Status return handling** (per task within the wave loop): ywc-finish-branch ends with `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. Apply [../references/subagent-status-actions.md](../references/subagent-status-actions.md):
 - `DONE` → proceed to the next task in the wave.
@@ -354,7 +368,7 @@ Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never 
 For each task that passed Step 4e finish-branch DONE return:
 
 ```bash
-bash codex/skills/ywc-parallel-executor/scripts/cleanup-worktree.sh <task-name>
+bash codex/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>
 # exit 0 = PASS (worktree removed, branch deleted, prune done, verified)
 # exit 1 = FAIL — fix hints on stdout; read them before taking any action
 ```
@@ -366,7 +380,7 @@ Preserve worktrees and branches of failed tasks for recovery. Do not run this st
 **4h. Wave Cleanup Audit** — Before transitioning to the next wave, audit the worktree state for the wave as a whole. Per-task verification in 4g catches single-task drift; this step catches wave-level drift (e.g. an agent created a sibling worktree the executor did not track).
 
 ```bash
-bash codex/skills/ywc-parallel-executor/scripts/audit-worktrees.sh \
+bash codex/skills/ywc-worktrees/scripts/audit-worktrees.sh \
   --expect <comma-separated preserved-failure task names, or omit if none>
 # exit 0 = clean (or only expected preserved failures); exit 1 = DRIFT — investigate before next wave
 ```
@@ -448,11 +462,12 @@ Display the following after all waves are complete:
   Run a final audit before printing the report:
 
   ```bash
-  git worktree list --porcelain | awk '/^worktree /{print $2}' | grep -E '/worktree-' || echo "OK: no parallel-executor worktrees remain"
+  bash codex/skills/ywc-worktrees/scripts/audit-worktrees.sh \
+    --expect <comma-separated preserved-failure task names, or omit if none>
   git branch --list 'feature/*' | sed 's/^[* ] //' || true
   ```
 
-  Any `worktree-*` path or `feature/*` branch that does not map to a `preserved (failure)` task in the report is a leak and must be reported as `LEAKED`, not silently omitted.
+  Any worktree or `feature/*` branch that does not map to a `preserved (failure)` task in the report is a leak and must be reported as `LEAKED`, not silently omitted.
 
 **When `--terse` is set**, omit all prose reminders, worktree audit lines, and mode-specific explanations. Emit only:
 1. The task table (name | status | merge SHA or PR URL)

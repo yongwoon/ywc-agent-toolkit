@@ -72,7 +72,7 @@ Score each dimension 0–100. Aggregate is the weighted sum, rounded to the near
 |---|---|---|---|
 | **PROCEED** | ≥ 90 | All ≥ 50 | Begin implementation. Report the score in the completion summary or the executor's per-step report. |
 | **REVIEW** | 70–89 | None < 50 | Present 1–3 alternatives or open questions before proceeding. Trigger the [Advisor Pattern](../references/advisor-pattern.md) for any dimension < 70. Do not begin implementation until at least the weakest dimension is raised or explicitly accepted. |
-| **STOP** | < 70 | Any < 50 (forces this band even if aggregate ≥ 70) | Do not begin implementation. Report which dimensions are weak and what evidence would raise them. Hand back to `ywc-plan` (architecture / scope), `ywc-spec-validate` (evidence), `ywc-tech-research` (reuse), or `ywc-brainstorm` (root cause / user need). When the architecture dimension specifically scores below 70 and the decision is irreversible, an advisor dispatch to `ywc-architect` (Claude Code agent at `claude-code/agents/ywc-architect.md`) can render a verdict before re-running the gate (see [Step 7: STOP-band Advisor Dispatch](#step-7-stop-band-advisor-dispatch)). |
+| **STOP** | < 70 | Any < 50 (forces this band even if aggregate ≥ 70) | Do not begin implementation. Report which dimensions are weak and what evidence would raise them. Hand back to `ywc-plan` (architecture / scope), `ywc-spec-validate` (evidence), `ywc-tech-research` (reuse), or `ywc-brainstorm` (root cause / user need). When the architecture dimension specifically scores below 70 and the decision is irreversible, request one bounded architecture advisor pass when the current runtime supports delegation; otherwise route back to `ywc-plan` with the missing evidence named (see [Step 7: STOP-band Advisor Dispatch](#step-7-stop-band-advisor-dispatch)). |
 
 **Single-dim ≤ 50 rule**: even if aggregate would clear the threshold, a single dimension scoring at or below 50 drops the band by one level (PROCEED → REVIEW, REVIEW → STOP). This prevents one strong dimension from masking a fatal weakness.
 
@@ -136,10 +136,10 @@ This step adopts the advisor dispatch pattern established by `ywc-plan` Step 3.5
 
 | Failing dimension | Routing target | Why |
 |---|---|---|
-| Architecture (`< 50`) | `ywc-architect` agent (`claude-code/agents/ywc-architect.md`) | Opus-tier design / trade-off analysis for irreversible architectural decisions |
-| Evidence (`< 50`) | `/ywc-spec-validate` skill | Spec quality review surfaces missing acceptance criteria / contradictions before implementation |
-| Reuse (`< 50`) | `/ywc-tech-research` skill | Targeted research into existing utilities, packages, or implementations that may eliminate the need to build from scratch |
-| Root cause (`< 50`) | `/ywc-debug-rootcause` skill + `ywc-root-cause-analyst` agent | Root-cause specialist agent (Opus, read-only) renders evidence-for / evidence-against verdict on the cause hypothesis |
+| Architecture (`< 50`) | Bounded architecture advisor pass when delegation is available; otherwise `ywc-plan` | Design / trade-off analysis for irreversible architectural decisions |
+| Evidence (`< 50`) | `ywc-spec-validate` skill | Spec quality review surfaces missing acceptance criteria / contradictions before implementation |
+| Reuse (`< 50`) | `ywc-tech-research` skill | Targeted research into existing utilities, packages, or implementations that may eliminate the need to build from scratch |
+| Root cause (`< 50`) | `ywc-debug-rootcause` skill; optionally one bounded root-cause analyst pass when delegation is available | Root-cause analysis renders evidence-for / evidence-against verdict on the cause hypothesis |
 
 Scope dimension `< 50` does NOT have an advisor target — STOP on scope routes back to `ywc-plan` (Scale assessment) or `ywc-brainstorm` (intent surfacing) via §Decision Bands directly; an advisor cannot disambiguate scope without first knowing what the user actually wants.
 

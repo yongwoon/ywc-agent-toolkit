@@ -23,8 +23,8 @@ argument table と priority chain の詳細は [SKILL.md](./SKILL.md) を参照�
 | `scripts/audit-worktrees.sh` | `--mode audit` の核となる検証 logic |
 | `scripts/cleanup-worktree.sh` | `--mode prune` の核となる cleanup + branch deletion logic |
 
-両 script は `ywc-parallel-executor/scripts/` から `git mv` で移動され、
-history が保持されています。
+両 script はこの skill 配下に centralized され、caller 側が divergent な
+worktree audit / cleanup logic を持たないようにします。
 
 ## Design Source
 
@@ -41,8 +41,8 @@ skill は runtime dispatch ではなく **design inspiration** としてのみ�
   [`ywc-finish-branch`](../ywc-finish-branch/) (Step 5 / 8 cleanup)
 - **downstream**: なし (leaf operation skill)
 
-## 3-Root Sync
+## Bundle Scope
 
-この skill は universal worktree management 機能のため、3 root (claude-code
-/ codex-skill / pi-skills) 全てに同一内容で sync されます。`is_diverged()`
-対象外です。
+この Codex skill は Claude Code 側の対応 skill と同じ worktree lifecycle
+contract に従いつつ、Codex bundle path
+(`codex/skills/ywc-worktrees/`) の script と metadata を基準に保守します。

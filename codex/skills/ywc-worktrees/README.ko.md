@@ -10,11 +10,11 @@ lifecycle 관리 skill 의 한국어 요약본. 전체 문서는 [SKILL.md](./SK
   (drift/leak 탐지) / `prune` (cleanup+검증)
 - Priority resolution chain: `.worktrees/` > CLAUDE.md `worktree_root` >
   `--root` fallback > legacy `../worktree-<task-name>` fallback
-- 3-root sync (claude-code / codex-skill / pi-skills) — `is_diverged()`
-  대상 외
 - Bundled scripts: `scripts/audit-worktrees.sh`, `scripts/cleanup-worktree.sh`
-  (prune 시 worktree 제거 + local branch 삭제, 이전
-  `ywc-parallel-executor/scripts/` 에서 `git mv` 로 이전, history 보존)
+  (prune 시 worktree 제거 + local branch 삭제, audit / cleanup logic 을 이
+  skill 아래에 centralized)
+- Codex bundle source: `codex/skills/ywc-worktrees/` 의 script 와 metadata 를
+  기준으로 유지
 
 ## 호출 패턴
 

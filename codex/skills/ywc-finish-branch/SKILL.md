@@ -110,7 +110,7 @@ For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construc
 Run the bundled script to extract the task number and English slug without regex parsing:
 
 ```bash
-python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
+python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
 # TASK_NUMBER=000001-010
 # SLUG_EN=Db Create Users Table
 ```
@@ -120,7 +120,7 @@ python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name
 For English PRs (`--pr-lang en`), use `--format title` to get the complete title directly:
 
 ```bash
-python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
+python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
 # [000001-010] Db Create Users Table
 ```
 
