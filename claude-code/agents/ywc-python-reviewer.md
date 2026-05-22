@@ -39,7 +39,6 @@ description: >-
   (use ywc-refactor-clean + pip-audit / safety instead).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
-permissionMode: dontAsk
 category: language-reviewer
 ---
 

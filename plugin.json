@@ -20,5 +20,8 @@
   ],
   "skills": [
     "./claude-code/skills/"
+  ],
+  "agents": [
+    "./claude-code/agents/"
   ]
 }

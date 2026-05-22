@@ -44,7 +44,6 @@ description: >-
   or accessibility / SEO analysis (separate Devex / specialist axes).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
-permissionMode: dontAsk
 category: specialist
 ---
 

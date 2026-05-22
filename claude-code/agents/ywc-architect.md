@@ -17,7 +17,6 @@ description: >-
   to survey first, then escalate specific decisions).
 model: opus
 tools: [Read, Grep, Glob, WebFetch]
-permissionMode: dontAsk
 category: architect
 ---
 
