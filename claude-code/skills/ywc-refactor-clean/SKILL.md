@@ -91,12 +91,14 @@ Full classification rules with concrete examples live in [`references/safety-tie
 
 ### Step 3: SAFE deletion loop
 
+The 5-substep loop below is the work the deletion worker performs per item. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-refactor-cleaner)` with the SAFE worklist so the worker carries the dedicated persona, Mission, and Boundaries (`claude-code/agents/ywc-refactor-cleaner.md`). When the runtime lacks named-agent dispatch, run the loop inline with the same discipline.
+
 For each SAFE item, in order:
 
 1. **Run the test suite scoped to the item's domain.** Establish that the suite is green *before* the deletion, so a later failure can be attributed to the deletion (and not pre-existing).
 2. **Verify with grep.** `git grep -nE '<symbol>'` (or pattern-matched variant for dynamic patterns). Zero hits = proceed. Any hit = re-classify to CAUTION and skip.
 3. **Delete the item** with the `Edit` tool — surgical removal, no adjacent re-formatting.
-4. **Re-run the same test suite.** If green, commit (next step). If red, `git checkout -- <file>` and re-classify to CAUTION.
+4. **Re-run the same test suite.** If green, commit (next step). If red, `git revert <commit>` (after the commit lands) and re-classify to CAUTION. Use `git checkout -- <file>` only for the pre-commit state, never after committing — `git revert` is the atomic rollback for multi-file deletions.
 5. **Commit** with shape `chore(cleanup): remove unused <symbol> (knip)` — name the tool that flagged it. One deletion per commit.
 
 Do **not** batch multiple deletions into one commit. Bisectability is the entire reason for per-item commits — when a regression surfaces in week 3, `git bisect` lands on the exact deletion.

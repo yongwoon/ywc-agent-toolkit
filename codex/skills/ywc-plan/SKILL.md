@@ -25,7 +25,7 @@ When tempted to bypass a rule, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, project guidance, or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
+| "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, `CLAUDE.md`, or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
 | "Scale looks ambiguous, I'll default to Small to keep things light" | Default to **Medium** when ambiguous, not Small. Small path skips spec review and task decomposition — wrong scale call cascades into untracked scope creep. The cost of writing a spec for an actually-Small change is one wasted hour; the cost of skipping a spec for an actually-Medium change is rework across multiple sessions. |
 | "DB migration is part of the change, I'll bundle it into the Small plan" | Any change touching `migrations/`, `prisma/schema.prisma`, `*.sql`, or equivalent is **never Small**. DB migration must be its own task — escalate to Medium path so `ywc-task-generator` can split it. Safety invariant — same rule as `ywc-task-generator`. |
 | "User wants to start coding now, I'll skip ywc-spec-validate on the Medium spec" | The Medium/Large path **must** route through `ywc-spec-validate` before `ywc-task-generator`. Skipping spec review is the failure mode `ywc-task-generator`'s `requires: [ywc-spec-validate]` exists to prevent. Run review even when the user is impatient. |
@@ -88,7 +88,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 
 #### Always read
 
-- `AGENTS.md`, `CODEX.md`, and `CLAUDE.md` at repo root where present — language policy, conventions, CI commands
+- `CLAUDE.md` and `AGENTS.md` (or `CODEX.md`) at repo root — language policy, conventions, CI commands
 - `package.json`, `pyproject.toml`, `Makefile`, `go.mod` etc. — actual lint/test/build commands
 - Project tree (top 2 levels of `src/`, `apps/`, or equivalent) — module placement and existing patterns
 - Existing `tasks/` directory if present — phase numbering and dependency context
@@ -139,6 +139,30 @@ Pick exactly one scale using the rubric below. **Default to Medium when ambiguou
 
 For the full scale-assessment heuristics including borderline-case examples, see [references/scale-assessment.md](references/scale-assessment.md).
 
+### Step 3.5: Architectural Advisor Gate (Medium/Large only)
+
+Run this gate **only when both conditions hold**:
+
+- Scale assessed as **Medium** or **Large** (Small path skips this gate)
+- Step 2 codebase investigation surfaced an architectural ambiguity that the spec / `docs/architecture/` / project convention cannot resolve on its own (examples: monolith vs split, sync vs async boundary, ORM vs raw SQL, domain boundary placement, abstraction-vs-duplication trade-off for a soon-to-be-replicated pattern)
+
+If both conditions fail, skip to Step 4 directly. The gate exists to head off the failure mode where a Medium/Large plan locks in a structural choice that subsequent implementation cannot walk back without a re-plan.
+
+**Procedure**:
+
+1. **Frame the decision** in one sentence with the two (occasionally three) reasonable options the codebase / spec admit. Avoid hypothetical options the project would not actually pick.
+2. **Assemble the bounded payload** — the spec excerpt that touches the decision (≤30 lines), the most relevant existing code reference (file path + 1-paragraph summary, not the full file), and the project convention or prior-art entry if one applies. Do not forward the whole spec.
+3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-architect)` with the bounded payload. When the runtime does not support named agents, dispatch a `model: opus` subagent with the same payload and the canonical persona prompt copied from `claude-code/agents/ywc-architect.md` Mission section.
+4. **Record the verdict** in `docs/ywc-plans/<plan-slug>/architecture-verdict.md` (or alongside the spec when the spec path is provided). The file captures: the framed decision, the trade-off table the advisor returned, the chosen direction, and the file / type / structural shape recommendation. Subsequent steps cite this file rather than re-litigating the decision.
+5. **Handle non-DONE statuses** per the standard contract:
+   - `DONE_WITH_CONCERNS` → cite the concerns explicitly in the spec's Constraints section so reviewers see the caveat
+   - `NEEDS_CONTEXT` → run the additional Read / Grep the advisor names, then re-dispatch with the enriched payload
+   - `BLOCKED` → surface to the user with the advisor's blocker summary; do not proceed to Step 4 until the prerequisite is resolved
+
+**Budget**: at most **1** ywc-architect dispatch per ywc-plan invocation. If a second architectural decision surfaces, defer it to `ywc-confidence-gate` STOP-band routing or to a follow-up plan rather than burning another Opus call inside the same plan run.
+
+Skip the gate entirely (with a one-line note in the plan / spec) when the architectural choice is unambiguous from the spec or already adjudicated by a prior `architecture-verdict.md` in the same project.
+
 ### Step 4a: Small Path — Direct Execution Plan
 
 When scale is **Small**, generate `plan.md` at a user-specified path (default: `./plan.md`). If `--output <path>` is provided, write to that path instead of the default.
@@ -151,8 +175,8 @@ After writing the plan, surface this handoff message to the user:
 
 > "Plan ready at `<path>`. To execute, you can:
 > 1. Implement directly in this session, or
-> 2. Run `$ywc-code-gen` with the plan as context, or
-> 3. Hand off to `$ywc-sequential-executor` if you prefer Branch + PR isolation."
+> 2. Run `/ywc-code-gen` with the plan as context, or
+> 3. Hand off to `/ywc-sequential-executor` if you prefer Branch + PR isolation."
 
 ### Step 4b: Medium/Large Path — Spec Document
 
@@ -241,7 +265,7 @@ Always end with an explicit handoff instruction matching the path taken.
 
 ```text
 ✅ Plan ready: <path>
-Next: implement directly, or run $ywc-code-gen, or $ywc-sequential-executor
+Next: implement directly, or run /ywc-code-gen, or /ywc-sequential-executor
 ```
 
 **Medium/Large path handoff:**
@@ -249,9 +273,9 @@ Next: implement directly, or run $ywc-code-gen, or $ywc-sequential-executor
 ```text
 ✅ Spec drafted: <path>
 Next:
-  1. $ywc-spec-validate --spec <path>
-  2. (after review passes) $ywc-task-generator <path>
-  3. (after tasks generated) $ywc-sequential-executor or $ywc-parallel-executor
+  1. /ywc-spec-validate --spec <path>
+  2. (after review passes) /ywc-task-generator <path>
+  3. (after tasks generated) /ywc-sequential-executor or /ywc-parallel-executor
 ```
 
 Never proceed past the handoff. The user decides which downstream skill runs next — this skill is the planner, not the executor.
@@ -272,7 +296,7 @@ For the exact templates, see [references/small-plan-template.md](references/smal
 Before declaring the skill's task complete, verify:
 
 - [ ] Step 1 produced explicit answers to all four anchors (What, Why, Out of Scope, Done When)
-- [ ] Step 2 read project guidance (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent) and the project's build/test command source
+- [ ] Step 2 read at minimum `CLAUDE.md` (or equivalent) and the project's build/test command source
 - [ ] Step 2 deep-read **every component the spec claims to "踏襲 / follow / extend"** (not just located them)
 - [ ] Step 2 grepped every **implicit reference** (property accessor on existing type, named audit/event/DTO/error type, mirrored column name) to confirm the existing schema/types match the spec's use
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly

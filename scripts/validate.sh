@@ -109,6 +109,50 @@ check_codex_support_dirs() {
   )
 }
 
+check_agent_file() {
+  local file="$1"
+  local base
+  base="$(basename "$file" .md)"
+
+  if ! grep -q "^name:" "$file"; then
+    echo "ERROR: agents/$base.md is missing 'name:' in frontmatter"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if ! grep -q "^description:" "$file"; then
+    echo "ERROR: agents/$base.md is missing 'description:' in frontmatter"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  local declared_name
+  declared_name="$(sed -n 's/^name:[[:space:]]*//p' "$file" | head -n 1)"
+  if [ "$declared_name" != "$base" ]; then
+    echo "ERROR: agents/$base.md name '$declared_name' does not match filename"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
+check_cc_agents() {
+  local dir=claude-code/agents
+  [ -d "$dir" ] || return 0
+
+  # Catalog README locale set must be present
+  local file
+  for file in README.md README.en.md README.ja.md README.ko.md; do
+    if [ ! -f "$dir/$file" ]; then
+      echo "ERROR: claude-code/agents is missing $file"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  # Each ywc-*.md agent file must have valid frontmatter
+  for file in "$dir"/ywc-*.md; do
+    [ -f "$file" ] || continue
+    check_agent_file "$file"
+  done
+}
+
 echo "==> Validating claude-code skills..."
 for dir in claude-code/skills/*/; do
   [ -d "$dir" ] || continue
@@ -116,6 +160,9 @@ for dir in claude-code/skills/*/; do
   check_skill_dir "$dir"
   check_readme_set "$dir"
 done
+
+echo "==> Validating claude-code agents..."
+check_cc_agents
 
 echo "==> Validating codex skills..."
 for dir in codex/skills/*/; do

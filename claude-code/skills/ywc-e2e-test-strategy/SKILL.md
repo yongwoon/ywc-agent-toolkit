@@ -22,7 +22,7 @@ When tempted to bypass a rule, check this table first:
 | "We'll add E2E tests later when the product stabilizes" | The later tests are added, the harder they are to retrofit. 5 critical-path tests on week 1 cost 90% less effort than 50 tests on week 20 against a hardened codebase. |
 | "Test everything to be safe" | Over-testing creates a maintenance burden that kills a solo developer. Start with 5–8 critical paths, measure flakiness, expand only where failure hurts users. |
 | "CSS class selectors are fine, they're stable enough" | Class names change during refactoring and styling. Prefer `data-testid` → ARIA role → visible text. See [references/playwright-patterns.md](references/playwright-patterns.md). |
-| "waitForTimeout(2000) fixes the flaky test" | Explicit timeouts mask timing problems and slow the suite. Use `locator.waitFor()`, `waitForURL()`, or `waitForResponse()` instead. |
+| "waitForTimeout(2000) fixes the flaky test" | Explicit timeouts mask timing problems and slow the suite. Banned outside the narrow debounce exception. Use the Reconnaissance Before Action pattern (`locator.waitFor()` → action → `waitForURL()` / `waitForResponse()`); see [references/reconnaissance-pattern.md](references/reconnaissance-pattern.md). |
 | "Skip GitHub Actions integration until later" | CI integration is what turns tests from a local convenience into a production safety net. Running only locally creates false confidence. |
 | "All three modes apply here, run all three" | Modes are mutually exclusive. Auto-detect: if `playwright.config.*` exists → `--audit`; if not → `--init`. When user specifies `--flow`, run only flow generation. |
 
@@ -199,6 +199,16 @@ Before declaring complete:
 - [ ] GitHub Actions workflow triggers on both `push` to main and `pull_request`
 - [ ] Playwright browser cache step present in CI workflow (avoids re-downloading ~300MB per run)
 - [ ] `--dry-run` output confirmed by user before writing (if flag given)
+
+## Reconnaissance Before Action
+
+All generated Playwright code follows the three-step **Reconnaissance Before Action** pattern: snapshot the DOM state the action expects to find (reconnaissance), `waitFor({ state: 'visible' })` on the locator the next action targets (confirmation), then execute the action (`click`, `fill`, etc.). The pattern eliminates timing-class flakiness by replacing every `waitForTimeout(N)` with a named, condition-based precondition.
+
+**Banned in generated code**: `page.waitForTimeout(N)` outside the narrow debounce exception (see the reference). Mode B audit flags `waitForTimeout` as a fragile pattern automatically.
+
+**Required substitutions**: `locator.waitFor({ state: 'visible' \| 'hidden' \| 'attached' })` for element state · `page.waitForURL(<regex>)` after navigation · `page.waitForResponse(<predicate>)` after XHR / fetch · `page.waitForFunction(...)` for custom JS predicates. Each is a narrow, named precondition — when the test fails, the failure message points at the unmet precondition rather than a generic timeout.
+
+Full pattern, banned-form / right-form examples, condition-primitive table, and the debounce exception live in [references/reconnaissance-pattern.md](references/reconnaissance-pattern.md). Generated tests in Mode A / Mode C and audit findings in Mode B treat this file as the authoritative pattern.
 
 ## Common Mistakes
 

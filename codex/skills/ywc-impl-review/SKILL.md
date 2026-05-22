@@ -62,6 +62,8 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
 
    Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The four code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
 
+   **Language-specific depth without named agents** — If the changed-file list is dominated by TypeScript / TSX / Vue / Svelte, add a TypeScript-specific checklist to the Design and Devex worker prompts: type-system depth, async correctness, framework idioms, tsconfig strictness, and ESM/CJS interop. Do not import Claude Code named-agent syntax (`subagent_type: ywc-typescript-reviewer`) or rely on `claude-code/agents/`; those are Claude Code-only surfaces. In Codex, keep the worker generic and pass the TS focus explicitly in the bounded prompt.
+
 4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all five workers:
    - Deduplicate findings that share `{file}:{line}` across categories.
    - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Security > Architecture > Design > Devex > QA. (Architecture / Design / Devex order reflects irreversibility — structural decisions are hardest to walk back, then contracts, then operator UX.)

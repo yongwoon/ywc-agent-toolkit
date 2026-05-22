@@ -1,0 +1,4 @@
+interface:
+  display_name: "Worktrees"
+  short_description: "Manage git worktree lifecycle for task isolation"
+  default_prompt: "Use $ywc-worktrees to resolve, create, audit, or prune git worktrees for isolated task workspaces, respecting the project worktree root and reporting stale, leaked, missing, or dirty worktrees before proceeding."

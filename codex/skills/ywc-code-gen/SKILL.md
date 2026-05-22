@@ -217,6 +217,13 @@ Any subagent output containing the following patterns is treated as a failed gen
 - Type definitions using `any` / `unknown` as a placeholder for real types
 - Config or schema files containing `YOUR_VALUE_HERE` or `<replace_me>` tokens
 
+**Scope creep / drive-by edits (never acceptable in generated output):**
+- Reformatting or restyling files the spec did not name — adjacent imports reordered, whitespace fixed, blank lines normalized, formatter run repo-wide because "it was easier than configuring the scope"
+- "While I'm here" docstring polish, comment rewording, or rename of a private symbol whose signature the spec did not touch — every such edit must wait for its own task
+- Magic-number → named-constant extraction in production code from a test-only task, or any production-code refactor surfaced "for free" while authoring tests
+- Bug-fix commits that bundle surrounding cleanup (dead-import removal, error-message rewording, log-level adjustment) — the fix and the cleanup ship in separate commits on separate branches
+- Type-annotation tasks that also remove unused exports, mark functions `internal`, or shrink the public surface — every public-surface change is its own review boundary, not a side effect of typing
+
 ## Agent Prompt References
 
 Read the corresponding reference file when spawning each agent and include it in the agent prompt:

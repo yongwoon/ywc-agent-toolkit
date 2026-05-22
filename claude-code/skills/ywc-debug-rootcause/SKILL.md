@@ -90,6 +90,8 @@ Before proposing **any** fix:
 
 Phase 1 exit condition: you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
 
+When local evidence cannot produce a confident initial hypothesis and the Claude Code runtime is in use with the named-agent catalog at `claude-code/agents/` installed, dispatch `Task(subagent_type: ywc-root-cause-analyst)` with the bounded packet (failure symptom + stack trace + recent diff + relevant code snippet) so an Opus-tier analyst returns a ranked top-3 hypothesis list with evidence-for / evidence-against per item (`claude-code/agents/ywc-root-cause-analyst.md`). The dispatch is conditional and at most one per Phase 1; runtimes without named-agent dispatch use the inline procedure above.
+
 ### Phase 2: Pattern Analysis
 
 Find the pattern before fixing.
@@ -109,7 +111,7 @@ Apply the scientific method.
 3. **Verify the result.**
    - Pass → proceed to Phase 4.
    - Fail → form a **new** hypothesis. Do **not** layer another fix on top of the failed one.
-4. **Stop and admit when stuck.** If you have run two hypotheses and both failed, the model of the system is wrong. Read more before forming a third hypothesis.
+4. **Stop and admit when stuck.** If you have run two hypotheses and both failed, the model of the system is wrong. Read more before forming a third hypothesis. After 3+ failed fixes on the same surface, fire the **architecture-suspicion gate**: when the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-root-cause-analyst)` with the bounded packet plus the failed-fix log. The analyst returns either "architecture is wrong — dispatch ywc-architect with [framed decision]" or "fix harder — next surgical attempt is [specific change]" — never an ambiguous verdict. Runtimes without named-agent dispatch read this gate as "stop and surface to the user instead of attempting a 4th fix".
 
 Phase 3 exit condition: a passing test that confirms the hypothesis, with one and only one variable changed.
 

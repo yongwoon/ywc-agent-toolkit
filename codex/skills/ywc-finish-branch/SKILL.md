@@ -1,6 +1,7 @@
 ---
 name: ywc-finish-branch
-description: (ywc) Use when delivering a single completed feature branch to the base branch — covers mark-PR-ready, CI wait + bot review polling, merge (PR or local), post-merge verification, Mark Task Complete bookkeeping, and local branch cleanup. Triggers: "finish branch", "deliver branch", "finish-branch", "ywc-finish-branch", "merge feature branch", "branch 마무리", "branch 마감", "ブランチ完了", "deliver task", "task 마감". Do not use for branch creation (handled by upstream executor), worktree management (caller of `ywc-parallel-executor` handles), draft PR creation alone (use `ywc-create-pr`), or PR review comment handling (use `ywc-handle-pr-reviews`).
+description: >-
+  (ywc) Use when delivering a single completed feature branch to the base branch — covers mark-PR-ready, CI wait + bot review polling, merge (PR or local), post-merge verification, Mark Task Complete bookkeeping, and local branch cleanup. Triggers: "finish branch", "deliver branch", "finish-branch", "ywc-finish-branch", "merge feature branch", "branch 마무리", "branch 마감", "ブランチ完了", "deliver task", "task 마감". Do not use for branch creation (handled by upstream executor), worktree management (caller of `ywc-parallel-executor` handles), draft PR creation alone (use `ywc-create-pr`), or PR review comment handling (use `ywc-handle-pr-reviews`).
 ---
 
 # ywc-finish-branch
@@ -109,7 +110,7 @@ For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construc
 Run the bundled script to extract the task number and English slug without regex parsing:
 
 ```bash
-python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
+python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
 # TASK_NUMBER=000001-010
 # SLUG_EN=Db Create Users Table
 ```
@@ -119,7 +120,7 @@ python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
 For English PRs (`--pr-lang en`), use `--format title` to get the complete title directly:
 
 ```bash
-python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
+python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
 # [000001-010] Db Create Users Table
 ```
 
@@ -253,6 +254,14 @@ The local branch must be deleted explicitly because `gh pr merge --delete-branch
 For `--mode local-merge`: already handled inside Step 5's command sequence (which honors `--keep-branch` likewise).
 
 For all other modes: skip. The branch stays alive for the user or caller to handle.
+
+**Worktree prune (when caller used a worktree)** — if the caller created a per-task worktree (`ywc-parallel-executor` does this), the post-cleanup prune is delegated to the [`ywc-worktrees`](../ywc-worktrees/) skill:
+
+```bash
+ywc-worktrees --mode prune --task-name <task-name>
+```
+
+`ywc-worktrees --mode prune` runs the bundled `cleanup-worktree.sh` against the resolved worktree path — `git worktree remove` + local `git branch -d` + `git worktree prune` + post-removal verification, refusing to operate on dirty worktrees without `--force`. This skill does not inline the prune logic; the worktree priority chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` fallback) and the dirty-tree safety check live in one place. Skip this delegation when no worktree was created (the typical `--mode local-merge` / `--mode normal-pr` flow that ran inside the main checkout).
 
 ## Output Format
 

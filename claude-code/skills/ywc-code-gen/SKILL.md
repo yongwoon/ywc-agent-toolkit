@@ -101,9 +101,9 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
 3. **Phase 1 — Parallel Generation** — Use the Task tool to spawn three subagents in parallel. Pass `subagent_type` and `model` explicitly on each call so the executor layer dispatches to the canonical Tier-1 worker agents at Sonnet cost:
-   - **Backend subagent** (`subagent_type: ywc-backend-coder`, `model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). The persona lives in [`tools/claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md); the dispatch prompt only carries the task brief (spec excerpt, project context, ubiquitous-language table, and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md)). Role reference for historical authoring guidance: `references/backend-agent.md`.
-   - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`tools/claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
-   - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`tools/claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
+   - **Backend subagent** (`subagent_type: ywc-backend-coder`, `model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). The persona lives in [`claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md); the dispatch prompt only carries the task brief (spec excerpt, project context, ubiquitous-language table, and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md)). Role reference for historical authoring guidance: `references/backend-agent.md`.
+   - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
+   - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
 
    **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (CLAUDE.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/<role>-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
@@ -221,6 +221,13 @@ Any subagent output containing the following patterns is treated as a failed gen
 - Test `describe`/`context` blocks with no `it`/`test`/`spec` cases inside them
 - Type definitions using `any` / `unknown` as a placeholder for real types
 - Config or schema files containing `YOUR_VALUE_HERE` or `<replace_me>` tokens
+
+**Scope creep / drive-by edits (never acceptable in generated output):**
+- Reformatting or restyling files the spec did not name — adjacent imports reordered, whitespace fixed, blank lines normalized, formatter run repo-wide because "it was easier than configuring the scope"
+- "While I'm here" docstring polish, comment rewording, or rename of a private symbol whose signature the spec did not touch — every such edit must wait for its own task
+- Magic-number → named-constant extraction in production code from a test-only task, or any production-code refactor surfaced "for free" while authoring tests
+- Bug-fix commits that bundle surrounding cleanup (dead-import removal, error-message rewording, log-level adjustment) — the fix and the cleanup ship in separate commits on separate branches
+- Type-annotation tasks that also remove unused exports, mark functions `internal`, or shrink the public surface — every public-surface change is its own review boundary, not a side effect of typing
 
 ## Agent Prompt References
 

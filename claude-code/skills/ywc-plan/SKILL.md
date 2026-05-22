@@ -143,6 +143,30 @@ Pick exactly one scale using the rubric below. **Default to Medium when ambiguou
 
 For the full scale-assessment heuristics including borderline-case examples, see [references/scale-assessment.md](references/scale-assessment.md).
 
+### Step 3.5: Architectural Advisor Gate (Medium/Large only)
+
+Run this gate **only when both conditions hold**:
+
+- Scale assessed as **Medium** or **Large** (Small path skips this gate)
+- Step 2 codebase investigation surfaced an architectural ambiguity that the spec / `docs/architecture/` / project convention cannot resolve on its own (examples: monolith vs split, sync vs async boundary, ORM vs raw SQL, domain boundary placement, abstraction-vs-duplication trade-off for a soon-to-be-replicated pattern)
+
+If both conditions fail, skip to Step 4 directly. The gate exists to head off the failure mode where a Medium/Large plan locks in a structural choice that subsequent implementation cannot walk back without a re-plan.
+
+**Procedure**:
+
+1. **Frame the decision** in one sentence with the two (occasionally three) reasonable options the codebase / spec admit. Avoid hypothetical options the project would not actually pick.
+2. **Assemble the bounded payload** — the spec excerpt that touches the decision (≤30 lines), the most relevant existing code reference (file path + 1-paragraph summary, not the full file), and the project convention or prior-art entry if one applies. Do not forward the whole spec.
+3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-architect)` with the bounded payload. When the runtime does not support named agents, dispatch a `model: opus` subagent with the same payload and the canonical persona prompt copied from `claude-code/agents/ywc-architect.md` Mission section.
+4. **Record the verdict** in `docs/ywc-plans/<plan-slug>/architecture-verdict.md` (or alongside the spec when the spec path is provided). The file captures: the framed decision, the trade-off table the advisor returned, the chosen direction, and the file / type / structural shape recommendation. Subsequent steps cite this file rather than re-litigating the decision.
+5. **Handle non-DONE statuses** per the standard contract:
+   - `DONE_WITH_CONCERNS` → cite the concerns explicitly in the spec's Constraints section so reviewers see the caveat
+   - `NEEDS_CONTEXT` → run the additional Read / Grep the advisor names, then re-dispatch with the enriched payload
+   - `BLOCKED` → surface to the user with the advisor's blocker summary; do not proceed to Step 4 until the prerequisite is resolved
+
+**Budget**: at most **1** ywc-architect dispatch per ywc-plan invocation. If a second architectural decision surfaces, defer it to `ywc-confidence-gate` STOP-band routing or to a follow-up plan rather than burning another Opus call inside the same plan run.
+
+Skip the gate entirely (with a one-line note in the plan / spec) when the architectural choice is unambiguous from the spec or already adjudicated by a prior `architecture-verdict.md` in the same project.
+
 ### Step 4a: Small Path — Direct Execution Plan
 
 When scale is **Small**, generate `plan.md` at a user-specified path (default: `./plan.md`). If `--output <path>` is provided, write to that path instead of the default.

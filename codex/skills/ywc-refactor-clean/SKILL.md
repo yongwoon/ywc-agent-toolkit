@@ -6,7 +6,7 @@ description: >-
   scheduled hygiene pass on a codebase. Triggers: "dead code 제거", "unused
   import 정리", "knip / depcheck / ts-prune 돌려줘", "refactor clean", "dead
   code cleanup", "remove unused exports", "デッドコード削除", "未使用
-  import 整理", "ywc-refactor-clean". Do not use for active feature
+  import 整理", "ywc-refactor-clean". Do not use during active feature
   implementation in the same branch (the cleanup competes with the feature
   diff — finish the feature, then clean), for behavior-changing refactors
   (use ywc-tdd-ritual + ywc-code-gen so behavior is captured by tests first),
@@ -18,7 +18,7 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-refactor-clean skill to remove dead code under a SAFE/CAUTION/DANGER tier with per-batch verification."
 
-This skill is the canonical dead-code-removal discipline for ywc. It exists because hand-rolled cleanup (`grep + delete + hope`) routinely breaks dynamic imports, public package exports, and CI-only code paths. Adapted from ECC cleanup workflows, tightened to delegate completion claims to `ywc-verify-done` and to forbid bundled behavior changes (those route to `ywc-tdd-ritual` + `ywc-code-gen`).
+This skill is the canonical dead-code-removal discipline for ywc. It exists because hand-rolled cleanup (`grep + delete + hope`) routinely breaks dynamic imports, public package exports, and CI-only code paths. Adapted from `ECC/refactor-cleaner` (Sonnet agent) and `ECC/refactor-clean` (slash command), tightened to delegate completion claims to `ywc-verify-done` and to forbid bundled behavior changes (those route to `ywc-tdd-ritual` + `ywc-code-gen`).
 
 ## The Iron Law
 
@@ -88,12 +88,14 @@ Full classification rules with concrete examples live in [`references/safety-tie
 
 ### Step 3: SAFE deletion loop
 
+The 5-substep loop below is the work the Codex operator performs per item. If another runtime provides a dedicated deletion worker, treat that worker as an execution detail only; Codex still owns the same SAFE worklist discipline, evidence capture, and rollback rules inline.
+
 For each SAFE item, in order:
 
 1. **Run the test suite scoped to the item's domain.** Establish that the suite is green *before* the deletion, so a later failure can be attributed to the deletion (and not pre-existing).
 2. **Verify with grep.** `git grep -nE '<symbol>'` (or pattern-matched variant for dynamic patterns). Zero hits = proceed. Any hit = re-classify to CAUTION and skip.
 3. **Delete the item** with the `Edit` tool — surgical removal, no adjacent re-formatting.
-4. **Re-run the same test suite.** If green, commit (next step). If red, `git checkout -- <file>` and re-classify to CAUTION.
+4. **Re-run the same test suite.** If green, commit (next step). If red before the commit, restore the edited files to the pre-delete state and re-classify to CAUTION. If a regression appears after the commit lands, `git revert <commit>` and re-classify to CAUTION — `git revert` is the atomic rollback for multi-file deletions.
 5. **Commit** with shape `chore(cleanup): remove unused <symbol> (knip)` — name the tool that flagged it. One deletion per commit.
 
 Do **not** batch multiple deletions into one commit. Bisectability is the entire reason for per-item commits — when a regression surfaces in week 3, `git bisect` lands on the exact deletion.

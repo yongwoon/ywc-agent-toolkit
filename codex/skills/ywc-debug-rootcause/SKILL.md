@@ -11,8 +11,8 @@ description: >-
   "ywc-debug-rootcause". Do not use for ongoing implementation drafting
   (use ywc-code-gen), incident postmortem after the fact (use
   ywc-incident-postmortem), security vulnerability triage (use
-  ywc-security-audit), or pre-implementation confidence assessment (route
-  through the planning or spec-review skill that owns the decision).
+  ywc-security-audit), or pre-implementation confidence check (use
+  ywc-confidence-gate).
 ---
 
 # ywc-debug-rootcause
@@ -87,6 +87,8 @@ Before proposing **any** fix:
 
 Phase 1 exit condition: you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
 
+When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent root-cause analyst pass with a bounded packet: failure symptom, stack trace, recent diff, and relevant code snippet. Ask for a ranked top-3 hypothesis list with evidence-for / evidence-against per item. If no delegation tool is available, continue the inline procedure above; do not attempt tool-specific named-agent syntax from another runtime.
+
 ### Phase 2: Pattern Analysis
 
 Find the pattern before fixing.
@@ -106,7 +108,7 @@ Apply the scientific method.
 3. **Verify the result.**
    - Pass → proceed to Phase 4.
    - Fail → form a **new** hypothesis. Do **not** layer another fix on top of the failed one.
-4. **Stop and admit when stuck.** If you have run two hypotheses and both failed, the model of the system is wrong. Read more before forming a third hypothesis.
+4. **Stop and admit when stuck.** If you have run two hypotheses and both failed, the model of the system is wrong. Read more before forming a third hypothesis. After 3+ failed fixes on the same surface, fire the **architecture-suspicion gate**: when a subagent/delegation tool is available, request one independent analyst pass with the bounded packet plus the failed-fix log. The analyst returns either "architecture is wrong — route to architecture redesign with [framed decision]" or "fix harder — next surgical attempt is [specific change]" — never an ambiguous verdict. Without delegation support, stop and surface the architectural concern to the user instead of attempting a 4th fix.
 
 Phase 3 exit condition: a passing test that confirms the hypothesis, with one and only one variable changed.
 

@@ -1,7 +1,8 @@
 ---
 name: ywc-security-audit
 version: 1.0.0
-description: (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), or for code that does not touch auth/external input/sensitive data.
+description: >-
+  (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), or for code that does not touch auth/external input/sensitive data.
 category: review
 phase: quality
 requires: []
@@ -42,13 +43,15 @@ When tempted to skip a step, check this table first:
 
 1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify tech stack. Pay special attention to authentication method, deployment environment (internal/external), and security libraries in use
 2. **Read Target Code Files** — Read all source files under the `--code` path
-3. **Phase 1 — Parallel OWASP Analysis** — Use the Task tool to spawn 3 Sonnet subagents in parallel. Each covers a grouped slice of OWASP Top 10. For each item in their slice, subagents must: Grep/AST search for patterns, trace data flow (input → processing → output), and apply project context.
+3. **Phase 1 — Parallel OWASP Analysis** — Use the Task tool to spawn 3 Sonnet subagents in parallel. Each covers a grouped slice of OWASP Top 10. For each item in their slice, subagents must: Grep/AST search for patterns, trace data flow (input → processing → output), and apply project context. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so each subagent carries the dedicated security worker persona, Mission, Boundaries, and Return Contract.
 
    | Subagent | Model | OWASP Items |
    |---|---|---|
    | Auth & Data | sonnet | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
-   | Web Layer | sonnet | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration |
+   | Web Layer | sonnet | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration · **PI Prompt Injection** (LLM-driven surfaces only — user-controlled string → prompt sink; see `references/prompt-injection-checklist.md`) |
    | Infra & Input | sonnet | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+
+   **Prompt-Injection slice (Web Layer sub-category)** — when the audit target includes an LLM-driven surface (agent / chatbot / prompt-template system / function-calling pipeline), the Web Layer subagent additionally walks the four items in [`references/prompt-injection-checklist.md`](./references/prompt-injection-checklist.md): user-controlled string flowing directly into a prompt, system/user role separation, canary-token + ML-classifier defense, and external-tool / RAG-result sanitization. The checklist defines default severity and conditions for adjustment. Findings surface under the standard severity rubric below and are reported alongside the OWASP A04-A06 items in the Web Layer subagent's output.
 
    Each subagent classifies its findings:
    - **Critical**: Immediately exploitable (SQL injection, auth bypass, hardcoded secrets)
@@ -78,6 +81,13 @@ When tempted to skip a step, check this table first:
 8. Input Validation (Missing Validation, Type Coercion)
 9. Rate Limiting (Missing Rate Limits on Sensitive Endpoints)
 10. Timing Attacks (Non-constant-time Comparisons for Secrets)
+
+### LLM-Driven Surface Addendum (run when target uses an LLM SDK)
+
+11. Prompt Injection — user input → prompt sink, role separation, canary
+    / classifier defenses, external-tool / RAG result sanitization
+    (full audit items + severity table in
+    [`references/prompt-injection-checklist.md`](./references/prompt-injection-checklist.md))
 
 ## Output Format
 
