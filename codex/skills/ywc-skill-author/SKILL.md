@@ -44,7 +44,7 @@ These rules apply to **every** ywc-* skill without exception.
 | A2 | `description` MUST start with `(ywc) Use when...` (trigger-only, never a workflow summary) |
 | A3 | `description` MUST include explicit `Do not use for...` anti-triggers pointing to the correct sibling skill where applicable |
 | A4 | `description` MUST include multilingual triggers (Korean / English / Japanese) when the skill is user-facing |
-| A5 | Frontmatter required minimum: `name`, `description`. Other fields (`requires`, `category`, etc.) are optional but recommended where meaningful |
+| A5 | Frontmatter required minimum: `name`, `description`. For Claude Code skills, additional fields (`version`, `category`, `requires`, etc.) are optional but recommended where meaningful. For Codex skills, frontmatter MUST contain only `name` and `description` — do not copy Claude-only fields |
 
 ### Body
 
