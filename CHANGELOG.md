@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.10.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.9.0...v1.10.0) (2026-05-22)
+
+
+### ### Added
+
+* add process-discipline skill suite (8 new skills + 6 existing skill updates) ([#32](https://github.com/yongwoon/ywc-agent-toolkit/issues/32)) ([8b34d0d](https://github.com/yongwoon/ywc-agent-toolkit/commit/8b34d0d3e0d129e0658fdcbeaac3a6ef20c45d77))
+
 ## [1.9.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.8.0...v1.9.0) (2026-05-21)
 
 
