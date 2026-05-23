@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.11.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.10.0...v1.11.0) (2026-05-23)
+
+
+### ### Added
+
+* agent catalog (12 agents) + ywc-worktrees skill + advisor dispatch ([#34](https://github.com/yongwoon/ywc-agent-toolkit/issues/34)) ([1ab5545](https://github.com/yongwoon/ywc-agent-toolkit/commit/1ab5545fc3becff82cc54d889d0a4804cbf81537))
+
 ## [1.10.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.9.0...v1.10.0) (2026-05-22)
 
 
