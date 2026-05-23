@@ -132,7 +132,7 @@ test -f .ywc-run-state.json && cat .ywc-run-state.json || echo "no-state"
 If the file exists:
 1. **Executor check** — `executor` must be `"parallel"`. If `"sequential"`, warn: *"State belongs to sequential-executor. Cannot resume as parallel."* Stop until user deletes the file.
 2. **Age check** — if `last_checkpoint` is older than 48 hours, treat as stale. Ask: *"Stale checkpoint found (<date>). Delete and start fresh? [Y/n]"*
-3. **Worktree validation** — for each task in the in-progress wave's `pending` list, validate the resolved path from `ywc-worktrees` (project `.worktrees/`, `CLAUDE.md worktree_root`, recorded state root, or legacy fallback). If a worktree is missing, add a warning: the agent must recreate it in Step 4a before implementation can continue.
+3. **Worktree validation** — for each task in the in-progress wave's `pending` list, validate the resolved path using the same precedence as resume-state validation (recorded state root, then project `.worktrees/`, then `CLAUDE.md worktree_root`, then legacy fallback). If a worktree is missing, add a warning: the agent must recreate it in Step 4a before implementation can continue.
 4. **Offer resume**:
    ```
    Resumable run found:
