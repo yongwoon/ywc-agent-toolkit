@@ -6,10 +6,10 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 ## Supported Tools
 
-| Tool | Skills | Install path |
-|------|--------|-------------|
-| Claude Code | 26 | `~/.claude/skills/` |
-| Codex | 27 | `~/.codex/skills/` |
+| Tool | Skills | Custom Agents | Install path |
+|------|--------|---------------|--------------|
+| Claude Code | 26 | — | `~/.claude/skills/` |
+| Codex | 27 | 7 | `~/.codex/skills/`, `~/.codex/agents/` |
 
 ## Installation
 
@@ -46,12 +46,26 @@ bash scripts/install.sh --cc ywc-plan ywc-commit ywc-create-pr
 bash scripts/install.sh --codex ywc-plan ywc-commit ywc-ui-ux-review
 ```
 
+### Install only Codex custom agents
+
+```bash
+# All 7 read-only specialist agents
+bash scripts/install.sh --codex-agents
+
+# Selected agents
+bash scripts/install.sh --codex-agents ywc-security-engineer ywc-architect
+
+# Skills only, leaving agents untouched
+bash scripts/install.sh --codex --skip-agents
+```
+
 ### List available skills
 
 ```bash
 bash scripts/install.sh --list
 bash scripts/install.sh --list --cc
 bash scripts/install.sh --list --codex
+bash scripts/install.sh --list --codex-agents
 ```
 
 ### Environment variables
@@ -127,6 +141,24 @@ versions include Codex-compatible frontmatter and tool guidance.
 | Skill | Description |
 |-------|-------------|
 | `ywc-team-assemble` | Split explicitly authorized work across specialist Codex subagents |
+
+---
+
+## Codex Custom Agents
+
+Seven read-only specialist agents complement the `ywc-*` skills. They are installed to `~/.codex/agents/` (override with `CODEX_HOME`) as individual TOML files, and Codex loads one custom agent per file.
+
+| Agent | Purpose | Sandbox |
+|-------|---------|---------|
+| `ywc-architect` | Architectural decision and trade-off advisor | `read-only` |
+| `ywc-security-engineer` | Static security review and threat-model triage | `read-only` |
+| `ywc-root-cause-analyst` | Root-cause and incident-cause analysis | `read-only` |
+| `ywc-performance-engineer` | Performance review and profiling recommendations | `read-only` |
+| `ywc-typescript-reviewer` | TypeScript / JavaScript language-specific review | `read-only` |
+| `ywc-python-reviewer` | Python language-specific review | `read-only` |
+| `ywc-go-reviewer` | Go language-specific review | `read-only` |
+
+All agents are read-only; they return verdicts, findings, or NEEDS_CONTEXT responses but never edit files. Source TOML lives under [`codex/agents/`](codex/agents/).
 
 ---
 

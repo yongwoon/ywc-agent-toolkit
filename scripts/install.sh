@@ -10,8 +10,10 @@
 #   bash scripts/install.sh --codex <skill> [skill...]      Codex 특정 스킬
 #   bash scripts/install.sh --cc-agents [agent-name...]     Claude Code agents 만 설치
 #   bash scripts/install.sh --cc --skip-agents              Claude Code skills 만 설치 (agents 제외)
+#   bash scripts/install.sh --codex-agents [agent-name...]  Codex custom agents 만 설치
+#   bash scripts/install.sh --codex --skip-agents           Codex skills 만 설치 (agents 제외)
 #   bash scripts/install.sh --hooks [--global|--local] [hook-name...]  Hook 설치
-#   bash scripts/install.sh --list [--cc|--codex|--cc-agents|--hooks]  설치 가능한 목록
+#   bash scripts/install.sh --list [--cc|--codex|--cc-agents|--codex-agents|--hooks]  설치 가능한 목록
 #   bash scripts/install.sh --help                          이 도움말
 #
 # Environment:
@@ -25,21 +27,26 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CC_SRC="$REPO_ROOT/claude-code/skills"
 CC_AGENTS_SRC="$REPO_ROOT/claude-code/agents"
 CODEX_SRC="$REPO_ROOT/codex/skills"
+CODEX_AGENTS_SRC="$REPO_ROOT/codex/agents"
 HOOKS_SRC="$REPO_ROOT/claude-code/hooks"
 HOOKS_REGISTRY="$HOOKS_SRC/hooks-registry.json"
 CC_DEST="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 CC_AGENTS_DEST="${CLAUDE_AGENTS_DIR:-$HOME/.claude/agents}"
 CODEX_DEST="${CODEX_HOME:-$HOME/.codex}/skills"
+CODEX_AGENTS_DEST="${CODEX_HOME:-$HOME/.codex}/agents"
 CC_MANIFEST="$CC_DEST/.ywc-agent-toolkit.manifest"
 CC_AGENTS_MANIFEST="$CC_AGENTS_DEST/.ywc-agent-toolkit.manifest"
 CODEX_MANIFEST="$CODEX_DEST/.ywc-agent-toolkit.manifest"
+CODEX_AGENTS_MANIFEST="$CODEX_AGENTS_DEST/.ywc-agent-toolkit.manifest"
 
 CC_INSTALLED=0
 CC_AGENTS_INSTALLED=0
 CODEX_INSTALLED=0
+CODEX_AGENTS_INSTALLED=0
 CC_PRUNED=0
 CC_AGENTS_PRUNED=0
 CODEX_PRUNED=0
+CODEX_AGENTS_PRUNED=0
 HOOKS_INSTALLED=0
 
 # ---- helpers ----------------------------------------------------------------
@@ -58,6 +65,15 @@ is_agent_file() {
     README.md|README.en.md|README.ja.md|README.ko.md|CLAUDE.md) return 1 ;;
   esac
   [[ "$base" == ywc-*.md ]]
+}
+
+is_codex_agent_file() {
+  # A codex agent file is a top-level ywc-*.toml file (single TOML per agent)
+  local f="$1"
+  local base
+  base="$(basename "$f")"
+  [ -f "$f" ] || return 1
+  [[ "$base" == ywc-*.toml ]]
 }
 
 list_skills() {
@@ -79,6 +95,17 @@ list_agents() {
     [ -f "$f" ] || continue
     is_agent_file "$f" || continue
     basename "$f" .md
+  done
+}
+
+list_codex_agents() {
+  local src="$1"
+  [ -d "$src" ] || return 0
+  local f
+  for f in "$src"/ywc-*.toml; do
+    [ -f "$f" ] || continue
+    is_codex_agent_file "$f" || continue
+    basename "$f" .toml
   done
 }
 
@@ -141,6 +168,16 @@ install_agent() {
   echo "  ✓ ${base%.md}"
 }
 
+install_codex_agent() {
+  local src_file="$1"
+  local dest_dir="$2"
+  local base
+  base="$(basename "$src_file")"
+  is_codex_agent_file "$src_file" || return 0
+  cp "$src_file" "$dest_dir/$base"
+  echo "  ✓ ${base%.toml}"
+}
+
 prune_agent_orphans() {
   local dest="$1"
   local manifest="$2"
@@ -164,6 +201,32 @@ prune_agent_orphans() {
     rm -f "$target"
     echo "    ✗ $name"
     CC_AGENTS_PRUNED=$((CC_AGENTS_PRUNED + 1))
+  done <<< "$orphans"
+}
+
+prune_codex_agent_orphans() {
+  local dest="$1"
+  local manifest="$2"
+  local current="$3"
+  local previous orphans name
+
+  previous="$(read_manifest "$manifest")"
+  [ -n "$previous" ] || return 0
+
+  orphans="$(comm -23 \
+    <(printf '%s\n' "$previous" | sort -u) \
+    <(printf '%s\n' "$current" | sort -u))"
+
+  [ -n "$orphans" ] || return 0
+
+  echo "  고아 codex agent 제거 중:"
+  while IFS= read -r name; do
+    [ -n "$name" ] || continue
+    local target="$dest/$name.toml"
+    [ -f "$target" ] || continue
+    rm -f "$target"
+    echo "    ✗ $name"
+    CODEX_AGENTS_PRUNED=$((CODEX_AGENTS_PRUNED + 1))
   done <<< "$orphans"
 }
 
@@ -318,6 +381,46 @@ run_codex_install() {
     local merged
     merged="$({ read_manifest "$CODEX_MANIFEST"; printf '%s\n' "${skills[@]}"; } | sort -u | awk 'NF')"
     write_manifest "$CODEX_MANIFEST" "$merged"
+  fi
+}
+
+# ---- Codex Agents -----------------------------------------------------------
+
+run_codex_agents_install() {
+  local agents=("$@")
+  [ -d "$CODEX_AGENTS_SRC" ] || { echo "  codex agents source not found: $CODEX_AGENTS_SRC" >&2; return 0; }
+  mkdir -p "$CODEX_AGENTS_DEST"
+  echo "Codex agents → $CODEX_AGENTS_DEST"
+
+  local current
+  current="$(list_codex_agents "$CODEX_AGENTS_SRC")"
+
+  if [ "${#agents[@]}" -eq 0 ]; then
+    prune_codex_agent_orphans "$CODEX_AGENTS_DEST" "$CODEX_AGENTS_MANIFEST" "$current"
+    local f
+    for f in "$CODEX_AGENTS_SRC"/ywc-*.toml; do
+      [ -f "$f" ] || continue
+      is_codex_agent_file "$f" || continue
+      install_codex_agent "$f" "$CODEX_AGENTS_DEST"
+      CODEX_AGENTS_INSTALLED=$((CODEX_AGENTS_INSTALLED + 1))
+    done
+    write_manifest "$CODEX_AGENTS_MANIFEST" "$current"
+  else
+    local name src
+    for name in "${agents[@]}"; do
+      src="$CODEX_AGENTS_SRC/$name.toml"
+      if [ ! -f "$src" ] || ! is_codex_agent_file "$src"; then
+        echo "  알 수 없는 codex agent: $name" >&2
+        echo "  사용 가능한 codex agent:" >&2
+        list_codex_agents "$CODEX_AGENTS_SRC" >&2
+        exit 1
+      fi
+      install_codex_agent "$src" "$CODEX_AGENTS_DEST"
+      CODEX_AGENTS_INSTALLED=$((CODEX_AGENTS_INSTALLED + 1))
+    done
+    local merged
+    merged="$({ read_manifest "$CODEX_AGENTS_MANIFEST"; printf '%s\n' "${agents[@]}"; } | sort -u | awk 'NF')"
+    write_manifest "$CODEX_AGENTS_MANIFEST" "$merged"
   fi
 }
 
@@ -558,14 +661,16 @@ usage() {
   cat >&2 <<'EOF'
 Usage:
   bash scripts/install.sh --cc                            Claude Code 전체 설치 (skills + agents)
-  bash scripts/install.sh --codex                         Codex 전체 설치
+  bash scripts/install.sh --codex                         Codex 전체 설치 (skills + agents)
   bash scripts/install.sh --all                           양쪽 전체 설치
   bash scripts/install.sh --cc <skill> [skill...]         Claude Code 특정 스킬
   bash scripts/install.sh --codex <skill> [skill...]      Codex 특정 스킬
   bash scripts/install.sh --cc-agents [agent-name...]     Claude Code agents 만 설치
+  bash scripts/install.sh --codex-agents [agent-name...]  Codex custom agents 만 설치
   bash scripts/install.sh --cc --skip-agents              Claude Code skills 만 설치 (agents 제외)
+  bash scripts/install.sh --codex --skip-agents           Codex skills 만 설치 (agents 제외)
   bash scripts/install.sh --hooks [--global|--local] [hook-name...]  Hook 설치
-  bash scripts/install.sh --list [--cc|--codex|--cc-agents|--hooks]  설치 가능한 목록
+  bash scripts/install.sh --list [--cc|--codex|--cc-agents|--codex-agents|--hooks]  설치 가능한 목록
   bash scripts/install.sh --help                          이 도움말
 
 Environment:
@@ -606,6 +711,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --codex)
       MODE="codex"
+      shift
+      ;;
+    --codex-agents)
+      MODE="codex-agents"
       shift
       ;;
     --all)
@@ -655,6 +764,9 @@ while [ "$#" -gt 0 ]; do
       elif [ "${1:-}" = "--codex" ]; then
         echo "=== Codex ==="
         list_skills "$CODEX_SRC"
+      elif [ "${1:-}" = "--codex-agents" ]; then
+        echo "=== Codex Agents ==="
+        list_codex_agents "$CODEX_AGENTS_SRC"
       else
         echo "=== Claude Code ==="
         list_skills "$CC_SRC"
@@ -664,6 +776,9 @@ while [ "$#" -gt 0 ]; do
         echo ""
         echo "=== Codex ==="
         list_skills "$CODEX_SRC"
+        echo ""
+        echo "=== Codex Agents ==="
+        list_codex_agents "$CODEX_AGENTS_SRC"
       fi
       exit 0
       ;;
@@ -674,7 +789,7 @@ while [ "$#" -gt 0 ]; do
     *)
       if [ "$IN_HOOKS" -eq 1 ]; then
         HOOK_NAMES+=("$1")
-      elif [ "$MODE" = "cc-agents" ]; then
+      elif [ "$MODE" = "cc-agents" ] || [ "$MODE" = "codex-agents" ]; then
         AGENT_NAMES+=("$1")
       else
         SKILLS+=("$1")
@@ -697,6 +812,13 @@ case "$MODE" in
     ;;
   codex)
     run_codex_install "${SKILLS[@]+"${SKILLS[@]}"}"
+    if [ "$SKIP_AGENTS" -eq 0 ] && [ "${#SKILLS[@]}" -eq 0 ]; then
+      echo ""
+      run_codex_agents_install
+    fi
+    ;;
+  codex-agents)
+    run_codex_agents_install "${AGENT_NAMES[@]+"${AGENT_NAMES[@]}"}"
     ;;
   all)
     run_cc_install
@@ -706,12 +828,16 @@ case "$MODE" in
     fi
     echo ""
     run_codex_install
+    if [ "$SKIP_AGENTS" -eq 0 ]; then
+      echo ""
+      run_codex_agents_install
+    fi
     ;;
   hooks)
     run_hook_install "$HOOK_SCOPE" "${HOOK_NAMES[@]+"${HOOK_NAMES[@]}"}"
     ;;
   *)
-    echo "Error: --cc / --cc-agents / --codex / --all / --hooks のいずれかを指定してください" >&2
+    echo "Error: --cc / --cc-agents / --codex / --codex-agents / --all / --hooks のいずれかを指定してください" >&2
     usage
     exit 1
     ;;
@@ -735,6 +861,14 @@ if [ "$CODEX_INSTALLED" -gt 0 ]; then
   msg="Codex: ${CODEX_INSTALLED}개 스킬 설치"
   [ "$CODEX_PRUNED" -gt 0 ] && msg+=" / ${CODEX_PRUNED}개 제거"
   echo "$msg → $CODEX_DEST"
+fi
+if [ "$CODEX_AGENTS_INSTALLED" -gt 0 ]; then
+  msg="Codex agents: ${CODEX_AGENTS_INSTALLED}개 설치"
+  [ "$CODEX_AGENTS_PRUNED" -gt 0 ] && msg+=" / ${CODEX_AGENTS_PRUNED}개 제거"
+  echo "$msg → $CODEX_AGENTS_DEST"
+fi
+if [ "$CODEX_INSTALLED" -gt 0 ] || [ "$CODEX_AGENTS_INSTALLED" -gt 0 ]; then
+  echo "Codex 를 재시작하면 설치된 스킬과 agent 가 반영됩니다."
 fi
 if [ "$HOOKS_INSTALLED" -gt 0 ]; then
   echo "Hooks: ${HOOKS_INSTALLED}개 설치 완료"
