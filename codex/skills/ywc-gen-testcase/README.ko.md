@@ -1,6 +1,6 @@
 # Gen Testcase Skill (ywc-gen-testcase)
 
-GitHub PR, 구현 완료된 Task, 또는 현재 git diff 를 입력으로 받아 **개발자용 Section A (pre-merge gate) 와 QA/Browser용 Section B (pre-release gate) 로 분리된 Checkbox 기반 Testsheet** 를 Markdown 으로 생성하는 Codex Skill 입니다. Default 출력 경로는 project 의 `docs/test-case/` folder 입니다.
+GitHub PR, 구현 완료된 Task directory, Task directory range, Git range, 또는 현재 git diff 를 입력으로 받아 **개발자용 Section A (pre-merge gate) 와 QA/Browser용 Section B (pre-release gate) 로 분리된 Checkbox 기반 Testsheet** 를 Markdown 으로 생성하는 Codex Skill 입니다. Default 출력 경로는 project 의 `docs/test-case/` folder 입니다.
 
 Backend 엔지니어와 QA/PM/Product Owner 가 각자 자신의 Section 에서 독립적으로 병렬 Sign-off 할 수 있어, Merge 결정과 Release 결정을 명확히 분리합니다.
 
@@ -25,6 +25,18 @@ PR URL 로 Testsheet 를 생성합니다:
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table
 ```
+
+### Task Range 기반 생성
+
+`000012-010..000019-010`처럼 두 endpoint 가 task prefix 형태이면, Skill 은 Git Range 보다 먼저 inclusive Task Range 로 해석합니다. `<tasks-dir>` 의 task directory basename 을 사전 순(번호 prefix → 실행 순서)으로 정렬하고, 시작 task 부터 끝 task 까지의 task.md / README.md 를 모두 읽어 Scenario 의 source 로 사용합니다.
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
+```
+
+> Endpoint 가 누락되거나 모호하면 stop 하고 사용자에게 묻습니다. `git rev-parse` 로 fallback 하지 않습니다.
+> 시작 task 가 끝 task 보다 뒤에 있으면 의도가 역방향인지 stop 하고 확인합니다.
+> Branch / tag / SHA 가 우연히 task prefix 처럼 보일 때는 `--range A..B` 로 명시적 Git range 를 강제할 수 있습니다.
 
 ### Git Range 기반 생성
 
@@ -54,7 +66,8 @@ Commit 범위를 직접 지정합니다. SHA, Tag, Branch, `HEAD~N` 모두 accep
 | `--output-dir <path>`    | 출력 Directory (default: `docs/test-case/`)                   | `--output-dir ./qa/manual-tests` |
 | `--lang <code>`          | Testsheet 언어 (`ja`, `ko`, `en`). default: auto-detect        | `--lang ja`                      |
 | `--filename <name>`      | Filename override (`.md` 제외)                                | `--filename release-v2-smoke`    |
-| `--tasks-dir <path>`     | Tasks directory 경로 (default: `tasks/`)                      | `--tasks-dir ./docs/tasks`       |
+| `--tasks-dir <path>`     | Tasks directory 경로 (Task / Task Range 입력에 사용; default: `tasks/`) | `--tasks-dir ./docs/tasks`       |
+| `--format <fmt>`         | 출력 형식 (`markdown` \| `html`). default: `markdown`        | `--format html`                  |
 | `--include-regression`   | Regression Section (B.3) 추가                                 |                                  |
 | `--audience <who>`       | `dev` \| `qa` \| `both`. default: `both` (A+B 통합)           | `--audience qa`                  |
 | `--split`                | 물리적으로 `<slug>-dev.md` + `<slug>-qa.md` 2 파일로 분할     |                                  |
@@ -64,7 +77,7 @@ Commit 범위를 직접 지정합니다. SHA, Tag, Branch, `HEAD~N` 모두 accep
 | `--range <spec>`         | Git range 명시적 지정 (`A..B`). Positional 과 동일            | `--range v1.2..v1.3`             |
 | `--dry-run`              | 생성 계획만 표시 (파일 작성 안 함)                            |                                  |
 
-> PR identifier, Task specifier, Range (`A..B`), `--from-diff` 는 상호 배타적입니다. `--split` 과 `--force-single` 도 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
+> PR identifier, Task specifier, Task Range (positional `<task>..<task>`), Git Range (positional `A..B` 또는 `--range`), `--from-diff` 는 상호 배타적입니다. `--split` 과 `--force-single` 도 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
 
 ## 두 개의 Audience, 두 개의 Gate
 
@@ -127,6 +140,7 @@ Step 6: Validate & Report
 | ----- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | PR    | `pr-<number>-<slug>.md`                                                                    | `pr-<number>-<slug>-dev.md` + `...-qa.md`            |
 | Task  | `task-<phase>-<sequence>-<slug>.md`                                                        | `...-dev.md` + `...-qa.md`                           |
+| Task Range | `tasks-<start-prefix>-<end-prefix>-<slug>.md`                                          | `...-dev.md` + `...-qa.md`                           |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (Tag 양끝이면 `range-v1.2-v1.3-<slug>.md`)      | `...-dev.md` + `...-qa.md`                           |
 | Diff  | `<yyyymmdd-HHMM>-<branch-slug>.md`                                                         | `...-dev.md` + `...-qa.md`                           |
 
@@ -230,6 +244,12 @@ YAML Front Matter, Section 번호, Template 골격은 `--lang` 과 무관하게 
 
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+```
+
+### Task Range (시작 task 부터 끝 task 까지 inclusive)
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
 ```
 
 ### Git Range (Tag 사이)

@@ -1,6 +1,6 @@
 # Gen Testcase Skill (ywc-gen-testcase)
 
-GitHub PR、実装済みの Task directory、または現在の git diff を入力として、**開発者向け Section A (pre-merge gate) と QA/Browser 向け Section B (pre-release gate) に分割された Checkbox 形式の Testsheet** を Markdown で生成する Codex Skill です。Default の出力先は project の `docs/test-case/` directory です。
+GitHub PR、実装済みの Task directory、Task directory range、Git range、または現在の git diff を入力として、**開発者向け Section A (pre-merge gate) と QA/Browser 向け Section B (pre-release gate) に分割された Checkbox 形式の Testsheet** を Markdown で生成する Codex Skill です。Default の出力先は project の `docs/test-case/` directory です。
 
 Backend engineer と QA/PM/Product Owner がそれぞれ自分の section で独立・並列に Sign-off でき、Merge 判断と Release 判断を明確に分離します。
 
@@ -25,6 +25,18 @@ PR URL から生成:
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table
 ```
+
+### Task Range ベース生成
+
+`000012-010..000019-010` のように両端点が task prefix のように見える場合、Skill は Git Range よりも先に inclusive Task Range として解釈します。`<tasks-dir>` 配下の task directory basename を辞書順 (番号 prefix → 実行順序) で並べ、開始 task から終了 task までの `task.md` / `README.md` を scenario の source として全て読み込みます。
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
+```
+
+> 端点が欠落または曖昧な場合、Skill は停止して利用者に確認します。task-like な端点に対して `git rev-parse` に fallback **しません**。
+> 開始 task が終了 task より後にある場合、逆向き range が意図かどうか停止して確認します。
+> Branch / tag / SHA が偶然 task prefix のように見えるときは `--range A..B` で明示的に Git range を強制できます。
 
 ### Git Range ベース生成
 
@@ -54,7 +66,8 @@ PR URL から生成:
 | `--output-dir <path>` | 出力 directory を上書き (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
 | `--lang <code>` | Testsheet の言語 (`ja`, `ko`, `en`)。default: auto-detect | `--lang ja` |
 | `--filename <name>` | Filename override (`.md` 不要) | `--filename release-v2-smoke` |
-| `--tasks-dir <path>` | Tasks directory パス (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--tasks-dir <path>` | Task および Task Range 入力で使用する tasks directory パス (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--format <fmt>` | 出力 format (`markdown` \| `html`)。default: `markdown` | `--format html` |
 | `--include-regression` | Regression section (B.3) を追加 | |
 | `--audience <who>` | `dev` \| `qa` \| `both`。default: `both` (A+B 統合) | `--audience qa` |
 | `--split` | `<slug>-dev.md` + `<slug>-qa.md` の 2 file に物理分割 | |
@@ -64,7 +77,7 @@ PR URL から生成:
 | `--range <spec>` | Git range を明示指定 (`A..B`)。positional と等価 | `--range v1.2..v1.3` |
 | `--dry-run` | 生成計画のみ表示 (file は書き出さない) | |
 
-> PR identifier・Task specifier・Range (`A..B`)・`--from-diff` は相互排他です。`--split` と `--force-single` も相互排他です。複数指定すると Skill は中断し、どの mode を意図したか確認します。
+> PR identifier・Task specifier・Task Range (positional `<task>..<task>`)・Git Range (positional `A..B` または `--range`)・`--from-diff` は相互排他です。`--split` と `--force-single` も相互排他です。複数指定すると Skill は中断し、どの mode を意図したか確認します。
 
 ## 2 つの Audience、2 つの Gate
 
@@ -127,6 +140,7 @@ Step 6: Validate & Report
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
 | Task | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Task Range | `tasks-<start-prefix>-<end-prefix>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (両端が tag なら `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 
@@ -230,6 +244,12 @@ YAML front matter の key、section 番号、template 骨格は `--lang` に関�
 
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+```
+
+### Task Range (開始 task から終了 task まで inclusive)
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
 ```
 
 ### Git Range (tag 間)

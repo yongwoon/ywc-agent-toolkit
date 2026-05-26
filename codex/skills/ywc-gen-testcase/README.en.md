@@ -1,6 +1,6 @@
 # Gen Testcase Skill (ywc-gen-testcase)
 
-This Codex Skill takes a GitHub PR, a completed task directory, or the current git diff and produces a **dual-audience checkbox-driven markdown testsheet**: Section A for developers (pre-merge gate) and Section B for QA/Browser (pre-release gate). The default output path is the project's `docs/test-case/` directory.
+This Codex Skill takes a GitHub PR, a completed task directory, a task directory range, a Git range, or the current git diff and produces a **dual-audience checkbox-driven markdown testsheet**: Section A for developers (pre-merge gate) and Section B for QA/Browser (pre-release gate). The default output path is the project's `docs/test-case/` directory.
 
 Backend engineers and QA/PM/Product Owner can each sign off on their own section independently and in parallel — so a merge decision and a release decision are cleanly separated.
 
@@ -25,6 +25,18 @@ Within the same repository, a PR number is sufficient:
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table
 ```
+
+### Task Range generation
+
+When both endpoints look like task prefixes (e.g. `000012-010..000019-010`), the Skill resolves the input as an inclusive Task Range before trying Git Range. It sorts task directory basenames in `<tasks-dir>` lexicographically (numbered prefixes are designed to sort in execution order) and reads `task.md` / `README.md` for every task from the start through the end as scenario sources.
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
+```
+
+> If either endpoint is missing or ambiguous, the Skill stops and asks. It does **not** fall back to `git rev-parse` for task-like endpoints.
+> If the start task appears after the end task in the ordered list, the Skill stops and asks whether the reverse range was intended.
+> When a branch / tag / SHA happens to look like a task prefix, force Git Range with `--range A..B`.
 
 ### Git Range generation
 
@@ -54,7 +66,8 @@ Generate from an arbitrary commit range. SHA, tag, branch name, and `HEAD~N` all
 | `--output-dir <path>` | Override output directory (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
 | `--lang <code>` | Testsheet language (`ja`, `ko`, `en`). Default: auto-detect | `--lang ja` |
 | `--filename <name>` | Filename override (without `.md`) | `--filename release-v2-smoke` |
-| `--tasks-dir <path>` | Tasks directory (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--tasks-dir <path>` | Tasks directory used by Task and Task Range inputs (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--format <fmt>` | Output format (`markdown` \| `html`). Default: `markdown` | `--format html` |
 | `--include-regression` | Add a Regression section (B.3) | |
 | `--audience <who>` | `dev` \| `qa` \| `both`. Default: `both` (single file, A+B) | `--audience qa` |
 | `--split` | Physically split into `<slug>-dev.md` + `<slug>-qa.md` | |
@@ -64,7 +77,7 @@ Generate from an arbitrary commit range. SHA, tag, branch name, and `HEAD~N` all
 | `--range <spec>` | Explicit git range (`A..B`). Equivalent to positional | `--range v1.2..v1.3` |
 | `--dry-run` | Show the generation plan only (no file written) | |
 
-> PR identifier, task specifier, range (`A..B`), and `--from-diff` are mutually exclusive. `--split` and `--force-single` are mutually exclusive. If incompatible flags are passed, the Skill stops and asks which mode you intended.
+> PR identifier, task specifier, Task Range (positional `<task>..<task>`), Git Range (positional `A..B` or `--range`), and `--from-diff` are mutually exclusive. `--split` and `--force-single` are mutually exclusive. If incompatible flags are passed, the Skill stops and asks which mode you intended.
 
 ## Two audiences, two gates
 
@@ -127,6 +140,7 @@ Step 6: Validate & Report
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
 | Task | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Task Range | `tasks-<start-prefix>-<end-prefix>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (tag names used when both endpoints are tags, e.g. `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 
@@ -232,6 +246,12 @@ Downstream of the implementation-oriented `ywc` skills:
 
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+```
+
+### Task Range (inclusive, from start task to end task)
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
 ```
 
 ### Git Range (between two tags)

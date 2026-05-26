@@ -7,7 +7,7 @@ description: (ywc) Use when generating a manual verification testsheet (develope
 
 **Announce at start:** "I'm using the ywc-gen-testcase skill to produce a dual-audience (developer + QA) testsheet."
 
-Produce a **dual-audience** testsheet (markdown with checkboxes) from one of three inputs — a GitHub PR, an implemented task directory, or the current git diff. The testsheet cleanly separates what the **developer** does (DB queries, curl contracts, container logs) from what a **QA/PM/Product Owner** does in a browser, so both gates — pre-merge and pre-release — can be signed off independently and in parallel.
+Produce a **dual-audience** testsheet (markdown with checkboxes) from a GitHub PR, an implemented task directory, a task directory range, a git range, or the current git diff. The testsheet cleanly separates what the **developer** does (DB queries, curl contracts, container logs) from what a **QA/PM/Product Owner** does in a browser, so both gates — pre-merge and pre-release — can be signed off independently and in parallel.
 
 ## Rationalization Defense
 
@@ -33,6 +33,7 @@ Exactly one input mode must resolve. If more than one is given, stop and ask —
 |---|---|---|
 | **PR** | PR URL or PR number | `gh pr view`, `gh pr diff` |
 | **Task** | Task name or `<phase>-<sequence>` prefix | `<tasks-dir>/<task>/task.md` + `README.md` |
+| **Task Range** | Positional `<task-start>..<task-end>` | Inclusive ordered task directories from `<tasks-dir>` |
 | **Range** | Positional `<start>..<end>` (SHA / tag / branch / `HEAD~N`) or `--range <spec>` | `git log`, `git diff <start>..<end>` |
 | **Diff** | `--from-diff` flag | Current `git diff HEAD` |
 
@@ -46,20 +47,22 @@ Parse `$ARGUMENTS`.
 |---|---|---|---|
 | PR identifier | URL or number | `250` | Fetches PR metadata + diff via `gh` |
 | Task specifier | name or prefix | `000001-010` | Prefix match against `<tasks-dir>` |
+| Task range | `<task-start>..<task-end>` | `000012-010..000019-010` | Inclusive range of ordered task directories. Resolve before treating positional `A..B` as a git range |
 | `--from-diff` | flag | | Use `git diff HEAD` |
-| `--range <spec>` | `<start>..<end>` | `--range v1.2..v1.3` | Explicit range form (equivalent to positional `A..B`). Two-dot only — three-dot `A...B` is rejected |
+| `--range <spec>` | `<start>..<end>` | `--range v1.2..v1.3` | Explicit git range form. Two-dot only — three-dot `A...B` is rejected |
 | `--output-dir <path>` | path | `--output-dir ./docs/qa` | Override `docs/test-case/` |
 | `--lang <code>` | `ja`,`ko`,`en` | `--lang ja` | Prose language. Default: auto-detect |
 | `--filename <name>` | string | `--filename release-smoke` | Override derived filename (no `.md`) |
-| `--tasks-dir <path>` | path | `--tasks-dir ./docs/tasks` | Tasks directory (Task input only) |
+| `--tasks-dir <path>` | path | `--tasks-dir ./docs/tasks` | Tasks directory (Task and Task Range input only) |
 | `--include-regression` | flag | | Add Regression section (B side) |
 | `--audience <who>` | `dev`\|`qa`\|`both` | `--audience qa` | Generate only one audience. Default: `both` (single file, A+B sections) |
 | `--split` | flag | | Force physical split into `<slug>-dev.md` + `<slug>-qa.md`. Mutually exclusive with `--force-single` |
 | `--force-single` | flag | | Bypass the L-tier split suggestion and always produce one file |
 | `--no-toc` | flag | | Suppress TOC auto-insertion for M/L tier |
 | `--dry-run` | flag | | Show plan (tier, filenames, section counts) without writing |
+| `--format` | `markdown`\|`html` | `--format html` | Output format. Default `markdown`. With `html`, writes an interactive HTML testsheet (see Step 5). |
 
-**Flag conflicts**: `--split` and `--force-single` cannot coexist — stop and ask. `--audience dev|qa` implies a single-audience file; `--split` in that combination is redundant and is silently ignored. **Range input** is mutually exclusive with PR, Task, and `--from-diff` — stop and ask if more than one is given. Range accepts only the two-dot `A..B` form; three-dot `A...B` is rejected because its merge-base semantics silently change scope and surprise the tester.
+**Flag conflicts**: `--split` and `--force-single` cannot coexist — stop and ask. `--audience dev|qa` implies a single-audience file; `--split` in that combination is redundant and is silently ignored. **Git range input** is mutually exclusive with PR, Task, Task Range, and `--from-diff` — stop and ask if more than one is given. Range accepts only the two-dot `A..B` form; three-dot `A...B` is rejected because its merge-base semantics silently change scope and surprise the tester.
 
 ## Context
 
@@ -78,6 +81,15 @@ Parse `$ARGUMENTS`.
 
 ## Step 1: Input Resolution
 
+Resolve input mode in this order:
+
+1. Explicit PR, task, `--from-diff`, and `--range` flags/phrases.
+2. For positional two-dot `A..B`, reject `A...B` first.
+3. For positional two-dot `A..B`, check whether either endpoint is task-like (for example, starts with `000012-010`) or resolves as a task prefix under `<tasks-dir>`. If yes, use **Task Range** mode. Do not run `git rev-parse` before this task-range check.
+4. If the positional two-dot endpoints are not task-like and do not resolve as task prefixes, use **Git Range** mode.
+
+`--range A..B` always means Git Range. Use it when a branch, tag, or SHA happens to look like a task prefix.
+
 ### 1a. PR input
 
 ```bash
@@ -89,14 +101,26 @@ Capture PR URL, title, body, author, head/base branches, labels, changed files, 
 
 ### 1b. Task input
 
+- Determine `<tasks-dir>` from `--tasks-dir`; if omitted, use the first existing directory among `tasks/`, `docs/tasks/`, `docs/specification/tasks/`, and `docs/specifications/tasks/`.
 - Resolve the task directory via prefix match. Prefer `<tasks-dir>/completed/<name>/` over `<tasks-dir>/<name>/` — a testsheet after merge is the common case.
 - Read `task.md` (Implementation Steps, Acceptance Criteria, Verify commands) and `README.md` in full.
 
-### 1c. Diff input
+### 1c. Task Range input
+
+Use this mode for positional task ranges such as `000012-010..000019-010`.
+
+- Resolve each endpoint with the same prefix-match rule as Task input.
+- Build the ordered task list from directory basenames under `<tasks-dir>`, including common status buckets such as `completed/`. Sort by basename lexicographically; numbered task prefixes are designed to sort in execution order.
+- Include every task from the resolved start task through the resolved end task, inclusive.
+- If either endpoint is missing or ambiguous, report the missing/ambiguous task endpoint and stop. Do not fall back to Git Range for task-like endpoints.
+- If the start task appears after the end task in the ordered list, stop and ask whether the user intended the reverse range. Do not silently swap endpoints.
+- Read each selected task's `task.md` and `README.md` in full. Use task Acceptance Criteria and Verify commands as the primary scenario source, grouped by task in the Summary and Appendix when needed.
+
+### 1d. Diff input
 
 - `git diff HEAD` plus `git log <base>..HEAD --oneline` (auto-detect `<base>`: `develop` > `main` > `master`). Stop on empty diff.
 
-### 1d. Range input
+### 1e. Git Range input
 
 Positional `<start>..<end>` or `--range <spec>`. Each endpoint accepts SHA, tag, branch, or a relative ref like `HEAD~5`. Reject the three-dot form `A...B` explicitly.
 
@@ -107,7 +131,7 @@ Collect:
 - `git diff <start>..<end>` — the change set (used for surface classification)
 - Stop immediately on an empty range
 
-### 1e. Range quality checks (range input only)
+### 1f. Range quality checks (git range input only)
 
 Range mode lacks PR body / Task Acceptance Criteria, so scenario quality is sensitive to commit-message hygiene and scope size. Three protective checks run before Step 2 to prevent low-quality testsheets from being generated silently:
 
@@ -208,12 +232,27 @@ Explicit flags override the tier default:
 
 ## Step 5: Write the Testsheet
 
+### Output format
+
+Default is a Markdown testsheet (`.md`) — keep this for the existing `-v<N>`
+append and front-matter sign-off workflow. With `--format html`, write an
+**interactive HTML testsheet** instead, following
+[html-output.md](../references/html-output.md): each scenario checkbox is
+clickable, sign-off state (tester name, Pass/Fail/Blocked, notes) persists in
+the browser via `localStorage`, and a `Copy as Markdown` button exports the
+current sign-off state back to the Markdown testsheet format so the result can
+be pasted into a PR or committed. HTML mode is recommended when the testsheet
+will be handed to a QA/PM who signs off in a browser; the filename follows the
+Default filename table below with an `.html` extension. The Markdown surface
+(front matter included) is preserved inside the file.
+
 ### Default filename
 
 | Input | Single file (default) | `--split` mode |
 |---|---|---|
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
 | Task | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Task Range | `tasks-<start-prefix>-<end-prefix>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (tag names used verbatim when both endpoints are tags, e.g. `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 
@@ -225,8 +264,10 @@ Write `<output-dir>/<filename>.md` using this skeleton. Keep front matter keys i
 
 ````markdown
 ---
-source: <pr#N | task:<name> | diff | range>
+source: <pr#N | task:<name> | task-range:<start>..<end> | diff | range>
 pr_url: <url or "">
+task_range_spec: <e.g. "000012-010..000019-010" or "">
+task_count: <number or "">
 range_spec: <e.g. "main..feature-x" or "">
 range_start: <short SHA or tag, or "">
 range_end: <short SHA or tag, or "">
@@ -344,7 +385,7 @@ Apply these regardless of tier to keep testsheets lean:
 
 1. **Prerequisites common-prefix + audience-suffix** — shared rows live once in `## 2.0 Common`; dev-only / qa-only rows live in `## 2.A` / `## 2.B`. Never duplicate.
 2. **Extract long verification material** — any SQL / script > 20 lines lives in `scripts/qa/*.sql` (or similar) and the scenario references the path only. The scenario body stays short.
-3. **Regression by reference** — instead of repeating known-good regression flows, link to prior testsheets (e.g. `[Stripe release testsheet](./pr-230-stripe-release.md)`).
+3. **Regression by reference** — instead of repeating known-good regression flows, link to prior testsheets (e.g. `Stripe release testsheet: ./pr-230-stripe-release.md`).
 4. **Appendix at the bottom** — overflow content (detailed troubleshooting, sample payloads) goes under `## Appendix` and is linked from the relevant scenario.
 
 Applied consistently, these four rules keep most M-tier testsheets under ~800 lines and prevent L-tier by shifting volume out of the main flow.
@@ -363,7 +404,7 @@ Report:
 
 ```text
 Testsheet generated: <absolute path(s)>
-Source: <pr#N | task:<name> | diff>
+Source: <pr#N | task:<name> | task-range:<start>..<end> | diff | range>
 Tier: <S | M | L>
 Layout: <single | split>
 Audiences: <A only | B only | A+B>
@@ -381,7 +422,7 @@ Next steps:
 
 When `--lang` is not specified, choose in this order. A testsheet is read by humans, so match the language humans speak on this project — not the language the code is written in.
 
-1. **CLAUDE.md / AGENTS.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `PR言語` → the strongest signal.
+1. **AGENTS.md / CODEX.md / CLAUDE.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `PR言語` → the strongest signal.
 2. **Recent testsheets in the output directory** — match dominant prose language.
 3. **Project `README.md`** — language of the root README.
 4. **Fallback** — English.
@@ -408,6 +449,8 @@ Do **not** write any file. Exit after printing.
 | No input given | Stop, ask for PR / task / range / `--from-diff` |
 | Multiple inputs given (PR + Range, Task + Range, Range + `--from-diff`, etc.) | Stop, ask which mode |
 | Three-dot range `A...B` passed | Reject and ask for the two-dot `A..B` form instead |
+| Task range endpoint missing or ambiguous | Report the endpoint and similar task names; stop without trying `git rev-parse` |
+| Task range start appears after end | Stop and ask whether the user intended the reverse range |
 | Range ref invalid (`git rev-parse` fails on `<start>` or `<end>`) | Report which ref failed; stop |
 | Range empty (`<end>` has no commits absent from `<start>`) | Report "range is empty"; stop |
 | Range > 50 commits | Escalate to L-tier handling (ask user how to proceed) |
@@ -434,66 +477,4 @@ Invoke this skill after those finish, when a human tester is ready to validate.
 
 ## Examples
 
-### Example 1: PR URL, default (single file, A+B)
-
-```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
-```
-
-### Example 2: Force physical split (two files)
-
-```text
-/ywc-gen-testcase 250 --split --lang ja
-```
-
-### Example 3: QA-only testsheet (to hand to QA team)
-
-```text
-/ywc-gen-testcase 250 --audience qa --lang ja
-```
-
-### Example 4: Force single file even if L tier
-
-```text
-/ywc-gen-testcase 250 --force-single
-```
-
-### Example 5: Task-based with regression
-
-```text
-/ywc-gen-testcase 000001-010-db-create-users-table --include-regression
-```
-
-### Example 6: Current diff, custom filename
-
-```text
-/ywc-gen-testcase --from-diff --filename smoke-before-release
-```
-
-### Example 7: Range between two tags
-
-```text
-/ywc-gen-testcase v1.2..v1.3
-```
-
-Generates `range-v1.2-v1.3-<slug>.md`. Auto-suggest will propose PR mode if the HEAD of the range is in a PR.
-
-### Example 8: Pre-PR local range
-
-```text
-/ywc-gen-testcase HEAD~5..HEAD --lang ja
-```
-
-Useful when you have local commits that are not yet pushed or PR'd and want a testsheet for review.
-
-### Example 9: Explicit `--range` flag form
-
-```text
-/ywc-gen-testcase --range abc1234..def5678
-```
-
-### Example 10: Dry-run to preview tier decision
-
-```text
-/ywc-gen-testcase 250 --dry-run
-```
+For invocation examples across PR, task, diff, and range modes, read [references/examples.md](references/examples.md).
