@@ -11,7 +11,7 @@ allowed tools: Bash, Read
 
 # Merge Dependabot Pull Requests
 
-**Announce at start:** "I'm using the ywc-merge-dependabot skill to merge Dependabot PRs sequentially with CI verification."
+**Announce at start:** "I'm using the ywc-merge-dependabot skill to merge Dependabot PRs with CI verification — sequential by default, or parallel-auto (ecosystem-grouped queue) when requested."
 
 Safely merge Dependabot PRs with CI verification, conflict resolution, and clear reporting.
 
@@ -21,7 +21,10 @@ When tempted to skip a step, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "Multiple Dependabot PRs, batch-merge them in parallel" | Sequential only. Parallel merges race on the same package-lock and produce conflicts. |
+| "All ecosystems can run in parallel — fire all merges at once without grouping" | No. Within an ecosystem (e.g., multiple npm PRs all touching `package-lock.json`) merges still serialize via GitHub's auto-merge queue. parallel-auto only fans out across non-overlapping ecosystems, not within one. |
+| "Mixed-ecosystem PR (touches both `package.json` and `pom.xml`) is fine to auto-merge" | No. Mixed PRs go to a final sequential pass; `--auto` cannot guarantee ordering when a single PR crosses two parallel groups. |
+| "Just queue everything with `--auto` and walk away" | The polling loop and final summary are non-optional. Without them users have no audit trail of which PRs failed, why, or whether the queue stalled. |
+| "Repo doesn't have auto-merge enabled, fall through silently" | If `parallel-auto` is requested but `gh repo view --json autoMergeAllowed` returns `false`, fall back to sequential mode and tell the user — never pretend the queue is running. |
 | "CI is green but lockfile shows different hash, merge anyway" | Lockfile mismatch indicates dirty working state. Stop and rebase the PR first. |
 | "Major version bump looks safe, just merge" | Major bumps need explicit user confirmation. Default action: skip and report for human review. |
 | "Conflicts with main, force-push my own resolution" | Use Dependabot's `@dependabot rebase` comment instead. Hand-resolved conflicts in dep PRs hide breaking changes. |
@@ -37,14 +40,38 @@ When tempted to skip a step, check this table first:
 
 ## Mode Selection
 
-This skill supports two modes based on `$ARGUMENTS`:
+This skill supports two orthogonal flags inside `$ARGUMENTS`. Parse the argument string as a set of space-separated tokens.
 
-| Argument contains | Mode | Behavior |
+**Scope flag** — controls which PRs are eligible:
+
+| Token | Scope |
+| --- | --- |
+| `security` | Security-related Dependabot PRs only |
+| _(token absent)_ | All Dependabot PRs |
+
+**Execution flag** — controls how eligible PRs are processed:
+
+| Token | Execution | When to use |
 | --- | --- | --- |
-| `security` | Security-only | Merge only security-related Dependabot PRs |
-| _(anything else or empty)_ | All | Merge all Dependabot PRs |
+| `parallel-auto` | Group eligible PRs by lockfile ecosystem; queue every PR with `gh pr merge --auto`; GitHub serializes within each ecosystem and processes ecosystems in parallel; one final sequential pass clears the `mixed` bucket | Many PRs (≥ 5) across multiple ecosystems (npm + github-actions + python …) where wall-clock CI wait is the bottleneck |
+| _(token absent)_ | Sequential — one PR at a time, ascending PR number | Small batches, repos with strict branch protection, or environments where auto-merge is disabled |
+
+Examples:
+
+- `(empty)` → all PRs, sequential (default)
+- `security` → security PRs only, sequential
+- `parallel-auto` → all PRs, ecosystem-grouped auto-merge
+- `security parallel-auto` → security PRs only, ecosystem-grouped auto-merge
 
 Security-related PRs are identified by labels like `security`, PR title containing "security", or Dependabot's security advisory metadata. When in doubt about whether a PR is security-related, check the PR body for CVE references or GitHub Security Advisory links.
+
+**Parallel-auto prerequisite:** before entering parallel-auto mode, verify the repository allows auto-merge:
+
+```bash
+gh repo view --json autoMergeAllowed --jq .autoMergeAllowed
+```
+
+If the value is `false`, announce the fallback ("Auto-merge is not enabled on this repository — falling back to sequential mode") and proceed as if `parallel-auto` were absent. Never silently skip the queueing and pretend the work is in progress.
 
 ## Task
 
@@ -75,7 +102,38 @@ For each PR, run these checks **before** attempting to merge. If any check fails
 
 To detect major version bumps, compare the version numbers in the PR title (Dependabot titles typically follow the pattern "Bump X from A to B"). A major bump means the leftmost non-zero version segment changed.
 
+### 2.5. Ecosystem Grouping (parallel-auto mode only)
+
+Skip this step in sequential mode. In parallel-auto mode, classify the eligible PR list by lockfile ecosystem using the bundled script. Resolve the script path relative to this skill folder (the directory containing this `SKILL.md`), not relative to the target repository.
+
+```bash
+python3 /path/to/ywc-merge-dependabot/scripts/group-by-ecosystem.py {pr_numbers...}
+```
+
+Replace `/path/to/ywc-merge-dependabot` with the actual skill directory path.
+
+The script returns single-line JSON of the shape `{"groups": {ecosystem: [pr...]}, "errors": [...]}`. Recognised ecosystems: `npm`, `github-actions`, `python`, `go`, `cargo`, `maven`, `gradle`, `docker`. PRs touching no recognised marker, or markers from two or more ecosystems, land in the `mixed` group.
+
+The grouping serves two purposes:
+
+1. **Audit trail** — the final summary records which ecosystem each PR belonged to and which ones GitHub serialized vs parallelized.
+2. **Mixed-bucket isolation** — `mixed` PRs are deliberately held back to a final sequential pass (Step 3b stage 3) so a single PR that crosses two parallel groups cannot race with itself.
+
+Surface the grouping breakdown to the user before merging:
+
+```
+Ecosystem grouping (8 PRs eligible):
+  - npm:            #201, #205, #207
+  - github-actions: #203, #209
+  - python:         #204, #208
+  - mixed:          #211
+```
+
 ### 3. Merge Process
+
+Choose the flow based on the execution flag from Mode Selection. Both flows preserve the same safety contract — only the merge invocation and waiting strategy differ.
+
+#### 3a. Sequential Flow (default)
 
 Process PRs one at a time in ascending PR number order. This is important because merging one PR can create conflicts in subsequent PRs.
 
@@ -111,6 +169,61 @@ gh pr merge {number} --merge
 
 After each successful merge, note it — the next PR in the queue may now have conflicts caused by this merge.
 
+#### 3b. Parallel-Auto Flow
+
+In parallel-auto mode the client offloads serialization to GitHub's auto-merge queue. The flow has three stages and the client never blocks on per-PR CI manually — GitHub handles rebase and CI orchestration.
+
+**Stage 1 — Queue every non-mixed PR for auto-merge:**
+
+For each ecosystem group's PRs (the order across groups does not matter — they are non-conflicting by construction), queue them all at once:
+
+```bash
+gh pr merge {number} --auto --merge
+```
+
+This sets the PR to merge automatically as soon as its CI is green and the branch is up to date. PRs sharing a lockfile (same ecosystem) automatically serialize because each merge invalidates the next PR's branch state, and Dependabot rebases the affected PRs; PRs in different ecosystems progress in parallel because GitHub processes them independently.
+
+**Stage 2 — Poll the queue until it drains:**
+
+Track each queued PR's state until it reaches a terminal state. Use a single bounded loop (do not spin in tight retries):
+
+```bash
+# Wait up to 30 minutes total, polling every 60 seconds.
+deadline=$(( $(date +%s) + 1800 ))
+remaining=(101 105 107 203 209 204 208)   # queued PR numbers
+declare -A status
+while [ ${#remaining[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ]; do
+  next=()
+  for pr in "${remaining[@]}"; do
+    pr_state=$(gh pr view "$pr" --json state --jq '.state' 2>/dev/null || echo UNKNOWN)
+    merge_status=$(gh pr view "$pr" --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
+    if [ "$pr_state" = "MERGED" ]; then
+      status[$pr]="merged"
+    elif [ "$pr_state" = "CLOSED" ]; then
+      status[$pr]="closed"
+    elif [ "$merge_status" = "CONFLICTING" ] || [ "$merge_status" = "DIRTY" ]; then
+      # Stay in queue — Dependabot or a maintainer may rebase before the deadline.
+      next+=("$pr")
+    else
+      next+=("$pr")
+    fi
+  done
+  remaining=("${next[@]}")
+  [ ${#remaining[@]} -gt 0 ] && sleep 60
+done
+
+# Any PR still in `remaining` after the loop is recorded as queue-stalled.
+for pr in "${remaining[@]}"; do
+  status[$pr]="stalled"
+done
+```
+
+PRs that reach `MERGED` are recorded as `Merged`. PRs still in the `remaining` list after the deadline are recorded as `Failed (queue stalled)` so the user can investigate. Do not extend the deadline silently — if the queue genuinely needs more time, the user can rerun the skill.
+
+**Stage 3 — Final sequential pass for the mixed bucket:**
+
+After the parallel queue has drained (Stage 2 returned), process the `mixed` group using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
+
 ### 4. Final Summary
 
 After processing all PRs, report results in this format:
@@ -118,15 +231,24 @@ After processing all PRs, report results in this format:
 ```
 ## Dependabot Merge Results
 
-- ✅ Merged: #123 Bump axios from 1.6.0 to 1.7.2
-- ✅ Merged: #125 Bump lodash from 4.17.20 to 4.17.21
-- ⏭️ Skipped (Dockerfile): #127 Bump node from 18 to 20
-- ⏭️ Skipped (Major version upgrade): #130 Bump webpack from 4.46.0 to 5.90.0
-- ❌ Failed: #132 Bump express from 4.18.0 to 4.19.2 — conflict caused by #125 merge, could not resolve
+Mode: parallel-auto (security)
+Ecosystem groups processed: npm (3), github-actions (2), python (2), mixed (1)
+
+- ✅ Merged    (npm)            : #123 Bump axios from 1.6.0 to 1.7.2
+- ✅ Merged    (npm)            : #125 Bump lodash from 4.17.20 to 4.17.21
+- ✅ Merged    (github-actions) : #129 Bump actions/checkout from 4.1.1 to 4.2.0
+- ⏭️ Skipped   (Dockerfile)     : #127 Bump node from 18 to 20
+- ⏭️ Skipped   (Major version)  : #130 Bump webpack from 4.46.0 to 5.90.0
+- ❌ Failed    (queue stalled)  : #132 Bump express from 4.18.0 to 4.19.2 — CONFLICTING after 30 min
+- ❌ Failed    (mixed pass)     : #135 Bump aws-sdk + boto3 — manual conflict resolution required
+
+Total: 3 merged / 2 skipped / 2 failed
 ```
 
 Include:
-- Processing order (ascending by PR number)
+- Mode line — scope flag + execution flag, so the reader can reproduce the run
+- Ecosystem group summary — only when parallel-auto was used; the count tells the reader how many groups GitHub serialized in parallel
+- Per-PR result — for parallel-auto, annotate each line with the ecosystem; for sequential, omit the annotation
 - If a previous merge affected a subsequent PR, note which PR caused the issue
 - Total counts: merged / skipped / failed
 
@@ -143,7 +265,8 @@ Include:
 
 - Follow any additional instructions in `$ARGUMENTS`
 - Never force-merge or bypass branch protection rules
-- If the number of PRs is large (>20), ask the user for confirmation before proceeding
+- If the number of PRs is large (>20), ask the user for confirmation before proceeding. For batches of that size, also recommend `parallel-auto` mode if the eligible PRs span more than one ecosystem
+- `parallel-auto` reduces wall-clock time by letting GitHub run the CI cycle for non-conflicting groups concurrently. It does not reduce the *per-PR* CI cost, the safety surface, or the conflict-resolution requirements — it only changes how the queue is orchestrated
 
 ## Integration
 

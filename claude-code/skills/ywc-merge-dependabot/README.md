@@ -11,6 +11,7 @@
 - Pre-Merge 안전 검증 (Dockerfile, Major Version, CI Status)
 - Merge Conflict 자동 해결 시도
 - PR 번호 오름차순 순차 처리 (이전 Merge가 이후 PR에 미치는 영향 고려)
+- **Parallel-auto Mode** — 다수 PR 처리 시 lockfile ecosystem 별로 grouping 한 뒤 GitHub auto-merge queue 에 위임하여 wall-clock 시간을 단축
 - 처리 결과 Summary Report 자동 생성
 
 **사용 대상:**
@@ -28,11 +29,17 @@
 Claude Code에서 다음과 같이 호출합니다:
 
 ```
-# 전체 Dependabot PR Merge
-/merge-dependabot
+# 전체 Dependabot PR Merge (sequential, default)
+/ywc-merge-dependabot
 
-# Security 관련 PR만 Merge
-/merge-dependabot security
+# Security 관련 PR만 Merge (sequential)
+/ywc-merge-dependabot security
+
+# 전체 PR 을 ecosystem 별 parallel-auto queue 로 처리
+/ywc-merge-dependabot parallel-auto
+
+# Security PR 만 parallel-auto 로 처리
+/ywc-merge-dependabot security parallel-auto
 ```
 
 또는 자연어로:
@@ -40,6 +47,7 @@ Claude Code에서 다음과 같이 호출합니다:
 ```
 User: dependabot이 만든 PR들을 merge해줘
 User: dependabot security PR만 merge해줘
+User: dependabot PR 이 많으니 parallel-auto 로 빠르게 처리해줘
 ```
 
 ### 전제 조건
@@ -52,24 +60,46 @@ User: dependabot security PR만 merge해줘
 
 ## Mode 설명
 
-### 1. All Mode (기본)
+본 Skill 은 두 축의 직교 Flag 를 지원합니다.
 
-모든 Dependabot PR을 대상으로 Merge합니다.
+- **Scope flag** — 어떤 PR 을 대상으로 할지 결정 (`security` 또는 기본 = 전체)
+- **Execution flag** — 어떻게 처리할지 결정 (`parallel-auto` 또는 기본 = sequential)
 
-```
-/merge-dependabot
-```
+### 1. All Mode (기본 Scope, 기본 Execution)
 
-### 2. Security Mode
-
-Security 관련 PR만 선별하여 Merge합니다. 다음 조건으로 Security PR을 식별합니다:
-
-- `security` Label이 있는 PR
-- Title 또는 Body에 "security advisory", "CVE-", "GHSA-", "vulnerability" 포함
-- Dependabot Security Advisory Metadata가 Body에 존재
+모든 Dependabot PR 을 순차적으로 Merge 합니다.
 
 ```
-/merge-dependabot security
+/ywc-merge-dependabot
+```
+
+### 2. Security Mode (Scope: security)
+
+Security 관련 PR 만 선별하여 Merge 합니다. 다음 조건으로 Security PR 을 식별합니다:
+
+- `security` Label 이 있는 PR
+- Title 또는 Body 에 "security advisory", "CVE-", "GHSA-", "vulnerability" 포함
+- Dependabot Security Advisory Metadata 가 Body 에 존재
+
+```
+/ywc-merge-dependabot security
+```
+
+### 3. Parallel-Auto Mode (Execution: parallel-auto)
+
+다수 PR (≥ 5) 이 여러 ecosystem 에 걸쳐 누적되어 wall-clock CI 대기가 병목인 경우 사용합니다. 동작 방식:
+
+1. 모든 eligible PR 을 `npm`, `github-actions`, `python`, `go`, `cargo`, `maven`, `gradle`, `docker` group 으로 분류 (`scripts/group-by-ecosystem.py` 사용)
+2. 각 PR 에 대해 `gh pr merge --auto` 로 auto-merge 예약
+3. GitHub Server 측에서 동일 ecosystem 은 직렬 merge, 서로 다른 ecosystem 은 병렬 merge 수행
+4. Client 는 polling 으로 queue 상태 추적 (최대 30분)
+5. Mixed-ecosystem PR (둘 이상의 lockfile 을 동시 변경) 은 마지막에 sequential pass 로 처리
+
+**전제조건:** Repository 에 "Allow auto-merge" 설정이 활성화되어 있어야 합니다. 비활성 상태에서는 sequential mode 로 자동 fallback 됩니다.
+
+```
+/ywc-merge-dependabot parallel-auto
+/ywc-merge-dependabot security parallel-auto
 ```
 
 ---
@@ -88,9 +118,17 @@ Security 관련 PR만 선별하여 Merge합니다. 다음 조건으로 Security 
 
 ## 처리 순서 및 Conflict 해결
 
-### 순차 처리
+### Sequential Mode 의 처리 순서
 
-PR 번호 **오름차순**으로 하나씩 처리합니다. 이전 PR의 Merge가 이후 PR에 Conflict를 발생시킬 수 있으므로, 순차 처리가 필수적입니다.
+PR 번호 **오름차순**으로 하나씩 처리합니다. 이전 PR 의 Merge 가 이후 PR 에 Conflict 를 발생시킬 수 있으므로, 순차 처리가 필수적입니다.
+
+### Parallel-Auto Mode 의 처리 순서
+
+`parallel-auto` 사용 시에는 client 가 순서를 강제하지 않고 GitHub auto-merge queue 에 위임합니다.
+
+- **Within-ecosystem**: 동일 ecosystem (예: 모든 npm PR) 내에서는 lockfile 충돌이 발생하므로 GitHub 가 자동으로 직렬화. 한 PR 이 merge 되면 나머지가 Dependabot 에 의해 rebase 되어 다시 CI 실행
+- **Across-ecosystem**: 서로 다른 ecosystem (예: npm vs github-actions) 의 PR 은 충돌하지 않으므로 GitHub 가 병렬 처리
+- **Mixed bucket**: 두 ecosystem 의 lockfile 을 동시에 변경하는 PR 은 별도 격리되어 모든 parallel queue 가 비워진 뒤 sequential 로 처리
 
 ### Conflict 해결 Flow
 
@@ -127,9 +165,12 @@ Total: 2 merged / 2 skipped / 1 failed
 ## 파일 구조
 
 ```
-merge-dependabot/
-├── README.md    # 이 파일 (Skill 사용 Guide)
-└── SKILL.md     # Skill 정의 및 상세 지침
+ywc-merge-dependabot/
+├── README.md                          # 이 파일 (Skill 사용 Guide, 한국어 primary)
+├── README.en.md / .ja.md / .ko.md     # Locale entry
+├── SKILL.md                           # Skill 정의 및 상세 지침
+└── scripts/
+    └── group-by-ecosystem.py          # PR 번호 → lockfile ecosystem grouping (parallel-auto mode 전용)
 ```
 
 ---
@@ -177,6 +218,37 @@ Claude: Security 관련 Dependabot PR을 필터링합니다.
 순차 처리를 시작합니다.
 ```
 
+### Example 3: Parallel-Auto Mode 로 대량 PR 처리
+
+```
+User: dependabot PR 이 12개 누적되어 있어. parallel-auto 로 빠르게 처리해줘.
+
+Claude: 12개의 Dependabot PR 을 발견했습니다.
+Pre-merge check 와 ecosystem grouping 을 수행합니다.
+
+Ecosystem grouping (10 PRs eligible, 2 skipped):
+  - npm:            #301, #305, #308, #312
+  - github-actions: #302, #309
+  - python:         #304, #310
+  - go:             #306, #311
+  - mixed:          (none)
+
+GitHub auto-merge queue 에 10개 PR 을 예약했습니다. CI 완료 대기 중...
+
+## Dependabot Merge Results
+Mode: parallel-auto
+Ecosystem groups processed: npm (4), github-actions (2), python (2), go (2)
+
+- ✅ Merged (npm)            : #301, #305, #308, #312
+- ✅ Merged (github-actions) : #302, #309
+- ✅ Merged (python)         : #304, #310
+- ✅ Merged (go)             : #306, #311
+- ⏭️ Skipped (Major version) : #307
+- ⏭️ Skipped (Dockerfile)    : #303
+
+Total: 10 merged / 2 skipped / 0 failed
+```
+
 ---
 
 ## Error Handling
@@ -213,16 +285,31 @@ updates:
 
 ### 2. Security PR 우선 처리
 
-보안 취약점은 빠른 대응이 중요합니다. Security Mode를 활용하여 Security PR을 먼저 Merge한 뒤, 나머지를 처리하세요:
+보안 취약점은 빠른 대응이 중요합니다. Security Mode 를 활용하여 Security PR 을 먼저 Merge 한 뒤, 나머지를 처리하세요:
 
 ```
-/merge-dependabot security    # Security PR 먼저
-/merge-dependabot             # 나머지 PR 처리
+/ywc-merge-dependabot security    # Security PR 먼저
+/ywc-merge-dependabot             # 나머지 PR 처리
 ```
 
-### 3. Major Version Upgrade는 수동 검토
+### 3. Major Version Upgrade 는 수동 검토
 
-Major Version Upgrade는 Breaking Change 가능성이 높으므로, Skill이 자동 Skip합니다. Skip된 PR은 수동으로 검토 후 개별 Merge하세요.
+Major Version Upgrade 는 Breaking Change 가능성이 높으므로, Skill 이 자동 Skip 합니다. Skip 된 PR 은 수동으로 검토 후 개별 Merge 하세요.
+
+### 4. 대량 PR 처리 시 Parallel-Auto 활용
+
+5개 이상의 Dependabot PR 이 여러 ecosystem 에 걸쳐 누적되어 있다면 `parallel-auto` 를 사용하세요. Sequential mode 는 N 개의 CI cycle 을 직렬로 대기하지만, parallel-auto 는 GitHub 의 auto-merge queue 가 서로 다른 ecosystem 을 동시에 처리하므로 wall-clock 시간이 크게 단축됩니다:
+
+```
+/ywc-merge-dependabot parallel-auto                # 전체 PR 을 parallel-auto 로
+/ywc-merge-dependabot security parallel-auto       # Security PR 만 parallel-auto 로
+```
+
+다만 다음 경우에는 sequential mode 가 더 적합합니다:
+
+- Branch protection 이 엄격하여 auto-merge 가 비활성화된 경우
+- PR 이 5개 미만이거나 모두 단일 ecosystem 에 속하는 경우 (병렬화 이득이 없음)
+- Conflict 가 빈번하여 client 측에서 즉시 resolve 해야 하는 경우
 
 ---
 
@@ -240,14 +327,25 @@ Major Version Upgrade는 Breaking Change 가능성이 높으므로, Skill이 자
 
 **A**: Conflict 해결 후 CI가 재실행되며, CI가 실패하면 Merge도 실패합니다. CI 실패 원인을 확인하고 수동으로 대응하세요.
 
+### Q: Parallel-auto 를 호출했는데 sequential 로 fallback 되었습니다
+
+**A**: Repository 의 "Allow auto-merge" 설정이 비활성화되어 있는 경우 자동 fallback 됩니다. Settings → General → Pull Requests → "Allow auto-merge" 를 활성화한 뒤 재시도하세요.
+
+### Q: Parallel-auto Queue 에서 일부 PR 이 `queue stalled` 로 보고됩니다
+
+**A**: 30분 polling window 내에 GitHub 가 merge 를 완료하지 못한 경우입니다. 주된 원인은 (1) Conflict 발생 후 `@dependabot rebase` 가 timeout 이내에 처리되지 않음, (2) Required reviewer 미배정, (3) 동일 ecosystem 내 선행 PR 의 CI 지연. 해당 PR 의 상태를 직접 확인한 뒤 필요 시 `@dependabot rebase` Comment 를 추가하고 skill 을 재실행하세요.
+
+### Q: Mixed bucket 에 어떤 PR 이 분류되나요
+
+**A**: 단일 PR 이 둘 이상의 ecosystem marker 를 동시에 변경하는 경우 (예: monorepo 에서 `package-lock.json` 과 `pyproject.toml` 을 동시 갱신) 또는 인식 가능한 marker 가 없는 경우입니다. 이러한 PR 은 parallel queue 가 모두 완료된 뒤 sequential 로 처리되어 hidden conflict 위험을 차단합니다.
+
 ---
 
 ## 관련 문서
 
 ### 프로젝트 내부 참조
 
-- [Dependabot PR Merge Prompt](../../../prompts/development/merge-dependabot-pr-list.md) - 원본 Prompt 문서
-- [GitHub Actions CI Workflow](../../../prompts/development/github-action.md) - Dependabot.yml 설정 포함
+- [GitHub Actions CI Workflow](../../../../prompts/development/github-action.md) — Dependabot.yml 설정 포함
 
 ### 외부 참조
 
@@ -258,8 +356,8 @@ Major Version Upgrade는 Breaking Change 가능성이 높으므로, Skill이 자
 
 ## 버전 정보
 
-- **마지막 업데이트**: 2026-03-26
-- **Skill Version**: 1.0
+- **마지막 업데이트**: 2026-05-26 (parallel-auto mode 추가)
+- **Skill Version**: 1.1
 - **호환 환경**: Claude Code, Codex CLI
 
 ---

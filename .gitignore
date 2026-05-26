@@ -17,3 +17,5 @@ tasks/
 .ywc-run-state.json
 .ywc-learnings.jsonl
 .serena
+
+__pycache__/
