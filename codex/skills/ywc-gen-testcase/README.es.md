@@ -4,7 +4,7 @@
 
 # Skill Gen Testcase (ywc-gen-testcase)
 
-Esta Skill de Codex toma un PR de GitHub, un directorio de tarea completada, o el diff de git actual y produce una **hoja de pruebas en markdown con checkboxes para dos audiencias**: la Sección A para desarrolladores (puerta previa al merge) y la Sección B para QA/Navegador (puerta previa al release). La ruta de salida predeterminada es el directorio `docs/test-case/` del proyecto.
+Esta Skill de Codex toma un PR de GitHub, un directorio de tarea completada, un rango de directorios de tarea, un rango de Git o el diff de git actual y produce una **hoja de pruebas con checkboxes para dos audiencias**: la Sección A para desarrolladores (puerta previa al merge) y la Sección B para QA/Navegador (puerta previa al release). Markdown es el formato de salida predeterminado, y `--format html` produce una hoja de pruebas HTML interactiva para la aprobación en navegador. La ruta de salida predeterminada es el directorio `docs/test-case/` del proyecto.
 
 Los ingenieros de backend y los responsables de QA/PM/Product Owner pueden firmar cada uno su propia sección de forma independiente y en paralelo, de modo que la decisión de merge y la decisión de release queden claramente separadas.
 
@@ -29,6 +29,18 @@ Dentro del mismo repositorio, basta con el número de PR:
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table
 ```
+
+### Generación por rango de tareas
+
+Cuando ambos extremos parecen prefijos de tarea (por ejemplo, `000012-010..000019-010`), la Skill resuelve la entrada como un rango de tareas inclusivo antes de intentar interpretarla como rango de Git. Ordena lexicográficamente los basenames de los directorios de tarea en `<tasks-dir>` (los prefijos numerados están pensados para ordenarse por ejecución) y lee `task.md` / `README.md` de cada tarea desde el inicio hasta el final como fuentes de escenarios.
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
+```
+
+> Si falta algún extremo o es ambiguo, la Skill se detiene y pregunta. No hace fallback a `git rev-parse` para extremos con aspecto de tarea.
+> Si la tarea inicial aparece después de la tarea final en la lista ordenada, la Skill se detiene y pregunta si se pretendía un rango inverso.
+> Cuando una rama / tag / SHA parezca accidentalmente un prefijo de tarea, fuerza el rango de Git con `--range A..B`.
 
 ### Generación por rango de Git
 
@@ -58,7 +70,8 @@ Generar a partir de un rango de commits arbitrario. SHA, tag, nombre de rama y `
 | `--output-dir <path>` | Sobreescribir directorio de salida (predeterminado: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
 | `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`). Predeterminado: detección automática | `--lang ja` |
 | `--filename <name>` | Sobreescribir nombre de archivo (sin `.md`) | `--filename release-v2-smoke` |
-| `--tasks-dir <path>` | Directorio de tareas (predeterminado: `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--tasks-dir <path>` | Directorio de tareas usado por entradas de Tarea y Rango de tareas (predeterminado: `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--format <fmt>` | Formato de salida (`markdown` \| `html`). Predeterminado: `markdown` | `--format html` |
 | `--include-regression` | Añadir una sección de Regresión (B.3) | |
 | `--audience <who>` | `dev` \| `qa` \| `both`. Predeterminado: `both` (archivo único, A+B) | `--audience qa` |
 | `--split` | Dividir físicamente en `<slug>-dev.md` + `<slug>-qa.md` | |
@@ -68,7 +81,7 @@ Generar a partir de un rango de commits arbitrario. SHA, tag, nombre de rama y `
 | `--range <spec>` | Rango de git explícito (`A..B`). Equivalente al posicional | `--range v1.2..v1.3` |
 | `--dry-run` | Mostrar solo el plan de generación (no se escribe ningún archivo) | |
 
-> El identificador de PR, el especificador de tarea, el rango (`A..B`) y `--from-diff` son mutuamente excluyentes. `--split` y `--force-single` son mutuamente excluyentes. Si se pasan flags incompatibles, la Skill se detiene y pregunta qué modo se pretendía.
+> El identificador de PR, el especificador de tarea, el Rango de tareas (posicional `<task>..<task>`), el Rango de Git (posicional `A..B` o `--range`) y `--from-diff` son mutuamente excluyentes. `--split` y `--force-single` son mutuamente excluyentes. Si se pasan flags incompatibles, la Skill se detiene y pregunta qué modo se pretendía.
 
 ## Dos audiencias, dos puertas
 
@@ -99,6 +112,7 @@ La mayoría de los PRs caen naturalmente en el nivel S o M; el prompt del nivel 
 Paso 1: Resolución de entrada
   └─ PR: obtener metadatos y diff vía gh pr view / gh pr diff
   └─ Tarea: cargar task.md / README.md desde <tasks-dir>/<name>/ (preferir completed/)
+  └─ Rango de tareas: cargar task.md / README.md de cada tarea incluida
   └─ Diff: capturar git diff HEAD + log de commits recientes
 
 Paso 2: Clasificación de audiencia y superficie
@@ -131,6 +145,7 @@ Paso 6: Validar e informar
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
 | Tarea | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Rango de tareas | `tasks-<start-prefix>-<end-prefix>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Rango | `range-<short-start>-<short-end>-<slug>.md` (se usan nombres de tag cuando ambos extremos son tags, p. ej. `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 
@@ -236,6 +251,12 @@ Descendiente de las Skills `ywc` orientadas a la implementación:
 
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+```
+
+### Rango de tareas (inclusivo, desde la tarea inicial hasta la final)
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
 ```
 
 ### Rango de Git (entre dos tags)
