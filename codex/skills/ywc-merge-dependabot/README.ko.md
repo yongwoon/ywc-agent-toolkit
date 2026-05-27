@@ -11,7 +11,7 @@ Claude Code와 Codex CLI 모두에서 사용할 수 있습니다.
 - Dockerfile `FROM` 변경, Major Version Upgrade, CI Status pre-merge check
 - Merge conflict 해결 시도 및 CI 재실행 대기
 - 기본값은 PR 번호 오름차순 sequential 처리
-- **Parallel-auto mode**: lockfile ecosystem 별로 PR을 grouping 한 뒤 GitHub auto-merge queue에 직렬화를 위임하여 대량 PR의 wall-clock 시간을 단축
+- **Parallel-auto mode**: lockfile ecosystem 별 lane 을 만들고 lane 별로 한 PR 만 active auto-merge 상태로 유지하여 대량 PR의 wall-clock 시간을 단축
 - 최종 Summary Report 출력
 
 ## 사용 방법
@@ -21,8 +21,8 @@ Claude Code와 Codex CLI 모두에서 사용할 수 있습니다.
 ```text
 /ywc-merge-dependabot                          # 전체 PR sequential 처리
 /ywc-merge-dependabot security                 # Security PR만 sequential 처리
-/ywc-merge-dependabot parallel-auto            # 전체 PR ecosystem-grouped auto-merge
-/ywc-merge-dependabot security parallel-auto   # Security PR만 ecosystem-grouped auto-merge
+/ywc-merge-dependabot parallel-auto            # 전체 PR ecosystem-lane auto-merge
+/ywc-merge-dependabot security parallel-auto   # Security PR만 ecosystem-lane auto-merge
 ```
 
 ### Codex CLI
@@ -30,7 +30,7 @@ Claude Code와 Codex CLI 모두에서 사용할 수 있습니다.
 ```text
 Use $ywc-merge-dependabot to merge all open Dependabot pull requests.
 Use $ywc-merge-dependabot security to merge only security-related Dependabot PRs.
-Use $ywc-merge-dependabot parallel-auto to merge a large batch via ecosystem-grouped auto-merge queue.
+Use $ywc-merge-dependabot parallel-auto to merge a large batch via ecosystem-lane auto-merge scheduling.
 Use $ywc-merge-dependabot security parallel-auto to combine the security scope with the parallel-auto execution flag.
 ```
 
@@ -55,7 +55,7 @@ Use $ywc-merge-dependabot security parallel-auto to combine the security scope w
 
 | Token | Execution | 사용 시점 |
 | --- | --- | --- |
-| `parallel-auto` | Ecosystem grouping + GitHub auto-merge queue | 여러 ecosystem에 걸쳐 5개 이상의 PR이 누적된 경우 |
+| `parallel-auto` | Ecosystem lane + lane 별 active auto-merge PR 1개 유지 | 여러 ecosystem에 걸쳐 5개 이상의 PR이 누적된 경우 |
 | _(없음)_ | PR 번호 오름차순 sequential 처리 | 소량 batch 또는 strict branch protection 환경 |
 
 ## Skip 조건
@@ -75,7 +75,7 @@ Ecosystem groups processed: npm (3), github-actions (2), python (2)
 - Merged    (npm)            : #123 Bump axios from 1.6.0 to 1.7.2
 - Skipped   (Dockerfile)     : #127 Bump node from 18 to 20
 - Skipped   (Major version)  : #130 Bump webpack from 4.x to 5.x
-- Failed    (queue stalled)  : #132 Bump express from 4.18.0 to 4.19.2 - CONFLICTING after 30 min
+- Failed    (lane stalled)   : #132 Bump express from 4.18.0 to 4.19.2 - CONFLICTING after 30 min
 ```
 
 Sequential mode에서도 `Mode` line은 출력하고, `Ecosystem groups` header와 PR line의 ecosystem annotation은 생략합니다.

@@ -5,7 +5,7 @@ description: (ywc) Use when the user wants to merge Dependabot PRs, batch-proces
 
 # Merge Dependabot Pull Requests
 
-**Announce at start:** "I'm using the ywc-merge-dependabot skill to merge Dependabot PRs with CI verification — sequential by default, or parallel-auto (ecosystem-grouped queue) when requested."
+**Announce at start:** "I'm using the ywc-merge-dependabot skill to merge Dependabot PRs with CI verification — sequential by default, or parallel-auto (ecosystem-lane scheduling) when requested."
 
 Safely merge Dependabot PRs with CI verification, conflict resolution, and clear reporting.
 
@@ -15,10 +15,10 @@ When tempted to skip a step, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "All ecosystems can run in parallel — fire all merges at once without grouping" | No. Within an ecosystem (e.g., multiple npm PRs all touching `package-lock.json`) merges still serialize via GitHub's auto-merge queue. parallel-auto only fans out across non-overlapping ecosystems, not within one. |
+| "All ecosystems can run in parallel — fire all merges at once without grouping" | No. Within an ecosystem (e.g., multiple npm PRs all touching `package-lock.json`) the client must keep one active PR at a time. `parallel-auto` only fans out across non-overlapping ecosystems, not within one. |
 | "Mixed-ecosystem PR (touches both `package.json` and `pom.xml`) is fine to auto-merge" | No. Mixed PRs go to a final sequential pass; `--auto` cannot guarantee ordering when a single PR crosses two parallel groups. |
-| "Just queue everything with `--auto` and walk away" | The polling loop and final summary are non-optional. Without them users have no audit trail of which PRs failed, why, or whether the queue stalled. |
-| "Repo doesn't have auto-merge enabled, fall through silently" | If `parallel-auto` is requested but `gh repo view --json autoMergeAllowed` returns `false`, fall back to sequential mode and tell the user — never pretend the queue is running. |
+| "Just enable `--auto` on every PR and walk away" | The polling loop and final summary are non-optional. Without them users have no audit trail of which PRs failed, why, or whether an ecosystem lane stalled. |
+| "Repo doesn't have auto-merge enabled, fall through silently" | If `parallel-auto` is requested but `gh repo view --json autoMergeAllowed` returns `false`, fall back to sequential mode and tell the user — never pretend parallel scheduling is running. |
 | "CI is green but lockfile shows different hash, merge anyway" | Lockfile mismatch indicates dirty working state. Stop and rebase the PR first. |
 | "Major version bump looks safe, just merge" | Major bumps need explicit user confirmation. Default action: skip and report for human review. |
 | "Conflicts with main, force-push my own resolution" | Use Dependabot's `@dependabot rebase` comment instead. Hand-resolved conflicts in dep PRs hide breaking changes. |
@@ -47,15 +47,15 @@ This skill supports two orthogonal flags inside `$ARGUMENTS`. Parse the argument
 
 | Token | Execution | When to use |
 | --- | --- | --- |
-| `parallel-auto` | Group eligible PRs by lockfile ecosystem; queue every PR with `gh pr merge --auto`; GitHub serializes within each ecosystem and processes ecosystems in parallel; one final sequential pass clears the `mixed` bucket | Many PRs (≥ 5) across multiple ecosystems (npm + github-actions + python …) where wall-clock CI wait is the bottleneck |
+| `parallel-auto` | Group eligible PRs by lockfile ecosystem; keep one active `gh pr merge --auto` PR per ecosystem lane; enqueue the next PR in that lane only after the previous PR reaches a terminal state; one final sequential pass clears the `mixed` bucket | Many PRs (≥ 5) across multiple ecosystems (npm + github-actions + python ...) where wall-clock CI wait is the bottleneck |
 | _(token absent)_ | Sequential — one PR at a time, ascending PR number | Small batches, repos with strict branch protection, or environments where auto-merge is disabled |
 
 Examples:
 
 - `(empty)` → all PRs, sequential (default)
 - `security` → security PRs only, sequential
-- `parallel-auto` → all PRs, ecosystem-grouped auto-merge
-- `security parallel-auto` → security PRs only, ecosystem-grouped auto-merge
+- `parallel-auto` → all PRs, ecosystem-lane auto-merge
+- `security parallel-auto` → security PRs only, ecosystem-lane auto-merge
 
 Security-related PRs are identified by labels like `security`, PR title containing "security", or Dependabot's security advisory metadata. When in doubt about whether a PR is security-related, check the PR body for CVE references or GitHub Security Advisory links.
 
@@ -65,7 +65,7 @@ Security-related PRs are identified by labels like `security`, PR title containi
 gh repo view --json autoMergeAllowed --jq .autoMergeAllowed
 ```
 
-If the value is `false`, announce the fallback ("Auto-merge is not enabled on this repository — falling back to sequential mode") and proceed as if `parallel-auto` were absent. Never silently skip the queueing and pretend the work is in progress.
+If the value is `false`, announce the fallback ("Auto-merge is not enabled on this repository — falling back to sequential mode") and proceed as if `parallel-auto` were absent. Never silently skip scheduling and pretend the work is in progress.
 
 ## Task
 
@@ -110,7 +110,7 @@ The script returns single-line JSON of the shape `{"groups": {ecosystem: [pr...]
 
 The grouping serves two purposes:
 
-1. **Audit trail** — the final summary records which ecosystem each PR belonged to and which ones GitHub serialized vs parallelized.
+1. **Audit trail** — the final summary records which ecosystem each PR belonged to and which ecosystem lanes ran concurrently.
 2. **Mixed-bucket isolation** — `mixed` PRs are deliberately held back to a final sequential pass (Step 3b stage 3) so a single PR that crosses two parallel groups cannot race with itself.
 
 Surface the grouping breakdown to the user before merging:
@@ -165,58 +165,63 @@ After each successful merge, note it — the next PR in the queue may now have c
 
 #### 3b. Parallel-Auto Flow
 
-In parallel-auto mode the client offloads serialization to GitHub's auto-merge queue. The flow has three stages and the client never blocks on per-PR CI manually — GitHub handles rebase and CI orchestration.
+In parallel-auto mode the client uses GitHub auto-merge as a per-PR scheduler while preserving one active PR per ecosystem lane. GitHub auto-merge merges a PR when its requirements are met; it is not, by itself, an ecosystem-aware queue. If the repository's branch protection requires GitHub merge queue, `gh pr merge` may add eligible PRs to that queue, but the skill must still maintain ecosystem lanes and poll outcomes.
 
-**Stage 1 — Queue every non-mixed PR for auto-merge:**
+**Stage 1 — Start one non-mixed PR per ecosystem lane:**
 
-For each ecosystem group's PRs (the order across groups does not matter — they are non-conflicting by construction), queue them all at once:
+For each non-empty ecosystem group, start only the first PR in that group with auto-merge:
 
 ```bash
 gh pr merge {number} --auto --merge
 ```
 
-This sets the PR to merge automatically as soon as its CI is green and the branch is up to date. PRs sharing a lockfile (same ecosystem) automatically serialize because each merge invalidates the next PR's branch state, and Dependabot rebases the affected PRs; PRs in different ecosystems progress in parallel because GitHub processes them independently.
+This sets the active PR to merge automatically as soon as its CI is green and the branch is up to date. Do not enable auto-merge for the remaining PRs in the same ecosystem yet; enabling all same-lockfile PRs at once can race because auto-merge is not ecosystem-aware. Different ecosystem lanes may have one active PR each.
 
-**Stage 2 — Poll the queue until it drains:**
+**Stage 2 — Poll active lanes and advance them:**
 
-Track each queued PR's state until it reaches a terminal state. Use a single bounded loop (do not spin in tight retries):
+Track each active PR's state until it reaches a terminal state. When an active PR merges, start the next PR from the same ecosystem lane. Use a single bounded loop (do not spin in tight retries):
 
 ```bash
 # Wait up to 30 minutes total, polling every 60 seconds.
 deadline=$(( $(date +%s) + 1800 ))
-remaining=(101 105 107 203 209 204 208)   # queued PR numbers
+declare -A lanes
+lanes[npm]="101 105 107"
+lanes[github-actions]="203 209"
+active=(101 203)   # first PR from each non-empty lane
 declare -A status
-while [ ${#remaining[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ]; do
+while [ ${#active[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ]; do
   next=()
-  for pr in "${remaining[@]}"; do
+  for pr in "${active[@]}"; do
     pr_state=$(gh pr view "$pr" --json state --jq '.state' 2>/dev/null || echo UNKNOWN)
     merge_status=$(gh pr view "$pr" --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
     if [ "$pr_state" = "MERGED" ]; then
       status[$pr]="merged"
+      # Remove this PR from active. Then start the next unprocessed PR from
+      # the same ecosystem lane, if any, and append that PR number to `next`.
     elif [ "$pr_state" = "CLOSED" ]; then
       status[$pr]="closed"
     elif [ "$merge_status" = "CONFLICTING" ] || [ "$merge_status" = "DIRTY" ]; then
-      # Stay in queue — Dependabot or a maintainer may rebase before the deadline.
+      # Keep the active lane item — Dependabot or a maintainer may rebase before the deadline.
       next+=("$pr")
     else
       next+=("$pr")
     fi
   done
-  remaining=("${next[@]}")
-  [ ${#remaining[@]} -gt 0 ] && sleep 60
+  active=("${next[@]}")
+  [ ${#active[@]} -gt 0 ] && sleep 60
 done
 
-# Any PR still in `remaining` after the loop is recorded as queue-stalled.
-for pr in "${remaining[@]}"; do
-  status[$pr]="stalled"
+# Any PR still in `active` after the loop is recorded as lane-stalled.
+for pr in "${active[@]}"; do
+  status[$pr]="lane-stalled"
 done
 ```
 
-PRs that reach `MERGED` are recorded as `Merged`. PRs still in the `remaining` list after the deadline are recorded as `Failed (queue stalled)` so the user can investigate. Do not extend the deadline silently — if the queue genuinely needs more time, the user can rerun the skill.
+PRs that reach `MERGED` are recorded as `Merged`. PRs still in the `active` list after the deadline are recorded as `Failed (lane stalled)` so the user can investigate. Do not extend the deadline silently — if the lane genuinely needs more time, the user can rerun the skill.
 
 **Stage 3 — Final sequential pass for the mixed bucket:**
 
-After the parallel queue has drained (Stage 2 returned), process the `mixed` group using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
+After all active lanes have drained (Stage 2 returned), process the `mixed` group using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
 
 ### 4. Final Summary
 
@@ -233,7 +238,7 @@ Ecosystem groups processed: npm (3), github-actions (2), python (2), mixed (1)
 - ✅ Merged    (github-actions) : #129 Bump actions/checkout from 4.1.1 to 4.2.0
 - ⏭️ Skipped   (Dockerfile)     : #127 Bump node from 18 to 20
 - ⏭️ Skipped   (Major version)  : #130 Bump webpack from 4.46.0 to 5.90.0
-- ❌ Failed    (queue stalled)  : #132 Bump express from 4.18.0 to 4.19.2 — CONFLICTING after 30 min
+- ❌ Failed    (lane stalled)   : #132 Bump express from 4.18.0 to 4.19.2 — CONFLICTING after 30 min
 - ❌ Failed    (mixed pass)     : #135 Bump aws-sdk + boto3 — manual conflict resolution required
 
 Total: 3 merged / 2 skipped / 2 failed
@@ -241,7 +246,7 @@ Total: 3 merged / 2 skipped / 2 failed
 
 Include:
 - Mode line — scope flag + execution flag, so the reader can reproduce the run
-- Ecosystem group summary — only when parallel-auto was used; the count tells the reader how many groups GitHub serialized in parallel
+- Ecosystem group summary — only when parallel-auto was used; the count tells the reader how many ecosystem lanes ran concurrently
 - Per-PR result — for parallel-auto, annotate each line with the ecosystem; for sequential, omit the annotation
 - If a previous merge affected a subsequent PR, note which PR caused the issue
 - Total counts: merged / skipped / failed
@@ -260,7 +265,7 @@ Include:
 - Follow any additional instructions in `$ARGUMENTS`
 - Never force-merge or bypass branch protection rules
 - If the number of PRs is large (>20), ask the user for confirmation before proceeding. For batches of that size, also recommend `parallel-auto` mode if the eligible PRs span more than one ecosystem
-- `parallel-auto` reduces wall-clock time by letting GitHub run the CI cycle for non-conflicting groups concurrently. It does not reduce the *per-PR* CI cost, the safety surface, or the conflict-resolution requirements — it only changes how the queue is orchestrated
+- `parallel-auto` reduces wall-clock time by letting GitHub run the CI cycle for non-conflicting ecosystem lanes concurrently. It does not reduce the *per-PR* CI cost, the safety surface, or the conflict-resolution requirements — it only changes how active PRs are scheduled
 
 ## Integration
 

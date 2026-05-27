@@ -11,7 +11,7 @@ It can be used from both Claude Code and Codex CLI.
 - Run pre-merge safety checks for Dockerfile `FROM` changes, major version upgrades, and CI status
 - Attempt merge-conflict resolution and wait for CI reruns
 - Process PRs sequentially by ascending PR number by default
-- **Parallel-auto mode**: group PRs by lockfile ecosystem and delegate serialization to GitHub's auto-merge queue to reduce wall-clock time for large batches
+- **Parallel-auto mode**: group PRs into lockfile ecosystem lanes and keep one active auto-merge PR per lane to reduce wall-clock time for large batches
 - Emit a final summary report
 
 ## Usage
@@ -21,8 +21,8 @@ It can be used from both Claude Code and Codex CLI.
 ```text
 /ywc-merge-dependabot                          # all PRs, sequential
 /ywc-merge-dependabot security                 # security PRs only, sequential
-/ywc-merge-dependabot parallel-auto            # all PRs, ecosystem-grouped auto-merge
-/ywc-merge-dependabot security parallel-auto   # security PRs only, ecosystem-grouped auto-merge
+/ywc-merge-dependabot parallel-auto            # all PRs, ecosystem-lane auto-merge
+/ywc-merge-dependabot security parallel-auto   # security PRs only, ecosystem-lane auto-merge
 ```
 
 ### Codex CLI
@@ -30,7 +30,7 @@ It can be used from both Claude Code and Codex CLI.
 ```text
 Use $ywc-merge-dependabot to merge all open Dependabot pull requests.
 Use $ywc-merge-dependabot security to merge only security-related Dependabot PRs.
-Use $ywc-merge-dependabot parallel-auto to merge a large batch via ecosystem-grouped auto-merge queue.
+Use $ywc-merge-dependabot parallel-auto to merge a large batch via ecosystem-lane auto-merge scheduling.
 Use $ywc-merge-dependabot security parallel-auto to combine the security scope with the parallel-auto execution flag.
 ```
 
@@ -55,7 +55,7 @@ This skill supports two orthogonal flags.
 
 | Token | Execution | When to use |
 | --- | --- | --- |
-| `parallel-auto` | Ecosystem grouping + GitHub auto-merge queue | Five or more PRs spread across multiple ecosystems |
+| `parallel-auto` | Ecosystem lanes + one active auto-merge PR per lane | Five or more PRs spread across multiple ecosystems |
 | _(none)_ | Sequential by ascending PR number | Small batches or strict branch protection environments |
 
 ## Skip Conditions
@@ -75,7 +75,7 @@ Ecosystem groups processed: npm (3), github-actions (2), python (2)
 - Merged    (npm)            : #123 Bump axios from 1.6.0 to 1.7.2
 - Skipped   (Dockerfile)     : #127 Bump node from 18 to 20
 - Skipped   (Major version)  : #130 Bump webpack from 4.x to 5.x
-- Failed    (queue stalled)  : #132 Bump express from 4.18.0 to 4.19.2 - CONFLICTING after 30 min
+- Failed    (lane stalled)   : #132 Bump express from 4.18.0 to 4.19.2 - CONFLICTING after 30 min
 ```
 
 Sequential mode still prints the `Mode` line, but omits the `Ecosystem groups` header and per-PR ecosystem annotations.
