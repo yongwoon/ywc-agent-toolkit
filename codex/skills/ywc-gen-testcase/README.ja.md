@@ -1,6 +1,6 @@
 # Gen Testcase Skill (ywc-gen-testcase)
 
-GitHub PR、実装済みの Task directory、Task directory range、Git range、または現在の git diff を入力として、**開発者向け Section A (pre-merge gate) と QA/Browser 向け Section B (pre-release gate) に分割された Checkbox 形式の Testsheet** を Markdown で生成する Codex Skill です。Default の出力先は project の `docs/test-case/` directory です。
+GitHub PR、実装済みの Task directory、Task directory range、Git range、または現在の git diff を入力として、**開発者向け Section A (pre-merge gate) と QA/Browser 向け Section B (pre-release gate) に分割された Checkbox 形式の Testsheet** を生成する Codex Skill です。Default output は Markdown で、`--format html` を使うと browser sign-off 向けの interactive HTML を生成できます。Default の出力先は project の `docs/test-case/` directory です。
 
 Backend engineer と QA/PM/Product Owner がそれぞれ自分の section で独立・並列に Sign-off でき、Merge 判断と Release 判断を明確に分離します。
 

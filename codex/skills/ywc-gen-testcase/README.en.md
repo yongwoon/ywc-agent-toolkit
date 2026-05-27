@@ -1,6 +1,6 @@
 # Gen Testcase Skill (ywc-gen-testcase)
 
-This Codex Skill takes a GitHub PR, a completed task directory, a task directory range, a Git range, or the current git diff and produces a **dual-audience checkbox-driven markdown testsheet**: Section A for developers (pre-merge gate) and Section B for QA/Browser (pre-release gate). The default output path is the project's `docs/test-case/` directory.
+This Codex Skill takes a GitHub PR, a completed task directory, a task directory range, a Git range, or the current git diff and produces a **dual-audience checkbox-driven testsheet**: Section A for developers (pre-merge gate) and Section B for QA/Browser (pre-release gate). Markdown is the default output, and `--format html` produces an interactive HTML testsheet for browser sign-off. The default output path is the project's `docs/test-case/` directory.
 
 Backend engineers and QA/PM/Product Owner can each sign off on their own section independently and in parallel — so a merge decision and a release decision are cleanly separated.
 

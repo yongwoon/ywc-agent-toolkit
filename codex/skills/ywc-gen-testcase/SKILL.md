@@ -1,13 +1,13 @@
 ---
 name: ywc-gen-testcase
-description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, git range, or diff. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
+description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, task directory range, git range, or diff, with Markdown or HTML output. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
 ---
 
 # Generate Testsheet
 
 **Announce at start:** "I'm using the ywc-gen-testcase skill to produce a dual-audience (developer + QA) testsheet."
 
-Produce a **dual-audience** testsheet (markdown with checkboxes) from a GitHub PR, an implemented task directory, a task directory range, a git range, or the current git diff. The testsheet cleanly separates what the **developer** does (DB queries, curl contracts, container logs) from what a **QA/PM/Product Owner** does in a browser, so both gates — pre-merge and pre-release — can be signed off independently and in parallel.
+Produce a **dual-audience** testsheet (Markdown by default, or interactive HTML with `--format html`) from a GitHub PR, an implemented task directory, a task directory range, a git range, or the current git diff. The testsheet cleanly separates what the **developer** does (DB queries, curl contracts, container logs) from what a **QA/PM/Product Owner** does in a browser, so both gates — pre-merge and pre-release — can be signed off independently and in parallel.
 
 ## Rationalization Defense
 
@@ -477,4 +477,4 @@ Invoke this skill after those finish, when a human tester is ready to validate.
 
 ## Examples
 
-For invocation examples across PR, task, diff, and range modes, read [references/examples.md](references/examples.md).
+For invocation examples across PR, task, task range, diff, and git range modes, read [references/examples.md](references/examples.md).
