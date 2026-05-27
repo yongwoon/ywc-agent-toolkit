@@ -6,7 +6,7 @@ A **meta-skill** for authoring new ywc-* skills and restructuring existing ones.
 
 - Authoring a brand-new ywc-* skill from scratch.
 - Restructuring an existing ywc-* skill's frontmatter, body sections, or references.
-- Auditing the 18 ywc-* skills against the canonical rule set.
+- Auditing ywc-* skills against the canonical rule set.
 
 ## Invocation
 

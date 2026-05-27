@@ -163,7 +163,7 @@ Repeat until the agent cannot find a loophole.
 | [references/skill-template.md](references/skill-template.md) | Drafting a brand-new ywc-* skill |
 | [references/rationalization-defense-cookbook.md](references/rationalization-defense-cookbook.md) | Writing or expanding the Rationalization Defense table |
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
-| [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding pipeline prerequisites, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
+| [references/cross-skill-graph.md](references/cross-skill-graph.md#flag-propagation-patterns) | Deciding pipeline prerequisites, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
 | [references/progressive-disclosure.md](references/progressive-disclosure.md) | Deciding whether a section stays inline (Tier 2) or extracts to `references/` (Tier 3); auditing existing skills for tier compliance |
 
 ## Validation Checklist
