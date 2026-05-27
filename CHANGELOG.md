@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.12.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.12.0...v1.12.1) (2026-05-27)
+
+
+### ### Documentation
+
+* sync documentation and improve skill/agent authoring rules ([#41](https://github.com/yongwoon/ywc-agent-toolkit/issues/41)) ([2169f75](https://github.com/yongwoon/ywc-agent-toolkit/commit/2169f750860fd57712553030117082ade629012f))
+
 ## [1.12.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.11.0...v1.12.0) (2026-05-27)
 
 
