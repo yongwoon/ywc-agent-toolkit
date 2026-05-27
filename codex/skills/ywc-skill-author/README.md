@@ -1,12 +1,12 @@
 # ywc-skill-author
 
-새로운 ywc-* skill을 작성하거나 기존 skill의 구조를 개선할 때 사용하는 **메타 skill**입니다. 18개 production ywc-* skill에서 도출된 표준 규칙(Frontmatter format, Rationalization Defense, multilingual triggers, progressive disclosure 등)을 LLM이 자동으로 따르도록 강제합니다.
+새로운 ywc-* skill을 작성하거나 기존 skill의 구조를 개선할 때 사용하는 **메타 skill**입니다. Production ywc-* skill에서 도출된 표준 규칙(Frontmatter format, Rationalization Defense, multilingual triggers, progressive disclosure 등)을 LLM이 자동으로 따르도록 강제합니다.
 
 ## 사용 시나리오
 
 - 새 ywc-* skill을 처음부터 작성할 때
 - 기존 ywc-* skill의 frontmatter, body section, references 구조를 개선할 때
-- 18개 ywc-* skill을 표준 rule set 기준으로 audit할 때
+- ywc-* skill을 표준 rule set 기준으로 audit할 때
 
 ## 사용 방법
 
@@ -52,4 +52,4 @@
 - `references/skill-template.md` — 새 skill 시작 template
 - `references/rationalization-defense-cookbook.md` — Rationalization Defense table 작성 가이드
 - `references/description-anti-patterns.md` — Description field 작성 시 금지 패턴
-- `references/cross-skill-graph.md` — 18개 ywc-* skill 간 의존성 + cross-reference 그래프
+- `references/cross-skill-graph.md` — ywc-* skill 간 prerequisite + cross-reference 그래프

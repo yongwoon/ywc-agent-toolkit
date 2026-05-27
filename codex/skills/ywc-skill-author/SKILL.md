@@ -98,7 +98,7 @@ These improve quality but are not strictly required.
 
 | # | Rule | Apply when |
 |---|---|---|
-| B1 | Declare `requires: [ywc-X]` in frontmatter | Skill expects another ywc-* skill to have run first |
+| B1 | Document upstream prerequisites in `## Integration` and the relevant description anti-trigger | Skill expects another ywc-* skill to have run first. For Codex skills, never add `requires:` to frontmatter; Codex frontmatter is `name` + `description` only |
 | B2 | Add `## Arguments` table | Skill accepts flags or positional arguments |
 | B3 | Add `## Workflow` or `## Execution Steps` numbered list | Skill performs a multi-step process |
 | B4 | Add `## Output Format` block with sample | Skill emits a structured report or artifact |
@@ -163,7 +163,7 @@ Repeat until the agent cannot find a loophole.
 | [references/skill-template.md](references/skill-template.md) | Drafting a brand-new ywc-* skill |
 | [references/rationalization-defense-cookbook.md](references/rationalization-defense-cookbook.md) | Writing or expanding the Rationalization Defense table |
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
-| [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `requires:` declarations, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
+| [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding pipeline prerequisites, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
 | [references/progressive-disclosure.md](references/progressive-disclosure.md) | Deciding whether a section stays inline (Tier 2) or extracts to `references/` (Tier 3); auditing existing skills for tier compliance |
 
 ## Validation Checklist
@@ -202,7 +202,7 @@ Before merging a new or modified ywc-* skill, verify:
 
 ## Cross-Skill Etiquette
 
-- If skill A's purpose overlaps with skill B's responsibility, declare `requires: [ywc-B]` and add `(use ywc-B)` to A's `Do not use for...` line.
+- If skill A's purpose overlaps with skill B's responsibility, add `(use ywc-B)` to A's `Do not use for...` line. If A depends on B's output, document B under `## Integration`; do not add `requires:` to Codex frontmatter.
 - For shared conventions across multiple skills (e.g., Advisor Pattern), extract to the bundle-level `references/<topic>.md` rather than duplicating.
 - New skill that supersedes an existing one: do **not** silently delete the old skill in the same PR. Add a deprecation note pointing to the successor, then delete in a later PR after a soak period.
 

@@ -1,12 +1,12 @@
 # Cross-Skill Graph
 
-This document captures the dependency and cross-reference relationships among the 18 production ywc-* skills as of 2026-04. Use it to:
+This document captures the prerequisite and cross-reference relationships among production ywc-* skills. Use it to:
 
-1. Decide whether a new skill needs `requires: [...]` and what to put there.
+1. Decide which upstream skill outputs a new skill depends on and how to document that dependency.
 2. Decide what to write in the `Do not use for ... (use ywc-X)` portion of a new skill's description.
 3. Detect overlap before creating a new skill (overlap usually means an existing skill should be extended instead).
 
-## Dependency Graph (`requires:` declarations)
+## Pipeline Prerequisite Graph
 
 ```text
 ywc-tech-research
@@ -15,33 +15,33 @@ ywc-tech-research
 ywc-spec-validate                 (validates spec quality)
         │
         ▼
-ywc-task-generator              (requires: [ywc-spec-validate])
+ywc-task-generator              (uses validated spec output)
         │
         ▼
-ywc-code-gen                    (requires: [ywc-task-generator])
-ywc-sequential-executor         (requires: [ywc-task-generator])
-ywc-parallel-executor           (requires: [ywc-task-generator])
+ywc-code-gen                    (uses task output)
+ywc-sequential-executor         (uses task output)
+ywc-parallel-executor           (uses task output)
         │
         ▼
-ywc-impl-review                 (no formal requires; runs after executors)
+ywc-impl-review                 (runs after executors)
         │
         ▼
-ywc-gen-testcase                (no formal requires; reads PR/Task/diff)
+ywc-gen-testcase                (reads PR/Task/diff)
         │
         ▼
 ywc-commit                      (standalone)
         │
         ▼
-ywc-create-pr                   (no formal requires; calls ywc-commit internally)
+ywc-create-pr                   (calls ywc-commit internally)
         │
         ▼
-ywc-handle-pr-reviews           (requires: [ywc-create-pr])
+ywc-handle-pr-reviews           (uses PR output)
         │
         ▼
-ywc-release-pr-list             (release flow; no formal requires)
+ywc-release-pr-list             (release flow)
 ```
 
-Standalone / parallel skills (no requires):
+Standalone / parallel skills (no strict pipeline prerequisite):
 
 - `ywc-security-audit` — runs against any code path; not pipeline-bound
 - `ywc-ui-ux-review` — runs against running UI; not pipeline-bound
@@ -124,12 +124,12 @@ If the side effect is **only ever skipped** because a specific upstream skill ra
 
 1. **Find the closest existing skill.** If your new skill's purpose is within ~80% of an existing one, **do not create a new skill** — extend the existing one. Splitting an over-similar pair causes activation collision.
 
-2. **Identify upstream dependency.** If your skill relies on another ywc-* skill having run first (e.g., reading task directories, requiring a spec), declare `requires: [ywc-X]`. If the dependency is conventional but not strict, omit `requires:` and instead mention the upstream in `## Integration` body section.
+2. **Identify upstream dependency.** If your skill relies on another ywc-* skill having run first (e.g., reading task directories, requiring a spec), document that prerequisite in the `## Integration` body section. For Codex skills, do not add `requires:` to frontmatter; Codex frontmatter must contain only `name` and `description`.
 
 3. **Identify potential collisions.** Look at the Cross-Reference Table for the closest 2-3 existing skills. Their description triggers tell you which natural-language phrases overlap with your new skill. Add `Do not use for ... (use ywc-X)` for each collision.
 
 4. **Update this graph.** When adding a new skill, add it to:
-   - The Dependency Graph (placement based on `requires:`)
+   - The Pipeline Prerequisite Graph
    - The Cross-Reference Table (one row, listing each anti-trigger pointer)
 
 ## Spotting Overlap (Avoid Creating Duplicate Skills)
@@ -167,4 +167,4 @@ Avoid:
 
 ## Last Updated
 
-This graph reflects the state at commit `9851518` (2026-04-30). Re-audit when new skills are added or when significant restructuring happens.
+Re-audit this graph when new skills are added or when significant restructuring changes pipeline relationships.

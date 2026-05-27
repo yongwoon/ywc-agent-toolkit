@@ -1,6 +1,6 @@
 # Rationalization Defense Cookbook
 
-The Rationalization Defense table is the single most effective rule-bypass blocker in a ywc-* skill. This guide explains how to write tables that actually work, using patterns proven across the 18 production ywc-* skills.
+The Rationalization Defense table is the single most effective rule-bypass blocker in a ywc-* skill. This guide explains how to write tables that actually work, using patterns proven across production ywc-* skills.
 
 ## What Makes a Rationalization Defense Table Effective
 

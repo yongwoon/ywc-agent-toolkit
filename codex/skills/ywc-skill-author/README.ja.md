@@ -1,12 +1,12 @@
 # ywc-skill-author
 
-新しい ywc-* skill を作成、または既存 skill の構造を改善する際に利用する **メタ skill** です。18 個の production ywc-* skill から抽出した canonical な rule set (Frontmatter format、Rationalization Defense、multilingual triggers、progressive disclosure 等) を LLM が自動的に遵守するよう強制します。
+新しい ywc-* skill を作成、または既存 skill の構造を改善する際に利用する **メタ skill** です。Production ywc-* skill から抽出した canonical な rule set (Frontmatter format、Rationalization Defense、multilingual triggers、progressive disclosure 等) を LLM が自動的に遵守するよう強制します。
 
 ## 使用シナリオ
 
 - 新しい ywc-* skill をゼロから作成する場合
 - 既存 ywc-* skill の frontmatter、body section、references 構造を改善する場合
-- 18 個の ywc-* skill を canonical rule set 基準で audit する場合
+- ywc-* skill を canonical rule set 基準で audit する場合
 
 ## 使用方法
 
@@ -52,4 +52,4 @@
 - `references/skill-template.md` — 新規 skill 開始 template
 - `references/rationalization-defense-cookbook.md` — Rationalization Defense table 作成 guide
 - `references/description-anti-patterns.md` — Description field の禁止 pattern
-- `references/cross-skill-graph.md` — 18 個の ywc-* skill 間の dependency + cross-reference graph
+- `references/cross-skill-graph.md` — ywc-* skill 間の prerequisite + cross-reference graph

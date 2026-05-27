@@ -2,7 +2,7 @@
 
 The `description` field in skill frontmatter is the primary mechanism Codex uses to decide whether to activate a skill. Getting it wrong is the #1 cause of skill misfires (wrong skill activated, or right skill skipped).
 
-This guide captures the failure modes documented across superpowers, Anthropic's official skill spec, and the 18 production ywc-* skills. Read this before writing or auditing any `description` field.
+This guide captures the failure modes documented across superpowers, Anthropic's official skill spec, and production ywc-* skills. Read this before writing or auditing any `description` field.
 
 ## The Core Trap: Workflow Summary
 
@@ -163,7 +163,7 @@ For any description, ask:
 
 ## Empirical Evidence
 
-The 18 production ywc-* skills were rewritten in 2026-04 to follow this guide. Before/after comparison (from this repository's commit history, `8f69b29`):
+The production ywc-* skills were rewritten in 2026-04 to follow this guide. Before/after comparison (from this repository's commit history, `8f69b29`):
 
 - **Before**: descriptions averaged 380 chars, often mixing trigger and workflow summary.
 - **After**: descriptions averaged 320 chars, trigger-only with explicit anti-triggers and 한/영/일 keywords.

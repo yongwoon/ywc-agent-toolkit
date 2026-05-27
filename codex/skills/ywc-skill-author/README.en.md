@@ -1,6 +1,6 @@
 # ywc-skill-author
 
-A **meta-skill** for authoring new ywc-* skills and restructuring existing ones. Encodes the canonical rules derived from analyzing the 18 production ywc-* skills (Frontmatter format, Rationalization Defense, multilingual triggers, progressive disclosure, etc.) so that LLMs automatically follow the standard.
+A **meta-skill** for authoring new ywc-* skills and restructuring existing ones. Encodes the canonical rules derived from analyzing production ywc-* skills (frontmatter format, Rationalization Defense, multilingual triggers, progressive disclosure, etc.) so that LLMs automatically follow the standard.
 
 ## Use Cases
 
@@ -52,4 +52,4 @@ See `SKILL.md` and the four reference documents under `references/` for the full
 - `references/skill-template.md` — starting template for new skills.
 - `references/rationalization-defense-cookbook.md` — guide for writing the Rationalization Defense table.
 - `references/description-anti-patterns.md` — anti-patterns to avoid in the description field.
-- `references/cross-skill-graph.md` — dependency and cross-reference graph for the 18 ywc-* skills.
+- `references/cross-skill-graph.md` — prerequisite and cross-reference graph for ywc-* skills.
