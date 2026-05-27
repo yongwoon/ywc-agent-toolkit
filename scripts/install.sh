@@ -837,7 +837,7 @@ case "$MODE" in
     run_hook_install "$HOOK_SCOPE" "${HOOK_NAMES[@]+"${HOOK_NAMES[@]}"}"
     ;;
   *)
-    echo "Error: --cc / --cc-agents / --codex / --codex-agents / --all / --hooks のいずれかを指定してください" >&2
+    echo "Error: --cc / --cc-agents / --codex / --codex-agents / --all / --hooks 중 하나를 지정하세요" >&2
     usage
     exit 1
     ;;
@@ -862,12 +862,12 @@ if [ "$CODEX_INSTALLED" -gt 0 ]; then
   [ "$CODEX_PRUNED" -gt 0 ] && msg+=" / ${CODEX_PRUNED}개 제거"
   echo "$msg → $CODEX_DEST"
 fi
-if [ "$CODEX_AGENTS_INSTALLED" -gt 0 ]; then
+if [ "$CODEX_AGENTS_INSTALLED" -gt 0 ] || [ "$CODEX_AGENTS_PRUNED" -gt 0 ]; then
   msg="Codex agents: ${CODEX_AGENTS_INSTALLED}개 설치"
   [ "$CODEX_AGENTS_PRUNED" -gt 0 ] && msg+=" / ${CODEX_AGENTS_PRUNED}개 제거"
   echo "$msg → $CODEX_AGENTS_DEST"
 fi
-if [ "$CODEX_INSTALLED" -gt 0 ] || [ "$CODEX_AGENTS_INSTALLED" -gt 0 ]; then
+if [ "$CODEX_INSTALLED" -gt 0 ] || [ "$CODEX_AGENTS_INSTALLED" -gt 0 ] || [ "$CODEX_AGENTS_PRUNED" -gt 0 ]; then
   echo "Codex 를 재시작하면 설치된 스킬과 agent 가 반영됩니다."
 fi
 if [ "$HOOKS_INSTALLED" -gt 0 ]; then

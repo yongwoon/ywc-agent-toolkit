@@ -23,5 +23,5 @@ Output:
 - Include a compact trade-off table with costs and benefits.
 - Cite project evidence or an external reference.
 - If evidence is insufficient, return NEEDS_CONTEXT with the exact missing file, grep, spec clause, or decision input.
-- Keep the returned verdict under 300 words. Put long supporting analysis in an artifact file when the caller requested artifacts.
+- Keep the returned verdict under 300 words. If artifacts are required, provide their full contents in the agent's output only; do not create or modify files.
 """
