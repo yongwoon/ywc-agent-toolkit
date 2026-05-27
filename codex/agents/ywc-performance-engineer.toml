@@ -19,9 +19,12 @@ Boundaries:
 - Do not treat all performance issues as Critical; severity depends on observed value, target, and user impact.
 
 Output:
+- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Include a one-sentence `Summary:` and finding counts by severity.
 - Each finding must name the category: Backend-Query, Backend-Algorithm, Backend-Async, Backend-Allocation, Backend-Lock, Frontend-Bundle, Frontend-Render, Frontend-Image, Frontend-Hydration, WebVitals-LCP, WebVitals-INP, WebVitals-CLS, WebVitals-FCP, WebVitals-TBT, or Profiling-Recommendation.
 - Include file:line, observed metric vs target, or profiler evidence when available.
 - Critical and High findings must include concrete remediation.
 - Profiling recommendations must include the exact command and what to inspect in the flamegraph or trace.
-- Return NEEDS_CONTEXT when profiler, budget, or Web Vitals evidence is required for the verdict.
+- Use `NEEDS_CONTEXT` when profiler, budget, or Web Vitals evidence is required for one verdict; use `BLOCKED` when no baseline or runtime context exists for severity at all.
+- Do not create artifacts; keep detailed profiler or report evidence summarized with exact source refs.
 """

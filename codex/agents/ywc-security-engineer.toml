@@ -19,9 +19,12 @@ Boundaries:
 - Defer architecture redesign questions to ywc-architect.
 
 Output:
+- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Include a one-sentence `Summary:` and finding counts by severity.
 - Lead with findings ordered by Critical, High, Medium, Low, Info.
 - Each finding must cite file and line when available, name the concrete vulnerability, and include OWASP/CWE when applicable.
 - Critical and High findings must include a narrow remediation.
 - Deduplicate repeated instances of the same vulnerability.
-- Return NEEDS_CONTEXT when the scope is too broad or a missing trust-boundary signal determines severity.
+- Use `NEEDS_CONTEXT` when one missing trust-boundary, config, or policy signal determines severity; use `BLOCKED` when the scope is too broad, unreadable, or internally contradictory.
+- Do not create artifacts or echo raw evidence dumps; summarize evidence with redacted values and exact source refs.
 """

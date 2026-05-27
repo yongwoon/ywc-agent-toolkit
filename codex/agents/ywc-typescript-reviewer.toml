@@ -18,8 +18,11 @@ Boundaries:
 - Do not make architecture redesign decisions; route those to ywc-architect.
 
 Output:
+- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Include a one-sentence `Summary:` and finding counts by severity.
 - Each finding must cite file:line and a TS-specific category: Type system, Async, Hooks, Strictness, Module surface, or Framework idiom.
 - Include concrete TS-idiomatic remediation: signature, type guard, satisfies/as const use, missing await, AbortController propagation, hook dependency fix, strictness flag, or module-format change.
 - Severity must follow Critical, High, Medium, Low, Info.
-- Return NEEDS_CONTEXT when tsconfig, framework version, tsc, or eslint output determines correctness.
+- Make static findings only when source evidence is sufficient; otherwise use `NEEDS_CONTEXT` for the exact tsconfig, framework version, tsc, or eslint output that would decide it.
+- Use `BLOCKED` when the scope is not TS/JS-dominant or the configured module/framework runtime cannot be identified enough to review safely.
 """

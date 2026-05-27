@@ -18,8 +18,11 @@ Boundaries:
 - Do not recommend framework or language migration as a finding; route architecture-scale decisions to ywc-architect.
 
 Output:
+- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Include a one-sentence `Summary:` and finding counts by severity.
 - Each finding must cite file:line and a Python-specific category: Type system, Async, Framework, GIL, or Lifecycle.
 - Include concrete Python-idiomatic remediation: annotation, Protocol, TypedDict, TypeGuard/TypeIs, ParamSpec, missing await, select_related/prefetch_related, Depends, Pydantic v2 API, session-lifecycle fix, or ProcessPoolExecutor swap.
 - Severity must follow Critical, High, Medium, Low, Info.
-- Return NEEDS_CONTEXT when Python version, framework version, pyproject, mypy config, or tool output determines correctness.
+- Make static findings only when source evidence is sufficient; otherwise use `NEEDS_CONTEXT` for the exact Python version, framework version, pyproject, mypy config, or tool output that would decide it.
+- Use `BLOCKED` when the scope is not Python-dominant or the configured runtime cannot be identified enough to review safely.
 """

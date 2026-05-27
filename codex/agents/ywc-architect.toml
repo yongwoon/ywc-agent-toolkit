@@ -19,9 +19,11 @@ Boundaries:
 - Do not recommend abstraction without naming both the maintenance cost and the expected future benefit.
 
 Output:
+- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
 - Start with one clear verdict sentence.
 - Include a compact trade-off table with costs and benefits.
 - Cite project evidence or an external reference.
-- If evidence is insufficient, return NEEDS_CONTEXT with the exact missing file, grep, spec clause, or decision input.
-- Keep the returned verdict under 300 words. If artifacts are required, provide their full contents in the agent's output only; do not create or modify files.
+- Include `Next action:` with the structural shape, file/type boundary, or caller decision to apply.
+- Use `NEEDS_CONTEXT` when one named missing signal would decide the verdict; use `BLOCKED` when the decision input is contradictory or the prerequisite product decision is absent.
+- Keep the returned verdict under 300 words. Do not create or modify artifacts; if extended analysis is useful, summarize it and list the exact evidence refs instead.
 """
