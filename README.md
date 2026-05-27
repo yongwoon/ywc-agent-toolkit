@@ -8,8 +8,8 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 | Tool | Skills | Custom Agents | Install path |
 |------|--------|---------------|--------------|
-| Claude Code | 26 | — | `~/.claude/skills/` |
-| Codex | 27 | 7 | `~/.codex/skills/`, `~/.codex/agents/` |
+| Claude Code | 36 | 12 | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex | 37 | 7 | `~/.codex/skills/`, `~/.codex/agents/` |
 
 ## Installation
 
@@ -21,7 +21,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 ```
 
 After running the command, open the Plugin UI (**Marketplaces** tab) and install **ywc-agent-toolkit** from there.
-Skills are installed to `~/.claude/skills/` automatically — no cloning or bash required.
+Skills and Claude Code agents are installed automatically — no cloning or bash required.
 
 ### Via bash script
 
@@ -46,25 +46,31 @@ bash scripts/install.sh --cc ywc-plan ywc-commit ywc-create-pr
 bash scripts/install.sh --codex ywc-plan ywc-commit ywc-ui-ux-review
 ```
 
-### Install only Codex custom agents
+### Install only custom agents
 
 ```bash
+# All 12 Claude Code worker/reviewer/specialist agents
+bash scripts/install.sh --cc-agents
+
 # All 7 read-only specialist agents
 bash scripts/install.sh --codex-agents
 
 # Selected agents
+bash scripts/install.sh --cc-agents ywc-backend-coder ywc-qa-engineer
 bash scripts/install.sh --codex-agents ywc-security-engineer ywc-architect
 
 # Skills only, leaving agents untouched
+bash scripts/install.sh --cc --skip-agents
 bash scripts/install.sh --codex --skip-agents
 ```
 
-### List available skills
+### List available items
 
 ```bash
 bash scripts/install.sh --list
 bash scripts/install.sh --list --cc
 bash scripts/install.sh --list --codex
+bash scripts/install.sh --list --cc-agents
 bash scripts/install.sh --list --codex-agents
 ```
 
@@ -73,6 +79,7 @@ bash scripts/install.sh --list --codex-agents
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CLAUDE_SKILLS_DIR` | `~/.claude/skills` | Override Claude Code install path |
+| `CLAUDE_AGENTS_DIR` | `~/.claude/agents` | Override Claude Code agent install path |
 | `CODEX_HOME` | `~/.codex` | Override Codex home path |
 
 Restart Claude Code or Codex after installation for skills to take effect.
@@ -93,6 +100,9 @@ versions include Codex-compatible frontmatter and tool guidance.
 | `ywc-spec-validate` | Validate spec quality (Completeness / Consistency / Feasibility) |
 | `ywc-tech-research` | Research libraries and compare technical approaches |
 | `ywc-ubiquitous-language` | Create and maintain a domain ubiquitous language dictionary |
+| `ywc-brainstorm` | Shape rough ideas before writing a formal plan or spec |
+| `ywc-confidence-gate` | Check readiness and risk before starting substantial implementation |
+| `ywc-onboard-repo` | Generate repository onboarding context for unfamiliar projects |
 
 ### Task & Execution
 
@@ -103,6 +113,8 @@ versions include Codex-compatible frontmatter and tool guidance.
 | `ywc-parallel-executor` | Execute tasks in parallel using Git worktree isolation |
 | `ywc-code-gen` | Generate Backend + Frontend + QA code in parallel |
 | `ywc-agentic` | Autonomously orchestrate the ywc-* pipeline from a goal (Plan → Execute → Evaluate → Repeat, max 3 iterations) |
+| `ywc-tdd-ritual` | Drive feature and bugfix work through a red-green-refactor loop |
+| `ywc-worktrees` | Create, audit, prune, and resolve worktree-based task isolation |
 
 ### Review & Verification
 
@@ -114,6 +126,10 @@ versions include Codex-compatible frontmatter and tool guidance.
 | `ywc-product-review` | Product feedback across 5 business dimensions |
 | `ywc-gen-testcase` | Generate test sheets from PRs or tasks |
 | `ywc-e2e-test-strategy` | Design Playwright E2E test strategy |
+| `ywc-debug-rootcause` | Investigate bugs, failed tests, and build failures to the root cause |
+| `ywc-receive-review` | Triage and apply human or automated review feedback |
+| `ywc-refactor-clean` | Remove dead code, unused exports, stale files, and unused dependencies |
+| `ywc-verify-done` | Verify tests, builds, and completion evidence before declaring work done |
 
 ### Git & Release
 
@@ -144,7 +160,9 @@ versions include Codex-compatible frontmatter and tool guidance.
 
 ---
 
-## Codex Custom Agents
+## Custom Agents
+
+Claude Code also ships 12 custom agents for worker, reviewer, and specialist dispatch. They install to `~/.claude/agents/` and are documented in [`claude-code/agents/README.md`](claude-code/agents/README.md).
 
 Seven read-only specialist agents complement the `ywc-*` skills. They are installed to `~/.codex/agents/` (override with `CODEX_HOME`) as individual TOML files, and Codex loads one custom agent per file.
 
@@ -158,7 +176,7 @@ Seven read-only specialist agents complement the `ywc-*` skills. They are instal
 | `ywc-python-reviewer` | Python language-specific review | `read-only` |
 | `ywc-go-reviewer` | Go language-specific review | `read-only` |
 
-All agents are read-only; they return verdicts, findings, or NEEDS_CONTEXT responses but never edit files. Source TOML lives under [`codex/agents/`](codex/agents/).
+All Codex agents are read-only; they return a standardized `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`, a compact verdict or finding set, and a `Next action:` when the caller should apply or inspect something. They never edit files. Source TOML lives under [`codex/agents/`](codex/agents/).
 
 ---
 

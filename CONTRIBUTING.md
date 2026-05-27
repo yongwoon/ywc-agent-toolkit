@@ -1,12 +1,13 @@
 # Contributing to ywc-agent-toolkit
 
-Thank you for your interest in contributing! This guide explains how to submit bug reports, skill improvements, new skills, and translations.
+Thank you for your interest in contributing! This guide explains how to submit bug reports, skill improvements, custom agent changes, new skills, and translations.
 
 ## Table of Contents
 
 - [How to contribute](#how-to-contribute)
 - [Development setup](#development-setup)
 - [Skill authoring rules](#skill-authoring-rules)
+- [Custom agent authoring rules](#custom-agent-authoring-rules)
 - [Translations](#translations)
 - [Commit message conventions](#commit-message-conventions)
 - [Pull request process](#pull-request-process)
@@ -20,6 +21,7 @@ Thank you for your interest in contributing! This guide explains how to submit b
 |-------------------|-----|
 | Bug report | Open an [issue](../../issues/new?template=bug_report.md) |
 | Skill improvement | Open an issue or submit a PR |
+| Custom agent improvement | Open an issue or submit a PR |
 | New skill | Open a [new skill issue](../../issues/new?template=new_skill.md) first, then PR |
 | Translation | Open a [translation issue](../../issues/new?template=translation.md) or submit a PR directly |
 
@@ -39,6 +41,8 @@ git checkout -b feat/your-skill-name
 bash scripts/install.sh --list
 bash scripts/install.sh --cc ywc-plan   # install a single skill for testing
 bash scripts/install.sh --codex ywc-plan
+bash scripts/install.sh --cc-agents     # install Claude Code custom agents
+bash scripts/install.sh --codex-agents  # install Codex custom agents
 ```
 
 ---
@@ -102,6 +106,30 @@ Claude Code skills may include extra metadata such as `version`, `category`,
 - [ ] Codex `SKILL.md` frontmatter has no Claude-only metadata fields
 - [ ] The skill is general-purpose (not specific to a single project)
 - [ ] `bash scripts/install.sh --list` still works after your change
+
+---
+
+## Custom agent authoring rules
+
+Claude Code agents live in `claude-code/agents/` as one `ywc-*.md` file per agent.
+Codex custom agents live in `codex/agents/` as one `ywc-*.toml` file per agent.
+
+### Codex custom agents
+
+- Keep Codex agents read-only: set `sandbox_mode = "read-only"` and do not grant write behavior in the instructions.
+- Use a bounded specialist mission. The agent should review or advise, not own a full workflow.
+- The output contract must include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Use `NEEDS_CONTEXT` when one named missing input would decide the verdict.
+- Use `BLOCKED` when the scope is contradictory, unreadable, too broad, or missing a prerequisite product decision.
+- Include a concise verdict or finding set and a `Next action:` when the caller needs to apply or inspect something.
+- `bash scripts/install.sh --list --codex-agents` should list the new or changed agent.
+
+### Claude Code agents
+
+- Keep frontmatter valid YAML with `name:`, `description:`, `model:`, and `tools:`.
+- Match the filename and `name:` field, for example `claude-code/agents/ywc-security-engineer.md` declares `name: ywc-security-engineer`.
+- Follow the catalog conventions in [claude-code/agents/README.md](claude-code/agents/README.md).
+- `bash scripts/install.sh --list --cc-agents` should list the new or changed agent.
 
 ---
 
@@ -213,7 +241,7 @@ All PRs must pass:
 
 | Check | What it verifies |
 |-------|-----------------|
-| `validate` | Every skill has required frontmatter, README locale files, and Codex `agents/openai.yaml` metadata |
+| `validate` | Every skill has required frontmatter, README locale files, Codex `agents/openai.yaml` metadata, and Claude Code agent frontmatter |
 | `shellcheck` | `scripts/install.sh` has no shell script errors |
 | `markdownlint` | README files pass basic Markdown formatting rules |
 

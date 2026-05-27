@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repository Is
 
-A skill distribution toolkit for **Claude Code** (26 skills) and **Codex** (27 skills). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
+A skill and agent distribution toolkit for **Claude Code** (36 skills, 12 agents) and **Codex** (37 skills, 7 custom agents). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
 
 ## Key Commands
 
 ```bash
-# Install all skills
+# Install full bundles
 bash scripts/install.sh --cc          # Claude Code → ~/.claude/skills/
 bash scripts/install.sh --codex       # Codex → ~/.codex/skills/
 bash scripts/install.sh --all         # both
@@ -17,9 +17,15 @@ bash scripts/install.sh --all         # both
 # Install specific skills only
 bash scripts/install.sh --cc ywc-plan ywc-commit
 
-# List available skills
+# Install custom agents only
+bash scripts/install.sh --cc-agents
+bash scripts/install.sh --codex-agents
+
+# List available items
 bash scripts/install.sh --list
 bash scripts/install.sh --list --cc
+bash scripts/install.sh --list --cc-agents
+bash scripts/install.sh --list --codex-agents
 
 # Validate skill structure locally (mirrors CI)
 bash scripts/validate.sh
@@ -27,6 +33,7 @@ bash scripts/validate.sh
 
 Override install paths via environment variables:
 - `CLAUDE_SKILLS_DIR` — Claude Code install path (default: `~/.claude/skills`)
+- `CLAUDE_AGENTS_DIR` — Claude Code agent install path (default: `~/.claude/agents`)
 - `CODEX_HOME` — Codex home path (default: `~/.codex`)
 
 ## Repository Structure
@@ -44,6 +51,8 @@ codex/skills/<skill-name>/         # one directory per Codex skill
   README.ja.md / README.ko.md      # required Tier 1 translations
   agents/openai.yaml               # required — Codex UI metadata
   references/                      # optional — long reference docs extracted from SKILL.md
+claude-code/agents/                # Claude Code custom agents, one ywc-*.md per agent
+codex/agents/                      # Codex custom agents, one ywc-*.toml per agent
 codex/skills/references/           # shared Codex reference docs linked by multiple skills
 codex/skills/scripts/              # shared Codex helper scripts installed with skills
 scripts/
@@ -57,6 +66,8 @@ scripts/
 ```
 
 Codex skills mostly mirror the Claude Code `ywc-*` skill set, with Codex-specific additions where useful. Codex `SKILL.md` frontmatter must keep only `name` and `description`.
+
+Codex custom agents are read-only TOML definitions. Their output contract uses `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` plus concise findings and a `Next action:` when the caller needs to apply or inspect something.
 
 ## Skill Authoring Rules
 
