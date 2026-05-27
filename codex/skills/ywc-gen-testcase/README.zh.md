@@ -4,7 +4,7 @@
 
 # Gen Testcase Skill（ywc-gen-testcase）
 
-此 Codex Skill 接受 GitHub PR、已完成的任务目录或当前 git diff，生成**面向双受众的复选框驱动的 Markdown 测试表**：A 节面向开发者（合并前关卡），B 节面向 QA/浏览器（发布前关卡）。默认输出路径为项目的 `docs/test-case/` 目录。
+此 Codex Skill 接受 GitHub PR、已完成的任务目录、任务目录范围、Git 范围或当前 git diff，生成**面向双受众的复选框驱动测试表**：A 节面向开发者（合并前关卡），B 节面向 QA/浏览器（发布前关卡）。默认输出为 Markdown，`--format html` 会生成用于浏览器签署的交互式 HTML 测试表。默认输出路径为项目的 `docs/test-case/` 目录。
 
 后端工程师和 QA/PM/产品负责人可以各自独立并行签署自己的部分——因此合并决策和发布决策被清晰地分离。
 
@@ -29,6 +29,18 @@
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table
 ```
+
+### 任务范围生成
+
+当两个端点都像任务前缀时（例如 `000012-010..000019-010`），Skill 会先将输入解析为包含端点的任务范围，再尝试 Git 范围。它会按字典序排序 `<tasks-dir>` 中的任务目录 basename（编号前缀设计为按执行顺序排序），并读取从起始任务到结束任务的每个 `task.md` / `README.md` 作为场景来源。
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
+```
+
+> 如果任一端点缺失或不明确，Skill 会停止并询问。对于类似任务的端点，它不会回退到 `git rev-parse`。
+> 如果起始任务在排序列表中出现在结束任务之后，Skill 会停止并询问是否意图使用反向范围。
+> 当分支 / 标签 / SHA 偶然看起来像任务前缀时，可使用 `--range A..B` 强制 Git 范围。
 
 ### Git 范围生成
 
@@ -58,7 +70,8 @@
 | `--output-dir <path>` | 覆盖输出目录（默认：`docs/test-case/`） | `--output-dir ./qa/manual-tests` |
 | `--lang <code>` | 测试表语言（`ja`、`ko`、`en`）。默认：自动检测 | `--lang ja` |
 | `--filename <name>` | 文件名覆盖（不含 `.md`） | `--filename release-v2-smoke` |
-| `--tasks-dir <path>` | 任务目录（默认：`tasks/`） | `--tasks-dir ./docs/tasks` |
+| `--tasks-dir <path>` | 任务和任务范围输入使用的任务目录（默认：`tasks/`） | `--tasks-dir ./docs/tasks` |
+| `--format <fmt>` | 输出格式（`markdown` \| `html`）。默认：`markdown` | `--format html` |
 | `--include-regression` | 添加回归测试节（B.3） | |
 | `--audience <who>` | `dev` \| `qa` \| `both`。默认：`both`（单文件，A+B） | `--audience qa` |
 | `--split` | 物理拆分为 `<slug>-dev.md` + `<slug>-qa.md` | |
@@ -68,7 +81,7 @@
 | `--range <spec>` | 明确的 git 范围（`A..B`）。等同于位置参数 | `--range v1.2..v1.3` |
 | `--dry-run` | 仅显示生成计划（不写入文件） | |
 
-> PR 标识符、任务规格、范围（`A..B`）和 `--from-diff` 互斥。`--split` 和 `--force-single` 互斥。如果传入不兼容的标志，Skill 会停止并询问您想要哪种模式。
+> PR 标识符、任务规格、任务范围（位置参数 `<task>..<task>`）、Git 范围（位置参数 `A..B` 或 `--range`）和 `--from-diff` 互斥。`--split` 和 `--force-single` 互斥。如果传入不兼容的标志，Skill 会停止并询问您想要哪种模式。
 
 ## 双受众，双关卡
 
@@ -99,6 +112,7 @@
 步骤 1：输入解析
   └─ PR：通过 gh pr view / gh pr diff 获取元数据和 diff
   └─ 任务：从 <tasks-dir>/<name>/ 加载 task.md / README.md（优先 completed/）
+  └─ 任务范围：加载范围内每个任务的 task.md / README.md
   └─ Diff：捕获 git diff HEAD + 最近提交日志
 
 步骤 2：受众和界面分类
@@ -131,6 +145,7 @@
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
 | 任务 | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| 任务范围 | `tasks-<start-prefix>-<end-prefix>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | 范围 | `range-<short-start>-<short-end>-<slug>.md`（两端点均为标签时使用标签名，如 `range-v1.2-v1.3-<slug>.md`） | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 
@@ -236,6 +251,12 @@ YAML front matter 携带 `dev_tester` / `dev_status` / `qa_tester` / `qa_status`
 
 ```text
 /ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+```
+
+### 任务范围（包含端点，从起始任务到结束任务）
+
+```text
+/ywc-gen-testcase 000012-010..000019-010 --lang ja
 ```
 
 ### Git 范围（两个标签之间）
