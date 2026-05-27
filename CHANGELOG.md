@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.12.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.11.0...v1.12.0) (2026-05-27)
+
+
+### ### Added
+
+* **codex:** add 7 specialist agents and --codex-agents installer mode ([#36](https://github.com/yongwoon/ywc-agent-toolkit/issues/36)) ([f6a1daf](https://github.com/yongwoon/ywc-agent-toolkit/commit/f6a1daf8d8d21073790aa05e7bb264530861689e))
+* **ywc-gen-testcase:** support task range input ([#37](https://github.com/yongwoon/ywc-agent-toolkit/issues/37)) ([da2fe0d](https://github.com/yongwoon/ywc-agent-toolkit/commit/da2fe0d4b59a048493de64a4ca298239169c197e))
+* **ywc-merge-dependabot:** parallel-auto mode (ecosystem grouping) ([#38](https://github.com/yongwoon/ywc-agent-toolkit/issues/38)) ([dd1fe8d](https://github.com/yongwoon/ywc-agent-toolkit/commit/dd1fe8dc28890dc71bdc90dc6ce4a497dfe24d66))
+
 ## [1.11.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.10.0...v1.11.0) (2026-05-23)
 
 
