@@ -56,3 +56,23 @@ Ocho skills de revisión y reporte soportan un flag opt-in `--format html` que g
 ```
 
 > **⚠️ Coste en tokens** — La salida HTML consume 2-4× más tokens de salida que Markdown y tarda más en generarse. El valor predeterminado es `markdown`; active HTML solo para informes que un humano leerá en un navegador.
+
+---
+
+## Agentes personalizados
+
+Claude Code incluye **12 agentes** personalizados para worker, reviewer y specialist dispatch. Se instalan en `~/.claude/agents/` y están documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
+
+Codex incluye **7 agentes** especialistas de solo lectura que complementan los skills `ywc-*`. Se instalan en `~/.codex/agents/`.
+
+| Agente | Propósito | Sandbox |
+|--------|-----------|---------|
+| `ywc-architect` | Asesor de decisiones arquitectónicas y trade-offs | `read-only` |
+| `ywc-security-engineer` | Revisión estática de seguridad y clasificación de threat model | `read-only` |
+| `ywc-root-cause-analyst` | Análisis de causa raíz e incidentes | `read-only` |
+| `ywc-performance-engineer` | Revisión de rendimiento y recomendaciones de profiling | `read-only` |
+| `ywc-typescript-reviewer` | Revisión específica de TypeScript / JavaScript | `read-only` |
+| `ywc-python-reviewer` | Revisión específica de Python | `read-only` |
+| `ywc-go-reviewer` | Revisión específica de Go | `read-only` |
+
+Consulte [README.md](README.md) para más detalles.

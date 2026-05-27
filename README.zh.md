@@ -57,3 +57,23 @@ bash scripts/install.sh --all
 ```
 
 > **⚠️ Token 成本** — HTML 输出比 Markdown 消耗 2-4 倍的 output token，生成时间也更长。默认值为 `markdown`，仅在需要人工在浏览器中阅读报告时才启用 HTML。
+
+---
+
+## Custom Agent
+
+Claude Code 包含 **12 个**用于 worker、reviewer、specialist dispatch 的 custom agent，安装到 `~/.claude/agents/`，详细信息请参阅 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
+
+Codex 包含 **7 个**补充 `ywc-*` skill 的 read-only specialist agent，安装到 `~/.codex/agents/`。
+
+| Agent | 用途 | Sandbox |
+|-------|------|---------|
+| `ywc-architect` | 架构决策与权衡 advisor | `read-only` |
+| `ywc-security-engineer` | 静态安全审查与威胁模型分类 | `read-only` |
+| `ywc-root-cause-analyst` | 根因与故障原因分析 | `read-only` |
+| `ywc-performance-engineer` | 性能审查与性能分析建议 | `read-only` |
+| `ywc-typescript-reviewer` | TypeScript / JavaScript 语言专项审查 | `read-only` |
+| `ywc-python-reviewer` | Python 语言专项审查 | `read-only` |
+| `ywc-go-reviewer` | Go 语言专项审查 | `read-only` |
+
+详细信息请参阅 [README.md](README.md)。

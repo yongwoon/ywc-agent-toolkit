@@ -58,3 +58,23 @@ bash scripts/install.sh --all
 ```
 
 > **⚠️ Token 비용** — HTML 출력은 Markdown 대비 output token을 2~4배 사용하며 생성 시간도 더 깁니다. 기본값은 `markdown`이며, 사람이 브라우저에서 읽을 report에 한해 HTML을 활성화하시기 바랍니다.
+
+---
+
+## Custom Agent
+
+Claude Code에는 worker, reviewer, specialist dispatch용 **12개**의 custom agent가 포함되어 있습니다. `~/.claude/agents/`에 설치되며, 자세한 내용은 [`claude-code/agents/README.md`](claude-code/agents/README.md)를 참조하세요.
+
+Codex에는 `ywc-*` skill을 보완하는 **7개**의 read-only specialist agent가 포함됩니다. `~/.codex/agents/`에 설치됩니다.
+
+| Agent | 용도 | Sandbox |
+|-------|------|---------|
+| `ywc-architect` | 아키텍처 결정 및 트레이드오프 advisor | `read-only` |
+| `ywc-security-engineer` | 정적 보안 리뷰 및 threat model 분류 | `read-only` |
+| `ywc-root-cause-analyst` | 근본 원인 및 장애 원인 분석 | `read-only` |
+| `ywc-performance-engineer` | 성능 리뷰 및 프로파일링 권장사항 | `read-only` |
+| `ywc-typescript-reviewer` | TypeScript / JavaScript 언어별 리뷰 | `read-only` |
+| `ywc-python-reviewer` | Python 언어별 리뷰 | `read-only` |
+| `ywc-go-reviewer` | Go 언어별 리뷰 | `read-only` |
+
+자세한 내용은 [README.md](README.md)를 참조하세요.
