@@ -32,7 +32,8 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
-declare -A seen_files=()
+files_tmp="$(mktemp)"
+trap 'rm -f "$files_tmp"' EXIT
 
 for pr in "$@"; do
   if ! [[ "$pr" =~ ^[1-9][0-9]*$ ]]; then
@@ -49,13 +50,13 @@ for pr in "$@"; do
   rm -f "$err_tmp"
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
-    seen_files["$f"]=1
+    printf '%s\n' "$f" >>"$files_tmp"
   done <<< "$diff_output"
 done
 
-if [[ ${#seen_files[@]} -eq 0 ]]; then
+if [[ ! -s "$files_tmp" ]]; then
   echo "ywc-spec-writer: no files found across PRs: $*" >&2
   exit 1
 fi
 
-printf '%s\n' "${!seen_files[@]}" | sort
+sort -u "$files_tmp"
