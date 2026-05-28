@@ -19,7 +19,7 @@ Project specification writer. Creates and maintains the `docs/specification/` di
 /ywc-spec-writer --update                 # Regenerate all sections
 /ywc-spec-writer --from-task tasks/000002-010-api-user/
 /ywc-spec-writer --from-tasks 000002-010..000003-020   # Task range (may span phases)
-/ywc-spec-writer --from-tasks 000002-* 000003-010      # Glob + single id mix
+/ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + single id mix
 /ywc-spec-writer --from-commit HEAD
 /ywc-spec-writer --from-pr 42                          # Single PR
 /ywc-spec-writer --from-prs 42 43 51                   # Multiple PRs (union diff)

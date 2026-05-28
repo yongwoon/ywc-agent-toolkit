@@ -6,6 +6,8 @@
 # Exit 0: created successfully
 # Exit 1: docs/specification/ already exists
 
+set -euo pipefail
+
 LANG="${1:-ko}"
 PROJECT="${2:-Project}"
 SPEC_DIR="docs/specification"

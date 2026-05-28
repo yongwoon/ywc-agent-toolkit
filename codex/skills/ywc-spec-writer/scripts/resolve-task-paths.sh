@@ -16,8 +16,8 @@
 # Output: one absolute path per line, deduplicated, sorted by basename.
 # Quote glob patterns in the caller command. zsh and bash may expand or reject
 # unquoted globs before this script can resolve them against task basenames.
-# Exit 0: at least one task resolved.
-# Exit 1: no arguments, or no task matched any provided pattern,
+# Exit 0: every provided argument resolved to at least one task.
+# Exit 1: no arguments, any provided pattern matched no tasks,
 #         or tasks root not found.
 #
 # Environment overrides:
@@ -117,6 +117,7 @@ resolve_id() {
 }
 
 any_matched=0
+had_failure=0
 for arg in "$@"; do
   case "$arg" in
     *..*)
@@ -124,20 +125,37 @@ for arg in "$@"; do
       end="${arg#*..}"
       if [[ -z "$start" || -z "$end" ]]; then
         echo "ywc-spec-writer: invalid range '$arg' (expected START..END)" >&2
+        had_failure=1
         continue
       fi
-      resolve_range "$start" "$end" && any_matched=1 || true
+      if resolve_range "$start" "$end"; then
+        any_matched=1
+      else
+        had_failure=1
+      fi
       ;;
     *\**|*\?*|*\[*)
-      resolve_glob "$arg" && any_matched=1 || true
+      if resolve_glob "$arg"; then
+        any_matched=1
+      else
+        had_failure=1
+      fi
       ;;
     *)
-      resolve_id "$arg" && any_matched=1 || true
+      if resolve_id "$arg"; then
+        any_matched=1
+      else
+        had_failure=1
+      fi
       ;;
   esac
 done
 
 if (( ! any_matched )); then
+  exit 1
+fi
+
+if (( had_failure )); then
   exit 1
 fi
 

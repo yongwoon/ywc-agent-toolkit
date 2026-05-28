@@ -23,7 +23,7 @@
 /ywc-spec-writer --update                 # 重新生成所有章节
 /ywc-spec-writer --from-task tasks/000002-010-api-user/
 /ywc-spec-writer --from-tasks 000002-010..000003-020   # 任务范围（可跨阶段）
-/ywc-spec-writer --from-tasks 000002-* 000003-010      # Glob + 单个 ID 混合
+/ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 单个 ID 混合
 /ywc-spec-writer --from-commit HEAD
 /ywc-spec-writer --from-pr 42                          # 单个 PR
 /ywc-spec-writer --from-prs 42 43 51                   # 多个 PR（union diff）
