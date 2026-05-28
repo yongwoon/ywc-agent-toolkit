@@ -190,7 +190,7 @@ One `## Entity` per key data concept. **All models in the project's primary sche
 
 ## Existing Constraints Touched (required when `--full` / `--update` mode runs)
 - Each numeric value used elsewhere in this file MUST be cited here with a `file:line`-style reference to the constants / config / migration file that owns it
-- Example: `BASIC_AD_SPEND_CAP_JPY = 500,000` → `backend/src/features/billing/basic-ad-spend-cap.constants.ts`
+- Example: `BASIC_AD_SPEND_CAP_JPY = 500,000` → `backend/src/features/billing/basic-ad-spend-cap.constants.ts:42`
 ```
 
 **Critical writing rules for `06-requirements.md`:**
