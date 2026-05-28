@@ -9,11 +9,13 @@
 #   Single ID (full):    000002-010-api-user
 #   ID prefix:           000002-010      (matches 000002-010-*)
 #   Phase only:          000002          (matches 000002-*)
-#   Glob:                000002-*        (shell-style wildcard)
+#   Glob:                '000002-*'      (shell-style wildcard; quote it)
 #   Range (inclusive):   000002-010..000003-020
 #                        (lexicographic on directory basename; spans phases)
 #
 # Output: one absolute path per line, deduplicated, sorted by basename.
+# Quote glob patterns in the caller command. zsh and bash may expand or reject
+# unquoted globs before this script can resolve them against task basenames.
 # Exit 0: at least one task resolved.
 # Exit 1: no arguments, or no task matched any provided pattern,
 #         or tasks root not found.

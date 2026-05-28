@@ -35,7 +35,7 @@ When tempted to bypass a rule, check this table first:
 | `--full` | flag | `--full` | Generate complete spec from scratch. Requires user confirmation. Uses best available model. |
 | `--update` | flag | `--update` | Regenerate all existing spec sections. |
 | `--from-task` | `--from-task <path>` | `--from-task tasks/000002-010-api-user/` | Update spec from a single ywc-task-generator task directory. |
-| `--from-tasks` | `--from-tasks <id-or-pattern> [<id-or-pattern> ...]` | `--from-tasks 000002-010..000003-020` | Update spec from a range, glob, or multi-id set of task directories. Patterns: single ID prefix, `START..END` range, shell glob, or multi-value list. Active and completed tasks both resolve. |
+| `--from-tasks` | `--from-tasks <id-or-pattern> [<id-or-pattern> ...]` | `--from-tasks 000002-010..000003-020` | Update spec from a range, glob, or multi-id set of task directories. Patterns: single ID prefix, `START..END` range, quoted shell glob, or multi-value list. Active and completed tasks both resolve. |
 | `--from-commit` | `--from-commit <ref>` | `--from-commit HEAD` | Update spec based on diff of a specific commit. |
 | `--from-pr` | `--from-pr <num>` | `--from-pr 42` | Update spec from a single pull request's diff. Requires `gh` CLI auth. |
 | `--from-prs` | `--from-prs <num> [<num> ...]` | `--from-prs 42 43 51` | Update spec from the union diff of multiple PRs. Each PR fetched via `gh pr diff`; duplicate files are coalesced. |
@@ -70,14 +70,14 @@ When tempted to bypass a rule, check this table first:
 
 ### Step 3: Language Setup
 
-If `--lang` is not specified, check project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) for a declared primary documentation language. If not found there either, **ask the user**:
+If `--lang` is not specified, check project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) for a declared primary documentation language. If not found there either, use Korean (`ko`) as the default. Ask the user only when they explicitly ask to choose a language or project guidance conflicts.
 
 > "사양서를 어떤 언어로 작성할까요? / Which language should the spec be written in? / 仕様書をどの言語で作成しますか？"
 > 1. 한국어 (ko) — 기본값
 > 2. English (en)
 > 3. 日本語 (ja)
 
-Wait for the user's answer before proceeding. Do not assume Korean silently — the question must appear in the conversation.
+When asking, wait for the user's answer before proceeding.
 
 For locale-specific writing rules (formality level, term policy), see [references/language-policy.md](references/language-policy.md).
 
@@ -110,6 +110,10 @@ git diff <ref>^..<ref> --name-only \
 # Resolve range / glob / multi-id to absolute task directory paths
 bash codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
   000002-010..000003-020
+
+# Quote glob patterns so the user's shell does not expand or reject them first.
+bash codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
+  '000002-*'
 
 # For each resolved path: read README.md → category → look up in section-mapping.md
 # Then UNION every resulting section list.
