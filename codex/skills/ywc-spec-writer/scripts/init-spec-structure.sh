@@ -39,9 +39,9 @@ cat > "$SPEC_DIR/README.md" << EOF
 - [Glossary](07-glossary.md)
 
 ## Change Log
-| Date | Section | Summary |
-|------|---------|---------|
-| $TODAY | All | Initial structure created |
+| Date | Section | Source | Summary |
+|------|---------|--------|---------|
+| $TODAY | All | --full | Initial structure created |
 EOF
 
 for section in 01-overview 02-features 03-data 04-interfaces 05-user-flows 06-requirements 07-glossary; do

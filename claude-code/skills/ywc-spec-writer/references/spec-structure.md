@@ -35,8 +35,8 @@ docs/specification/
 - [Glossary](07-glossary.md)
 
 ## Change Log
-| Date | Section | Summary |
-|------|---------|---------|
+| Date | Section | Source | Summary |
+|------|---------|--------|---------|
 ```
 
 ---
@@ -109,8 +109,9 @@ Each `### Feature` is one user-facing capability.
 - Connected to [Other Entity] — [what the relationship means]
 ```
 
-One `## Entity` per key data concept.
-**No field types, no column names, no SQL or ORM syntax.**
+One `## Entity` per key data concept. **All models in the project's primary schema (e.g., `prisma/schema.prisma`, `*/migrations/*.sql`, `*/models/`, or `*/entities/`) MUST appear by name in this file** when in `--full` / `--update` mode. Sibling entities sharing a prefix MAY be grouped under one `### <Family>` heading (e.g., `### CampaignTarget Family`), but each member name MUST appear in an inline list under that heading. Silent omission causes Code Compatibility Critical findings at `ywc-spec-validate` time.
+
+**No field types, no column names, no SQL or ORM syntax.** This rule applies to **all sections**, not only 03-data — Prisma directives (`@default`, `@relation`, `dbgenerated(...)`), SQL fragments (`SELECT`, `WHERE`, `CREATE TABLE`), and ORM decorators in any section (including 06-requirements §Multi-Tenant Isolation, 04-interfaces, etc.) must be paraphrased into plain prose. Field-reference identifiers (`tenantId`, `BeaconSite.samplingState`) in inline backticks remain permitted. See SKILL.md §6 Writing Rules for the full ruleset.
 
 ---
 
@@ -157,10 +158,15 @@ One `## Entity` per key data concept.
 # Non-Functional Requirements
 
 ## Performance
-- [e.g., "Page load must complete within X seconds under Y concurrent users"]
+- Concrete example: "Operator console p95 < 1.5s under 1000 concurrent users"
+- Placeholder example (DO NOT SHIP): "Page load must complete within X seconds under Y concurrent users"
 
 ## Security
 - [e.g., "User data must be encrypted at rest and in transit"]
+
+## Authentication & Authorization (required when project has ≥3 distinct actor roles)
+- Role × Action matrix listing every role × every protected action
+- Source of truth for role determination (e.g., DB-first vs JWT claim vs both)
 
 ## Availability
 - [e.g., "System must be available 99.9% of the time"]
@@ -168,9 +174,31 @@ One `## Entity` per key data concept.
 ## Scalability
 - [e.g., "Must support growth to X users without architectural change"]
 
+## Audit Trail (required when the project records state changes for compliance)
+- What state-change actions are recorded (canonical action list)
+- Required fields (actor, before/after snapshot, correlation ID, etc.)
+- Retention period and physical-delete policy
+- Read access policy (cross-tenant vs own-tenant only)
+
+## Data Lifecycle (required when the project has audit / analytics / time-series data)
+- Retention period per entity
+- Sampling strategy (if data volume requires it)
+- Aggregation timing
+
 ## Compliance
 - [Regulation or standard the system must satisfy]
+
+## Existing Constraints Touched (required when `--full` / `--update` mode runs)
+- Each numeric value used elsewhere in this file MUST be cited here with a `file:line`-style reference to the constants / config / migration file that owns it
+- Example: `BASIC_AD_SPEND_CAP_JPY = 500,000` → `backend/src/features/billing/basic-ad-spend-cap.constants.ts`
 ```
+
+**Critical writing rules for `06-requirements.md`:**
+
+- Every NFR MUST include ≥1 concrete number. Placeholder values like `X seconds`, `Y users`, `数秒以内` are NOT acceptable in the shipped file.
+- If a target is genuinely undefined for the project, list it under `## Open Questions` with the reason, do NOT leave it as a placeholder.
+- The `## Existing Constraints Touched` subsection is the source of truth — every number above must be cited there to prove it was extracted from code, not invented.
+- `## Authentication & Authorization`, `## Audit Trail`, and `## Data Lifecycle` sections may be omitted (or replaced with `N/A — <reason>`) when the project genuinely does not need them. Omission MUST be justified, not silent.
 
 ---
 
