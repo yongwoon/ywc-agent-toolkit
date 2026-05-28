@@ -39,32 +39,69 @@ if [[ ! -d "$TASKS_ROOT" ]]; then
   exit 1
 fi
 
-declare -A path_by_base=()
+task_bases=()
+task_paths=()
+
+has_task_base() {
+  local candidate="$1" base
+  (( ${#task_bases[@]} == 0 )) && return 1
+  for base in "${task_bases[@]}"; do
+    [[ "$base" == "$candidate" ]] && return 0
+  done
+  return 1
+}
+
 while IFS= read -r dir; do
   [[ -z "$dir" ]] && continue
   base="$(basename "$dir")"
   # Prefer active tasks over completed when both exist with the same basename.
-  if [[ -z "${path_by_base[$base]:-}" ]]; then
-    path_by_base["$base"]="$dir"
+  if ! has_task_base "$base"; then
+    task_bases+=("$base")
+    task_paths+=("$dir")
   fi
 done < <(
   find "$TASKS_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name completed 2>/dev/null
   find "$TASKS_ROOT/completed" -mindepth 1 -maxdepth 1 -type d 2>/dev/null
 )
 
-if [[ ${#path_by_base[@]} -eq 0 ]]; then
+if [[ ${#task_bases[@]} -eq 0 ]]; then
   echo "ywc-spec-writer: no task directories found under $TASKS_ROOT" >&2
   exit 1
 fi
 
-mapfile -t sorted_bases < <(printf '%s\n' "${!path_by_base[@]}" | sort)
+sorted_bases=()
+while IFS= read -r base; do
+  [[ -z "$base" ]] && continue
+  sorted_bases+=("$base")
+done < <(printf '%s\n' "${task_bases[@]}" | sort)
 
-declare -A emitted=()
+emitted_bases=()
+is_emitted() {
+  local candidate="$1" base
+  (( ${#emitted_bases[@]} == 0 )) && return 1
+  for base in "${emitted_bases[@]}"; do
+    [[ "$base" == "$candidate" ]] && return 0
+  done
+  return 1
+}
+
 emit() {
   local base="$1"
-  [[ -n "${emitted[$base]:-}" ]] && return
-  emitted["$base"]=1
+  is_emitted "$base" && return
+  emitted_bases+=("$base")
   # Defer output; printed after all args are processed to guarantee global sort.
+}
+
+path_for_base() {
+  local candidate="$1" i
+  (( ${#task_bases[@]} == 0 )) && return 1
+  for i in "${!task_bases[@]}"; do
+    if [[ "${task_bases[$i]}" == "$candidate" ]]; then
+      printf '%s\n' "${task_paths[$i]}"
+      return 0
+    fi
+  done
+  return 1
 }
 
 resolve_range() {
@@ -160,7 +197,11 @@ if (( had_failure )); then
 fi
 
 # Emit deduplicated results in sorted order
-mapfile -t matched_bases < <(printf '%s\n' "${!emitted[@]}" | sort)
+matched_bases=()
+while IFS= read -r base; do
+  [[ -z "$base" ]] && continue
+  matched_bases+=("$base")
+done < <(printf '%s\n' "${emitted_bases[@]}" | sort)
 for base in "${matched_bases[@]}"; do
-  printf '%s\n' "${path_by_base[$base]}"
+  path_for_base "$base"
 done
