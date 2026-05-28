@@ -75,7 +75,7 @@ When tempted to bypass a rule, check this table first:
 
 ### Step 3: Language Setup
 
-If `--lang` is not specified, check project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) for a declared primary documentation language. If not found there either, use Korean (`ko`) as the default. Ask the user only when they explicitly ask to choose a language or project guidance conflicts.
+If `--lang` is not specified, check project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) for a declared primary documentation language. If not found there either, use Korean (`ko`) as the default. Ask the user only when they explicitly ask to choose a language or the project guidance conflicts.
 
 > "사양서를 어떤 언어로 작성할까요? / Which language should the spec be written in? / 仕様書をどの言語で作成しますか？"
 > 1. 한국어 (ko) — 기본값
