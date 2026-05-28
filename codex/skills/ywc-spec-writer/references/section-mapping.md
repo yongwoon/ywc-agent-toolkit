@@ -32,7 +32,7 @@ When the category is ambiguous, use `02-features.md` as the fallback.
 | `*component*`, `*page*`, `*view*`, `*screen*` | `05-user-flows.md`, `02-features.md` |
 | `*infra/*`, `*deploy/*`, CI/CD YAML files | `06-requirements.md` |
 | `*.env*`, `*config*`, `*settings*` | `06-requirements.md` |
-| `docs/ywc-plans/*`, `CLAUDE.md`, `README.md` | None — documentation, not spec |
+| `docs/ywc-plans/*`, `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, `README.md` | None — documentation, not spec |
 | `docs/specification/*` | None — spec files themselves, skip |
 
 ---

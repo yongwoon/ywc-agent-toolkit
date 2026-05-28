@@ -2,7 +2,7 @@
 
 ## Default
 
-Korean (`ko`) unless overridden by `--lang` or the project's CLAUDE.md.
+Korean (`ko`) unless overridden by `--lang` or project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`).
 
 ---
 

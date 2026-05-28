@@ -1,7 +1,7 @@
 # Hook Setup
 
 Install a git pre-commit hook that marks when a spec update is needed after significant code changes.
-The hook itself is intentionally lightweight — no Claude API calls inside git hooks.
+The hook itself is intentionally lightweight — no LLM calls inside git hooks.
 
 ## How It Works
 

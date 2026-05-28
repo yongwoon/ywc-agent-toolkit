@@ -11,16 +11,12 @@ Before any LLM call, verify:
 
 ## Model Selection
 
-Use the most capable available model. Priority order:
-1. `claude-opus-4-7` (preferred)
-2. `claude-opus-4-5` (fallback if 4-7 unavailable)
-
-Do not use Sonnet or Haiku for full spec generation — full codebase analysis requires frontier reasoning.
+Use the most capable available reasoning model. Do not use a low-reasoning pass for full spec generation — full codebase analysis requires frontier reasoning.
 
 ## Analysis Steps
 
 ### 1. Project Identity
-Read: `CLAUDE.md`, `README.md` (repo root)
+Read: `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, `README.md` (repo root; read whichever project guidance files exist)
 Extract: project name, purpose, target users, tech stack summary, language policy
 
 ### 2. Feature Inventory
@@ -40,7 +36,7 @@ Scan for: `*/pages/`, `*/views/`, `*/screens/`, `*/components/`
 Extract: top-level page/screen names → infer user flows from naming and directory structure
 
 ### 6. Non-Functional Requirements
-Read: `CLAUDE.md` (NFR mentions), `docs/architecture/` (if exists)
+Read: `AGENTS.md`, `CODEX.md`, `CLAUDE.md` (NFR mentions), `docs/architecture/` (if exists)
 Extract: explicit or implied constraints on performance, security, availability, compliance
 
 ## Writing Order

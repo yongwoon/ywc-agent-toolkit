@@ -5,7 +5,9 @@ Project specification writer. `docs/specification/` 디렉토리를 생성하고
 ## 사용 시나리오
 
 - **새 프로젝트**: Specification 이 없는 프로젝트에 전체 사양서를 처음 작성할 때
-- **Task 기반 업데이트**: `ywc-task-generator` 로 작성한 task 문서를 사양서에 반영할 때
+- **Task 기반 업데이트**: `ywc-task-generator` 로 작성한 단일 task 문서를 사양서에 반영할 때
+- **Task Range / Multi 업데이트**: 여러 task (범위·glob·다중 ID) 를 한 번에 반영할 때
+- **PR 기반 업데이트**: 하나 또는 여러 개의 PR diff 와 narrative 로 사양서를 갱신할 때
 - **Commit 후 동기화**: Code 변경 후 사양서와 동기화할 때
 - **전체 갱신**: 사양서 전체를 최신 상태로 재생성할 때
 
@@ -16,7 +18,11 @@ Project specification writer. `docs/specification/` 디렉토리를 생성하고
 /ywc-spec-writer --full                   # 전체 사양서 생성 (확인 필요)
 /ywc-spec-writer --update                 # 전체 사양서 재생성
 /ywc-spec-writer --from-task tasks/000002-010-api-user/
+/ywc-spec-writer --from-tasks 000002-010..000003-020   # Task range (phase 경계 가능)
+/ywc-spec-writer --from-tasks 000002-* 000003-010      # Glob + 단일 ID 혼합
 /ywc-spec-writer --from-commit HEAD
+/ywc-spec-writer --from-pr 42                          # 단일 PR
+/ywc-spec-writer --from-prs 42 43 51                   # 여러 PR (union diff)
 /ywc-spec-writer --setup-hook             # Git hook 설치
 /ywc-spec-writer --lang ja                # 일본어로 작성
 ```
@@ -24,10 +30,15 @@ Project specification writer. `docs/specification/` 디렉토리를 생성하고
 ## 입력
 
 - (선택) `--full` / `--update` — 전체 생성 또는 갱신
-- (선택) `--from-task <path>` — task 디렉토리 경로
+- (선택) `--from-task <path>` — 단일 task 디렉토리 경로
+- (선택) `--from-tasks <id-or-pattern> ...` — Task range / glob / 다중 ID (active + completed 모두 탐색)
 - (선택) `--from-commit <ref>` — commit 참조 (기본: `HEAD`)
+- (선택) `--from-pr <num>` — 단일 PR (gh CLI 필요)
+- (선택) `--from-prs <num> ...` — 다중 PR union diff (중복 file 자동 dedup)
 - (선택) `--lang ko|ja|en` — 출력 언어 (기본: `ko`)
 - (선택) `--setup-hook` — Git pre-commit hook 설치
+
+> `--from-pr` / `--from-prs` 사용 시 `gh` CLI 가 설치·인증되어 있어야 합니다. PR title / body / `headRefOid` 는 spec 작성 시 narrative context 와 audit trail 로 함께 기록됩니다.
 
 ## 출력
 
