@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.13.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.12.1...v1.13.0) (2026-05-28)
+
+
+### ### Added
+
+* **ywc-spec-writer:** add task-range and PR-based update modes (v1.1.0) ([#43](https://github.com/yongwoon/ywc-agent-toolkit/issues/43)) ([2894746](https://github.com/yongwoon/ywc-agent-toolkit/commit/28947467d6803d427597d1a9aa446973faf25931))
+* **ywc-spec-writer:** align with ywc-spec-validate rubric (v1.3.1) ([#45](https://github.com/yongwoon/ywc-agent-toolkit/issues/45)) ([ec7b467](https://github.com/yongwoon/ywc-agent-toolkit/commit/ec7b46766cc915a217b44d20dfd801f8e5b25cc3))
+
 ## [1.12.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.12.0...v1.12.1) (2026-05-27)
 
 
