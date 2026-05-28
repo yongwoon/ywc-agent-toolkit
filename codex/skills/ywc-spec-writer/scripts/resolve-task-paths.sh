@@ -64,7 +64,7 @@ emit() {
   local base="$1"
   [[ -n "${emitted[$base]:-}" ]] && return
   emitted["$base"]=1
-  printf '%s\n' "${path_by_base[$base]}"
+  # Defer output; printed after all args are processed to guarantee global sort.
 }
 
 resolve_range() {
@@ -140,3 +140,9 @@ done
 if (( ! any_matched )); then
   exit 1
 fi
+
+# Emit deduplicated results in sorted order
+mapfile -t matched_bases < <(printf '%s\n' "${!emitted[@]}" | sort)
+for base in "${matched_bases[@]}"; do
+  printf '%s\n' "${path_by_base[$base]}"
+done

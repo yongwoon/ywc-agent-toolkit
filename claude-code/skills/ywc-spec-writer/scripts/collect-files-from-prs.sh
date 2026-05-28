@@ -39,11 +39,14 @@ for pr in "$@"; do
     echo "ywc-spec-writer: invalid PR number '$pr' (must be a positive integer)" >&2
     exit 1
   fi
-  if ! diff_output="$(gh pr diff "$pr" --name-only 2>&1)"; then
+  err_tmp="$(mktemp)"
+  if ! diff_output="$(gh pr diff "$pr" --name-only 2>"$err_tmp")"; then
     echo "ywc-spec-writer: failed to fetch PR #$pr file list" >&2
-    echo "$diff_output" >&2
+    cat "$err_tmp" >&2
+    rm -f "$err_tmp"
     exit 1
   fi
+  rm -f "$err_tmp"
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
     seen_files["$f"]=1
