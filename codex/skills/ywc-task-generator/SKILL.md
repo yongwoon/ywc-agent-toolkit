@@ -100,7 +100,7 @@ Gather information about the project environment to generate realistic tasks. Th
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Check the highest Phase/Sequence number and start from a non-conflicting number
+- Determine the next starting number by scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `tasks/` or in `tasks/completed/` — the new batch starts at `000017-010`. If `tasks/` is empty (every task already completed and archived), fall back to the highest number in `tasks/completed/` and apply the same `+1 phase` rule.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -155,14 +155,14 @@ Analyze the specification and decompose it into tasks following the Task Design 
 
 For **Medium** and **Large** specs, phase boundary decisions and task size splits benefit from frontier judgment. A wrong Phase boundary cascades into every subsequent dependency declaration and is expensive to undo once the task directories are generated.
 
-This skill applies **Pattern C** from [advisor-pattern.md](../references/advisor-pattern.md): a **single** upfront high-capability advisor call before writing any task directories. The executor handles everything else — Task Naming, Directory Generation, Dependency Graph, and Final Validation.
+This skill applies **Pattern C** from [advisor-pattern.md](../references/advisor-pattern.md): a **single** upfront higher-capability advisor call before writing any task directories. The executor handles everything else — Task Naming, Directory Generation, Dependency Graph, and Final Validation.
 
 **When to invoke**:
 - Scale is Medium (4–15 tasks) or Large (15+ tasks), AND
 - At least one of: phase boundary is non-obvious, multiple DB migrations or library introductions compete for Phase 1, or the spec touches more than two concurrent feature areas.
-- **Skip for Small specs** (1–3 tasks) — a single-phase decomposition is obvious and does not benefit from frontier reasoning. Adding an Opus call here wastes budget.
+- **Skip for Small specs** (1–3 tasks) — a single-phase decomposition is obvious and does not benefit from frontier reasoning. Adding an advisor call here wastes budget.
 
-**How to invoke**: Use Codex subagent tools with the strongest available model when explicitly allowed. Pass the following as context payload:
+**How to invoke**: Use Codex subagent delegation when the current session exposes a delegation tool. Request one higher-capability advisor pass with the bounded payload below. If no delegation tool is available, run the same advisor checklist inline as a separate bounded pass and record the fallback in the final handoff. Do not use Claude Code-only `Task` fields, `subagent_type`, or explicit Claude model pins in the Codex bundle.
 
 - **Spec summary** — ≤20 lines distilled from your Spec Review in Step 3 (not the full spec).
 - **First-pass task list** — task name + one-line description for each candidate task from your Step 6 decomposition.
@@ -175,7 +175,7 @@ Ask the advisor for three things:
 2. **Task size verification** — any task likely to exceed ~10 files or ~300 LOC that should be split further.
 3. **Dependency cycle risk** — any tasks with circular implicit dependencies the first-pass missed.
 
-**Budget**: exactly **1** Opus call per invocation of this skill. Pattern C explicitly rules out re-invocation during execution — if the initial plan proves wrong, re-run the whole skill with refined input rather than calling Opus mid-generation. This rule exists because mid-generation re-planning leads to inconsistent task directories; a fresh start is cleaner and more auditable.
+**Budget**: exactly **1** advisor pass per invocation of this skill. Pattern C explicitly rules out re-invocation during execution — if the initial plan proves wrong, re-run the whole skill with refined input rather than calling another advisor mid-generation. This rule exists because mid-generation re-planning leads to inconsistent task directories; a fresh start is cleaner and more auditable.
 
 **Payload rules**: the summary and task list together must not exceed ~200 lines of payload. If the first-pass decomposition is already larger, narrow it before the advisor call (split the spec into sub-specs and plan each separately). Never forward the full spec verbatim.
 
@@ -201,6 +201,7 @@ Each task name follows this format:
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
+- **Starting PHASE for a new batch**: when any tasks already exist, scan both `tasks/` and `tasks/completed/`, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `tasks/completed/`.
 
 **Category:**
 - `lib` — New library/framework introduction

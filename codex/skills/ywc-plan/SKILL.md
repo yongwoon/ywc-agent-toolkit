@@ -35,6 +35,8 @@ When tempted to bypass a rule, check this table first:
 | "The idea is clear enough, I'll write the spec directly" | For Medium/Large changes, unverified design assumptions are the most expensive rework source. Before drafting the spec, surface at least the key branching decisions: data model shape, API boundary, error handling strategy, and any third-party integration scope. Assumptions that seem obvious now become the reason the spec is rewritten during implementation. |
 | "The spec-writing process is overhead — let's get to the tasks faster" | Design investment is not overhead — it IS the task. Every hour spent clarifying scope and surfacing assumptions prevents 3–5 hours of rework during implementation. Kent Beck: "Invest in the design of the system every day." The spec is today's investment. |
 | "The spec says it follows existing component X, that's good enough — no need to read X" | "Follows X" is a *claim*, not a *spec*. Code Compatibility findings are the largest single category of spec-validate Critical findings, and the majority trace to a "follows X" claim where the author never opened X. Read X end-to-end and transcribe its behavior into **Existing Constraints Touched** with `file:line` citations. The reviewer cannot verify what was never written down. |
+| "I grepped and found the one writer/reader, so that's the only one" | A forward grep that confirms **one** instance is not evidence of a **closed set**. Closure claims ("only / sole / 唯一 / no other / all / exhaustive") and liveness claims ("dead / @deprecated / 呼び出し元ゼロ / still active") are the single largest source of *false-but-confident* spec assertions: the planner confirms the instance it already had in mind and never runs the *complement* grep that enumerates the rest. The most expensive Critical in the LP column-drop plan was exactly this — "injectAndSaveGtmSnippet is the 唯一の generatedHtml writer", but `markDone` also wrote it, and dropping the column would have broken the build. Before writing any closure or liveness word, run the complement grep (`grep -rn "<identifier>" <module>`, classify every hit live/dead) and transcribe the full set. |
+| "While I'm reading this code anyway, I'll fold in the adjacent cleanup/refactor" | Thoroughness in *investigation* must not become expansion of the *change scope*. A plan that enumerates a related site (a parameter, a sibling method, a rename opportunity) and then proposes changing it — when the request did not ask for it — adds surface that becomes new Critical findings. The measured regression: a `generatedHtml`-drop plan proactively proposed a `composeHtml` refactor and shipped a build-break Critical the narrower plan never risked. Enumerate everything; change only what the request requires; record the rest as "no change needed" under Existing Constraints Touched. |
 | "AC and the API Contract probably agree, I won't cross-check" | Cross-section drift between AC, FR, Data Model, and API Contract is the #2 source of Critical findings (after Code Compatibility). Step 4b.5 is mandatory for Medium/Large precisely because authors trust their own consistency and reviewers find it broken. Run the cross-check; the cost is ~5 minutes, the cost of skipping it is one full re-plan iteration. |
 | "Validation came back DONE_WITH_CONCERNS, I'll rewrite the spec from scratch and re-run" | Use **Re-plan Mode** (`--update-spec <path> --failure-context "<findings>"`) instead. Re-plan appends an `## Iteration N Amendments` section that addresses only the failing items, preserving the rest of the spec verbatim. Rewriting from scratch loses the validated portions and produces cosmetic diffs that reviewers must re-validate. |
 
@@ -94,6 +96,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 - Existing `tasks/` directory if present — phase numbering and dependency context
 - Relevant `docs/ywc-plans/`, `docs/architecture/`, `docs/product/` if the project uses the LLM development guide layout
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and their "Synonyms to Avoid"; spec text and Out of Scope items must use canonical terms and never use synonym identifiers
+- **Parent spec / design doc** named in the plan's own header (`Parent spec:`, `親 spec:`, `Spec Reference:`) — when the request is a follow-up or amendment to an existing plan, read the parent end-to-end. A follow-up that silently narrows the parent's explicit removal/scope list is a cross-document Consistency finding: in the LP column-drop follow-up, the parent said "delete `markDone`/`markFailed`" but the follow-up's removal list dropped `markDone`, which would have left a dangling write against the dropped column.
 
 #### Conditional reads (only when relevant to the request)
 
@@ -103,7 +106,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 
 #### Trigger-based deep reads
 
-Three triggers force a deeper read than the lists above. Each fires independently — if more than one applies, do all of them.
+Four triggers force a deeper read than the lists above. Each fires independently — if more than one applies, do all of them.
 
 1. **Explicit "follows existing X" claim.** When the user's request — or your own draft of Scope / Functional Requirements / Data Model — uses phrases like *"踏襲 / follows / based on / extends / 同じパターンで / similar to / mirrors / 参考に"* and names a specific component, you **must read that component end-to-end** (not just its location, not just nearby patterns). The new spec inherits not only the pattern but every actual behavior — response headers, status codes, timeout values, parser limits, cascade rules. Capture each inherited behavior under **Existing Constraints Touched** with a `file:line` citation. This rule exists because Code Compatibility findings dominate spec-validate Critical counts — and the majority trace back to a "踏襲" claim whose author never opened the referenced file.
 
@@ -115,6 +118,12 @@ Three triggers force a deeper read than the lists above. Each fires independentl
    For each implicit reference, grep the existing schema/types (`grep -n "<identifier>" backend/prisma/schema.prisma`, `grep -rn "<TypeName>" backend/src/lib/`) and either capture the verified shape under **Existing Constraints Touched** or declare the schema change explicitly. This rule exists because findings like "field absent on existing model" and "shape mismatch with existing type" arise from variable-name use, not from any prose claim of "踏襲".
 
 3. **Stack-primitive section about to be written.** Before drafting Data Model, API Contract, or any section that touches DB / middleware / framework primitives, skim [references/common-pitfalls.md](references/common-pitfalls.md). It enumerates the recurring traps spec-validate flags (global vs route-scoped middleware, `@HttpCode` vs documented status, error-handling discipline, etc.). The schema-side rules live separately in [references/schema-invariants.md](references/schema-invariants.md). Skimming both at Step 2 is cheaper than discovering each trap individually in validation.
+
+4. **Closure or liveness claim about code.** The first three triggers fire on a *positive identity* claim ("this follows / uses X"). This one fires on the inverse — *set-closure* and *liveness* claims — which are just as failure-prone and far easier to assert from memory. When your draft asserts that a set is complete — *"only / sole / 唯一 / the single / no other / all / exhaustive / 全て / 唯一の … 経路"* — or that a symbol is dead or alive — *"@deprecated / unused / 呼び出し元ゼロ / dead write / still active / 現に write"* — you must run the **complement grep**: enumerate the entire candidate set, not just re-confirm the one instance already in hand. For "C is the only writer of column X", run `grep -rn "X" <module>` and classify every write site live/dead; for "method M is dead", grep M's callers repo-wide and transcribe the zero (or the non-zero hit you would otherwise have missed). Capture the enumerated set under **Existing Constraints Touched**. This rule exists because a forward grep that confirms one writer is silently mistaken for proof that no other writer exists — the failure mode behind both the largest Critical and a Warning in the LP column-drop plan (`markDone` was a second `generatedHtml` writer the "唯一の write 経路" claim never enumerated; `markFailed` was dead despite an "active" claim).
+
+   Two disciplines when transcribing the enumerated set:
+   - **Attribute each hit to its own `file:line`.** Never fold one file's line numbers under another file's header — mixing `lp.service.ts` lines into an `lp.repository.ts` proof is itself a Consistency finding the reviewer will flag.
+   - **Enumeration is for comprehension, not scope expansion.** Classify each enumerated site as *must-change for this request* or *no change needed* (record the latter under **Existing Constraints Touched**, not in the change list). Never fold an adjacent refactor — a rename, a signature change on a site that merely looks related — into the plan unless the request requires it. "While I'm here I'll also refactor X" over-reach expands the plan's surface and is its own Critical source; the measured failure was a plan that proactively proposed a `composeHtml` refactor and introduced a build break the narrower plan never risked.
 
 #### When to stop
 
@@ -152,14 +161,14 @@ If both conditions fail, skip to Step 4 directly. The gate exists to head off th
 
 1. **Frame the decision** in one sentence with the two (occasionally three) reasonable options the codebase / spec admit. Avoid hypothetical options the project would not actually pick.
 2. **Assemble the bounded payload** — the spec excerpt that touches the decision (≤30 lines), the most relevant existing code reference (file path + 1-paragraph summary, not the full file), and the project convention or prior-art entry if one applies. Do not forward the whole spec.
-3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-architect)` with the bounded payload. When the runtime does not support named agents, dispatch a `model: opus` subagent with the same payload and the canonical persona prompt copied from `claude-code/agents/ywc-architect.md` Mission section.
+3. **Dispatch the advisor**. Use Codex subagent delegation when the current session exposes a delegation tool. Prefer the installed Codex custom agent `ywc-architect` when available; otherwise request one higher-capability architecture advisor pass with the bounded payload and the same decision frame. If no delegation tool is available, run the architecture-advisor checklist inline as a separate bounded pass and record the fallback in the plan. Do not use Claude Code-only `Task(...)`, `subagent_type`, `tools/claude-code/agents/`, or explicit Claude model pins in the Codex bundle.
 4. **Record the verdict** in `docs/ywc-plans/<plan-slug>/architecture-verdict.md` (or alongside the spec when the spec path is provided). The file captures: the framed decision, the trade-off table the advisor returned, the chosen direction, and the file / type / structural shape recommendation. Subsequent steps cite this file rather than re-litigating the decision.
 5. **Handle non-DONE statuses** per the standard contract:
    - `DONE_WITH_CONCERNS` → cite the concerns explicitly in the spec's Constraints section so reviewers see the caveat
    - `NEEDS_CONTEXT` → run the additional Read / Grep the advisor names, then re-dispatch with the enriched payload
    - `BLOCKED` → surface to the user with the advisor's blocker summary; do not proceed to Step 4 until the prerequisite is resolved
 
-**Budget**: at most **1** ywc-architect dispatch per ywc-plan invocation. If a second architectural decision surfaces, defer it to `ywc-confidence-gate` STOP-band routing or to a follow-up plan rather than burning another Opus call inside the same plan run.
+**Budget**: at most **1** architecture advisor dispatch per ywc-plan invocation. If a second architectural decision surfaces, defer it to `ywc-confidence-gate` STOP-band routing or to a follow-up plan rather than spending another advisor call inside the same plan run.
 
 Skip the gate entirely (with a one-line note in the plan / spec) when the architectural choice is unambiguous from the spec or already adjudicated by a prior `architecture-verdict.md` in the same project.
 
@@ -199,13 +208,14 @@ Activated when `--update-spec <path>` and `--failure-context <text>` are both pr
 1. Read the existing spec at `<path>`. If the file does not exist, report an error and stop — do not create a new file.
 2. Determine the current iteration number by counting existing `## Iteration N Amendments` sections in the file. The new section number is N + 1 (starting at 1 if none exist).
 3. Using `--failure-context` as the input (the "Fix Priority" section text from `ywc-impl-review`), draft amendment content that addresses only the failing areas.
-4. **Append** `## Iteration N Amendments` to the end of the existing spec file. Do NOT create a new file, do NOT modify any completed sections above the new section.
+4. **Append** `## Iteration N Amendments` to the end of the existing spec file. Do NOT create a new file, do NOT rewrite any completed section's body above the new section.
+4.5. **Mark superseded originals (the one permitted in-place edit).** When the amendment scopes out or changes an instruction that an original section still states literally — e.g., an original migration SQL block that drops a column the amendment now defers — prepend a single inline marker line at the head of that original section: `> ⚠️ SUPERSEDED by Iteration N — see §<amendment-anchor>`. Do not edit the section's body, only prepend the marker. Then ensure a top-of-file **Operative Sections** pointer names which sections `ywc-task-generator` should treat as authoritative. This removes the precedence-only resolution that otherwise leaves a copy-faithful implementer acting on the superseded original — the exact residual Warning in the LP column-drop re-validation, where the original §1 SQL still dropped `errorMessage` after the amendment deferred it.
 5. The appended section must include: which requirements failed (from `--failure-context`), the amended approach, and updated Acceptance Criteria for the affected items only.
 6. **Re-run Step 4b.5 on the whole spec** (original sections + the new amendment) before printing the handoff. An amendment frequently introduces fresh drift — a new status code that conflicts with an original AC, a new field absent from the original API Contract, a new state value without a write site. Without the re-run, that drift surfaces as a *fresh* Critical at the next `ywc-spec-validate` pass and forces yet another iteration. Re-running 4b.5 here is what makes Re-plan Mode actually converge.
 
 **Constraints:**
 
-- Never overwrite or reorder existing content.
+- Never overwrite or reorder existing content — **except** the single-line `> ⚠️ SUPERSEDED ...` marker permitted by Behavior step 4.5, which prepends (never rewrites the body of) a contradicted original section.
 - Never create a new spec file — only append to the file at `<path>`.
 - `--output` is ignored in Re-plan Mode (output path is always the `--update-spec` path).
 
@@ -228,6 +238,7 @@ Catches drift between AC / FR / API Contract / Data Model of the same spec.
 | Every field name in API Contract request/response is either declared in Data Model **or** explicitly marked as "derived from X" / "server-side snapshot from Y" | `consentText` appears in DB columns but is missing from the request body — reviewer cannot tell whether the field is client-supplied (spoofable PII) or server-snapshotted |
 | Every Acceptance Criterion is in the form `When <trigger>, system does <behavior>, observable as <concrete check>` — not a bare behavior name | "e2e: form submission の golden path" is a section name; becomes an AC only when it specifies request shape → expected status → DB row state |
 | Every new state value (enum value, status flag, lifecycle column) declared in Data Model has ≥1 Functional Requirement writing it, **and** Edge Cases enumerate every state combination it introduces (A→B→A, delete-then-recreate, partial-then-resume) | `LandingPage.status='PUBLISHED'` added to the enum without a transaction writing it; `unpublish → delete LpFormConfig → republish` is a 3-step path the spec never enumerates |
+| Every grep-based Acceptance Criterion matches the code's **actual call shape** — a single-line regex like `update\([^)]*field` does not match a multi-line `.update({ … field … })`, so use a broad identifier grep or pair the narrow regex with one | AC1's single-line `landingPage\.update\([^)]*generatedHtml` could not match `markDone`'s multi-line `.update({ … })` — the verification command shared the exact blind spot that let the Critical through, so the AC would have falsely passed |
 
 #### Pass B — Claim ↔ reality verification (this spec vs existing code / sibling specs)
 
@@ -239,6 +250,8 @@ Catches the failure mode where the spec asserts something about the world that t
 | Every "no change to existing X" / "§Y そのまま採用" claim is verified — replace with "based on X, with diffs: A, B, C" the moment any diff exists | Data Model header says "§5 そのまま" while silently changing `isActive` default and adding `consentText` columns |
 | Every Edge Case threshold (size, time, rate) is verified against the actual enforcing code, not assumed | "body > 32kb → 413" sounds observable; `main.ts` actually enforces 6mb globally — the spec is a wish, not an assertion, until the limit is path-scoped |
 | Every function signature, shared type, prerequisite, or shared constant that crosses a sibling spec in the same feature family appears identically in both — or one spec explicitly declares "owned by spec X, referenced here" with the canonical signature inlined | `injectBeaconMarkers(html, formKey)` is untyped 2-arg in form spec but `(html: string, formKey: string \| null): string` in publish spec; publish spec depends on `LpFormConfig` from form spec without naming the prerequisite in Dependencies |
+| Every closure claim ("only / sole / 唯一 / no other / all / exhaustive") and every liveness claim ("dead / @deprecated / 呼び出し元ゼロ / still active") carries the **complement-grep result** enumerating the full candidate set — not a single confirming instance (Step 2 trigger #4 produced this; Pass B confirms it landed in the spec) | "injectAndSaveGtmSnippet is the 唯一の write 経路" — `markDone` (`:404`) also wrote the column → Critical; "errorMessage is active because markFailed writes it" — `markFailed` had zero callers → Warning |
+| Every removal / scope item in a referenced parent spec is either carried into this follow-up or explicitly deferred with a stated reason — a follow-up never silently narrows the parent's declared scope | Parent plan §3 said "delete `markDone`/`markFailed`"; the follow-up's removal list dropped `markDone`, so the dropped column would still be referenced by a live build target |
 
 #### Pass C — Schema invariants (Data Model mechanical rules)
 
@@ -253,7 +266,7 @@ For the full Data Model self-check, run the checklist at the end of [schema-inva
 
 ---
 
-This step is **mandatory for the Medium/Large path** (Step 4b) and **for the appended amendment in Re-plan Mode** (Step 4c). For the Small path (Step 4a), Step 5's structural checks suffice — Small plans rarely span enough sections for cross-section drift.
+This step is **mandatory for the Medium/Large path** (Step 4b), **for the appended amendment in Re-plan Mode** (Step 4c), and **for any in-place append of implementation detail to an existing plan or spec** — including a free-form 追補 / follow-up block added via `Edit` rather than through `--update-spec`. The append path is the one that silently skips this pass: it is neither a fresh Step 4b generation nor a formal Step 4c invocation, so the failure that motivated these rules (a follow-up 追補 whose "唯一の write 経路" closure claim was never complement-grepped) lands exactly there. Run at minimum **Pass B and Pass C** on any such append, and Pass A as well when the append introduces or changes an Acceptance Criterion. For the Small path (Step 4a), Step 5's structural checks suffice — Small plans rarely span enough sections for cross-section drift.
 
 If any pass surfaces ≥1 issue, fix and re-run **that pass**. The loop terminates only when every row answers "yes, see <pointer>". This investment is what prevents `ywc-spec-validate` from returning `DONE_WITH_CONCERNS` and forcing a Re-plan iteration — the cost is paid once here instead of being amplified across the spec-validate fan-out and the re-plan amendment.
 
@@ -299,11 +312,16 @@ Before declaring the skill's task complete, verify:
 - [ ] Step 2 read at minimum `CLAUDE.md` (or equivalent) and the project's build/test command source
 - [ ] Step 2 deep-read **every component the spec claims to "踏襲 / follow / extend"** (not just located them)
 - [ ] Step 2 grepped every **implicit reference** (property accessor on existing type, named audit/event/DTO/error type, mirrored column name) to confirm the existing schema/types match the spec's use
+- [ ] Step 2 ran the **complement grep** for every **closure** ("only / 唯一 / no other / all / exhaustive") and **liveness** ("dead / @deprecated / 呼び出し元ゼロ / active") claim, enumerating and classifying the full candidate set (Step 2 trigger #4), with each hit attributed to its own `file:line`
+- [ ] The plan's change list contains only sites the request **requires** changing; enumerated-but-incidental sites are recorded as "no change needed" under Existing Constraints Touched (no "while I'm here" refactors)
+- [ ] If the plan names a **parent spec**, Step 2 read it and confirmed the follow-up does not silently narrow the parent's removal / scope list
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly
 - [ ] If scale = Small, none of the hard-disqualifiers apply (re-check DB / library / API contract / cross-cutting)
 - [ ] If scale = Medium/Large, the spec includes an **Existing Constraints Touched** section with `file:line` citations for every inherited behavior
 - [ ] If scale = Medium/Large, **Step 4b.5 Self-Consistency Pass** ran (all three passes A/B/C) and every row resolved to a concrete pointer
 - [ ] If Re-plan Mode (Step 4c) ran, **Step 4b.5 was re-run on the whole spec** (original + amendment) before handoff
+- [ ] If this run was an **in-place append** (追補 / follow-up) to an existing plan/spec, Step 4b.5 (≥ Pass B + C) ran on the appended content
+- [ ] If Re-plan Mode changed an instruction an original section still states literally, a `> ⚠️ SUPERSEDED ...` marker plus a top-of-file **Operative Sections** pointer was added
 - [ ] Output file written at a concrete path (no `<placeholder>` slugs)
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in

@@ -199,6 +199,26 @@ find docs/ -name "*<keyword>*" -type f
 
 ---
 
+## Verification Commands: Single-line grep vs Multi-line Calls
+
+**Trap:** A grep-based Acceptance Criterion uses a single-line regex (`landingPage\.update\([^)]*generatedHtml`) to prove a write site is gone. The actual write is a multi-line `.update({ … generatedHtml … })` call, which the single-line regex cannot match. The AC passes while the write still exists — the verification command shares the exact blind spot that produced the finding.
+
+**Past spec-review example (this codebase):** AC1's single-line `update\([^)]*generatedHtml` could not match `markDone`'s multi-line `.update({ … })`; the broad fallback grep (`grep -rn 'generatedHtml' <module>`) is what actually caught it. The single-line regex would have falsely passed.
+
+**Required when writing grep-based ACs:**
+
+```bash
+# Prefer a broad identifier grep that is shape-agnostic …
+grep -rn "<identifier>" <module>   # catches single- and multi-line call sites
+
+# … or, if a narrow regex is genuinely needed, pair it with the broad grep
+# and treat the broad grep as the authoritative zero-match check.
+```
+
+**Capture in spec:** When an AC asserts "zero match", make the authoritative check the broad identifier grep. A narrow single-line regex may accompany it as a convenience, never as the sole gate. Note the multi-line `.update({ … })` blind spot inline so the implementer does not trust the narrow regex alone.
+
+---
+
 ## Adding to this catalog
 
 When `ywc-spec-validate` surfaces a Critical finding that traces to a generalizable pitfall (not a one-off domain quirk), add a new entry following the template:

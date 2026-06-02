@@ -105,7 +105,7 @@ Gather information about the project environment to generate realistic tasks. Th
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Check the highest Phase/Sequence number and start from a non-conflicting number
+- Determine the next starting number by scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `tasks/` or in `tasks/completed/` — the new batch starts at `000017-010`. If `tasks/` is empty (every task already completed and archived), fall back to the highest number in `tasks/completed/` and apply the same `+1 phase` rule.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -206,6 +206,7 @@ Each task name follows this format:
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
+- **Starting PHASE for a new batch**: when any tasks already exist, scan both `tasks/` and `tasks/completed/`, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `tasks/completed/`.
 
 **Category:**
 - `lib` — New library/framework introduction
