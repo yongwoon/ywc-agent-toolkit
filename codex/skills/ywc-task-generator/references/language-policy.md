@@ -1,6 +1,6 @@
 # Language Policy for Task Documents
 
-This skill allows the user to choose the output language for task documents. If the user does not specify a language, ask for confirmation.
+This skill allows the user to choose the output language for task documents. If the user does not specify a language, first infer it from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), then ask for confirmation only when no clear language policy is present.
 
 **Supported languages:** `korean` | `japanese` | `english` (default: `english`)
 
@@ -11,7 +11,7 @@ This skill allows the user to choose the output language for task documents. If 
 | "한국어로 task 생성해줘" | korean |
 | "日本語でタスクを生成して" | japanese |
 | "Generate tasks in English" | english |
-| (not specified) | ask the user |
+| (not specified) | infer from project instruction files; ask the user if inference fails |
 
 ## Language-Specific Writing Rules
 

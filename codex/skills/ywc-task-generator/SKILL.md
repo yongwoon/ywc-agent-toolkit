@@ -36,9 +36,9 @@ When tempted to bend a rule, check this table first:
 
 ## Language Option
 
-When `--lang` is not specified, this skill first attempts to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails does it ask the user.
+When `--lang` is not specified, this skill first attempts to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails does it ask the user.
 
-This skill supports `korean` | `japanese` | `english` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
+This skill supports `korean` | `japanese` | `english` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from the project instruction files fails.
 
 For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean or Japanese output. English output does not require reading this reference.
 
@@ -92,7 +92,7 @@ If the specification is unclear, ask specific questions to clarify the scope.
 Gather information about the project environment to generate realistic tasks. This information directly feeds into task.md verification commands, ownership paths, and category selection matching the tech stack.
 
 **Targets to collect:**
-- `CLAUDE.md`, `AGENTS.md`, `CODEX.md` — project rules, language policy, CI commands
+- `AGENTS.md`, `CODEX.md`, `CLAUDE.md` — project rules, language policy, CI commands. Prefer Codex-native instructions (`AGENTS.md` / `CODEX.md`) when they conflict with Claude-only guidance.
 - `package.json`, `Makefile`, `pyproject.toml`, etc. — actual lint/test/build commands
 - Project directory structure — `src/` layout, monorepo status, existing module placement
 - Existing `tasks/` directory — whether tasks already exist, numbering collision check
@@ -120,7 +120,7 @@ Review the specification for completeness and verify that sufficient information
 
 ### Step 4: Confirm Language
 
-If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails or is ambiguous, ask:
+If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails or is ambiguous, ask:
 
 > "Which language should the task documents be written in? (korean / japanese / english)"
 

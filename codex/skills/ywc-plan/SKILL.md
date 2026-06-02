@@ -14,7 +14,7 @@ This skill converts a rough idea, vague request, or partially-formed change desc
 
 | Flag | Type | Description |
 |---|---|---|
-| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
+| `--non-interactive` | flag | Skip interactive clarification prompts in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
 | `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used with `--failure-context`. Mutually exclusive with normal spec generation. |
 | `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec` to identify which parts of the spec need amendment. |
 | `--output <path>` | string | Explicit output path for the generated spec or plan (e.g., `--output docs/ywc-plans/agentic-iteration-1.md`). When omitted, defaults to `./plan.md` (Small) or `docs/ywc-plans/<slug>.md` (Medium/Large). |
@@ -25,7 +25,7 @@ When tempted to bypass a rule, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, `CLAUDE.md`, or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
+| "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, project instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`), or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
 | "Scale looks ambiguous, I'll default to Small to keep things light" | Default to **Medium** when ambiguous, not Small. Small path skips spec review and task decomposition — wrong scale call cascades into untracked scope creep. The cost of writing a spec for an actually-Small change is one wasted hour; the cost of skipping a spec for an actually-Medium change is rework across multiple sessions. |
 | "DB migration is part of the change, I'll bundle it into the Small plan" | Any change touching `migrations/`, `prisma/schema.prisma`, `*.sql`, or equivalent is **never Small**. DB migration must be its own task — escalate to Medium path so `ywc-task-generator` can split it. Safety invariant — same rule as `ywc-task-generator`. |
 | "User wants to start coding now, I'll skip ywc-spec-validate on the Medium spec" | The Medium/Large path **must** route through `ywc-spec-validate` before `ywc-task-generator`. Skipping spec review is the failure mode `ywc-task-generator`'s `requires: [ywc-spec-validate]` exists to prevent. Run review even when the user is impatient. |
@@ -82,7 +82,7 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not ask interactive clarification questions at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 
@@ -90,7 +90,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 
 #### Always read
 
-- `CLAUDE.md` and `AGENTS.md` (or `CODEX.md`) at repo root — language policy, conventions, CI commands
+- `AGENTS.md`, `CODEX.md`, and `CLAUDE.md` at repo root when present — language policy, conventions, CI commands. Prefer Codex-native instructions (`AGENTS.md` / `CODEX.md`) when they conflict with Claude-only guidance.
 - `package.json`, `pyproject.toml`, `Makefile`, `go.mod` etc. — actual lint/test/build commands
 - Project tree (top 2 levels of `src/`, `apps/`, or equivalent) — module placement and existing patterns
 - Existing `tasks/` directory if present — phase numbering and dependency context
@@ -165,7 +165,7 @@ If both conditions fail, skip to Step 4 directly. The gate exists to head off th
 4. **Record the verdict** in `docs/ywc-plans/<plan-slug>/architecture-verdict.md` (or alongside the spec when the spec path is provided). The file captures: the framed decision, the trade-off table the advisor returned, the chosen direction, and the file / type / structural shape recommendation. Subsequent steps cite this file rather than re-litigating the decision.
 5. **Handle non-DONE statuses** per the standard contract:
    - `DONE_WITH_CONCERNS` → cite the concerns explicitly in the spec's Constraints section so reviewers see the caveat
-   - `NEEDS_CONTEXT` → run the additional Read / Grep the advisor names, then re-dispatch with the enriched payload
+   - `NEEDS_CONTEXT` → run the additional file reads / searches the advisor names, then re-dispatch with the enriched payload
    - `BLOCKED` → surface to the user with the advisor's blocker summary; do not proceed to Step 4 until the prerequisite is resolved
 
 **Budget**: at most **1** architecture advisor dispatch per ywc-plan invocation. If a second architectural decision surfaces, defer it to `ywc-confidence-gate` STOP-band routing or to a follow-up plan rather than spending another advisor call inside the same plan run.
@@ -266,7 +266,7 @@ For the full Data Model self-check, run the checklist at the end of [schema-inva
 
 ---
 
-This step is **mandatory for the Medium/Large path** (Step 4b), **for the appended amendment in Re-plan Mode** (Step 4c), and **for any in-place append of implementation detail to an existing plan or spec** — including a free-form 追補 / follow-up block added via `Edit` rather than through `--update-spec`. The append path is the one that silently skips this pass: it is neither a fresh Step 4b generation nor a formal Step 4c invocation, so the failure that motivated these rules (a follow-up 追補 whose "唯一の write 経路" closure claim was never complement-grepped) lands exactly there. Run at minimum **Pass B and Pass C** on any such append, and Pass A as well when the append introduces or changes an Acceptance Criterion. For the Small path (Step 4a), Step 5's structural checks suffice — Small plans rarely span enough sections for cross-section drift.
+This step is **mandatory for the Medium/Large path** (Step 4b), **for the appended amendment in Re-plan Mode** (Step 4c), and **for any in-place append of implementation detail to an existing plan or spec** — including a free-form 追補 / follow-up block added through a direct file edit rather than through `--update-spec`. The append path is the one that silently skips this pass: it is neither a fresh Step 4b generation nor a formal Step 4c invocation, so the failure that motivated these rules (a follow-up 追補 whose "唯一の write 経路" closure claim was never complement-grepped) lands exactly there. Run at minimum **Pass B and Pass C** on any such append, and Pass A as well when the append introduces or changes an Acceptance Criterion. For the Small path (Step 4a), Step 5's structural checks suffice — Small plans rarely span enough sections for cross-section drift.
 
 If any pass surfaces ≥1 issue, fix and re-run **that pass**. The loop terminates only when every row answers "yes, see <pointer>". This investment is what prevents `ywc-spec-validate` from returning `DONE_WITH_CONCERNS` and forcing a Re-plan iteration — the cost is paid once here instead of being amplified across the spec-validate fan-out and the re-plan amendment.
 
@@ -309,7 +309,7 @@ For the exact templates, see [references/small-plan-template.md](references/smal
 Before declaring the skill's task complete, verify:
 
 - [ ] Step 1 produced explicit answers to all four anchors (What, Why, Out of Scope, Done When)
-- [ ] Step 2 read at minimum `CLAUDE.md` (or equivalent) and the project's build/test command source
+- [ ] Step 2 read at minimum the project's instruction file (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent) and the project's build/test command source
 - [ ] Step 2 deep-read **every component the spec claims to "踏襲 / follow / extend"** (not just located them)
 - [ ] Step 2 grepped every **implicit reference** (property accessor on existing type, named audit/event/DTO/error type, mirrored column name) to confirm the existing schema/types match the spec's use
 - [ ] Step 2 ran the **complement grep** for every **closure** ("only / 唯一 / no other / all / exhaustive") and **liveness** ("dead / @deprecated / 呼び出し元ゼロ / active") claim, enumerating and classifying the full candidate set (Step 2 trigger #4), with each hit attributed to its own `file:line`

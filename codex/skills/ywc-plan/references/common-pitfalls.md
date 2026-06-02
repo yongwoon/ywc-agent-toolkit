@@ -6,7 +6,7 @@ Each entry is a recurring trap surfaced by `ywc-spec-validate` Critical findings
 
 ## How to use this file
 
-1. Open it at Step 2, alongside the project's `CLAUDE.md`.
+1. Open it at Step 2, alongside the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent).
 2. For each section below that could apply to your request, run the suggested grep / file read.
 3. Capture the actual behavior in the spec's **Existing Constraints Touched** section, with `file:line` citations.
 
