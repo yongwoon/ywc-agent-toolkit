@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.14.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.13.0...v1.14.0) (2026-06-02)
+
+
+### ### Added
+
+* apply develop-with-llm PRs [#75](https://github.com/yongwoon/ywc-agent-toolkit/issues/75), [#76](https://github.com/yongwoon/ywc-agent-toolkit/issues/76), [#77](https://github.com/yongwoon/ywc-agent-toolkit/issues/77) ([#46](https://github.com/yongwoon/ywc-agent-toolkit/issues/46)) ([abd0985](https://github.com/yongwoon/ywc-agent-toolkit/commit/abd0985ad06afc0de7b1241f9b61fde8086f6dd5))
+
+
+### ### Documentation
+
+* **codex:** align skill guidance with Codex runtime ([#48](https://github.com/yongwoon/ywc-agent-toolkit/issues/48)) ([ee5093a](https://github.com/yongwoon/ywc-agent-toolkit/commit/ee5093acd861d8223797fdca6e1be0a08b6d5763))
+
 ## [1.13.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.12.1...v1.13.0) (2026-05-28)
 
 
