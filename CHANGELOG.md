@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.15.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.14.0...v1.15.0) (2026-06-09)
+
+
+### ### Added
+
+* **ywc-spec-validate:** Step 3.5 Precedent-Completeness Re-grounding (omission check) ([#49](https://github.com/yongwoon/ywc-agent-toolkit/issues/49)) ([79a707a](https://github.com/yongwoon/ywc-agent-toolkit/commit/79a707a941d20755f446e10d44771b671b9cd412))
+
 ## [1.14.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.13.0...v1.14.0) (2026-06-02)
 
 
