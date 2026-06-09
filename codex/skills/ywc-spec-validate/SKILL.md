@@ -15,13 +15,13 @@ When tempted to skip a step, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "Spec is mostly clear, no need to assess Feasibility" | Feasibility and Code Compatibility require project context. Always read CLAUDE.md, package.json, and existing code first. |
+| "Spec is mostly clear, no need to assess Feasibility" | Feasibility and Code Compatibility require project context. Always read the project instruction files (`AGENTS.md` / `CODEX.md` / `CLAUDE.md` where present), package metadata, and existing code first. |
 | "Spec gaps are obvious, just list them and finish" | Each gap must specify which dimension (completeness / consistency / feasibility / compatibility) and propose a concrete clarifying question. |
 | "User wrote the spec, do not push back too hard" | Honest review prevents implementation rework. Soften tone, never soften findings. |
 | "Spec uses internal jargon, infer the intent" | If a term is undefined, that is a completeness gap. Flag it. |
 | "Architecture decision is implicit, do not flag it" | Implicit ≠ specified. Surface implicit assumptions for explicit confirmation. |
-| "The spec contradicts CLAUDE.md, follow the spec" | Surface the conflict. Do not silently let the spec override project rules. |
-| "4-dimension review is fast enough sequentially" | Phase 1 fan-out cuts latency on large specs; each Sonnet subagent handles one dimension, reducing per-call context and preventing cross-dimension finding contamination. |
+| "The spec contradicts project instructions, follow the spec" | Surface the conflict. Do not silently let the spec override project rules. Prefer Codex-native instructions (`AGENTS.md` / `CODEX.md`) over Claude-only guidance when they conflict. |
+| "4-dimension review is fast enough sequentially" | Phase 1 fan-out cuts latency on large specs; each Codex worker handles one dimension, reducing per-call context and preventing cross-dimension finding contamination. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
 
@@ -36,13 +36,13 @@ When tempted to skip a step, check this table first:
 ## Execution Steps
 
 1. **Collect Project Context** — Read the following before touching the spec file. The Feasibility and Code Compatibility dimensions cannot be assessed without this context:
-   - `CLAUDE.md` (or the nearest parent `CLAUDE.md`) — language/framework constraints, commit conventions, any explicit out-of-scope rules
+   - `AGENTS.md`, `CODEX.md`, and `CLAUDE.md` where present (nearest file first) — language/framework constraints, commit conventions, any explicit out-of-scope rules. Prefer Codex-native instructions (`AGENTS.md` / `CODEX.md`) over Claude-only guidance when they conflict.
    - `package.json` / `pyproject.toml` / `go.mod` — runtime, major dependencies, and their versions
    - Top-level directory structure — identify where DB schemas, API routes, and type definitions live (e.g., `src/`, `app/`, `prisma/`, `migrations/`)
    - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and their "Synonyms to Avoid"; any spec term matching a Synonyms entry is a Consistency finding
    - Extract and keep: runtime, primary framework, DB type, ORM, existing API pattern (REST / GraphQL / RPC)
 
-   If CLAUDE.md is absent and package.json is absent, note "project context unavailable" and flag all Feasibility findings as lower-confidence.
+   If project instruction files and package metadata are absent, note "project context unavailable" and flag all Feasibility findings as lower-confidence.
 
 2. **Read Specification File** — Confirm the `--spec` path exists before reading. If the file does not exist, stop immediately with `BLOCKED` status and report the missing path.
 
@@ -60,18 +60,18 @@ When tempted to skip a step, check this table first:
      3. Every search hit MUST appear as a row. Decide each row's coverage by searching the spec for *that specific site* — never by trusting the spec's own prose summary that it "follows X".
      4. **Every row marked OMITTED is its own Completeness Critical.** Do not fold multiple omitted sites into one finding, and **do not let a louder conflict elsewhere (e.g. a stale-anchor or deprecated-path finding) substitute for explicitly naming the omitted site** — an omission and a conflict are different defects and both must be reported. Each OMITTED Critical names the omitted site's `file:line` and the runtime path on which the feature fails.
 
-     Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical.
+     Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical. If no named precedent exists, still include the table with a single `(No named precedent identified)` row so downstream readers know the omission check was performed.
 
-4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
+4. **Phase 1 — Parallel Dimension Review** — Use Codex subagent delegation when the current session exposes a delegation tool to run 4 workers in parallel, one per review dimension. If no delegation tool is available, run the same four dimension passes inline and record the fallback in the report. Do not use Claude Code-only `Task(...)` fields, `subagent_type`, or explicit Claude model pins in the Codex bundle. Pass each worker the project context from Step 1, the spec text from Step 2, and any Step 3.5 coverage rows relevant to its dimension:
 
-   | Subagent | Model | Dimension | Focus |
-   |---|---|---|---|
-   | Completeness | sonnet | Completeness | Missing required items, edge cases, pagination |
-   | Consistency | sonnet | Consistency | Terminology mismatches; Synonyms-to-Avoid violations |
-   | Feasibility | sonnet | Feasibility | Implementable with current stack and dependencies |
-   | Code Compatibility | sonnet | Code Compatibility | Conflicts with existing schema, API routes, type definitions |
+   | Worker | Dimension | Focus |
+   |---|---|---|
+   | Completeness | Completeness | Missing required items, edge cases, pagination, Step 3.5 OMITTED rows |
+   | Consistency | Consistency | Terminology mismatches; Synonyms-to-Avoid violations |
+   | Feasibility | Feasibility | Implementable with current stack and dependencies |
+   | Code Compatibility | Code Compatibility | Conflicts with existing schema, API routes, type definitions |
 
-   Each subagent returns:
+   Each worker returns:
    - **Confirmed findings** — dimension label, severity (Critical / Warning / Suggestion), file:line, description, improvement
    - **Advisor candidates** — findings where two reasonable interpretations exist (include the specific choice and its consequence, ≤100 lines per candidate)
 
@@ -141,7 +141,7 @@ This routes findings into the `## Iteration N Amendments` append flow described 
 
 ## Advisor Escalation Policy
 
-This skill runs Phase 1 as 4 parallel Sonnet subagents (one per dimension) and aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, the orchestrator escalates to an Opus advisor using the Task tool with `model: opus`. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.
+This skill runs Phase 1 as 4 parallel Codex workers (one per dimension) when delegation is available, then aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, request a short higher-capability advisor pass with a bounded payload. If delegation is unavailable, run the advisor checklist inline as a separate bounded pass and record the fallback in the report. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.
 
 **Budget**: up to 2 high-capability advisor calls per invocation. Unused budget is good. Spec review is smaller in scope than impl-review, so the cap is tighter.
 
@@ -154,7 +154,7 @@ This skill runs Phase 1 as 4 parallel Sonnet subagents (one per dimension) and a
 
 **Context payload rules** (critical for cost discipline):
 - Forward only the decision: the specific spec clause, the conflicting code or spec excerpt, and the constraint (≤100 lines total).
-- Do NOT forward: the full spec, the full target code, or the CLAUDE.md contents.
+- Do NOT forward: the full spec, the full target code, or full project instruction files.
 - The advisor returns a short verdict (≤200 words) containing the recommended resolution and a one-line rationale.
 
 **Non-goals** — do not escalate for these:
@@ -173,7 +173,7 @@ When a finding involves a genuine architectural trade-off — where two reasonab
 2. The single-advisor verdict would likely depend on unstated assumptions about team preferences or future requirements.
 3. The finding is Critical or Warning severity — not a Suggestion.
 
-**Council voices** (spawn one high-capability subagent per voice, passing only the specific trade-off excerpt — not the full spec):
+**Council voices** (request one high-capability advisor pass per voice when delegation is available, passing only the specific trade-off excerpt — not the full spec; otherwise run the same voices inline as bounded passes and record the fallback):
 
 | Voice | Role | Anti-bias Mandate |
 |-------|------|-------------------|
