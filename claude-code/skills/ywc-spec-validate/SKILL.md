@@ -54,6 +54,20 @@ When tempted to skip a step, check this table first:
 
 3. **Check Code Compatibility** — Use Grep/Glob to search for related DB schemas, API routes, and type definitions to detect conflicts with the spec. Scope the search to the directories identified in Step 1.
 
+3.5. **Precedent-Completeness Re-grounding (MANDATORY omission check — distinct from the conflict check in Step 3).** Step 3 / Code Compatibility detect where a spec *claim* conflicts with code. They structurally cannot detect an *omission*: an existing integration site the spec never names makes no claim, so nothing conflicts — yet a dropped integration site silently breaks the feature on the un-modeled runtime path while every written claim still validates cleanly. (This is the failure class that survives repeated spec-validation; re-reading spec text can never reveal a site the text never names.)
+
+   For **every** existing pattern the spec mirrors / follows / 踏襲 / extends (a **named precedent X**), you MUST build a **Precedent Site Coverage table** before writing the report — do not reason about it in prose, build the table:
+
+   1. Grep X's own identifier(s)/marker(s) across the actual code: `grep -rn "<precedentFn>\|<precedentMarker>" <src>` (exclude test files). Integration patterns (snippet/script injection, hooks, interceptors, lifecycle handlers) routinely span a **generation** step, a **preview/transform** step, **and** a **publish/render-time** step — enumerate all of them; the publish/render-time site is the one a memory-driven spec most often drops.
+   2. Emit one row **per site X integrates at**:
+
+      | Precedent site (`file:line` + what runs there) | Spec coverage: Replicated / Deferred-with-reason / **OMITTED** |
+
+   3. Every grep hit MUST appear as a row. Decide each row's coverage by searching the spec for *that specific site* — never by trusting the spec's own prose summary that it "follows X".
+   4. **Every row marked OMITTED is its own Completeness Critical.** Do not fold multiple omitted sites into one finding, and **do not let a louder conflict elsewhere (e.g. a stale-anchor or deprecated-path finding) substitute for explicitly naming the omitted site** — an omission and a conflict are different defects and both must be reported. Each OMITTED Critical names the omitted site's `file:line` and the runtime path on which the feature fails.
+
+   Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical.
+
 4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
 
    | Subagent | Model | Dimension | Focus |
