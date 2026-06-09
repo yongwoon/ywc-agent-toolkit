@@ -107,6 +107,11 @@ When tempted to skip a step, check this table first:
 - Critical: N, Warning: M, Suggestion: K
 - Phase 2 advisor calls used: X of 2 ({single-advisor|council|none})
 
+### Precedent Site Coverage
+| Precedent site (`file:line` + what runs there) | Spec coverage: Replicated / Deferred-with-reason / OMITTED |
+|---|---|
+| ... | ... |
+
 ### Critical Issues
 1. [{file}:{line}] [P1|P2] Description — Suggested improvement
    (if P2) Advisor rationale: {one-line rationale}
