@@ -1,6 +1,7 @@
 ---
 name: ywc-gen-testcase
-description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, task directory range, git range, or diff, with Markdown or HTML output. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
+description: >-
+  (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, task directory range, git range, or diff, with Markdown or HTML output. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
 ---
 
 # Generate Testsheet

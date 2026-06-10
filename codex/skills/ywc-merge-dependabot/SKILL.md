@@ -1,6 +1,7 @@
 ---
 name: ywc-merge-dependabot
-description: (ywc) Use when the user wants to merge Dependabot PRs, batch-process dependency updates, or clean up accumulated Dependabot PRs. Triggers: "merge dependabot", "dependabot PR", "dependency updates", "security updates merge", "디펜다봇 머지", "依存関係更新マージ". Do not use for non-Dependabot PRs, manual dependency upgrades, or for merging feature PRs (use ywc-create-pr or platform tools).
+description: >-
+  (ywc) Use when the user wants to merge Dependabot PRs, batch-process dependency updates, or clean up accumulated Dependabot PRs. Triggers: "merge dependabot", "dependabot PR", "dependency updates", "security updates merge", "디펜다봇 머지", "依存関係更新マージ". Do not use for non-Dependabot PRs, manual dependency upgrades, or for merging feature PRs (use ywc-create-pr or platform tools).
 ---
 
 # Merge Dependabot Pull Requests

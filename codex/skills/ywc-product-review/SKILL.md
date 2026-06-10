@@ -1,6 +1,7 @@
 ---
 name: ywc-product-review
-description: (ywc) Use when the user wants a business/service perspective review of a project (user value, UX, growth, risk, market). Triggers: "product review", "service feedback", "비즈니스 관점 리뷰", "서비스 개선 포인트", "what should we improve", "プロダクトレビュー", "サービス改善". Do not use for code-level review (use ywc-impl-review), security review (use ywc-security-audit), or UI/UX implementation review (use ywc-ui-ux-review).
+description: >-
+  (ywc) Use when the user wants a business/service perspective review of a project (user value, UX, growth, risk, market). Triggers: "product review", "service feedback", "비즈니스 관점 리뷰", "서비스 개선 포인트", "what should we improve", "プロダクトレビュー", "サービス改善". Do not use for code-level review (use ywc-impl-review), security review (use ywc-security-audit), or UI/UX implementation review (use ywc-ui-ux-review).
 ---
 
 # Product Review

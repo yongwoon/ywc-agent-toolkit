@@ -1,6 +1,7 @@
 ---
 name: ywc-sequential-executor
-description: (ywc) Use when executing tasks from the tasks/ directory in strict order through their full lifecycle (branch → implement → commit → PR → CI → merge → cleanup). Triggers: "execute task", "implement tasks 000001-010", "run the next task", "implement all remaining tasks", "start implementing", "sequential-executor", "순차 실행", "タスク順次実行". Do not use for parallel/concurrent execution (use ywc-parallel-executor), code generation without a task directory (use ywc-code-gen), or ad-hoc one-off implementation requests.
+description: >-
+  (ywc) Use when executing tasks from the tasks/ directory in strict order through their full lifecycle (branch → implement → commit → PR → CI → merge → cleanup). Triggers: "execute task", "implement tasks 000001-010", "run the next task", "implement all remaining tasks", "start implementing", "sequential-executor", "순차 실행", "タスク順次実行". Do not use for parallel/concurrent execution (use ywc-parallel-executor), code generation without a task directory (use ywc-code-gen), or ad-hoc one-off implementation requests.
 ---
 
 # Sequential Executor
