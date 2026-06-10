@@ -1,4 +1,4 @@
 interface:
   display_name: "Skill Author"
-  short_description: "Create, audit, and improve ywc-* skills against Codex skill rules"
-  default_prompt: "Use $ywc-skill-author to create or audit a ywc-* skill, keeping Codex frontmatter to name and description, aligning references and README locale files, and validating the skill structure before completion."
+  short_description: "Author and audit ywc skills"
+  default_prompt: "Use $ywc-skill-author to create, audit, or improve a ywc-* skill against the repository skill rules."

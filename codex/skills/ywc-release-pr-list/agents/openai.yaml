@@ -1,4 +1,4 @@
 interface:
   display_name: "Release PR List"
-  short_description: "working on a release PR (e.g., develop\u2192main) and the user wants to generate the merged PR list grouped by author. Triggers: \"re..."
-  default_prompt: "Use $ywc-release-pr-list to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Build release PR lists grouped by author"
+  default_prompt: "Use $ywc-release-pr-list to collect merged pull requests for the release range and group them by author for the release PR."

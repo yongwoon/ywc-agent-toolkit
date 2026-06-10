@@ -1,4 +1,4 @@
 interface:
   display_name: "Create PR"
-  short_description: "the user wants to open a pull request and says \"create a PR\", \"open a PR\", \"submit code for review\", \"push and create PR\", \"PR..."
-  default_prompt: "Use $ywc-create-pr to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Create pull requests with safety checks"
+  default_prompt: "Use $ywc-create-pr to prepare commits, scan for secrets, push the branch, and open a pull request with the right title and body."

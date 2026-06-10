@@ -1,4 +1,4 @@
 interface:
   display_name: "Project Docs"
-  short_description: "the user wants to generate or add project docs/ documentation in Korean or Japanese (Task, Architecture, Specification, Product..."
-  default_prompt: "Use $ywc-project-docs to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Create Korean or Japanese project docs"
+  default_prompt: "Use $ywc-project-docs to create or update Korean or Japanese documentation under the project docs structure."

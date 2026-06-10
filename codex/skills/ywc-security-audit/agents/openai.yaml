@@ -1,4 +1,4 @@
 interface:
   display_name: "Security Audit"
-  short_description: "reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, or for periodic security..."
-  default_prompt: "Use $ywc-security-audit to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Audit auth, input, and data security risks"
+  default_prompt: "Use $ywc-security-audit to inspect authentication, authorization, external input, and sensitive-data handling for security issues."

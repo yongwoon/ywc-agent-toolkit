@@ -1,4 +1,4 @@
 interface:
   display_name: "Spec Validate"
-  short_description: "Use after writing a specification and before task decomposition, when the user wants to validate spec completeness, consistency..."
-  default_prompt: "Use $ywc-spec-validate to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Validate specs before task generation"
+  default_prompt: "Use $ywc-spec-validate to check this specification for completeness, consistency, feasibility, and readiness for task generation."

@@ -1,4 +1,4 @@
 interface:
   display_name: "E2E Test Strategy"
-  short_description: "designing an automated E2E test strategy for a web application, setting up Playwright from scratch, auditing existing E2E cover..."
-  default_prompt: "Use $ywc-e2e-test-strategy to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Design Playwright E2E strategy and CI"
+  default_prompt: "Use $ywc-e2e-test-strategy to design Playwright coverage for critical flows and wire it into CI when needed."

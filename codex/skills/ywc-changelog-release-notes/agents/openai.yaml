@@ -1,4 +1,4 @@
 interface:
   display_name: "Changelog Release Notes"
-  short_description: "you need to generate CHANGELOG.md entries or user-facing release notes from git history, merged PRs, or ywc-release-pr-list out..."
-  default_prompt: "Use $ywc-changelog-release-notes to handle this request following the skill workflow, loading bundled references or scripts only when needed."
+  short_description: "Write changelogs and user release notes"
+  default_prompt: "Use $ywc-changelog-release-notes to generate CHANGELOG entries and release notes from the requested git, PR, or release range."

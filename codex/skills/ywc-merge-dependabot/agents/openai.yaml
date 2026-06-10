@@ -1,4 +1,4 @@
 interface:
   display_name: "Merge Dependabot PRs"
-  short_description: "Merge Dependabot PRs with CI checks and optional ecosystem-lane parallel-auto mode"
-  default_prompt: "Use $ywc-merge-dependabot to merge open Dependabot pull requests with CI verification. Apply the security scope when requested. For large batches, use parallel-auto as ecosystem-lane scheduling: keep only one active auto-merge PR per ecosystem and advance that lane after each terminal result."
+  short_description: "Merge Dependabot PRs with CI"
+  default_prompt: "Use $ywc-merge-dependabot to merge Dependabot pull requests with CI verification and ecosystem-lane scheduling when batching."

@@ -1,4 +1,4 @@
 interface:
   display_name: "Spec Writer"
-  short_description: "Create or update project specifications from tasks, commits, or PRs"
-  default_prompt: "Use $ywc-spec-writer to create or update docs/specification with clear feature, data, and workflow details, including task ranges, commit refs, or PR diffs when provided."
+  short_description: "Update project specs from tasks or PRs"
+  default_prompt: "Use $ywc-spec-writer to create or update docs/specification from project context, task ranges, commits, or PR diffs."
