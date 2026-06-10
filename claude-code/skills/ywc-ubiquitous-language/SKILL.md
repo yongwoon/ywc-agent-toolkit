@@ -10,6 +10,7 @@ description: >-
   structure (use ywc-project-docs), spec writing (use ywc-plan), or
   implementation task decomposition (use ywc-task-generator).
 category: documentation
+phase: planning
 ---
 
 # Ubiquitous Language

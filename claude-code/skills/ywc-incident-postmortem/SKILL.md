@@ -7,12 +7,17 @@ description: >
 
   Trigger phrases: "장애 회고", "포스트모텀 작성", "postmortem", "incident report",
   "장애 보고서", "장애 원인 분석", "사고 회고록", "ポストモーテム", "インシデントレポート",
-  "障害振り返り", "outage report", "incident postmortem"
+  "障害振り返り", "outage report", "incident postmortem", "ywc-incident-postmortem"
 
   Do not use for: proactive security vulnerability scanning before an incident
   (use ywc-security-audit); general code quality review unrelated to an incident
   (use ywc-impl-review); generating changelog or release notes after a fix
   (use ywc-changelog-release-notes).
+version: 1.0.0
+category: incident
+phase: post-release
+requires: []
+advisor_budget: 1
 ---
 
 **Announce at start:** "I'm using the ywc-incident-postmortem skill to write a structured incident postmortem."

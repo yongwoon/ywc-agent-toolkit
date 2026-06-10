@@ -1,7 +1,7 @@
 ---
 name: ywc-task-generator
 version: 1.0.0
-description: (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
+description: (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", "ywc-task-generator", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
 category: spec
 phase: planning
 requires: [ywc-spec-validate]

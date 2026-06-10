@@ -1,7 +1,7 @@
 ---
 name: ywc-release-pr-list
 version: 1.0.0
-description: (ywc) Use when working on a release PR (e.g., develop→main) and the user wants to generate the merged PR list grouped by author. Triggers: "release PR list", "릴리즈 PR 정리", "릴리스 PR 리스트", "release pr 정리", "릴리스 노트", "リリースPR一覧", or any request to build a release-PR description from merged PR numbers. Do not use for normal feature PR creation (use ywc-create-pr) or for handling PR review comments (use ywc-handle-pr-reviews).
+description: (ywc) Use when working on a release PR (e.g., develop→main) and the user wants to generate the merged PR list grouped by author. Triggers: "release PR list", "릴리즈 PR 정리", "릴리스 PR 리스트", "release pr 정리", "릴리스 노트", "リリースPR一覧", "ywc-release-pr-list", or any request to build a release-PR description from merged PR numbers. Do not use for normal feature PR creation (use ywc-create-pr) or for handling PR review comments (use ywc-handle-pr-reviews).
 category: release
 phase: release
 requires: []

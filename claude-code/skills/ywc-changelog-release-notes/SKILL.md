@@ -6,11 +6,17 @@ description: >
 
   Trigger phrases: "changelog 작성", "릴리즈 노트 생성", "release notes", "변경 이력 업데이트",
   "CHANGELOG 업데이트", "릴리스 노트", "リリースノート作成", "変更履歴", "changelog",
-  "what changed in this release", "이번 릴리즈 변경 사항"
+  "what changed in this release", "이번 릴리즈 변경 사항",
+  "ywc-changelog-release-notes"
 
   Do not use for: listing merged PRs as a summary table (use ywc-release-pr-list);
   committing the changelog file (use ywc-commit); creating the release PR (use ywc-create-pr);
   writing a postmortem after a patch release (use ywc-incident-postmortem).
+version: 1.0.0
+category: release
+phase: release
+requires: []
+advisor_budget: 0
 ---
 
 **Announce at start:** "I'm using the ywc-changelog-release-notes skill to generate CHANGELOG entries and release notes."
