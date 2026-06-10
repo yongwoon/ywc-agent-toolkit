@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### ### Documentation
 
+* **codex:** improve skill metadata and development pipeline docs ([#53](https://github.com/yongwoon/ywc-agent-toolkit/issues/53)) ([631e794](https://github.com/yongwoon/ywc-agent-toolkit/commit/631e7944d98362a52b6b8952e9b41e8b12ff5d84))
 * document release-please PR title requirement ([c858959](https://github.com/yongwoon/ywc-agent-toolkit/commit/c858959afca5ca02e50bb2f4b68e3b8d19cbea19))
 * rewrite recommended development pipeline from real usage patterns ([#51](https://github.com/yongwoon/ywc-agent-toolkit/issues/51)) ([b79da80](https://github.com/yongwoon/ywc-agent-toolkit/commit/b79da80b297d1a27339f14d8285ac9dcd398bf88))
 
