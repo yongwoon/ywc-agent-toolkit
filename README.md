@@ -204,9 +204,9 @@ Details: [`references/html-output.md`](claude-code/skills/references/html-output
 
 This spine mirrors how the skills are actually invoked day to day, not the full
 catalog. One planning pass, a spec gate, task decomposition, then the executor as
-the workhorse — it folds conformance review (`--review`) and branch delivery
-(`ywc-finish-branch`) in as sub-steps, so those almost never run standalone. The
-PR review loop runs alongside until the PR is green.
+the workhorse — for each task it delivers end to end via `ywc-finish-branch`,
+folding conformance review (`--review`), PR creation, bot-review handling, and
+merge in as sub-steps, so those rarely run standalone in the task-driven flow.
 
 ```
 1. ywc-plan                    # rough idea → plan.md (Small) or Spec routing (Medium/Large)
@@ -218,16 +218,19 @@ PR review loop runs alongside until the PR is green.
 3. ywc-task-generator          # decompose spec into dependency-safe tasks
      ↓
 4. ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
-     #  the workhorse — runs a task range; per task:
-     #    branch → implement → verify → impl-review (--review) → PR → CI → merge → cleanup
-     #  common flags: --base-branch · --draft · --local-merge · --review
+     #  the workhorse — runs a task range. Each task gets its own branch and PR,
+     #  delivered end to end via ywc-finish-branch:
+     #    branch → implement → verify → impl-review (--review)
+     #    → open PR → CI → handle bot review → merge → cleanup
+     #  common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
      #  (ywc-parallel-executor is the worktree-isolated alternative)
      ↓
-5. ywc-create-pr → ywc-handle-pr-reviews
-     #  open the PR (if the executor didn't already), then drive bot / human review to green
-     ↓
-6. ywc-gen-testcase pr <N>     # generate a QA test sheet against the PR
+5. ywc-gen-testcase pr <N>     # generate a QA test sheet against a task's PR
 ```
+
+**Ad-hoc / non-task changes** skip the executor and deliver manually: `ywc-create-pr` opens a
+draft PR, then `ywc-handle-pr-reviews` drives bot / human review to green. `ywc-handle-pr-reviews`
+is also what you re-run whenever new review comments land on an open PR — task-driven or not.
 
 Also reached for in real work: `ywc-ubiquitous-language` (domain glossary, before or during
 spec), and at release time `ywc-release-pr-list` + `ywc-changelog-release-notes`.
