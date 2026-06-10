@@ -16,6 +16,8 @@ Closes #
 ## Checklist
 
 - [ ] CI passes (skill validation, shellcheck, markdownlint)
+- [ ] PR title follows Conventional Commit format and the squash merge title will keep that format (required for Release Please)
+- [ ] For docs/chore-only changes that should ship in the next release, add the `release-as: patch` label before merging
 - [ ] `SKILL.md` has `name:` and `description:` frontmatter (for new/modified skills)
 - [ ] Skill README locale set is included or updated (`README.md`, `README.en.md`, `README.ja.md`, `README.ko.md`)
 - [ ] Skill is general-purpose (not project-specific)
