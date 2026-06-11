@@ -1,0 +1,61 @@
+{
+  "skill_name": "ywc-toolkit-eval",
+  "description": "Regression scenarios for the two-tier evaluation harness: mechanical scorer determinism, judgment-tier merge, prioritized backlog, and history append-only invariant.",
+  "last_updated": "2026-06-12",
+  "evals": [
+    {
+      "id": 1,
+      "name": "mechanical-only-mode",
+      "prompt": "toolkit skill들 구조만 빠르게 점수 매겨줘 (mechanical only)",
+      "context": {
+        "preconditions": { "$ARGUMENTS": "--mode mechanical --target claude-code/skills" }
+      },
+      "expected_behavior": [
+        "Runs scripts/score.py --target claude-code/skills.",
+        "Reports S2/S4/S5 numeric scores and S1/S3/S6 as judgment-deferred (·).",
+        "Explicitly states the total is mechanical-only and the judgment tier was skipped.",
+        "Does NOT present a /100 total as the item's final quality."
+      ],
+      "anti_behavior": [
+        "Hand-computing structure scores instead of reading score.py output.",
+        "Presenting a mechanical-only number as the complete score."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "full-cycle-with-backlog",
+      "prompt": "toolkit 전체 평가하고 개선 우선순위 뽑아줘",
+      "context": {
+        "preconditions": { "$ARGUMENTS": "--mode full --target all" }
+      },
+      "expected_behavior": [
+        "Runs mechanical scorer, then spawns activation/behavioral/boundary judges per item.",
+        "Every judgment-axis score carries a file:line citation.",
+        "Emits a prioritized backlog ranked ascending by total, ties broken by S1/A2.",
+        "Appends exactly one row to evals/history.json without mutating prior rows."
+      ],
+      "anti_behavior": [
+        "Scoring a skill in isolation without re-deriving collisions against current siblings.",
+        "Producing a scorecard with no prioritized backlog.",
+        "Overwriting an existing history.json row."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ci-regression-gate",
+      "prompt": "CI에서 mechanical 회귀 게이트 돌려줘",
+      "context": {
+        "preconditions": { "$ARGUMENTS": "--ci" }
+      },
+      "expected_behavior": [
+        "Runs score.py --ci, compares per-axis mechanical scores against history.mechanical.json.",
+        "Exits non-zero if any mechanical sub-score dropped vs the prior baseline.",
+        "On first run with no baseline, writes the baseline and passes."
+      ],
+      "anti_behavior": [
+        "Blocking on judgment-tier variance (judge scores must never gate CI).",
+        "Comparing mean totals instead of per-item per-axis sub-scores."
+      ]
+    }
+  ]
+}

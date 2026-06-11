@@ -25,3 +25,13 @@ jobs:
       - name: Test install script (dry run)
         run: |
           bash scripts/install.sh --list
+
+      # Mechanical (deterministic) quality-regression gate for the distributed
+      # skills/agents. The eval tool itself lives in .claude/ (project-local, not
+      # distributed) since it only runs inside this repo. Compares per-axis
+      # structural scores against the committed baseline and fails on any drop.
+      # When a PR legitimately changes scores, regenerate the baseline locally with
+      # `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` and commit it.
+      - name: Toolkit eval — mechanical regression gate
+        run: |
+          python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci
