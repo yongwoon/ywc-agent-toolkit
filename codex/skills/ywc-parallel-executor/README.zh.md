@@ -22,7 +22,7 @@
 | 选项 | 描述 |
 |------|------|
 | `--tasks-dir <path>` | 任务目录路径（默认：tasks/） |
-| `--review` | 每个任务完成后自动运行 /ywc-impl-review（可组合） |
+| `--review` | 每个任务完成后自动运行 `ywc-impl-review`（可组合） |
 | `--local-merge` | 无 PR，仅推送到基础分支（默认行为） |
 | `--draft` | 所有任务完成后创建草稿 PR |
 | `--per-task-pr` | 每个任务创建独立 PR |

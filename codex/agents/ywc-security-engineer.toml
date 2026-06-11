@@ -27,6 +27,7 @@ High-frequency real-world checks:
 
 Output:
 - Start with `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
+- Include a one-sentence `Summary:` and finding counts by severity.
 - Lead with findings ordered by Critical, High, Medium, Low, Info.
 - Each finding must cite file and line when available, name the concrete vulnerability, and include OWASP/CWE when applicable.
 - Critical and High findings must include a narrow remediation.

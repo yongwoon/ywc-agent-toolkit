@@ -46,7 +46,7 @@ Parse `$ARGUMENTS` for the following parameters:
 | `--base-branch` | `--base-branch <branch>` | `--base-branch develop` | Base branch override. Default: auto-detect (develop > main > master) |
 | `--dry-run` | flag | | Show the execution plan (task order, dependencies, modes) without executing anything |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no mode explanations, no advisor notes |
-| `--review` | flag | | Auto-run /ywc-impl-review after each task, before PR creation or merge |
+| `--review` | flag | | Auto-run `ywc-impl-review` after each task, before PR creation or merge |
 | `--run-tests-locally` | flag | | Before merging in `--local-merge` mode, detect and run the project's test command. On failure: mark task FAIL and do not merge. Ignored in PR-based modes. |
 
 **Flag conflicts**: `--local-merge`, `--draft`, and `--skip-ci-wait` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want. The reason is that `--local-merge` skips PRs entirely while the other two assume a PR exists — silently picking one would surprise the user.
@@ -295,13 +295,13 @@ If any layer fails: **fix the code, never the test** — no `skip`/`xit`/`.only`
 
 ### Step 4.5: Implementation Review (optional)
 
-If `--review` is set, invoke `/ywc-impl-review` on the current feature branch after all verification layers in Step 4 pass. The review runs before PR creation (Step 5) or local merge (Step 6a), so any issues it surfaces can be fixed while still on the feature branch.
+If `--review` is set, invoke `ywc-impl-review` on the current feature branch after all verification layers in Step 4 pass. The review runs before PR creation (Step 5) or local merge (Step 6a), so any issues it surfaces can be fixed while still on the feature branch.
 
 This is optional — it adds time and tokens but catches design issues, naming problems, and patterns that automated tests miss. It pairs especially well with `--local-merge`, where no remote CI runs and this review becomes the last quality gate before code reaches the base branch.
 
 The review applies the [recurring real-world defects catalog](../ywc-impl-review/references/recurring-defects.md) — the classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation / fail-fast, HTTP status, test fidelity) that PR-review bots such as CodeRabbit flag most. In PR-based modes (`normal-pr`, `--draft`, `--skip-ci-wait`), catching these *before* the PR opens directly reduces the bot-review round-trips handled later by `ywc-handle-pr-reviews` — the issue is fixed on the feature branch instead of in a follow-up review cycle.
 
-**Handling the review's status return**: `/ywc-impl-review` emits one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — in particular, `BLOCKED` triggers the four-step triage (context → reasoning → scope → plan) before surfacing to the user, and `DONE_WITH_CONCERNS` requires reading the concerns to decide whether they are correctness-level (fix and re-review) or observation-level (carry forward to the Completion Report).
+**Handling the review's status return**: `ywc-impl-review` emits one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — in particular, `BLOCKED` triggers the four-step triage (context → reasoning → scope → plan) before surfacing to the user, and `DONE_WITH_CONCERNS` requires reading the concerns to decide whether they are correctness-level (fix and re-review) or observation-level (carry forward to the Completion Report).
 
 ### Step 5: Delivery (delegated to `ywc-finish-branch`)
 

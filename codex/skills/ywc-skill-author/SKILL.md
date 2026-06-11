@@ -155,7 +155,7 @@ Draft the skill addressing exactly the failures identified in RED. Do not pre-em
 
 Use [references/skill-template.md](references/skill-template.md) as the starting structure.
 
-For a new bundle skill, place it at `tools/codex-skill/skills/<skill-name>/` unless the user explicitly asks for an installed local skill. For an installed local skill outside this bundle, ask for the destination and default to `${CODEX_HOME:-$HOME/.codex}/skills` so Codex can discover it automatically.
+For a new bundle skill in this repository, place it at `codex/skills/<skill-name>/` unless the user explicitly asks for an installed local skill. For an installed local skill outside this bundle, ask for the destination and default to `${CODEX_HOME:-$HOME/.codex}/skills` so Codex can discover it automatically.
 
 ### Step 3: REFACTOR — Close Loopholes
 
@@ -230,7 +230,7 @@ Before merging a new or modified ywc-* skill, verify:
 - [ ] No `references/*.md` file is <30 lines (over-extraction)
 
 **Catalog Sync**
-- [ ] Relevant bundle catalog updated (`tools/claude-code/skills/README.md`, `tools/codex-skill/skills/README.md`, or `tools/pi-skills/README.md`)
+- [ ] Relevant bundle catalog or root distribution docs updated when the repository has one for the affected bundle
 - [ ] Relevant routing guide updated if the bundle has one and the skill is user-facing
 - [ ] If skill is part of a pipeline, the 표준 개발 Pipeline diagram updated
 

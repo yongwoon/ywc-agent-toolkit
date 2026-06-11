@@ -18,7 +18,7 @@ task-generator が生成した Task を Agent が並列で実行する Skill で
 | Option | 説明 |
 |--------|------|
 | `--tasks-dir <path>` | Tasks directory パス (default: tasks/) |
-| `--review` | 各 Task 完了後 /ywc-impl-review を自動実行します (組み合わせ可能) |
+| `--review` | 各 Task 完了後 `ywc-impl-review` を自動実行します (組み合わせ可能) |
 | `--local-merge` | PR なし、base-branch push のみ (デフォルト動作) |
 | `--draft` | 全体完了後に Draft PR を作成します |
 | `--per-task-pr` | Task ごとに個別 PR を作成します |

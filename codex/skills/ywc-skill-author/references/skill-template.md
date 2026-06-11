@@ -144,23 +144,6 @@ These follow the same structure as the Korean `README.md` but in their respectiv
 
 For Korean and Japanese, **keep technical terms in English** (Database, API, Backend, etc.) per the project-wide language policy in the repository root `AGENTS.md` or equivalent guidance file.
 
----
-
-## agents/openai.yaml
-
-Every Codex skill must include UI metadata under `agents/openai.yaml`.
-
-```yaml
-interface:
-  display_name: "<Short human-readable name>"
-  short_description: "<One sentence describing the skill outcome>"
-  default_prompt: "Use $ywc-<name> to handle this request following the skill workflow, loading bundled references or scripts only when needed."
-```
-
-Keep this metadata aligned with `SKILL.md`. Do not add optional fields unless the repository explicitly needs them.
-
----
-
 ## Optional: references/
 
 Create this directory only when long-form content (>30 lines of static rules, lookup tables, or templates) lives outside the workflow path. Examples from existing skills:

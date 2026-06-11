@@ -26,6 +26,7 @@ High-frequency real-world checks:
 
 Output:
 - Start with `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
+- Include a one-sentence `Summary:` and finding counts by severity.
 - Each finding must cite file:line and a TS-specific category: Type system, Async, Hooks, Strictness, Module surface, or Framework idiom.
 - Include concrete TS-idiomatic remediation: signature, type guard, satisfies/as const use, missing await, AbortController propagation, hook dependency fix, strictness flag, or module-format change.
 - Severity must follow Critical, High, Medium, Low, Info.

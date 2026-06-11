@@ -22,7 +22,7 @@ Un Skill que ejecuta Tareas generadas por task-generator en paralelo usando Agen
 | Opción | Descripción |
 |--------|-------------|
 | `--tasks-dir <path>` | Ruta del directorio de tareas (por defecto: tasks/) |
-| `--review` | Ejecutar /ywc-impl-review automáticamente después de cada Tarea (combinable) |
+| `--review` | Ejecutar `ywc-impl-review` automáticamente después de cada Tarea (combinable) |
 | `--local-merge` | Sin PR, solo push a la rama base (comportamiento por defecto) |
 | `--draft` | Crear PR Borrador después de que todas las Tareas estén completas |
 | `--per-task-pr` | Crear PR individual por Tarea |
