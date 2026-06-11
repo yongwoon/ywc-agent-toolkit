@@ -12,7 +12,8 @@
 
 # Claude Code hook runtime logs (skill-stop diagnostics; per-machine, not portable)
 .claude/logs/
-docs/ywc-plans
+docs/ywc-plans/*
+!docs/ywc-plans/codex-plugin-distribution.md
 tasks/
 .ywc-run-state.json
 .ywc-learnings.jsonl
