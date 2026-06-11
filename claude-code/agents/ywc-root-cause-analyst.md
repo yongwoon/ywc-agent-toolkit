@@ -20,6 +20,7 @@ description: >-
   require Bash (the caller assembles evidence and forwards the bounded payload).
 model: opus
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: rootcause
 ---
 

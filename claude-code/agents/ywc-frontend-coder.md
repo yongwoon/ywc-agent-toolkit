@@ -77,7 +77,7 @@ tiny-component dogma, behaviour-preserving edits). This is the single rubric
 shared with review (`ywc-impl-review` devex) and planning (`ywc-plan`);
 conforming here is what keeps generated code from being flagged on the first
 review pass. See
-[`tools/claude-code/skills/references/readable-code.md`](../skills/references/readable-code.md).
+[`claude-code/skills/references/readable-code.md`](../skills/references/readable-code.md).
 
 ## Return Contract
 

@@ -18,6 +18,7 @@ description: >-
   static analysis only).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: security
 ---
 

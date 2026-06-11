@@ -151,6 +151,7 @@ install_support_dir() {
 
 install_cc_support_dirs() {
   install_support_dir "$CC_SRC/references" "$CC_DEST"
+  install_support_dir "$CC_SRC/scripts" "$CC_DEST"
 }
 
 install_codex_support_dirs() {

@@ -21,7 +21,7 @@
 #     "thread_comment_count":3}, ...]
 #
 # Usage:
-#   bash tools/claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
+#   bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
 #     owner/repo 123
 
 set -euo pipefail

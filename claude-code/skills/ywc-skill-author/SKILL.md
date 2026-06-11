@@ -196,7 +196,7 @@ Before merging a new or modified ywc-* skill, verify:
 - [ ] No `references/*.md` file is <30 lines (over-extraction)
 
 **Catalog Sync**
-- [ ] Relevant bundle catalog updated (`tools/claude-code/skills/README.md`, `tools/codex-skill/skills/README.md`, or `tools/pi-skills/README.md`)
+- [ ] Relevant bundle catalog updated (`claude-code/skills/README.md` or `codex/skills/README.md`)
 - [ ] Relevant routing guide updated if the bundle has one and the skill is user-facing
 - [ ] If skill is part of a pipeline, the 표준 개발 Pipeline diagram updated
 

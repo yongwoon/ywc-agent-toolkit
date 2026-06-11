@@ -130,7 +130,7 @@ Before declaring the skill's task complete, verify:
 
 These follow the same structure as the Korean `README.md` but in their respective languages. Always create the full locale set together so the documentation cannot drift between languages.
 
-For Korean and Japanese, **keep technical terms in English** (Database, API, Backend, etc.) per the project-wide language policy in `tools/claude-code/skills/CLAUDE.md`.
+For Korean and Japanese, **keep technical terms in English** (Database, API, Backend, etc.) per the project-wide language policy in `claude-code/skills/CLAUDE.md`.
 
 ---
 

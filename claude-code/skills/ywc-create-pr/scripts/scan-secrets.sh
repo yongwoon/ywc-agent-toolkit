@@ -13,10 +13,10 @@
 #
 # Usage:
 #   # Scan staged + unstaged changes
-#   bash tools/claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+#   bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
 #
 #   # Also scan all commits vs base branch
-#   bash tools/claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed develop
+#   bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed develop
 
 set -uo pipefail
 

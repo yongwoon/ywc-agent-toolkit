@@ -90,10 +90,10 @@ Run the bundled secret scan script:
 
 ```bash
 # Phase 1+2: dangerous file names + staged/unstaged diff content
-bash tools/claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
-bash tools/claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
+bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
 ```
 
 Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout.
@@ -248,10 +248,10 @@ If `gh pr checks` exits 1, at least one check failed. Apply fixes in the loop be
 
 #### 8-3. Bot Review Polling
 
-> **Action required**: Read [`tools/claude-code/skills/references/pr-bot-polling.md`](../references/pr-bot-polling.md) before proceeding. The canonical polling procedure and parameters are defined there.
+> **Action required**: Read [`claude-code/skills/references/pr-bot-polling.md`](../references/pr-bot-polling.md) before proceeding. The canonical polling procedure and parameters are defined there.
 
 ```bash
-bash tools/claude-code/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
+bash claude-code/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
 # exit 0 → BOT_COUNT > 0 (bot reviews posted)
 # exit 1 → BOT_COUNT == 0 (no bot reviews within polling window)
 ```

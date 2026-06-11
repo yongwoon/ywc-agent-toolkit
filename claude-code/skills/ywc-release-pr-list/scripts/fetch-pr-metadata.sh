@@ -19,7 +19,7 @@
 #   2  Usage error
 #
 # Usage:
-#   bash tools/claude-code/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh 123 124 125
+#   bash claude-code/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh 123 124 125
 
 set -uo pipefail
 

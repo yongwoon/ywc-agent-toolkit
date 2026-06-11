@@ -14,7 +14,7 @@
 #   One status line per action. On failure, includes a fix hint.
 #
 # Usage:
-#   bash tools/claude-code/skills/ywc-parallel-executor/scripts/cleanup-worktree.sh \
+#   bash claude-code/skills/ywc-parallel-executor/scripts/cleanup-worktree.sh \
 #     000001-010-db-create-users-table
 
 set -uo pipefail

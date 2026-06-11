@@ -23,6 +23,7 @@ description: >-
   knip / depcheck instead).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: language-reviewer
 ---
 

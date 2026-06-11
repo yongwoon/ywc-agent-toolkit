@@ -146,6 +146,43 @@ check_agent_file() {
   fi
 }
 
+check_cc_support_dirs() {
+  local ref
+
+  if [ ! -d claude-code/skills/references ]; then
+    echo "ERROR: claude-code/skills/references is missing"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -d claude-code/skills/scripts ]; then
+    echo "ERROR: claude-code/skills/scripts is missing"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -x claude-code/skills/scripts/poll-pr-reviews.sh ]; then
+    echo "ERROR: claude-code/skills/scripts/poll-pr-reviews.sh is missing or not executable"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  # Every ../references/<file> link must resolve relative to the file that
+  # contains it. From a SKILL.md this points at the shared references dir; from
+  # a skill-local references/*.md it points back at that same local dir. We
+  # resolve per-source-file so both cases are validated without false positives.
+  # This catches the broken-link regression class that frontmatter checks miss.
+  local file link target
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    while IFS= read -r link; do
+      [ -n "$link" ] || continue
+      target="$(dirname "$file")/$link"
+      if [ ! -f "$target" ]; then
+        echo "ERROR: broken reference link in ${file#./}: $link"
+        ERRORS=$((ERRORS + 1))
+      fi
+    done < <(grep -oE '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$file" | sort -u)
+  done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
+}
+
 check_cc_agents() {
   local dir=claude-code/agents
   [ -d "$dir" ] || return 0
@@ -176,6 +213,7 @@ done
 
 echo "==> Validating claude-code agents..."
 check_cc_agents
+check_cc_support_dirs
 
 echo "==> Validating codex skills..."
 for dir in codex/skills/*/; do
