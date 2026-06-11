@@ -11,6 +11,7 @@ task-generator 가 생성한 Task 를 Agent 가 병렬로 실행하는 Skill 입
 /ywc-parallel-executor 000001-010..000002-040 --review            # 병렬 + 자동 Review
 /ywc-parallel-executor 000001-010..000002-040 --local-merge       # PR 없이 Local merge
 /ywc-parallel-executor 000001-010..000002-040 --draft             # Draft PR 생성
+/ywc-parallel-executor 000001-010..000002-040 --per-task-pr       # Task 마다 PR 생성·CI·review·merge
 ```
 
 ## Option
@@ -19,9 +20,11 @@ task-generator 가 생성한 Task 를 Agent 가 병렬로 실행하는 Skill 입
 |--------|------|
 | `--tasks-dir <path>` | Tasks directory 경로 (default: tasks/) |
 | `--review` | 각 Task 완료 후 /ywc-impl-review 자동 실행 (조합 가능) |
-| `--local-merge` | PR 없음, base-branch push 만 (기본 동작) |
-| `--draft` | 전체 완료 후 Draft PR 생성 |
-| `--per-task-pr` | Task 마다 개별 PR 생성 |
+| `--local-merge` | PR 없음, base-branch 로 직접 merge + push |
+| `--draft` | 전체 완료 후 단일 Draft PR 생성 |
+| `--per-task-pr` | Task 마다 PR 생성 → CI 대기 → bot review 대응 → merge 까지 수행 (sequential-executor default 와 동일한 full lifecycle) |
+
+> Mode 미지정 시 기본값은 없습니다. `--local-merge` / `--draft` / `--per-task-pr` 중 하나를 사용자가 명시적으로 선택해야 합니다.
 
 ## 실행 흐름
 
