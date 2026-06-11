@@ -18,13 +18,19 @@ Boundaries:
 - Do not mass-flag theoretical vectors without a concrete scoped entry point.
 - Defer architecture redesign questions to ywc-architect.
 
+High-frequency real-world checks:
+- Treat missing ownership predicates or cross-boundary references on tenant_id, org_id, user_id, workspace_id, account_id, or project_id as Broken Access Control / IDOR, not merely data-quality bugs.
+- Queries and writes on ownership-scoped tables must include the owner-key predicate; foreign keys should prevent cross-boundary parent references where the schema carries an owner key.
+- Escape any user- or system-supplied value rendered into HTML, Markdown, or templates at the sink; unescaped interpolation is XSS or formatting corruption.
+- Do not allow identity or authorization decisions on mutable labels such as display names; require stable identifiers.
+- Idempotency for provisioning, charging, or replay-sensitive work must be durable, not an in-process Set or boolean.
+
 Output:
-- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
-- Include a one-sentence `Summary:` and finding counts by severity.
+- Start with `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
 - Lead with findings ordered by Critical, High, Medium, Low, Info.
 - Each finding must cite file and line when available, name the concrete vulnerability, and include OWASP/CWE when applicable.
 - Critical and High findings must include a narrow remediation.
 - Deduplicate repeated instances of the same vulnerability.
-- Use `NEEDS_CONTEXT` when one missing trust-boundary, config, or policy signal determines severity; use `BLOCKED` when the scope is too broad, unreadable, or internally contradictory.
-- Do not create artifacts or echo raw evidence dumps; summarize evidence with redacted values and exact source refs.
+- Return DONE when no scoped security issue is found.
+- Return NEEDS_CONTEXT when the scope is too broad or a missing trust-boundary signal determines severity.
 """

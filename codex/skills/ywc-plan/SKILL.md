@@ -195,6 +195,8 @@ For the full spec structure aligned with `ywc-spec-validate`'s evaluation dimens
 
 The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, and Open Questions (use `N/A — none identified` if none).
 
+When the spec names module boundaries, key types, and interfaces, ground those design choices in the shared readable-code rubric — especially §G (structural smells) and its anti-dogma guardrails (do not specify speculative generality or premature abstraction the requirement does not yet need). See [../references/readable-code.md](../references/readable-code.md).
+
 For **Large** scale, also surface this advisory before writing the spec:
 
 > "This change is Large (15+ expected tasks). Consider splitting into multiple smaller specs by feature boundary. Splitting now is cheaper than splitting after `ywc-task-generator` produces 20+ task directories. Proceed with single spec, or split first?"

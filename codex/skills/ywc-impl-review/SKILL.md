@@ -163,6 +163,8 @@ Read the corresponding reference file when spawning each worker and include the 
 
 If a reference file does not yet contain an "Advisor Candidate Criteria" section, fall back to the three-property test in [advisor-pattern.md §5](../references/advisor-pattern.md): objective trigger, irreversibility, ambiguity. A finding must satisfy all three to be a Phase 2 candidate.
 
+**Recurring real-world defects catalog** — every reviewer agent additionally consults [`references/recurring-defects.md`](./references/recurring-defects.md), a derived-from-data catalog of the defect classes that production bot reviewers (CodeRabbit, Codex Review) flag most often: data-layer access-boundary (ownership / tenant isolation), data-integrity / `NULL` handling, error-swallowing, external-call resilience, validation / fail-fast, HTTP-status semantics, and test fidelity. Each agent's "High-frequency real-world checks" section points at its catalog slice. The catalog tells the reviewer *where real bugs cluster*; the per-aspect rubric still governs severity and escalation. This is the same surface the executors' `--review` flag targets, so these classes get caught before the PR opens — reducing bot-review round-trips after the PR is created.
+
 ## Confidence Gate
 
 This skill applies the [Confidence Gate](../references/confidence-gate.md) to the aggregated review output before emitting the final report. The gate sits between Phase 2 advisor consolidation and report emission.

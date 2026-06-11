@@ -43,7 +43,7 @@ When tempted to skip a step, check this table first:
 | Task specifier | `<name>` or `<start>..<end>` | `000001-010..000002-040` | Single task or range. Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; range matching uses lexical order. |
 | `--all` | flag | | Execute all tasks |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir tasks/` | Tasks directory (default: tasks/) |
-| `--review` | flag | | Auto-run /ywc-impl-review after each task |
+| `--review` | flag | | Auto-run /ywc-impl-review on each task's worktree branch before the wave merge (Step 4d). Applies the recurring-defects catalog to catch bot-flagged defect classes before the PR opens |
 | `--local-merge` | flag | | No PR, merge and push to base-branch directly |
 | `--draft` | flag | | Create draft PR after all tasks complete |
 | `--per-task-pr` | flag | | Create individual PR per task |
@@ -307,7 +307,17 @@ The named worker subagents return payloads per [../references/subagent-status-ac
 
 **4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`
 
-**4d. Review (optional)** — If `--review` is set, auto-invoke `/ywc-impl-review`
+**4d. Review (optional)** — If `--review` is set, auto-invoke `/ywc-impl-review` on the task's worktree branch after Task Verify (4c) passes and **before** the Wave Merge (4e). Running the review while the code is still isolated in its worktree means any issue it surfaces is fixed before the change reaches the base branch — which, in `--local-merge` and `--draft`/`--per-task-pr` modes alike, is the last quality gate where no remote bot review has run yet.
+
+The review applies the [recurring real-world defects catalog](../ywc-impl-review/references/recurring-defects.md) — the defect classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation, HTTP status, test fidelity) that PR-review bots flag most. Catching them here reduces the bot-review round-trips that would otherwise land on the aggregate/per-task PR.
+
+Invoke against the worktree so the review reads the right tree. `--spec` is required by `ywc-impl-review`; source `<task-spec-path>` from the task `README.md`'s Spec Reference (the same spec the implementer read in 4a):
+
+```bash
+/ywc-impl-review --spec <task-spec-path> --git-range <base-branch>..feature/<task-name>
+```
+
+**Handling the review's status return**: `/ywc-impl-review` emits `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. Apply [../references/subagent-status-actions.md](../references/subagent-status-actions.md): correctness-level concerns (Critical/High) are fixed on the worktree branch and re-reviewed before 4e merges the task; observation-level concerns carry forward to the Completion Report. A `BLOCKED` review preserves the task's worktree (skip 4g for it) exactly like a `BLOCKED` implementation.
 
 **4e. Wave Merge + Mark Complete (delegated to `ywc-finish-branch`)** — After all tasks in the wave complete their implementation, merge successful tasks into the base branch sequentially and mark each one complete. This local merge is required for **every** mode because downstream waves depend on previous wave results being in the base branch. The per-task `git merge --no-ff` + post-merge verification + Mark Task Complete + push (or defer) is delegated to [ywc-finish-branch](../ywc-finish-branch/SKILL.md). This skill orchestrates the wave loop and applies mode-specific PR creation up front; finish-branch handles the merge half.
 

@@ -68,6 +68,17 @@ composition patterns.
 - [ ] No unsafe HTML injection sinks used on untrusted input — sanitize
       through the framework's escaped path or a vetted sanitizer library
 
+## Coding standards
+
+Write to the shared **readable-code rubric** — informative component/hook
+naming, small single-purpose components, reuse-before-adding, and the
+anti-dogma guardrails (no speculative generality or premature abstraction, no
+tiny-component dogma, behaviour-preserving edits). This is the single rubric
+shared with review (`ywc-impl-review` devex) and planning (`ywc-plan`);
+conforming here is what keeps generated code from being flagged on the first
+review pass. See
+[`tools/claude-code/skills/references/readable-code.md`](../skills/references/readable-code.md).
+
 ## Return Contract
 
 > Status payload format: see

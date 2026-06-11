@@ -80,7 +80,7 @@ Before proceeding, verify the environment is ready:
 
 - Confirm `gh` CLI is installed and authenticated (`gh auth status`). If not, stop and tell the user how to set it up
 - Check if a PR already exists for this branch (`gh pr list --head <current-branch> --state open`). If one exists, show the URL and ask the user whether to update it or create a new one
-  - **If update**: Skip PR creation (Step 7). Commit and push changes, then optionally update the PR description with `gh pr edit <number> --body-file -`
+  - **If update**: Skip PR creation (Step 7), but do **not** skip Step 8. Commit and push changes, optionally update the PR description with `gh pr edit <number> --body-file -`, then proceed to Step 8 (Remote CI & Bot Review Check). Updating a PR can break CI exactly like creating one — the verification must run on the update path too, not only on the new-PR path (unless `--skip-post-ci-check` was passed by an upstream caller).
   - **If new**: Continue with the full workflow
 - Verify the current branch is not the base branch itself — refuse to create a PR from main/develop/master to itself
 
@@ -204,7 +204,7 @@ If no commands are detected, skip this step and inform the user of the reason.
 
 **Skip this step entirely if `--skip-post-ci-check` is present in `$ARGUMENTS`.** This step runs only when `ywc-create-pr` is invoked directly by the user — `ywc-finish-branch` passes `--skip-post-ci-check` and handles CI + bot review in its own Step 4.
 
-After the PR is created, retrieve the PR number and verify that remote CI passes and no automated reviewers have flagged issues.
+After the PR is created **or updated** (the Step 2 update path also lands here), retrieve the PR number and verify that remote CI passes and no automated reviewers have flagged issues.
 
 ```bash
 PR_NUMBER=$(gh pr view --json number --jq .number)

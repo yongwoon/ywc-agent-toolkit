@@ -92,6 +92,16 @@ Verify only necessary readability / log / doc changes were made for THIS task.
 
 Prioritize operator-facing issues (error messages, logging, config UX) over internal readability. Operator-facing surfaces cause production pain; internal readability is paid down incrementally.
 
+## High-frequency real-world checks
+
+Before finalizing, run the resilience items from [`recurring-defects.md` §2 (Error handling & external-call resilience)](./recurring-defects.md#2-error-handling--external-call-resilience) against the diff. These are the devex-aspect defects production bot reviewers flag most often, and they directly determine whether an incident is debuggable:
+
+- **No swallowing catch** — an empty `catch {}`, `catch(() => undefined)`, or `.catch(() => null)` erases the failure and makes the incident un-debuggable; require at least a `warn` with the operation name and triggering identifier, unless the swallow is deliberate and commented.
+- **External calls need timeout + bounded retry** — an unguarded `fetch` / SDK call to a third-party API on a hot or user-facing path hangs on a stalled socket and fails under `429`/`5xx`; require a timeout and bounded backoff.
+- **Resource lifecycle** — a client/connection created (e.g. a fresh ORM instance per call) must be closed/disconnected on every exit path, including error paths, or the pool exhausts.
+
+Skip any item that does not apply and say so — do not invent a finding to satisfy the list. Severity follows this file's rubric.
+
 ## Advisor Candidate Criteria (Phase 2 Escalation)
 
 The parent skill runs in two phases: Phase 1 (this subagent, on Sonnet) handles mechanical devex reviews, and Phase 2 (on Opus) receives only items the executor cannot confidently judge. When producing your findings, split them into **Confirmed findings** (Phase 1 verdict is final) and **Advisor candidates** (Phase 2 should re-evaluate).

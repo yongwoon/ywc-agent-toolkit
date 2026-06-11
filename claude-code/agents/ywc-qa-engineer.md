@@ -70,6 +70,27 @@ pass.
 - [ ] Visual regression tests (when applicable) cover the canonical
       breakpoints (320 / 768 / 1024 / 1440) and both themes if both ship
 
+## High-frequency real-world checks
+
+Whether writing tests or reviewing them, run
+[`recurring-defects.md` §5 (Test fidelity)](../skills/ywc-impl-review/references/recurring-defects.md#5-test-fidelity)
+against the diff. Coverage is only half of QA; the other half is **tests that
+pass without testing anything** — the recurring ways suites manufacture false
+confidence:
+
+- **Mock-implementation drift** — a mock must target the symbol the
+  implementation *actually calls*; if the code calls `createSearchCampaign`
+  but the test mocks `deploySearchCampaign`, the `toHaveBeenCalled` assertion
+  passes while exercising nothing. Cross-check mocked names against the
+  implementation.
+- **Test isolation** — prefer `resetAllMocks()` / `mockReset()` over
+  `clearAllMocks()` (which keeps the implementation, bleeding `mockReturnValue`
+  across tests); restore mutated globals (`NODE_ENV`, `process.env.*`) to their
+  *original captured* value, not a hardcoded default.
+- **Assertion currency** — when a feature/flag/column is removed, update the
+  count/value assertions referencing it; a stale-but-passing assertion hides
+  the regression.
+
 ## Return Contract
 
 > Status payload format: see

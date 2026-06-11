@@ -90,3 +90,15 @@ Reason for escalation: (the specific ambiguity that makes this not a mechanical 
 ```
 
 If you find yourself writing more than one candidate per invocation of the skill, pause and reconsider. QA's natural escalation rate should be well under one candidate per invocation on average.
+
+## High-frequency real-world checks
+
+Before finalizing, run [`recurring-defects.md` §5 (Test fidelity)](./recurring-defects.md#5-test-fidelity) against the diff. Coverage gaps are only half of QA; the other half is **tests that pass without testing anything** — the recurring ways test suites manufacture false confidence:
+
+- **Mock-implementation drift** — a mock must target the symbol the implementation *actually calls*; if the code calls `createSearchCampaign` but the test mocks `deploySearchCampaign`, the `toHaveBeenCalled` assertion passes while exercising nothing. Cross-check mocked names against the implementation.
+- **Test isolation** — prefer `resetAllMocks()`/`mockReset()` over `clearAllMocks()` (which keeps the implementation, bleeding `mockReturnValue` across tests); mutated globals (`NODE_ENV`, `process.env.*`, `IS_REACT_ACT_ENVIRONMENT`) must be restored to their *original captured* value, not a hardcoded default.
+- **Assertion currency** — when a feature/flag/column is removed, the count/value assertions referencing it must be updated; a stale-but-passing assertion hides the regression.
+- **Strict argument assertions** — for calls carrying `tenantId` / `actor` / request body, assert `toHaveBeenCalledWith(...)`, not just `toHaveBeenCalled()`.
+- **Placement convention** — a test placed outside the project's test glob is silently excluded from the run.
+
+These fidelity defects are mechanical to confirm once spotted — mark them P1 unless intent is genuinely ambiguous. Skip any item that does not apply and say so.

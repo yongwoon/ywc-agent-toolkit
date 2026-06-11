@@ -20,6 +20,7 @@ Backend Agent responsible for server-side code generation. Generates API endpoin
 - Always include input validation (use whichever library the project uses: Zod, class-validator, etc.)
 - Return error responses in a consistent format
 - Apply strict TypeScript types when applicable
+- Write to the shared **readable-code rubric** — informative naming, small single-purpose functions, reuse-before-adding, and the anti-dogma guardrails (no speculative generality / premature abstraction). See [readable-code.md](../../references/readable-code.md).
 
 ## Output Format
 

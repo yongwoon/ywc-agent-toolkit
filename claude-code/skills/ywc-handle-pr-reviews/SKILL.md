@@ -29,6 +29,7 @@ When tempted to skip a step, check this table first:
 | "Conflict in suggestions, pick one and move on" | Surface the conflict to the user. Do not silently choose between reviewer A and reviewer B. |
 | "PR not found for this branch, scan recent PRs" | Stop and ask. Acting on a wrong PR overwrites unrelated reviewer threads. |
 | "All review comments are addressed — CI is a separate concern" | Fixes to source code (refactors, new imports, logic changes) can break CI. Always re-verify CI after pushing review fixes. A PR with all comments addressed but failing CI is still blocked from merging. |
+| "The comments only needed replies, no code changed — so CI is fine to skip" | CI can already be red for reasons unrelated to the comments (a flaky earlier push, a base-branch change, a dependency break). Handling a PR means leaving it mergeable. Always check current CI status when handling a PR, even when your replies pushed no code. |
 
 **Violating the letter of these rules is violating the spirit.** Code review is a conversation, not a checklist.
 
@@ -143,18 +144,18 @@ Things can go wrong during the process. Handle these gracefully:
 | Comment reply API returns 403/404     | Log the error, skip that reply, and report it in the final summary                      |
 | Referenced file no longer exists      | Reply to the comment explaining the file was removed, and skip the fix                  |
 
-### 6.5 CI Re-verification After Fixes
+### 6.5 CI Status Check & Fix
 
-**Skip this step if no code commits were pushed in Step 4** (e.g., only reply comments with no code changes were made).
-
-After all review-comment fixes are pushed, verify that the applied changes did not introduce CI regressions.
+**Always run this step — do not skip it, even when your replies pushed no code.** A PR review thread and CI status are two independent blockers on the same PR. Addressing every comment but leaving CI red still leaves the PR unmergeable, so handling a PR means checking both. This step covers two cases at once: CI regressions introduced by the fixes in Step 4, **and** pre-existing CI failures that were already red before you touched the PR (a flaky earlier push, a base-branch change, a broken dependency).
 
 ```bash
 PR_NUMBER=$(gh pr view --json number --jq .number)
 gh pr checks $PR_NUMBER
+# exit 0 = all checks passed; non-zero = one or more checks failed or are pending
 ```
 
 - **All checks pass**: proceed to Step 7.
+- **Checks still pending**: wait for completion with `gh pr checks $PR_NUMBER --watch`, then re-evaluate.
 - **Any check fails**:
   1. Get failure logs:
      ```bash
@@ -168,6 +169,7 @@ gh pr checks $PR_NUMBER
      |---|---|
      | Lint / format | Run the project's auto-fix command, commit, push |
      | Type / test / build | Analyze output, fix implementation, commit, push |
+     | Infra / flaky / clearly unrelated to this PR's scope | Do **not** blindly patch. Surface the failing check and logs to the user and ask how to proceed (e.g., re-run the job, or fix in a separate PR) |
   3. Re-check CI after each push. Up to **2 fix attempts**.
   4. If CI still fails after 2 attempts: record the failing check names in Step 7's summary and set the overall outcome to `DONE_WITH_CONCERNS` (not `DONE`).
 

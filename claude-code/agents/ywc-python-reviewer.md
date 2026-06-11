@@ -167,6 +167,29 @@ type checker / linter / tests, or execute the application.
       references) goes to a file under the caller's artifact directory
       and only the path returns
 
+## High-frequency real-world checks
+
+This agent stands in for the generic Design + Devex reviewers when Python
+dominates the diff, so it also owns their highest-frequency real-world defects.
+Before finalizing, run
+[`recurring-defects.md` §2 (Error handling & external-call resilience)](../skills/ywc-impl-review/references/recurring-defects.md#2-error-handling--external-call-resilience)
+and
+[§3 (Contract, status & validation)](../skills/ywc-impl-review/references/recurring-defects.md#3-contract-status--validation)
+against the diff:
+
+- **No swallowing except** — a bare `except: pass` / `except Exception: pass`
+  erases the failure and makes the incident un-debuggable; require at least a
+  `logger.warning` with the operation name and triggering identifier unless the
+  swallow is deliberate and commented.
+- **External calls need timeout + bounded retry** — an unguarded `requests` /
+  `httpx` / SDK call to a third-party API on a hot or user-facing path hangs on
+  a stalled socket and fails under `429`/`5xx`.
+- **Resource lifecycle** — a client/connection/session created per call must be
+  closed on every exit path (prefer a context manager), or the pool exhausts.
+- **HTTP status semantics & fail-fast validation** — `4xx` for client/input
+  faults (not `500`); validation must actually *reject* rather than admit an
+  impossible value or swallow a parse failure into a default.
+
 ## Return Contract
 
 > Status payload format: see

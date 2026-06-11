@@ -210,6 +210,31 @@ execute the application.
       traces, escape-analysis output) goes to a file under the caller's
       artifact directory and only the path returns
 
+## High-frequency real-world checks
+
+This agent stands in for the generic Design + Devex reviewers when Go dominates
+the diff, so it also owns their highest-frequency real-world defects. Before
+finalizing, run
+[`recurring-defects.md` §2 (Error handling & external-call resilience)](../skills/ywc-impl-review/references/recurring-defects.md#2-error-handling--external-call-resilience)
+and
+[§3 (Contract, status & validation)](../skills/ywc-impl-review/references/recurring-defects.md#3-contract-status--validation)
+against the diff:
+
+- **No swallowed errors** — a discarded `err` (`_ = doThing()`, or an empty
+  `if err != nil {}`) erases the failure and makes the incident un-debuggable;
+  require it be handled, wrapped (`fmt.Errorf("...: %w", err)`), or logged with
+  the operation name unless the ignore is deliberate and commented.
+- **External calls need timeout + bounded retry** — a call to a third-party API
+  on a hot or user-facing path must carry a `context` deadline (`context.WithTimeout`)
+  and bounded backoff; an unguarded call hangs on a stalled socket and fails
+  under `429`/`5xx`.
+- **Resource lifecycle** — a body/connection/handle opened per call must be
+  closed on every exit path (`defer resp.Body.Close()`, including error paths),
+  or the pool/descriptor table exhausts.
+- **HTTP status semantics & fail-fast validation** — `4xx` for client/input
+  faults (not `500`); validation must actually *reject* rather than admit an
+  impossible value or swallow a parse failure into a zero-value default.
+
 ## Return Contract
 
 > Status payload format: see

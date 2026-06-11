@@ -48,6 +48,18 @@ Security Agent that analyzes security vulnerabilities. Evaluates implementation 
   Fix: {specific remediation steps}
 ```
 
+## High-frequency real-world checks
+
+Before finalizing, run [`recurring-defects.md` §4 (Security specifics)](./recurring-defects.md#4-security-specifics) and the access-control items in [§1 (Data-layer access-boundary & integrity)](./recurring-defects.md#1-data-layer-access-boundary--integrity) against the diff. In any system with a row-ownership boundary (`tenant_id` / `org_id` / `user_id` / `workspace_id`) these are the highest-frequency security findings — and the most consequential:
+
+- **Access-boundary isolation is A01 / IDOR** — a query or write on an ownership-scoped table that omits the owner-key predicate, or a foreign key that allows a cross-boundary reference, is Broken Access Control. `tenantId` is the most common owner key, but the same applies to `org_id` / `user_id`. Treat it as a security finding (often Critical), not merely a data bug.
+- **Output escaping** — any user- or system-supplied value rendered into HTML/Markdown/a template must be escaped at the sink (verification codes, names, echoed errors) — unescaped interpolation is XSS (A03).
+- **No identity decisions on mutable labels** — authorization keyed on a display name or other editable string is bypassable; key on stable IDs (A01/A07).
+- **Durable idempotency** — an in-process `Set`/flag cannot prevent duplicate provisioning, double-charge, or replay across instances/restarts; require a unique constraint, DB lock, or idempotency key (A04).
+- **Supply chain & secrets** — pin third-party GitHub Actions by commit SHA; new secrets/env vars must be in the secret inventory and `.env.example` (A05/A06).
+
+Map each to its OWASP category in the finding. Skip any item that does not apply (single-owner, no rendered output) and say so. Severity follows this file's rubric — and note the slightly more permissive escalation bar below for Critical/High candidates.
+
 ## Advisor Candidate Criteria (Phase 2 Escalation)
 
 The parent skill runs in two phases: Phase 1 (this subagent, on Sonnet) handles mechanical OWASP matches, and Phase 2 (on Opus) receives only items the executor cannot confidently judge. Split your findings into **Confirmed findings** and **Advisor candidates** using the rules below.

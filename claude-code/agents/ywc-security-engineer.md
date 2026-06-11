@@ -83,6 +83,27 @@ are dispatched separately to the appropriate coder agent.
       (matched patterns, surrounding code excerpts, references) goes to a
       file under the caller's artifact directory and only the path returns
 
+## High-frequency real-world checks
+
+Before finalizing, run
+[`recurring-defects.md` §4 (Security specifics)](../skills/ywc-impl-review/references/recurring-defects.md#4-security-specifics)
+and the access-control items in
+[§1 (Data-layer access-boundary & integrity)](../skills/ywc-impl-review/references/recurring-defects.md#1-data-layer-access-boundary--integrity)
+against the diff. In any system with a row-ownership boundary (`tenant_id` /
+`org_id` / `user_id` / `workspace_id`) these are the highest-frequency — and
+most consequential — security findings:
+
+- **Access-boundary isolation is A01 / IDOR** — a query or write on an
+  ownership-scoped table that omits the owner-key predicate, or a foreign key
+  that allows a cross-boundary reference, is Broken Access Control. Treat it as
+  a security finding (often Critical), not merely a data bug.
+- **Output escaping** — any user- or system-supplied value rendered into
+  HTML/Markdown/a template must be escaped at the sink; unescaped interpolation
+  is XSS (A03).
+- **No identity decisions on mutable labels** — authorization keyed on a
+  display name or other editable string is bypassable; key on stable IDs
+  (A01/A07).
+
 ## Return Contract
 
 > Status payload format: see

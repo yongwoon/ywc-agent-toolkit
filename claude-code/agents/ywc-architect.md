@@ -79,6 +79,25 @@ anything — verdicts go back to the caller for implementation.
 - [ ] Verdict payload stays under 300 words; supporting analysis goes to a
       file under the caller's artifact directory and only the path returns
 
+## High-frequency real-world checks
+
+When the decision touches data-layer structure, run the items from
+[`recurring-defects.md` §1 (Data-layer access-boundary & integrity)](../skills/ywc-impl-review/references/recurring-defects.md#1-data-layer-access-boundary--integrity)
+— the architecture-aspect defects production bot reviewers flag most often,
+easy to miss because they live in schema/migration files rather than the
+obvious "logic" files. The examples use `tenantId`, but apply them to whatever
+ownership/partition column the system uses (`org_id` / `user_id` /
+`workspace_id`):
+
+- **Ownership-scoped foreign keys** — a child carrying its own owner key but
+  referencing a parent by `id` alone lets the DB accept cross-boundary
+  references; prefer a composite `(ownerKey, id)` FK, especially under
+  `onDelete: Cascade`. This is a structural decision — it is your lane.
+- **Composite index lead column** — indexes on ownership-scoped tables should
+  lead with the owner key.
+- **Migration & referential integrity** — additive over destructive; no model
+  that can persist a contradictory parent graph.
+
 ## Return Contract
 
 > Status payload format: see

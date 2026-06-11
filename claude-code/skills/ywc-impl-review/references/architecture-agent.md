@@ -77,6 +77,16 @@ Verify only necessary structural files were modified for THIS task.
 
 Prioritize structural-spec-conformance issues over pattern-style issues. A working structure that matches the spec is more important than perfect uniformity.
 
+## High-frequency real-world checks
+
+Before finalizing, run the structural items from [`recurring-defects.md` §1 (Data-layer access-boundary & integrity)](./recurring-defects.md#1-data-layer-access-boundary--integrity) against the diff. These are the architecture-aspect defects that production bot reviewers flag most often, and they are easy to miss because they live in schema/migration files rather than in the obvious "logic" files. The examples use `tenantId`, but apply them to whatever ownership/partition column the system uses (`org_id` / `user_id` / `workspace_id`):
+
+- **Ownership-scoped foreign keys** — a child carrying its own owner key (`tenantId` / `orgId`) but referencing a parent by `id` alone lets the DB accept cross-boundary references; prefer a composite `(ownerKey, id)` FK, especially under `onDelete: Cascade`. This is a structural (not just data) decision — it is your lane.
+- **Composite index lead column** — indexes on ownership-scoped tables should lead with the owner key.
+- **Migration & referential integrity** — additive over destructive; no model that can persist a contradictory parent graph.
+
+Skip any item that does not apply to the stack (single-owner, no relational DB) and say so — do not invent a finding to satisfy the list. Severity follows this file's rubric; the catalog only tells you where to look.
+
 ## Advisor Candidate Criteria (Phase 2 Escalation)
 
 The parent skill runs in two phases: Phase 1 (this subagent, on Sonnet) handles mechanical structural reviews, and Phase 2 (on Opus) receives only items the executor cannot confidently judge. When producing your findings, split them into **Confirmed findings** (Phase 1 verdict is final) and **Advisor candidates** (Phase 2 should re-evaluate).

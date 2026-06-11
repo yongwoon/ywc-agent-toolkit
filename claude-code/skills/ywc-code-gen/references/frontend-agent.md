@@ -21,6 +21,7 @@ Frontend Agent responsible for client-side code generation. Generates UI compone
 - Responsive design: mobile-first approach
 - Always include loading and error states
 - Design components to be testable and reusable
+- Write to the shared **readable-code rubric** — informative naming, small single-purpose functions, reuse-before-adding, and the anti-dogma guardrails (no speculative generality / premature abstraction). See [readable-code.md](../../references/readable-code.md).
 
 ## Output Format
 

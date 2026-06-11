@@ -53,3 +53,30 @@ Rules for skills that adopt this mode:
 When authoring a new review or report skill whose output a human reads to
 make a decision, add the `--format` flag and the `html-output.md` pointer
 following the eight skills above.
+
+## Sync-skip exceptions
+
+The sync hook in `tools/scripts/sync-skills.sh` skips propagation of the following
+skills because their implementations diverge across runtimes:
+
+- `tools/codex-skill/skills:ywc-agentic/SKILL.md`
+- `tools/pi-skills:ywc-agentic/SKILL.md`
+
+Additionally, the codex-skill `ywc-code-gen` layer-role references diverge by
+**filename** — codex-skill uses `*-generation.md` (`backend-generation.md` /
+`frontend-generation.md` / `qa-generation.md`) where claude-code and pi-skills
+use `*-agent.md`. The two sets are maintained independently, so the hook also
+skips these (target, rel) pairs:
+
+- `tools/codex-skill/skills:ywc-code-gen/references/backend-agent.md`
+- `tools/codex-skill/skills:ywc-code-gen/references/frontend-agent.md`
+- `tools/codex-skill/skills:ywc-code-gen/references/qa-agent.md`
+
+Without these entries the sync loop copies claude-code's `*-agent.md` into
+codex-skill, creating orphan files the codex `ywc-code-gen/SKILL.md` never
+references (it links the `*-generation.md` set).
+
+The hook MUST NOT propagate claude-code changes onto these paths. If a
+future change to one of the four skills above needs to be cross-rooted
+(e.g. a bug fix that applies to all three runtimes), apply it once in
+each runtime's directory manually.

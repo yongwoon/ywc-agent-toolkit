@@ -118,6 +118,8 @@ For each DANGER item, **emit a report entry** (Step 7) but do not delete. DANGER
 
 This step is **opt-in via `--tier all`** and is reserved for `git diff`-quality consolidations. Skip if `--tier` is `safe` or `safe+caution`.
 
+> When choosing the canonical implementation and judging what "simpler" means, apply the shared readable-code rubric and respect its anti-dogma guardrails (do not over-simplify or drop a helpful abstraction). See [../references/readable-code.md](../references/readable-code.md).
+
 For near-duplicate functions (>80% AST or text similarity by inspection):
 
 1. Pick the canonical implementation (best-tested, most-complete, fewest call sites needing rewrite).

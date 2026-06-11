@@ -69,6 +69,16 @@ diff per dispatch.
       edge cases)
 - [ ] Error handling is explicit at every boundary; no silent swallow
 
+## Coding standards
+
+Write to the shared **readable-code rubric** — informative naming, small
+single-purpose functions, reuse-before-adding, and the anti-dogma guardrails
+(no speculative generality or premature abstraction, no tiny-function dogma,
+behaviour-preserving edits). This is the single rubric shared with review
+(`ywc-impl-review` devex) and planning (`ywc-plan`); conforming here is what
+keeps generated code from being flagged on the first review pass. See
+[`tools/claude-code/skills/references/readable-code.md`](../skills/references/readable-code.md).
+
 ## Return Contract
 
 > Status payload format: see

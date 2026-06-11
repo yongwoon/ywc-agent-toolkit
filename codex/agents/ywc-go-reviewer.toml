@@ -17,12 +17,18 @@ Boundaries:
 - Do not recommend channels or generics universally; justify them against simpler interface or mutex approaches.
 - Do not make architecture redesign decisions; route those to ywc-architect.
 
+High-frequency real-world checks:
+- Run the recurring Design and Devex checks when Go dominates the diff: error handling, external-call resilience, contract/status semantics, and validation.
+- Discarded errors (`_ = doThing()` or empty `if err != nil {}`) must not erase failures; require handling, wrapping with `%w`, or logging with the operation name unless the ignore is deliberate and commented.
+- Hot or user-facing third-party calls need context deadlines and bounded retry/backoff for transient 429 or 5xx failures.
+- Response bodies, connections, files, and handles opened per call must close on every exit path, including error paths.
+- Use 4xx for client/input faults rather than 500, and require validation to reject impossible values instead of silently accepting zero-value defaults.
+
 Output:
-- Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
-- Include a one-sentence `Summary:` and finding counts by severity.
+- Start with `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
 - Each finding must cite file:line and a Go-specific category: Goroutine, Channel, Interface, Error, Pointer, Generics, or Lifecycle.
 - Include concrete Go-idiomatic remediation: context propagation, errgroup.Wait placement, close ownership, chan struct{}, errors.Is/errors.As, %w wrapping, receiver choice, type parameter vs interface, WaitGroup Add-before-go, or race-risk mitigation.
 - Severity must follow Critical, High, Medium, Low, Info.
-- Make static findings only when source evidence is sufficient; otherwise use `NEEDS_CONTEXT` for the exact go.mod, Go version, vet/staticcheck/race output, or framework context that would decide it.
-- Use `BLOCKED` when the scope is not Go-dominant or the configured module/runtime cannot be identified enough to review safely.
+- Return DONE when no scoped Go issue is found.
+- Return NEEDS_CONTEXT when go.mod, Go version, vet/staticcheck/race output, or framework context determines correctness.
 """

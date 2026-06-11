@@ -2,8 +2,8 @@
 name: ywc-skill-author
 description: >-
   (ywc) Use when creating a new ywc-* skill, restructuring an existing one's
-  frontmatter/body sections/references, or auditing existing ywc-* skills
-  against the canonical rule set. Triggers: "ywc skill 생성", "create ywc
+  frontmatter/body sections/references/agents metadata, or auditing existing
+  ywc-* skills against the canonical rule set. Triggers: "ywc skill 생성", "create ywc
   skill", "ywc skill 만들어줘", "ywc skill 개선", "new ywc skill", "ywc skill
   upgrade", "ywcスキル作成", "ywc skill audit", "ywc skill 룰 점검". Do not use
   for editing skill content during normal task execution, for non-ywc-* skills,
@@ -27,8 +27,11 @@ When tempted to bypass a rule, check this table first:
 | "Rationalization Defense table is generic, I'll copy from another skill" | Each table must be **domain-specific**. Generic tables become noise that the agent ignores. |
 | "References are optional, keep everything inline" | Body >500 lines violates progressive disclosure. Extract long sections to `references/`. |
 | "Skill name does not need `ywc-` prefix" | Always `ywc-` prefix. Differentiates from upstream skills and signals project ownership. |
+| "`agents/openai.yaml` is UI-only, so it can wait" | Stale UI metadata causes wrong skill chips and default prompts. Update it with every meaningful SKILL.md change. |
+| "A `requires:` frontmatter key makes the dependency clear" | Codex skill frontmatter must stay strict: `name` and `description` only. Document dependencies in `## Integration`. |
 | "Cross-references can use tool-specific force-load syntax" | Never force-load sibling skills from documentation. It causes unnecessary context loading and unintended activation. Always reference by skill name only. |
 | "Korean README only, English/Japanese later" | Always create the full `README.md` / `README.en.md` / `README.ja.md` / `README.ko.md` set together. |
+| "Add a README or changelog inside the skill for clarity" | Do not add auxiliary docs beyond the required locale README set. Use `references/` only for task-relevant material the agent should load on demand. |
 
 **Violating the letter of these rules is violating the spirit.** Inconsistent ywc-* skills degrade the activation accuracy of every other ywc-* skill.
 
@@ -44,7 +47,7 @@ These rules apply to **every** ywc-* skill without exception.
 | A2 | `description` MUST start with `(ywc) Use when...` (trigger-only, never a workflow summary) |
 | A3 | `description` MUST include explicit `Do not use for...` anti-triggers pointing to the correct sibling skill where applicable |
 | A4 | `description` MUST include multilingual triggers (Korean / English / Japanese) when the skill is user-facing |
-| A5 | Frontmatter required minimum: `name`, `description`. For Claude Code skills, additional fields (`version`, `category`, `requires`, etc.) are optional but recommended where meaningful. For Codex skills, frontmatter MUST contain only `name` and `description` — do not copy Claude-only fields |
+| A5 | Frontmatter MUST contain only `name` and `description`. Do not add `requires`, `category`, `metadata`, `allowed-tools`, or other non-schema fields |
 
 ### Body
 
@@ -64,6 +67,8 @@ These rules apply to **every** ywc-* skill without exception.
 | A12 | Long-form content goes under `references/`. Reusable templates use `.template` suffix (e.g., `task.md.template`) — see Progressive Disclosure §A14 for extraction criteria |
 | A13 | Test scenarios under `evals/evals.json` when the skill has objectively verifiable outputs |
 | A14 | Tier 3 extraction MUST trigger when any single inline section exceeds **30 lines of static content** (lookup tables, decision trees, vocabulary lists, code-block templates). Workflow / step prose stays in Tier 2 even when long, so the agent reads it on activation. See [references/progressive-disclosure.md](references/progressive-disclosure.md) for the full decision tree |
+| A15 | Each skill MUST ship `agents/openai.yaml` with `display_name`, `short_description`, and `default_prompt` synchronized to SKILL.md |
+| A16 | Do not add auxiliary documentation such as per-skill `CHANGELOG.md`, `INSTALLATION_GUIDE.md`, or `QUICK_REFERENCE.md`; only `SKILL.md`, required locale READMEs, `agents/openai.yaml`, and truly needed resources belong in the skill folder |
 
 ## Progressive Disclosure (3-Tier Loading Model)
 
@@ -98,7 +103,7 @@ These improve quality but are not strictly required.
 
 | # | Rule | Apply when |
 |---|---|---|
-| B1 | Document upstream prerequisites in `## Integration` and the relevant description anti-trigger | Skill expects another ywc-* skill to have run first. For Codex skills, never add `requires:` to frontmatter; Codex frontmatter is `name` + `description` only |
+| B1 | Document upstream dependencies in `## Integration` | Skill expects another ywc-* skill to have run first |
 | B2 | Add `## Arguments` table | Skill accepts flags or positional arguments |
 | B3 | Add `## Workflow` or `## Execution Steps` numbered list | Skill performs a multi-step process |
 | B4 | Add `## Output Format` block with sample | Skill emits a structured report or artifact |
@@ -150,11 +155,36 @@ Draft the skill addressing exactly the failures identified in RED. Do not pre-em
 
 Use [references/skill-template.md](references/skill-template.md) as the starting structure.
 
+For a new bundle skill, place it at `tools/codex-skill/skills/<skill-name>/` unless the user explicitly asks for an installed local skill. For an installed local skill outside this bundle, ask for the destination and default to `${CODEX_HOME:-$HOME/.codex}/skills` so Codex can discover it automatically.
+
 ### Step 3: REFACTOR — Close Loopholes
 
 Re-run the scenario with the new skill. Document any new rationalizations the agent invented to bypass the new rules. Add those to the Rationalization Defense table.
 
 Repeat until the agent cannot find a loophole.
+
+### Resource and Metadata Pass
+
+After drafting SKILL.md, add only the resources that directly support execution:
+
+- `agents/openai.yaml`: write deterministic `display_name`, `short_description`, and `default_prompt` from the final SKILL.md. Include optional fields such as icons or brand color only when explicitly provided.
+- `references/`: move long static rules, lookup tables, rubrics, and templates here, then add an explicit pointer from SKILL.md.
+- `scripts/`: add scripts only when repeated manual code would be fragile or deterministic reliability matters. Run each new script, or a representative sample for similar scripts, before completion.
+- `assets/`: add files that the skill uses as output material, not documentation to load into context.
+
+Delete placeholder files and do not create empty resource directories.
+
+## Forward-testing
+
+Use subagents to forward-test substantial or tricky skill changes when available and when doing so will not require risky approvals or long-running work.
+
+Prompt subagents as if they are solving a real task, for example:
+
+```text
+Use $ywc-<skill-name> at <path/to/skill> to solve <realistic user request>.
+```
+
+Do not ask them to "review the skill" unless the user explicitly requested a review. Pass raw artifacts and the task-local request, not the intended answer, suspected bug, or planned fix. Review their outputs for generalization failures, then tighten SKILL.md or references and retest if needed.
 
 ## Templates and References
 
@@ -163,7 +193,7 @@ Repeat until the agent cannot find a loophole.
 | [references/skill-template.md](references/skill-template.md) | Drafting a brand-new ywc-* skill |
 | [references/rationalization-defense-cookbook.md](references/rationalization-defense-cookbook.md) | Writing or expanding the Rationalization Defense table |
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
-| [references/cross-skill-graph.md](references/cross-skill-graph.md#flag-propagation-patterns) | Deciding pipeline prerequisites, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
+| [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `## Integration` upstream/downstream entries, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
 | [references/progressive-disclosure.md](references/progressive-disclosure.md) | Deciding whether a section stays inline (Tier 2) or extracts to `references/` (Tier 3); auditing existing skills for tier compliance |
 
 ## Validation Checklist
@@ -175,6 +205,7 @@ Before merging a new or modified ywc-* skill, verify:
 - [ ] `description` starts with `(ywc) Use when...`
 - [ ] `description` ends with `Do not use for...` anti-triggers
 - [ ] `description` includes Korean / English / Japanese triggers (if user-facing)
+- [ ] No frontmatter keys other than `name` and `description`
 
 **Body**
 - [ ] First content line is `**Announce at start:** "..."`
@@ -186,8 +217,11 @@ Before merging a new or modified ywc-* skill, verify:
 
 **Filesystem**
 - [ ] Full README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`
+- [ ] `agents/openai.yaml` exists and matches the current SKILL.md purpose and invocation
 - [ ] Long sections (>30 lines of static content) extracted to `references/` (Tier 3 — A14)
 - [ ] `evals/evals.json` exists if outputs are objectively verifiable
+- [ ] No auxiliary docs such as per-skill `CHANGELOG.md`, `INSTALLATION_GUIDE.md`, or `QUICK_REFERENCE.md`
+- [ ] New scripts were run, or a representative sample was run when many similar scripts were added
 
 **Progressive Disclosure (Tier compliance)**
 - [ ] Description (Tier 1) contains trigger conditions only — no workflow summary
@@ -202,7 +236,7 @@ Before merging a new or modified ywc-* skill, verify:
 
 ## Cross-Skill Etiquette
 
-- If skill A's purpose overlaps with skill B's responsibility, add `(use ywc-B)` to A's `Do not use for...` line. If A depends on B's output, document B under `## Integration`; do not add `requires:` to Codex frontmatter.
+- If skill A's purpose overlaps with skill B's responsibility, document the relationship in `## Integration` and add `(use ywc-B)` to A's `Do not use for...` line.
 - For shared conventions across multiple skills (e.g., Advisor Pattern), extract to the bundle-level `references/<topic>.md` rather than duplicating.
 - New skill that supersedes an existing one: do **not** silently delete the old skill in the same PR. Add a deprecation note pointing to the successor, then delete in a later PR after a soak period.
 

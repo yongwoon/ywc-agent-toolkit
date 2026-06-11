@@ -85,6 +85,17 @@ Verify only the necessary surface is exported.
 
 Prioritize contract-spec-conformance issues over naming style. A correct contract with imperfect naming is more important than a beautifully named contract that's wrong.
 
+## High-frequency real-world checks
+
+Before finalizing, run the contract items from [`recurring-defects.md` §3 (Contract, status & validation)](./recurring-defects.md#3-contract-status--validation) against the diff. These are the design-aspect defects production bot reviewers flag most often:
+
+- **HTTP status semantics** — `4xx` for client/input faults, not `500`; an invalid account / malformed payload / unsupported config is `400` / `409` / `422`. A `500` on a client fault is a contract bug, not just noise.
+- **Validation strictness & fail-fast** — validation must actually *reject*: a regex that admits impossible months/dates, a parse failure returned as a valid default, or an unsupported setting accepted and only failing deep in a side-effecting path.
+- **Non-null contract** — a non-null-typed field must be guaranteed non-null at every construction site, not merely hoped for.
+- **`NULL` is not `0` (return shape)** — do not collapse a nullable metric/aggregate with `?? 0`; "unobserved" becoming "measured zero" misleads every downstream consumer. This is a return-shape contract decision, your lane.
+
+Skip any item that does not apply and say so — do not invent a finding to satisfy the list. Severity follows this file's rubric.
+
 ## Advisor Candidate Criteria (Phase 2 Escalation)
 
 The parent skill runs in two phases: Phase 1 (this worker) handles mechanical contract reviews, and Phase 2 (advisor) receives only items the executor cannot confidently judge. When producing your findings, split them into **Confirmed findings** (Phase 1 verdict is final) and **Advisor candidates** (Phase 2 should re-evaluate).
