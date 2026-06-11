@@ -71,13 +71,17 @@ Score each dimension 0–100. Aggregate is the weighted sum, rounded to the near
 
 ## The Decision Bands
 
-| Band | Aggregate score | Per-dim override | Action |
-|---|---|---|---|
-| **PROCEED** | ≥ 90 | All ≥ 50 | Begin implementation. Report the score in the completion summary or the executor's per-step report. |
-| **REVIEW** | 70–89 | None < 50 | Present 1–3 alternatives or open questions before proceeding. Trigger the [Advisor Pattern](../references/advisor-pattern.md) for any dimension < 70. Do not begin implementation until at least the weakest dimension is raised or explicitly accepted. |
-| **STOP** | < 70 | Any < 50 (forces this band even if aggregate ≥ 70) | Do not begin implementation. Report which dimensions are weak and what evidence would raise them. Hand back to `ywc-plan` (architecture / scope), `ywc-spec-validate` (evidence), `ywc-tech-research` (reuse), or `ywc-brainstorm` (root cause / user need). When the architecture dimension specifically scores below 70 and the decision is irreversible, an advisor dispatch to `ywc-architect` (Claude Code agent at `claude-code/agents/ywc-architect.md`) can render a verdict before re-running the gate (see [Step 7: STOP-band Advisor Dispatch](#step-7-stop-band-advisor-dispatch)). |
+The aggregate sets a **tentative** band; the single-dim override (below) may then drop it one level.
 
-**Single-dim ≤ 50 rule**: even if aggregate would clear the threshold, a single dimension scoring at or below 50 drops the band by one level (PROCEED → REVIEW, REVIEW → STOP). This prevents one strong dimension from masking a fatal weakness.
+| Band | Aggregate score | Action |
+|---|---|---|
+| **PROCEED** | ≥ 90 | Begin implementation. Report the score in the completion summary or the executor's per-step report. |
+| **REVIEW** | 70–89 | Present 1–3 alternatives or open questions before proceeding. Trigger the [Advisor Pattern](../references/advisor-pattern.md) for any dimension < 70. Do not begin implementation until at least the weakest dimension is raised or explicitly accepted. |
+| **STOP** | < 70 | Do not begin implementation. Report which dimensions are weak and what evidence would raise them. Hand back to `ywc-plan` (architecture / scope), `ywc-spec-validate` (evidence), `ywc-tech-research` (reuse), or `ywc-brainstorm` (root cause / user need). When the architecture dimension specifically scores below 70 and the decision is irreversible, an advisor dispatch to `ywc-architect` (Claude Code agent at `claude-code/agents/ywc-architect.md`) can render a verdict before re-running the gate (see [Step 7: STOP-band Advisor Dispatch](#step-7-stop-band-advisor-dispatch)). |
+
+**Single-dim `< 50` override**: after the aggregate sets the tentative band, if any single dimension scored **below 50**, drop the band by **one level** — PROCEED → REVIEW, REVIEW → STOP (STOP is already the floor). It is always a one-level drop, never a jump straight to STOP: an aggregate ≥ 90 with one dimension at 45 lands on **REVIEW**, not STOP. A dimension at exactly 50 does not trigger the drop. This prevents one strong dimension from masking a fatal weakness, and matches the canonical rule in [`../references/confidence-gate.md`](../references/confidence-gate.md) §3.
+
+> A separate, stricter rule applies only when a skill designates a dimension as *required* via the [confidence-gate.md §4](../references/confidence-gate.md) profile: a required dimension scoring **< 70** forces STOP regardless of aggregate. This gate does not designate required dimensions for its own runs, so only the `< 50` override above applies here.
 
 ## Workflow
 
@@ -109,7 +113,7 @@ Round to the nearest integer.
 
 ### Step 4: Apply the single-dim override
 
-If any dimension scored ≤ 50, drop the band by one level. PROCEED becomes REVIEW; REVIEW becomes STOP.
+If any dimension scored **below 50** (`< 50`), drop the band by one level: PROCEED becomes REVIEW; REVIEW becomes STOP (already the floor). A dimension at exactly 50 does not trigger the drop, and the drop is never more than one level — an aggregate-PROCEED with a sub-50 dimension lands on REVIEW, not STOP.
 
 ### Step 5: Surface the report
 
@@ -196,9 +200,9 @@ Before reporting a PROCEED band and beginning implementation, verify:
 
 - [ ] All five dimensions have explicit numeric scores (not "high", not "OK")
 - [ ] Each dimension has a one-line evidence statement
-- [ ] No dimension scored at or below 50
+- [ ] No dimension scored below 50
 - [ ] Aggregate was computed with the rubric weights (25/25/20/15/15)
-- [ ] The single-dim override was applied if any score ≤ 50
+- [ ] The single-dim override was applied if any score is below 50 (`< 50`)
 - [ ] The score and band are surfaced in the response **before** any implementation tool is invoked
 - [ ] If REVIEW or STOP, no implementation skill was invoked in the same turn
 

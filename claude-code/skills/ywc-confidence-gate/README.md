@@ -18,13 +18,13 @@
 | Reuse verified | 15% | 기존 utility / library 를 검색하고 각각 ruled out 한 이유가 있는가 |
 | Root cause identified | 15% | Bug 라면 symptom 이 아닌 underlying cause, greenfield 라면 surface request 가 아닌 underlying need 를 명명했는가 |
 
-| Band | Aggregate | 단일 차원 조건 | 행동 |
-|---|---|---|---|
-| **PROCEED** | ≥ 90 | 전부 > 50 | 구현 시작. 점수를 executor report 에 surface |
-| **REVIEW** | 70~89 | 단일 < 50 없을 때 | 1~3개 alternative 또는 open question 제시, 약한 차원 해소 후 진행 |
-| **STOP** | < 70 | 단일 ≤ 50 시 강제 downgrade | 구현 금지. 약한 차원과 raise 방법 surface, 상위 skill 로 routing |
+| Band | Aggregate | 행동 |
+|---|---|---|
+| **PROCEED** | ≥ 90 | 구현 시작. 점수를 executor report 에 surface |
+| **REVIEW** | 70~89 | 1~3개 alternative 또는 open question 제시, 약한 차원 해소 후 진행 |
+| **STOP** | < 70 | 구현 금지. 약한 차원과 raise 방법 surface, 상위 skill 로 routing |
 
-**단일 차원 ≤ 50 규칙**: aggregate 가 threshold 통과해도 단일 차원이 50 이하면 band 가 한 단계 강등됩니다. 강한 차원이 fatal weakness 를 가리는 것을 막기 위한 장치입니다.
+**단일 차원 `< 50` override**: aggregate 가 tentative band 를 정한 뒤 단일 차원이 50 미만이면 band 가 한 단계 강등됩니다 (PROCEED → REVIEW, REVIEW → STOP) — 항상 한 단계만이며 STOP 로 건너뛰지 않고, 정확히 50 인 차원은 trigger 하지 않습니다. 강한 차원이 fatal weakness 를 가리는 것을 막기 위한 장치입니다.
 
 ## 언제 trigger 되나요
 
