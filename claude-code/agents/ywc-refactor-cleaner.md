@@ -95,29 +95,25 @@ consolidation belong to the parent skill.
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE_WITH_CONCERNS` means at
+least one item was reclassified to CAUTION because grep found a hit the
+parent's classification missed, or a pre-deletion test run was already red on a
+specific item; successful deletions still ship and the concerns block names
+each affected item and reason):
 
-- `DONE` — every item on the SAFE worklist was deleted with the full
-  three-witness verification, each as its own commit; no item was
-  reclassified or skipped
-- `DONE_WITH_CONCERNS` — at least one item was reclassified to CAUTION
-  (grep found a hit the parent's classification missed) or pre-deletion
-  test run was already red on a specific item; the concerns block names
-  each affected item and reason, and successful deletions still ship
-- `BLOCKED` — the test command is unrunnable (missing dependency, missing
-  fixture, missing env var) or the worklist itself is malformed; the
-  blocker block names the specific obstacle the parent must resolve before
-  re-dispatch
-- `NEEDS_CONTEXT` — the parent did not include the detection tool name in
-  the worklist, or the symbol is ambiguous (two definitions with the same
-  name in different modules); the bullets name the specific missing input
+- `BLOCKED` — the test command is unrunnable (missing dependency / fixture /
+  env var) or the worklist itself is malformed; the blocker names the obstacle
+  the parent must resolve before re-dispatch.
+- `NEEDS_CONTEXT` — the parent omitted the detection tool name, or the symbol
+  is ambiguous (two definitions with the same name in different modules); the
+  bullets name the specific missing input.
 
-Detailed evidence (commit list, per-item grep output, per-item test
-output) goes to a file under the parent's artifact directory; only the
-status, 1-line summary, counts (deleted / reclassified / skipped), and
-artifact path return.
+Full evidence (commit list, per-item grep output, per-item test output) goes to
+a file under the parent's artifact directory; only status, 1-line summary,
+counts (deleted / reclassified / skipped), and the artifact path return.
 
 ## Anti-patterns
 

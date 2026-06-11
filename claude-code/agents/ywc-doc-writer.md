@@ -78,16 +78,20 @@ does not require frontier reasoning.
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` (Iteration
-4 §P1). `DONE_WITH_CONCERNS` covers cases where documentation lands but an
-adjacent file falls out of sync (e.g., changed `README.md` but the
-`README.en.md` mirror needs the matching update in a follow-up); `BLOCKED`
-covers cases where the task requires a Bash invocation this agent cannot
-perform, or where the source intent is genuinely ambiguous. Detailed diffs
-and link-check output go to files; only status + summary + artifact paths
-return.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE_WITH_CONCERNS` means
+documentation landed but an adjacent file fell out of sync, e.g., a `README.md`
+change whose `README.en.md` mirror needs the matching follow-up):
+
+- `BLOCKED` — the task requires a Bash invocation this agent cannot perform
+  (no Bash grant), or the source intent is genuinely ambiguous.
+- `NEEDS_CONTEXT` — the authoritative term spelling, locale set membership, or
+  CHANGELOG convention is undetermined and must be supplied.
+
+Detailed diffs and link-check output go to files; only status, 1-line summary,
+and the artifact paths return.
 
 ## Anti-patterns
 

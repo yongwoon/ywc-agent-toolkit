@@ -83,14 +83,21 @@ keeps generated code from being flagged on the first review pass. See
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` (Iteration 4
-§P1). `DONE_WITH_CONCERNS` is used when implementation completed but observed
-issues outside the task's edit scope; `BLOCKED` is used when a fundamental
-prerequisite is missing (missing schema, missing service config, unresolved
-dependency). Detailed findings, generated diffs, and full test logs go to
-files; only the status, 1-line summary, and artifact paths return.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE_WITH_CONCERNS` means
+implementation completed but issues were observed outside the task's edit
+scope):
+
+- `BLOCKED` — a fundamental prerequisite is missing (missing schema, missing
+  service config, unresolved dependency), or the task requires editing
+  frontend files outside this agent's lane.
+- `NEEDS_CONTEXT` — a public API contract change beyond the task request, or a
+  schema migration, must be approved before coding.
+
+Detailed findings, generated diffs, and full test logs go to files; only
+status, 1-line summary, and the artifact paths return.
 
 ## Anti-patterns
 
