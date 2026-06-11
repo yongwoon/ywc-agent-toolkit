@@ -105,7 +105,14 @@ Gather information about the project environment to generate realistic tasks. Th
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Determine the next starting number by scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `tasks/` or in `tasks/completed/` — the new batch starts at `000017-010`. If `tasks/` is empty (every task already completed and archived), fall back to the highest number in `tasks/completed/` and apply the same `+1 phase` rule.
+- Determine the next starting number with the bundled script — it scans **both** `tasks/` and `tasks/completed/` and prints the next batch prefix, so a number that was already used and archived is never reused:
+
+  ```bash
+  bash claude-code/skills/ywc-task-generator/scripts/next-task-number.sh [tasks-dir]
+  # prints e.g. 000017-010  (000001-010 when no tasks exist yet)
+  ```
+
+  The rule it implements (stated here so you can verify the output): completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010` (e.g. highest `000016-040` → new batch `000017-010`). If `tasks/` is empty but `tasks/completed/` is not, the same `+1 phase` rule still applies.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -265,11 +272,20 @@ tasks/[TASK_NAME]/
 └── test.md (optional — included when manual verification is needed)
 ```
 
-Refer to templates in the `references/` directory when writing files:
+Scaffold each task directory deterministically with the bundled script, then fill the generated files with content — never hand-retype the structure:
+
+```bash
+bash claude-code/skills/ywc-task-generator/scripts/scaffold-task-dir.sh \
+  <task-name> [--out tasks] [--with-test]
+# lays down <out>/<task-name>/{README.md,task.md[,test.md]} from the templates,
+# substituting the [TASK_NAME] placeholder; blocks path traversal and overwrites.
+```
+
+The script copies from the templates below; refer to them for the content you write into each generated file:
 - `references/README.md.template` — Task overview and dependency documentation
 - `references/task.md.template` — Implementation checklist
-- `references/test.md.template` — Manual test plan
-- `references/dependency-graph.md.template` — Top-level dependency summary
+- `references/test.md.template` — Manual test plan (only with `--with-test`)
+- `references/dependency-graph.md.template` — Top-level dependency summary (written once per batch, not per task)
 
 #### README.md Core Elements
 
