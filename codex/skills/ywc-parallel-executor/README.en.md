@@ -7,6 +7,8 @@ This document introduces the Codex `ywc-parallel-executor` workflow. The authori
 - [한국어](./README.md)
 - [日本語](./README.ja.md)
 - [한국어 full](./README.ko.md)
+- [Español](./README.es.md)
+- [中文](./README.zh.md)
 
 ## When To Use
 

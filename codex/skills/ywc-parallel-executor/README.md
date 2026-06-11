@@ -7,6 +7,8 @@
 - [English](./README.en.md)
 - [日本語](./README.ja.md)
 - [한국어 full](./README.ko.md)
+- [Español](./README.es.md)
+- [中文](./README.zh.md)
 
 ## 사용 시나리오
 

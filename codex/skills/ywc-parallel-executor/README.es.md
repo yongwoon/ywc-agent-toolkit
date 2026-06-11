@@ -2,68 +2,42 @@
      Community review and corrections are welcome.
      Source: README.en.md | Language: Spanish -->
 
-# ywc-parallel-executor (Ejecutor Paralelo)
+# ywc-parallel-executor
 
-Un Skill que ejecuta Tareas generadas por task-generator en paralelo usando Agentes. Analiza dependency-graph.md para realizar ejecución paralela basada en Waves con aislamiento de Git Worktree.
-
-## Uso
-
-```text
-/ywc-parallel-executor 000001-010-db-create-events           # Tarea única
-/ywc-parallel-executor 000001-010..000002-040                # Rango (paralelo)
-/ywc-parallel-executor --all                                 # Ejecutar todo
-/ywc-parallel-executor 000001-010..000002-040 --review       # Paralelo + Revisión automática
-/ywc-parallel-executor 000001-010..000002-040 --local-merge  # Merge local sin PR
-/ywc-parallel-executor 000001-010..000002-040 --draft        # Crear PR Borrador
-```
-
-## Opciones
-
-| Opción | Descripción |
-|--------|-------------|
-| `--tasks-dir <path>` | Ruta del directorio de tareas (por defecto: tasks/) |
-| `--review` | Ejecutar `ywc-impl-review` automáticamente después de cada Tarea (combinable) |
-| `--local-merge` | Sin PR, solo push a la rama base (comportamiento por defecto) |
-| `--draft` | Crear PR Borrador después de que todas las Tareas estén completas |
-| `--per-task-pr` | Crear PR individual por Tarea |
-
-## Flujo de ejecución
-
-1. Parsear dependency-graph.md
-2. Planificar Waves (Ordenamiento Topológico)
-3. Ejecutar por Wave: Crear Worktree → Ejecución de Agente Paralelo → Merge → Eliminar Worktree
-
-## Mapeo automático Tarea → Agente
-
-| Categoría | Agente |
-|----------|-------|
-| db, api, domain, lib, worker | Backend Agent (sonnet) |
-| ui | Frontend Agent (sonnet) |
-| test | QA Agent (sonnet) |
-| infra | DevOps Agent (sonnet) |
-| refactor | Reviewer Agent (opus) |
-
-Sobrescribir con Agent Hint:
-```markdown
-## Parallel Execution Metadata
-- Agent Hint: frontend
-```
-
-## Comparación con sequential-executor
-
-| Escenario | Herramienta recomendada |
-|----------|-----------------|
-| Alcance pequeño (1-3 Tareas) | sequential-executor |
-| Dependencias secuenciales fuertes | sequential-executor |
-| Alcance grande (4+ Tareas) | /ywc-parallel-executor |
-| Muchas Tareas paralelizables | /ywc-parallel-executor |
-
-## Activación
-
-Las condiciones de activación para este Skill están definidas en el campo `description` de [SKILL.md](./SKILL.md).
+Este documento presenta el workflow Codex `ywc-parallel-executor`. Las condiciones de activacion autoritativas, anti-triggers, pasos de ejecucion y formato de salida estan definidos en [SKILL.md](./SKILL.md).
 
 ## Versiones localizadas
 
-- [Inglés](./README.en.md)
-- [Japonés](./README.ja.md)
-- [Coreano](./README.ko.md)
+- [English](./README.en.md)
+- [日本語](./README.ja.md)
+- [한국어](./README.md)
+- [한국어 full](./README.ko.md)
+- [中文](./README.zh.md)
+
+## Cuando usarlo
+
+- El usuario usa una frase trigger del skill o una solicitud equivalente en lenguaje natural.
+- Codex necesita el workflow y los criterios de validacion especificos del skill antes de actuar.
+- Otro skill `ywc-*` referencia este skill como paso upstream o downstream.
+
+## Uso
+
+```bash
+$ywc-parallel-executor
+```
+
+Sigue las secciones Arguments o Workflow de [SKILL.md](./SKILL.md) para las opciones y modos compatibles.
+
+## Modos de entrega
+
+| Mode | Comportamiento |
+|---|---|
+| `--local-merge` | Hace merge local de cada tarea en la rama base y hace push inmediato. No crea PR. |
+| `--draft` | Acumula los cambios de tareas mediante merges locales y crea un PR draft agregado al final. |
+| `--per-task-pr` | Para cada tarea, crea un PR, espera CI, gestiona revisiones de bots, refresca contra la base mas reciente, mergea el PR, sincroniza la base y marca la tarea como completa. |
+
+En `--per-task-pr`, una tarea anterior de la misma wave puede avanzar la rama base. Antes de mergear, el executor comprueba si la rama del PR contiene la base mas reciente; si no, mergea la base en la rama del worktree, hace push y vuelve a verificar CI. Un conflicto al refrescar base se reporta como `BLOCKED`, y el PR no se mergea usando resultados de CI de un head SHA antiguo.
+
+## Salida
+
+Este skill sigue el formato de reportes, artefactos y estados definido en [SKILL.md](./SKILL.md). Si el skill emite Completion Status, conserva los significados de `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED` y `NEEDS_CONTEXT`.
