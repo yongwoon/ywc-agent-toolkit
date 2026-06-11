@@ -109,6 +109,19 @@ check_codex_support_dirs() {
   )
 }
 
+check_codex_plan_handoff() {
+  local file="codex/skills/ywc-plan/SKILL.md"
+
+  if [ ! -f "$file" ]; then
+    return
+  fi
+
+  if rg -n '/ywc-(spec-validate|task-generator|code-gen|sequential-executor|parallel-executor)' "$file"; then
+    echo "ERROR: codex/skills/ywc-plan/SKILL.md must use Codex-style \$ywc-* handoff commands, not Claude Code slash commands"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
 check_agent_file() {
   local file="$1"
   local base
@@ -171,6 +184,7 @@ for dir in codex/skills/*/; do
   check_codex_skill_dir "$dir"
 done
 check_codex_support_dirs
+check_codex_plan_handoff
 
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null

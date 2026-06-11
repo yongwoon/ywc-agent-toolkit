@@ -184,8 +184,8 @@ After writing the plan, surface this handoff message to the user:
 
 > "Plan ready at `<path>`. To execute, you can:
 > 1. Implement directly in this session, or
-> 2. Run `/ywc-code-gen` with the plan as context, or
-> 3. Hand off to `/ywc-sequential-executor` if you prefer Branch + PR isolation."
+> 2. Run `$ywc-code-gen` with the plan as context, or
+> 3. Hand off to `$ywc-sequential-executor` if you prefer Branch + PR isolation."
 
 ### Step 4b: Medium/Large Path — Spec Document
 
@@ -280,7 +280,7 @@ Always end with an explicit handoff instruction matching the path taken.
 
 ```text
 ✅ Plan ready: <path>
-Next: implement directly, or run /ywc-code-gen, or /ywc-sequential-executor
+Next: implement directly, or run $ywc-code-gen, or $ywc-sequential-executor
 ```
 
 **Medium/Large path handoff:**
@@ -288,9 +288,9 @@ Next: implement directly, or run /ywc-code-gen, or /ywc-sequential-executor
 ```text
 ✅ Spec drafted: <path>
 Next:
-  1. /ywc-spec-validate --spec <path>
-  2. (after review passes) /ywc-task-generator <path>
-  3. (after tasks generated) /ywc-sequential-executor or /ywc-parallel-executor
+  1. $ywc-spec-validate --spec <path>
+  2. (after review passes) $ywc-task-generator <path>
+  3. (after tasks generated) $ywc-sequential-executor or $ywc-parallel-executor
 ```
 
 Never proceed past the handoff. The user decides which downstream skill runs next — this skill is the planner, not the executor.
