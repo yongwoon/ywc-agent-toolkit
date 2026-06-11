@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.16.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.15.1...v1.16.0) (2026-06-11)
+
+
+### ### Added
+
+* add recurring defect review guidance to ywc skills ([#55](https://github.com/yongwoon/ywc-agent-toolkit/issues/55)) ([f0425ac](https://github.com/yongwoon/ywc-agent-toolkit/commit/f0425ac4ec300804e0af0b3ee8f220b3097ffd70))
+
 ## [1.15.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.15.0...v1.15.1) (2026-06-10)
 
 
