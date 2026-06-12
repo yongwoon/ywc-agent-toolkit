@@ -111,10 +111,32 @@ def find_collisions(items: list[dict]) -> dict:
                 # only a real collision if neither names the other as an exclusion
                 ad = next(x["description"] for x in items if x["name"] == a)
                 bd = next(x["description"] for x in items if x["name"] == b)
-                if b not in ad and a not in bd:
+                if not _has_explicit_antitrigger(ad, b) and not _has_explicit_antitrigger(bd, a):
                     out.setdefault(a, []).append([b, round(j, 3)])
                     out.setdefault(b, []).append([a, round(j, 3)])
     return out
+
+
+def _clauses(text: str) -> list[str]:
+    return [c.strip() for c in re.split(r"[\n\r.!?;。！？；]+|,\s+", text) if c.strip()]
+
+
+def _mentions_skill(clause: str, skill: str) -> bool:
+    return bool(re.search(rf"(?<![\w-]){re.escape(skill)}(?![\w-])", clause, re.IGNORECASE))
+
+
+def _is_antitrigger_clause(clause: str) -> bool:
+    return bool(
+        re.search(r"\b(do not use|don't use|avoid using)\b", clause, re.IGNORECASE)
+        or re.search(r"\buse\s+ywc-[\w-]+\b", clause, re.IGNORECASE)
+    )
+
+
+def _has_explicit_antitrigger(desc: str, sibling: str) -> bool:
+    return any(
+        _is_antitrigger_clause(clause) and _mentions_skill(clause, sibling)
+        for clause in _clauses(desc)
+    )
 
 
 def band(n: int, thresholds: list[int]) -> int:
@@ -229,10 +251,13 @@ def _dangling_ref_links(d: Path, body: str) -> list:
 
 def _unresolved_sibling_pointers(desc: str) -> list:
     out = []
-    for m in re.finditer(r"use (ywc-[\w-]+)", desc):
-        sib = m.group(1)
-        if not any((REPO_ROOT / r / sib).is_dir() for r in SKILL_ROOTS):
-            out.append(sib)
+    for clause in _clauses(desc):
+        if not _is_antitrigger_clause(clause):
+            continue
+        for m in re.finditer(r"\buse\s+(ywc-[\w-]+)\b", clause, re.IGNORECASE):
+            sib = m.group(1)
+            if not any((REPO_ROOT / r / sib).is_dir() for r in SKILL_ROOTS):
+                out.append(sib)
     return out
 
 

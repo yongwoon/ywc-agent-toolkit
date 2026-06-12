@@ -390,6 +390,9 @@ check_internal_toolkit_eval() {
   local internal_dir="tools/codex-internal/skills/ywc-codex-toolkit-eval"
   local leaked_dir
 
+  check_skill_dir "$internal_dir/"
+  check_readme_set "$internal_dir/"
+
   for leaked_dir in codex/skills/ywc-codex-toolkit-eval .codex-plugin/skills/ywc-codex-toolkit-eval; do
     if [ -e "$leaked_dir" ]; then
       echo "ERROR: internal-only ywc-codex-toolkit-eval must not be packaged at $leaked_dir"
@@ -397,8 +400,8 @@ check_internal_toolkit_eval() {
     fi
   done
 
-  if [ ! -f "$internal_dir/SKILL.md" ]; then
-    echo "ERROR: internal toolkit eval skill is missing: $internal_dir/SKILL.md"
+  if [ ! -f "$internal_dir/agents/openai.yaml" ]; then
+    echo "ERROR: internal toolkit eval skill is missing: $internal_dir/agents/openai.yaml"
     ERRORS=$((ERRORS + 1))
   fi
 

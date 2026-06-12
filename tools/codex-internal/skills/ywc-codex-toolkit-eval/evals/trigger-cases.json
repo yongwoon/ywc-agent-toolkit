@@ -63,12 +63,26 @@
       "kind": "positive"
     },
     {
+      "id": "codex-toolkiteval-pos-3",
+      "prompt": "Codex toolkit 평가 사이클을 돌리고 개선 backlog를 뽑아줘",
+      "expected": "ywc-codex-toolkit-eval",
+      "kind": "positive"
+    },
+    {
       "id": "codex-toolkiteval-vs-skillauthor-1",
       "prompt": "새 ywc skill 만들어줘",
       "expected": "ywc-skill-author",
       "kind": "collision",
       "impostor": "ywc-codex-toolkit-eval",
       "note": "authoring — codex-toolkit-eval scores existing Codex skills, must NOT win on creation"
+    },
+    {
+      "id": "codex-toolkiteval-vs-skillauthor-2",
+      "prompt": "Codex ywc skill을 frontmatter와 body 규칙에 맞게 고쳐줘",
+      "expected": "ywc-skill-author",
+      "kind": "collision",
+      "impostor": "ywc-codex-toolkit-eval",
+      "note": "authoring-rule repair — skill-author owns structural fixes, codex-toolkit-eval only scores them"
     },
     {
       "id": "neg-weather-1",
