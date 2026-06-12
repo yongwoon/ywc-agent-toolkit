@@ -64,7 +64,7 @@ Initialize after Pre-flight passes. Always update `last_checkpoint` to the curre
 |---|---|
 | Pre-flight passes | Initialize file; `started_at`, `mode`, `tasks_dir`, all waves as `planned` |
 | Step 4a complete (wave start) | Set wave `status` to `in_progress`; populate `pending` with all wave tasks |
-| Step 4e per-task delivery complete (`ywc-finish-branch` returned `DONE`) | Move task from `pending` to `merged` in the wave entry |
+| Step 4e per-task delivery complete (`ywc-finish-branch` returned `DONE` for `--local-merge` / `--draft`, or the inline `--per-task-pr` PR merge + Mark Complete path succeeded) | Move task from `pending` to `merged` in the wave entry |
 | Step 4e wave loop complete (all tasks delivered or `BLOCKED`) | Set wave `status` to `completed`; `current_wave` to next wave number |
 | All waves done | `rm -f .ywc-run-state.json` |
 

@@ -18,13 +18,13 @@ Scores 5 dimensions (each 0–100), takes the weighted sum, and maps to a band.
 | Reuse verified | 15% | Have you searched for existing utilities and ruled out each with a reason? |
 | Root cause identified | 15% | Bug: do you name the cause, not the symptom? Greenfield: the underlying need, not the surface request? |
 
-| Band | Aggregate | Per-dim rule | Action |
-|---|---|---|---|
-| **PROCEED** | ≥ 90 | All > 50 | Begin implementation; carry the score into the executor report |
-| **REVIEW** | 70–89 | No score < 50 | Present 1–3 alternatives or open questions; raise the weakest dimension first |
-| **STOP** | < 70 | Any ≤ 50 forces a downgrade | Do not begin; surface weak dimensions and route back to upstream skill |
+| Band | Aggregate | Action |
+|---|---|---|
+| **PROCEED** | ≥ 90 | Begin implementation; carry the score into the executor report |
+| **REVIEW** | 70–89 | Present 1–3 alternatives or open questions; raise the weakest dimension first |
+| **STOP** | < 70 | Do not begin; surface weak dimensions and route back to upstream skill |
 
-**Single-dim ≤ 50 rule**: even if aggregate clears the threshold, a single dimension at or below 50 drops the band by one level. Prevents a strong dimension from masking a fatal weakness.
+**Single-dim `< 50` override**: the aggregate sets a tentative band, then any single dimension scoring below 50 drops it by one level (PROCEED → REVIEW, REVIEW → STOP) — always one level, never a jump straight to STOP, and a dimension at exactly 50 does not trigger it. Prevents a strong dimension from masking a fatal weakness.
 
 ## When It Triggers
 

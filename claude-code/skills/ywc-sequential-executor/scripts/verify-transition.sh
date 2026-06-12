@@ -15,11 +15,11 @@
 #   1  FAIL — one or more conditions failed (details on stdout)
 #
 # Usage:
-#   bash tools/claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+#   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
 #     <base-branch> <completed-task-name> [tasks-dir]
 #   tasks-dir defaults to "tasks/"
 
-set -uo pipefail
+set -euo pipefail
 
 BASE_BRANCH="${1:-}"
 COMPLETED_TASK="${2:-}"

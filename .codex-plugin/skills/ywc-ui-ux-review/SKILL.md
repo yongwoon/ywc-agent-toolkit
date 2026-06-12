@@ -80,14 +80,14 @@ For each piece of evidence record: URL, breakpoint, screenshot reference, snapsh
 
 ### Phase 4 — Per-Domain Review (Parallel)
 
-Use the Task tool to spawn 2 Sonnet subagents in parallel. Pass each subagent the code reconnaissance notes from Phase 2 and the live UI evidence from Phase 3:
+Use Codex subagent delegation when the current session exposes a delegation tool to run 2 review workers in parallel. If no delegation tool is available, run the same two review passes inline and record the fallback in the report. Pass each worker the code reconnaissance notes from Phase 2 and the live UI evidence from Phase 3:
 
-| Subagent | Model | Reference |
+| Worker | Scope | Reference |
 |---|---|---|
-| IA Reviewer | sonnet | `references/ia-checklist.md` |
-| Visual Design Reviewer | sonnet | `references/visual-design-checklist.md` |
+| IA Reviewer | Navigation, hierarchy, labels, and flow structure | `references/ia-checklist.md` |
+| Visual Design Reviewer | Layout, typography, contrast, spacing, and component polish | `references/visual-design-checklist.md` |
 
-Each subagent returns findings with:
+Each worker returns findings with:
 - Concrete location (file path + line number, OR screen + selector)
 - Observed behavior
 - Expected behavior (per heuristic)
@@ -135,7 +135,7 @@ Escalate to an high-capability advisor only when the executor cannot resolve the
 | **Borderline Critical vs High** | An accessibility issue blocks assistive-technology users on a primary flow, but only under a specific screen-reader / browser combination that the rubric does not explicitly address — both Critical and High are defensible |
 | **Heuristic conflict** | Nielsen's "Visibility of system status" (#1) and Apple HIG's "Clarity" principle produce opposite recommendations for the same UI element (e.g., a persistent loading indicator that aids status visibility but creates visual noise per HIG clarity) |
 
-For all other borderline cases — High vs Medium, Medium vs Low, uncertain evidence from code-only analysis — choose the more conservative (lower) tier and add a brief inline note explaining the uncertainty. Do not escalate these to Opus.
+For all other borderline cases — High vs Medium, Medium vs Low, uncertain evidence from code-only analysis — choose the more conservative (lower) tier and add a brief inline note explaining the uncertainty. Do not spend advisor budget on these cases.
 
 ## Boundaries
 

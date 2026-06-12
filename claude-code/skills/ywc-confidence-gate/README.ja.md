@@ -18,13 +18,13 @@
 | Reuse verified | 15% | 既存 utility / library を検索し、各々を除外する理由を述べているか |
 | Root cause identified | 15% | Bug なら symptom ではなく underlying cause、新規なら surface request ではなく underlying need を名指せているか |
 
-| Band | Aggregate | 単一次元規則 | 行動 |
-|---|---|---|---|
-| **PROCEED** | ≥ 90 | 全て > 50 | 実装開始。Executor report にスコアを surface |
-| **REVIEW** | 70〜89 | 単一 < 50 が無いとき | 1〜3 個の alternative or 未確定事項を提示し、弱い次元を解消してから進む |
-| **STOP** | < 70 | 単一 ≤ 50 で強制 downgrade | 実装禁止。弱い次元と raise 方法を surface し、上流 skill に routing |
+| Band | Aggregate | 行動 |
+|---|---|---|
+| **PROCEED** | ≥ 90 | 実装開始。Executor report にスコアを surface |
+| **REVIEW** | 70〜89 | 1〜3 個の alternative or 未確定事項を提示し、弱い次元を解消してから進む |
+| **STOP** | < 70 | 実装禁止。弱い次元と raise 方法を surface し、上流 skill に routing |
 
-**単一次元 ≤ 50 規則**: aggregate が threshold を超えても、単一次元が 50 以下なら band を 1 段階下げます。強い次元が fatal weakness を隠さないための装置です。
+**単一次元 `< 50` override**: aggregate が tentative band を決めた後、単一次元が 50 未満なら band を 1 段階下げます (PROCEED → REVIEW, REVIEW → STOP) — 常に 1 段階のみで STOP へ飛ばず、ちょうど 50 の次元は trigger しません。強い次元が fatal weakness を隠さないための装置です。
 
 ## いつ trigger されるか
 

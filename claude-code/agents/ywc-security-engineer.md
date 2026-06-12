@@ -18,6 +18,7 @@ description: >-
   static analysis only).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: security
 ---
 
@@ -108,24 +109,20 @@ most consequential — security findings:
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference):
 
-- `DONE` — scope reviewed completely, no Critical or High findings (zero or
-  Medium / Low findings reported)
-- `DONE_WITH_CONCERNS` — scope reviewed completely, Critical or High findings
-  identified; the report details them with remediation
-- `BLOCKED` — scope is unreadable (missing files, ambiguous spec, contradictory
-  evidence about the trust boundary)
-- `NEEDS_CONTEXT` — scope is well-defined but a specific signal is missing
-  to triage a particular finding (e.g., "the rate-limit middleware exists in
-  this file but its exemption list is in a config not in scope")
+- `BLOCKED` — scope is unreadable (missing files, ambiguous spec, or
+  contradictory evidence about the trust boundary).
+- `NEEDS_CONTEXT` — scope is well-defined but a specific signal is missing to
+  triage a finding (e.g., the rate-limit middleware is in scope but its
+  exemption list lives in a config not forwarded).
 
-Detailed evidence (matched patterns, line ranges, OWASP citations,
-remediation snippets) goes to a file under the caller's artifact directory;
-only the status, 1-line summary, finding count by severity, and artifact
-path return.
+Full evidence (matched patterns, line ranges, OWASP citations, remediation
+snippets) goes to a file under the caller's artifact directory; only status,
+1-line summary, severity counts, and the artifact path return.
 
 ## Anti-patterns
 

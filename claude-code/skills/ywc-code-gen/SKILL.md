@@ -202,6 +202,14 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 Any subagent output containing the following patterns is treated as a failed generation — retry or escalate, never deliver as-is. Downstream tools (ywc-sequential-executor, CI) will compile and test whatever is generated; a stub is a runtime error, not deferred work.
 
+Catch the high-confidence comment/marker stubs mechanically before delivering (more reliable than self-review; exits non-zero on any hit):
+
+```bash
+bash claude-code/skills/scripts/scan-stubs.sh <generated-file>...
+```
+
+The script gates the comment/marker forms below; the prose shortcuts and bare `...`/`pass` placeholders still need your own read, since they false-positive in real code and docs.
+
 **Code stubs (never acceptable in generated files):**
 - `// TODO: implement` / `// FIXME` / any implementation replaced by a comment only
 - `// ... rest of code` / `// ...` / `/* ... */` used to omit logic

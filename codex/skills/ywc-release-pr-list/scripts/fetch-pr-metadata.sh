@@ -21,7 +21,7 @@
 # Usage:
 #   bash codex/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh 123 124 125
 
-set -uo pipefail
+set -euo pipefail
 
 if [ $# -eq 0 ]; then
   echo "Usage: fetch-pr-metadata.sh <pr-number> [<pr-number> ...]" >&2

@@ -175,7 +175,7 @@ The unit for this skill is **task**. Sequential-specific Allowed Stop Reasons: d
 
 ### Advisor Escalation Policy
 
-This skill follows **Pattern A** from [../references/advisor-pattern.md](../references/advisor-pattern.md): a single inherited-model executor with bounded Opus escalation. **Budget**: up to **3 Opus calls per invocation** (single-task or range alike); exceeding requires explicit justification in the Completion Report. **Context payload rule**: forward only the decision point (≤100 lines), never the full task README, spec, repo state, or prior Execution Cycle turns; advisor returns a ≤200-word verdict.
+This skill follows **Pattern A** from [../references/advisor-pattern.md](../references/advisor-pattern.md): a single inherited-model executor with bounded higher-capability advisor escalation. **Budget**: up to **3 advisor escalations per invocation** (single-task or range alike); exceeding requires explicit justification in the Completion Report. **Context payload rule**: forward only the decision point (≤100 lines), never the full task README, spec, repo state, or prior Execution Cycle turns; advisor returns a ≤200-word verdict.
 
 The escalation conditions remaining in this skill's scope — Spec Reference conflict (Step 1b), verification first failure with unclear cause (Step 4), Stop Condition borderline (Step 3) — are defined in [references/advisor-escalation.md](./references/advisor-escalation.md). Merge conflict and CI first-failure escalations (originally conditions 3 and 4 in that reference) move to `ywc-finish-branch`'s scope at Step 5; finish-branch consumes its own `advisor_budget: 1` for those escalations independently of this skill's budget of 3.
 

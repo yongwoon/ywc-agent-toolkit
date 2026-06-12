@@ -2,68 +2,42 @@
      Community review and corrections are welcome.
      Source: README.en.md | Language: Chinese (Simplified) -->
 
-# ywc-parallel-executor（并行执行器）
+# ywc-parallel-executor
 
-一个使用 Agent 并行执行由 task-generator 生成的任务的 Skill。分析 dependency-graph.md 以在 Git Worktree 隔离下执行基于 Wave 的并行执行。
-
-## 使用方法
-
-```text
-/ywc-parallel-executor 000001-010-db-create-events           # 单个任务
-/ywc-parallel-executor 000001-010..000002-040                # 范围（并行）
-/ywc-parallel-executor --all                                 # 执行全部
-/ywc-parallel-executor 000001-010..000002-040 --review       # 并行 + 自动审查
-/ywc-parallel-executor 000001-010..000002-040 --local-merge  # 本地合并，无 PR
-/ywc-parallel-executor 000001-010..000002-040 --draft        # 创建草稿 PR
-```
-
-## 选项
-
-| 选项 | 描述 |
-|------|------|
-| `--tasks-dir <path>` | 任务目录路径（默认：tasks/） |
-| `--review` | 每个任务完成后自动运行 `ywc-impl-review`（可组合） |
-| `--local-merge` | 无 PR，仅推送到基础分支（默认行为） |
-| `--draft` | 所有任务完成后创建草稿 PR |
-| `--per-task-pr` | 每个任务创建独立 PR |
-
-## 执行流程
-
-1. 解析 dependency-graph.md
-2. 规划 Wave（拓扑排序）
-3. 按 Wave 执行：创建 Worktree → 并行 Agent 执行 → 合并 → 删除 Worktree
-
-## 任务 → Agent 自动映射
-
-| 类别 | Agent |
-|------|-------|
-| db, api, domain, lib, worker | Backend Agent (sonnet) |
-| ui | Frontend Agent (sonnet) |
-| test | QA Agent (sonnet) |
-| infra | DevOps Agent (sonnet) |
-| refactor | Reviewer Agent (opus) |
-
-使用 Agent Hint 覆盖：
-```markdown
-## Parallel Execution Metadata
-- Agent Hint: frontend
-```
-
-## 与 sequential-executor 的比较
-
-| 场景 | 推荐工具 |
-|------|---------|
-| 小范围（1-3 个任务） | sequential-executor |
-| 强顺序依赖 | sequential-executor |
-| 大范围（4+ 个任务） | /ywc-parallel-executor |
-| 可并行任务较多 | /ywc-parallel-executor |
-
-## 触发条件
-
-此 Skill 的触发条件在 [SKILL.md](./SKILL.md) 的 `description` 字段中定义。
+本文档介绍 Codex `ywc-parallel-executor` workflow。权威的 trigger 条件、anti-trigger、执行步骤和输出格式以 [SKILL.md](./SKILL.md) 为准。
 
 ## 本地化版本
 
-- [英语](./README.en.md)
-- [日语](./README.ja.md)
-- [韩语](./README.ko.md)
+- [English](./README.en.md)
+- [日本語](./README.ja.md)
+- [한국어](./README.md)
+- [한국어 full](./README.ko.md)
+- [Español](./README.es.md)
+
+## 何时使用
+
+- 用户输入此 skill 的 trigger phrase 或等价的自然语言请求。
+- Codex 在执行前需要遵循 skill 专用 workflow 和 validation criteria。
+- 其他 `ywc-*` skill 将此 skill 作为 upstream 或 downstream step 引用。
+
+## 使用方法
+
+```bash
+$ywc-parallel-executor
+```
+
+支持的 option 和 mode 请遵循 [SKILL.md](./SKILL.md) 的 Arguments 或 Workflow section。
+
+## Delivery Modes
+
+| Mode | 行为 |
+|---|---|
+| `--local-merge` | 将每个 task 本地 merge 到 base branch 并立即 push。不创建 PR。 |
+| `--draft` | 通过本地 merge 累积 task 更改，并在最后创建一个 aggregate draft PR。 |
+| `--per-task-pr` | 对每个 task 创建 PR、等待 CI、处理 bot review、刷新到最新 base、merge PR、同步 base，并 Mark Complete。 |
+
+在 `--per-task-pr` 中，同一 wave 里的前一个 task 可能会推进 base branch。因此 merge 前 executor 会检查 PR branch 是否包含最新 base；如果没有，就把 base merge 到 worktree branch，push 后重新验证 CI。Base refresh conflict 会报告为 `BLOCKED`，不会只凭旧 head SHA 的 CI 结果 merge PR。
+
+## 输出
+
+此 skill 遵循 [SKILL.md](./SKILL.md) 中定义的 report、artifact 和 status format。如果 skill 输出 Completion Status，请保持 `DONE`、`DONE_WITH_CONCERNS`、`BLOCKED` 和 `NEEDS_CONTEXT` 的含义。

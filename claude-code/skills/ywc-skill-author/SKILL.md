@@ -168,7 +168,13 @@ Repeat until the agent cannot find a loophole.
 
 ## Validation Checklist
 
-Before merging a new or modified ywc-* skill, verify:
+Run the bundled mechanical gate first — it enforces the deterministic subset of the checklist below (name/description shape, announce line, 500-line cap, README locale set, no `@ywc-` force-loads, reference pointers + min-length) for a single skill and exits non-zero on any failure:
+
+```bash
+bash claude-code/skills/ywc-skill-author/scripts/validate-skill.sh <skill-dir>
+```
+
+Then verify the judgment-based items the script cannot check, before merging a new or modified ywc-* skill:
 
 **Frontmatter**
 - [ ] `name` starts with `ywc-`
@@ -196,7 +202,7 @@ Before merging a new or modified ywc-* skill, verify:
 - [ ] No `references/*.md` file is <30 lines (over-extraction)
 
 **Catalog Sync**
-- [ ] Relevant bundle catalog updated (`tools/claude-code/skills/README.md`, `tools/codex-skill/skills/README.md`, or `tools/pi-skills/README.md`)
+- [ ] Relevant bundle catalog updated (`claude-code/skills/README.md` or `codex/skills/README.md`)
 - [ ] Relevant routing guide updated if the bundle has one and the skill is user-facing
 - [ ] If skill is part of a pipeline, the 표준 개발 Pipeline diagram updated
 

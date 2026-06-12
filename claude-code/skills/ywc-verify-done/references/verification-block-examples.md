@@ -135,7 +135,7 @@ $ gh pr checks 1234 --json name,state,conclusion
 [{"name":"build","state":"COMPLETED","conclusion":"SUCCESS"},
  {"name":"test","state":"COMPLETED","conclusion":"SUCCESS"},
  {"name":"lint","state":"COMPLETED","conclusion":"SUCCESS"}]
-$ bash tools/claude-code/skills/scripts/poll-pr-reviews.sh 1234
+$ bash claude-code/skills/scripts/poll-pr-reviews.sh 1234
 exit=1   # = no bot reviews surfaced after 10×30s polling
 ```
 

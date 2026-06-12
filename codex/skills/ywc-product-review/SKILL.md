@@ -22,7 +22,7 @@ When tempted to skip a step, check this table first:
 | "Priority is roughly High, do not specify P0/P1/P2" | Always emit explicit priority. Without it, the report becomes a wishlist instead of a plan. |
 | "Risks are speculative, drop them from the report" | Risk is a perspective. Speculative risks are still findings — mark `unverified`, do not drop. |
 | "I have no live access, infer growth metrics from code" | If a perspective cannot be assessed (no live data), state the gap. Do not fabricate. |
-| "Running 5 perspectives sequentially is fine" | Phase 1 fan-out reduces total latency; each Sonnet subagent sees only one perspective's checklist, lowering per-call context and improving analysis depth. |
+| "Running 5 perspectives sequentially is fine" | Phase 1 fan-out reduces total latency; each worker sees only one perspective's checklist, lowering per-call context and improving analysis depth. |
 
 **Violating the letter of these rules is violating the spirit.** A product review with cherry-picked perspectives misses the most expensive problems.
 
@@ -51,32 +51,32 @@ Focus on: what the service **does**, who it serves, and what the main user flows
 
 ### Step 2: Phase 1 — Parallel Perspective Review
 
-Use the Task tool to spawn 5 Sonnet subagents in parallel — one per perspective. Pass each subagent a brief context summary (service name, target user, main flows) and the corresponding reference file to read:
+Use Codex subagent delegation when the current session exposes a delegation tool to run 5 perspective workers in parallel. If no delegation tool is available, run the same five perspective passes inline and record the fallback in the report. Pass each worker a brief context summary (service name, target user, main flows) and the corresponding reference file to read:
 
-| Subagent | Model | Reference |
+| Worker | Perspective | Reference |
 |---|---|---|
-| User Value | sonnet | `references/user-value.md` |
-| UX Flow | sonnet | `references/ux-flow.md` |
-| Growth | sonnet | `references/growth.md` |
-| Risk | sonnet | `references/risk.md` |
-| Market | sonnet | `references/market-timing.md` |
+| User Value | Core user value and painkiller strength | `references/user-value.md` |
+| UX Flow | Main flow friction and clarity | `references/ux-flow.md` |
+| Growth | Acquisition, retention, and expansion loops | `references/growth.md` |
+| Risk | Product, market, and operational risks | `references/risk.md` |
+| Market | Timing, category, and positioning | `references/market-timing.md` |
 
-Each subagent classifies its findings:
+Each worker classifies its findings:
 - **High**: Directly blocks or degrades core user value, causes churn, or represents a significant missed opportunity
 - **Medium**: Meaningfully improves experience, growth, or differentiation with moderate effort
 - **Low**: Incremental improvement, nice-to-have, or long-term consideration
 
-Each subagent returns two artifacts:
+Each worker returns two artifacts:
 - **Confirmed findings** — perspective tag, problem statement, evidence, improvement suggestion
 - **Advisor candidates** — cross-perspective conflicts where two reasonable positions exist (include conflicting finding excerpts + one-sentence reason for escalation)
 
 ### Step 2b: Aggregate Phase 1 Results
 
-Combine findings from all 5 subagents. Deduplicate by evidence source. Select up to `advisor_budget` (default: 2) advisor candidates, prioritizing High over Medium findings.
+Combine findings from all 5 workers. Deduplicate by evidence source. Select up to `advisor_budget` (default: 2) advisor candidates, prioritizing High over Medium findings.
 
 ### Step 3: Phase 2 — Advisor Pass
 
-Follow the **Advisor Escalation Policy** section below. For each surviving candidate, spawn a short Opus subagent via the Task tool. Pass only the conflicting finding excerpts (≤100 lines total). Merge Phase 2 verdicts into the confirmed findings list.
+Follow the **Advisor Escalation Policy** section below. For each surviving candidate, request one short higher-capability advisor pass using the Codex delegation mechanism available in the current session. If no delegation tool is available, run the same advisor decision inline and record the fallback. Pass only the conflicting finding excerpts (≤100 lines total). Merge Phase 2 verdicts into the confirmed findings list.
 
 ### Step 4: Generate Report
 
@@ -97,7 +97,7 @@ Escalate to an high-capability advisor only when the executor genuinely cannot r
 | **Cross-perspective priority conflict** | A finding is classified Critical under `[Risk]` but Low under `[Market]`, and the correct priority tier determines a concrete recommendation that contradicts the other perspective |
 | **Architectural product trade-off** | A recommendation from one perspective (e.g., deepen a niche feature for `[User Value]`) would directly undermine another perspective (e.g., limit growth loop activation under `[Growth]`), and resolving the conflict requires product strategy judgment beyond the reference checklists |
 
-For all other ambiguities — borderline High vs Medium severity, uncertain evidence strength, incomplete codebase — use conservative judgment (prefer the lower priority) and note the uncertainty inline in the report. Do not escalate these to Opus.
+For all other ambiguities — borderline High vs Medium severity, uncertain evidence strength, incomplete codebase — use conservative judgment (prefer the lower priority) and note the uncertainty inline in the report. Do not spend advisor budget on these cases.
 
 ## Notes
 

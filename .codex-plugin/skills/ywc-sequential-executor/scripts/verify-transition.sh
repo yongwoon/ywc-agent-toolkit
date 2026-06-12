@@ -19,7 +19,7 @@
 #     <base-branch> <completed-task-name> [tasks-dir]
 #   tasks-dir defaults to "tasks/"
 
-set -uo pipefail
+set -euo pipefail
 
 BASE_BRANCH="${1:-}"
 COMPLETED_TASK="${2:-}"

@@ -50,54 +50,34 @@ Resolve `{owner}/{repo}` dynamically at this stage — it's used throughout the 
 gh repo view --json nameWithOwner --jq .nameWithOwner
 ```
 
-### 2. Retrieve and Filter Review Artifacts
+### 2. Retrieve and Filter Comments
 
-Retrieve all unresolved PR review artifacts and filter out those that do not need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
-
-```bash
-bash tools/codex-skill/skills/scripts/fetch-pr-review-artifacts.sh {pr_number}
-# exit 0 -> JSON array of unresolved artifacts on stdout (may be [])
-# exit 2 -> usage error
-# exit 3 -> GitHub fetch/parse error
-```
-
-Output artifact types:
-
-| Type | Source | Reply target |
-|---|---|---|
-| `review_thread` | Line-level PR review thread | Reply to the line comment |
-| `pr_comment` | General PR comment | Add a PR comment referencing the artifact |
-| `review_submission` | Top-level review body/state | Add a PR comment referencing the artifact |
-| `status_check` | Review-like failed check run | Fix the code/check failure; no reply is required unless a human-readable explanation is useful |
-
-Each artifact has `fingerprint`, `body`, `path`, `line`, `user`, `reply_api`, and optional `url`/`state`/`conclusion`. If the array is `[]`, skip to Step 7 and report "no unresolved review artifacts".
-
-Legacy line-comment-only fallback, used only if the artifact script is unavailable:
+Retrieve all unresolved PR review comments and filter out those that do not need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
 
 ```bash
-bash tools/codex-skill/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
+bash codex/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
   {owner}/{repo} {pr_number}
-# exit 0 -> JSON array of unresolved review_thread artifacts on stdout (may be [])
+# exit 0 -> JSON array of unresolved threads on stdout (may be [])
 # exit 1 -> gh CLI error (not authenticated or PR not found)
-# exit 3 -> GitHub fetch/parse error from the shared artifact fetcher
+# exit 2 -> usage error
 ```
 
-The artifact script applies skip conditions automatically: artifacts with a matching `<!-- <review_comment_addressed:<fingerprint>> -->` marker are dropped, and legacy line threads containing `<!-- <review_comment_addressed> -->` are also dropped for backward compatibility.
+The script fetches paginated comments, groups them into threads, and applies skip conditions automatically: threads containing `<!-- <review_comment_addressed> -->` are dropped, and threads where your reply is newer than the latest reviewer comment are dropped. The output JSON array contains only actionable threads; each element has `id`, `body`, `path`, `line`, `user`, `created_at`, and `thread_comment_count`. If the array is `[]`, skip to Step 7 and report "no unresolved comments".
 
 ### 3. Group and Analyze Comments
 
-Before fixing anything, group all remaining artifacts by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth. Keep pathless artifacts (`pr_comment`, `review_submission`, `status_check`) in a separate "PR-level" group and inspect their body/check URL before deciding whether code changes are required.
+Before fixing anything, group all remaining comments by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth.
 
 **Processing strategy:**
 
-1. Collect all unresolved artifacts and group by target file path
+1. Collect all unresolved comments and group by target file path
 2. For each file, read the file once and analyze all related comments together
 3. Apply fixes for that file and commit as a unit
-4. Process PR-level artifacts after file-specific artifacts, using the linked body/check output as the source of truth
+4. Move to the next file
 
-### 4. Classify and Fix Artifacts
+### 4. Classify and Fix Comments
 
-For each artifact, classify it into one of these categories:
+For each comment, classify it into one of these categories:
 
 | Category                                                                                                   | Action                                                                                                                                                                                  |
 | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -105,7 +85,6 @@ For each artifact, classify it into one of these categories:
 | **Clear code change request** (the fix is straightforward and unambiguous)                                 | Apply the fix                                                                                                                                                                           |
 | **Controversial or ambiguous change request** (disagreement, architectural concern, or trade-off involved) | Do NOT auto-fix. Present the comment to the user with context, explain the trade-off, and ask for a decision. Reviewer feedback deserves thoughtful consideration, not blind acceptance |
 | **Question only** (no code change implied)                                                                 | Reply with an explanation — no fix needed                                                                                                                                               |
-| **Failed review-like status check**                                                                        | Inspect the check URL/logs, fix the underlying issue if clear, then push and re-run CI/review polling. If the check output is inaccessible or unclear, return `BLOCKED`                 |
 
 **Security guardrails (never auto-apply, always defer to user):**
 

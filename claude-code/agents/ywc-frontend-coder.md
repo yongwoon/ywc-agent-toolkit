@@ -77,20 +77,26 @@ tiny-component dogma, behaviour-preserving edits). This is the single rubric
 shared with review (`ywc-impl-review` devex) and planning (`ywc-plan`);
 conforming here is what keeps generated code from being flagged on the first
 review pass. See
-[`tools/claude-code/skills/references/readable-code.md`](../skills/references/readable-code.md).
+[`claude-code/skills/references/readable-code.md`](../skills/references/readable-code.md).
 
 ## Return Contract
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` (Iteration 4
-§P1). `DONE_WITH_CONCERNS` covers cases where rendering succeeds but a design
-or a11y observation falls outside the task's edit scope; `BLOCKED` covers
-missing API contracts, missing assets, or hard prerequisite gaps. Detailed
-findings and full test output go to files; only status + summary + artifact
-paths return.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE_WITH_CONCERNS` means
+rendering succeeds but a design or a11y observation falls outside the task's
+edit scope):
+
+- `BLOCKED` — missing API contract, missing asset, a hard prerequisite gap, or
+  the task requires editing backend / schema files outside this agent's lane.
+- `NEEDS_CONTEXT` — an API contract gap must be closed by `ywc-backend-coder`
+  before the component can consume the endpoint.
+
+Detailed findings and full test output go to files; only status, 1-line
+summary, and the artifact paths return.
 
 ## Anti-patterns
 

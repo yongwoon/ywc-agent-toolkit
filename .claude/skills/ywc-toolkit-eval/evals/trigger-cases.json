@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "description": "Seed activation cases for the S1/A2 trigger judge. Positive cases drive recall; negative drive precision; collision pairs stress precision against the nearest sibling. Expand per item over time — every evaluated item should reach >=3 positives and >=2 collisions.",
+  "cases": [
+    {
+      "id": "commit-pos-1",
+      "prompt": "지금까지 한 작업 커밋해줘",
+      "expected": "ywc-commit",
+      "kind": "positive"
+    },
+    {
+      "id": "commit-pos-2",
+      "prompt": "commit and push these changes",
+      "expected": "ywc-commit",
+      "kind": "positive"
+    },
+    {
+      "id": "commit-vs-createpr-1",
+      "prompt": "이 브랜치 PR 올려줘",
+      "expected": "ywc-create-pr",
+      "kind": "collision",
+      "impostor": "ywc-commit",
+      "note": "commit must NOT win — create-pr owns PR creation"
+    },
+    {
+      "id": "createpr-pos-1",
+      "prompt": "feature 다 됐으니 풀리퀘 만들어줘",
+      "expected": "ywc-create-pr",
+      "kind": "positive"
+    },
+    {
+      "id": "specvalidate-vs-implreview-1",
+      "prompt": "이 사양서 완성도랑 일관성 검토해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "spec-only review — impl-review must NOT win (no code yet)"
+    },
+    {
+      "id": "implreview-pos-1",
+      "prompt": "구현 끝났는데 PR 전에 코드 검증해줘",
+      "expected": "ywc-impl-review",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-vs-productreview-1",
+      "prompt": "이 기능 비즈니스적으로 가치 있는지 검토해줘",
+      "expected": "ywc-product-review",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "product/business reasoning — plan must NOT win"
+    },
+    {
+      "id": "toolkiteval-pos-1",
+      "prompt": "toolkit skill들 품질 평가하고 점수 매겨줘",
+      "expected": "ywc-toolkit-eval",
+      "kind": "positive"
+    },
+    {
+      "id": "toolkiteval-pos-2",
+      "prompt": "evaluate the agents and give me a scorecard",
+      "expected": "ywc-toolkit-eval",
+      "kind": "positive"
+    },
+    {
+      "id": "toolkiteval-vs-skillauthor-1",
+      "prompt": "새 ywc skill 만들어줘",
+      "expected": "ywc-skill-author",
+      "kind": "collision",
+      "impostor": "ywc-toolkit-eval",
+      "note": "authoring — toolkit-eval scores existing skills, must NOT win on creation"
+    },
+    {
+      "id": "neg-weather-1",
+      "prompt": "오늘 도쿄 날씨 알려줘",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-recipe-1",
+      "prompt": "김치찌개 레시피 알려줘",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "agent-tsreviewer-pos-1",
+      "prompt": "이 TypeScript 코드의 타입 시스템과 async 정확성 리뷰해줘",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "agent-tsreviewer-vs-pyreviewer-1",
+      "prompt": "이 Python 코드 asyncio랑 타입 힌트 리뷰해줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "language reviewers share trigram surface — each must only win its own language"
+    }
+  ]
+}

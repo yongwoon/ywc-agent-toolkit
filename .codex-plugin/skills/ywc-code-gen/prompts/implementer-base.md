@@ -61,7 +61,7 @@ Return exactly two artifacts:
    - The relevant existing-project pattern (if any)
    - A one-sentence reason a second opinion is wanted
 
-The orchestrator will pass surviving candidates to a Phase 2 Opus advisor. Candidates without a clear alternative set are dropped — vague candidates ("not sure about this") consume budget without giving the advisor anything to decide.
+The orchestrator will pass surviving candidates to a Phase 2 higher-capability advisor. Candidates without a clear alternative set are dropped — vague candidates ("not sure about this") consume budget without giving the advisor anything to decide.
 
 ## 5. Scope boundaries
 

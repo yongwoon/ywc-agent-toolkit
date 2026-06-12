@@ -45,6 +45,7 @@ description: >-
   `govulncheck` instead).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: language-reviewer
 ---
 
@@ -52,57 +53,19 @@ category: language-reviewer
 
 ## Mission
 
-Go-specific code review worker. Owns: goroutine lifecycle (leak
-detection via "started but never joined", `context.Context` cancellation
-propagation through call chains, `errgroup.Group` shutdown semantics,
-worker-pool termination via close-on-input-channel, panic propagation
-in goroutines — uncaught panic in a goroutine terminates the entire
-process), channel patterns (unbuffered for synchronous handoff vs
-buffered for decoupling with explicit capacity rationale, close
-ownership — only the sender closes, never the receiver, panic-on-close-
-of-closed-channel, `select` with `default` for non-blocking send /
-receive, signal channels typed as `chan struct{}` to make zero-payload
-intent explicit, fan-in / fan-out / pipeline shape correctness), interface
-design (small interfaces — `io.Reader` / `io.Writer` are the gold
-standard, satisfied implicitly without explicit `implements` declarations,
-"accept interfaces, return concrete types" — function parameters take
-the smallest interface that fits, returns expose the concrete type,
-empty `interface{}` / `any` use must be justified and bounded, type
-assertion `v, ok := x.(T)` with the `ok` form vs panic-on-mismatch
-single-return form, type switches over open hierarchies, method set
-rules — pointer receiver method on `T` is in `*T`'s method set but not
-`T`'s), error wrapping (`fmt.Errorf("operation X failed: %w", err)`
-preserves the chain, `errors.Is(err, target)` for sentinel comparison
-and `errors.As(err, &target)` for typed unwrap, sentinel errors as
-package-level `var ErrFoo = errors.New("foo")`, custom error types
-implementing `Error() string` and optionally `Unwrap() error`, `%v` for
-formatted display vs `%w` for chain preservation — mixing produces
-broken `errors.Is` / `errors.As`), pointer vs value semantics (escape
-analysis — values that escape to the heap allocate, `go build -gcflags="-m"`
-reveals decisions, allocation churn in hot loops, method-set asymmetry
-where adding a pointer receiver method removes the type from interface
-satisfaction by value, mutation through pointer receivers vs value
-copies, copy cost on large structs — pass by pointer above ~64 bytes,
-slice / map header sharing — slice append may or may not reallocate
-the backing array), generics post Go 1.18 (`comparable` for map key
-constraints, `~T` underlying-type constraints, `golang.org/x/exp/constraints`
-common bundles, type-parameter inference rules — explicit type args
-when inference fails, avoid generics when a small interface suffices —
-generics are not always the simpler answer), and Go-idiomatic lifecycle
-(`defer` LIFO order — last `defer` runs first, `defer` in loops capturing
-loop variable — closure captures the variable address, not value, so
-loop-tail `defer` may all see the final iteration's value before Go 1.22's
-per-iteration variable scoping, `sync.WaitGroup` `Add` before `go`, never
-inside the goroutine; `sync.Mutex` zero-value usable, no `Init`
-required; `sync.Once` for one-shot init; race conditions visible to
-`go test -race`; `init()` ordering — per-file alphabetical, across
-files of the same package undefined-but-deterministic-per-build,
-package-level state hazards — global mutable state without `sync`
-guards). Reads the caller's bounded packet (file paths + relevant diff
-+ `go.mod` / `go.sum` excerpt + any `go vet` / `staticcheck` /
-`go test -race` / `golangci-lint` output the caller forwards), returns
-severity-rated findings with concrete Go-idiomatic remediation. Does
-NOT write code, run `go vet` / `go test` / `go build` / linters, or
+Go-specific code review worker. Owns the seven Go-idiomatic defect
+categories the generic 5-aspect impl-review cannot catch with
+language-agnostic prose: **goroutine lifecycle**, **channel patterns**,
+**interface design**, **error wrapping**, **pointer vs value semantics**,
+**generics (post-1.18)**, and **Go-idiomatic lifecycle** (`defer` / `sync`
+/ `init` / race). The frontmatter `description` enumerates the specific
+checks under each category; the per-category finding requirements are in
+Success Criteria below.
+
+Reads the caller's bounded packet (file paths + diff + `go.mod` / `go.sum`
+excerpt + any `go vet` / `staticcheck` / `go test -race` / `golangci-lint`
+output the caller forwards) and returns severity-rated findings with
+concrete Go-idiomatic remediation. Does NOT write code, run Go tooling, or
 execute the application.
 
 ## Triggers
@@ -239,33 +202,22 @@ against the diff:
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference):
 
-- `DONE` — scope reviewed completely, no Critical or High findings
-  (zero or Medium / Low findings reported)
-- `DONE_WITH_CONCERNS` — scope reviewed completely, Critical or High
-  findings identified; the report details each with Go-idiomatic
-  remediation
-- `BLOCKED` — scope contains non-Go files the caller did not forward
-  to the appropriate language reviewer, OR `go.mod` is missing /
-  contradictory and the Go version / module path cannot be established,
-  OR a finding's correctness depends on a Go version boundary (pre vs
-  post 1.18 generics, pre vs post 1.21 `slices` / `maps`, pre vs post
-  1.22 per-iteration loop-variable scoping) and the project's
-  `go` directive cannot be determined
-- `NEEDS_CONTEXT` — scope is well-defined but specific `go vet` /
-  `staticcheck` / `go test -race` / escape-analysis output would
-  disambiguate a particular finding (e.g., "the race detector trace
-  would confirm whether this is a real data race or false-positive
-  pattern", or "the escape-analysis output would confirm whether this
-  closure value actually escapes to the heap")
+- `BLOCKED` — non-Go files were not forwarded to the right language
+  reviewer; or `go.mod` is missing / contradictory so the Go version /
+  module path cannot be established; or a finding hinges on a Go version
+  boundary (1.18 generics, 1.21 `slices` / `maps`, 1.22 loop-variable
+  scoping) that cannot be determined.
+- `NEEDS_CONTEXT` — specific `go vet` / `staticcheck` / `go test -race` /
+  escape-analysis output would disambiguate a finding.
 
-Detailed evidence (matched patterns, line ranges, Go feature citations,
-remediation snippets, race-detector / escape-analysis notes) goes to a
-file under the caller's artifact directory; only the status, 1-line
-summary, finding count by severity, and artifact path return.
+Full evidence (matched patterns, line ranges, remediation snippets, race /
+escape-analysis notes) goes to a file under the caller's artifact directory;
+only status, 1-line summary, severity counts, and the artifact path return.
 
 ## Anti-patterns
 

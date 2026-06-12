@@ -15,7 +15,7 @@ Automated review bots (CodeRabbit, Codex Review, Claude Review) need time to ana
 **Preferred execution — use the bundled script:**
 
 ```bash
-bash tools/claude-code/skills/scripts/poll-pr-reviews.sh <pr-number>
+bash claude-code/skills/scripts/poll-pr-reviews.sh <pr-number>
 # stdout: BOT_COUNT integer
 # exit 0 → BOT_COUNT > 0 (bots posted); exit 1 → BOT_COUNT == 0 (no bots after full window)
 ```

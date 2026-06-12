@@ -28,7 +28,7 @@ Line 1: commit hash. Remaining lines: spec sections that need updating.
 Run `/ywc-spec-writer --setup-hook` or manually:
 
 ```bash
-cp tools/claude-code/skills/ywc-spec-writer/scripts/spec-update-hook.sh tools/scripts/
+cp claude-code/skills/ywc-spec-writer/scripts/spec-update-hook.sh tools/scripts/
 ln -sf ../../tools/scripts/spec-update-hook.sh .git/hooks/pre-commit
 chmod +x tools/scripts/spec-update-hook.sh
 echo ".spec-update-pending" >> .gitignore

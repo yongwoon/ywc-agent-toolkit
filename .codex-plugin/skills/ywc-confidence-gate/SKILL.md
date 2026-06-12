@@ -215,5 +215,5 @@ Before reporting a PROCEED band and beginning implementation, verify:
 |---|---|
 | [../references/confidence-gate.md](../references/confidence-gate.md) | Authoritative rubric definition; per-skill required-dimension profiles; status mapping; anti-patterns |
 | [references/pre-implementation-checklist.md](references/pre-implementation-checklist.md) | Per-dimension probe questions specific to the pre-implementation moment (this skill's distinct usage from the post-review usage in `ywc-impl-review`) |
-| [../references/advisor-pattern.md](../references/advisor-pattern.md) | Escalating a weak dimension to Opus for a second opinion before changing the band |
+| [../references/advisor-pattern.md](../references/advisor-pattern.md) | Escalating a weak dimension to a higher-capability advisor for a second opinion before changing the band |
 | [../ywc-verify-done/SKILL.md](../ywc-verify-done/SKILL.md) | The symmetric post-implementation gate; both gates use the same rubric so the start-of-work and end-of-work scores are directly comparable |

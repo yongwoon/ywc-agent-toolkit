@@ -20,6 +20,7 @@ description: >-
   require Bash (the caller assembles evidence and forwards the bounded payload).
 model: opus
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: rootcause
 ---
 
@@ -116,29 +117,26 @@ verdicts come back as text for the caller to act on.
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE` requires the primary
+root cause named with high confidence plus the named next dispatch, and
+`DONE_WITH_CONCERNS` means a contributing factor could not be verified from
+the bounded payload):
 
-- `DONE` — primary root cause named with high confidence, evidence cited
-  per hypothesis, next dispatch (coder / architect / security-engineer)
-  named with the specific surgical scope
-- `DONE_WITH_CONCERNS` — top hypothesis named but one contributing factor
-  could not be verified from the bounded payload; the concerns block
-  names the unverified factor and the probe that would close it
-- `BLOCKED` — evidence is contradictory (two probes return mutually
-  exclusive results) or the caller's bounded payload is internally
-  inconsistent; the blocker block names the contradiction and the
-  reconciliation the caller must perform before re-dispatch
-- `NEEDS_CONTEXT` — the bounded payload is missing a load-bearing signal
-  (e.g., the stack trace shows a wrapped exception but the inner cause
-  is in a frame the caller did not forward); bullets name the specific
-  Read / Grep / probe that would resolve
+- `BLOCKED` — evidence is contradictory (two probes return mutually exclusive
+  results) or the caller's bounded payload is internally inconsistent; the
+  blocker names the contradiction and the reconciliation needed before
+  re-dispatch.
+- `NEEDS_CONTEXT` — the bounded payload is missing a load-bearing signal (e.g.,
+  a wrapped exception whose inner cause is in a frame the caller did not
+  forward); bullets name the specific Read / Grep / probe that resolves it.
 
-Detailed evidence (full hypothesis tables, 5 Whys with citations, contributing
-factor list, architecture-vs-fix verdict reasoning) goes to a file under
-the caller's artifact directory; only the status, 1-line summary, primary
-root cause statement, next probe, and artifact path return.
+Full evidence (hypothesis tables, 5 Whys with citations, contributing-factor
+list, architecture-vs-fix verdict reasoning) goes to a file under the caller's
+artifact directory; only status, 1-line summary, primary root cause, next
+probe, and the artifact path return.
 
 ## Anti-patterns
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.17.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.16.0...v1.17.0) (2026-06-11)
+
+
+### ### Added
+
+* **ywc-parallel-executor:** convert --per-task-pr to full PR-merge lifecycle ([#59](https://github.com/yongwoon/ywc-agent-toolkit/issues/59)) ([26eb6fa](https://github.com/yongwoon/ywc-agent-toolkit/commit/26eb6fa543ed372fcb7959a3724a2c29b59b38b2))
+
+
+### ### Fixed
+
+* **codex:** use Codex handoff commands in ywc-plan ([#57](https://github.com/yongwoon/ywc-agent-toolkit/issues/57)) ([14b1049](https://github.com/yongwoon/ywc-agent-toolkit/commit/14b1049c102e2970bd89dbe6e5a5796f68c6e6e6))
+
 ## [1.16.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.15.1...v1.16.0) (2026-06-11)
 
 

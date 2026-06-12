@@ -1,65 +1,39 @@
-# ywc-parallel-executor (Parallel Executor)
+# ywc-parallel-executor
 
-task-generator が生成した Task を Agent が並列で実行する Skill です。dependency-graph.md を分析し、Wave ベースの並列実行 + Git Worktree 分離を行います。
-
-## 使用方法
-
-```text
-/ywc-parallel-executor 000001-010-db-create-events           # 単一 Task
-/ywc-parallel-executor 000001-010..000002-040                     # 範囲指定 (並列)
-/ywc-parallel-executor --all                              # 全体実行
-/ywc-parallel-executor 000001-010..000002-040 --review            # 並列 + 自動 Review
-/ywc-parallel-executor 000001-010..000002-040 --local-merge       # PR なし Local merge
-/ywc-parallel-executor 000001-010..000002-040 --draft             # Draft PR 作成
-```
-
-## Option
-
-| Option | 説明 |
-|--------|------|
-| `--tasks-dir <path>` | Tasks directory パス (default: tasks/) |
-| `--review` | 各 Task 完了後 `ywc-impl-review` を自動実行します (組み合わせ可能) |
-| `--local-merge` | PR なし、base-branch push のみ (デフォルト動作) |
-| `--draft` | 全体完了後に Draft PR を作成します |
-| `--per-task-pr` | Task ごとに個別 PR を作成します |
-
-## 実行フロー
-
-1. dependency-graph.md の Parse
-2. Wave 計画の策定 (Topological Sort)
-3. Wave 単位で実行: Worktree 作成 → Agent 並列実行 → Merge → Worktree 削除
-
-## Task → Agent 自動マッピング
-
-| Category | Agent |
-|----------|-------|
-| db, api, domain, lib, worker | Backend Agent (sonnet) |
-| ui | Frontend Agent (sonnet) |
-| test | QA Agent (sonnet) |
-| infra | DevOps Agent (sonnet) |
-| refactor | Reviewer Agent (opus) |
-
-Agent Hint で Override が可能です:
-```markdown
-## Parallel Execution Metadata
-- Agent Hint: frontend
-```
-
-## sequential-executor との比較
-
-| 状況 | 推奨ツール |
-|------|-----------|
-| 小規模作業 (1-3 Task) | sequential-executor |
-| 順次依存性が強い作業 | sequential-executor |
-| 大規模作業 (4+ Task) | /ywc-parallel-executor |
-| 並列可能な Task が多い場合 | /ywc-parallel-executor |
-
-## Triggering
-
-この Skill の Trigger 条件は [SKILL.md](./SKILL.md) の `description` フィールドに定義されています。
+この文書は Codex の `ywc-parallel-executor` workflow を紹介します。正確な trigger、anti-trigger、実行手順、output format は [SKILL.md](./SKILL.md) を基準にします。
 
 ## Localized Versions
 
+- [한국어](./README.md)
 - [English](./README.en.md)
-- [Japanese](./README.ja.md)
-- [Korean](./README.ko.md)
+- [한국어 full](./README.ko.md)
+- [Español](./README.es.md)
+- [中文](./README.zh.md)
+
+## 使用シナリオ
+
+- User がこの Skill の trigger phrase または同等の自然言語 request を入力したとき
+- Codex が作業前に Skill 固有の workflow と validation criteria を揃える必要があるとき
+- 他の `ywc-*` Skill が upstream または downstream step としてこの Skill を参照するとき
+
+## 使用方法
+
+```bash
+$ywc-parallel-executor
+```
+
+対応する option と mode は [SKILL.md](./SKILL.md) の Arguments または Workflow section に従います。
+
+## Delivery Modes
+
+| Mode | 動作 |
+|---|---|
+| `--local-merge` | 各 task を base branch に local merge して即時 push します。PR は作成しません。 |
+| `--draft` | 各 task の変更を local merge で蓄積し、最後に aggregate draft PR を作成します。 |
+| `--per-task-pr` | 各 task ごとに PR 作成、CI 待機、bot review 対応、最新 base refresh、PR merge、base sync、Mark Complete まで実行します。 |
+
+`--per-task-pr` では、同じ wave の先行 task が base branch を進める場合があります。そのため merge 直前に PR branch が最新 base を含むか確認し、遅れている場合は worktree branch に base を merge して push し、CI を再確認します。Base refresh conflict は `BLOCKED` として報告し、古い head SHA の CI 結果だけで PR を merge しません。
+
+## 出力
+
+この Skill は [SKILL.md](./SKILL.md) に定義された report、artifact、status format に従います。Completion Status を出力する場合、`DONE`、`DONE_WITH_CONCERNS`、`BLOCKED`、`NEEDS_CONTEXT` の意味を維持します。

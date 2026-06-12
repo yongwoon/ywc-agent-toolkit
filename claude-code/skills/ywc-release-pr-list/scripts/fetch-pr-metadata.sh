@@ -19,9 +19,9 @@
 #   2  Usage error
 #
 # Usage:
-#   bash tools/claude-code/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh 123 124 125
+#   bash claude-code/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh 123 124 125
 
-set -uo pipefail
+set -euo pipefail
 
 if [ $# -eq 0 ]; then
   echo "Usage: fetch-pr-metadata.sh <pr-number> [<pr-number> ...]" >&2

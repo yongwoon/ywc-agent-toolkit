@@ -95,15 +95,20 @@ confidence:
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` (Iteration 4
-§P1). `DONE_WITH_CONCERNS` covers cases where tests landed but an
-implementation gap surfaced (e.g., the test caught a real bug — orchestrator
-must dispatch a coder fix); `BLOCKED` covers cases where the unit under test
-isn't testable without production code changes that this agent cannot make.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE_WITH_CONCERNS` means
+tests landed but an implementation gap surfaced, e.g., a test caught a real
+bug the orchestrator must route to a coder fix):
+
+- `BLOCKED` — the unit under test is not testable without production code
+  changes this agent cannot make; the orchestrator must dispatch a coder first.
+- `NEEDS_CONTEXT` — a missing fixture / mock contract or test-root convention
+  is needed before the suite can be authored deterministically.
+
 Detailed test output, coverage reports, and failing-test traces go to files;
-only status + summary + artifact paths return.
+only status, 1-line summary, and the artifact paths return.
 
 ## Anti-patterns
 

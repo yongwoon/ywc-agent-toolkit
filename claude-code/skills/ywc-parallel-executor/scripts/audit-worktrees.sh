@@ -18,13 +18,13 @@
 #
 # Usage:
 #   # Pre-flight: prune stale metadata first, then report any remaining
-#   bash tools/claude-code/skills/ywc-parallel-executor/scripts/audit-worktrees.sh --prune
+#   bash claude-code/skills/ywc-parallel-executor/scripts/audit-worktrees.sh --prune
 #
 #   # Wave-end audit with preserved failures
-#   bash tools/claude-code/skills/ywc-parallel-executor/scripts/audit-worktrees.sh \
+#   bash claude-code/skills/ywc-parallel-executor/scripts/audit-worktrees.sh \
 #     --expect 000001-010-db-create-users,000001-020-add-indexes
 
-set -uo pipefail
+set -euo pipefail
 
 DO_PRUNE=0
 EXPECT=""

@@ -90,9 +90,9 @@ For greenfield work:
 | Scope clarity | 75 | "Magic Link" is named; "alongside Google" implies parallel; the Out of Scope ("does it replace password reset? does it impact session length?") was not explicit |
 | Architecture compliance | 70 | The Auth module has one provider pattern; a second provider needs the strategy abstraction extracted first |
 | Evidence quality | 60 | Plan cites "Magic Link is how Slack does it" but no specific RFC / provider library was confirmed |
-| Reuse verified | 50 | No search has been done for existing magic-link libraries; "we'll write it" is the current plan |
+| Reuse verified | 45 | No search has been done for existing magic-link libraries; "we'll write it" is the current plan |
 | Root cause identified | 80 | Underlying need (login for users without a Google account) is named |
-| **Aggregate** | **68** → **STOP** (Reuse verified ≤ 50 also forces downgrade, but aggregate alone already STOPs) | |
+| **Aggregate** | **67** → **STOP** (aggregate alone already STOPs; Reuse verified at 45 is also `< 50`, which independently forces a one-level downgrade) | |
 
 **Routing**: STOP back to `ywc-tech-research` to pick a magic-link library, then `ywc-plan` to revise the architecture for the second provider.
 

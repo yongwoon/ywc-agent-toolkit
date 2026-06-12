@@ -97,10 +97,14 @@ Before starting execution, verify these conditions:
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Also add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the task range, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+bash claude-code/skills/scripts/update-state.py init-sequential \
+  --mode <local-merge|draft|skip-ci-wait|normal> --tasks-dir <tasks-dir> \
+  --range '["000001-010-...","000001-020-..."]'
 ```
+The `--range` array is the ordered list of task-directory names this run will execute. Per-step checkpoint writes then use `update-state.py task-step <task> <step>` (Steps 2/4) and `update-state.py task-complete <task>` (after Step 5 delivery); see the schema and event table in [Checkpoint and Resume](#checkpoint-and-resume).
 
 ## External URL Policy
 
@@ -267,12 +271,11 @@ Commit guidelines:
 - Add a `Co-Authored-By` trailer when Claude generated the changes. Use the format specified in the project's CLAUDE.md or commit convention; if none is specified, default to `Co-Authored-By: Claude <noreply@anthropic.com>`
 - Stage specific files by name (never `git add -A` or `git add .`)
 
-**Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
+**Completeness Gate (required before first commit):** Before creating the first commit for this task, run the shared stub-pattern check on the modified files (exits non-zero if any stub is found):
 
 ```bash
-git diff --name-only HEAD 2>/dev/null | xargs grep -lnE \
-  "TODO:.*implement|FIXME|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
-  2>/dev/null || echo "OK: no stub patterns found"
+git diff --name-only HEAD | tr '\n' '\0' | xargs -0 \
+  bash claude-code/skills/scripts/scan-stubs.sh
 ```
 
 If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.
@@ -357,7 +360,7 @@ If executing a range:
 1. Check if there are remaining tasks in the range. If no remaining tasks, and Step 5 has returned `DONE` for the current task, proceed to the Completion Report.
 2. **Pre-transition state check (`normal-pr` and `local-merge` modes):** Run the bundled verification script:
    ```bash
-   bash tools/claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
      <base-branch> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.

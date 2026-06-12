@@ -1,0 +1,462 @@
+{
+  "claude-code/skills/ywc-agentic": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-brainstorm": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-changelog-release-notes": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-code-gen": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-commit": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-confidence-gate": {
+    "S2": 4,
+    "S4": 4,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-create-pr": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-debug-rootcause": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-e2e-test-strategy": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-finish-branch": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-gen-testcase": {
+    "S2": 4,
+    "S4": 3,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-handle-pr-reviews": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-impl-review": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-incident-postmortem": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-merge-dependabot": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-onboard-repo": {
+    "S2": 5,
+    "S4": 4,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-parallel-executor": {
+    "S2": 4,
+    "S4": 3,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-plan": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-product-review": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-project-docs": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-project-scaffold": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-receive-review": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-refactor-clean": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-release-pr-list": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-security-audit": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-sequential-executor": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-skill-author": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-spec-validate": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-spec-writer": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-task-generator": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-tdd-ritual": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-tech-research": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-ubiquitous-language": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-ui-ux-review": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-verify-done": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "claude-code/skills/ywc-worktrees": {
+    "S2": 5,
+    "S4": 4,
+    "S5": 4
+  },
+  "codex/skills/ywc-agentic": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-brainstorm": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-changelog-release-notes": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-code-gen": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-commit": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-confidence-gate": {
+    "S2": 4,
+    "S4": 4,
+    "S5": 4
+  },
+  "codex/skills/ywc-create-pr": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-debug-rootcause": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-e2e-test-strategy": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-finish-branch": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-gen-testcase": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-handle-pr-reviews": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-impl-review": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-incident-postmortem": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-merge-dependabot": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-onboard-repo": {
+    "S2": 5,
+    "S4": 4,
+    "S5": 4
+  },
+  "codex/skills/ywc-parallel-executor": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-plan": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-product-review": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-project-docs": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-project-scaffold": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-receive-review": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-refactor-clean": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-release-pr-list": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-security-audit": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-sequential-executor": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-skill-author": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-spec-validate": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-spec-writer": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-task-generator": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-tdd-ritual": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-team-assemble": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-tech-research": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-ubiquitous-language": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-ui-ux-review": {
+    "S2": 4,
+    "S4": 5,
+    "S5": 5
+  },
+  "codex/skills/ywc-verify-done": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
+  "codex/skills/ywc-worktrees": {
+    "S2": 5,
+    "S4": 4,
+    "S5": 4
+  },
+  "claude-code/agents/ywc-architect": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-backend-coder": {
+    "A3": 4,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-doc-writer": {
+    "A3": 4,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-frontend-coder": {
+    "A3": 3,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-go-reviewer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-performance-engineer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-python-reviewer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-qa-engineer": {
+    "A3": 3,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-refactor-cleaner": {
+    "A3": 4,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-root-cause-analyst": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-security-engineer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "claude-code/agents/ywc-typescript-reviewer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-architect": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-go-reviewer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-performance-engineer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-python-reviewer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-root-cause-analyst": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-security-engineer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  },
+  "codex/agents/ywc-typescript-reviewer": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 4
+  }
+}

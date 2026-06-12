@@ -17,6 +17,7 @@ description: >-
   to survey first, then escalate specific decisions).
 model: opus
 tools: [Read, Grep, Glob, WebFetch]
+permissionMode: dontAsk
 category: architect
 ---
 
@@ -102,24 +103,22 @@ ownership/partition column the system uses (`org_id` / `user_id` /
 
 > Status payload format: see
 > [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
-> §3.5.
+> §3.5. Do not restate the generic format inline.
 
-Status set: `DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+Agent-specific status triggers (the generic `DONE` / `DONE_WITH_CONCERNS`
+semantics are in the reference — for this agent `DONE_WITH_CONCERNS` means the
+verdict is rendered but the caller should validate one named assumption before
+acting):
 
-- `DONE` — verdict is confident, trade-off cited from evidence, recommendation
-  actionable
-- `DONE_WITH_CONCERNS` — verdict rendered but the caller should validate one
-  specific assumption before acting (call this out explicitly in the summary)
-- `BLOCKED` — the architectural question's prerequisite is undecided
-  (e.g., the spec contradicts itself, the project has conflicting conventions
-  and no precedent for resolution)
+- `BLOCKED` — the architectural question's prerequisite is undecided (the spec
+  contradicts itself, or the project has conflicting conventions and no
+  precedent for resolution).
 - `NEEDS_CONTEXT` — the bounded payload is missing a signal that would
-  disambiguate; the bullets must name the specific Read / Grep that would
-  resolve it
+  disambiguate; the bullets must name the specific Read / Grep that resolves it.
 
-The detailed analysis (trade-off matrix, prior-art references, cost
-estimates) goes to a file under the caller's artifact directory; only the
-status, 1-line summary, verdict, and artifact path return.
+Full analysis (trade-off matrix, prior-art references, cost estimates) goes to
+a file under the caller's artifact directory; only status, 1-line summary,
+verdict, and the artifact path return.
 
 ## Anti-patterns
 

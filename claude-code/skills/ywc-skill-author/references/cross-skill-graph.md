@@ -110,7 +110,7 @@ The skip flag is named after the action being skipped, not the caller (e.g., `--
 
 1. **The callee defines the flag**, not the caller. The callee owns the side effect, so it owns the off-switch.
 2. **Document the flag in the callee's `## Arguments` table**, with the caller listed as a known invoker.
-3. **Document the propagation in both `tools/claude-code/skills/CLAUDE.md`** (in a "Calling `<callee>` from Other Skills" subsection) and in the callee's README under `## Integration`.
+3. **Document the propagation in both `claude-code/skills/CLAUDE.md`** (in a "Calling `<callee>` from Other Skills" subsection) and in the callee's README under `## Integration`.
 4. **Add a Rationalization Defense row to the callee** for "the caller already did X, mine would duplicate" — this catches the regression where a future refactor of the caller forgets to pass the flag.
 5. **The flag must be passed in every delegation hop**. If A → B → C and the side effect is owned by C, then A → B passes the flag AND B → C passes it. Inference across hops is unsafe because the intermediate skill may not know whether the upstream caller already ran the side effect.
 

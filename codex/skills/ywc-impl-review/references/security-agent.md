@@ -50,7 +50,7 @@ Security Agent that analyzes security vulnerabilities. Evaluates implementation 
 
 ## Advisor Candidate Criteria (Phase 2 Escalation)
 
-The parent skill runs in two phases: Phase 1 (this subagent, on Sonnet) handles mechanical OWASP matches, and Phase 2 (on Opus) receives only items the executor cannot confidently judge. Split your findings into **Confirmed findings** and **Advisor candidates** using the rules below.
+The parent skill runs in two phases: Phase 1 (this worker) handles mechanical OWASP matches, and Phase 2 (a higher-capability advisor pass) receives only items the executor cannot confidently judge. Split your findings into **Confirmed findings** and **Advisor candidates** using the rules below.
 
 Because security findings are the most consequential category in the review pipeline, this subagent's escalation bar is slightly **more permissive** than the other reviewers: when in doubt on a Critical or High candidate, escalate. The cost of one extra advisor call is much smaller than the cost of mislabeling a real vulnerability as Low.
 
@@ -58,7 +58,7 @@ A finding is an advisor candidate when it satisfies the three-property test from
 
 ### When to escalate (examples)
 
-- **Indirect exploit chain** — You see a parameter flow that *could* enable SSRF, auth bypass, or injection, but the chain requires two or more hops through functions you did not fully trace. The primary question for Opus is whether the chain is actually reachable.
+- **Indirect exploit chain** — You see a parameter flow that *could* enable SSRF, auth bypass, or injection, but the chain requires two or more hops through functions you did not fully trace. The primary advisor question is whether the chain is actually reachable.
 - **Two OWASP categories compete** — The same evidence fits A01 (Broken Access Control) and A07 (Auth Failures) equally well. The severity rubric differs between them, and the correct category affects the remediation guidance.
 - **Business logic flaw (A04)** — A04 is the hardest category to judge mechanically because it depends on understanding the domain, not matching a pattern. When you suspect a business logic flaw, almost always escalate.
 - **Crypto decision** (A02) — You see a hashing or encryption choice and cannot tell whether it is appropriate for the threat model without knowing the data sensitivity. Frontier judgment plus the spec excerpt is the right call.
