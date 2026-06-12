@@ -267,12 +267,11 @@ Commit guidelines:
 - Add a `Co-Authored-By` trailer when Claude generated the changes. Use the format specified in the project's CLAUDE.md or commit convention; if none is specified, default to `Co-Authored-By: Claude <noreply@anthropic.com>`
 - Stage specific files by name (never `git add -A` or `git add .`)
 
-**Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
+**Completeness Gate (required before first commit):** Before creating the first commit for this task, run the shared stub-pattern check on the modified files (exits non-zero if any stub is found):
 
 ```bash
-git diff --name-only HEAD 2>/dev/null | xargs grep -lnE \
-  "TODO:.*implement|FIXME|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
-  2>/dev/null || echo "OK: no stub patterns found"
+git diff --name-only HEAD | tr '\n' '\0' | xargs -0 \
+  bash claude-code/skills/scripts/scan-stubs.sh
 ```
 
 If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.

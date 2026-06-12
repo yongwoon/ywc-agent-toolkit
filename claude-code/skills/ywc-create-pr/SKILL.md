@@ -118,7 +118,13 @@ Run the same lint, format, typecheck, and test checks locally that CI will execu
 
 #### 5-1. Detect CI Check Commands
 
-Identify the commands to run in this priority order:
+Run the bundled detector first — it emits candidate commands from each source plus the package manager, so you do not re-derive the same greps each run:
+
+```bash
+bash claude-code/skills/ywc-create-pr/scripts/detect-ci-commands.sh [repo-dir]
+```
+
+It is best-effort; reconcile its output against the priority order below (workflows are authoritative, then CLAUDE.md, then package.json, then Makefile):
 
 1. **`.github/workflows/*.yml`** — Read CI workflow files and extract active check commands
    - Look for `run:` fields containing `lint`, `format`, `typecheck`, `type-check`, `test`, `check`
