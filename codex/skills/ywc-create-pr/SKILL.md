@@ -84,10 +84,12 @@ Run the bundled secret scan script:
 
 ```bash
 # Phase 1+2: dangerous file names + staged/unstaged diff content
-bash codex/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+SECRET_SCRIPT="codex/skills/ywc-create-pr/scripts/scan-secrets.sh"
+[ -f "$SECRET_SCRIPT" ] || SECRET_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/scan-secrets.sh"
+bash "$SECRET_SCRIPT" --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
-bash codex/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
+bash "$SECRET_SCRIPT" --committed <base-branch>
 ```
 
 Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout.
@@ -115,7 +117,9 @@ Run the same lint, format, typecheck, and test checks locally that CI will execu
 Run the bundled detector first — it emits candidate commands from each source plus the package manager, so you do not re-derive the same greps each run:
 
 ```bash
-bash codex/skills/ywc-create-pr/scripts/detect-ci-commands.sh [repo-dir]
+CI_DETECT_SCRIPT="codex/skills/ywc-create-pr/scripts/detect-ci-commands.sh"
+[ -f "$CI_DETECT_SCRIPT" ] || CI_DETECT_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/detect-ci-commands.sh"
+bash "$CI_DETECT_SCRIPT" [repo-dir]
 ```
 
 It is best-effort; reconcile its output against the priority order below (workflows are authoritative, then CLAUDE.md, then package.json, then Makefile):

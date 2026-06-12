@@ -201,7 +201,9 @@ Do not ask them to "review the skill" unless the user explicitly requested a rev
 Run the bundled mechanical gate first — it enforces the deterministic subset of the checklist below (name/description shape, announce line, 500-line cap, README locale set, no `@ywc-` force-loads, reference pointers + min-length) for a single skill and exits non-zero on any failure:
 
 ```bash
-bash codex/skills/ywc-skill-author/scripts/validate-skill.sh <skill-dir>
+VALIDATE_SKILL_SCRIPT="codex/skills/ywc-skill-author/scripts/validate-skill.sh"
+[ -f "$VALIDATE_SKILL_SCRIPT" ] || VALIDATE_SKILL_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-skill-author/scripts/validate-skill.sh"
+bash "$VALIDATE_SKILL_SCRIPT" <skill-dir>
 ```
 
 Then verify the judgment-based items the script cannot check, before merging a new or modified ywc-* skill:

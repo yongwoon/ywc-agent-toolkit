@@ -200,7 +200,9 @@ Any subagent output containing the following patterns is treated as a failed gen
 Catch the high-confidence comment/marker stubs mechanically before delivering (more reliable than self-review; exits non-zero on any hit):
 
 ```bash
-bash codex/skills/scripts/scan-stubs.sh <generated-file>...
+STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
+[ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
+bash "$STUB_SCRIPT" <generated-file>...
 ```
 
 The script gates the comment/marker forms below; the prose shortcuts and bare `...`/`pass` placeholders still need your own read, since they false-positive in real code and docs.

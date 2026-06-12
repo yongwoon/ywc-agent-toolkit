@@ -160,6 +160,51 @@ check_agent_file() {
   fi
 }
 
+check_codex_agent_file() {
+  local file="$1"
+  local base
+  base="$(basename "$file" .toml)"
+
+  if ! grep -q "^name = \"$base\"$" "$file"; then
+    echo "ERROR: codex/agents/$base.toml is missing matching name"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  local field
+  for field in description developer_instructions; do
+    if ! grep -q "^${field} =" "$file"; then
+      echo "ERROR: codex/agents/$base.toml is missing $field"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  if ! grep -q '^sandbox_mode = "read-only"$' "$file"; then
+    echo "ERROR: codex/agents/$base.toml must keep sandbox_mode = \"read-only\""
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if grep -Eq '^(tools|permissionMode)[[:space:]]*=' "$file" || grep -q 'Task(subagent_type=' "$file"; then
+    echo "ERROR: codex/agents/$base.toml contains Claude Code-only agent fields"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
+check_codex_agents() {
+  local dir=codex/agents
+  [ -d "$dir" ] || return 0
+
+  if [ ! -f "$dir/README.md" ]; then
+    echo "ERROR: codex/agents is missing README.md"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  local file
+  for file in "$dir"/ywc-*.toml; do
+    [ -f "$file" ] || continue
+    check_codex_agent_file "$file"
+  done
+}
+
 check_cc_support_dirs() {
   local ref
 
@@ -237,6 +282,9 @@ for dir in codex/skills/*/; do
 done
 check_codex_support_dirs
 check_codex_plan_handoff
+
+echo "==> Validating codex agents..."
+check_codex_agents
 
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null

@@ -107,7 +107,9 @@ Verify the following conditions before starting:
 **State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
-bash codex/skills/scripts/update-state.py init-parallel \
+STATE_SCRIPT="codex/skills/scripts/update-state.py"
+[ -f "$STATE_SCRIPT" ] || STATE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/update-state.py"
+python3 "$STATE_SCRIPT" init-parallel \
   --mode <local-merge|draft|per-task-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"]},{"wave":2,"tasks":["t-c"]}]'
 ```
@@ -201,7 +203,7 @@ $ywc-worktrees --mode create \
 
 Record the resolved worktree path for the subagent payload. Record the resolved root (`worktree_root`) and root kind (`standard` or `legacy`) in `.ywc-run-state.json` so resume validation checks the same location used during creation.
 
-**Checkpoint**: `bash codex/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
+**Checkpoint**: use the same `STATE_SCRIPT` resolver above, then run `python3 "$STATE_SCRIPT" wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 
 **4b. Spawn Agents** — Use Codex subagent delegation to spawn one worker subagent per task in parallel. Pass each subagent:
 - The task's `task.md` (implementation checklist)
@@ -305,7 +307,9 @@ $ywc-finish-branch \
 **For `--per-task-pr`** — the merge already happened in (a) step 5, so do **not** call finish-branch (its `local-merge` would attempt a redundant merge, and its `normal-pr` assumes the feature branch is the current checkout, which it is not under the worktree model). Instead, run the same Mark Complete that finish-branch would, then push immediately:
 
 ```bash
-bash codex/skills/scripts/mark-complete.sh <tasks-dir> <task-name> --push
+MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
+[ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
+bash "$MARK_SCRIPT" <tasks-dir> <task-name> --push
 ```
 
 This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves the task into `completed/`, writes the mandatory `chore: mark <task-name> as completed` commit (handling the gitignored-`<tasks-dir>` case with a plain `mv` + `--allow-empty` commit), pushes the current branch — which under this flow is the synced base — and verifies the move (destination exists, source gone, marker at HEAD). A **non-zero exit** means the move or verification failed: mark the task `BLOCKED`, do not treat it as delivered. A `--per-task-pr` task is delivered only when its PR is merged (a step 5), local base is synced (a step 6), and this marker commit is pushed.
@@ -318,13 +322,13 @@ This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves 
 
 **Status handling for `--per-task-pr`** (no finish-branch delegation): the inline path has three failure gates — a CI failure exhausted after 2 fix cycles (a step 2), a latest-base refresh conflict (a step 4), and a post-move verification mismatch (b). Any one marks the task `BLOCKED`: preserve its worktree and branch (Step 4g must skip it), record it for the Completion Report, and continue with the remaining wave tasks. A merge conflict reported by `gh pr merge` (a step 5) is likewise `BLOCKED` — never force-merge; surface the conflict to the user.
 
-**Checkpoint** (after each successful task delivery in the inner loop): `bash codex/skills/scripts/update-state.py task-merged <N> <task-name>` — moves the task from `pending` to `merged` in wave `<N>` and stamps `last_checkpoint`.
+**Checkpoint** (after each successful task delivery in the inner loop): use the `STATE_SCRIPT` resolver from State Init, then run `python3 "$STATE_SCRIPT" task-merged <N> <task-name>` — moves the task from `pending` to `merged` in wave `<N>` and stamps `last_checkpoint`.
 
 **Wave-end push for `--draft` mode**: After every task in the wave has been processed, the `--defer-push` completion-marker commits remain local. They are pushed once at the end of **all waves** (not per-wave), as part of the Completion Report transition. For `--local-merge` and `--per-task-pr`, no wave-end push is needed — every task already pushed individually (local-merge via finish-branch, per-task-pr via the (b) inline push after `gh pr merge`).
 
 Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never moves them. Record those tasks for the Completion Report.
 
-**Checkpoint** (after the entire wave loop finishes): `bash codex/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
+**Checkpoint** (after the entire wave loop finishes): use the `STATE_SCRIPT` resolver from State Init, then run `python3 "$STATE_SCRIPT" wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
 
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 

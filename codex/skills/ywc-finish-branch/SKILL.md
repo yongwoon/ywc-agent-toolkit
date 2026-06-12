@@ -214,7 +214,9 @@ For `--mode normal-pr` and `--mode local-merge`:
 Use the shared marker script — it handles the `.gitignore` branch, the mandatory marker commit, and the post-move verification in one deterministic step (exits non-zero if anything failed):
 
 ```bash
-bash codex/skills/scripts/mark-complete.sh <tasks-dir> <task-name> [--push | --defer-push]
+MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
+[ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
+bash "$MARK_SCRIPT" <tasks-dir> <task-name> [--push | --defer-push]
 ```
 
 Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
