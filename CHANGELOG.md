@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.18.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.17.0...v1.18.0) (2026-06-12)
+
+
+### ### Added
+
+* add Codex plugin distribution support ([#67](https://github.com/yongwoon/ywc-agent-toolkit/issues/67)) ([de823a3](https://github.com/yongwoon/ywc-agent-toolkit/commit/de823a3c6094d7f3682be36a1175347a429dd2af))
+* add deterministic scripts replacing LLM-prose steps across skills ([#63](https://github.com/yongwoon/ywc-agent-toolkit/issues/63)) ([b3f6572](https://github.com/yongwoon/ywc-agent-toolkit/commit/b3f6572b81e2bd8402466bcf50c59df23efa37f5))
+* add deterministic skill helper scripts ([#66](https://github.com/yongwoon/ywc-agent-toolkit/issues/66)) ([63c4ae5](https://github.com/yongwoon/ywc-agent-toolkit/commit/63c4ae5df4d028808c817a86216665dc3da91bb3))
+* add internal Codex toolkit eval skill ([#68](https://github.com/yongwoon/ywc-agent-toolkit/issues/68)) ([64ec48e](https://github.com/yongwoon/ywc-agent-toolkit/commit/64ec48e815673ed6f1b3877ebb432e330d003ddb))
+* add ywc-toolkit-eval harness; repair refs and tighten skill/agent specs ([#60](https://github.com/yongwoon/ywc-agent-toolkit/issues/60)) ([aaf0dd6](https://github.com/yongwoon/ywc-agent-toolkit/commit/aaf0dd6eebd5308348ea16e7a1b60d25efc60f07))
+
+
+### ### Fixed
+
+* **codex:** improve toolkit eval quality ([#69](https://github.com/yongwoon/ywc-agent-toolkit/issues/69)) ([dad0081](https://github.com/yongwoon/ywc-agent-toolkit/commit/dad0081bfb702a58eca5485a821aa9542d2fd6b6))
+* **skills:** improve activation accuracy for confidence-gate, receive-review, project-docs ([#71](https://github.com/yongwoon/ywc-agent-toolkit/issues/71)) ([bcc4098](https://github.com/yongwoon/ywc-agent-toolkit/commit/bcc40984f412077df15b270d91f6cd6419c1beb4))
+
 ## [1.17.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.16.0...v1.17.0) (2026-06-11)
 
 
