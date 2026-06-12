@@ -56,13 +56,27 @@ check_codex_skill_dir() {
   local dir="$1"
   local name
   name="$(basename "$dir")"
+  local openai_yaml="${dir}agents/openai.yaml"
 
   check_skill_dir "$dir"
   check_readme_set "$dir"
 
-  if [ ! -f "${dir}agents/openai.yaml" ]; then
+  if [ ! -f "$openai_yaml" ]; then
     echo "ERROR: $name is missing agents/openai.yaml"
     ERRORS=$((ERRORS + 1))
+  else
+    if ! grep -q '^interface:' "$openai_yaml"; then
+      echo "ERROR: $name/agents/openai.yaml is missing interface root"
+      ERRORS=$((ERRORS + 1))
+    fi
+
+    local field
+    for field in display_name short_description default_prompt; do
+      if ! grep -Eq "^[[:space:]]{2}${field}:[[:space:]]*\"[^\"]+\"[[:space:]]*$" "$openai_yaml"; then
+        echo "ERROR: $name/agents/openai.yaml is missing interface.$field"
+        ERRORS=$((ERRORS + 1))
+      fi
+    done
   fi
 
   local frontmatter
@@ -327,6 +341,51 @@ check_agent_file() {
   fi
 }
 
+check_codex_agent_file() {
+  local file="$1"
+  local base
+  base="$(basename "$file" .toml)"
+
+  if ! grep -q "^name = \"$base\"$" "$file"; then
+    echo "ERROR: codex/agents/$base.toml is missing matching name"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  local field
+  for field in description developer_instructions; do
+    if ! grep -q "^${field} =" "$file"; then
+      echo "ERROR: codex/agents/$base.toml is missing $field"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  if ! grep -q '^sandbox_mode = "read-only"$' "$file"; then
+    echo "ERROR: codex/agents/$base.toml must keep sandbox_mode = \"read-only\""
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if grep -Eq '^(tools|permissionMode)[[:space:]]*=' "$file" || grep -q 'Task(subagent_type=' "$file"; then
+    echo "ERROR: codex/agents/$base.toml contains Claude Code-only agent fields"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
+check_codex_agents() {
+  local dir=codex/agents
+  [ -d "$dir" ] || return 0
+
+  if [ ! -f "$dir/README.md" ]; then
+    echo "ERROR: codex/agents is missing README.md"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  local file
+  for file in "$dir"/ywc-*.toml; do
+    [ -f "$file" ] || continue
+    check_codex_agent_file "$file"
+  done
+}
+
 check_cc_support_dirs() {
   local ref
 
@@ -407,6 +466,9 @@ check_codex_plan_handoff
 
 echo "==> Validating Codex plugin package..."
 check_codex_plugin_manifest
+
+echo "==> Validating codex agents..."
+check_codex_agents
 
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null

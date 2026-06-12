@@ -67,7 +67,7 @@ These rules apply to **every** ywc-* skill without exception.
 | A12 | Long-form content goes under `references/`. Reusable templates use `.template` suffix (e.g., `task.md.template`) — see Progressive Disclosure §A14 for extraction criteria |
 | A13 | Test scenarios under `evals/evals.json` when the skill has objectively verifiable outputs |
 | A14 | Tier 3 extraction MUST trigger when any single inline section exceeds **30 lines of static content** (lookup tables, decision trees, vocabulary lists, code-block templates). Workflow / step prose stays in Tier 2 even when long, so the agent reads it on activation. See [references/progressive-disclosure.md](references/progressive-disclosure.md) for the full decision tree |
-| A15 | Each skill MUST ship `agents/openai.yaml` with `display_name`, `short_description`, and `default_prompt` synchronized to SKILL.md |
+| A15 | Each skill MUST ship `agents/openai.yaml` with `interface.display_name`, `interface.short_description`, and `interface.default_prompt` synchronized to SKILL.md |
 | A16 | Do not add auxiliary documentation such as per-skill `CHANGELOG.md`, `INSTALLATION_GUIDE.md`, or `QUICK_REFERENCE.md`; only `SKILL.md`, required locale READMEs, `agents/openai.yaml`, and truly needed resources belong in the skill folder |
 
 ## Progressive Disclosure (3-Tier Loading Model)
@@ -167,7 +167,7 @@ Repeat until the agent cannot find a loophole.
 
 After drafting SKILL.md, add only the resources that directly support execution:
 
-- `agents/openai.yaml`: write deterministic `display_name`, `short_description`, and `default_prompt` from the final SKILL.md. Include optional fields such as icons or brand color only when explicitly provided.
+- `agents/openai.yaml`: write deterministic `interface.display_name`, `interface.short_description`, and `interface.default_prompt` from the final SKILL.md. Include optional fields such as icons or brand color only when explicitly provided.
 - `references/`: move long static rules, lookup tables, rubrics, and templates here, then add an explicit pointer from SKILL.md.
 - `scripts/`: add scripts only when repeated manual code would be fragile or deterministic reliability matters. Run each new script, or a representative sample for similar scripts, before completion.
 - `assets/`: add files that the skill uses as output material, not documentation to load into context.
@@ -198,7 +198,15 @@ Do not ask them to "review the skill" unless the user explicitly requested a rev
 
 ## Validation Checklist
 
-Before merging a new or modified ywc-* skill, verify:
+Run the bundled mechanical gate first — it enforces the deterministic subset of the checklist below (name/description shape, announce line, 500-line cap, README locale set, no `@ywc-` force-loads, reference pointers + min-length) for a single skill and exits non-zero on any failure:
+
+```bash
+VALIDATE_SKILL_SCRIPT="codex/skills/ywc-skill-author/scripts/validate-skill.sh"
+[ -f "$VALIDATE_SKILL_SCRIPT" ] || VALIDATE_SKILL_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-skill-author/scripts/validate-skill.sh"
+bash "$VALIDATE_SKILL_SCRIPT" <skill-dir>
+```
+
+Then verify the judgment-based items the script cannot check, before merging a new or modified ywc-* skill:
 
 **Frontmatter**
 - [ ] `name` starts with `ywc-`

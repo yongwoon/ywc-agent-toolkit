@@ -64,7 +64,15 @@ When tempted to bypass a rule, check this table first:
 
 ### Phase 1: Reconnaissance — Glob + Grep, never Read-all
 
-Run **all six signal-gathering passes in parallel** (no Read tool — Glob and Grep only). Full per-pass tool invocations live in [`references/reconnaissance-checklist.md`](references/reconnaissance-checklist.md).
+Run **all six signal-gathering passes** (no Read tool — Glob and Grep only). The fastest path is the bundled script, which runs every pass in one shot and prints the structured summary:
+
+```bash
+RECON_SCRIPT="codex/skills/ywc-onboard-repo/scripts/recon.sh"
+[ -f "$RECON_SCRIPT" ] || RECON_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-onboard-repo/scripts/recon.sh"
+bash "$RECON_SCRIPT" [repo-dir]
+```
+
+Full per-pass tool invocations (for when you need to run or extend a single pass by hand) live in [`references/reconnaissance-checklist.md`](references/reconnaissance-checklist.md).
 
 | Pass | What it surfaces | Tool |
 |---|---|---|

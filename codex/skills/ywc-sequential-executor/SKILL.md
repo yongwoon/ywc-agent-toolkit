@@ -93,10 +93,16 @@ Before starting execution, verify these conditions:
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Also add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the task range, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+STATE_SCRIPT="codex/skills/scripts/update-state.py"
+[ -f "$STATE_SCRIPT" ] || STATE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/update-state.py"
+python3 "$STATE_SCRIPT" init-sequential \
+  --mode <local-merge|draft|skip-ci-wait|normal> --tasks-dir <tasks-dir> \
+  --range '["000001-010-...","000001-020-..."]'
 ```
+The `--range` array is the ordered list of task-directory names this run will execute. Per-step checkpoint writes then use `update-state.py task-step <task> <step>` (Steps 2/4) and `update-state.py task-complete <task>` (after Step 5 delivery); see the schema and event table in [Checkpoint and Resume](#checkpoint-and-resume).
 
 ## External URL Policy
 
@@ -234,7 +240,7 @@ This solves the code-availability problem that Step 1's dependency-validation ex
 
 Branch name format: `feature/<task-name>` (e.g., `feature/000001-010-db-create-users-table`)
 
-**Checkpoint**: Update `.ywc-run-state.json` — set `current_task` to `<task-name>`, `current_step` to `2`, `branch` to `feature/<task-name>`, and `last_checkpoint` to current UTC time.
+**Checkpoint**: use the `STATE_SCRIPT` resolver from State Init, then run `python3 "$STATE_SCRIPT" task-step <task-name> 2 --branch feature/<task-name>`.
 
 ### Step 3: Implementation
 
@@ -263,12 +269,15 @@ Commit guidelines:
 - Add a `Co-Authored-By` trailer when Claude generated the changes. Use the format specified in the project's CLAUDE.md or commit convention; if none is specified, default to `Co-Authored-By: Codex <noreply@openai.com>`
 - Stage specific files by name (never `git add -A` or `git add .`)
 
-**Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
+**Completeness Gate (required before first commit):** Before creating the first commit for this task, run the shared stub-pattern check on the modified files (exits non-zero if any stub is found):
 
 ```bash
-git diff --name-only HEAD 2>/dev/null | xargs grep -lnE \
-  "TODO:.*implement|FIXME|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
-  2>/dev/null || echo "OK: no stub patterns found"
+FILES="$(git diff --name-only HEAD)"
+if [ -n "$FILES" ]; then
+  STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
+  [ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
+  printf '%s\n' "$FILES" | xargs bash "$STUB_SCRIPT"
+fi
 ```
 
 If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.
@@ -289,7 +298,7 @@ Run verification in three layers, from narrowest to broadest. Each layer must pa
 
 If any layer fails: **fix the code, never the test** — no `skip`/`xit`/`.only`, no commented-out or relaxed assertions. Re-run the failing layer plus any earlier layer the fix could invalidate. For a failure in a test unrelated to the current task, investigate whether the task actually caused it (shared state, fixtures, ordering) before dismissing as flaky. **Layer 4 lint/format exception**: running the project's auto-fix command is step zero and does not count toward the 2-attempt limit — the limit starts only if auto-fix leaves residual errors. After **2 fix attempts** (post-auto-fix for Layer 4, or 2 direct attempts for other layers), stop and report layer + failing test name(s) + error output + attempts made. Never proceed to Step 5 with a failing full suite — local catch saves a CI round trip and keeps `main` healthy.
 
-**Checkpoint**: Update `.ywc-run-state.json` — set `current_step` to `4`, `last_checkpoint` to current UTC time.
+**Checkpoint**: use the `STATE_SCRIPT` resolver from State Init, then run `python3 "$STATE_SCRIPT" task-step <task-name> 4`.
 
 **`--run-tests-locally` gate (applies only when `--run-tests-locally` is set AND `--local-merge` is active)**: After all four verification layers pass, detect the project's test command from CLAUDE.md or `package.json` (scripts field). Run it before proceeding to Step 5 (merge). On failure: mark the task FAIL and do not merge — surface the test output to the user and stop. If no test command can be detected: emit a warning and proceed to Step 5 without blocking.
 
@@ -342,7 +351,7 @@ After Step 4 verification (and optional Step 4.5 review) passes, the rest of the
 
 **`--draft` bot review**: After finish-branch returns with the draft PR URL, run the bot review polling loop from [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews` for this PR. The PR stays as draft after review response — do not un-draft or merge.
 
-**Checkpoint**: Update `.ywc-run-state.json` after finish-branch returns — set `current_step` to `8` (final pre-completion checkpoint, preserved for resume compatibility with older state files); set `branch` to `null` for `normal-pr` and `local-merge` (finish-branch deleted it) or keep `feature/<task-name>` for `draft` / `skip-ci-wait` (branch stays alive). Append `<task-name>` to `completed` only when finish-branch returned `DONE` and `--mode` is `normal-pr` or `local-merge`. For `draft` / `skip-ci-wait`, do not append; the task is intentionally incomplete.
+**Checkpoint**: use the `STATE_SCRIPT` resolver from State Init after finish-branch returns. For `normal-pr` and `local-merge` when finish-branch returned `DONE`, run `python3 "$STATE_SCRIPT" task-complete <task-name>` so the task is appended to `completed`, `branch` is cleared, and the next task becomes current. For `draft` / `skip-ci-wait`, run `python3 "$STATE_SCRIPT" task-step <task-name> 8 --branch feature/<task-name>` instead; do not append to `completed`, because the task is intentionally incomplete until the draft PR is merged.
 
 ### Step 6: Next Task (Range Mode Only)
 
@@ -353,8 +362,9 @@ If executing a range:
 1. Check if there are remaining tasks in the range. If no remaining tasks, and Step 5 has returned `DONE` for the current task, proceed to the Completion Report.
 2. **Pre-transition state check (`normal-pr` and `local-merge` modes):** Run the bundled verification script:
    ```bash
-   bash codex/skills/ywc-sequential-executor/scripts/verify-transition.sh \
-     <base-branch> <completed-task-name> [<tasks-dir>]
+   VERIFY_SCRIPT="codex/skills/ywc-sequential-executor/scripts/verify-transition.sh"
+   [ -f "$VERIFY_SCRIPT" ] || VERIFY_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-sequential-executor/scripts/verify-transition.sh"
+   bash "$VERIFY_SCRIPT" <base-branch> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.
 3. Transition to the next task **immediately and silently** — emit no text output, do not ask for confirmation, do not summarize. The next output after Step 5 of this task is the first tool call (reading `README.md`) of Step 1 of the next task — not any text. Suppress any transition-message impulse and issue the tool call instead.
