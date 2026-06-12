@@ -19,7 +19,9 @@ fail() { echo "FAIL: $1"; errs=$((errs + 1)); }
 [ -f "$SKILL" ] || { echo "FAIL: $SKILL not found"; exit 1; }
 
 # --- Frontmatter ---
-case "$name" in ywc-*) ;; *) fail "directory name '$name' does not start with ywc-" ;; esac
+if ! printf '%s' "$name" | grep -qE '^ywc-[a-z0-9]+(-[a-z0-9]+)*$'; then
+  fail "directory name '$name' is not ywc-<kebab-case> (lowercase letters/digits, hyphen-separated)"
+fi
 declared="$(sed -n 's/^name:[[:space:]]*//p' "$SKILL" | head -1)"
 [ "$declared" = "$name" ] || fail "frontmatter name '$declared' != directory '$name'"
 # The description may be inline (text on the `description:` line) or a folded

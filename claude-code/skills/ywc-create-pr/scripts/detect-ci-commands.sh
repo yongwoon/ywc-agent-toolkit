@@ -41,10 +41,22 @@ fi
 
 echo "from_package_json_scripts:"
 if [ -f package.json ]; then
-  # Extract "key": "value" pairs whose key matches a check category.
-  grep -oE '"[A-Za-z:_-]+"[[:space:]]*:[[:space:]]*"[^"]*"' package.json 2>/dev/null \
-    | grep -iE "^\"($CHECK_RE)" | grep -ivE "$EXCLUDE_RE" \
-    | sed -E 's/^"([^"]+)".*/  - '"$pm"' run \1/' | sort -u
+  # Parse only the "scripts" object (not the whole file) so non-script keys
+  # never become bogus `pm run <key>` candidates. Silent no-op if python3 or
+  # the JSON is unavailable.
+  python3 - "$pm" "$CHECK_RE" "$EXCLUDE_RE" <<'PY' 2>/dev/null
+import json, re, sys
+pm, check_re, exclude_re = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    scripts = json.load(open("package.json")).get("scripts", {})
+except Exception:
+    scripts = {}
+check = re.compile(check_re, re.I)
+exclude = re.compile(exclude_re, re.I)
+for key in sorted(scripts):
+    if check.search(key) and not exclude.search(key):
+        print(f"  - {pm} run {key}")
+PY
 fi
 
 echo "from_makefile:"

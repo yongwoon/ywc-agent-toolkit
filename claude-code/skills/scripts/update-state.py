@@ -95,10 +95,13 @@ def find_wave(state: dict, n: int) -> dict:
 def cmd_init_parallel(args: argparse.Namespace) -> None:
     waves = parse_json_list(args.waves, "waves")
     for wave in waves:
+        if (not isinstance(wave, dict)
+                or not isinstance(wave.get("wave"), int)
+                or not isinstance(wave.get("tasks"), list)):
+            die('each --waves element must be a {"wave": <int>, "tasks": [<task>...]} object')
         wave.setdefault("status", "planned")
-        wave.setdefault("tasks", [])
         wave.setdefault("merged", [])
-        wave.setdefault("pending", list(wave.get("tasks", [])))
+        wave.setdefault("pending", list(wave["tasks"]))
     save({
         "executor": "parallel",
         "mode": args.mode,
@@ -142,6 +145,8 @@ def cmd_task_merged(args: argparse.Namespace) -> None:
     state = load()
     require_executor(state, "parallel", "task-merged")
     wave = find_wave(state, args.wave)
+    if args.task not in wave.get("tasks", []):
+        die(f"task '{args.task}' is not in wave {args.wave}'s task list {wave.get('tasks', [])}")
     if args.task in wave.get("pending", []):
         wave["pending"].remove(args.task)
     if args.task not in wave.setdefault("merged", []):
@@ -157,8 +162,13 @@ def cmd_wave_complete(args: argparse.Namespace) -> None:
     if wave.get("pending"):
         die(f"wave {args.n} still has pending tasks: {wave['pending']}")
     wave["status"] = "completed"
+    # Advance current_wave to the lowest-numbered not-yet-completed wave so an
+    # interruption right after wave-complete resumes at the next wave, not the
+    # one just finished. If every wave is done, keep the last completed number.
+    remaining = [w["wave"] for w in state.get("waves", []) if w.get("status") != "completed"]
+    state["current_wave"] = min(remaining) if remaining else args.n
     save(state)
-    print(f"wave {args.n} -> completed")
+    print(f"wave {args.n} -> completed (current_wave={state['current_wave']})")
 
 
 def cmd_task_step(args: argparse.Namespace) -> None:

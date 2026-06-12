@@ -40,6 +40,13 @@ case "$TASK" in
   */*|*..*) echo "error: invalid task name (no '/' or '..'): $TASK" >&2; exit 2 ;;
 esac
 
+# Tasks-dir guard — both executors pass a repo-relative dir; reject absolute
+# paths and '..' so the move/commit can never escape the working tree.
+case "$TASKS_DIR" in
+  /*)    echo "error: tasks-dir must be repo-relative, not absolute: $TASKS_DIR" >&2; exit 2 ;;
+  *..*)  echo "error: tasks-dir must not contain '..': $TASKS_DIR" >&2; exit 2 ;;
+esac
+
 TASKS_DIR="${TASKS_DIR%/}"
 SRC="$TASKS_DIR/$TASK"
 DEST="$TASKS_DIR/completed/$TASK"

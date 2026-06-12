@@ -17,7 +17,14 @@ files=""
 if [ "${1:-}" = "--range" ]; then
   base="${2:-}"
   [ -n "$base" ] || { echo "usage: scan-stubs.sh --range <git-ref>" >&2; exit 2; }
-  files="$(git diff --name-only "$base"...HEAD 2>/dev/null)"
+  # Validate the ref first — otherwise an invalid base yields an empty file list
+  # and the gate exits 0 (false pass), silently disabling stub detection.
+  git rev-parse --verify "$base^{commit}" >/dev/null 2>&1 || {
+    echo "error: invalid git ref: $base" >&2; exit 2
+  }
+  if ! files="$(git diff --name-only "$base"...HEAD)"; then
+    echo "error: failed to collect changed files for range $base...HEAD" >&2; exit 2
+  fi
 elif [ "$#" -gt 0 ]; then
   printf -v files '%s\n' "$@"
 else
