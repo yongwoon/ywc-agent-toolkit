@@ -1,7 +1,7 @@
 ---
 name: ywc-confidence-gate
 description: >-
-  (ywc) Use before starting any non-trivial implementation, before invoking
+  (ywc) Use when you need to gate an implementation start — before any non-trivial implementation, before invoking
   ywc-code-gen / ywc-sequential-executor / ywc-parallel-executor, or before
   committing to a design path with material rework cost. Scores readiness
   across five dimensions (scope clarity, architecture compliance, evidence
