@@ -1,22 +1,22 @@
 .DS_Store
 *.manifest
 
+__pycache__/
+
 .omc/
 .entire/
-
-.claude/settings.local.json
-.claude/worktrees/
-
+.serena
 .pi/hooks-logs/
 **/.pi/hooks-logs/
 
-# Claude Code hook runtime logs (skill-stop diagnostics; per-machine, not portable)
+.claude/settings.local.json
+.claude/worktrees/
 .claude/logs/
+.claude/skills/ywc-toolkit-eval/evals/
+
+
 docs/ywc-plans
 tasks/
+tools/codex-internal/skills/ywc-codex-toolkit-eval/evals/
 .ywc-run-state.json
 .ywc-learnings.jsonl
-.serena
-
-__pycache__/
-tools/codex-internal/skills/ywc-codex-toolkit-eval/evals/
