@@ -45,7 +45,7 @@ When tempted to bypass a rule, check this table first:
 | `--target` | `--target <root>` | `--target claude-code/skills` | Root to evaluate: `claude-code/skills`, `claude-code/agents`, `codex/skills`, or `all` (default). |
 | `--mode` | `--mode <m>` | `--mode mechanical` | `mechanical` (script only), `judge` (model pass only), or `full` (both, default). |
 | `--item` | `--item <name>` | `--item ywc-commit` | Score a single skill/agent instead of the whole root. |
-| `--ci` | flag | | Mechanical-only, compares against the last `history.json` row and exits non-zero on any per-axis regression. Used by the CI gate. |
+| `--ci` | flag | | Mechanical-only, compares against the committed `evals/history.mechanical.json` baseline and exits non-zero on any per-axis mechanical regression. Used by the CI gate. |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Max Opus judge escalations for genuinely ambiguous activation/boundary calls. Default 5. |
 
 ## Scoring Model
@@ -142,7 +142,7 @@ Before declaring an evaluation cycle complete, verify:
 - [ ] Every judgment-axis score carries a file:line citation.
 - [ ] The prioritized backlog has at least one concrete, actionable fix per listed item.
 - [ ] `evals/history.json` gained exactly one new row; no prior row was mutated.
-- [ ] In `--ci` mode, exit code reflects regression (non-zero if any per-axis score dropped vs the last history row).
+- [ ] In `--ci` mode, exit code reflects regression (non-zero if any per-axis mechanical score dropped vs the committed `history.mechanical.json` baseline).
 
 ## Common Mistakes
 

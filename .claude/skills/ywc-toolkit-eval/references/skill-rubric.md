@@ -42,7 +42,7 @@ Mechanical. Counts satisfied `ywc-skill-author` rules A1–A14. Score = round(sa
 | `## Rationalization Defense` with ≥5 table rows | A7 |
 | body ≤ 500 lines | A8 |
 | no `@`-prefixed skill cross-reference | A9 |
-| full README locale set present | A11 |
+| required README locale set (md/en/ja/ko) present; full-set (es/zh) completeness scored under S5 | A11 |
 | every `references/*.md` has ≥1 inbound pointer | A14 |
 
 ## S3 — Behavioral Efficacy (weight 20)

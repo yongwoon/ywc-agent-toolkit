@@ -37,7 +37,7 @@ HISTORY_MECH = Path(__file__).resolve().parent.parent / "evals" / "history.mecha
 
 HANGUL = re.compile(r"[가-힣]")
 KANA = re.compile(r"[぀-ヿ]")
-MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit"}
+MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit", "Bash"}
 READONLY_HINT = re.compile(r"review|audit|analyst|reviewer|read-only", re.IGNORECASE)
 
 
@@ -87,7 +87,9 @@ def parse_toml_lite(text: str) -> tuple[dict, str]:
 # --- scoring helpers -------------------------------------------------------
 
 def word_trigrams(desc: str) -> set:
-    words = re.findall(r"[a-zA-Z]{3,}", desc.lower())
+    # Unicode-aware: capture Hangul / Kana / Latin tokens so collisions between
+    # Korean/Japanese-heavy descriptions are detected, not silently dropped.
+    words = re.findall(r"[^\W\d_]{3,}", desc.lower(), flags=re.UNICODE)
     return {tuple(words[i:i + 3]) for i in range(len(words) - 2)}
 
 
@@ -277,14 +279,18 @@ def score_agent(path: Path, collisions: dict) -> dict:
     signals["sandbox_mode"] = sandbox
     signals["readonly_role"] = readonly_role
 
-    # A4 output contract
+    # A4 output contract. Claude Code agents satisfy the contract either by an
+    # inline Status: block or by referencing the canonical Return Contract
+    # (subagent-status-actions.md §3.5) — an inline-invented format does not.
     has_status = "Status:" in instr or "Status :" in instr
+    has_contract_ref = "subagent-status-actions" in instr
     states = sum(s in instr for s in ("DONE", "BLOCKED", "NEEDS_CONTEXT", "DONE_WITH_CONCERNS"))
     if is_codex:
         a4 = 5 if (has_status and states >= 3) else (3 if has_status else 0)
     else:
-        a4 = 5 if has_status else (3 if re.search(r"output|format|return", instr, re.I) else 2)
+        a4 = 5 if (has_status or has_contract_ref) else (2 if re.search(r"output|format|return", instr, re.I) else 1)
     signals["has_status_contract"] = has_status
+    signals["has_contract_ref"] = has_contract_ref
     signals["contract_states"] = states
 
     # A5 model present (judge refines tier fit)

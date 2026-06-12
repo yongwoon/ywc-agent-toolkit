@@ -62,7 +62,7 @@ Mechanical (presence) + judgment (adherence). Codex agents MUST define the `Stat
 
 | Score | Band |
 |---|---|
-| 5 | Output contract defined explicitly; the four `Status:` states present (Codex) or an equivalent structured shape (Claude Code); `Next action:` described. |
+| 5 | Output contract follows the canonical Return Contract — an inline `Status:` block with the four states (DONE / DONE_WITH_CONCERNS / BLOCKED / NEEDS_CONTEXT) and a parseable `Next action:`, or an explicit reference to `claude-code/skills/references/subagent-status-actions.md §3.5`. An inline-invented format does not qualify. |
 | 4 | Contract defined, one state or `Next action:` under-specified. |
 | 3 | Output shape implied by an example but not stated as a contract. |
 | 2 | Free-form output; caller must parse prose. |
