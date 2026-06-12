@@ -19,3 +19,4 @@ tasks/
 .serena
 
 __pycache__/
+tools/codex-internal/skills/ywc-codex-toolkit-eval/evals/
