@@ -1,0 +1,4 @@
+interface:
+  display_name: "TDD Ritual"
+  short_description: "Enforce RED → GREEN → REFACTOR with a watch-it-fail step"
+  default_prompt: "Use $ywc-tdd-ritual to write a failing test first, watch it fail for the expected reason, then write the minimal production code that makes it pass."

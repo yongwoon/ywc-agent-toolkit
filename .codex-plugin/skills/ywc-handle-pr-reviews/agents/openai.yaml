@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handle PR Reviews"
+  short_description: "Address GitHub PR review comments"
+  default_prompt: "Use $ywc-handle-pr-reviews to fetch unresolved PR comments, implement justified fixes, and reply to each review thread."

@@ -1,0 +1,95 @@
+# [TASK_NAME]
+
+## Purpose
+What this task achieves and why it is needed.
+
+## Scope
+What is included in this task.
+
+## Spec Reference
+Source documents the implementer must consult before and during implementation. Fill in every field. If there is genuinely no spec, write `N/A — no external spec (housekeeping / refactor / config only)` in **Primary Sources** and leave the other fields empty.
+
+### Primary Sources
+Project-relative paths first; external URLs only if the project has opted in (see sequential-executor policy). Include the specific section or anchor when possible.
+- `docs/prd/[feature].md#[section]` — what this doc defines for this task
+- `docs/design/[component].md` — what this doc defines for this task
+- `(N/A — no external spec)`
+
+### Summary
+2–5 sentence orientation so the implementer does not need to open every link to start. The linked sources above are the source of truth; this summary is a quick-start. If the summary and the primary source disagree, trust the primary source and flag the drift.
+
+### Out of Scope (from spec)
+Items the **spec** mentions that are **intentionally deferred** or handled by a different task. This is a guardrail against scope creep — implementers should refuse to add these even if they seem natural.
+- Item deferred — handled by `[TASK_NAME]`
+- Item deferred — out of this feature's scope entirely
+- `(None — spec has no deferred items)`
+
+<!-- NOTE: "Out of Scope (from spec)" covers items the SPEC describes but this TASK does not cover.
+     It answers: "The spec says X, but this task intentionally skips it."
+     Compare with "## Out of Scope" at the bottom, which defines the TASK's own boundary. -->
+
+## Dependencies
+
+### Depends On
+List of tasks that must be completed before this task can start.
+- `[TASK_NAME_A]` — what it provides that this task needs
+- `[TASK_NAME_B]` — what it provides that this task needs
+- (None — if this is a root task)
+
+### Depended By
+List of tasks that depend on this task's output.
+- `[TASK_NAME_X]` — what this task provides that it needs
+- `[TASK_NAME_Y]` — what this task provides that it needs
+- (None — if no downstream dependency)
+
+## Key Files
+Files expected to be created or modified in this task.
+- `path/to/file.ts` — description
+- `path/to/migration.sql` — description
+
+## Notes
+Important considerations, pitfalls, or design decisions.
+
+## Parallel Execution Metadata
+
+### Ownership
+Files, directories, modules, or contracts this task is allowed to modify.
+- `path/to/module/**`
+- `path/to/file.ts`
+- `API contract: /api/v1/example`
+
+<!-- NOTE: Ownership scope depends on the selected Granularity Mode:
+     - `human` mode: narrow path globs or specific files
+     - `llm` mode: feature/module subtree (e.g., `src/features/auth/**`)
+     See references/granularity-modes.md for full rules. -->
+
+### Shared Surfaces
+Shared boundaries this task touches and may conflict on.
+- `Database schema: example_table`
+- `Shared type: ExampleResponse`
+- `(None identified)`
+
+### Conflicts With
+Tasks that should not run in parallel with this task.
+- `[TASK_NAME_Y]` — overlaps on `path/to/shared-area/**`
+- `(None identified)`
+
+### Parallelizable After
+Minimum merged baseline required before isolated execution can safely start.
+- `[TASK_NAME_A]`
+- `[TASK_NAME_B]`
+- `(Root task — no predecessor required)`
+
+### Task Verify
+Commands that specifically prove this task is complete.
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test -- path/to/test`
+
+## Out of Scope
+What is intentionally excluded from this task's implementation, regardless of whether the spec mentions it. This covers assumptions, adjacent features, or implementation choices that someone might mistakenly try to include.
+
+<!-- NOTE: "## Out of Scope" defines the TASK's own implementation boundary.
+     It answers: "Even if it seems related, do NOT implement these in this task."
+     Compare with "### Out of Scope (from spec)" in Spec Reference, which lists items
+     the spec explicitly describes but are deferred to other tasks. -->

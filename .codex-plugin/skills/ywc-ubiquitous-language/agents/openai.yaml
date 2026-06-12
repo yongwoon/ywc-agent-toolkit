@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ubiquitous Language"
+  short_description: "Maintain shared domain vocabulary"
+  default_prompt: "Use $ywc-ubiquitous-language to extract, create, or update the project domain vocabulary and synonyms to avoid."

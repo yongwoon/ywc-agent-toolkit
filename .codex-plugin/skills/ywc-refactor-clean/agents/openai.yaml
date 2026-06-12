@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refactor Clean"
+  short_description: "Remove dead code with tiered safety"
+  default_prompt: "Use $ywc-refactor-clean to find dead code, classify each removal by safety tier, and verify each cleanup batch."

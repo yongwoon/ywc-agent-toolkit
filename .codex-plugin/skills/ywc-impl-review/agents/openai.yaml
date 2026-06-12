@@ -1,0 +1,4 @@
+interface:
+  display_name: "Impl Review"
+  short_description: "Run five-axis implementation review"
+  default_prompt: "Use $ywc-impl-review to review this completed implementation across architecture, design, devex, security, and QA before PR creation."

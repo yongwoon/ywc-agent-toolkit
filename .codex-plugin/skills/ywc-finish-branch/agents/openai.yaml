@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finish Branch"
+  short_description: "Deliver a completed branch to base"
+  default_prompt: "Use $ywc-finish-branch to take this verified feature branch through PR readiness, CI or local merge, task completion, and cleanup."

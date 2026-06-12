@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create PR"
+  short_description: "Create pull requests with safety checks"
+  default_prompt: "Use $ywc-create-pr to prepare commits, scan for secrets, push the branch, and open a pull request with the right title and body."

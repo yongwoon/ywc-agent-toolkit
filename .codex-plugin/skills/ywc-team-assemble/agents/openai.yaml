@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Assemble"
+  short_description: "Split complex work into specialist Codex subagents"
+  default_prompt: "Use $ywc-team-assemble to decompose this complex request into independent specialist roles, delegate only suitable parallel workstreams to Codex subagents, keep the critical path local, and synthesize the accepted outputs with clear changed files and verification."

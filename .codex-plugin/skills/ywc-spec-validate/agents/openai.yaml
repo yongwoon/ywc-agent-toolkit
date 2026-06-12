@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec Validate"
+  short_description: "Validate specs before task generation"
+  default_prompt: "Use $ywc-spec-validate to check this specification for completeness, consistency, feasibility, and readiness for task generation."

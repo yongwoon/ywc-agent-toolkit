@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit"
+  short_description: "Stage, commit, and optionally push work"
+  default_prompt: "Use $ywc-commit to inspect the current diff, stage the intended files, create a conventional commit, and push only when requested."

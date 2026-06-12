@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gen Testcase"
+  short_description: "Create manual QA testsheets"
+  default_prompt: "Use $ywc-gen-testcase to create a developer and QA testsheet from the requested PR, task range, git range, or diff."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI/UX Review"
+  short_description: "Review UI, UX, accessibility, and IA"
+  default_prompt: "Use $ywc-ui-ux-review to combine static code inspection and live UI exploration for UX, visual, IA, and accessibility findings."

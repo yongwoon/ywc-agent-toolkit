@@ -1,0 +1,4 @@
+interface:
+  display_name: "Incident Postmortem"
+  short_description: "Write structured incident postmortems"
+  default_prompt: "Use $ywc-incident-postmortem to reconstruct the timeline, identify root cause, assess impact, and draft corrective actions."

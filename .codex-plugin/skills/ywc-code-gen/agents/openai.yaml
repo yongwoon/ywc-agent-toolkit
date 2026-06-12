@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Gen"
+  short_description: "Generate backend, frontend, and QA layers"
+  default_prompt: "Use $ywc-code-gen to generate backend, frontend, and QA implementation layers from the approved specification."
