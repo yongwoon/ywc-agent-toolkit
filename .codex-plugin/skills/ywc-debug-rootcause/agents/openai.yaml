@@ -1,0 +1,4 @@
+interface:
+  display_name: "Debug Root Cause"
+  short_description: "Investigate defects before proposing fixes"
+  default_prompt: "Use $ywc-debug-rootcause to investigate a bug, test failure, build failure, or unexpected behavior through a four-phase root-cause workflow before applying any fix."

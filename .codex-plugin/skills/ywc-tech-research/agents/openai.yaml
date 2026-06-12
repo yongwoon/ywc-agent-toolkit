@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tech Research"
+  short_description: "Compare technical options before specs"
+  default_prompt: "Use $ywc-tech-research to compare implementation options, libraries, and tradeoffs before writing a specification."

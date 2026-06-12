@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Scaffold"
+  short_description: "Design project folder structures"
+  default_prompt: "Use $ywc-project-scaffold to design a practical folder layout for the requested language, framework, and project shape."

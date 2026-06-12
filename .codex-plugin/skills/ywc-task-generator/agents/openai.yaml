@@ -1,0 +1,4 @@
+interface:
+  display_name: "Task Generator"
+  short_description: "Decompose specs into executable tasks"
+  default_prompt: "Use $ywc-task-generator to convert this approved specification into dependency-safe implementation task folders."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merge Dependabot PRs"
+  short_description: "Merge Dependabot PRs with CI"
+  default_prompt: "Use $ywc-merge-dependabot to merge Dependabot pull requests with CI verification and ecosystem-lane scheduling when batching."

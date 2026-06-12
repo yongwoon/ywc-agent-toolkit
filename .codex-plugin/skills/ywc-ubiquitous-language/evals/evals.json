@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-ubiquitous-language",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "우리 팀이 새로 B2C 쇼핑몰 프로젝트를 시작하는데, 아직 코드는 없어. 도메인 용어집 초안 만들어줘. 서비스는 고객이 상품을 검색해서 장바구니에 담고 주문하는 방식이야.",
+      "expected_output": "docs/ubiquitous-language.md 파일이 생성되어야 함. Bounded Context(예: Order, Catalog, User)가 식별되고, 각 Context마다 핵심 용어 Table이 작성되어야 함. 각 용어는 Korean 컬럼과 Synonyms to Avoid 컬럼을 포함해야 함. 완료 후 CLAUDE.md 참조 추가 권장 메시지가 출력되어야 함.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "우리 프로젝트 src/ 폴더에 코드가 있는데, 기존에 도메인 용어집이 없어. 코드를 분석해서 ubiquitous language 문서 만들어줘. --ddd 플래그 써서 DDD 타입도 포함해줘.",
+      "expected_output": "src/ 디렉토리를 스캔하여 도메인 후보 용어를 추출해야 함. Controller/Repository/DTO 같은 기술 계층 클래스는 제외되어야 함. 추출된 후보를 사용자에게 확인받은 후 docs/ubiquitous-language.md를 생성해야 함. DDD Type 컬럼(Entity/Value Object/Aggregate 등)이 포함되어야 함.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "docs/ubiquitous-language.md 가 이미 있는데, 이번에 Payment 기능을 새로 추가했어. Payment, Invoice, Refund 개념이 생겼고, 기존에 쓰던 Bill 이라는 용어는 더 이상 안 써. 업데이트해줘.",
+      "expected_output": "기존 docs/ubiquitous-language.md를 읽어야 함. ADD: Payment, Invoice, Refund 용어를 추가해야 함. DEPRECATE: Bill 용어를 삭제하지 않고 ~~strikethrough~~ 처리 + 대체 용어 안내를 해야 함. updated 날짜가 갱신되어야 함. Change Log에 이번 변경 내역이 추가되어야 함.",
+      "files": []
+    }
+  ]
+}

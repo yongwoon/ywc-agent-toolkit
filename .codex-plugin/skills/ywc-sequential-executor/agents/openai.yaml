@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sequential Executor"
+  short_description: "Execute task folders in strict order"
+  default_prompt: "Use $ywc-sequential-executor to run task folders one by one through branch, implementation, verification, PR or merge, and cleanup."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "YWC Skill Author"
+  short_description: "Author and audit ywc-* Codex skills against canonical frontmatter, resource, and UI metadata rules"
+  default_prompt: "Use $ywc-skill-author to create or audit a ywc-* Codex skill, applying strict frontmatter, body, references, agents/openai.yaml, README locale, and validation rules."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parallel Executor"
+  short_description: "Run independent tasks in worktrees"
+  default_prompt: "Use $ywc-parallel-executor to execute independent task folders concurrently in isolated worktrees with wave gating and cleanup."

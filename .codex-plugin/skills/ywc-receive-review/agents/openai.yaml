@@ -1,0 +1,4 @@
+interface:
+  display_name: "Receive Review"
+  short_description: "Verify before implementing; no performative agreement"
+  default_prompt: "Use $ywc-receive-review to verify each reviewer comment against the codebase before agreeing or pushing back; replies must state the fix or a technical pushback ending in a question, never gratitude."

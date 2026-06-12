@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Audit"
+  short_description: "Audit auth, input, and data security risks"
+  default_prompt: "Use $ywc-security-audit to inspect authentication, authorization, external input, and sensitive-data handling for security issues."

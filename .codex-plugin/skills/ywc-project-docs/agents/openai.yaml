@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Docs"
+  short_description: "Create Korean or Japanese project docs"
+  default_prompt: "Use $ywc-project-docs to create or update Korean or Japanese documentation under the project docs structure."

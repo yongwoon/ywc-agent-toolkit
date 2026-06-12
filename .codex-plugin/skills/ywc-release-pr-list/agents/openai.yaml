@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release PR List"
+  short_description: "Build release PR lists grouped by author"
+  default_prompt: "Use $ywc-release-pr-list to collect merged pull requests for the release range and group them by author for the release PR."

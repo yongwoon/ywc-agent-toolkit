@@ -1,0 +1,48 @@
+{
+  "skill_name": "create-pr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm done working on the feature/add-user-auth branch. Commit the changes and create a PR.",
+      "expected_output": "Commits uncommitted changes, pushes, and creates a draft PR displaying the PR URL. Auto-detects the base branch and performs sensitive file checks.",
+      "files": [],
+      "expectations": [
+        "Auto-detects the base branch and displays it to the user",
+        "Verifies CLI authentication with gh auth status",
+        "Checks for sensitive files such as .env",
+        "Stages specific files by name instead of using git add -A or git add .",
+        "Includes a Co-Authored-By trailer in the commit message",
+        "Pushes with git push -u origin HEAD",
+        "Creates the PR with gh pr create --draft",
+        "Passes the PR body via HEREDOC",
+        "Displays the PR URL and a change summary upon completion"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I modified .env.local and src/config.ts on this branch. Create a PR against main.",
+      "expected_output": "Warns about the .env.local file and does not commit it without user confirmation. Uses main as the base branch.",
+      "files": [],
+      "expectations": [
+        "Uses main as the base branch as specified in $ARGUMENTS",
+        "Detects .env.local as a sensitive file and warns the user",
+        "Does not commit .env.local without user confirmation",
+        "Commits src/config.ts normally",
+        "Creates the PR with gh pr create --draft --base main"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Create a PR. All changes are already committed and pushed.",
+      "expected_output": "Skips commit and push steps since they are already done and proceeds directly to PR creation. Also checks for an existing PR.",
+      "files": [],
+      "expectations": [
+        "Confirms no uncommitted changes via git status and skips the commit step",
+        "Detects the branch is already pushed and up-to-date with remote, skipping the push step",
+        "Checks for an existing open PR on the branch with gh pr list",
+        "Creates a new PR if none exists",
+        "Includes the PR URL in the completion report"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Changelog Release Notes"
+  short_description: "Write changelogs and user release notes"
+  default_prompt: "Use $ywc-changelog-release-notes to generate CHANGELOG entries and release notes from the requested git, PR, or release range."

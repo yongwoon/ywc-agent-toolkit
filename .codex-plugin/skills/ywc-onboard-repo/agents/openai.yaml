@@ -1,0 +1,4 @@
+interface:
+  display_name: "Onboard Repo"
+  short_description: "Map an unfamiliar repo for onboarding"
+  default_prompt: "Use $ywc-onboard-repo to inspect this unfamiliar repository, summarize architecture and conventions, and create or enhance AGENTS.md."

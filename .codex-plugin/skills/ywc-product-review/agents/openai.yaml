@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Review"
+  short_description: "Review product value, UX, growth, and risk"
+  default_prompt: "Use $ywc-product-review to assess the project from user value, UX, growth, market timing, and risk perspectives."

@@ -1,0 +1,89 @@
+{
+  "skill_name": "ywc-commit",
+  "description": "Regression scenarios covering the conditional Ubiquitous Language update hook (Step 0.5) and its --skip-ubiquitous-update flag propagation contract.",
+  "last_updated": "2026-05-14",
+  "evals": [
+    {
+      "id": 1,
+      "name": "direct-invocation-with-ul-doc",
+      "prompt": "지금 작업한 내용을 커밋해줘",
+      "context": {
+        "files_changed": [
+          "src/order/OrderAggregate.ts",
+          "src/order/OrderRepository.ts"
+        ],
+        "preconditions": {
+          "docs/ubiquitous-language.md": "exists",
+          "$ARGUMENTS": "(none)"
+        }
+      },
+      "expected_behavior": [
+        "Step 0 parses $ARGUMENTS and finds no --skip-ubiquitous-update flag.",
+        "Step 0.5 runs `test -f docs/ubiquitous-language.md` → exists → invokes `ywc-ubiquitous-language --mode update`.",
+        "Any resulting changes to docs/ubiquitous-language.md are classified as IN in Step 2 (session-relevant, just modified).",
+        "Step 3 groups domain-code changes and the UL diff into the same logical commit when they reflect the same new term, or splits them when independent.",
+        "Final commit message reflects the project's git log style; UL update is not announced in the commit body unless it carries an independent semantic change."
+      ],
+      "anti_behavior": [
+        "Skipping Step 0.5 silently.",
+        "Asking the user whether to update the UL document — the conditional auto-ON contract says the answer is yes when the file exists.",
+        "Creating the UL document if it does not exist — that is the job of `ywc-ubiquitous-language --mode new`, not ywc-commit."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "delegated-invocation-with-skip-flag",
+      "prompt": "ywc-create-pr Step 4 에서 ywc-commit 을 --skip-ubiquitous-update flag 와 함께 호출하는 시나리오. ywc-create-pr 의 Step 0.5 가 이미 UL update 를 수행한 직후이며, 같은 PR 생성 흐름에서 ywc-commit 이 호출됨.",
+      "context": {
+        "files_changed": [
+          "src/payment/PaymentEntity.ts",
+          "docs/ubiquitous-language.md"
+        ],
+        "preconditions": {
+          "docs/ubiquitous-language.md": "exists, already updated by upstream caller in the same session",
+          "$ARGUMENTS": "--skip-ubiquitous-update"
+        }
+      },
+      "expected_behavior": [
+        "Step 0 parses $ARGUMENTS and stores the --skip-ubiquitous-update flag.",
+        "Step 0.5 is skipped entirely. `ywc-ubiquitous-language` is NOT invoked.",
+        "Step 2 still classifies the already-modified docs/ubiquitous-language.md as IN (session-relevant), since the upstream caller modified it in the same session.",
+        "Final commit set includes the UL diff that was produced upstream — without ywc-commit re-running the update."
+      ],
+      "anti_behavior": [
+        "Running ywc-ubiquitous-language despite the flag (double invocation).",
+        "Excluding docs/ubiquitous-language.md from the commit because 'I did not run UL update myself' — the file is still IN because upstream session activity touched it.",
+        "Treating --skip-ubiquitous-update as a hint to also skip Step 0.5 logic in subsequent steps (the flag scope is Step 0.5 only)."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ul-document-absent",
+      "prompt": "/ywc-commit",
+      "context": {
+        "files_changed": [
+          "src/utils/format.ts"
+        ],
+        "preconditions": {
+          "docs/ubiquitous-language.md": "does not exist",
+          "$ARGUMENTS": "(none)"
+        }
+      },
+      "expected_behavior": [
+        "Step 0 parses $ARGUMENTS and finds no flag.",
+        "Step 0.5 runs `test -f docs/ubiquitous-language.md` → absent → silent skip.",
+        "User is NOT prompted to create a UL document. Step 1 (Assess current state) begins immediately.",
+        "Workflow proceeds normally with the file change committed under the project's commit-message conventions."
+      ],
+      "anti_behavior": [
+        "Prompting the user 'shall I create docs/ubiquitous-language.md?' — that responsibility belongs to ywc-ubiquitous-language invoked directly by the user, not to ywc-commit.",
+        "Logging or warning about the missing UL document — silent skip is the contract; noisy skip degrades the UX of small commits.",
+        "Failing the workflow because the file is missing."
+      ]
+    }
+  ],
+  "notes": [
+    "These scenarios are documentation-grade regression checks. They describe expected agent behavior in natural language; running them as code-level assertions would require a harness that simulates skill activation, file presence, and sub-skill delegation.",
+    "When the skill-creator workflow is run against ywc-commit, treat these scenarios as the qualitative review checklist and add programmatic assertions only where behavior is mechanically verifiable (e.g., presence of `ywc-ubiquitous-language --mode update` invocation in the transcript)."
+  ]
+}

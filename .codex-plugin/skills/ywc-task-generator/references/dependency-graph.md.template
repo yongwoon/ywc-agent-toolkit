@@ -1,0 +1,35 @@
+# Task Dependency Graph
+
+## Phase 000001 — [Phase Name]
+- `000001-010-db-create-users-table` → (root)
+- `000001-020-domain-user-entity` → depends on `000001-010`
+- `000001-030-api-user-registration` → depends on `000001-020`
+
+## Phase 000002 — [Phase Name]
+- `000002-010-lib-setup-redis` → (root)
+- `000002-020-domain-session-management` → depends on `000001-020`, `000002-010`
+
+## Parallel Execution Notes
+- Initial ready set: `000001-010-db-create-users-table`, `000002-010-lib-setup-redis`
+- After `000001-010-db-create-users-table` merges: `000001-020-domain-user-entity` becomes runnable
+- `000001-020-domain-user-entity` and `000002-020-domain-session-management` must not run together if they both modify `shared/types/**`
+
+## Visual Dependency Graph (Optional)
+
+Task 수가 5개 이상이거나 cross-phase dependency가 복잡한 경우, Mermaid diagram을 추가하면 가독성이 크게 향상됩니다.
+
+```mermaid
+graph LR
+  subgraph Phase 000001
+    A[000001-010-db-create-users-table] --> B[000001-020-domain-user-entity]
+    B --> C[000001-030-api-user-registration]
+  end
+  subgraph Phase 000002
+    D[000002-010-lib-setup-redis] --> E[000002-020-domain-session-management]
+    B --> E
+  end
+```
+
+<!-- This graph serves as the single source of truth for execution order.
+     Must be consistent with individual README.md "Dependencies" sections.
+     The Mermaid diagram is optional but recommended for complex dependency structures. -->
