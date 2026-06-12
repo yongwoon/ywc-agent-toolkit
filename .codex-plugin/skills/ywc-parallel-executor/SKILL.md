@@ -93,7 +93,7 @@ Verify the following conditions before starting:
 5. **No stale worktrees from previous runs** — Delegate to `ywc-worktrees --mode audit` (or run its bundled audit script directly). This applies the project worktree priority chain before pruning stale metadata and reporting any remaining drift:
 
    ```bash
-   bash codex/skills/ywc-worktrees/scripts/audit-worktrees.sh --prune
+   bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-worktrees/scripts/audit-worktrees.sh" --prune
    # exit 0 = clean; exit 1 = stale worktrees detected — details on stdout
    ```
 
@@ -307,7 +307,7 @@ Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never 
 For each task that passed Step 4e finish-branch DONE return:
 
 ```bash
-bash codex/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-worktrees/scripts/cleanup-worktree.sh" <task-name>
 # exit 0 = PASS (worktree removed, branch deleted, prune done, verified)
 # exit 1 = FAIL — fix hints on stdout; read them before taking any action
 ```
@@ -319,7 +319,7 @@ Preserve worktrees and branches of failed tasks for recovery. Do not run this st
 **4h. Wave Cleanup Audit** — Before transitioning to the next wave, audit the worktree state for the wave as a whole. Per-task verification in 4g catches single-task drift; this step catches wave-level drift (e.g. an agent created a sibling worktree the executor did not track).
 
 ```bash
-bash codex/skills/ywc-worktrees/scripts/audit-worktrees.sh \
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-worktrees/scripts/audit-worktrees.sh" \
   --expect <comma-separated preserved-failure task names, or omit if none>
 # exit 0 = clean (or only expected preserved failures); exit 1 = DRIFT — investigate before next wave
 ```
@@ -401,7 +401,7 @@ Display the following after all waves are complete:
   Run a final audit before printing the report:
 
   ```bash
-  bash codex/skills/ywc-worktrees/scripts/audit-worktrees.sh \
+  bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-worktrees/scripts/audit-worktrees.sh" \
     --expect <comma-separated preserved-failure task names, or omit if none>
   git branch --list 'feature/*' | sed 's/^[* ] //' || true
   ```

@@ -13,10 +13,10 @@
 #
 # Usage:
 #   # Scan staged + unstaged changes
-#   bash codex/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+#   bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/scan-secrets.sh" --staged
 #
 #   # Also scan all commits vs base branch
-#   bash codex/skills/ywc-create-pr/scripts/scan-secrets.sh --committed develop
+#   bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/scan-secrets.sh" --committed develop
 
 set -uo pipefail
 

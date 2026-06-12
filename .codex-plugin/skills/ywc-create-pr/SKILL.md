@@ -84,10 +84,10 @@ Run the bundled secret scan script:
 
 ```bash
 # Phase 1+2: dangerous file names + staged/unstaged diff content
-bash codex/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/scan-secrets.sh" --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
-bash codex/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/scan-secrets.sh" --committed <base-branch>
 ```
 
 Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout.

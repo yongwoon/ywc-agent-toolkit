@@ -19,7 +19,7 @@
 #   2  Usage error
 #
 # Usage:
-#   bash codex/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh 123 124 125
+#   bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh" 123 124 125
 
 set -uo pipefail
 

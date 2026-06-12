@@ -24,13 +24,13 @@ Exit codes:
 
 Usage:
   # Default (parts mode) — LLM translates SLUG_EN to target language
-  python codex/skills/ywc-finish-branch/scripts/build-pr-title.py \\
+  python "${CODEX_HOME:-$HOME/.codex}/skills/ywc-finish-branch/scripts/build-pr-title.py" \\
     000001-010-db-create-users-table
   # TASK_NUMBER=000001-010
   # SLUG_EN=Db Create Users Table
 
   # Full English title (no LLM translation needed)
-  python codex/skills/ywc-finish-branch/scripts/build-pr-title.py \\
+  python "${CODEX_HOME:-$HOME/.codex}/skills/ywc-finish-branch/scripts/build-pr-title.py" \\
     000001-010-db-create-users-table --format title
   # [000001-010] Db Create Users Table
 """

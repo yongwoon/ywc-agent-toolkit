@@ -27,4 +27,20 @@ mkdir -p "$DEST_DIR"
   tar -xf -
 )
 
+while IFS= read -r -d '' file; do
+  tmp_file="$file.tmp"
+  if mode="$(stat -f '%Lp' "$file" 2>/dev/null)"; then
+    :
+  else
+    mode="$(stat -c '%a' "$file")"
+  fi
+  sed -E \
+    -e 's#bash codex/skills/([^[:space:]]+)#bash "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
+    -e 's#python codex/skills/([^[:space:]]+)#python "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
+    -e 's#cp codex/skills/([^[:space:]]+)#cp "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
+    "$file" > "$tmp_file"
+  chmod "$mode" "$tmp_file"
+  mv "$tmp_file" "$file"
+done < <(find "$DEST_DIR" -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' \) -print0)
+
 echo "Synced codex/skills -> .codex-plugin/skills"

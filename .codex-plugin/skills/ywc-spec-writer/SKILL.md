@@ -92,7 +92,7 @@ For locale-specific writing rules (formality level, term policy), see [reference
 If `docs/specification/` does not exist, run:
 
 ```bash
-bash codex/skills/ywc-spec-writer/scripts/init-spec-structure.sh <lang> "<ProjectName>"
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/init-spec-structure.sh" <lang> "<ProjectName>"
 ```
 
 This creates the 7-section skeleton without any LLM calls. For the full section layout and writing templates, see [references/spec-structure.md](references/spec-structure.md).
@@ -105,7 +105,7 @@ For incremental modes, identify which spec sections need updating before writing
 
 ```bash
 git diff <ref>^..<ref> --name-only \
-  | bash codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
+  | bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
 ```
 
 **Task-based (single task)** — read the task `README.md` for its `category` field and apply the mapping in [references/section-mapping.md](references/section-mapping.md).
@@ -114,11 +114,11 @@ git diff <ref>^..<ref> --name-only \
 
 ```bash
 # Resolve range / glob / multi-id to absolute task directory paths
-bash codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-paths.sh" \
   000002-010..000003-020
 
 # Quote glob patterns so the user's shell does not expand or reject them first.
-bash codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-paths.sh" \
   '000002-*'
 
 # For each resolved path: read README.md → category → look up in section-mapping.md
@@ -128,8 +128,8 @@ bash codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
 **PR-based (single or multiple PRs)** — fetch the changed-file union, then feed it into `detect-affected-sections.sh`:
 
 ```bash
-bash codex/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh 42 43 51 \
-  | bash codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh" 42 43 51 \
+  | bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
 ```
 
 Additionally, for `--from-pr` / `--from-prs`, fetch each PR's title + body as narrative context:

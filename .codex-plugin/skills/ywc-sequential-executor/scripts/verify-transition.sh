@@ -15,7 +15,7 @@
 #   1  FAIL — one or more conditions failed (details on stdout)
 #
 # Usage:
-#   bash codex/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+#   bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-sequential-executor/scripts/verify-transition.sh" \
 #     <base-branch> <completed-task-name> [tasks-dir]
 #   tasks-dir defaults to "tasks/"
 
