@@ -56,13 +56,27 @@ check_codex_skill_dir() {
   local dir="$1"
   local name
   name="$(basename "$dir")"
+  local openai_yaml="${dir}agents/openai.yaml"
 
   check_skill_dir "$dir"
   check_readme_set "$dir"
 
-  if [ ! -f "${dir}agents/openai.yaml" ]; then
+  if [ ! -f "$openai_yaml" ]; then
     echo "ERROR: $name is missing agents/openai.yaml"
     ERRORS=$((ERRORS + 1))
+  else
+    if ! grep -q '^interface:' "$openai_yaml"; then
+      echo "ERROR: $name/agents/openai.yaml is missing interface root"
+      ERRORS=$((ERRORS + 1))
+    fi
+
+    local field
+    for field in display_name short_description default_prompt; do
+      if ! grep -Eq "^[[:space:]]{2}${field}:[[:space:]]*\"[^\"]+\"[[:space:]]*$" "$openai_yaml"; then
+        echo "ERROR: $name/agents/openai.yaml is missing interface.$field"
+        ERRORS=$((ERRORS + 1))
+      fi
+    done
   fi
 
   local frontmatter
