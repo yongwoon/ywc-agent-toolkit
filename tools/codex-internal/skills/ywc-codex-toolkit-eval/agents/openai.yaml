@@ -1,0 +1,4 @@
+interface:
+  display_name: "YWC Codex Toolkit Eval"
+  short_description: "Scores internal Codex ywc-* skills and agents and produces a prioritized improvement backlog."
+  default_prompt: "Use $ywc-codex-toolkit-eval to evaluate this toolkit's Codex skills and agents, then produce a scorecard and improvement backlog."
