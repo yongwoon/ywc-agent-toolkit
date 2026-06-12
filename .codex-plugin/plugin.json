@@ -19,26 +19,19 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "display_name": "YWC Agent Toolkit",
-    "short_description": "Codex skills for planning, implementation, review, and delivery workflows.",
-    "long_description": "YWC Agent Toolkit packages Codex skills that support structured software delivery: planning, specification writing, task generation, implementation support, reviews, pull requests, and release workflows.",
-    "developer_name": "yongwoon",
+    "displayName": "YWC Agent Toolkit",
+    "shortDescription": "Codex skills for planning, implementation, review, and delivery workflows.",
+    "longDescription": "YWC Agent Toolkit packages Codex skills that support structured software delivery: planning, specification writing, task generation, implementation support, reviews, pull requests, and release workflows.",
+    "developerName": "yongwoon",
     "category": "Development",
     "capabilities": [
-      "planning",
-      "specification",
-      "task generation",
-      "implementation workflow",
-      "code review",
-      "pull request delivery"
+      "Interactive",
+      "Read",
+      "Write"
     ],
-    "default_prompts": [
-      "Use $ywc-plan to clarify this change request and route it to the right workflow.",
-      "Use $ywc-task-generator to turn an approved specification into implementation tasks.",
-      "Use $ywc-sequential-executor to run generated tasks through delivery in order."
-    ],
-    "website_url": "https://github.com/yongwoon/ywc-agent-toolkit",
-    "brand_color": "#2563EB",
+    "defaultPrompt": "Use $ywc-plan to clarify this change request and route it to the right workflow.",
+    "websiteURL": "https://github.com/yongwoon/ywc-agent-toolkit",
+    "brandColor": "#2563EB",
     "screenshots": []
   }
 }
