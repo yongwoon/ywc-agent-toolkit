@@ -35,9 +35,9 @@ while IFS= read -r -d '' file; do
     mode="$(stat -c '%a' "$file")"
   fi
   sed -E \
-    -e 's#bash codex/skills/([^[:space:]]+)#bash "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
-    -e 's#python codex/skills/([^[:space:]]+)#python "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
-    -e 's#cp codex/skills/([^[:space:]]+)#cp "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
+    -e "s#bash codex/skills/([^[:space:]]+)#bash \"\${CODEX_HOME:-\$HOME/.codex}/skills/\\1\"#g" \
+    -e "s#python codex/skills/([^[:space:]]+)#python \"\${CODEX_HOME:-\$HOME/.codex}/skills/\\1\"#g" \
+    -e "s#cp codex/skills/([^[:space:]]+)#cp \"\${CODEX_HOME:-\$HOME/.codex}/skills/\\1\"#g" \
     "$file" > "$tmp_file"
   chmod "$mode" "$tmp_file"
   mv "$tmp_file" "$file"
