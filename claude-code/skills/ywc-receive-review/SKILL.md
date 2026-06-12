@@ -10,12 +10,10 @@ description: >-
   Triggers: "리뷰 받았어", "리뷰 코멘트", "PR comment 처리",
   "review feedback", "received review", "レビュー受信", "コメント返信",
   "ywc-receive-review". Do not use for performing a code review yourself
-  (use ywc-impl-review), creating a PR (use ywc-create-pr), or for the
-  end-to-end PR review workflow — fetching threads, implementing fixes,
-  and posting replies (use ywc-handle-pr-reviews, which composes this
-  skill's judgment layer internally; "리뷰 대응", "respond to review",
-  "address review comments", "リビュー対応" route to that skill, not
-  this one).
+  (use ywc-impl-review), creating a PR (use ywc-create-pr), or for
+  end-to-end PR response (use ywc-handle-pr-reviews; "리뷰 대응",
+  "respond to review", "address review comments", "リビュー対応"
+  route to that skill, not this one).
 category: discipline
 phase: post-implementation
 requires: []
