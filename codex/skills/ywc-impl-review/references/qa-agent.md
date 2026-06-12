@@ -60,13 +60,13 @@ Look for gaps in the following areas:
 
 ## Advisor Candidate Criteria (Phase 2 Escalation)
 
-The parent skill runs in two phases: Phase 1 (this subagent, on Haiku) handles mechanical coverage analysis, and Phase 2 (on Opus) receives only items the executor cannot confidently judge. In practice, most QA findings are Phase 1 material — coverage gaps are either present or absent, and Haiku can enumerate them reliably. Phase 2 escalations from this category should be **rare**.
+The parent skill runs in two phases: Phase 1 (this worker) handles mechanical coverage analysis, and Phase 2 (a higher-capability advisor pass) receives only items the executor cannot confidently judge. In practice, most QA findings are Phase 1 material — coverage gaps are either present or absent. Phase 2 escalations from this category should be **rare**.
 
 A finding is an advisor candidate only when it satisfies the three-property test from [advisor-pattern.md §5](../../references/advisor-pattern.md) (objective trigger, irreversibility, ambiguity). For QA specifically, the ambiguity is usually about *intent*, not coverage: "this code path has no test, but I cannot tell if that is an oversight or an intentional deferral."
 
 ### When to escalate (examples)
 
-- **Critical code path with no test, unclear intent** — A core business operation (e.g., billing, auth, data integrity) has no direct test, but the repository's testing conventions suggest the coverage might live in an integration suite or e2e test you did not scan. The question for Opus is whether this is an acceptable coverage gap given the project's standards.
+- **Critical code path with no test, unclear intent** — A core business operation (e.g., billing, auth, data integrity) has no direct test, but the repository's testing conventions suggest the coverage might live in an integration suite or e2e test you did not scan. The advisor question is whether this is an acceptable coverage gap given the project's standards.
 - **Mock-heavy test with suspicious reality gap** — A test exists and passes, but the mocks feel tuned to make the assertion pass rather than to model real behavior. Detecting real-vs-theatrical testing requires judgment about the domain and the framework.
 - **Assertion that looks trivial but gates something important** — A test whose assertion is `expect(result).toBeTruthy()` on a function that produces structured data, in a file whose downstream impact is wide. The question is whether the weak assertion masks a real bug or is intentional (e.g., smoke test).
 - **Test organization conflict with spec** — The spec defines acceptance criteria that the existing tests appear to cover, but the mapping is unclear (different test file names, different assertion styles) and you cannot confirm one-to-one correspondence.

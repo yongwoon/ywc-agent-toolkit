@@ -23,7 +23,7 @@ When tempted to skip a step, check this table first:
 | "User input is validated upstream, no need at this layer" | Defense in depth. Validate at every trust boundary, not just at the gateway. |
 | "Token/secret/key is just for dev, exposure is fine" | Never. Dev secrets get committed, leak, and become prod credentials. Always flag. |
 | "I cannot exploit it locally, finding is theoretical" | Theoretical findings still belong in the report. Mark as `unverified — theoretical` rather than dropping. |
-| "OWASP scan is too fine-grained to parallelize" | Grouping into 3 domain clusters lets each Sonnet subagent focus deeply on 3-4 items; it also prevents cross-category contamination that degrades severity classification in a monolithic pass. |
+| "OWASP scan is too fine-grained to parallelize" | Grouping into 3 domain clusters lets each worker focus deeply on 3-4 items; it also prevents cross-category contamination that degrades severity classification in a monolithic pass. |
 
 **Violating the letter of these rules is violating the spirit.** A clean security report without honest dimensional coverage is dangerous.
 
@@ -36,31 +36,31 @@ When tempted to skip a step, check this table first:
 
 ## Execution Steps
 
-1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify tech stack. Pay special attention to authentication method, deployment environment (internal/external), and security libraries in use
+1. **Collect Project Context** — Read `AGENTS.md`, `CODEX.md`, `package.json`, and equivalent project metadata where present to identify tech stack. Pay special attention to authentication method, deployment environment (internal/external), and security libraries in use
 2. **Read Target Code Files** — Read all source files under the `--code` path
-3. **Phase 1 — Parallel OWASP Analysis** — Use the Task tool to spawn 3 Sonnet subagents in parallel. Each covers a grouped slice of OWASP Top 10. For each item in their slice, subagents must: Grep/AST search for patterns, trace data flow (input → processing → output), and apply project context. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so each subagent carries the dedicated security worker persona, Mission, Boundaries, and Return Contract.
+3. **Phase 1 — Parallel OWASP Analysis** — Use Codex subagent delegation when the current session exposes a delegation tool to run 3 workers in parallel. If no delegation tool is available, run the same three analysis slices inline and record the fallback in the report. Each slice covers a grouped subset of OWASP Top 10. For each item in its slice, the worker must: Grep/AST search for patterns, trace data flow (input → processing → output), and apply project context. Do not use Claude Code-only `Task(...)` fields, `subagent_type`, `tools`, or explicit Claude model pins in the Codex bundle.
 
-   | Subagent | Model | OWASP Items |
+   | Worker | Scope | OWASP Items |
    |---|---|---|
-   | Auth & Data | sonnet | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
-   | Web Layer | sonnet | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration · **PI Prompt Injection** (LLM-driven surfaces only — user-controlled string → prompt sink; see `references/prompt-injection-checklist.md`) |
-   | Infra & Input | sonnet | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+   | Auth & Data | Authentication and persistence | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
+   | Web Layer | Request/response and LLM prompt surfaces | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration · **PI Prompt Injection** (LLM-driven surfaces only — user-controlled string → prompt sink; see `references/prompt-injection-checklist.md`) |
+   | Infra & Input | Network, validation, and abuse controls | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
 
-   **Prompt-Injection slice (Web Layer sub-category)** — when the audit target includes an LLM-driven surface (agent / chatbot / prompt-template system / function-calling pipeline), the Web Layer subagent additionally walks the four items in [`references/prompt-injection-checklist.md`](./references/prompt-injection-checklist.md): user-controlled string flowing directly into a prompt, system/user role separation, canary-token + ML-classifier defense, and external-tool / RAG-result sanitization. The checklist defines default severity and conditions for adjustment. Findings surface under the standard severity rubric below and are reported alongside the OWASP A04-A06 items in the Web Layer subagent's output.
+   **Prompt-Injection slice (Web Layer sub-category)** — when the audit target includes an LLM-driven surface (agent / chatbot / prompt-template system / function-calling pipeline), the Web Layer worker additionally walks the four items in [`references/prompt-injection-checklist.md`](./references/prompt-injection-checklist.md): user-controlled string flowing directly into a prompt, system/user role separation, canary-token + ML-classifier defense, and external-tool / RAG-result sanitization. The checklist defines default severity and conditions for adjustment. Findings surface under the standard severity rubric below and are reported alongside the OWASP A04-A06 items in the Web Layer worker's output.
 
-   Each subagent classifies its findings:
+   Each worker classifies its findings:
    - **Critical**: Immediately exploitable (SQL injection, auth bypass, hardcoded secrets)
    - **High**: Conditionally exploitable (SSRF with internal network access, improper auth checks)
    - **Medium**: Potential risk (verbose errors, insufficient rate limiting)
    - **Low**: Best practice violation (timing attack potential, unnecessary information disclosure)
 
-   Each subagent returns:
+   Each worker returns:
    - **Confirmed findings** — severity, file:line, issue, risk, recommended fix
    - **Advisor candidates** — findings meeting the Advisor Escalation Policy conditions below (suspect code chain + hypothesized exploit, ≤100 lines each)
 
-4. **Aggregate Phase 1 Results** — Combine findings from all 3 subagents. Deduplicate by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 3), prioritizing Critical > High. Log any dropped candidates in the report.
+4. **Aggregate Phase 1 Results** — Combine findings from all 3 workers. Deduplicate by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 3), prioritizing Critical > High. Log any dropped candidates in the report.
 
-5. **Phase 2 — Advisor Pass** — For each surviving advisor candidate, follow the **Advisor Escalation Policy** section below. Spawn a short Opus subagent via the Task tool with only the bounded excerpt (≤100 lines). Merge verdicts into the findings list.
+5. **Phase 2 — Advisor Pass** — For each surviving advisor candidate, follow the **Advisor Escalation Policy** section below. Request one short higher-capability advisor pass using the Codex delegation mechanism available in the current session. If no delegation tool is available, run the same advisor decision inline and record the fallback. Use only the bounded excerpt (≤100 lines). Merge verdicts into the findings list.
 
 6. **Output Severity-Classified Security Report**
 
@@ -108,11 +108,11 @@ When tempted to skip a step, check this table first:
 
 This skill runs the full OWASP Top 10 deep analysis on a single inherited-model executor. Because security findings are the highest-stakes output category in this repository, the executor applies a **permissive** escalation bar: when a suspected Critical or High finding has indirect evidence, escalate rather than risk mislabeling. This follows **Pattern A** from [advisor-pattern.md](../references/advisor-pattern.md) — frontier judgment applied at the specific decision points where it carries real value.
 
-**Budget**: up to 3 Opus advisor calls per invocation. Security gets a slightly larger budget than spec-review because the downside cost of a missed vulnerability is much higher than the downside cost of a missed spec gap. Unused budget is still good; the bar for escalation must still be met.
+**Budget**: up to 3 advisor escalations per invocation. Security gets a slightly larger budget than spec-review because the downside cost of a missed vulnerability is much higher than the downside cost of a missed spec gap. Unused budget is still good; the bar for escalation must still be met.
 
 **Escalation conditions** — a finding is an advisor candidate when it matches any of the following:
 
-1. **Indirect exploit chain** — A parameter flow could enable SSRF, auth bypass, or injection, but the exploit requires two or more hops through functions the executor did not fully trace. The key question for Opus is whether the chain is actually reachable.
+1. **Indirect exploit chain** — A parameter flow could enable SSRF, auth bypass, or injection, but the exploit requires two or more hops through functions the executor did not fully trace. The key advisor question is whether the chain is actually reachable.
 2. **Two OWASP categories compete** — The same evidence fits two categories equally (for example A01 Broken Access Control and A07 Auth Failures). The correct category affects severity and remediation, so the choice is irreversible once reported.
 3. **Business logic flaw (A04)** — A04 is the hardest category to judge mechanically because it depends on domain knowledge, not pattern matching. When a suspected business logic flaw has any ambiguity, escalate.
 4. **Crypto decision (A02)** — The code makes a hashing or encryption choice and the executor cannot tell whether it is appropriate without knowing the threat model and data sensitivity. Frontier judgment with the spec excerpt is the right call.

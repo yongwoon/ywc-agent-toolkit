@@ -96,11 +96,11 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
 3. **Phase 1 — Parallel Generation** — Use Codex subagent delegation to spawn three workers in parallel when the environment supports subagents. Do not pass Claude Code-only named dispatch fields; Codex workers receive their role from the prompt and the layer reference file:
-   - **Backend worker** — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Include [references/backend-generation.md](references/backend-generation.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
-   - **Frontend worker** — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Include [references/frontend-generation.md](references/frontend-generation.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
-   - **QA worker** — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Include [references/qa-generation.md](references/qa-generation.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
+   - **Backend worker** — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Include [references/backend-agent.md](references/backend-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
+   - **Frontend worker** — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Include [references/frontend-agent.md](references/frontend-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
+   - **QA worker** — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Include [references/qa-agent.md](references/qa-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
 
-   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (AGENTS.md / CODEX.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/backend-generation.md`, `references/frontend-generation.md`, or `references/qa-generation.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
+   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (AGENTS.md / CODEX.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/backend-agent.md`, `references/frontend-agent.md`, or `references/qa-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
    **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Do not silently retry on the same input.
 
@@ -228,9 +228,9 @@ Any subagent output containing the following patterns is treated as a failed gen
 
 Read the corresponding reference file when spawning each agent and include it in the agent prompt:
 
-- `references/backend-generation.md` — Backend generation targets, coding standards, and output checklist
-- `references/frontend-generation.md` — Frontend generation targets, accessibility standards, and output checklist
-- `references/qa-generation.md` — QA generation targets, test strategy, and output checklist
+- `references/backend-agent.md` — Backend generation targets, coding standards, and output checklist
+- `references/frontend-agent.md` — Frontend generation targets, accessibility standards, and output checklist
+- `references/qa-agent.md` — QA generation targets, test strategy, and output checklist
 
 ## Confidence Gate
 
