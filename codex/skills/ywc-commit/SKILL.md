@@ -1,6 +1,12 @@
 ---
 name: ywc-commit
-description: (ywc) Use when the user says "commit", "커밋", "커밋 해줘", "commit push", "push", "지금까지 한 작업 커밋", or any phrase indicating intent to stage, commit, or push current work. Do not use for PR creation, code review, or making code changes.
+description: >-
+  (ywc) Use when the user says "commit", "커밋", "커밋 해줘", "commit push",
+  "push", "지금까지 한 작업 커밋", "コミットして", "プッシュして", or any phrase
+  indicating intent to stage, commit, or push current work. Do not use for PR
+  creation (use ywc-create-pr), handling PR review feedback (use
+  ywc-handle-pr-reviews), code review (use ywc-impl-review), or making code
+  changes.
 ---
 
 # Commit Skill

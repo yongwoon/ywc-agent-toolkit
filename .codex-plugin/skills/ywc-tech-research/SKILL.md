@@ -1,7 +1,14 @@
 ---
 name: ywc-tech-research
 description: >-
-  (ywc) Use when comparing libraries, investigating implementation approaches, evaluating technology options, or gathering best practices before writing specifications. Triggers: "기술 조사", "라이브러리 비교", "research", "investigate", "compare options", "어떤 걸 쓸까", "best way to implement", "技術調査", "ライブラリ比較". Do not use for spec writing (output goes to ywc-spec-validate), code generation (use ywc-code-gen), or simple documentation lookup that does not require comparison/evaluation.
+  (ywc) Use when comparing libraries, investigating implementation approaches,
+  evaluating technology options, or gathering sourced best practices before a
+  plan/spec decision. Triggers: "기술 조사", "라이브러리 비교", "research",
+  "investigate options", "compare options", "어떤 걸 쓸까",
+  "best way to implement", "技術調査", "ライブラリ比較", "実装方針調査". Do not use
+  for writing the spec itself (use ywc-spec-writer), validating an existing spec
+  (use ywc-spec-validate), code generation (use ywc-code-gen), or simple
+  documentation lookup with no comparison/evaluation decision.
 ---
 
 # ywc-tech-research

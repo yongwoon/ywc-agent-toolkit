@@ -1,6 +1,13 @@
 ---
 name: ywc-team-assemble
-description: '(ywc) Use when the user explicitly asks Codex to assemble a specialist team, delegate work to subagents, run a swarm, or split a complex task across parallel expert roles. Triggers: "assemble a team", "use agents", "delegate", "parallel agents", "swarm", "specialist team", "팀 구성", "エージェントチーム". Do not use for simple questions, single-file edits, strictly sequential work, or any task where the user has not explicitly authorized subagents/parallel/delegated execution.'
+description: >-
+  (ywc) Use when the user explicitly asks Codex to assemble a specialist team,
+  delegate work to subagents, run a swarm, or split a complex task across
+  parallel expert roles. Triggers: "assemble a team", "use agents", "delegate",
+  "parallel agents", "swarm", "specialist team", "팀 구성", "전문가 팀",
+  "エージェントチーム", "専門家チーム". Do not use for simple questions,
+  single-file edits, strictly sequential work, or any task where the user has
+  not explicitly authorized subagents/parallel/delegated execution.
 ---
 
 # Team Assemble

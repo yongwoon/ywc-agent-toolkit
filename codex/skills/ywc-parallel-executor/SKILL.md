@@ -1,7 +1,7 @@
 ---
 name: ywc-parallel-executor
 description: >-
-  (ywc) Use when multiple independent tasks from tasks/ can run simultaneously and the user wants faster execution via Git Worktree isolation. Triggers: "병렬 실행", "parallel execute", "parallel-executor", "agent executor", "동시 실행", "워크트리 실행", "execute tasks in parallel", "run tasks simultaneously", "並列実行". Do not use for strictly sequential tasks (use ywc-sequential-executor), single-task execution, or when no dependency-graph.md exists.
+  (ywc) Use when multiple independent tasks from tasks/ can run simultaneously and the user wants faster execution via Git Worktree isolation. Triggers: "병렬 실행", "parallel execute", "parallel-executor", "agent executor", "동시 실행", "워크트리 실행", "execute tasks in parallel", "run tasks simultaneously", "並列実行", "並列ワークフロー". Do not use for strictly sequential tasks (use ywc-sequential-executor), single-task execution, or when no dependency-graph.md exists.
 ---
 
 # ywc-parallel-executor (Parallel Executor)

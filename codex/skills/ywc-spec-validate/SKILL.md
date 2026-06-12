@@ -1,7 +1,13 @@
 ---
 name: ywc-spec-validate
 description: >-
-  (ywc) Use after writing a specification and before task decomposition, when the user wants to validate spec completeness, consistency, feasibility, or readiness for implementation. Triggers: "사양 검토", "spec review", "사양 리뷰", "review specification", "스펙 점검", "check the spec", "is this spec complete", "仕様レビュー". Do not use for code-level review (use ywc-impl-review), product/business review (use ywc-product-review), or when no specification document exists yet.
+  (ywc) Use when a specification document exists and the user wants to validate
+  spec completeness, consistency, feasibility, or readiness before task
+  decomposition. Triggers: "사양 검토", "spec review", "사양 리뷰",
+  "review specification", "스펙 점검", "check the spec", "is this spec complete",
+  "仕様レビュー", "仕様確認". Do not use for code-level review (use
+  ywc-impl-review), product/business review (use ywc-product-review), or when no
+  specification document exists yet (use ywc-plan or ywc-spec-writer).
 ---
 
 # ywc-spec-validate

@@ -1,6 +1,13 @@
 ---
 name: ywc-ui-ux-review
-description: "(ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (available browser tooling) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '사용성 점검', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), or code-only review without a running UI."
+description: >-
+  (ywc) Use when the user wants a UI/UX review combining static code analysis
+  with live UI exploration, covering information architecture, visual design,
+  usability, and accessibility. Triggers: "UI/UX review", "UX 점검", "UI 검토",
+  "usability audit", "design review", "accessibility review", "사용성 점검",
+  "디자인 리뷰", "UX 監査", "UI レビュー". Do not use for backend/API review (use
+  ywc-impl-review), product/business strategy review (use ywc-product-review),
+  or code-only review without a running UI.
 ---
 
 # UI/UX Review — Hybrid (Code + Live UI)

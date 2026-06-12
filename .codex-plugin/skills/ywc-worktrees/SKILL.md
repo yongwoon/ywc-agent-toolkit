@@ -2,20 +2,14 @@
 name: ywc-worktrees
 description: >-
   (ywc) Use when creating, auditing, pruning, or resolving the worktree
-  location for an isolated workspace — primarily as a delegated callable
-  from `ywc-parallel-executor` (per-task worktree creation in Step 4 and
-  audit in Pre-flight) and `ywc-finish-branch` (post-merge prune in the
-  cleanup step), but also available standalone for one-off worktree
-  operations. Triggers: "worktree 생성", "worktree audit", "worktree 정리",
-  "worktree prune", "ywc-worktrees", "ywc worktrees", "worktree 경로 결정",
-  "worktree 위치 확정", "git worktree 정리", "ワークツリー作成",
+  location for a git-isolated workspace, either standalone or as a delegated
+  helper from ywc-parallel-executor / ywc-finish-branch. Triggers: "worktree
+  생성", "worktree audit", "worktree 정리", "worktree prune", "ywc-worktrees",
+  "worktree 경로 결정", "git worktree 정리", "ワークツリー作成",
   "ワークツリー監査", "create worktree", "audit worktrees", "prune worktrees".
-  Do not use for branch creation alone (use `git checkout -b` directly via
-  the caller), branch deletion alone (use `git branch -d` via the caller),
-  PR creation (`ywc-create-pr`), CI / merge / Mark-Complete delivery
-  (`ywc-finish-branch`), task-level orchestration
-  (`ywc-sequential-executor` / `ywc-parallel-executor`), or any non-git
-  workspace isolation pattern (e.g. Docker volumes).
+  Do not use for branch creation/deletion alone, PR creation (use
+  ywc-create-pr), delivery/merge flow (use ywc-finish-branch), task execution
+  (use ywc-sequential-executor or ywc-parallel-executor), or non-git isolation.
 ---
 
 # ywc-worktrees

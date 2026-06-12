@@ -1,19 +1,14 @@
 ---
 name: ywc-confidence-gate
 description: >-
-  (ywc) Use before starting any non-trivial implementation, before invoking
-  ywc-code-gen / ywc-sequential-executor / ywc-parallel-executor, or before
-  committing to a design path with material rework cost. Scores readiness
-  across five dimensions (scope clarity, architecture compliance, evidence
-  quality, reuse verified, root cause identified) and gates the decision
-  with PROCEED (≥90) / REVIEW (70–89) / STOP (below 70). Triggers: "confidence
-  check", "confidence gate", "ready to implement", "should I proceed",
-  "is this ready", "준비 됐어", "구현 시작해도 돼", "confidence 점검",
-  "착수 준비", "実装着手", "実装に進んで良いか", "確信度チェック",
-  "ywc-confidence-gate". Do not use for completion verification (use
-  ywc-verify-done — that gates the claim, this gates the start), spec
-  quality review (use ywc-spec-validate), implementation review (use
-  ywc-impl-review — that scores findings, this scores readiness), or
+  (ywc) Use when checking readiness before non-trivial implementation,
+  executor/code-gen delegation, or a design path with material rework cost.
+  Triggers: "confidence check", "confidence gate", "ready to implement",
+  "should I proceed", "is this ready", "준비 됐어", "구현 시작해도 돼",
+  "confidence 점검", "착수 준비", "実装着手", "実装に進んで良いか",
+  "確信度チェック", "ywc-confidence-gate". Do not use for completion
+  verification (use ywc-verify-done), spec quality review (use
+  ywc-spec-validate), implementation review (use ywc-impl-review), or
   brainstorming intent (use ywc-brainstorm).
 ---
 

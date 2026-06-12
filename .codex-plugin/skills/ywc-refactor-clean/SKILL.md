@@ -6,7 +6,7 @@ description: >-
   scheduled hygiene pass on a codebase. Triggers: "dead code 제거", "unused
   import 정리", "knip / depcheck / ts-prune 돌려줘", "refactor clean", "dead
   code cleanup", "remove unused exports", "デッドコード削除", "未使用
-  import 整理", "ywc-refactor-clean". Do not use during active feature
+  import 整理", "ywc-refactor-clean". Do not use for active feature
   implementation in the same branch (the cleanup competes with the feature
   diff — finish the feature, then clean), for behavior-changing refactors
   (use ywc-tdd-ritual + ywc-code-gen so behavior is captured by tests first),

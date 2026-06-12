@@ -1,7 +1,15 @@
 ---
 name: ywc-handle-pr-reviews
 description: >-
-  (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), or for changes outside an open PR context.
+  (ywc) Use when an open GitHub PR already has review threads, PR comments,
+  review-like checks, or reviewer feedback that must be fetched, fixed, replied
+  to, marked, pushed, and CI-verified. Triggers: "handle PR reviews",
+  "address review comments", "respond to PR comments", "리뷰 대응",
+  "리뷰 코멘트 처리", "PR comment 처리", "レビュー対応", "レビューコメント対応".
+  Do not use for receiving standalone reviewer-shaped feedback before PR
+  automation (use ywc-receive-review), creating a new PR (use ywc-create-pr),
+  performing a code review yourself (use ywc-impl-review), or changes outside an
+  open PR context.
 ---
 
 # Handle PR Review Comments
