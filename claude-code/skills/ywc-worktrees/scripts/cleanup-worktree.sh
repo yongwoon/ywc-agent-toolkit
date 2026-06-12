@@ -9,7 +9,7 @@
 #   1  Cleanup failed; details printed on stdout
 #   2  Usage error
 
-set -uo pipefail
+set -euo pipefail
 
 ROOT_ARG=""
 BRANCH=""

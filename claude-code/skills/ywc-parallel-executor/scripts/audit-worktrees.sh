@@ -24,7 +24,7 @@
 #   bash claude-code/skills/ywc-parallel-executor/scripts/audit-worktrees.sh \
 #     --expect 000001-010-db-create-users,000001-020-add-indexes
 
-set -uo pipefail
+set -euo pipefail
 
 DO_PRUNE=0
 EXPECT=""

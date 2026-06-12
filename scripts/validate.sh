@@ -227,6 +227,13 @@ check_codex_plan_handoff
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null
 
+# Mirror the CI mechanical-regression gate locally so a score drop is caught
+# before push, not only in CI (.github/workflows/validate.yml runs the same gate).
+if [ -f .claude/skills/ywc-toolkit-eval/scripts/score.py ]; then
+  echo "==> Running ywc-toolkit-eval mechanical regression gate..."
+  python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci || ERRORS=$((ERRORS + 1))
+fi
+
 if [ "$ERRORS" -gt 0 ]; then
   echo ""
   echo "Validation failed: $ERRORS error(s) found."
