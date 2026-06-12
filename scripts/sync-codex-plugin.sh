@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_DIR="$ROOT_DIR/codex/skills"
-DEST_DIR="$ROOT_DIR/.codex-plugin/skills"
+DEST_DIR="${CODEX_PLUGIN_DEST_DIR:-$ROOT_DIR/.codex-plugin/skills}"
 
 if [[ ! -d "$SOURCE_DIR" ]]; then
   echo "ERROR: Codex skill source directory not found: $SOURCE_DIR" >&2
@@ -43,4 +43,4 @@ while IFS= read -r -d '' file; do
   mv "$tmp_file" "$file"
 done < <(find "$DEST_DIR" -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' \) -print0)
 
-echo "Synced codex/skills -> .codex-plugin/skills"
+echo "Synced codex/skills -> $DEST_DIR"

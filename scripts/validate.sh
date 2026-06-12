@@ -122,56 +122,48 @@ check_codex_plan_handoff() {
   fi
 }
 
-rewrite_packaged_skill_paths() {
-  local dest_dir="$1"
-  local file tmp_file mode
-
-  while IFS= read -r -d '' file; do
-    tmp_file="$file.tmp"
-    if mode="$(stat -f '%Lp' "$file" 2>/dev/null)"; then
-      :
-    else
-      mode="$(stat -c '%a' "$file")"
-    fi
-    sed -E \
-      -e 's#bash codex/skills/([^[:space:]]+)#bash "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
-      -e 's#python codex/skills/([^[:space:]]+)#python "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
-      -e 's#cp codex/skills/([^[:space:]]+)#cp "${CODEX_HOME:-$HOME/.codex}/skills/\1"#g' \
-      "$file" > "$tmp_file"
-    chmod "$mode" "$tmp_file"
-    mv "$tmp_file" "$file"
-  done < <(find "$dest_dir" -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' \) -print0)
-}
-
-build_expected_codex_plugin_skills() {
-  local dest_dir="$1"
-
-  mkdir -p "$dest_dir"
-  (
-    cd codex/skills
-    tar -cf - .
-  ) | (
-    cd "$dest_dir"
-    tar -xf -
-  )
-  rewrite_packaged_skill_paths "$dest_dir"
-}
-
 check_path_under_codex_plugin() {
   local field="$1"
   local path="$2"
+  local target plugin_root target_real
 
   [ -n "$path" ] || return 0
   path="${path#./}"
-  if [ ! -f ".codex-plugin/$path" ]; then
+  case "$path" in
+    /*|../*|*/../*)
+      echo "ERROR: .codex-plugin/plugin.json interface.$field path must stay under .codex-plugin: $path"
+      ERRORS=$((ERRORS + 1))
+      return
+      ;;
+  esac
+
+  target=".codex-plugin/$path"
+  if [ ! -f "$target" ]; then
     echo "ERROR: .codex-plugin/plugin.json references missing interface.$field path: $path"
     ERRORS=$((ERRORS + 1))
+    return
   fi
+
+  if [ -L "$target" ]; then
+    echo "ERROR: .codex-plugin/plugin.json interface.$field path must not be a symlink: $path"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  plugin_root="$(cd .codex-plugin && pwd -P)"
+  target_real="$(cd "$(dirname "$target")" && pwd -P)/$(basename "$target")"
+  case "$target_real" in
+    "$plugin_root"/*) ;;
+    *)
+      echo "ERROR: .codex-plugin/plugin.json interface.$field path resolves outside .codex-plugin: $path"
+      ERRORS=$((ERRORS + 1))
+      ;;
+  esac
 }
 
 check_codex_plugin_manifest() {
   local manifest=".codex-plugin/plugin.json"
-  local required field value tmp_dir expected_dir diff_output
+  local required field value tmp_dir expected_dir diff_output unsafe_paths_file
 
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required to validate .codex-plugin/plugin.json"
@@ -217,8 +209,30 @@ check_codex_plugin_manifest() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  for field in displayName shortDescription longDescription developerName category websiteURL brandColor; do
+    if ! jq -e --arg field "$field" '.interface[$field] | type == "string" and length > 0' "$manifest" >/dev/null; then
+      echo "ERROR: .codex-plugin/plugin.json interface.$field must be a non-empty string"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
   if ! jq -e '.interface.capabilities | type == "array" and length > 0' "$manifest" >/dev/null; then
     echo "ERROR: .codex-plugin/plugin.json interface.capabilities must be a non-empty array"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! jq -e '.interface.capabilities | all(.[]; type == "string" and length > 0)' "$manifest" >/dev/null; then
+    echo "ERROR: .codex-plugin/plugin.json interface.capabilities must contain only non-empty strings"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! jq -e '.interface.defaultPrompt | type == "array" and length > 0 and all(.[]; type == "string" and length > 0)' "$manifest" >/dev/null; then
+    echo "ERROR: .codex-plugin/plugin.json interface.defaultPrompt must be a non-empty string array"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! jq -e '(.interface.screenshots // []) | type == "array" and all(.[]; type == "string" and length > 0)' "$manifest" >/dev/null; then
+    echo "ERROR: .codex-plugin/plugin.json interface.screenshots must be an array of non-empty strings"
     ERRORS=$((ERRORS + 1))
   fi
 
@@ -247,12 +261,13 @@ check_codex_plugin_manifest() {
     ERRORS=$((ERRORS + 1))
   fi
 
-  if rg -n '(bash|python|cp) codex/skills/' .codex-plugin/skills >/tmp/ywc-plugin-unsafe-paths.txt; then
+  unsafe_paths_file="$(mktemp)"
+  if rg -n '(bash|python|cp) codex/skills/' .codex-plugin/skills >"$unsafe_paths_file"; then
     echo "ERROR: .codex-plugin/skills contains workspace-relative executable command paths"
-    sed -n '1,20p' /tmp/ywc-plugin-unsafe-paths.txt
+    sed -n '1,20p' "$unsafe_paths_file"
     ERRORS=$((ERRORS + 1))
   fi
-  rm -f /tmp/ywc-plugin-unsafe-paths.txt
+  rm -f "$unsafe_paths_file"
 
   if [ -f codex/skills/ywc-plan/SKILL.md ] && [ -f .codex-plugin/skills/ywc-plan/SKILL.md ]; then
     if ! diff -u \
@@ -265,7 +280,12 @@ check_codex_plugin_manifest() {
 
   tmp_dir="$(mktemp -d)"
   expected_dir="$tmp_dir/skills"
-  build_expected_codex_plugin_skills "$expected_dir"
+  if ! CODEX_PLUGIN_DEST_DIR="$expected_dir" bash scripts/sync-codex-plugin.sh >/dev/null; then
+    echo "ERROR: failed to build expected Codex plugin skills package"
+    rm -rf "$tmp_dir"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
 
   if ! diff_output="$(diff -qr "$expected_dir" .codex-plugin/skills)"; then
     echo "ERROR: .codex-plugin/skills is stale; run: bash scripts/sync-codex-plugin.sh"

@@ -29,7 +29,11 @@
       "Read",
       "Write"
     ],
-    "defaultPrompt": "Use $ywc-plan to clarify this change request and route it to the right workflow.",
+    "defaultPrompt": [
+      "Use $ywc-plan to clarify this change request and route it to the right workflow.",
+      "Use $ywc-task-generator to turn an approved specification into implementation tasks.",
+      "Use $ywc-sequential-executor to run generated tasks through delivery in order."
+    ],
     "websiteURL": "https://github.com/yongwoon/ywc-agent-toolkit",
     "brandColor": "#2563EB",
     "screenshots": []
