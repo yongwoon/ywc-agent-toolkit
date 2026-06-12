@@ -23,11 +23,36 @@
 运行命令后，在 Plugin UI 的 **Marketplaces** 标签页中安装 **ywc-agent-toolkit**。
 无需克隆或运行 bash，自动安装到 `~/.claude/skills/`。
 
-### bash 脚本
+### Codex CLI 插件目录
+
+本仓库在 [`.codex-plugin/`](.codex-plugin/) 下包含 Codex 插件分发所需的打包元数据，插件本地 skill 会镜像到 `.codex-plugin/skills/`，并由 `bash scripts/validate.sh` 检查是否保持最新。这表示 `ywc-agent-toolkit` 已为 Codex CLI/App 插件安装做好准备，但不表示它已经在官方 Codex 市场上架。
+
+当包含本仓库的 Codex 插件市场或来源可用时：
+
+```text
+# Shell
+codex
+
+# 在交互式 Codex 会话中
+/plugins
+```
+
+在交互式 Codex 会话中打开插件目录，搜索 `yongwoon/ywc-agent-toolkit` 的 **ywc-agent-toolkit**，然后选择 **Install plugin**。
+
+### Codex App Plugins 侧边栏
+
+在 Codex App 中，从侧边栏打开 **Plugins**，搜索或浏览 **ywc-agent-toolkit**，确认插件来源是 `yongwoon/ywc-agent-toolkit`，然后在插件详情页安装。
+
+在本仓库出现在你可用的 Codex 插件来源之前，请使用下面的 bash fallback。
+
+### bash 脚本 fallback
 
 ```bash
-git clone https://github.com/yongwoon/ywc-agent-toolkit.git
+YWC_REF=<release-tag-or-reviewed-commit>
+git clone --branch "$YWC_REF" --depth 1 https://github.com/yongwoon/ywc-agent-toolkit.git
 cd ywc-agent-toolkit
+git remote get-url origin
+git rev-parse --verify HEAD
 
 # Claude Code
 bash scripts/install.sh --cc

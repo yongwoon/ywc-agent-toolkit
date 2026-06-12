@@ -23,11 +23,36 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 After running the command, open the Plugin UI (**Marketplaces** tab) and install **ywc-agent-toolkit** from there.
 Skills and Claude Code agents are installed automatically — no cloning or bash required.
 
-### Via bash script
+### Via Codex CLI plugin directory
+
+This repository includes Codex plugin packaging metadata under [`.codex-plugin/`](.codex-plugin/), with plugin-local skills mirrored in `.codex-plugin/skills/` and checked by `bash scripts/validate.sh`. This prepares `ywc-agent-toolkit` for Codex CLI/App plugin installation, but does not mean it is already listed in an official Codex marketplace.
+
+When a Codex plugin marketplace or source that contains this repository is available:
+
+```text
+# Shell
+codex
+
+# Inside the interactive Codex session
+/plugins
+```
+
+Inside the interactive Codex session, open the plugin directory, search for **ywc-agent-toolkit** from `yongwoon/ywc-agent-toolkit`, then choose **Install plugin**.
+
+### Via Codex App Plugins sidebar
+
+In the Codex App, open **Plugins** from the sidebar, search or browse for **ywc-agent-toolkit**, confirm the plugin source is `yongwoon/ywc-agent-toolkit`, then install it from the plugin details view.
+
+Until this repository appears in a Codex plugin source available to you, use the bash fallback below.
+
+### Via bash script fallback
 
 ```bash
-git clone https://github.com/yongwoon/ywc-agent-toolkit.git
+YWC_REF=<release-tag-or-reviewed-commit>
+git clone --branch "$YWC_REF" --depth 1 https://github.com/yongwoon/ywc-agent-toolkit.git
 cd ywc-agent-toolkit
+git remote get-url origin
+git rev-parse --verify HEAD
 
 # Claude Code
 bash scripts/install.sh --cc
