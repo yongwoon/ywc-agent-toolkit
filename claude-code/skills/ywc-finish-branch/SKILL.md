@@ -216,33 +216,15 @@ The output **must** begin with `Merge branch 'feature/`. If not, the merge did n
 
 For `--mode normal-pr` and `--mode local-merge`:
 
-The marker commit form depends on whether `<tasks-dir>` is tracked by git or gitignored. `git mv` cannot stage a path inside a gitignored directory and the move produces no diff for git to commit, so a `git mv` + `git commit` sequence silently fails (or commits nothing) when `<tasks-dir>` is in `.gitignore`. Detect the case once and branch:
+Use the shared marker script — it handles the `.gitignore` branch, the mandatory marker commit, and the post-move verification in one deterministic step (exits non-zero if anything failed):
 
 ```bash
-mkdir -p <tasks-dir>/completed
-
-if git check-ignore -q <tasks-dir>/<task-name> 2>/dev/null; then
-  # Gitignored tasks/ — git mv cannot track the move; use plain mv plus an
-  # empty marker commit so the audit trail is preserved in `git log`.
-  mv <tasks-dir>/<task-name> <tasks-dir>/completed/<task-name>
-  git commit --allow-empty -m "chore: mark <task-name> as completed"
-else
-  # Tracked tasks/ — git mv stages the rename; the commit content IS the move.
-  git mv <tasks-dir>/<task-name> <tasks-dir>/completed/<task-name>
-  git commit -m "chore: mark <task-name> as completed"
-fi
+bash claude-code/skills/scripts/mark-complete.sh <tasks-dir> <task-name> [--push | --defer-push]
 ```
 
-The `chore: mark <task-name> as completed` commit is **mandatory in both branches**. It is what `git log` readers (humans, audit tooling, downstream skills, the Completion Report) rely on to verify task completion at a specific commit boundary. Skipping the marker commit for the gitignored case (e.g., "the file system already reflects the move, no commit needed") leaves no `git log` evidence that the task was completed in this run, which breaks resume / replay / audit semantics for every downstream consumer.
+Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
 
-**Post-move verification (do not skip):**
-```bash
-test -d <tasks-dir>/completed/<task-name> && ! test -e <tasks-dir>/<task-name>
-git log -1 --format="%s"
-```
-The directory test must succeed, and the last commit subject must be `chore: mark <task-name> as completed`. If either check fails, the move did not happen — investigate and retry before declaring `DONE`.
-
-**Push strategy**: push immediately for `--mode local-merge` and for `--mode normal-pr` when `--defer-push` is **not** set. With `--defer-push`, skip the push so the caller can batch completion-marker commits and push them once at the end of the range. The caller is responsible for the eventual push when deferral is requested.
+**Push strategy**: pass `--push` to `mark-complete.sh` for `--mode local-merge` and for `--mode normal-pr` when `--defer-push` is **not** set. Otherwise pass `--defer-push` (the script's default) so the caller can batch completion-marker commits and push them once at the end of the range. The caller is responsible for the eventual push when deferral is requested.
 
 For `--mode draft`, `--mode skip-ci-wait`, `--mode per-task-pr`: skip Step 7 entirely. The task is not yet merged; marking it complete would be incorrect.
 

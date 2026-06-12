@@ -97,10 +97,14 @@ Before starting execution, verify these conditions:
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Also add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the task range, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+bash claude-code/skills/scripts/update-state.py init-sequential \
+  --mode <local-merge|draft|skip-ci-wait|normal> --tasks-dir <tasks-dir> \
+  --range '["000001-010-...","000001-020-..."]'
 ```
+The `--range` array is the ordered list of task-directory names this run will execute. Per-step checkpoint writes then use `update-state.py task-step <task> <step>` (Steps 2/4) and `update-state.py task-complete <task>` (after Step 5 delivery); see the schema and event table in [Checkpoint and Resume](#checkpoint-and-resume).
 
 ## External URL Policy
 
