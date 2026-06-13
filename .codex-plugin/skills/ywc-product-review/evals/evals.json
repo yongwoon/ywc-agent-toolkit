@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-product-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this repo from a product perspective and tell me the highest priority improvements.",
+      "expected_output": "Produces a prioritized product review with observable evidence, severity tiers, and a Status line. Does not speculate about users or metrics without grounding.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-product-review on docs and README only. Avoid code-level implementation review.",
+      "expected_output": "Limits evidence to the requested docs and README, focuses on product value and positioning, and avoids code-review findings.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Find growth and user value gaps in this project, but do not invent a roadmap.",
+      "expected_output": "Reports grounded growth and user-value findings, marks uncertainty, and avoids fabricated roadmap commitments.",
+      "files": []
+    }
+  ]
+}

@@ -105,3 +105,19 @@ For all other ambiguities — borderline High vs Medium severity, uncertain evid
 - If the codebase is large, focus on README, main entrypoints, and feature directories rather than implementation details
 - Base all findings on observable evidence — avoid speculation without grounding in what you actually read
 - Follow any additional instructions in `$ARGUMENTS`
+
+## Output Format
+
+Return a concise product review report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Summary: <top product judgment in 1-3 bullets>
+Findings: <High / Medium / Low findings with evidence and recommendation>
+Advisor usage: <advisor calls used or "none">
+Next action: <single recommended product decision or follow-up>
+```
+
+## Validation
+
+Before finalizing, verify that every finding cites observable product, code, or documentation evidence; severity is consistent with the rubric; advisor budget is recorded; and no unsupported speculation is presented as fact.

@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-project-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create developer onboarding docs for this repository.",
+      "expected_output": "Checks for existing docs first, chooses an appropriate docs path, reports the document path, and includes Status and validation details.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Update the architecture document with the new worker flow.",
+      "expected_output": "Updates an existing relevant document when present instead of creating a duplicate, and records cross-links that were considered.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Draft a temporary integration note for a feature that is not final yet.",
+      "expected_output": "Routes pre-finalized content to the draft/todo area when appropriate and clearly reports official vs draft placement.",
+      "files": []
+    }
+  ]
+}

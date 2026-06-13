@@ -272,3 +272,21 @@ Include:
 
 - **upstream**: None — this skill is triggered directly by the user or a scheduled workflow when Dependabot PRs accumulate
 - **downstream**: /ywc-gen-testcase (optional — run after merging dependency updates to verify the updated packages do not break existing test coverage)
+
+## Output Format
+
+Return the Dependabot merge report with:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Mode: <scope and execution mode>
+Merged: <PR numbers>
+Skipped: <PR numbers and reasons>
+Failed: <PR numbers and reasons>
+Validation: <CI and branch-protection checks>
+Next action: <manual follow-up or "none">
+```
+
+## Validation
+
+Before finalizing, verify that branch protection was not bypassed, each PR result is categorized, CI status was checked after each merge lane, major or unsupported updates were skipped with reason, and failures include actionable blocker details.

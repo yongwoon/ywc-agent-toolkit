@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-handle-pr-reviews",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Address all actionable review comments on PR #123.",
+      "expected_output": "Fetches review artifacts, applies only in-scope fixes, reports processed/skipped counts, reruns verification, and returns Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "A review comment is ambiguous. Just guess and patch it.",
+      "expected_output": "Does not guess reviewer intent; asks for clarification or marks the item deferred with a clear reason.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Handle PR review feedback but ignore failing CI afterward.",
+      "expected_output": "Reruns or checks CI after fixes and reports BLOCKED or DONE_WITH_CONCERNS if verification remains failing.",
+      "files": []
+    }
+  ]
+}

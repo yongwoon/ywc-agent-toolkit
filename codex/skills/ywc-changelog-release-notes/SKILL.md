@@ -120,3 +120,17 @@ See [references/release-notes-format.md](references/release-notes-format.md) for
 | Internal code names or module paths | Users don't know internal structure | User-visible feature names |
 | Security entries only in user notes | Developers need CVE details | CVE reference in CHANGELOG; plain summary in release notes |
 | Refactor/chore entries in user notes | Not relevant to users | Omit from release notes; include only in CHANGELOG |
+
+## Validation
+
+Before finalizing, report the release-note result with:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Artifacts: <CHANGELOG entry path and/or release notes path>
+Sources: <commits, PR list, tags, or incident documents used>
+Validation: <banned patterns checked and category placement verified>
+Next action: <release handoff or "none">
+```
+
+Verify that every entry maps to a concrete source, user-facing notes omit irrelevant internal refactors, developer changelog entries keep required technical/security references, and banned generic wording is absent.

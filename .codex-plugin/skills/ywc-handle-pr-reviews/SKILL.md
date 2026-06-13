@@ -208,6 +208,23 @@ Report the results so the user has a clear picture of what happened:
 - Follow any additional instructions in `$ARGUMENTS`
 - When in doubt about a reviewer's intent, ask the user rather than guessing — misinterpreting feedback wastes more time than a quick clarification
 
+## Output Format
+
+Return a PR review handling report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+PR: <number or URL>
+Processed: <count and source of comments handled>
+Skipped: <comments deferred with reason>
+Validation: <tests or CI checks rerun>
+Next action: <remaining review/CI action or "none">
+```
+
+## Validation
+
+Before finalizing, verify that every actionable comment is either addressed or explicitly deferred, reviewer intent was not guessed when ambiguous, fixes stay within PR scope, and CI or local verification was rerun after code changes.
+
 ## Integration
 
 - **upstream**: ywc-create-pr (a PR must exist before review comments can be handled); ywc-sequential-executor / ywc-parallel-executor (executors that generate the PRs being reviewed)
