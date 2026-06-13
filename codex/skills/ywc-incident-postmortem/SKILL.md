@@ -140,4 +140,4 @@ Validation: <timeline, impact, root cause, and action-item checks>
 Next action: <owner follow-up or "none">
 ```
 
-Verify that impact is quantified, root cause avoids "human error" as a terminal explanation, action items have owners and dates, and client-facing output contains no internal stack traces or architecture details.
+Verify that impact is quantified, root cause avoids "human error" as a terminal explanation, action items have owners and dates, and client-facing output contains no internal names, stack traces, or architecture details.

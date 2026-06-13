@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Use $ywc-gen-testcase --from-diff HEAD~1..HEAD --output qa.md",
+      "prompt": "Use $ywc-gen-testcase --range HEAD~1..HEAD",
       "expected_output": "Validates the two-dot range, generates a deterministic testsheet path, reports detected scope and Status, and does not confuse range input with PR mode.",
       "files": []
     },

@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "Design a FastAPI project structure for a medium-sized REST service using DDD.",
-      "expected_output": "Returns a tree-only scaffold with directory roles, dependency direction, Status, and validation against language/framework/architecture constraints.",
+      "expected_output": "Returns a structured scaffold report with Scaffold, Rationale, Boundaries, Validation, and Next action fields, plus directory roles, dependency direction, Status, and validation against language/framework/architecture constraints.",
       "files": []
     },
     {

@@ -93,9 +93,11 @@ Before starting execution, verify these conditions:
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Also add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Do not modify `.gitignore` during execution; the ignore entry must already be committed or present in repo-local exclude before the run:
 ```bash
-grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null \
+  || grep -qxF '.ywc-run-state.json' .git/info/exclude 2>/dev/null \
+  || { echo "Missing .ywc-run-state.json ignore entry; add it to tracked .gitignore before the run or to .git/info/exclude for local-only state."; exit 1; }
 ```
 
 ## External URL Policy

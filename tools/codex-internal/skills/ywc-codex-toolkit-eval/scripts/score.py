@@ -260,7 +260,10 @@ def score_agent(path: Path, repo_root: Path, skill_text_index: str) -> dict[str,
     output_checks = {
         "output_marker": "Output:" in instructions,
         "status_line": "Status:" in instructions,
-        "shared_states": all(state in instructions for state in ("DONE", "BLOCKED", "NEEDS_CONTEXT")),
+        "shared_states": all(
+            state in instructions
+            for state in ("DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT")
+        ),
     }
     caller_refs = len(re.findall(rf"(?<![\w-]){re.escape(path.stem)}(?![\w-])", skill_text_index))
     axes: dict[str, int | None] = {

@@ -180,6 +180,20 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         skill = payload["roots"]["codex/skills"][0]
         self.assertEqual(skill["axes"]["S7"], 4)
 
+    def test_agent_output_contract_requires_done_with_concerns(self) -> None:
+        agent = self.repo / "codex" / "agents" / "ywc-reviewer.toml"
+        agent.write_text(
+            agent.read_text(encoding="utf-8").replace("DONE_WITH_CONCERNS | ", ""),
+            encoding="utf-8",
+        )
+
+        proc = self.run_score("--target", "codex/agents", "--format", "json")
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        payload = json.loads(proc.stdout)
+        scored_agent = payload["roots"]["codex/agents"][0]
+        self.assertLess(scored_agent["axes"]["A6"], 4)
+
     def test_repo_root_missing_fails_instead_of_scoring_empty_repo(self) -> None:
         empty_dir = tempfile.TemporaryDirectory()
         self.addCleanup(empty_dir.cleanup)

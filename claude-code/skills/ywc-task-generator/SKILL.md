@@ -203,7 +203,7 @@ Each task name follows this format:
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
-- **Starting PHASE for a new batch**: when any tasks already exist, scan both `tasks/` and `tasks/completed/`, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `tasks/completed/`.
+- **Starting PHASE for a new batch**: when any tasks already exist, scan both `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`), take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `<tasks-dir>/completed/`.
 
 **Category:**
 - `lib` — New library/framework introduction
