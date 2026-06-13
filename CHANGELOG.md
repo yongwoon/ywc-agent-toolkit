@@ -9,6 +9,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * **codex:** port PR conflict and merge-readiness handling to Codex PR workflow skills from develop-with-llm PR #101.
 
+## [1.20.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.19.0...v1.20.0) (2026-06-13)
+
+
+### ### Added
+
+* add review learnings, design renew, and schema guide ([#80](https://github.com/yongwoon/ywc-agent-toolkit/issues/80)) ([eedc4d5](https://github.com/yongwoon/ywc-agent-toolkit/commit/eedc4d558f1f07642a9ed1dd67dfdc0b4e4dc1e8))
+* **skills:** add PR conflict resolution and merge-readiness gate ([#82](https://github.com/yongwoon/ywc-agent-toolkit/issues/82)) ([f3a2384](https://github.com/yongwoon/ywc-agent-toolkit/commit/f3a23848a5f8b7549e16bb275348ffc1b640eaa5))
+
+
+### ### Documentation
+
+* improve README navigation ([#79](https://github.com/yongwoon/ywc-agent-toolkit/issues/79)) ([f270126](https://github.com/yongwoon/ywc-agent-toolkit/commit/f270126ec77a6405aed614d8e8b0fe755fd31b4c))
+
 ## [1.19.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.18.0...v1.19.0) (2026-06-13)
 
 
