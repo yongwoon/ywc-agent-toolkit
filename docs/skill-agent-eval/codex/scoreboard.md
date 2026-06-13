@@ -1,0 +1,50 @@
+# Codex Skill/Agent Evaluation Scoreboard
+
+| Asset | Kind | Current | Previous | Trend | Last evaluated | Weakest dimension | Next action |
+|---|---|---:|---:|---|---|---|---|
+| `codex/skills/ywc-agentic` | skill | A / 3.77 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-brainstorm` | skill | A / 3.77 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-changelog-release-notes` | skill | B / 3.44 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-code-gen` | skill | A / 3.51 | n/a | new | 2026-06-13 | S1=3 | Optional polish to reference quality |
+| `codex/skills/ywc-commit` | skill | A / 3.64 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-confidence-gate` | skill | A / 3.77 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-create-pr` | skill | B / 3.08 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-debug-rootcause` | skill | A / 3.87 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-design-renew` | skill | A / 4.00 | n/a | new | 2026-06-13 | S1=4 | Maintain |
+| `codex/skills/ywc-e2e-test-strategy` | skill | A / 3.87 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-finish-branch` | skill | A / 3.77 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-gen-testcase` | skill | A / 3.61 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-handle-pr-reviews` | skill | B / 3.34 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-impl-review` | skill | A / 3.74 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-incident-postmortem` | skill | A / 3.61 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-merge-dependabot` | skill | A / 3.51 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-onboard-repo` | skill | A / 3.90 | n/a | new | 2026-06-13 | S7=3 | Optional polish to reference quality |
+| `codex/skills/ywc-parallel-executor` | skill | A / 3.64 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-plan` | skill | A / 3.67 | n/a | new | 2026-06-13 | S7=2 | Maintain |
+| `codex/skills/ywc-product-review` | skill | B / 3.05 | n/a | new | 2026-06-13 | S5=0 | Fix rubric axis below 2 |
+| `codex/skills/ywc-project-docs` | skill | B / 3.05 | n/a | new | 2026-06-13 | S5=0 | Fix rubric axis below 2 |
+| `codex/skills/ywc-project-scaffold` | skill | B / 3.05 | n/a | new | 2026-06-13 | S5=0 | Fix rubric axis below 2 |
+| `codex/skills/ywc-receive-review` | skill | A / 3.64 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-refactor-clean` | skill | A / 3.77 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-release-pr-list` | skill | B / 3.34 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-review-learnings` | skill | A / 4.00 | n/a | new | 2026-06-13 | S1=4 | Maintain |
+| `codex/skills/ywc-security-audit` | skill | A / 3.74 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-sequential-executor` | skill | A / 3.64 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-skill-author` | skill | A / 3.90 | n/a | new | 2026-06-13 | S7=3 | Optional polish to reference quality |
+| `codex/skills/ywc-spec-validate` | skill | A / 3.64 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-spec-writer` | skill | A / 3.90 | n/a | new | 2026-06-13 | S7=3 | Optional polish to reference quality |
+| `codex/skills/ywc-task-generator` | skill | A / 3.87 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-tdd-ritual` | skill | A / 3.77 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-team-assemble` | skill | B / 3.05 | n/a | new | 2026-06-13 | S5=0 | Fix rubric axis below 2 |
+| `codex/skills/ywc-tech-research` | skill | B / 3.31 | n/a | new | 2026-06-13 | S5=2 | Maintain |
+| `codex/skills/ywc-ubiquitous-language` | skill | A / 3.87 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-ui-ux-review` | skill | A / 3.61 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/skills/ywc-verify-done` | skill | A / 3.87 | n/a | new | 2026-06-13 | S5=3 | Optional polish to reference quality |
+| `codex/skills/ywc-worktrees` | skill | B / 3.36 | n/a | new | 2026-06-13 | S5=1 | Fix rubric axis below 2 |
+| `codex/agents/ywc-architect.toml` | agent | A / 3.92 | n/a | new | 2026-06-13 | A8=3 | Optional polish to reference quality |
+| `codex/agents/ywc-go-reviewer.toml` | agent | A / 3.92 | n/a | new | 2026-06-13 | A8=3 | Optional polish to reference quality |
+| `codex/agents/ywc-performance-engineer.toml` | agent | A / 3.92 | n/a | new | 2026-06-13 | A8=3 | Optional polish to reference quality |
+| `codex/agents/ywc-python-reviewer.toml` | agent | A / 3.92 | n/a | new | 2026-06-13 | A8=3 | Optional polish to reference quality |
+| `codex/agents/ywc-root-cause-analyst.toml` | agent | A / 3.65 | n/a | new | 2026-06-13 | A7=1 | Fix rubric axis below 2 |
+| `codex/agents/ywc-security-engineer.toml` | agent | A / 3.65 | n/a | new | 2026-06-13 | A7=1 | Fix rubric axis below 2 |
+| `codex/agents/ywc-typescript-reviewer.toml` | agent | A / 3.92 | n/a | new | 2026-06-13 | A8=3 | Optional polish to reference quality |
