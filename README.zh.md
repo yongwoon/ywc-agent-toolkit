@@ -11,6 +11,27 @@
 
 目前包含 36 个 Claude Code skill、37 个 Codex skill、12 个 Claude Code agent 和 7 个 Codex custom agent。
 
+## 前提条件
+
+插件市场和 Codex 插件安装**无需前提条件** — 工具会自动处理一切。
+
+使用 **bash 脚本 fallback** 时，运行 `install.sh` 前需安装以下工具：
+
+| 工具 | 用途 | 安装方式 |
+| ---- | ---- | -------- |
+| `git` | 克隆仓库 | 大多数系统已预装 |
+| `bash ≥ 3.2` | 运行 `install.sh` | macOS / Linux 已预装 |
+| `jq` | Hook 注册 | `brew install jq` / `apt-get install jq` |
+
+**Skill 运行时**（安装时不需要）：
+
+| 工具 | 使用的 Skill | 安装方式 |
+| ---- | ------------ | -------- |
+| `python3 ≥ 3.9` | `ywc-parallel-executor`、`ywc-finish-branch`、`ywc-merge-dependabot` | macOS 12.3+ 已预装；`brew install python3` |
+| `gh` CLI | 大多数 Git & Release Skill | `brew install gh` / [cli.github.com](https://cli.github.com) |
+
+---
+
 ## 安装
 
 ### Claude Code 插件市场（推荐）

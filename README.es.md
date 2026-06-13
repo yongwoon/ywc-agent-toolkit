@@ -10,6 +10,27 @@ Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de
 
 Actualmente incluye 36 skills para Claude Code, 37 skills para Codex, 12 agentes de Claude Code y 7 custom agents de Codex.
 
+## Prerrequisitos
+
+La instalación mediante marketplace de plugins y plugins de Codex **no tiene prerrequisitos** — la herramienta lo gestiona todo automáticamente.
+
+Para el **script bash fallback**, lo siguiente debe estar instalado antes de ejecutar `install.sh`:
+
+| Herramienta | Necesario para | Instalación |
+| ----------- | -------------- | ----------- |
+| `git` | Clonar el repositorio | Preinstalado en la mayoría de sistemas |
+| `bash ≥ 3.2` | Ejecutar `install.sh` | Preinstalado en macOS / Linux |
+| `jq` | Registro de hooks | `brew install jq` / `apt-get install jq` |
+
+En **tiempo de ejecución de skills** (no requerido para la instalación):
+
+| Herramienta | Utilizado por | Instalación |
+| ----------- | ------------- | ----------- |
+| `python3 ≥ 3.9` | `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot` | Preinstalado en macOS 12.3+; `brew install python3` |
+| `gh` CLI | La mayoría de skills de Git & Release | `brew install gh` / [cli.github.com](https://cli.github.com) |
+
+---
+
 ## Instalación
 
 ### Marketplace de plugins de Claude Code (recomendado)
