@@ -210,6 +210,7 @@ Record the resolved worktree path for the subagent payload. Record the resolved 
 - The task's `README.md` (scope, ownership, spec reference)
 - The worktree path (working directory)
 - The canonical term table from `docs/ubiquitous-language.md` if it exists in the project root (include the "Synonyms to Avoid" column — identifiers matching those entries are naming violations)
+- The shared schema guide when the task touches database schema, migrations, ORM models, relations, indexes, tenant scoping, or enum domains: [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`)
 - **Question-First directive (append verbatim):**
 
   > Before any code change: read `task.md` and the Spec Reference, then enumerate genuinely ambiguous decisions whose wrong answer would force a rewrite (interface shape, data model, naming that conflicts with existing code, library choice when more than one is installed). If the list is non-empty, return `NEEDS_CONTEXT` with the questions enumerated — do not infer from neighboring tasks. Inferring silently compounds error and is the most expensive failure mode. See [../references/question-first-gate.md](../references/question-first-gate.md) for what counts as genuine ambiguity and the question format.

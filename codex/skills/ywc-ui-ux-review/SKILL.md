@@ -7,7 +7,8 @@ description: >-
   "usability audit", "design review", "accessibility review", "사용성 점검",
   "디자인 리뷰", "UX 監査", "UI レビュー". Do not use for backend/API review (use
   ywc-impl-review), product/business strategy review (use ywc-product-review),
-  or code-only review without a running UI.
+  renewing an existing generic or AI-slop-looking visual design (use
+  ywc-design-renew), or code-only review without a running UI.
 ---
 
 # UI/UX Review — Hybrid (Code + Live UI)

@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-parallel-executor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-parallel-executor --all --tasks-dir tasks/ --local-merge.",
+      "expected_output": "Pre-flight에서 clean working tree, base branch, tasks/dependency-graph.md, stale worktree audit를 확인한다. dependency graph의 Depends On, Conflicts With, Shared Surfaces를 기준으로 wave를 만들고, 같은 wave의 각 task를 별도 worktree와 branch에서 실행한다. Wave boundary는 hard gate로 유지하고, 각 task는 delivery, Mark Complete, worktree cleanup까지 완료되어야 다음 wave로 넘어간다. Completion Report에는 task status, merge SHA, worktree cleanup status, final audit, Completion Status가 포함된다.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "tasks/dependency-graph.md에 Conflicts With가 있는 두 task를 같은 wave로 병렬 실행해줘.",
+      "expected_output": "Conflicts With는 hint가 아니라 hard constraint로 취급한다. 두 task를 같은 wave에 배치하지 않고 wave boundary를 조정하거나 reconsider verdict를 보고한다. 사용자가 빠른 실행을 원해도 conflict pair를 동시에 실행하지 않는다.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Use $ywc-parallel-executor 000001-010..000001-030 --per-task-pr.",
+      "expected_output": "각 task별 PR을 create만 하고 넘어가지 않는다. PR 생성, CI wait, bot review polling, bot fix 후 CI re-gate, gh pr merge --delete-branch, base sync, completion marker commit/push까지 full lifecycle을 수행한다. 실패 task의 worktree와 branch는 보존하고 성공 task만 cleanup한다.",
+      "files": []
+    }
+  ]
+}

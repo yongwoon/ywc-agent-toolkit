@@ -204,9 +204,11 @@ versions include Codex-compatible frontmatter and tool guidance.
 
 | Skill | Description |
 | ----- | ----------- |
-| [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md) | Verify implementation across Spec / Security / QA axes |
+| [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md) | Verify implementation across Architecture / Design / Devex / Security / QA axes |
+| [`ywc-review-learnings`](claude-code/skills/ywc-review-learnings/README.md) | Accumulate per-project review preferences in `docs/review-learnings.md` |
 | [`ywc-security-audit`](claude-code/skills/ywc-security-audit/README.md) | Security audit based on OWASP Top 10 |
 | [`ywc-ui-ux-review`](claude-code/skills/ywc-ui-ux-review/README.md) | UI/UX review (IA + Visual design + WCAG 2.2 AA) |
+| [`ywc-design-renew`](claude-code/skills/ywc-design-renew/README.md) | Renew generic UI surfaces and audit AI-slop design tells |
 | [`ywc-product-review`](claude-code/skills/ywc-product-review/README.md) | Product feedback across 5 business dimensions |
 | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) | Generate test sheets from PRs or tasks |
 | [`ywc-e2e-test-strategy`](claude-code/skills/ywc-e2e-test-strategy/README.md) | Design Playwright E2E test strategy |
@@ -266,9 +268,9 @@ All Codex agents are read-only; they return a standardized `Status: DONE | DONE_
 
 ## HTML Output Mode for Review Skills
 
-Eight review and report skills support an opt-in `--format html` flag that produces a self-contained, browser-ready HTML report instead of Markdown.
+Nine review and report skills support an opt-in `--format html` flag that produces a self-contained, browser-ready HTML report instead of Markdown.
 
-**Supported skills:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`
+**Supported skills:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`, `ywc-design-renew`
 
 **Why HTML?** AI-generated Markdown documents longer than ~100 lines are rarely read end to end — an unread report cannot drive a decision. HTML adds color, severity coding, tabs, and interactive controls (checkboxes, `Copy as Markdown`), so the human on the other end actually reads and acts on the output.
 

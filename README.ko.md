@@ -91,9 +91,9 @@ bash scripts/install.sh --all
 
 ## Review Skill HTML 출력 모드
 
-8개의 Review / Report skill이 opt-in `--format html` flag를 지원합니다. 이 flag는 Markdown 대신 브라우저에서 바로 열리는 self-contained HTML report를 생성합니다.
+9개의 Review / Report skill이 opt-in `--format html` flag를 지원합니다. 이 flag는 Markdown 대신 브라우저에서 바로 열리는 self-contained HTML report를 생성합니다.
 
-**지원 Skill:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`
+**지원 Skill:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`, `ywc-design-renew`
 
 **도입 배경:** AI가 생성한 100줄 이상의 Markdown 문서는 끝까지 읽히지 않는 경향이 있으며, 읽히지 않는 report는 의사결정을 이끌지 못합니다. HTML은 색상, severity coding, tab, 인터랙티브 control(체크박스, `Copy as Markdown`)을 더해, 결과물을 받는 사람이 실제로 읽고 행동하게 만듭니다.
 

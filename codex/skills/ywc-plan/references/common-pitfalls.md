@@ -52,7 +52,7 @@ grep -rn "isPublic\|isAnonymous\|isBypass\|isExcluded" backend/src/
 
 ## Prisma / Postgres schema invariants
 
-The DB-side mechanical rules (bilateral `@relation`, cascade ↔ API status, NOT NULL backfill, FK index, composite uniqueness, multi-tenant `tenantId`, enum domain, `timestamptz`) are not duplicated here. They live in [schema-invariants.md](schema-invariants.md) with one consolidated self-check.
+The DB-side mechanical rules (bilateral relation, cascade ↔ API status, NOT NULL backfill, FK index, composite uniqueness, multi-tenant `tenantId`, enum domain, `timestamptz`) are not duplicated here. They live in the shared schema guide at [../../references/schema/core.md](../../references/schema/core.md) with stack-specific files for Prisma, SQL DDL, Drizzle, and TypeORM.
 
 Read that file once at Step 2 whenever the spec adds, modifies, or removes DB tables, columns, indexes, or relations. The two highest-frequency Criticals — one-sided `@relation` and `onDelete: Restrict` without `409` — also appear in `SKILL.md` Step 4b.5 Pass C as inline reminders.
 

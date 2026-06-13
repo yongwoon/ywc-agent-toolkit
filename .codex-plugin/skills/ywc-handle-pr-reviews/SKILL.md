@@ -8,8 +8,9 @@ description: >-
   "리뷰 코멘트 처리", "PR comment 처리", "レビュー対応", "レビューコメント対応".
   Do not use for receiving standalone reviewer-shaped feedback before PR
   automation (use ywc-receive-review), creating a new PR (use ywc-create-pr),
-  performing a code review yourself (use ywc-impl-review), or changes outside an
-  open PR context.
+  performing a code review yourself (use ywc-impl-review), storing or reading
+  durable review preferences as learnings (use ywc-review-learnings), or changes
+  outside an open PR context.
 ---
 
 # Handle PR Review Comments

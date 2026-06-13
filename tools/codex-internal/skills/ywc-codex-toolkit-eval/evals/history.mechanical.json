@@ -39,6 +39,11 @@
     "S4": 5,
     "S5": 5
   },
+  "codex/skills/ywc-design-renew": {
+    "S2": 5,
+    "S4": 4,
+    "S5": 4
+  },
   "codex/skills/ywc-e2e-test-strategy": {
     "S2": 5,
     "S4": 5,
@@ -118,6 +123,11 @@
     "S2": 5,
     "S4": 5,
     "S5": 5
+  },
+  "codex/skills/ywc-review-learnings": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
   },
   "codex/skills/ywc-security-audit": {
     "S2": 5,

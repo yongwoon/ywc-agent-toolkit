@@ -117,8 +117,8 @@ check_codex_support_dirs() {
     fi
   done < <(
     {
-      rg -o '\.\./references/[A-Za-z0-9._-]+' codex/skills || true
-      rg -o 'codex/skills/references/[A-Za-z0-9._-]+' codex/skills || true
+      rg -o '\.\./references/[A-Za-z0-9._/-]+' codex/skills || true
+      rg -o 'codex/skills/references/[A-Za-z0-9._/-]+' codex/skills || true
     } | sed -E 's#^.*references/##' | sort -u
   )
 }
