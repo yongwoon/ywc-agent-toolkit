@@ -11,6 +11,27 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Claude Code | 36     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
 | Codex       | 37     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
+## Prerequisites
+
+Plugin marketplace and Codex plugin installation have **no prerequisites** — the tool handles everything automatically.
+
+For the **bash script fallback**, the following must be installed before running `install.sh`:
+
+| Tool | Required for | Install |
+| ---- | ------------ | ------- |
+| `git` | Cloning the repository | Pre-installed on most systems |
+| `bash ≥ 3.2` | Running `install.sh` | Pre-installed on macOS / Linux |
+| `jq` | Hook registration | `brew install jq` / `apt-get install jq` |
+
+At **skill runtime** (not required for installation):
+
+| Tool | Used by | Install |
+| ---- | ------- | ------- |
+| `python3 ≥ 3.9` | `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot` | Pre-installed on macOS 12.3+; `brew install python3` |
+| `gh` CLI | Most Git & Release skills | `brew install gh` / [cli.github.com](https://cli.github.com) |
+
+---
+
 ## Installation
 
 ### Via Claude Code plugin marketplace (recommended)
@@ -111,76 +132,114 @@ Restart Claude Code or Codex after installation for skills to take effect.
 
 ---
 
+## Quick Start
+
+Install via the Claude Code plugin marketplace — no cloning or bash required:
+
+```bash
+/plugin marketplace add yongwoon/ywc-agent-toolkit
+```
+
+Then invoke any skill immediately inside Claude Code:
+
+```bash
+/ywc-onboard-repo           # understand an unfamiliar codebase in minutes
+/ywc-plan                   # turn a rough idea into a plan or spec
+/ywc-debug-rootcause        # trace a bug to its root cause
+/ywc-impl-review            # review code for spec / security / quality
+/ywc-agentic                # run the full pipeline autonomously from a goal
+```
+
+Not sure which skill to use? → [What do I want to do?](#what-do-i-want-to-do)
+
+---
+
 ## Skills
 
 Most `ywc-*` skills are available for both Claude Code and Codex. The Codex
 versions include Codex-compatible frontmatter and tool guidance.
 
+### What do I want to do?
+
+| Goal | Skills |
+| ---- | ------ |
+| Turn an idea into a plan or spec | [`ywc-plan`](claude-code/skills/ywc-plan/README.md) → [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) |
+| Understand an unfamiliar codebase | [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) |
+| Break work into dependency-safe tasks | [`ywc-task-generator`](claude-code/skills/ywc-task-generator/README.md) |
+| Implement tasks end-to-end | [`ywc-sequential-executor`](claude-code/skills/ywc-sequential-executor/README.md) / [`ywc-parallel-executor`](claude-code/skills/ywc-parallel-executor/README.md) |
+| Run the full pipeline from a goal | [`ywc-agentic`](claude-code/skills/ywc-agentic/README.md) |
+| Find the root cause of a bug | [`ywc-debug-rootcause`](claude-code/skills/ywc-debug-rootcause/README.md) |
+| Review code quality and security | [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md), [`ywc-security-audit`](claude-code/skills/ywc-security-audit/README.md) |
+| Open a PR and handle review comments | [`ywc-create-pr`](claude-code/skills/ywc-create-pr/README.md) → [`ywc-handle-pr-reviews`](claude-code/skills/ywc-handle-pr-reviews/README.md) |
+| Generate a QA test sheet | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
+| Write release notes | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
+| Author a new `ywc-*` skill | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
+
 ### Planning & Spec
 
-| Skill                     | Description                                                                   |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| `ywc-plan`                | Convert a rough idea into `plan.md` (Small) or a Spec document (Medium/Large) |
-| `ywc-spec-writer`         | Write and update spec documents (`docs/specification/`)                       |
-| `ywc-spec-validate`       | Validate spec quality (Completeness / Consistency / Feasibility)              |
-| `ywc-tech-research`       | Research libraries and compare technical approaches                           |
-| `ywc-ubiquitous-language` | Create and maintain a domain ubiquitous language dictionary                   |
-| `ywc-brainstorm`          | Shape rough ideas before writing a formal plan or spec                        |
-| `ywc-confidence-gate`     | Check readiness and risk before starting substantial implementation           |
-| `ywc-onboard-repo`        | Generate repository onboarding context for unfamiliar projects                |
+| Skill | Description |
+| ----- | ----------- |
+| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | Convert a rough idea into `plan.md` (Small) or a Spec document (Medium/Large) |
+| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | Write and update spec documents (`docs/specification/`) |
+| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Validate spec quality (Completeness / Consistency / Feasibility) |
+| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | Research libraries and compare technical approaches |
+| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | Create and maintain a domain ubiquitous language dictionary |
+| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | Shape rough ideas before writing a formal plan or spec |
+| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | Check readiness and risk before starting substantial implementation |
+| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | Generate repository onboarding context for unfamiliar projects |
 
 ### Task & Execution
 
-| Skill                     | Description                                                                                                     |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `ywc-task-generator`      | Decompose a spec into dependency-safe tasks                                                                     |
-| `ywc-sequential-executor` | Execute tasks sequentially (Branch → Implement → Commit → PR → Merge)                                           |
-| `ywc-parallel-executor`   | Execute tasks in parallel using Git worktree isolation                                                          |
-| `ywc-code-gen`            | Generate Backend + Frontend + QA code in parallel                                                               |
-| `ywc-agentic`             | Autonomously orchestrate the ywc-\* pipeline from a goal (Plan → Execute → Evaluate → Repeat, max 3 iterations) |
-| `ywc-tdd-ritual`          | Drive feature and bugfix work through a red-green-refactor loop                                                 |
-| `ywc-worktrees`           | Create, audit, prune, and resolve worktree-based task isolation                                                 |
+| Skill | Description |
+| ----- | ----------- |
+| [`ywc-task-generator`](claude-code/skills/ywc-task-generator/README.md) | Decompose a spec into dependency-safe tasks |
+| [`ywc-sequential-executor`](claude-code/skills/ywc-sequential-executor/README.md) | Execute tasks sequentially (Branch → Implement → Commit → PR → Merge) |
+| [`ywc-parallel-executor`](claude-code/skills/ywc-parallel-executor/README.md) | Execute tasks in parallel using Git worktree isolation |
+| [`ywc-code-gen`](claude-code/skills/ywc-code-gen/README.md) | Generate Backend + Frontend + QA code in parallel |
+| [`ywc-agentic`](claude-code/skills/ywc-agentic/README.md) | Autonomously orchestrate the ywc-\* pipeline from a goal (Plan → Execute → Evaluate → Repeat, max 3 iterations) |
+| [`ywc-tdd-ritual`](claude-code/skills/ywc-tdd-ritual/README.md) | Drive feature and bugfix work through a red-green-refactor loop |
+| [`ywc-worktrees`](claude-code/skills/ywc-worktrees/README.md) | Create, audit, prune, and resolve worktree-based task isolation |
 
 ### Review & Verification
 
-| Skill                   | Description                                                              |
-| ----------------------- | ------------------------------------------------------------------------ |
-| `ywc-impl-review`       | Verify implementation across Spec / Security / QA axes                   |
-| `ywc-security-audit`    | Security audit based on OWASP Top 10                                     |
-| `ywc-ui-ux-review`      | UI/UX review (IA + Visual design + WCAG 2.2 AA)                          |
-| `ywc-product-review`    | Product feedback across 5 business dimensions                            |
-| `ywc-gen-testcase`      | Generate test sheets from PRs or tasks                                   |
-| `ywc-e2e-test-strategy` | Design Playwright E2E test strategy                                      |
-| `ywc-debug-rootcause`   | Investigate bugs, failed tests, and build failures to the root cause     |
-| `ywc-receive-review`    | Triage and apply human or automated review feedback                      |
-| `ywc-refactor-clean`    | Remove dead code, unused exports, stale files, and unused dependencies   |
-| `ywc-verify-done`       | Verify tests, builds, and completion evidence before declaring work done |
+| Skill | Description |
+| ----- | ----------- |
+| [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md) | Verify implementation across Spec / Security / QA axes |
+| [`ywc-security-audit`](claude-code/skills/ywc-security-audit/README.md) | Security audit based on OWASP Top 10 |
+| [`ywc-ui-ux-review`](claude-code/skills/ywc-ui-ux-review/README.md) | UI/UX review (IA + Visual design + WCAG 2.2 AA) |
+| [`ywc-product-review`](claude-code/skills/ywc-product-review/README.md) | Product feedback across 5 business dimensions |
+| [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) | Generate test sheets from PRs or tasks |
+| [`ywc-e2e-test-strategy`](claude-code/skills/ywc-e2e-test-strategy/README.md) | Design Playwright E2E test strategy |
+| [`ywc-debug-rootcause`](claude-code/skills/ywc-debug-rootcause/README.md) | Investigate bugs, failed tests, and build failures to the root cause |
+| [`ywc-receive-review`](claude-code/skills/ywc-receive-review/README.md) | Triage and apply human or automated review feedback |
+| [`ywc-refactor-clean`](claude-code/skills/ywc-refactor-clean/README.md) | Remove dead code, unused exports, stale files, and unused dependencies |
+| [`ywc-verify-done`](claude-code/skills/ywc-verify-done/README.md) | Verify tests, builds, and completion evidence before declaring work done |
 
 ### Git & Release
 
-| Skill                         | Description                                              |
-| ----------------------------- | -------------------------------------------------------- |
-| `ywc-commit`                  | Stage and commit session work                            |
-| `ywc-create-pr`               | Commit and create a Draft PR                             |
-| `ywc-handle-pr-reviews`       | Automate PR review responses                             |
-| `ywc-finish-branch`           | Full branch delivery (CI → merge → cleanup)              |
-| `ywc-merge-dependabot`        | Auto-merge Dependabot PRs                                |
-| `ywc-release-pr-list`         | Summarize PRs included in a release                      |
-| `ywc-changelog-release-notes` | Generate CHANGELOG entries and user-facing release notes |
+| Skill | Description |
+| ----- | ----------- |
+| [`ywc-commit`](claude-code/skills/ywc-commit/README.md) | Stage and commit session work |
+| [`ywc-create-pr`](claude-code/skills/ywc-create-pr/README.md) | Commit and create a Draft PR |
+| [`ywc-handle-pr-reviews`](claude-code/skills/ywc-handle-pr-reviews/README.md) | Automate PR review responses |
+| [`ywc-finish-branch`](claude-code/skills/ywc-finish-branch/README.md) | Full branch delivery (CI → merge → cleanup) |
+| [`ywc-merge-dependabot`](claude-code/skills/ywc-merge-dependabot/README.md) | Auto-merge Dependabot PRs |
+| [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) | Summarize PRs included in a release |
+| [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) | Generate CHANGELOG entries and user-facing release notes |
 
 ### Documentation & Other
 
-| Skill                     | Description                                               |
-| ------------------------- | --------------------------------------------------------- |
-| `ywc-project-scaffold`    | Generate directory structure for any language/framework   |
-| `ywc-project-docs`        | Generate project documentation in Korean or Japanese      |
-| `ywc-incident-postmortem` | Write a structured postmortem after a production incident |
-| `ywc-skill-author`        | (Meta) Rules for authoring new `ywc-*` skills             |
+| Skill | Description |
+| ----- | ----------- |
+| [`ywc-project-scaffold`](claude-code/skills/ywc-project-scaffold/README.md) | Generate directory structure for any language/framework |
+| [`ywc-project-docs`](claude-code/skills/ywc-project-docs/README.md) | Generate project documentation in Korean or Japanese |
+| [`ywc-incident-postmortem`](claude-code/skills/ywc-incident-postmortem/README.md) | Write a structured postmortem after a production incident |
+| [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) | (Meta) Rules for authoring new `ywc-*` skills |
 
 ### Codex-only
 
-| Skill               | Description                                                        |
-| ------------------- | ------------------------------------------------------------------ |
+| Skill | Description |
+| ----- | ----------- |
 | `ywc-team-assemble` | Split explicitly authorized work across specialist Codex subagents |
 
 ---
@@ -191,15 +250,15 @@ Claude Code also ships 12 custom agents for worker, reviewer, and specialist dis
 
 Seven read-only specialist agents complement the `ywc-*` skills. They are installed to `~/.codex/agents/` (override with `CODEX_HOME`) as individual TOML files, and Codex loads one custom agent per file.
 
-| Agent                      | Purpose                                          | Sandbox     |
-| -------------------------- | ------------------------------------------------ | ----------- |
-| `ywc-architect`            | Architectural decision and trade-off advisor     | `read-only` |
-| `ywc-security-engineer`    | Static security review and threat-model triage   | `read-only` |
-| `ywc-root-cause-analyst`   | Root-cause and incident-cause analysis           | `read-only` |
-| `ywc-performance-engineer` | Performance review and profiling recommendations | `read-only` |
-| `ywc-typescript-reviewer`  | TypeScript / JavaScript language-specific review | `read-only` |
-| `ywc-python-reviewer`      | Python language-specific review                  | `read-only` |
-| `ywc-go-reviewer`          | Go language-specific review                      | `read-only` |
+| Agent | Purpose | Sandbox |
+| ----- | ------- | ------- |
+| [`ywc-architect`](claude-code/agents/ywc-architect.md) | Architectural decision and trade-off advisor | `read-only` |
+| [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | Static security review and threat-model triage | `read-only` |
+| [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | Root-cause and incident-cause analysis | `read-only` |
+| [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | Performance review and profiling recommendations | `read-only` |
+| [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript language-specific review | `read-only` |
+| [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python language-specific review | `read-only` |
+| [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go language-specific review | `read-only` |
 
 All Codex agents are read-only; they return a standardized `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`, a compact verdict or finding set, and a `Next action:` when the caller should apply or inspect something. They never edit files. Source TOML lives under [`codex/agents/`](codex/agents/).
 
@@ -233,24 +292,22 @@ the workhorse — for each task it delivers end to end via `ywc-finish-branch`,
 folding conformance review (`--review`), PR creation, bot-review handling, and
 merge in as sub-steps, so those rarely run standalone in the task-driven flow.
 
+```mermaid
+flowchart TD
+    A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
+    B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
+    B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
+    C --> CV["ywc-spec-validate\ngate spec quality"]
+    CV --> D
+    D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
+    E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
 ```
-1. ywc-plan                    # rough idea → plan.md (Small) or Spec routing (Medium/Large)
-     ↓
-2. ywc-spec-writer             # write / update the spec          ┐ Medium / Large
-     ↓                                                            │ (Small skips
-   ywc-spec-validate           # gate spec quality before tasks   ┘  straight to 4)
-     ↓
-3. ywc-task-generator          # decompose spec into dependency-safe tasks
-     ↓
-4. ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
-     #  the workhorse — runs a task range. Each task gets its own branch and PR,
-     #  delivered end to end via ywc-finish-branch:
-     #    branch → implement → verify → impl-review (--review)
-     #    → open PR → CI → handle bot review → merge → cleanup
-     #  common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
-     #  (ywc-parallel-executor is the worktree-isolated alternative)
-     ↓
-5. ywc-gen-testcase pr <N>     # generate a QA test sheet against a task's PR
+
+```bash
+# Step 4 example — run a task range with full delivery:
+ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
+# common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
+# (ywc-parallel-executor is the worktree-isolated alternative)
 ```
 
 **Ad-hoc / non-task changes** skip the executor and deliver manually: `ywc-create-pr` opens a
