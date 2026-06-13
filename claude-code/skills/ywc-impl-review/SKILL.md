@@ -1,12 +1,7 @@
 ---
 name: ywc-impl-review
-version: 1.0.0
 description: >-
-  (ywc) Use after implementation is complete and before creating a PR, when the user wants to validate code matches the spec, check implementation quality, or run a comprehensive review. Triggers: "구현 검증", "impl review", "implementation review", "사양 적합성", "코드 리뷰", "구현 리뷰", "PR 전 검증", "check my implementation", "実装レビュー". Do not use during active code generation, for spec-only review (use ywc-spec-validate), or for product/business-level review (use ywc-product-review).
-category: review
-phase: quality
-requires: []
-advisor_budget: 5
+  (ywc) Use when implementation is complete and before creating a PR, and the user wants to validate code matches the spec, check implementation quality, or run a comprehensive review. Triggers: "구현 검증", "impl review", "implementation review", "사양 적합성", "코드 리뷰", "구현 리뷰", "PR 전 검증", "check my implementation", "実装レビュー". Do not use for active code generation, for spec-only review (use ywc-spec-validate), for product/business-level review (use ywc-product-review), for capturing or reading accumulated review preferences as durable learnings (use ywc-review-learnings), or for a security-only audit of auth / external-input / sensitive-data code (use ywc-security-audit).
 ---
 
 # ywc-impl-review
@@ -28,6 +23,9 @@ When tempted to skip a step, check this table first:
 | "`--no-advisor` saves time on this review" | Skip Phase 2 only on throwaway/prototype code. Production review needs ambiguity escalation. |
 | "Reviewer agents agree, so the finding is correct" | Three Sonnet agents drawing the same wrong conclusion is still wrong. Escalate when stakes are high. |
 | "User wants a quick review, severity ratings are optional" | Without severity, the user cannot triage. Always rate Critical / High / Medium / Low. |
+| "Surface every nitpick to be thorough" | A review that buries one real bug under ten style nits trains the reader to ignore all of them. `chill` is the default for a reason — suppress the Style/Docs/polish tail unless `--profile assertive`. Thoroughness on correctness, restraint on nitpicks. |
+| "This finding is plausible, surface it with a 'might be'" | Verify-before-surface: a finding without primary evidence (file:line, traced symbol, command output) is dropped, not hedged. A hedged finding is noise that costs the reader a round-trip to disprove. |
+| "There's a `docs/review-learnings.md` FALSE-POSITIVE entry but I'll flag it anyway to be safe" | A `FALSE-POSITIVE` learning carries the team's reason it is a non-issue here. Re-raising it ignores accumulated project knowledge and reintroduces the exact noise the learning was created to stop. |
 
 **Violating the letter of these rules is violating the spirit.** Review without honest severity is theater.
 
@@ -39,6 +37,8 @@ When tempted to skip a step, check this table first:
 | `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review (required). `--code` and `--git-range` are mutually exclusive |
 | `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. `--code` and `--git-range` are mutually exclusive |
 | `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where frontier judgment on ambiguous findings is not worth the latency |
+| `--profile` | `--profile chill\|assertive` | Verbosity dial (default `chill`). `chill` surfaces only correctness / security / logic / runtime-risk findings and suppresses the Style/Docs/Devex-polish nitpick tail (`Low`/`Info`); `assertive` emits those too. Critical/High/Medium are never suppressed. See [coderabbit-methodology.md §1](./references/coderabbit-methodology.md) |
+| `--skip-learnings` | flag | | Skip Step 0 (loading `docs/review-learnings.md`). Use when no learnings file exists or a clean-room review is wanted |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 Opus calls. Default: 5. Applies across all categories combined |
 | `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
@@ -50,16 +50,20 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
 ## Execution Steps
 
-1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Reviewer subagent must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term.
+0. **Load Review Learnings** (skip if `--skip-learnings`) — Invoke `ywc-review-learnings --mode read --target <changed files / --code path>` to load the project's accumulated review preferences from `docs/review-learnings.md`. The result is a compact "Applicable Review Learnings" block: `DO` / `DO-NOT` entries become extra checks injected into the matching reviewer subagent (Step 3), and `FALSE-POSITIVE` entries tell that reviewer to **stop** raising a known non-issue. If the file is absent, proceed with an empty set — never block a review on missing learnings. This is the compounding mechanism that makes review quality rise per repository over time (see [coderabbit-methodology.md §7](./references/coderabbit-methodology.md)).
+
+1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Reviewer subagent must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term. Per [coderabbit-methodology.md §3](./references/coderabbit-methodology.md), treat the spec / PR description as the statement of *intent* and trace each changed symbol to its callers/callees before judging it — a locally-fine change can still break a caller's contract.
 
 2. **Read Spec + Code** — When `--git-range` is provided instead of `--code`: run `git diff --name-only <range>` to obtain the changed-file list and treat those files as the review target. Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
 
 3. **Phase 1 — Parallel Executor Review** — Use the Task tool to spawn five subagents in parallel. Pass `model` explicitly on each call so the executor layer stays at Sonnet or Haiku cost:
-   - **Architecture subagent** (`model: sonnet`) — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`.
+   - **Architecture subagent** (`model: sonnet`) — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status (B2) and multi-tenant scope (B6) gaps as one-line cross-references to the Security subagent rather than duplicating them.
    - **Design subagent** (`model: sonnet`) — API/interface design, naming, signatures, error models, return shapes, public-surface discipline, contract spec conformance. Reference: `references/design-agent.md`.
    - **Devex subagent** (`model: sonnet`) — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
-   - **Security subagent** (`model: sonnet`) — OWASP Top 10 analysis. Reference: `references/security-agent.md`. When the Claude Code named-agent catalog at `claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so the subagent carries the dedicated worker persona (`claude-code/agents/ywc-security-engineer.md`).
+   - **Security subagent** (`model: sonnet`) — OWASP Top 10 analysis. Reference: `references/security-agent.md`. When the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so the subagent carries the dedicated worker persona (`tools/claude-code/agents/ywc-security-engineer.md`).
    - **QA subagent** (`model: haiku`) — Test coverage gaps and missing test cases. Reference: `references/qa-agent.md`. Haiku is appropriate because coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration) and does not typically require frontier reasoning.
+
+   **Inject the Step 0 learnings** into each subagent prompt, filtered to that aspect's category: a `DO`/`DO-NOT` learning is an extra check; a `FALSE-POSITIVE` learning is an explicit instruction not to raise that finding here. **Apply the `--profile` dial**: in `chill` (default), a subagent suppresses its Style/Docs/Devex-polish nitpick tail (`Low`/`Info`) and surfaces only correctness/security/logic/runtime-risk findings; `assertive` emits the tail too (Critical/High/Medium are never suppressed). **Verify before surfacing** (the precision lever, [coderabbit-methodology.md §2](./references/coderabbit-methodology.md)): every finding must cite primary evidence — exact `file:line`, the symbol traced to its definition/callers, or fresh command output — and a finding that cannot be substantiated by re-reading the code or running a scoped check is **dropped**, not surfaced with a hedge. Where the project ships linters/scanners (ruff, eslint, golangci-lint, shellcheck, semgrep, gitleaks, ast-grep), run them and feed their output to the relevant subagent as *evidence* to triage — not as the verdict ([§4](./references/coderabbit-methodology.md)).
 
    Each subagent must return two artifacts:
    - **Confirmed findings** — issues the executor is confident about (Phase 1 complete, no escalation needed).
@@ -67,7 +71,7 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
    Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The four code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
 
-   **Language-specific reviewer dispatch (Tier 2)** — when the changed-file list is dominated by a single language and the Claude Code named-agent catalog at `claude-code/agents/` is installed, replace the Design and Devex generic `model: sonnet` subagents with the matching language reviewer for sharper findings. Currently shipped:
+   **Language-specific reviewer dispatch (Tier 2)** — when the changed-file list is dominated by a single language and the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, replace the Design and Devex generic `model: sonnet` subagents with the matching language reviewer for sharper findings. Currently shipped:
    - TypeScript / TSX / Vue / Svelte → `subagent_type: ywc-typescript-reviewer` (covers type-system depth, async correctness, framework idioms, tsconfig strictness, ESM/CJS interop)
    - Python / .py / .pyi / pyproject.toml → `subagent_type: ywc-python-reviewer` (covers type-system depth, asyncio correctness, framework idioms — Django / FastAPI / Pydantic v2 / Flask, mypy strict mode, GIL implications, lifecycle patterns)
    - Go / .go / go.mod / go.sum → `subagent_type: ywc-go-reviewer` (covers goroutine lifecycle, channel patterns, interface design — accept interfaces return concrete, error wrapping `%w` / `errors.Is` / `errors.As`, pointer vs value semantics, generics post 1.18, defer + sync primitives)
@@ -79,12 +83,14 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
    - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Security > Architecture > Design > Devex > QA. (Architecture / Design / Devex order reflects irreversibility — structural decisions are hardest to walk back, then contracts, then operator UX.)
    - Log the candidates that were dropped due to the cap in the final report so the user can see what was not escalated.
 
-5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, spawn a short Opus subagent via the Task tool with `model: opus`. When the candidate's source category is **Architecture** and the Claude Code named-agent catalog at `claude-code/agents/` is installed, prefer `subagent_type: ywc-architect` so the advisor carries the dedicated architectural-decision persona (`claude-code/agents/ywc-architect.md`). When the candidate's ambiguous axis is **performance** (latency / throughput / memory / bundle-size / Web Vitals regression on an Architecture or Devex candidate), prefer `subagent_type: ywc-performance-engineer` (`claude-code/agents/ywc-performance-engineer.md`) so the advisor carries the dedicated Performance persona with concrete remediation (specific query rewrite, missing-index DDL, dynamic-import split point, Web Vitals fix path, profiler invocation recommendation). This is a routing hint — Phase 2 subagent count and budget are unchanged. Other categories use the generic `model: opus` dispatch.
+5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, spawn a short Opus subagent via the Task tool with `model: opus`. When the candidate's source category is **Architecture** and the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, prefer `subagent_type: ywc-architect` so the advisor carries the dedicated architectural-decision persona (`tools/claude-code/agents/ywc-architect.md`). When the candidate's ambiguous axis is **performance** (latency / throughput / memory / bundle-size / Web Vitals regression on an Architecture or Devex candidate), prefer `subagent_type: ywc-performance-engineer` (`tools/claude-code/agents/ywc-performance-engineer.md`) so the advisor carries the dedicated Performance persona with concrete remediation (specific query rewrite, missing-index DDL, dynamic-import split point, Web Vitals fix path, profiler invocation recommendation). This is a routing hint — Phase 2 subagent count and budget are unchanged. Other categories use the generic `model: opus` dispatch.
    - **Context payload**: only the candidate's finding text, the bounded snippet, the spec excerpt, and the category-specific severity rubric from the matching reference file. Do **not** forward the full spec, the full file, or the Phase 1 transcripts.
    - **Expected output**: a short verdict (≤200 words) containing: confirmed severity, a one-line rationale, and either "confirmed" or "adjusted" (with the adjustment if any). The 200-word cap is tighter than [advisor-pattern.md §3](../references/advisor-pattern.md)'s observed ceiling of "typically <500 words" — 200 is an operational choice for this skill. If a genuinely complex candidate needs more room, invoke the §6 override: exceed the cap and justify the overrun in the final report's `Advisor Budget Report` section.
    - Opus calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
 
 6. **Merge and Output Report** — Combine Phase 1 confirmed findings with Phase 2 verdicts. Mark each finding in the final report with its provenance (Phase 1 vs Phase 2) so the user can see which decisions involved frontier judgment.
+
+7. **Capture Learnings** (skip if `--skip-learnings`) — After the report, offer to promote durable lessons into `docs/review-learnings.md` via `ywc-review-learnings --mode update --source review`: confirmed findings that **recur** (same class across files or recent reviews) become `DO`/`DO-NOT` learnings caught earlier next time, and any finding the user dismisses as a false positive becomes a `FALSE-POSITIVE` learning **with the dismissal reason**. This is what makes the next review on this repository sharper — do not write learnings without the user-confirmation CHANGESET that `ywc-review-learnings` enforces.
 
 ## Output Format
 
@@ -173,6 +179,8 @@ Read the corresponding reference file when spawning each subagent and include th
 
 If a reference file does not yet contain an "Advisor Candidate Criteria" section, fall back to the three-property test in [advisor-pattern.md §5](../references/advisor-pattern.md): objective trigger, irreversibility, ambiguity. A finding must satisfy all three to be a Phase 2 candidate.
 
+**CodeRabbit-derived methodology** — the verbosity dial (`--profile`), the verify-before-surface precision gate, the intent/context phase, static-analysis-as-evidence, and the per-project learnings loop are specified in [`references/coderabbit-methodology.md`](./references/coderabbit-methodology.md). These are the techniques imported to raise review quality toward bot-reviewer parity, in a runtime-agnostic form (no CodeRabbit dependency). The learnings half pairs with `ywc-review-learnings`, which owns `docs/review-learnings.md`.
+
 **Recurring real-world defects catalog** — every reviewer agent additionally consults [`references/recurring-defects.md`](./references/recurring-defects.md), a derived-from-data catalog of the defect classes that production bot reviewers (CodeRabbit, Codex Review) flag most often: data-layer access-boundary (ownership / tenant isolation), data-integrity / `NULL` handling, error-swallowing, external-call resilience, validation / fail-fast, HTTP-status semantics, and test fidelity. Each agent's "High-frequency real-world checks" section points at its catalog slice. The catalog tells the reviewer *where real bugs cluster*; the per-aspect rubric still governs severity and escalation. This is the same surface the executors' `--review` flag targets, so these classes get caught before the PR opens — reducing bot-review round-trips after the PR is created.
 
 ## Confidence Gate
@@ -200,4 +208,5 @@ The gate score must appear in the report header. Per-finding `[P1]` / `[P2]` mar
 
 - **upstream**: `ywc-sequential-executor` or `ywc-parallel-executor` (auto-invoked via `--review` flag)
 - **downstream**: PR creation
-- **pattern source**: [`references/advisor-pattern.md`](../references/advisor-pattern.md)
+- **pairs with**: `ywc-review-learnings` — loaded in Step 0 (`read`) to apply accumulated review preferences and called in Step 7 (`update --source review`) to capture new ones; `docs/review-learnings.md` is the per-project memory that compounds review quality
+- **pattern source**: [`references/advisor-pattern.md`](../references/advisor-pattern.md), [`references/coderabbit-methodology.md`](./references/coderabbit-methodology.md)
