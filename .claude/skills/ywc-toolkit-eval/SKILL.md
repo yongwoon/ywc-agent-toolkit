@@ -13,7 +13,7 @@ advisor_budget: 5
 
 **Announce at start:** "I'm using the ywc-toolkit-eval skill to score the toolkit's skills and agents and drive the evaluate→improve cycle."
 
-Graded quality-evaluation harness for the toolkit's own `ywc-*` skills and custom agents. Where `ywc-skill-author` defines the **binary compliance rules** for *building* a skill, this skill produces a **graded scorecard** (0–5 per axis, weighted to 100) for *existing* skills and agents, ranks the weakest items, and persists score history so quality trends are visible release over release. Input: a target root (`claude-code/skills`, `claude-code/agents`, or both). Output: `evals/scorecard.md` (per-item axis scores + prioritized backlog) and an appended `evals/history.json` row.
+Graded quality-evaluation harness for the toolkit's own Claude Code `ywc-*` skills and custom agents. Where `ywc-skill-author` defines the **binary compliance rules** for *building* a skill, this skill produces a **graded scorecard** (0–5 per axis, weighted to 100) for *existing* Claude Code skills and agents, ranks the weakest items, and persists score history so quality trends are visible release over release. Input: a target root (`claude-code/skills`, `claude-code/agents`, or both). Output: `evals/scorecard.md` (per-item axis scores + prioritized backlog) and an appended `evals/history.json` row. Codex skill/agent evaluation is owned by `tools/codex-internal/skills/ywc-codex-toolkit-eval`.
 
 The harness is **two-tier** by design, because not every quality axis can be measured deterministically:
 
@@ -42,7 +42,7 @@ When tempted to bypass a rule, check this table first:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| `--target` | `--target <root>` | `--target claude-code/skills` | Root to evaluate: `claude-code/skills`, `claude-code/agents`, `codex/skills`, or `all` (default). |
+| `--target` | `--target <root>` | `--target claude-code/skills` | Root to evaluate: `claude-code/skills`, `claude-code/agents`, or `all` (default). |
 | `--mode` | `--mode <m>` | `--mode mechanical` | `mechanical` (script only), `judge` (model pass only), or `full` (both, default). |
 | `--item` | `--item <name>` | `--item ywc-commit` | Score a single skill/agent instead of the whole root. |
 | `--ci` | flag | | Mechanical-only, compares against the committed `evals/history.mechanical.json` baseline and exits non-zero on any per-axis mechanical regression. Used by the CI gate. |
@@ -80,7 +80,7 @@ The activation methodology (how positive/negative/collision cases yield precisio
 
 ### Step 1: Inventory Targets
 
-Resolve `--target` to a concrete item list. For `all`, score `claude-code/skills`, `claude-code/agents`, and `codex/skills`. Read `evals/history.json` (if present) to obtain the previous scores for regression comparison.
+Resolve `--target` to a concrete item list. For `all`, score `claude-code/skills` and `claude-code/agents` only. Do not score `codex/skills` or `codex/agents`; use `tools/codex-internal/skills/ywc-codex-toolkit-eval` for Codex evaluation. Read `evals/history.json` (if present) to obtain the previous scores for regression comparison.
 
 ### Step 2: Mechanical Tier — `scripts/score.py`
 

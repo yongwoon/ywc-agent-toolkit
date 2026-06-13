@@ -409,6 +409,16 @@ check_internal_toolkit_eval() {
     echo "ERROR: internal toolkit eval scorer is missing: $internal_dir/scripts/score.py"
     ERRORS=$((ERRORS + 1))
   fi
+
+  if [ ! -f "$internal_dir/scripts/inventory_gate.py" ]; then
+    echo "ERROR: internal toolkit eval inventory gate is missing: $internal_dir/scripts/inventory_gate.py"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -f "$internal_dir/scripts/test_score.py" ]; then
+    echo "ERROR: internal toolkit eval scorer tests are missing: $internal_dir/scripts/test_score.py"
+    ERRORS=$((ERRORS + 1))
+  fi
 }
 
 check_cc_support_dirs() {
