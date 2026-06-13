@@ -1,12 +1,7 @@
 ---
 name: ywc-code-gen
-version: 1.0.0
 description: >-
-  (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, or when no specification exists.
-category: implementation
-phase: execution
-requires: [ywc-task-generator]
-advisor_budget: 5
+  (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, when a tasks/ directory already defines the work (use ywc-sequential-executor or ywc-parallel-executor), or when no specification exists.
 ---
 
 # ywc-code-gen
@@ -101,9 +96,9 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
 3. **Phase 1 — Parallel Generation** — Use the Task tool to spawn three subagents in parallel. Pass `subagent_type` and `model` explicitly on each call so the executor layer dispatches to the canonical Tier-1 worker agents at Sonnet cost:
-   - **Backend subagent** (`subagent_type: ywc-backend-coder`, `model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). The persona lives in [`claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md); the dispatch prompt only carries the task brief (spec excerpt, project context, ubiquitous-language table, and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md)). Role reference for historical authoring guidance: `references/backend-agent.md`.
-   - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
-   - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
+   - **Backend subagent** (`subagent_type: ywc-backend-coder`, `model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). The persona lives in [`tools/claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md); the dispatch prompt only carries the task brief (spec excerpt, project context, ubiquitous-language table, and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md)). Role reference for historical authoring guidance: `references/backend-agent.md`. **When the brief includes a DB migration, inject the shared schema guide into the dispatch prompt** — [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`) — so the generated migration honors the eight invariants instead of relying on the model's defaults.
+   - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`tools/claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
+   - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`tools/claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
 
    **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (CLAUDE.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/<role>-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
@@ -201,14 +196,6 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 ## Banned Output Patterns (Hard Failures)
 
 Any subagent output containing the following patterns is treated as a failed generation — retry or escalate, never deliver as-is. Downstream tools (ywc-sequential-executor, CI) will compile and test whatever is generated; a stub is a runtime error, not deferred work.
-
-Catch the high-confidence comment/marker stubs mechanically before delivering (more reliable than self-review; exits non-zero on any hit):
-
-```bash
-bash claude-code/skills/scripts/scan-stubs.sh <generated-file>...
-```
-
-The script gates the comment/marker forms below; the prose shortcuts and bare `...`/`pass` placeholders still need your own read, since they false-positive in real code and docs.
 
 **Code stubs (never acceptable in generated files):**
 - `// TODO: implement` / `// FIXME` / any implementation replaced by a comment only

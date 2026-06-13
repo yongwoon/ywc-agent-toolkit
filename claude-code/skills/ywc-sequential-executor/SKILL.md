@@ -1,11 +1,7 @@
 ---
 name: ywc-sequential-executor
-version: 1.0.0
-description: (ywc) Use when executing tasks from the tasks/ directory in strict order through their full lifecycle (branch → implement → commit → PR → CI → merge → cleanup). Triggers: "execute task", "implement tasks 000001-010", "run the next task", "implement all remaining tasks", "start implementing", "sequential-executor", "순차 실행", "タスク順次実行". Do not use for parallel/concurrent execution (use ywc-parallel-executor), code generation without a task directory (use ywc-code-gen), or ad-hoc one-off implementation requests.
-category: implementation
-phase: execution
-requires: [ywc-task-generator]
-advisor_budget: 3
+description: >-
+  (ywc) Use when executing tasks from the tasks/ directory in strict order through their full lifecycle (branch → implement → commit → PR → CI → merge → cleanup). Triggers: "execute task", "implement tasks 000001-010", "run the next task", "implement all remaining tasks", "start implementing", "sequential-executor", "순차 실행", "タスク順次実行". Do not use for parallel/concurrent execution (use ywc-parallel-executor), code generation without a task directory (use ywc-code-gen), an autonomous goal-to-code loop without explicit task control (use ywc-agentic), or ad-hoc one-off implementation requests.
 ---
 
 # Sequential Executor
@@ -97,14 +93,10 @@ Before starting execution, verify these conditions:
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the task range, and add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Also add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
-bash claude-code/skills/scripts/update-state.py init-sequential \
-  --mode <local-merge|draft|skip-ci-wait|normal> --tasks-dir <tasks-dir> \
-  --range '["000001-010-...","000001-020-..."]'
 ```
-The `--range` array is the ordered list of task-directory names this run will execute. Per-step checkpoint writes then use `update-state.py task-step <task> <step>` (Steps 2/4) and `update-state.py task-complete <task>` (after Step 5 delivery); see the schema and event table in [Checkpoint and Resume](#checkpoint-and-resume).
 
 ## External URL Policy
 
@@ -252,6 +244,8 @@ Read the task's `task.md` and implement according to the checklist. The `Spec Re
 
 **Simplicity + Surgical Changes (enforce throughout implementation):** Implement the minimum code that satisfies the task spec — no speculative features, no unsolicited abstractions, no "flexibility" that wasn't asked for. When editing existing code: touch only files within the declared Ownership; do not improve adjacent code, comments, or formatting unless they are the direct subject of this task. If you notice unrelated issues, mention them in the PR description — do not fix them. Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify before committing.
 
+**Schema-aware implementation (when the task touches DB):** If the task adds, modifies, or removes tables, columns, indexes, or relations, read the shared [../references/schema/core.md](../references/schema/core.md) and the one stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`) before writing the migration. The eight mechanical invariants there (bilateral relations, cascade ↔ API status, NOT NULL backfill, FK index, composite uniqueness, multi-tenant scope, enum domain, `timestamptz`) fail deterministically at generate time or first write when omitted, and a migration task is the single point where they must all be right.
+
 1. **Check Prerequisites** — Verify all prerequisite items are satisfied
 2. **Respect Edit Scope** — Only modify files within the declared Ownership from `README.md`
 3. **Follow Implementation Steps** — Execute each step in order, checking off as completed. Keep the Spec Reference's `Out of Scope (from spec)` list in mind at every step — if an implementation step tempts you toward an Out of Scope item, stop and re-read the step; the item likely belongs to a different task.
@@ -271,11 +265,12 @@ Commit guidelines:
 - Add a `Co-Authored-By` trailer when Claude generated the changes. Use the format specified in the project's CLAUDE.md or commit convention; if none is specified, default to `Co-Authored-By: Claude <noreply@anthropic.com>`
 - Stage specific files by name (never `git add -A` or `git add .`)
 
-**Completeness Gate (required before first commit):** Before creating the first commit for this task, run the shared stub-pattern check on the modified files (exits non-zero if any stub is found):
+**Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
 
 ```bash
-git diff --name-only HEAD | tr '\n' '\0' | xargs -0 \
-  bash claude-code/skills/scripts/scan-stubs.sh
+git diff --name-only HEAD 2>/dev/null | xargs grep -lnE \
+  "TODO:.*implement|FIXME|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
+  2>/dev/null || echo "OK: no stub patterns found"
 ```
 
 If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.
@@ -345,6 +340,22 @@ After Step 4 verification (and optional Step 4.5 review) passes, the rest of the
 
 **Handling finish-branch's status return**: ywc-finish-branch ends with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular, `BLOCKED` triggers the four-step triage (context → reasoning → scope → plan) before surfacing to the user, and `DONE_WITH_CONCERNS` requires reading the concerns to decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report).
 
+## Status Routing
+
+Both `ywc-finish-branch` (Step 5) and the optional `/ywc-impl-review` invocation (Step 4.5) return payloads per [../references/subagent-status-actions.md](../references/subagent-status-actions.md) §3.5. Apply the following routing table:
+
+| Returned status | Caller action |
+|---|---|
+| `DONE` | Proceed to Step 6 (transition to next task in range, or to the Completion Report if this was the last task) |
+| `DONE_WITH_CONCERNS` | Observation-level concerns → carry forward to the Completion Report; correctness-level concerns → fix and re-dispatch finish-branch (or impl-review) before proceeding |
+| `BLOCKED` | Run the four-step triage (context → reasoning → scope → plan); if exhausted, halt the range and surface to the user with the failing task name and finish-branch's blocker excerpt — see **Sequential-specific amplification** below |
+| `NEEDS_CONTEXT` | Provide the missing context and re-dispatch finish-branch (or impl-review) — do not silently infer from prior tasks in the range |
+| Status absent or unparseable | Treat as implicit `BLOCKED`; halt the range, surface the raw payload to the user |
+
+### Sequential-specific amplification
+
+`BLOCKED` returns from `ywc-finish-branch` in sequential mode preserve the task branch and any in-progress merge state (finish-branch never auto-aborts). The task directory stays in `<tasks-dir>/<task-name>` (not moved to `completed/`). When the user resolves the blocker and re-invokes this skill, Resume Detection (see [Checkpoint and Resume](#checkpoint-and-resume)) picks up at the failed task's Step 5. CI-failure and merge-conflict cases inside finish-branch are handled by its own internal retry loop (up to 2 fix attempts); only fundamentally unresolvable blockers reach this Status Routing table.
+
 **Mode-skip semantics**: for `--mode draft` and `--mode skip-ci-wait`, finish-branch's responsibility ends at PR creation (not at merge or Mark Complete). The task remains in `<tasks-dir>/<task-name>` (not moved to `completed/`) and no completion marker is committed; the user is expected to re-run the executor (or merge the PRs manually) to finalize.
 
 **`--draft` bot review**: After finish-branch returns with the draft PR URL, run the bot review polling loop from [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews` for this PR. The PR stays as draft after review response — do not un-draft or merge.
@@ -360,7 +371,7 @@ If executing a range:
 1. Check if there are remaining tasks in the range. If no remaining tasks, and Step 5 has returned `DONE` for the current task, proceed to the Completion Report.
 2. **Pre-transition state check (`normal-pr` and `local-merge` modes):** Run the bundled verification script:
    ```bash
-   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash tools/claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
      <base-branch> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.
