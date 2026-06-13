@@ -191,8 +191,10 @@ gh pr view <pr-number> --json mergeable,mergeStateStatus --jq '{mergeable, merge
 ```
 
 - `MERGEABLE` / `CLEAN` → proceed to Step 5.
-- `BEHIND` (branch protection requires up-to-date) or `CONFLICTING` that auto-resolves → merge the base into the feature branch (never rebase), push, and re-verify CI (counts as one CI cycle). Then re-check the gate.
-- `CONFLICTING` with real textual conflicts → surface the conflicting files + PR URL and return `BLOCKED`. Do not auto-resolve or force-push.
+- `BEHIND` (branch protection requires up-to-date; no textual conflict) → merge the base into the feature branch (never rebase), push, and re-verify CI (counts as one CI cycle). Then re-check the gate.
+- `CONFLICTING` / `DIRTY` that auto-resolves → merge the base into the feature branch (never rebase), push, and re-verify CI (counts as one CI cycle). Then re-check the gate.
+- `CONFLICTING` / `DIRTY` with real textual conflicts → surface the conflicting files + PR URL and return `BLOCKED`. Do not auto-resolve or force-push.
+- `BLOCKED` (a required check or review is missing — not a conflict) → do not run the base-merge procedure; surface the outstanding required check/review and return `BLOCKED` so the user can resolve the gate.
 - `UNKNOWN` → poll briefly per the reference, then re-read.
 
 Skip this step entirely for `--mode local-merge`, `--mode draft`, `--mode skip-ci-wait`, `--mode per-task-pr`.

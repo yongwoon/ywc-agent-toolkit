@@ -33,7 +33,7 @@ When tempted to skip a step, check this table first:
 | "PR not found for this branch, scan recent PRs" | Stop and ask. Acting on a wrong PR overwrites unrelated reviewer threads. |
 | "All review comments are addressed — CI is a separate concern" | Fixes to source code (refactors, new imports, logic changes) can break CI. Always re-verify CI after pushing review fixes. A PR with all comments addressed but failing CI is still blocked from merging. |
 | "The comments only needed replies, no code changed — so CI is fine to skip" | CI can already be red for reasons unrelated to the comments (a flaky earlier push, a base-branch change, a dependency break). Handling a PR means leaving it mergeable. Always check current CI status when handling a PR, even when your replies pushed no code. |
-| "CI is green and comments are addressed — the PR is mergeable" | While the review was in progress the base branch may have advanced and the PR may now be `CONFLICTING`. Handling a PR means leaving it mergeable, which requires checking `gh pr view --json mergeable`, not just CI. A conflicting PR is blocked from merge regardless of how many comments were resolved. |
+| "CI is green and comments are addressed — the PR is mergeable" | While the review was in progress the base branch may have advanced and the PR may now be `CONFLICTING`. Handling a PR means leaving it mergeable, which requires checking `gh pr view --json mergeable,mergeStateStatus`, not just CI. A conflicting PR is blocked from merge regardless of how many comments were resolved. |
 | "The PR conflicts with base — rebase the branch to clear it" | Rebasing rewrites SHAs and orphans the very review threads you are replying to. Merge the base *into* the feature branch (`git merge --no-ff origin/<base>`) instead. See `../references/pr-conflict-resolution.md`. |
 | "The poller found a top-level review/check, but the line-comment script returned empty" | Top-level reviews, PR comments, and review-like checks are first-class review artifacts. Fetch the artifact list and block merge until each one is fixed, answered, or explicitly deferred. |
 | "I replied but did not include the marker" | The polling gate is marker-based for non-threaded artifacts. Every reply must include `<!-- <review_comment_addressed:<fingerprint>> -->` so the next poll can distinguish handled feedback from unresolved feedback. |
@@ -207,7 +207,9 @@ gh pr view $PR_NUMBER --json mergeable,mergeStateStatus --jq '{mergeable, mergeS
 ```
 
 - `MERGEABLE` / `CLEAN` → proceed to Step 7.
-- `CONFLICTING` / `DIRTY` / `BEHIND` → follow **Update Branch From Base** in the reference (merge the base into the feature branch — never rebase, since that orphans the review threads you just replied to). If it auto-resolves, push and re-verify CI (one additional cycle). If it reports real textual conflicts, surface the conflicting files + PR URL to the user, stop, and set the outcome to `DONE_WITH_CONCERNS` — do not auto-resolve or force-push.
+- `BEHIND` → the branch is merely out of date (no textual conflict). Follow **Update Branch From Base** (merge the base into the feature branch — never rebase, since that orphans the review threads you just replied to), push, and re-verify CI (one additional cycle).
+- `CONFLICTING` / `DIRTY` → follow **Update Branch From Base** in the reference. If it auto-resolves, push and re-verify CI (one additional cycle). If it reports real textual conflicts, surface the conflicting files + PR URL to the user, stop, and set the outcome to `BLOCKED` — do not auto-resolve or force-push.
+- `BLOCKED` → a required check or review gate is missing — **not** a conflict. Do not run the base-merge procedure; surface which required check or review is outstanding and set the outcome to `BLOCKED`.
 - `UNKNOWN` → poll briefly per the reference, then re-read.
 
 ### 7. Final Summary
