@@ -27,8 +27,8 @@
 
 | 工具 | 使用的 Skill | 安装方式 |
 | ---- | ------------ | -------- |
-| `python3 ≥ 3.9` | `ywc-parallel-executor`、`ywc-finish-branch`、`ywc-merge-dependabot` | macOS 12.3+ 已预装；`brew install python3` |
-| `gh` CLI | 大多数 Git & Release Skill | `brew install gh` / [cli.github.com](https://cli.github.com) |
+| `python3 ≥ 3.9` | Skill 运行时辅助功能：`ywc-parallel-executor`、`ywc-finish-branch`、`ywc-merge-dependabot`；Claude Code hooks 需要 Python ≥ 3.11 | macOS 12.3+ 已预装；`brew install python3` |
+| `gh` CLI | 基于 PR 和 GitHub release 的 Skill/模式：`ywc-handle-pr-reviews`、`ywc-spec-writer --from-pr/--from-prs`、`ywc-release-pr-list`、`ywc-create-pr`、`ywc-finish-branch` PR 模式、`ywc-merge-dependabot`、`ywc-sequential-executor`/`ywc-parallel-executor`、`ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
 
 ---
 

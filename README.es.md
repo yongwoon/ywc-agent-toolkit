@@ -26,8 +26,8 @@ En **tiempo de ejecución de skills** (no requerido para la instalación):
 
 | Herramienta | Utilizado por | Instalación |
 | ----------- | ------------- | ----------- |
-| `python3 ≥ 3.9` | `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot` | Preinstalado en macOS 12.3+; `brew install python3` |
-| `gh` CLI | La mayoría de skills de Git & Release | `brew install gh` / [cli.github.com](https://cli.github.com) |
+| `python3 ≥ 3.9` | Helpers de runtime de skills: `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot`; los hooks de Claude Code requieren Python ≥ 3.11 | Preinstalado en macOS 12.3+; `brew install python3` |
+| `gh` CLI | Skills/modos basados en PR y releases de GitHub: `ywc-handle-pr-reviews`, `ywc-spec-writer --from-pr/--from-prs`, `ywc-release-pr-list`, `ywc-create-pr`, modo PR de `ywc-finish-branch`, `ywc-merge-dependabot`, `ywc-sequential-executor`/`ywc-parallel-executor`, `ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
 
 ---
 
