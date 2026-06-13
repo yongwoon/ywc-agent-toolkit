@@ -268,9 +268,14 @@ Commit guidelines:
 **Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
 
 ```bash
-git diff --name-only HEAD 2>/dev/null | xargs grep -lnE \
-  "TODO:.*implement|FIXME|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
-  2>/dev/null || echo "OK: no stub patterns found"
+files="$(git ls-files -co --exclude-standard | grep -vE '(^|/)(test|tests|spec|__tests__)/|\.test\.' || true)"
+if [ -n "$files" ]; then
+  printf '%s\n' "$files" | xargs grep -lnE \
+    "TODO|FIXME|XXX|HACK|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
+    2>/dev/null || echo "OK: no stub patterns found"
+else
+  echo "OK: no files to scan"
+fi
 ```
 
 If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.
@@ -371,7 +376,7 @@ If executing a range:
 1. Check if there are remaining tasks in the range. If no remaining tasks, and Step 5 has returned `DONE` for the current task, proceed to the Completion Report.
 2. **Pre-transition state check (`normal-pr` and `local-merge` modes):** Run the bundled verification script:
    ```bash
-   bash tools/claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
      <base-branch> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.

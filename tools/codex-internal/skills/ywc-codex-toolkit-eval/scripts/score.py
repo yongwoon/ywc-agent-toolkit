@@ -52,7 +52,7 @@ CLAUDE_ONLY_PATTERNS = (
     r"tools/claude-code/agents",
     r"Task\(subagent_type=",
     r"allowed-tools:",
-    r"/ywc-[a-z0-9-]+",
+    r"(?<![\w/-])/ywc-[a-z0-9-]+\b",
 )
 
 
@@ -115,7 +115,9 @@ def find_repo_root(start: Path) -> Path:
     for candidate in [probe, *probe.parents]:
         if (candidate / SKILL_ROOT).is_dir() or (candidate / AGENT_ROOT).is_dir():
             return candidate
-    return probe
+    raise RuntimeError(
+        f"could not locate repository root containing {SKILL_ROOT} or {AGENT_ROOT} from {start}"
+    )
 
 
 def readme_checks(skill_dir: Path) -> dict[str, bool]:

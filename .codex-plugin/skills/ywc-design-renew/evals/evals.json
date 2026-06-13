@@ -3,32 +3,32 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "이 dashboard 화면이 너무 평범해서 LLM이 만든 티가 나. src/app/dashboard 를 리뉴얼해줘. 대상 사용자는 야간 근무하는 SRE 야.",
-      "expected_output": "Phase 0에서 impeccable 설치 여부를 감지하고, Design Context(audience=SRE, 야간/관제 맥락 → dark theme 도출)를 확정한 뒤, Phase 2 slop audit → Phase 3 renew(자체 ruleset 또는 impeccable polish) → Phase 4 재검증 순으로 진행. border-left stripe/gradient text/Inter 등 Banned Output Pattern 미사용. 행동/route/IA 보존. 리뉴얼 report 출력.",
+      "prompt": "This dashboard looks too plain and feels AI-made. Renew src/app/dashboard. The target users are SREs working night shifts.",
+      "expected_output": "In Phase 0, detect whether impeccable is installed and confirm the Design Context (audience=SRE, night operations context -> derive a dark theme). Then run Phase 2 slop audit -> Phase 3 renew (self-contained ruleset or impeccable polish) -> Phase 4 re-verification. Do not use Banned Output Patterns such as border-left stripes, gradient text, or Inter. Preserve behavior, routes, and information architecture. Output a renewal report.",
       "files": []
     },
     {
       "id": 2,
       "prompt": "Use $ywc-design-renew --mode check --target src/components/Hero.tsx --fail-on critical.",
-      "expected_output": "편집 없이 check mode 만 수행. anti-slop-ruleset 의 Part B/C detection signal 을 grep 으로 검출하고 AI Slop Test + Part E required-qualities 카운트를 적용. 각 finding 에 ID·file:line·observed·why·fix 부착. 우선순위 분류 후 --fail-on critical gate 판정을 명시적으로 출력. code 변경 없음.",
+      "expected_output": "Run check mode only without editing. Detect Part B/C signals from anti-slop-ruleset with grep and apply the AI Slop Test plus Part E required-quality counts. Attach ID, file:line, observed, why, and fix to every finding. Classify priority and explicitly output the --fail-on critical gate decision. Make no code changes.",
       "files": []
     },
     {
       "id": 3,
-      "prompt": "이 landing page 디자인 점검해줘. 근데 우리 회사엔 impeccable 같은 거 안 깔려있어.",
-      "expected_output": "impeccable 미설치를 감지해도 거부하지 않고 self-contained anti-slop-ruleset 으로 fallback 하여 check 수행. 'impeccable 없어서 못한다'는 합리화를 하지 않음. 자체 ruleset 기반 slop audit report 출력.",
+      "prompt": "Audit this landing page design. Our company does not have impeccable installed.",
+      "expected_output": "Even when impeccable is not installed, do not refuse. Fall back to the self-contained anti-slop-ruleset and run the check. Do not rationalize that the task cannot be done because impeccable is missing. Output a slop audit report based on the local ruleset.",
       "files": []
     },
     {
       "id": 4,
-      "prompt": "hero 영역 폰트가 Inter라 너무 흔해. 다른 걸로 바꿔서 리뉴얼해줘.",
-      "expected_output": "Inter 를 banned 로 인식하되 Fraunces 등 reflex 폰트로 단순 교체하지 않음. 3개 brand word 도출 → catalog 에서 물리적 대상으로 평가하는 절차를 따름. display+body 폰트 pairing 적용. 단순 second-favorite 교체 합리화를 거부.",
+      "prompt": "The hero font is Inter and looks too generic. Renew it with a different direction.",
+      "expected_output": "Recognize Inter as banned, but do not simply swap to a reflex font such as Fraunces. Derive three brand words, evaluate candidate fonts as physical objects in the catalog, and apply a display/body font pairing. Reject the rationalization of replacing it with a second-favorite default.",
       "files": []
     },
     {
       "id": 5,
-      "prompt": "이 화면 UX랑 접근성(WCAG) 문제 있는지 봐줘.",
-      "expected_output": "이 요청은 usability/IA/WCAG 축이므로 ywc-design-renew 의 범위가 아님을 인식하고 ywc-ui-ux-review 로 안내(또는 위임). 미감/slop 축만 담당한다는 boundary 를 지킴.",
+      "prompt": "Check whether this screen has UX or accessibility (WCAG) issues.",
+      "expected_output": "Recognize that this request is about usability, information architecture, and WCAG, which is outside ywc-design-renew scope. Route or delegate to ywc-ui-ux-review. Preserve the boundary that this skill owns aesthetics and slop signals only.",
       "files": []
     }
   ]

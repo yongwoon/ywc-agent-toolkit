@@ -148,12 +148,21 @@ def run_skill_validator(repo_root: Path) -> dict:
     if not script.is_file():
         return {"available": False, "passed": None, "detail": "missing scripts/validate.sh"}
 
-    proc = subprocess.run(
-        ["bash", str(script)],
-        cwd=str(repo_root),
-        capture_output=True,
-        text=True,
-    )
+    try:
+        proc = subprocess.run(
+            ["bash", str(script)],
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "available": True,
+            "passed": False,
+            "returncode": None,
+            "detail": "scripts/validate.sh timed out after 300s",
+        }
     return {
         "available": True,
         "passed": proc.returncode == 0,

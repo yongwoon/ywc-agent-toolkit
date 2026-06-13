@@ -4,19 +4,19 @@
     {
       "id": 1,
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/invite-members.md --feature \"team invite flow\" --tdd.",
-      "expected_output": "Feature branch를 확인하거나 생성한 뒤 Reuse Gate를 먼저 수행한다. Spec과 project context, ubiquitous language가 있으면 각 worker payload에 반영한다. Backend, Frontend, QA worker를 Codex subagent 방식으로 병렬 dispatch하고, backend/frontend/qa reference와 prompts/implementer-base.md를 포함한다. Phase 2 advisor 후보는 최대 5개로 제한하고, generated files는 P1/P2 provenance로 보고한다. --tdd가 있으므로 RED/GREEN/REFACTOR checkpoint commit 경계를 지키며 Verification Gate 결과를 Completion Status 전에 제시한다.",
+      "expected_output": "Checks or creates the feature branch, then runs the Reuse Gate first. Includes the spec, project context, and ubiquitous language in each worker payload when available. Dispatches Backend, Frontend, and QA workers in parallel through Codex subagents, including backend/frontend/qa references and prompts/implementer-base.md. Limits Phase 2 advisor candidates to at most five and reports generated files with P1/P2 provenance. Because --tdd is set, preserves RED/GREEN/REFACTOR checkpoint commit boundaries and presents Verification Gate results before Completion Status.",
       "files": []
     },
     {
       "id": 2,
       "prompt": "Use $ywc-code-gen --feature \"billing dashboard\" without a spec file.",
-      "expected_output": "--spec가 없으므로 생성 작업을 시작하지 않는다. Spec file path가 필요하다는 NEEDS_CONTEXT를 반환하고, branch 생성이나 파일 편집, worker dispatch를 하지 않는다.",
+      "expected_output": "Because --spec is missing, does not start generation. Returns NEEDS_CONTEXT stating that a spec file path is required, and does not create a branch, edit files, or dispatch workers.",
       "files": []
     },
     {
       "id": 3,
-      "prompt": "이 spec으로 CRUD를 생성해줘. 기존 users module이 거의 같은 기능을 갖고 있어도 새로 만들어.",
-      "expected_output": "--skip-reuse-check가 없으면 Reuse Gate를 반드시 수행한다. 기존 internal code가 요구사항의 80% 이상을 충족하면 Adopt로 분류하고, 사용자가 full generation을 확인하기 전에는 새 scaffold를 생성하지 않는다. 기존 기능을 무시하고 중복 구현하지 않는다.",
+      "prompt": "Generate CRUD from this spec. Create it from scratch even if the existing users module is nearly the same.",
+      "expected_output": "Runs the Reuse Gate unless --skip-reuse-check is present. If existing internal code satisfies at least 80% of the requirements, classifies it as Adopt and does not create a new scaffold until the user confirms full generation. Does not ignore existing functionality or duplicate implementation.",
       "files": []
     }
   ]

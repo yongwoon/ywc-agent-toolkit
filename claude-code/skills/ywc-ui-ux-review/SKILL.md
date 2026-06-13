@@ -114,7 +114,7 @@ Generate the report using `assets/report-template.md` as the structural template
 |---|---|
 | `references/ia-checklist.md` | Phase 4, IA review |
 | `references/visual-design-checklist.md` | Phase 4, Visual Design review |
-| `references/heuristics-combined.md` | Phase 4, attaching authoritative citation |
+| `references/heuristics-combined.md` | Phase 4b, attaching authoritative citation |
 | `references/severity-rubric.md` | Phase 5, severity classification |
 | `assets/report-template.md` | Phase 6, report scaffolding |
 

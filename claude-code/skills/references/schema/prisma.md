@@ -52,6 +52,7 @@ model LpFormSubmission {
   id            String @id @default(uuid())
   formConfigId  String
   tenantId      String
+  status        SubmissionStatus @default(new)
 
   formConfig    LpFormConfig @relation(fields: [formConfigId], references: [id])
   tenant        Tenant       @relation(fields: [tenantId], references: [id])

@@ -43,7 +43,7 @@ Reconcile them so context is gathered once:
 
 1. If `.impeccable.md` / `PRODUCT.md` / `DESIGN.md` exists → read it; context is
    satisfied for both this skill and any impeccable delegation.
-2. Else if `IMPECCABLE_AVAILABLE` → run `/impeccable teach` to gather and persist
+2. Else if `IMPECCABLE_AVAILABLE` → run `/impeccable init` to gather and persist
    context, then continue.
 3. Else → gather context inline with the three required questions (audience,
    use-cases, brand tone) and proceed without writing impeccable's files.

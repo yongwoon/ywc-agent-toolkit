@@ -102,7 +102,7 @@ Gather information about the project environment to generate realistic tasks. Th
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Determine the next starting number by scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `tasks/` or in `tasks/completed/` — the new batch starts at `000017-010`. If `tasks/` is empty (every task already completed and archived), fall back to the highest number in `tasks/completed/` and apply the same `+1 phase` rule.
+- Determine the next starting number by scanning **both** `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`). Completed tasks are moved out of `<tasks-dir>/` into `<tasks-dir>/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning only the active root misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `<tasks-dir>/` or in `<tasks-dir>/completed/` — the new batch starts at `000017-010`. If `<tasks-dir>/` is empty (every task already completed and archived), fall back to the highest number in `<tasks-dir>/completed/` and apply the same `+1 phase` rule.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -251,12 +251,12 @@ Each task name follows this format:
 
 ### Step 9: Directory and File Generation
 
-Use the path specified by the user for output. If not specified, default to `tasks/`.
+Use the resolved `--tasks-dir` path specified by the user for output. If not specified, default to `tasks/`.
 
 Generate the following structure for each task:
 
 ```
-tasks/[TASK_NAME]/
+<tasks-dir>/[TASK_NAME]/
 ├── README.md
 ├── task.md
 └── test.md (optional — included when manual verification is needed)
@@ -341,7 +341,7 @@ Write structured scenario-based tests (Steps + Expected Result).
 
 ### Step 10: Generate Dependency Graph
 
-After generating all tasks, create `tasks/dependency-graph.md` at the top level. This file serves as the single source of truth for execution order.
+After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level. This file serves as the single source of truth for execution order.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 
@@ -391,9 +391,9 @@ After generating all tasks, verify the following:
 The final output includes:
 
 1. **Task list summary**: A table organizing all tasks by phase
-2. **Directory generation**: Task directories and files created under `tasks/`
-3. **Dependency Graph**: `tasks/dependency-graph.md` generated — single source of truth for execution order
-4. **Parallel Execution Notes**: Included in `tasks/dependency-graph.md` when parallel worktree execution is expected
+2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default: `tasks/`)
+3. **Dependency Graph**: `<tasks-dir>/dependency-graph.md` generated — single source of truth for execution order
+4. **Parallel Execution Notes**: Included in `<tasks-dir>/dependency-graph.md` when parallel worktree execution is expected
 
 When parallel execution is expected, verify that each task is safe for isolated worktree or agent execution.
 
@@ -401,7 +401,7 @@ When parallel execution is expected, verify that each task is safe for isolated 
 
 ## Example
 
-For a full worked example — the user-authentication spec decomposed in `human` mode (7-task table + generated `tasks/` directory tree) and the same spec collapsed to ~4–5 tasks in `llm` mode — see [references/example-decomposition.md](references/example-decomposition.md).
+User input: "Break down the user authentication spec into tasks. In Korean." (Granularity Mode: `human`)
 
 ---
 

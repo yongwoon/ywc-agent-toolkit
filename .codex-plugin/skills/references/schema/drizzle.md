@@ -76,7 +76,7 @@ Map the resulting unique violation to `409` at the write endpoint.
 
 ## B6. Multi-tenant scope
 
-`tenant_id` column + `.references(() => tenant.id)` + index (B4) + reverse `relations()`. Drizzle has first-class RLS helpers (`pgPolicy`, `.enableRLS()`); declare the policy explicitly:
+`tenant_id` column + `.references(() => tenant.id)` + index (B4) + reverse `relations()`. Drizzle has first-class RLS helpers (`pgPolicy`, `pgTable(..., extraConfig)`, and `.withRLS()` for policy-free RLS); declare the policy explicitly:
 
 ```ts
 export const lpFormSubmission = pgTable('lp_form_submission', {
@@ -86,7 +86,7 @@ export const lpFormSubmission = pgTable('lp_form_submission', {
   isolation: pgPolicy('tenant_isolation', {
     using: sql`tenant_id = current_setting('app.tenant_id')::uuid`,
   }),
-})).enableRLS();
+}));
 ```
 
 ## B7. Enum domain

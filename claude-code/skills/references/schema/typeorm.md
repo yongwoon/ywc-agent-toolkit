@@ -6,7 +6,7 @@ TypeORM's defining risk: `synchronize: true` and `migration:generate` will happi
 
 ## B1. Bilateral relations
 
-Declare the owning side (`@ManyToOne` with `@JoinColumn`) and the inverse side (`@OneToMany`). TypeORM needs the inverse-side function on both decorators to wire the relation:
+Declare the owning side (`@ManyToOne` with `@JoinColumn`) and the inverse side (`@OneToMany`). TypeORM uses the inverse-side function to connect bidirectional navigation metadata:
 
 ```ts
 @Entity()
@@ -23,7 +23,7 @@ export class LandingPage {
 }
 ```
 
-The `@JoinColumn` belongs on the `@ManyToOne` (owning) side only. Putting it on both, or omitting the inverse function, silently breaks the relation mapping.
+The `@JoinColumn` belongs on the `@ManyToOne` (owning) side only. Putting it on both is wrong. Omitting the inverse function does not necessarily corrupt the underlying database relation, but it can prevent TypeORM from populating or navigating the inverse collection such as `LandingPage.submissions`.
 
 ## B2. Cascade rules ↔ API status codes
 

@@ -165,6 +165,36 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         self.assertEqual(payload["repo_root"], str(self.repo.resolve()))
         self.assertEqual(len(payload["roots"]["codex/skills"]), 1)
 
+    def test_runtime_fit_does_not_treat_codex_paths_as_slash_commands(self) -> None:
+        skill_md = self.repo / "codex" / "skills" / "ywc-example" / "SKILL.md"
+        skill_md.write_text(
+            skill_md.read_text(encoding="utf-8")
+            + "\nRefer to codex/skills/ywc-plan for adjacent planning behavior.\n",
+            encoding="utf-8",
+        )
+
+        proc = self.run_score("--target", "codex/skills", "--format", "json")
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        payload = json.loads(proc.stdout)
+        skill = payload["roots"]["codex/skills"][0]
+        self.assertEqual(skill["axes"]["S7"], 4)
+
+    def test_repo_root_missing_fails_instead_of_scoring_empty_repo(self) -> None:
+        empty_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(empty_dir.cleanup)
+        empty = Path(empty_dir.name)
+
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT), "--repo-root", str(empty), "--format", "json"],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("could not locate repository root", proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

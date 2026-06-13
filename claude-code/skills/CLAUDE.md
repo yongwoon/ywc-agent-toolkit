@@ -8,7 +8,7 @@
 
 ## Language Policy for Localized Documentation
 
-When writing or updating localized documentation (README files), follow the language policy for the target locale below. All non-README files must be written entirely in English regardless of locale.
+When writing or updating localized documentation (README files), follow the language policy for the target locale below. All non-README file bodies must be written entirely in English regardless of locale. Skill frontmatter `description` trigger phrases are the narrow exception: keep Korean/Japanese trigger examples when they are required for activation quality.
 
 ### Korean (`README.md`)
 

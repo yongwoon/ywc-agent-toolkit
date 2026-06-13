@@ -8,7 +8,7 @@ description: >-
   unclear items before partial implementation.
   Triggers: "리뷰 받았어", "리뷰 코멘트", "리뷰 대응", "PR comment 처리",
   "review feedback", "received review", "respond to review", "address
-  review comments", "リビュー対応", "レビュー受信", "コメント返信",
+  review comments", "レビュー対応", "レビュー受信", "コメント返信",
   "ywc-receive-review". Do not use for performing a code review yourself
   (use ywc-impl-review), creating a PR (use ywc-create-pr), or for the
   automation orchestration of fetching / replying to inline PR comments

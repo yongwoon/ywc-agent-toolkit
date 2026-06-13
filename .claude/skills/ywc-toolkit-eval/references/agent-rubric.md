@@ -67,7 +67,7 @@ Mechanical (presence) + judgment (adherence). Claude Code agents should define a
 | 3 | Output shape implied by an example but not stated as a contract. |
 | 2 | Free-form output; caller must parse prose. |
 | 1 | Output format contradicts the caller's expectation. |
-| 0 | Agent has no output contract at all. |
+| 0 | No output contract: no Status block, no canonical reference, and no contract defined. |
 
 ## A5 — Model-Tier Appropriateness (weight 15)
 
