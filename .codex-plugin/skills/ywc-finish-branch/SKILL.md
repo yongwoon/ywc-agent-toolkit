@@ -26,6 +26,7 @@ When tempted to skip a step, check this table first:
 | "`build-pr-title.py` exited 1 — I'll use just the slug as the title" | Exit 1 means `TASK_NUMBER` was not detected. Stop and return `NEEDS_CONTEXT` — do not construct a title without `[TASK_NUMBER]`. A title without the task number cannot be traced back to the task in the audit trail. |
 | "`ywc-create-pr` generates its own title from `git log`, so `--title` is optional" | `ywc-create-pr`'s internal title generation does not know the task-number format. It silently produces a title without `[TASK_NUM]`. Always pass `--title` explicitly with `[TASK_NUMBER]` already included. |
 | "CI failed twice — return BLOCKED and let the user fix it" | Before returning BLOCKED, categorize the failure type. Lint/format failures are auto-fixable without judgment. Type errors and build errors usually have a clear mechanical fix visible in the log. Only return BLOCKED when the root cause requires a design decision or all fix attempts are genuinely exhausted. |
+| "CI is green, so `gh pr merge` will succeed" | A PR can be `CONFLICTING` or `BEHIND` against the base even with green CI — a sibling task or another PR merged first. Check `gh pr view --json mergeable,mergeStateStatus` before merging instead of letting `gh pr merge` fail. If the branch is merely behind, merge the base into it (never rebase — it orphans review threads) and re-verify CI; if it is a real textual conflict, surface it and return `BLOCKED`. See `../references/pr-conflict-resolution.md`. |
 | "The UL update in Step 1.5 is optional bookkeeping — skip it to save time" | The glossary is the shared vocabulary LLMs use in every subsequent prompt on this project. A branch that introduces new domain terms without updating the glossary silently pollutes downstream code generation and spec reviews. If `docs/ubiquitous-language.md` does not exist, Step 1.5 skips automatically — there is no overhead in that case. |
 
 **Violating the letter of these rules is violating the spirit.** Delivery is the step where the user trusts the executor most — earning that trust requires honesty about partial completion.
@@ -176,6 +177,21 @@ Run the CI wait + fix loop and the bot review polling per [../references/pr-bot-
 
 Skip this step entirely for `--mode local-merge`, `--mode draft`, `--mode skip-ci-wait`, `--mode per-task-pr`.
 
+#### Step 4 final: Merge-Readiness Gate (normal-pr only)
+
+CI green is necessary but not sufficient — the base may have advanced into a conflict while CI ran. Before Step 5's `gh pr merge`, confirm the PR can actually merge:
+
+> **Action required**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) — it defines the `mergeable` / `mergeStateStatus` table and the merge-not-rebase update procedure.
+
+```bash
+gh pr view <pr-number> --json mergeable,mergeStateStatus --jq '{mergeable, mergeStateStatus}'
+```
+
+- `MERGEABLE` / `CLEAN` → proceed to Step 5.
+- `BEHIND` (branch protection requires up-to-date) or `CONFLICTING` that auto-resolves → merge the base into the feature branch (never rebase), push, and re-verify CI (counts as one CI cycle). Then re-check the gate.
+- `CONFLICTING` with real textual conflicts → surface the conflicting files + PR URL and return `BLOCKED`. Do not auto-resolve or force-push.
+- `UNKNOWN` → poll briefly per the reference, then re-read.
+
 ### Step 5: Merge
 
 For `--mode normal-pr`:
@@ -197,7 +213,7 @@ For all other modes: skip — merge happens later (manual for `draft`, caller fo
 
 **Why `git merge --no-ff` specifically** (not cherry-pick, not direct commit on main): preserves original commit SHAs, marks the task boundary in `git log --graph`, and lets `git branch -d` act as a built-in safety check that refuses to delete an unmerged branch. Full rationale lives in the upstream executor's `references/branch-lifecycle.md`.
 
-**Error handling**: `git merge` conflict → stop and ask the user to resolve manually (do not auto-abort; the user may want to inspect). `gh pr merge` failure → stop and report. Push rejected (remote moved) → stop; never force-push.
+**Error handling**: `git merge` conflict → stop and ask the user to resolve manually (do not auto-abort; the user may want to inspect). `gh pr merge` failure due to conflict/out-of-date → apply the Step 4 final Merge-Readiness Gate (`../references/pr-conflict-resolution.md`): merge the base into the feature branch and re-verify, or return `BLOCKED` on a real textual conflict. Other `gh pr merge` failures → stop and report. Push rejected (remote moved) → stop; never force-push.
 
 ### Step 6: Post-Merge Verification (hard gate)
 

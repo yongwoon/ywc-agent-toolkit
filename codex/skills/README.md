@@ -2,6 +2,17 @@
 
 Codex 전용 `ywc-*` Skill 목록입니다. 이 directory는 `bash scripts/install.sh --codex <skill-name>` 또는 `bash scripts/install.sh --all`을 통해 `${CODEX_HOME:-~/.codex}/skills`로 설치되는 source bundle입니다.
 
+## PR Conflict & Merge-Readiness Resolution
+
+PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-finish-branch`, `ywc-parallel-executor`)은 canonical conflict 절차인 [`references/pr-conflict-resolution.md`](./references/pr-conflict-resolution.md)를 사용해야 합니다. `SKILL.md` 본문에 같은 logic을 중복 작성하지 말고, `pr-bot-polling.md`와 동일하게 `> **Action required**: Read [../references/pr-conflict-resolution.md]` 포인터를 둡니다.
+
+이 reference는 놓치기 쉬운 두 가지 사실을 고정합니다:
+
+- **CI status와 merge-readiness는 독립 gate입니다.** PR이 CI를 통과해도 base branch가 앞서 나가면 `CONFLICTING`일 수 있습니다. PR 완료 선언 또는 `gh pr merge` 직전에는 `gh pr view --json mergeable,mergeStateStatus`를 확인합니다.
+- **PR-vs-base conflict는 feature branch에 base를 merge해서 해결합니다.** Rebase는 commit SHA를 재작성해 기존 PR review thread를 고아화하므로 사용하지 않습니다. `git merge --no-ff origin/<base>`는 SHA와 review history를 보존합니다.
+
+실제 textual conflict는 1회 시도 후 사용자에게 surface하는 `BLOCKED` 상황입니다. Auto-resolve, force-push, `git merge --abort`는 하지 않습니다. 단순히 뒤처진 branch는 base를 merge하고 CI를 재검증합니다(최대 2 cycle, CI fix-loop budget과 동일).
+
 ## Skill 목록
 
 아래 표는 **설치 Directory**, **내부 Skill Name**, **호출 예시**를 구분해서 보여줍니다. Codex는 skill metadata의 `description`과 사용자의 자연어 요청을 기준으로 skill을 활성화합니다.

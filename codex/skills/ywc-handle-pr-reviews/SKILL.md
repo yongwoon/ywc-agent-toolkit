@@ -33,6 +33,8 @@ When tempted to skip a step, check this table first:
 | "PR not found for this branch, scan recent PRs" | Stop and ask. Acting on a wrong PR overwrites unrelated reviewer threads. |
 | "All review comments are addressed — CI is a separate concern" | Fixes to source code (refactors, new imports, logic changes) can break CI. Always re-verify CI after pushing review fixes. A PR with all comments addressed but failing CI is still blocked from merging. |
 | "The comments only needed replies, no code changed — so CI is fine to skip" | CI can already be red for reasons unrelated to the comments (a flaky earlier push, a base-branch change, a dependency break). Handling a PR means leaving it mergeable. Always check current CI status when handling a PR, even when your replies pushed no code. |
+| "CI is green and comments are addressed — the PR is mergeable" | While the review was in progress the base branch may have advanced and the PR may now be `CONFLICTING`. Handling a PR means leaving it mergeable, which requires checking `gh pr view --json mergeable`, not just CI. A conflicting PR is blocked from merge regardless of how many comments were resolved. |
+| "The PR conflicts with base — rebase the branch to clear it" | Rebasing rewrites SHAs and orphans the very review threads you are replying to. Merge the base *into* the feature branch (`git merge --no-ff origin/<base>`) instead. See `../references/pr-conflict-resolution.md`. |
 | "The poller found a top-level review/check, but the line-comment script returned empty" | Top-level reviews, PR comments, and review-like checks are first-class review artifacts. Fetch the artifact list and block merge until each one is fixed, answered, or explicitly deferred. |
 | "I replied but did not include the marker" | The polling gate is marker-based for non-threaded artifacts. Every reply must include `<!-- <review_comment_addressed:<fingerprint>> -->` so the next poll can distinguish handled feedback from unresolved feedback. |
 
@@ -161,7 +163,7 @@ Things can go wrong during the process. Handle these gracefully:
 | Error                                 | How to handle                                                                           |
 | ------------------------------------- | --------------------------------------------------------------------------------------- |
 | `gh pr view` fails (no PR for branch) | Stop and tell the user. Don't guess the PR number                                       |
-| Push fails due to conflict            | Stop, notify the user, and show the conflicting files. Don't force-push or auto-resolve |
+| Push fails (non-fast-forward, remote feature branch advanced) | `git pull --rebase origin <feature-branch>` (rebase on the feature branch you own is safe), then re-push. Don't force-push without approval. See `../references/pr-conflict-resolution.md` |
 | Comment reply API returns 403/404     | Log the error, skip that reply, and report it in the final summary                      |
 | Referenced file no longer exists      | Reply to the comment explaining the file was removed, and skip the fix                  |
 
@@ -193,6 +195,20 @@ gh pr checks $PR_NUMBER
      | Infra / flaky / clearly unrelated to this PR's scope | Do **not** blindly patch. Surface the failing check and logs to the user and ask how to proceed (e.g., re-run the job, or fix in a separate PR) |
   3. Re-check CI after each push. Up to **2 fix attempts**.
   4. If CI still fails after 2 attempts: record the failing check names in Step 7's summary and set the overall outcome to `DONE_WITH_CONCERNS` (not `DONE`).
+
+### 6.6 Merge-Readiness (Conflict) Check
+
+**Always run this step.** CI green and all comments addressed still does not guarantee the PR can merge — while the review was in progress the base branch may have advanced into a conflict. A PR review thread, CI status, and merge-readiness are three independent blockers on the same PR; handling a PR means leaving all three clear.
+
+> **Action required**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) before proceeding — it defines the `mergeable` / `mergeStateStatus` semantics and the merge-not-rebase update procedure.
+
+```bash
+gh pr view $PR_NUMBER --json mergeable,mergeStateStatus --jq '{mergeable, mergeStateStatus}'
+```
+
+- `MERGEABLE` / `CLEAN` → proceed to Step 7.
+- `CONFLICTING` / `DIRTY` / `BEHIND` → follow **Update Branch From Base** in the reference (merge the base into the feature branch — never rebase, since that orphans the review threads you just replied to). If it auto-resolves, push and re-verify CI (one additional cycle). If it reports real textual conflicts, surface the conflicting files + PR URL to the user, stop, and set the outcome to `DONE_WITH_CONCERNS` — do not auto-resolve or force-push.
+- `UNKNOWN` → poll briefly per the reference, then re-read.
 
 ### 7. Final Summary
 

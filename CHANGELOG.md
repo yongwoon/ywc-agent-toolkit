@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+
+### Added
+
+* **codex:** port PR conflict and merge-readiness handling to Codex PR workflow skills from develop-with-llm PR #101.
+
 ## [1.19.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.18.0...v1.19.0) (2026-06-13)
 
 
