@@ -444,7 +444,7 @@ When `--pr-lang` is not specified, detect the language in this priority:
 
 ## Error Handling
 
-Merge conflict during pull → stop and ask the user to resolve manually. CI timeout (>30 min) → report status and ask whether to continue waiting. CI failure → `ywc-finish-branch` Step 4 diagnoses the failing checks, categorizes the failure (lint/format, type, test, build), and applies up to 2 fix attempts automatically; returns `BLOCKED` only when fixes are exhausted — do not stop at the first CI failure. `gh` CLI not authenticated → provide setup instructions and stop. Task not found → list available tasks and ask the user to specify. Dirty working tree → show changed files and ask the user to commit or stash.
+Merge conflict during pull → stop and ask the user to resolve manually. PR-vs-base conflict at delivery → `ywc-finish-branch`'s Merge-Readiness Gate (Step 4 final, per [../references/pr-conflict-resolution.md](../references/pr-conflict-resolution.md)) handles it: a merely-behind branch is auto-updated and CI re-verified; a real textual conflict returns `BLOCKED` for human resolution. CI timeout (>30 min) → report status and ask whether to continue waiting. CI failure → `ywc-finish-branch` Step 4 diagnoses the failing checks, categorizes the failure (lint/format, type, test, build), and applies up to 2 fix attempts automatically; returns `BLOCKED` only when fixes are exhausted — do not stop at the first CI failure. `gh` CLI not authenticated → provide setup instructions and stop. Task not found → list available tasks and ask the user to specify. Dirty working tree → show changed files and ask the user to commit or stash.
 
 ## Notes
 

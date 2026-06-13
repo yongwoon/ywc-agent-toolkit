@@ -94,6 +94,30 @@ PreToolUse hook. The initial 60-second wait is embedded inside the loop's first
 iteration (not a leading standalone `sleep 60`) to avoid the "long leading sleep"
 block.
 
+## PR Conflict & Merge-Readiness Resolution
+
+Skills that create, update, or merge a PR (`ywc-create-pr`, `ywc-handle-pr-reviews`,
+`ywc-finish-branch`, `ywc-parallel-executor`) must use the canonical conflict
+procedure defined in `references/pr-conflict-resolution.md`. Do not inline or
+approximate this logic in a SKILL.md body — reference it with an explicit
+`> **Action required**: Read [references/pr-conflict-resolution.md]` directive
+the same way `pr-bot-polling.md` is referenced.
+
+The reference codifies two facts that are easy to miss:
+
+- **CI status and merge-readiness are independent gates.** A PR can pass CI and
+  still be `CONFLICTING` against the base if the base advanced. Always check
+  `gh pr view --json mergeable,mergeStateStatus` before declaring a PR done or
+  calling `gh pr merge`.
+- **Resolve a PR-vs-base conflict by merging the base INTO the feature branch,
+  never by rebasing.** Rebasing rewrites commit SHAs and orphans existing PR
+  review threads; merging (`git merge --no-ff origin/<base>`) preserves both.
+
+Real textual conflicts are a 1-attempt, surface-to-user (`BLOCKED`) situation —
+never auto-resolve, never force-push, never `git merge --abort`. A merely-behind
+branch is auto-updated and CI re-verified (up to 2 cycles, matching the CI
+fix-loop budget).
+
 ## Skill Invocation Syntax
 
 Skills in `tools/claude-code/skills/` are Claude Code skills. Use `/skill-name` (slash command) syntax in all documentation and examples — never `$skill-name`, which is the Codex CLI format.

@@ -1,7 +1,7 @@
 ---
 name: ywc-create-pr
 version: 1.0.0
-description: (ywc) Use when the user wants to open a pull request and says "create a PR", "open a PR", "submit code for review", "push and create PR", "PR 만들어줘", "풀리퀘 작성", "プルリク作成", or is wrapping up a feature branch. Do not use for committing only without PR creation, or for handling existing PR review comments (use ywc-handle-pr-reviews).
+description: (ywc) Use when the user wants to open a pull request and says "create a PR", "open a PR", "submit code for review", "push and create PR", "PR 만들어줘", "풀리퀘 작성", "プルリク作成", or is wrapping up a feature branch. Do not use for committing only without PR creation, for the full delivery lifecycle of merging an already-completed branch (use ywc-finish-branch), or for handling existing PR review comments (use ywc-handle-pr-reviews).
 category: release
 phase: release
 requires: []
@@ -30,6 +30,8 @@ When tempted to skip a step, check this table first:
 | "The hook is just being pedantic, `CLAUDE_MD_CHECK=skip git push` will fix it" | Inline `VAR=value git push` does NOT reach the hook subprocess — the hook runs before the command executes. Use `export VAR=value && git push` in a single Bash call instead, or instruct the user to run `! VAR=value git push` in their terminal. |
 | "CI passed locally, so remote CI will pass too" | Remote CI may use different OS runners, Node versions, or environment secrets unavailable locally. Always verify remote CI after pushing — local and remote diverge more often than expected. |
 | "CI is slow — let the reviewer catch failures" | CI failures signal a broken branch to every reviewer. Fix them immediately after PR creation so the PR stays reviewable and avoids a second round-trip after the reviewer waits for another push. |
+| "CI is green, so the PR is ready to merge" | CI status and merge-readiness are independent gates. A green PR can still be `CONFLICTING` against the base if the base advanced. Check `gh pr view --json mergeable` before declaring the PR done — a conflicting PR blocks every reviewer just like a CI failure. |
+| "The PR conflicts with base — I'll rebase the feature branch to fix it" | Rebasing rewrites commit SHAs and orphans existing PR review threads. Merge the base *into* the feature branch instead (`git merge --no-ff origin/<base>`); it preserves SHAs and review history. See `references/pr-conflict-resolution.md`. |
 | "The UL update adds noise before every PR" | The update is a diff-driven incremental review, not a full re-extraction. If no new domain terms appeared in the branch, the skill produces no changes. Skipping it lets the glossary drift from the codebase with every PR that introduces new vocabulary. |
 
 **Violating the letter of these rules is violating the spirit.** If you find yourself rephrasing a rule to make an exception, stop and ask the user.
@@ -263,7 +265,23 @@ bash claude-code/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
 ```
 
 - **BOT_COUNT > 0**: Invoke `ywc-handle-pr-reviews` to address all comments, then re-run the polling script to catch any follow-up comments. If code fixes were pushed, re-run `gh pr checks $PR_NUMBER --watch` (one additional fix attempt allowed).
-- **BOT_COUNT == 0**: No bot reviews — proceed to Completion Report.
+- **BOT_COUNT == 0**: No bot reviews — proceed to Step 8-4.
+
+#### 8-4. Merge-Readiness (Conflict) Check
+
+> **Action required**: Read [`claude-code/skills/references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) before proceeding. The `mergeable` / `mergeStateStatus` semantics, the merge-not-rebase rule, and the surface-vs-auto-resolve boundary are defined there.
+
+CI passing does not mean the PR is mergeable — the base branch may have advanced and now conflict. After CI and bot review settle, check the merge state:
+
+```bash
+gh pr view $PR_NUMBER --json mergeable,mergeStateStatus --jq '{mergeable, mergeStateStatus}'
+```
+
+- `MERGEABLE` / `CLEAN` → the PR is review-ready; proceed to Completion Report.
+- `CONFLICTING` / `DIRTY` → follow **Update Branch From Base** in the reference. If the merge auto-resolves (branch was merely behind), push and re-verify CI. If it reports real textual conflicts, surface the conflicting files and PR URL to the user and note the conflict in the Completion Report — do not auto-resolve or force-push.
+- `UNKNOWN` → poll briefly per the reference, then re-read.
+
+Because this skill creates a **draft** PR by default and does not merge, a conflicting result is reported (not a hard stop) unless the user asked to take the PR further — but the branch should still be brought up to date so reviewers see a mergeable PR.
 
 ### 9. Completion Report
 
