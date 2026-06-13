@@ -87,7 +87,7 @@ Before proposing **any** fix:
 
 Phase 1 exit condition: you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
 
-When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent root-cause analyst pass with a bounded packet: failure symptom, stack trace, recent diff, and relevant code snippet. Ask for a ranked top-3 hypothesis list with evidence-for / evidence-against per item. If no delegation tool is available, continue the inline procedure above; do not attempt tool-specific named-agent syntax from another runtime.
+When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent `ywc-root-cause-analyst` pass. Send only a bounded packet: failure symptom, timeline, stack trace or logs, recent diff, rejected hypotheses, relevant code snippet, and current candidate cause. Ask for `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>` plus a ranked top-3 hypothesis list with evidence-for / evidence-against per item. If no delegation tool is available, continue the inline procedure above; do not attempt tool-specific named-agent syntax from another runtime.
 
 ### Phase 2: Pattern Analysis
 

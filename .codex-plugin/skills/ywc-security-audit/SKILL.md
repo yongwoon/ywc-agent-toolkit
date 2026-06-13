@@ -60,7 +60,7 @@ When tempted to skip a step, check this table first:
 
 4. **Aggregate Phase 1 Results** — Combine findings from all 3 workers. Deduplicate by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 3), prioritizing Critical > High. Log any dropped candidates in the report.
 
-5. **Phase 2 — Advisor Pass** — For each surviving advisor candidate, follow the **Advisor Escalation Policy** section below. Request one short higher-capability advisor pass using the Codex delegation mechanism available in the current session. If no delegation tool is available, run the same advisor decision inline and record the fallback. Use only the bounded excerpt (≤100 lines). Merge verdicts into the findings list.
+5. **Phase 2 — Advisor Pass** — For each surviving advisor candidate, follow the **Advisor Escalation Policy** section below. When Codex custom-agent delegation is available, request one bounded `ywc-security-engineer` read-only advisor pass for OWASP/security verdict review. Send only trust boundaries, authn/authz flows, external inputs, suspected risks, and the relevant excerpt (≤100 lines), and expect `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>` plus confirmed/adjusted severity. If no delegation tool is available, run the same advisor decision inline and record the fallback. Merge verdicts into the findings list.
 
 6. **Output Severity-Classified Security Report**
 
