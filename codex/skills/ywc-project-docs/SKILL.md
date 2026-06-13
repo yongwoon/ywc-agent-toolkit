@@ -158,3 +158,20 @@ Before creating any document, confirm:
 3. **Cross-references** — If related documents exist, add bidirectional links (new → existing, existing → new).
 4. **Official vs draft** — Place pre-finalized content in `todo/`; place finalized content in the official folder.
 5. **CLAUDE.md rule** — Create documentation only when the user explicitly requests it.
+
+## Output Format
+
+Return the created or updated documentation path and a short report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Document: <path created or updated>
+Summary: <what changed and why>
+Cross-links: <added / updated / not applicable>
+Validation: <checks performed before writing>
+Next action: <follow-up or "none">
+```
+
+## Validation
+
+Before finalizing, confirm that no duplicate document should have been updated instead, the directory matches routing rules, cross-references were considered, official vs draft placement is correct, and the user explicitly requested documentation creation.

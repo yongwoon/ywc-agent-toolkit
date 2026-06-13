@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-worktrees",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-worktrees --mode create --task-name 000004-010.",
+      "expected_output": "Resolves the worktree root, creates the task worktree under that root, reports mode, path, validation, and Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Prune a dirty worktree without --force.",
+      "expected_output": "Refuses to remove the dirty worktree, reports the blocker, and does not delete files.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Audit worktrees and ignore leaked directories.",
+      "expected_output": "Reports stale, missing, and leaked worktrees accurately and exits with failure status when audit is not clean.",
+      "files": []
+    }
+  ]
+}

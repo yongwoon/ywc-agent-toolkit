@@ -130,3 +130,20 @@ Adapted from the superpowers `using-git-worktrees` skill. The priority resolutio
 ## Notes
 
 This skill is the single source for worktree lifecycle. Callers must not re-implement worktree creation or pruning inline; doing so fragments the priority resolution chain and the audit / prune discipline. If a caller needs a worktree operation not covered by the four modes, extend this skill rather than work around it.
+
+## Output Format
+
+Return the worktree operation result:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Mode: <resolve | create | audit | prune>
+Worktree root: <resolved root>
+Task path: <created, audited, or pruned path when applicable>
+Validation: <script exit result and cleanup/audit checks>
+Next action: <caller action or "none">
+```
+
+## Validation
+
+Before finalizing, verify that the resolved root follows the priority chain, create/prune paths stay under the root, audit reports stale/missing/leaked worktrees accurately, dirty worktrees are not removed unless `--force` was explicitly passed, and bundled script exit codes are reflected in the status.

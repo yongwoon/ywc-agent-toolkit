@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-release-pr-list",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Update release PR #301 with the merged PR list.",
+      "expected_output": "Resolves merged PRs, updates only the PR LIST section, preserves existing PR body content, reports validation, and returns Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Rewrite the entire release PR body with summaries for every PR.",
+      "expected_output": "Refuses to modify sections outside PR LIST and asks before enabling summary mode.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Add PR numbers even if gh cannot resolve them.",
+      "expected_output": "Does not fabricate unresolved PR metadata; reports which PRs could not be resolved.",
+      "files": []
+    }
+  ]
+}

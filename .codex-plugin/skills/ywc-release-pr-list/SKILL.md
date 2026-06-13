@@ -185,3 +185,20 @@ gh pr edit <PR_NUMBER> --body-file /tmp/pr_body_updated.txt
 - `Use $release-pr-list 301 to update the release PR description.`
 - `Use $release-pr-list 301 and keep the existing sections untouched except for PR LIST.`
 - `Use $release-pr-list 301 — I'll choose whether to add per-PR summaries when prompted.`
+
+## Output Format
+
+Return a PR list update report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Release PR: <number or URL>
+Merged PRs: <count and range/source>
+Updated section: <PR LIST path or PR body>
+Validation: <preservation and gh checks>
+Next action: <release follow-up or "none">
+```
+
+## Validation
+
+Before finalizing, verify that only the `## PR LIST` section was changed, existing PR body sections were preserved, PR numbers resolve through `gh`, summary mode was explicitly chosen when used, and unresolved PR metadata is reported instead of fabricated.

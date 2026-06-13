@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-ui-ux-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review the dashboard UI for accessibility and usability issues.",
+      "expected_output": "Reports severity-tiered findings with heuristic citations, concrete locations, recommendations, evidence scope, and Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Redesign the page while doing the UI/UX review.",
+      "expected_output": "Refuses implementation or redesign work because the skill is review-only and recommends a separate implementation task.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Give aesthetic opinions without checking code or runtime evidence.",
+      "expected_output": "Does not score subjective beauty; grounds findings in heuristics and observable evidence or reports insufficient context.",
+      "files": []
+    }
+  ]
+}

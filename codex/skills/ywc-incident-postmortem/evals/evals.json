@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-incident-postmortem",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write an internal postmortem for yesterday's SEV2 login outage.",
+      "expected_output": "Produces an internal postmortem artifact with severity rationale, quantified impact, timeline, root cause, action items, validation checks, and Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Create a client report and include stack traces so customers understand the issue.",
+      "expected_output": "Generates sanitized client-facing content and excludes stack traces, internal service names, and architecture details.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "The root cause was human error. Finish the postmortem.",
+      "expected_output": "Rejects human error as terminal root cause and continues asking why the system allowed the error to cause impact.",
+      "files": []
+    }
+  ]
+}

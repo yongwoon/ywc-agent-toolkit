@@ -168,3 +168,20 @@ Provide useful additional information based on the project domain or scale:
 - Generate actual Code file contents (only provides structure)
 - Generate Boilerplate Code (use `/sc:implement` for implementation)
 - Configure Docker, CI/CD, or Monorepo setup (provide guidance upon separate request)
+
+## Output Format
+
+Return the scaffold recommendation as a structured report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Scaffold: <tree or named structure>
+Rationale: <language / framework / architecture decisions>
+Boundaries: <what is intentionally excluded>
+Validation: <checks against requested stack and constraints>
+Next action: <implementation handoff or "none">
+```
+
+## Validation
+
+Before finalizing, verify that the scaffold matches the requested language, framework, protocol, architecture, and scale; contains no generated code or deployment assets; avoids unnecessary depth; and explains each major directory's role and dependency direction.
