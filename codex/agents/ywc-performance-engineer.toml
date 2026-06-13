@@ -28,6 +28,7 @@ Rationalization defense:
 
 Output:
 - Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Shared status line: `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
 - Include a one-sentence `Summary:` and finding counts by severity.
 - Each finding must name the category: Backend-Query, Backend-Algorithm, Backend-Async, Backend-Allocation, Backend-Lock, Frontend-Bundle, Frontend-Render, Frontend-Image, Frontend-Hydration, WebVitals-LCP, WebVitals-INP, WebVitals-CLS, WebVitals-FCP, WebVitals-TBT, or Profiling-Recommendation.
 - Include file:line, observed metric vs target, or profiler evidence when available.
