@@ -1,13 +1,8 @@
 ---
 name: ywc-handle-pr-reviews
-version: 1.0.0
 description: >-
-  (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), or for changes outside an open PR context.
-category: release
-phase: release
-requires: [ywc-create-pr]
-advisor_budget: 0
-allowed tools: Bash, Read, Edit, Write, Glob, Grep, Agent
+  (ywc) Use when handling PR review feedback, addressing code review comments, or responding to GitHub PR review threads. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), for the verify-before-agreeing discipline on reviewer feedback (use ywc-receive-review), for storing or reading durable review preferences as learnings (use ywc-review-learnings), or for changes outside an open PR context.
+allowed-tools: Bash, Read, Edit, Write, Glob, Grep, Agent
 ---
 
 # Handle PR Review Comments
@@ -59,7 +54,7 @@ gh repo view --json nameWithOwner --jq .nameWithOwner
 Retrieve all PR review comments and filter out those that don't need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
 
 ```bash
-bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
+bash tools/claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
   {owner}/{repo} {pr_number}
 # exit 0 → JSON array of unresolved threads on stdout (may be [])
 # exit 1 → gh CLI error (not authenticated or PR not found)

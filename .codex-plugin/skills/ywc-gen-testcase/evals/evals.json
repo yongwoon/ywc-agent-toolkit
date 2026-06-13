@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-gen-testcase",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-gen-testcase --range HEAD~1..HEAD",
+      "expected_output": "Validates the two-dot range, generates a deterministic testsheet path, reports detected scope and Status, and does not confuse range input with PR mode.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Generate test cases for PR 42 and task 000004-010 at the same time.",
+      "expected_output": "Stops with NEEDS_CONTEXT because multiple input modes are present and asks which mode should be used.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Dry-run the testcase generation for 000004-010..000004-030.",
+      "expected_output": "Prints preview output only, includes Status and detected language, and writes no files during dry-run.",
+      "files": []
+    }
+  ]
+}

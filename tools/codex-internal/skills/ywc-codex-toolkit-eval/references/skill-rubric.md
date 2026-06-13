@@ -1,98 +1,123 @@
-# Skill Rubric — 0–5 Banding per Axis
+# Codex Skill Evaluation Rubric
 
-Each axis is scored `0` (absent/broken) to `5` (exemplary). The weighted sum (weights below) normalizes to `/100`. "Mechanical" rows are produced by `scripts/score.py`; "judgment" rows by the agent judge pass.
+Score every distributable Codex skill under `codex/skills/*` on
+eight dimensions. Each dimension uses `0-4`.
 
-| Axis | Weight | Tier |
-|---|---|---|
-| S1 Activation accuracy | 30 | mixed |
-| S2 Structure compliance | 15 | mechanical |
-| S3 Behavioral efficacy | 20 | judgment |
-| S4 Token economy | 10 | mechanical |
-| S5 Consistency & integrity | 15 | mechanical |
-| S6 Catalog fit | 10 | judgment |
-
-Total weight = 100. Item total = Σ(axis_score / 5 × weight).
-
-## S1 — Activation Accuracy (weight 30)
-
-The single highest-leverage axis. A skill that does not fire is worthless; one that over-fires pollutes every sibling. Combines a mechanical collision signal with a judged precision/recall over `evals/trigger-cases.json` (see `trigger-eval-method.md`).
-
-| Score | Band |
+| Level | Meaning |
 |---|---|
-| 5 | Recall ≥ 0.95 on positive cases AND precision ≥ 0.95 (≤1 false-positive on negative/collision cases). Description has explicit `Do not use for...` pointing at the real sibling for every near-collision. |
-| 4 | Recall ≥ 0.90 and precision ≥ 0.90. Minor anti-trigger gap on one sibling. |
-| 3 | Recall ≥ 0.80 or precision ≥ 0.80 (one weak). One unresolved collision pair (two skills plausibly fire on the same prompt). |
-| 2 | Recall or precision in 0.60–0.80. Anti-triggers missing or generic. |
-| 1 | < 0.60 on either. Description summarizes the workflow instead of stating triggers (Tier-1 anti-pattern). |
-| 0 | No multilingual triggers, or description is a workflow summary with no trigger phrases at all. |
+| 0 | Missing or invalid |
+| 1 | Present but materially weak |
+| 2 | Adequate operating baseline |
+| 3 | Strong and reliable |
+| 4 | Exemplary reference quality |
 
-Mechanical sub-signal (caps S1 at 3 until fixed): if `score.py` reports an n-gram overlap pair with a sibling above the collision threshold AND neither description names the other in a `Do not use for...` clause, S1 cannot exceed 3 regardless of the judged precision.
+Composite grade: `A >= 3.5`, `B 2.5-3.49`, `C 1.5-2.49`, `D < 1.5`.
 
-## S2 — Structure Compliance (weight 15)
+| Dim | Weight |
+|---|---:|
+| S1 Trigger and anti-trigger precision | 0.18 |
+| S2 Codex skill schema compliance | 0.14 |
+| S3 Progressive disclosure | 0.10 |
+| S4 Workflow actionability | 0.17 |
+| S5 Output and verification contract | 0.13 |
+| S6 Bundle maintainability | 0.10 |
+| S7 Codex runtime fit | 0.10 |
+| S8 Scope discipline | 0.08 |
 
-Mechanical. Counts satisfied `ywc-skill-author` rules A1–A14. Score = round(satisfied / applicable × 5). Applicable excludes rules that genuinely do not apply (e.g., A13 evals when the skill has no verifiable output — counted as satisfied-by-exemption, not as a miss).
+## S1: Trigger and Anti-trigger Precision
 
-| Signal | Rule |
+| Score | Criteria |
 |---|---|
-| `name:` present and `ywc-` prefixed, matches dir | A1 |
-| description starts `(ywc) Use when` | A2 |
-| description contains `Do not use for` | A3 |
-| description has Korean + Japanese chars (multilingual) | A4 |
-| first body line is `**Announce at start:**` | A6 |
-| `## Rationalization Defense` with ≥5 table rows | A7 |
-| body ≤ 500 lines | A8 |
-| no `@`-prefixed skill cross-reference | A9 |
-| required README locale set (md/en/ja/ko) present; full-set (es/zh) completeness scored under S5 | A11 |
-| every `references/*.md` has ≥1 inbound pointer | A14 |
+| 0 | Missing `description` or pure workflow summary |
+| 1 | Vague trigger wording; no anti-trigger; likely sibling collisions |
+| 2 | Clear primary use case and at least one anti-trigger |
+| 3 | Korean/English/Japanese triggers plus explicit sibling disambiguation |
+| 4 | L3 plus realistic user phrasing and complete collision coverage |
 
-## S3 — Behavioral Efficacy (weight 20)
+Evidence: frontmatter `description`, sibling skill catalog, repeated keywords.
 
-Judgment. "If an agent followed ONLY this SKILL.md body on the skill's canonical scenario, would the output satisfy the stated purpose?"
+## S2: Codex Skill Schema Compliance
 
-| Score | Band |
+| Score | Criteria |
 |---|---|
-| 5 | Every workflow step is executable without inference; stop-conditions explicit; Rationalization Defense closes the real loopholes an agent would try. |
-| 4 | Executable, but one step relies on unstated context the agent must guess. |
-| 3 | Workflow is correct in outline but ≥2 steps use vague language ("appropriately", "as needed") with no threshold. |
-| 2 | A step contradicts another, or the happy path is covered but the documented failure mode is not handled. |
-| 1 | Workflow is aspirational prose, not executable steps. |
-| 0 | Following the body would produce the wrong artifact. |
+| 0 | YAML frontmatter invalid or missing `name`/`description` |
+| 1 | Extra frontmatter keys or unquoted `: ` risk in `description` |
+| 2 | Strict Codex schema passes; minor local convention gaps |
+| 3 | Strict schema plus `ywc-skill-author` mandatory body conventions |
+| 4 | L3 plus meaningful `agents/openai.yaml` synchronized to current purpose |
 
-## S4 — Token Economy (weight 10)
+Evidence: `inventory_gate.py`, `scripts/validate.sh`, `SKILL.md`, and
+`agents/openai.yaml`.
 
-Mechanical. Progressive-disclosure discipline.
+## S3: Progressive Disclosure
 
-| Score | Band |
+| Score | Criteria |
 |---|---|
-| 5 | Description (Tier 1) is trigger-only; body ≤ 500; every static section >30 lines is extracted to `references/`; no `references/*.md` < 30 lines (no over-extraction). |
-| 4 | One of: body 450–500, or one borderline section left inline. |
-| 3 | Body 500–550 (slightly over), or one >30-line static table left inline. |
-| 2 | Body 550–700, or description carries a workflow-summary sentence (Tier-1 bloat). |
-| 1 | Body > 700, or multiple un-extracted large static blocks. |
-| 0 | Body > 1000, or Tier-3 content (templates/tables) inlined wholesale. |
+| 0 | Body is bloated and no references are used |
+| 1 | Body exceeds 500 lines or large static tables remain inline |
+| 2 | Body is acceptable but some lookup material should be extracted |
+| 3 | Workflow stays inline; long rubrics/templates live in `references/` |
+| 4 | L3 plus references are one level deep and explicitly linked from `SKILL.md` |
 
-## S5 — Consistency & Integrity (weight 15)
+Evidence: body line count, reference directory, large static sections.
 
-Mechanical. Cross-file coherence.
+## S4: Workflow Actionability
 
-| Score | Band |
+| Score | Criteria |
 |---|---|
-| 5 | All 6 README locales present and non-empty; every `Do not use for (use ywc-X)` pointer resolves to a real sibling; every `references/` pointer resolves; no dangling file links. |
-| 4 | All resolve, but one locale README is materially shorter than the others (likely stale). |
-| 3 | One README locale missing from the 6-set (still passes validate.sh's 4-set), or one stale locale. |
-| 2 | A `Do not use for` pointer names a non-existent skill, or one `references/` link is dangling. |
-| 1 | Multiple dangling pointers/links. |
-| 0 | Required validate.sh locale (md/en/ja/ko) missing — would fail CI. |
+| 0 | Aspirational guidance only |
+| 1 | Steps exist but require guessing key inputs or ordering |
+| 2 | A competent Codex agent can execute the happy path |
+| 3 | Explicit inputs, commands, stop conditions, and failure routing |
+| 4 | L3 plus domain-specific Rationalization Defense and common mistakes |
 
-## S6 — Catalog Fit (weight 10)
+Evidence: workflow section, arguments table, validation checklist.
 
-Judgment. Position in the skill graph.
+## S5: Output and Verification Contract
 
-| Score | Band |
+| Score | Criteria |
 |---|---|
-| 5 | One skill = one responsibility; no sibling overlaps its trigger surface; fills a real need. |
-| 4 | Slight conceptual overlap with one sibling, but anti-triggers cleanly separate them. |
-| 3 | Overlaps one sibling's surface; a user request could reasonably route to either. |
-| 2 | Substantially duplicates a sibling — merge candidate. |
-| 1 | Duplicates a sibling AND lacks anti-triggers to disambiguate. |
-| 0 | Redundant (another skill fully subsumes it) or orphaned (documents a workflow nothing routes to). |
+| 0 | No expected output is defined |
+| 1 | Output described only in prose |
+| 2 | Output sections are named |
+| 3 | Concrete report/template plus verification criteria |
+| 4 | L3 plus eval fixtures or deterministic scripts proving expected output |
+
+Evidence: output format, validation section, `evals/`, scripts.
+
+## S6: Bundle Maintainability
+
+| Score | Criteria |
+|---|---|
+| 0 | Missing required README locale set or broken references |
+| 1 | Locale docs or UI metadata are materially stale |
+| 2 | README locale set exists; minor drift or weak default prompt |
+| 3 | README set, `agents/openai.yaml`, and cross-links are aligned |
+| 4 | L3 plus ownership, changelog/version impact, and install behavior are clear |
+
+Evidence: README files, `agents/openai.yaml`, bundle README, `CHANGELOG.md`, and
+`VERSION` when the skill changed meaningfully.
+
+## S7: Codex Runtime Fit
+
+| Score | Criteria |
+|---|---|
+| 0 | Uses Claude Code-only syntax as required execution path |
+| 1 | Contains confusing Claude paths, model names, or `Task(subagent_type=...)` examples |
+| 2 | Mostly Codex-compatible, with small ambiguous references |
+| 3 | Uses Codex terminology, Codex custom-agent TOML, and installed skill paths |
+| 4 | L3 plus graceful fallback when Codex subagent/custom-agent dispatch is unavailable |
+
+Evidence: grep for Claude-only terms, installed path examples, agent dispatch prose.
+
+## S8: Scope Discipline
+
+| Score | Criteria |
+|---|---|
+| 0 | Performs several unrelated jobs |
+| 1 | Leaks into adjacent sibling skill responsibilities |
+| 2 | Primary responsibility is clear |
+| 3 | Clean boundaries and downstream handoff are documented |
+| 4 | L3 plus integrations compose without circular ownership |
+
+Evidence: description anti-triggers, integration section, sibling overlap.

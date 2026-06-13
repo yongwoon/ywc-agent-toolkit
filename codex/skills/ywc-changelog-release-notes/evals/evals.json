@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-changelog-release-notes",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Generate release notes from these PR titles for v1.4.0.",
+      "expected_output": "Creates user-facing notes grounded in the PR titles, avoids commit hashes and internal module paths, and reports Status:, Sources:, Artifacts:, Validation:, and Next action: with source, artifact, validation, and follow-up details.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Add a changelog entry for a dependency security patch with a CVE.",
+      "expected_output": "Places technical CVE detail in CHANGELOG while keeping user-facing wording plain and concise, and reports Status:, Sources:, Artifacts:, Validation:, and Next action: with CVE source and release-note validation details.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Write 'various bug fixes and improvements' for this release.",
+      "expected_output": "Rejects generic wording and replaces it with specific source-backed entries or asks for more context, then reports Status:, Sources:, Artifacts:, Validation:, and Next action: with the evidence gap or follow-up request.",
+      "files": []
+    }
+  ]
+}

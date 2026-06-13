@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-agentic",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use agentic mode to implement user profile image uploads end to end. Allow at most two iterations.",
+      "expected_output": "Receives the natural-language goal, decides Full or Resume mode, and creates a fixed spec path through ywc-plan. For Medium or Large work, runs ywc-spec-validate and ywc-task-generator, then chooses the sequential or parallel executor. Records the pre-iteration SHA before each iteration. The Evaluate phase runs ywc-impl-review against the original spec and the pre-iteration SHA..HEAD git range. If HIGH or CRITICAL findings remain, it does not raise max-iterations; it either re-plans or emits a ceiling report. Appends an iteration record to tasks/agentic-log.md and exits with Completion Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-agentic --resume --tasks-dir tasks/ to continue the existing task run.",
+      "expected_output": "Detects Resume mode first. If tasks/ is empty or has no pending tasks, it does not silently restart in Full mode; it reports the mismatch and asks for user confirmation. If pending tasks exist, it skips the Plan phase and resumes from the Executor phase using the existing tasks/ directory and dependency graph. It does not re-run tasks already under completed/.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Only update the copy on a small settings screen. Use agentic and handle it automatically.",
+      "expected_output": "When ywc-plan returns a Small verdict, uses the Small Path. Does not invoke ywc-task-generator, ywc-sequential-executor, or ywc-parallel-executor; instead runs ywc-code-gen directly. Still preserves pre-iteration SHA recording, ywc-impl-review evaluation, loop control, agentic-log, and Completion Report rules.",
+      "files": []
+    }
+  ]
+}

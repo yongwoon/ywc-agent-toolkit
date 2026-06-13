@@ -1,0 +1,35 @@
+{
+  "skill_name": "ywc-design-renew",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "This dashboard looks too plain and feels AI-made. Renew src/app/dashboard. The target users are SREs working night shifts.",
+      "expected_output": "In Phase 0, detect whether impeccable is installed and confirm the Design Context (audience=SRE, night operations context -> derive a dark theme). Then run Phase 2 slop audit -> Phase 3 renew (self-contained ruleset or impeccable polish) -> Phase 4 re-verification. Do not use Banned Output Patterns such as border-left stripes, gradient text, or Inter. Preserve behavior, routes, and information architecture. Output a renewal report.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-design-renew --mode check --target src/components/Hero.tsx --fail-on critical.",
+      "expected_output": "Run check mode only without editing. Detect Part B/C signals from anti-slop-ruleset with grep and apply the AI Slop Test plus Part E required-quality counts. Attach ID, file:line, observed, why, and fix to every finding. Classify priority and explicitly output the --fail-on critical gate decision. Make no code changes.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Audit this landing page design. Our company does not have impeccable installed.",
+      "expected_output": "Even when impeccable is not installed, do not refuse. Fall back to the self-contained anti-slop-ruleset and run the check. Do not rationalize that the task cannot be done because impeccable is missing. Output a slop audit report based on the local ruleset.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "The hero font is Inter and looks too generic. Renew it with a different direction.",
+      "expected_output": "Recognize Inter as banned, but do not simply swap to a reflex font such as Fraunces. Derive three brand words, evaluate candidate fonts as physical objects in the catalog, and apply a display/body font pairing. Reject the rationalization of replacing it with a second-favorite default.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Check whether this screen has UX or accessibility (WCAG) issues.",
+      "expected_output": "Recognize that this request is about usability, information architecture, and WCAG, which is outside ywc-design-renew scope. Route or delegate to ywc-ui-ux-review. Preserve the boundary that this skill owns aesthetics and slop signals only.",
+      "files": []
+    }
+  ]
+}

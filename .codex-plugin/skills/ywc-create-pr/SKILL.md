@@ -276,3 +276,20 @@ Display:
 - Follow any additional instructions in `$ARGUMENTS`
 - Never force-push or amend published commits without explicit user approval
 - If any step fails, explain what went wrong and suggest the fix rather than silently retrying
+
+## Output Format
+
+Return a PR creation report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+PR: <URL or "not created">
+Base branch: <detected or requested base>
+Commits: <commits created or "already committed">
+Validation: <local checks, sensitive-file scan, and CI/bot status>
+Next action: <merge/review instruction or blocker>
+```
+
+## Validation
+
+Before finalizing, verify that sensitive files were not committed without confirmation, staged files were explicit, base branch selection is reported, `gh` authentication was checked, and CI or bot-review handling follows the selected mode.

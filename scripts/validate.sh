@@ -117,8 +117,8 @@ check_codex_support_dirs() {
     fi
   done < <(
     {
-      rg -o '\.\./references/[A-Za-z0-9._-]+' codex/skills || true
-      rg -o 'codex/skills/references/[A-Za-z0-9._-]+' codex/skills || true
+      rg -o '\.\./references/[A-Za-z0-9._/-]+' codex/skills || true
+      rg -o 'codex/skills/references/[A-Za-z0-9._/-]+' codex/skills || true
     } | sed -E 's#^.*references/##' | sort -u
   )
 }
@@ -407,6 +407,16 @@ check_internal_toolkit_eval() {
 
   if [ ! -f "$internal_dir/scripts/score.py" ]; then
     echo "ERROR: internal toolkit eval scorer is missing: $internal_dir/scripts/score.py"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -f "$internal_dir/scripts/inventory_gate.py" ]; then
+    echo "ERROR: internal toolkit eval inventory gate is missing: $internal_dir/scripts/inventory_gate.py"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -f "$internal_dir/scripts/test_score.py" ]; then
+    echo "ERROR: internal toolkit eval scorer tests are missing: $internal_dir/scripts/test_score.py"
     ERRORS=$((ERRORS + 1))
   fi
 }

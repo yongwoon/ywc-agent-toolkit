@@ -1,6 +1,6 @@
 # Agent Rubric — 0–5 Banding per Axis
 
-Custom agents (`claude-code/agents/ywc-*.md`, `codex/agents/ywc-*.toml`) are evaluated on a **different** axis set than skills: an agent has no README locale set, but it has a tool grant, a model assignment, and (for Codex) a `Status:` output contract that skills lack.
+Claude Code custom agents (`claude-code/agents/ywc-*.md`) are evaluated on a **different** axis set than skills: an agent has no README locale set, but it has a tool grant, a model assignment, and a return contract that skills lack. Codex TOML agents are evaluated separately by `tools/codex-internal/skills/ywc-codex-toolkit-eval`.
 
 | Axis | Weight | Tier |
 |---|---|---|
@@ -58,16 +58,16 @@ Heuristic: if the agent name or description contains `review`, `audit`, `analyst
 
 ## A4 — Output-Contract Compliance (weight 15)
 
-Mechanical (presence) + judgment (adherence). Codex agents MUST define the `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` contract plus a `Next action:` when the caller must apply or inspect something (per repo CLAUDE.md). Claude Code agents should define a clear, parseable output shape.
+Mechanical (presence) + judgment (adherence). Claude Code agents should define a clear, parseable output shape or explicitly reference the canonical return contract.
 
 | Score | Band |
 |---|---|
-| 5 | Output contract follows the canonical Return Contract — an inline `Status:` block with the four states (DONE / DONE_WITH_CONCERNS / BLOCKED / NEEDS_CONTEXT) and a parseable `Next action:`, or an explicit reference to `claude-code/skills/references/subagent-status-actions.md §3.5`. An inline-invented format does not qualify. |
+| 5 | Output contract follows the canonical Return Contract — a clear inline shape or an explicit reference to `claude-code/skills/references/subagent-status-actions.md §3.5`. An inline-invented incompatible format does not qualify. |
 | 4 | Contract defined, one state or `Next action:` under-specified. |
 | 3 | Output shape implied by an example but not stated as a contract. |
 | 2 | Free-form output; caller must parse prose. |
 | 1 | Output format contradicts the caller's expectation. |
-| 0 | Codex agent missing the `Status:` contract entirely. |
+| 0 | No output contract: no Status block, no canonical reference, and no contract defined. |
 
 ## A5 — Model-Tier Appropriateness (weight 15)
 

@@ -1,11 +1,7 @@
 ---
 name: ywc-plan
 description: >-
-  (ywc) Use when the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment and routing to the right downstream skill. Triggers: "plan 세워줘", "계획 세워", "어떻게 진행할지", "plan this", "make a plan", "계획", "プラン作成", "計画立てて", "ywc-plan", "task 만들기 전 plan", "before task generator". Do not use for spec quality validation on an existing spec (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), product/business reasoning (use ywc-product-review), or architecture-only design without implementation intent (use ywc-tech-research).
-category: planning
-phase: pre-implementation
-requires: []
-advisor_budget: 1
+  (ywc) Use when the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment and routing to the right downstream skill. Triggers: "plan 세워줘", "계획 세워", "어떻게 진행할지", "plan this", "make a plan", "계획", "プラン作成", "計画立てて", "ywc-plan", "task 만들기 전 plan", "before task generator". Do not use for spec quality validation on an existing spec (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), product/business reasoning (use ywc-product-review), pre-intent idea clarification when the goal is not yet pinned down (use ywc-brainstorm), authoring a full specification document (use ywc-spec-writer), or architecture-only design without implementation intent (use ywc-tech-research).
 ---
 
 # ywc-plan
@@ -110,7 +106,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 
 #### Trigger-based deep reads
 
-Four triggers force a deeper read than the lists above. Each fires independently — if more than one applies, do all of them.
+Five triggers force a deeper read than the lists above. Each fires independently — if more than one applies, do all of them.
 
 1. **Explicit "follows existing X" claim.** When the user's request — or your own draft of Scope / Functional Requirements / Data Model — uses phrases like *"踏襲 / follows / based on / extends / 同じパターンで / similar to / mirrors / 参考に"* and names a specific component, you **must read that component end-to-end** (not just its location, not just nearby patterns). The new spec inherits not only the pattern but every actual behavior — response headers, status codes, timeout values, parser limits, cascade rules. Capture each inherited behavior under **Existing Constraints Touched** with a `file:line` citation. This rule exists because Code Compatibility findings dominate spec-validate Critical counts — and the majority trace back to a "踏襲" claim whose author never opened the referenced file.
 
@@ -121,9 +117,10 @@ Four triggers force a deeper read than the lists above. Each fires independently
 
    For each implicit reference, grep the existing schema/types (`grep -n "<identifier>" backend/prisma/schema.prisma`, `grep -rn "<TypeName>" backend/src/lib/`) and either capture the verified shape under **Existing Constraints Touched** or declare the schema change explicitly. This rule exists because findings like "field absent on existing model" and "shape mismatch with existing type" arise from variable-name use, not from any prose claim of "踏襲".
 
-3. **Stack-primitive section about to be written.** Before drafting Data Model, API Contract, or any section that touches DB / middleware / framework primitives, skim [references/common-pitfalls.md](references/common-pitfalls.md). It enumerates the recurring traps spec-validate flags (global vs route-scoped middleware, `@HttpCode` vs documented status, error-handling discipline, etc.). The schema-side rules live separately in [references/schema-invariants.md](references/schema-invariants.md). Skimming both at Step 2 is cheaper than discovering each trap individually in validation.
+3. **Stack-primitive section about to be written.** Before drafting Data Model, API Contract, or any section that touches DB / middleware / framework primitives, skim [references/common-pitfalls.md](references/common-pitfalls.md). It enumerates the recurring traps spec-validate flags (global vs route-scoped middleware, `@HttpCode` vs documented status, error-handling discipline, etc.). The schema-side rules live in the shared [../references/schema/core.md](../references/schema/core.md) — read core for the rules, then the one stack file matching the project (`prisma.md`, `sql-ddl.md`, `drizzle.md`, `typeorm.md`). Skimming both at Step 2 is cheaper than discovering each trap individually in validation.
+4. **Schema invariants summary needed.** When the user needs the planner's compact checklist instead of full stack syntax, read [references/schema-invariants.md](references/schema-invariants.md) before writing Data Model acceptance criteria.
 
-4. **Closure or liveness claim about code.** The first three triggers fire on a *positive identity* claim ("this follows / uses X"). This one fires on the inverse — *set-closure* and *liveness* claims — which are just as failure-prone and far easier to assert from memory. When your draft asserts that a set is complete — *"only / sole / 唯一 / the single / no other / all / exhaustive / 全て / 唯一の … 経路"* — or that a symbol is dead or alive — *"@deprecated / unused / 呼び出し元ゼロ / dead write / still active / 現に write"* — you must run the **complement grep**: enumerate the entire candidate set, not just re-confirm the one instance already in hand. For "C is the only writer of column X", run `grep -rn "X" <module>` and classify every write site live/dead; for "method M is dead", grep M's callers repo-wide and transcribe the zero (or the non-zero hit you would otherwise have missed). Capture the enumerated set under **Existing Constraints Touched**. This rule exists because a forward grep that confirms one writer is silently mistaken for proof that no other writer exists — the failure mode behind both the largest Critical and a Warning in the LP column-drop plan (`markDone` was a second `generatedHtml` writer the "唯一の write 経路" claim never enumerated; `markFailed` was dead despite an "active" claim).
+5. **Closure or liveness claim about code.** The first three triggers fire on a *positive identity* claim ("this follows / uses X"). This one fires on the inverse — *set-closure* and *liveness* claims — which are just as failure-prone and far easier to assert from memory. When your draft asserts that a set is complete — *"only / sole / 唯一 / the single / no other / all / exhaustive / 全て / 唯一の … 経路"* — or that a symbol is dead or alive — *"@deprecated / unused / 呼び出し元ゼロ / dead write / still active / 現に write"* — you must run the **complement grep**: enumerate the entire candidate set, not just re-confirm the one instance already in hand. For "C is the only writer of column X", run `grep -rn "X" <module>` and classify every write site live/dead; for "method M is dead", grep M's callers repo-wide and transcribe the zero (or the non-zero hit you would otherwise have missed). Capture the enumerated set under **Existing Constraints Touched**. This rule exists because a forward grep that confirms one writer is silently mistaken for proof that no other writer exists — the failure mode behind both the largest Critical and a Warning in the LP column-drop plan (`markDone` was a second `generatedHtml` writer the "唯一の write 経路" claim never enumerated; `markFailed` was dead despite an "active" claim).
 
    Two disciplines when transcribing the enumerated set:
    - **Attribute each hit to its own `file:line`.** Never fold one file's line numbers under another file's header — mixing `lp.service.ts` lines into an `lp.repository.ts` proof is itself a Consistency finding the reviewer will flag.
@@ -165,7 +162,7 @@ If both conditions fail, skip to Step 4 directly. The gate exists to head off th
 
 1. **Frame the decision** in one sentence with the two (occasionally three) reasonable options the codebase / spec admit. Avoid hypothetical options the project would not actually pick.
 2. **Assemble the bounded payload** — the spec excerpt that touches the decision (≤30 lines), the most relevant existing code reference (file path + 1-paragraph summary, not the full file), and the project convention or prior-art entry if one applies. Do not forward the whole spec.
-3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-architect)` with the bounded payload. When the runtime does not support named agents, dispatch a `model: opus` subagent with the same payload and the canonical persona prompt copied from `claude-code/agents/ywc-architect.md` Mission section.
+3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `tools/claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-architect)` with the bounded payload. When the runtime does not support named agents, dispatch a `model: opus` subagent with the same payload and the canonical persona prompt copied from `tools/claude-code/agents/ywc-architect.md` Mission section.
 4. **Record the verdict** in `docs/ywc-plans/<plan-slug>/architecture-verdict.md` (or alongside the spec when the spec path is provided). The file captures: the framed decision, the trade-off table the advisor returned, the chosen direction, and the file / type / structural shape recommendation. Subsequent steps cite this file rather than re-litigating the decision.
 5. **Handle non-DONE statuses** per the standard contract:
    - `DONE_WITH_CONCERNS` → cite the concerns explicitly in the spec's Constraints section so reviewers see the caveat
@@ -261,14 +258,14 @@ Catches the failure mode where the spec asserts something about the world that t
 
 #### Pass C — Schema invariants (Data Model mechanical rules)
 
-Catches Data Model omissions that make the migration fail at `prisma generate`, the first delete attempt, or the first concurrent insert. The two highest-frequency Criticals are inline; the full ruleset (NOT NULL backfill, FK index, composite uniqueness, multi-tenant scope, enum domain, `timestamptz`) is in [references/schema-invariants.md](references/schema-invariants.md).
+Catches Data Model omissions that make the migration fail at `prisma generate`, the first delete attempt, or the first concurrent insert. The two highest-frequency Criticals are inline; the full ruleset (NOT NULL backfill, FK index, composite uniqueness, multi-tenant scope, enum domain, `timestamptz`) is in the shared [../references/schema/core.md](../references/schema/core.md) Part B, with stack-specific syntax in the matching `../references/schema/<stack>.md`.
 
 | Rule | Example failure (past session, this codebase) |
 |---|---|
 | Every new DB `@relation` has the reverse-relation field declared on the other model **in this spec** (even if the other model already exists in `schema.prisma`) | `@relation` on `LpFormSubmission` pointing at `LandingPage` without adding `lpFormSubmissions LpFormSubmission[]` on `LandingPage` → `prisma generate` fails |
 | Every `onDelete` rule (`Restrict / Cascade / SetNull / NoAction`) has its API consequence specified in the API Contract (typically `409 Conflict` for `Restrict`, a destructive-side-effect note for `Cascade`) | `onDelete: Restrict` on submissions, but `DELETE /api/lp-forms/:id` lacks `409 Conflict` and the operator UX for "delete submissions first" |
 
-For the full Data Model self-check, run the checklist at the end of [schema-invariants.md](references/schema-invariants.md).
+For the full Data Model self-check, run the [../references/schema/core.md](../references/schema/core.md) Part C checklist.
 
 ---
 

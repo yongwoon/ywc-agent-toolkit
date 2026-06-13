@@ -1,23 +1,25 @@
 # ywc-codex-toolkit-eval
 
-Internal Codex-only quality evaluation skill for this repository's Codex `ywc-*` skills and Codex custom agents. It scores the catalog on a 0-5 rubric, creates scorecards and improvement backlogs, and drives an evaluate -> improve -> re-evaluate cycle.
+Internal maintenance skill for evaluating this repository's Codex `ywc-*` skills and Codex custom agents. It gathers structural evidence with `inventory_gate.py`, scores deterministic mechanical axes with `score.py`, then uses a 0-4 rubric judgment pass for final grades and a prioritized backlog.
 
-This skill is not distributed. Keep it under `tools/codex-internal/skills/ywc-codex-toolkit-eval/`; it must not appear under `codex/skills/` or `.codex-plugin/skills/`.
+This skill is not distributed. Keep it only under `tools/codex-internal/skills/ywc-codex-toolkit-eval/`; never package it under `codex/skills/` or `.codex-plugin/skills/`.
 
 ## Usage
 
 ```bash
 $ywc-codex-toolkit-eval --mode full --target all
+python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py --json
 python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --target codex/skills --format markdown
 python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
 ```
 
-## Output
+## Outputs
 
-- `evals/scorecard.md` — per Codex skill/agent scores plus a prioritized backlog.
-- `evals/history.json` — append-only trend history.
+- `docs/skill-agent-eval/codex/reports/` — Codex evaluation reports
+- `docs/skill-agent-eval/codex/scoreboard.md` — rolling scoreboard
+- `evals/history.mechanical.json` — reviewed mechanical baseline
 
 ## Related Skills
 
-- `ywc-skill-author` — source of the structural authoring rules.
-- `.claude/skills/ywc-toolkit-eval` — separate evaluation skill for Claude Code skills and agents.
+- `ywc-skill-author` — source of Codex skill authoring rules
+- `.claude/skills/ywc-toolkit-eval` — separate evaluator for Claude Code skills and agents

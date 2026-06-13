@@ -1,7 +1,7 @@
 {
   "skill_name": "ywc-codex-toolkit-eval",
-  "description": "Regression scenarios for the Codex two-tier evaluation harness: mechanical scorer determinism, judgment-tier merge, prioritized backlog, and history append-only invariant.",
-  "last_updated": "2026-06-12",
+  "description": "Regression scenarios for the Codex gate/mechanical/judgment evaluation harness: inventory evidence, mechanical scorer determinism, judgment-tier merge, prioritized backlog, and explicit baseline updates.",
+  "last_updated": "2026-06-13",
   "evals": [
     {
       "id": 1,
@@ -11,14 +11,14 @@
         "preconditions": { "$ARGUMENTS": "--mode mechanical --target codex/skills" }
       },
       "expected_behavior": [
-        "Runs scripts/score.py --target codex/skills.",
-        "Reports S2/S4/S5 numeric scores and S1/S3/S6 as judgment-deferred (·).",
-        "Explicitly states the total is mechanical-only and the judgment tier was skipped.",
-        "Does NOT present a /100 total as the item's final quality."
+        "Runs inventory_gate.py for the stated scope unless the user explicitly asked for score.py only.",
+        "Runs scripts/score.py --target codex/skills --format markdown.",
+        "Reports deterministic skill axes S2/S3/S5/S6/S7 and leaves S1/S4/S8 judgment-deferred (·).",
+        "Explicitly states mechanical mode is partial and final_total is unavailable."
       ],
       "anti_behavior": [
         "Hand-computing structure scores instead of reading score.py output.",
-        "Presenting a mechanical-only number as the complete score."
+        "Presenting mechanical points as the complete grade."
       ]
     },
     {
@@ -29,15 +29,15 @@
         "preconditions": { "$ARGUMENTS": "--mode full --target all" }
       },
       "expected_behavior": [
-        "Runs mechanical scorer, then spawns activation/behavioral/boundary judges per item.",
+        "Runs inventory_gate.py, then the mechanical scorer, then judgment scoring with the skill or agent rubric.",
         "Every judgment-axis score carries a file:line citation.",
-        "Emits a prioritized backlog ranked ascending by total, ties broken by S1/A2.",
-        "Appends exactly one row to evals/history.json without mutating prior rows."
+        "Emits a prioritized backlog for dimensions below 2, with gate failures ranked first.",
+        "Writes Codex-only report artifacts under docs/skill-agent-eval/codex/ when artifacts are requested."
       ],
       "anti_behavior": [
-        "Scoring a skill in isolation without re-deriving collisions against current siblings.",
+        "Scoring Claude Code paths as Codex assets.",
         "Producing a scorecard with no prioritized backlog.",
-        "Overwriting an existing history.json row."
+        "Overwriting the mechanical baseline without an explicit --update-baseline step."
       ]
     },
     {
@@ -50,7 +50,8 @@
       "expected_behavior": [
         "Runs score.py --ci, compares per-axis mechanical scores against history.mechanical.json.",
         "Exits non-zero if any mechanical sub-score dropped vs the prior baseline.",
-        "On first run with no baseline, writes the baseline and passes."
+        "Does not rewrite history.mechanical.json in CI mode.",
+        "Tells the operator to run --update-baseline if the baseline is missing or intentionally stale."
       ],
       "anti_behavior": [
         "Blocking on judgment-tier variance (judge scores must never gate CI).",

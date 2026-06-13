@@ -1,0 +1,34 @@
+{
+  "skill_name": "ywc-review-learnings",
+  "description": "Behavioral test prompts for the per-project review-learnings skill. These are realistic invocations a developer would actually type; the expected_output describes the correct behavior (mode selection, why-capture, polarity, user confirmation) rather than a byte-exact artifact, because most paths are interactive and write a user-confirmed file. No output-contract harness key is set, so CI auto-discovery skips these; they are for manual and skill-creator evaluation.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "capture-false-positive-with-why",
+      "prompt": "impl-review just flagged top-level await in src/setup/test-bootstrap.ts as a missing-await bug, but that is a false positive. Our test runner supports top-level await in setup files. Learn this for future reviews.",
+      "expected_output": "Enters update mode with --source feedback. Classifies polarity as FALSE-POSITIVE. Captures the user's stated reason ('runner supports top-level await in setup files') verbatim as the Why. Generalizes scope from the single file to a glob like **/*.test.ts or setup files. Presents an ADD CHANGESET for confirmation BEFORE writing docs/review-learnings.md, then prints a 'Learnings added' confirmation.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "read-applicable-before-review",
+      "prompt": "This PR only changed SQL files under db/queries/. Load the review learnings that apply to this path before the review.",
+      "expected_output": "Enters read mode with --target db/queries/**. Reads docs/review-learnings.md (or reports it is absent without blocking). Emits a compact 'Applicable Review Learnings' block containing only learnings whose Scope matches the SQL paths, each line showing rule + why + polarity. Does not load unrelated learnings such as TypeScript-only rules.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "deprecate-contradictory-learning",
+      "prompt": "I think review-learnings has two N+1 rules: one limited to src/api/users.ts and one for all of src/api/**. The narrower one is no longer needed. Curate them.",
+      "expected_output": "Enters curate mode. Reads the file, identifies the narrow users.ts learning and the broader src/api/** learning as a contradictory or superseded pair. Proposes a DEPRECATE for the narrow one with a superseded-by pointer to the broad one, marks it with strikethrough rather than hard-deleting it, and asks for confirmation. Updates the change log and the updated-date header.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "harvest-pr-bot-comments",
+      "prompt": "PR #128 has several CodeRabbit comments. I want the accepted ones captured as learnings so future reviews catch them earlier.",
+      "expected_output": "Enters update mode with --source pr --pr 128. Uses gh to fetch line-anchored review-bot comments. Classifies only resolved or accepted comments as DO learnings and explicitly dismissed comments as FALSE-POSITIVE learnings with the dismissal reason; skips open or unreacted comments. Generalizes each line-specific comment to its issue class and scope, then presents a CHANGESET for confirmation before writing.",
+      "files": []
+    }
+  ]
+}

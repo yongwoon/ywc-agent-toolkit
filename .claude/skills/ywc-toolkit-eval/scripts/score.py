@@ -28,8 +28,8 @@ from pathlib import Path
 # --- repo roots ------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-SKILL_ROOTS = ["claude-code/skills", "codex/skills"]
-AGENT_ROOTS = ["claude-code/agents", "codex/agents"]
+SKILL_ROOTS = ["claude-code/skills"]
+AGENT_ROOTS = ["claude-code/agents"]
 REQUIRED_LOCALES = ["README.md", "README.en.md", "README.ja.md", "README.ko.md"]
 FULL_LOCALES = REQUIRED_LOCALES + ["README.es.md", "README.zh.md"]
 COLLISION_JACCARD = 0.18  # word-trigram Jaccard above this = likely description collision
@@ -72,16 +72,6 @@ def parse_yaml_lite(fm_raw: str) -> dict:
     if key is not None:
         fields[key] = " ".join(s.strip() for s in buf).strip()
     return fields
-
-
-def parse_toml_lite(text: str) -> tuple[dict, str]:
-    """Read top-level key = value pairs + the developer_instructions block from a Codex agent."""
-    fields: dict[str, str] = {}
-    for m in re.finditer(r'^([a-z_]+)\s*=\s*"([^"]*)"', text, re.MULTILINE):
-        fields[m.group(1)] = m.group(2)
-    block = re.search(r'developer_instructions\s*=\s*"""(.*?)"""', text, re.DOTALL)
-    instructions = block.group(1) if block else ""
-    return fields, instructions
 
 
 # --- scoring helpers -------------------------------------------------------
@@ -239,43 +229,30 @@ def _unresolved_sibling_pointers(desc: str) -> list:
 # --- agent scoring ---------------------------------------------------------
 
 def score_agent(path: Path, collisions: dict) -> dict:
-    if path.suffix == ".toml":
-        fm, instr = parse_toml_lite(path.read_text(encoding="utf-8"))
-        name = fm.get("name", path.stem)
-        desc = fm.get("description", "")
-        tools_raw = ""
-        sandbox = fm.get("sandbox_mode", "")
-        model = fm.get("model", "")
-        is_codex = True
-    else:
-        fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
-        name = fm.get("name", path.stem)
-        desc = fm.get("description", "")
-        tools_raw = fm.get("tools", "")
-        instr = body
-        sandbox = ""
-        model = fm.get("model", "")
-        is_codex = False
+    fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
+    name = fm.get("name", path.stem)
+    desc = fm.get("description", "")
+    tools_raw = fm.get("tools", "")
+    instr = body
+    sandbox = ""
+    model = fm.get("model", "")
 
     readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(desc))
     signals: dict = {}
 
     # A3 tool minimality
-    if is_codex:
-        a3 = 5 if sandbox == "read-only" else (3 if readonly_role else 4)
+    tools = set(re.findall(r"[A-Z]\w+", tools_raw))
+    mutating = tools & MUTATING_TOOLS
+    if "*" in tools_raw:
+        a3 = 1
+    elif readonly_role and mutating:
+        a3 = 3
+    elif mutating and not readonly_role:
+        a3 = 4
     else:
-        tools = set(re.findall(r"[A-Z]\w+", tools_raw))
-        mutating = tools & MUTATING_TOOLS
-        if "*" in tools_raw:
-            a3 = 1
-        elif readonly_role and mutating:
-            a3 = 3
-        elif mutating and not readonly_role:
-            a3 = 4
-        else:
-            a3 = 5
-        signals["tools"] = sorted(tools)
-        signals["mutating_tools"] = sorted(mutating)
+        a3 = 5
+    signals["tools"] = sorted(tools)
+    signals["mutating_tools"] = sorted(mutating)
     signals["sandbox_mode"] = sandbox
     signals["readonly_role"] = readonly_role
 
@@ -285,10 +262,7 @@ def score_agent(path: Path, collisions: dict) -> dict:
     has_status = "Status:" in instr or "Status :" in instr
     has_contract_ref = "subagent-status-actions" in instr
     states = sum(s in instr for s in ("DONE", "BLOCKED", "NEEDS_CONTEXT", "DONE_WITH_CONCERNS"))
-    if is_codex:
-        a4 = 5 if (has_status and states >= 3) else (3 if has_status else 0)
-    else:
-        a4 = 5 if (has_status or has_contract_ref) else (2 if re.search(r"output|format|return", instr, re.I) else 1)
+    a4 = 5 if (has_status or has_contract_ref) else (2 if re.search(r"output|format|return", instr, re.I) else 1)
     signals["has_status_contract"] = has_status
     signals["has_contract_ref"] = has_contract_ref
     signals["contract_states"] = states
@@ -318,7 +292,7 @@ def collect_skills(root: Path) -> list:
 
 
 def collect_agents(root: Path) -> list:
-    return sorted([p for p in root.glob("ywc-*.md")] + [p for p in root.glob("ywc-*.toml")])
+    return sorted(root.glob("ywc-*.md"))
 
 
 def evaluate(target: str) -> dict:
@@ -336,10 +310,7 @@ def evaluate(target: str) -> dict:
             items = collect_agents(root)
             descs = []
             for p in items:
-                if p.suffix == ".toml":
-                    fm, _ = parse_toml_lite(p.read_text(encoding="utf-8"))
-                else:
-                    fm, _ = split_frontmatter(p.read_text(encoding="utf-8"))
+                fm, _ = split_frontmatter(p.read_text(encoding="utf-8"))
                 descs.append({"name": fm.get("name", p.stem),
                               "description": fm.get("description", "")})
             collisions = find_collisions(descs)

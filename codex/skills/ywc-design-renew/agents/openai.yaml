@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Renew"
+  short_description: "Renew generic UI surfaces and audit AI-slop tells"
+  default_prompt: "Use $ywc-design-renew to renew an existing frontend surface or audit it for AI-slop design tells with before and after evidence."

@@ -479,3 +479,11 @@ Invoke this skill after those finish, when a human tester is ready to validate.
 ## Examples
 
 For invocation examples across PR, task, task range, diff, and git range modes, read [references/examples.md](references/examples.md).
+
+## Output Format
+
+Include `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`, the generated testsheet path or dry-run summary, detected scope, and any blocker.
+
+## Validation
+
+Before finalizing, verify that input mode is unambiguous, the diff/range is non-empty, output path handling is deterministic, and no file is written during `--dry-run`.

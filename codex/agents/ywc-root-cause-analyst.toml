@@ -28,6 +28,8 @@ Rationalization defense:
 
 Output:
 - Always include `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+- Shared status line: `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
+- Include `Next action: <one next dispatch/probe or "none">` when applicable.
 - If confident, name one primary root cause and the next dispatch or probe.
 - If not confident, return NEEDS_CONTEXT with the single highest-information probe.
 - Include only the top three hypotheses, each with evidence for, evidence against, and confidence.

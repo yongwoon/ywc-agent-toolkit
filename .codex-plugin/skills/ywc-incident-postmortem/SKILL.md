@@ -127,3 +127,17 @@ See [references/client-report-template.md](references/client-report-template.md)
 | Writing postmortem days later from memory | Write within 24-48 hours while logs and chat history are available. |
 | Skipping impact quantification | Always quantify: number of users, duration, revenue or SLA impact if known. |
 | Client report exposing internal details | Describe user impact and resolution only — no stack traces, service names, or architecture. |
+
+## Validation
+
+Before finalizing, report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Artifacts: <internal postmortem path and optional client report path>
+Severity: <SEV level with rationale>
+Validation: <timeline, impact, root cause, and action-item checks>
+Next action: <owner follow-up or "none">
+```
+
+Verify that impact is quantified, root cause avoids "human error" as a terminal explanation, action items have owners and dates, and client-facing output contains no internal names, stack traces, or architecture details.

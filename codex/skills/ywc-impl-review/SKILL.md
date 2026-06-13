@@ -8,7 +8,9 @@ description: >-
   "実装レビュー", "実装確認". Do not use for active code generation (use
   ywc-code-gen), spec-only review before code exists (use
   ywc-spec-validate), for product/business-level review (use
-  ywc-product-review), or for UI-only live design audits (use ywc-ui-ux-review).
+  ywc-product-review), for capturing or reading accumulated review preferences
+  as durable learnings (use ywc-review-learnings), or for UI-only live design
+  audits (use ywc-ui-ux-review).
 ---
 
 # ywc-impl-review
@@ -30,6 +32,9 @@ When tempted to skip a step, check this table first:
 | "`--no-advisor` saves time on this review" | Skip Phase 2 only on throwaway/prototype code. Production review needs ambiguity escalation. |
 | "Reviewer workers agree, so the finding is correct" | Multiple workers drawing the same wrong conclusion is still wrong. Escalate when stakes are high. |
 | "User wants a quick review, severity ratings are optional" | Without severity, the user cannot triage. Always rate Critical / High / Medium / Low. |
+| "Surface every nitpick to be thorough" | A review that buries one real bug under ten style nits trains the reader to ignore all of them. `chill` is the default: suppress the Style/Docs/polish tail unless `--profile assertive`. |
+| "This finding is plausible, surface it with a 'might be'" | Verify-before-surface: a finding without primary evidence (file:line, traced symbol, command output) is dropped, not hedged. |
+| "There's a `docs/review-learnings.md` FALSE-POSITIVE entry but I'll flag it anyway to be safe" | A `FALSE-POSITIVE` learning carries the team's reason it is a non-issue here. Re-raising it reintroduces the exact noise the learning was created to stop. |
 
 **Violating the letter of these rules is violating the spirit.** Review without honest severity is theater.
 
@@ -41,6 +46,8 @@ When tempted to skip a step, check this table first:
 | `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review (required). `--code` and `--git-range` are mutually exclusive |
 | `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. `--code` and `--git-range` are mutually exclusive |
 | `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where higher-capability advisor judgment on ambiguous findings is not worth the latency |
+| `--profile` | `--profile chill\|assertive` | | Verbosity dial (default `chill`). `chill` surfaces correctness / security / logic / runtime-risk findings and suppresses Style/Docs/Devex-polish `Low`/`Info` nits; `assertive` emits those too. Critical/High/Medium are never suppressed. See [coderabbit-methodology.md §1](./references/coderabbit-methodology.md) |
+| `--skip-learnings` | flag | | Skip Step 0 (loading `docs/review-learnings.md`). Use when no learnings file exists or a clean-room review is wanted |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 advisor calls. Default: 5. Applies across all categories combined |
 | `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
@@ -52,16 +59,20 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
 
 ## Execution Steps
 
-1. **Collect Project Context** — Read `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, and `package.json` where present to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Design worker must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term.
+0. **Load Review Learnings** (skip if `--skip-learnings`) — Invoke `ywc-review-learnings --mode read --target <changed files / --code path>` to load the project's accumulated review preferences from `docs/review-learnings.md`. `DO` / `DO-NOT` entries become extra checks injected into the matching reviewer worker; `FALSE-POSITIVE` entries tell that worker to stop raising a known non-issue. If the file is absent, proceed with an empty set — never block a review on missing learnings. See [coderabbit-methodology.md §7](./references/coderabbit-methodology.md).
+
+1. **Collect Project Context** — Read `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, and `package.json` where present to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Design worker must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term. Per [coderabbit-methodology.md §3](./references/coderabbit-methodology.md), treat the spec / PR description as the statement of intent and trace each changed symbol to its callers/callees before judging it.
 
 2. **Read Spec + Code** — When `--git-range` is provided instead of `--code`: run `git diff --name-only <range>` to obtain the changed-file list and treat those files as the review target. Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
 
 3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five review workers in parallel. Do not pass Claude Code-only `model` fields; each worker receives its role from the prompt and matching reference file:
-   - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`.
+   - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status and multi-tenant scope gaps as one-line cross-references to the Security worker rather than duplicating them.
    - **Design worker** — API/interface design, naming, signatures, error models, return shapes, public-surface discipline, contract spec conformance. Reference: `references/design-agent.md`.
    - **Devex worker** — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
    - **Security worker** — OWASP Top 10 analysis. Reference: `references/security-agent.md`.
    - **QA worker** — Test coverage gaps and missing test cases. Reference: `references/qa-agent.md`. Coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration), so keep the prompt narrow and evidence-based.
+
+   **Inject the Step 0 learnings** into each worker prompt, filtered to that aspect's category. **Apply the `--profile` dial**: in `chill` (default), suppress Style/Docs/Devex-polish `Low`/`Info` nits and surface only correctness/security/logic/runtime-risk findings; `assertive` emits the tail too. **Verify before surfacing** ([coderabbit-methodology.md §2](./references/coderabbit-methodology.md)): every finding must cite primary evidence — exact `file:line`, a traced symbol, or fresh command output — and a finding that cannot be substantiated is dropped, not hedged. Where the project ships linters/scanners, run them and feed output to the relevant worker as evidence to triage, not as the verdict ([§4](./references/coderabbit-methodology.md)).
 
    Each worker must return two artifacts:
    - **Confirmed findings** — issues the executor is confident about (Phase 1 complete, no escalation needed).
@@ -69,7 +80,16 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
 
    Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The four code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
 
-   **Language-specific depth without named agents** — If the changed-file list is dominated by TypeScript / TSX / Vue / Svelte, add a TypeScript-specific checklist to the Design and Devex worker prompts: type-system depth, async correctness, framework idioms, tsconfig strictness, and ESM/CJS interop. Do not import Claude Code named-agent syntax (`subagent_type: ywc-typescript-reviewer`) or rely on `claude-code/agents/`; those are Claude Code-only surfaces. In Codex, keep the worker generic and pass the TS focus explicitly in the bounded prompt.
+   **Language-specific depth via Codex custom agents** — When the Codex custom-agent catalog at `codex/agents/` is installed, route language-dominant or performance-sensitive review packets to the matching read-only specialist:
+
+   | Signal in changed-file list or evidence packet | Specialist | Packet boundary |
+   |---|---|---|
+   | TypeScript / TSX / JavaScript dominates | `ywc-typescript-reviewer` | changed TS/JS files, relevant diff, tsconfig/framework excerpt, forwarded `tsc`/lint output if available |
+   | Python dominates | `ywc-python-reviewer` | changed Python files, relevant diff, Python/framework version, forwarded mypy/pyright/pytest/ruff output if available |
+   | Go dominates | `ywc-go-reviewer` | changed Go files, relevant diff, go.mod/go.sum excerpt, forwarded vet/staticcheck/test/race output if available |
+   | Performance budget, profiler, Lighthouse, query plan, or bundle evidence is central | `ywc-performance-engineer` | bounded code/diff plus the measurement, budget, trace, query plan, or bundle report |
+
+   Do not import Claude Code named-agent syntax (`subagent_type: ...`) or rely on `claude-code/agents/`; those are Claude Code-only surfaces. If Codex custom-agent dispatch is unavailable, keep the worker generic and pass the same specialist checklist explicitly in the bounded prompt.
 
 4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all five workers:
    - Deduplicate findings that share `{file}:{line}` across categories.
@@ -82,6 +102,8 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
    - Advisor calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
 
 6. **Merge and Output Report** — Combine Phase 1 confirmed findings with Phase 2 verdicts. Mark each finding in the final report with its provenance (Phase 1 vs Phase 2) so the user can see which decisions involved higher-capability advisor judgment.
+
+7. **Capture Learnings** (skip if `--skip-learnings`) — After the report, offer to promote durable lessons into `docs/review-learnings.md` via `ywc-review-learnings --mode update --source review`: recurring confirmed findings become `DO`/`DO-NOT` learnings, and findings the user dismisses as false positives become `FALSE-POSITIVE` learnings with the dismissal reason. Do not write learnings without the user-confirmation CHANGESET that `ywc-review-learnings` enforces.
 
 ## Output Format
 
@@ -170,7 +192,9 @@ Read the corresponding reference file when spawning each worker and include the 
 
 If a reference file does not yet contain an "Advisor Candidate Criteria" section, fall back to the three-property test in [advisor-pattern.md §5](../references/advisor-pattern.md): objective trigger, irreversibility, ambiguity. A finding must satisfy all three to be a Phase 2 candidate.
 
-**Recurring real-world defects catalog** — every reviewer agent additionally consults [`references/recurring-defects.md`](./references/recurring-defects.md), a derived-from-data catalog of the defect classes that production bot reviewers (CodeRabbit, Codex Review) flag most often: data-layer access-boundary (ownership / tenant isolation), data-integrity / `NULL` handling, error-swallowing, external-call resilience, validation / fail-fast, HTTP-status semantics, and test fidelity. Each agent's "High-frequency real-world checks" section points at its catalog slice. The catalog tells the reviewer *where real bugs cluster*; the per-aspect rubric still governs severity and escalation. This is the same surface the executors' `--review` flag targets, so these classes get caught before the PR opens — reducing bot-review round-trips after the PR is created.
+**CodeRabbit-derived methodology** — the verbosity dial (`--profile`), verify-before-surface precision gate, intent/context phase, static-analysis-as-evidence, and per-project learnings loop are specified in [`references/coderabbit-methodology.md`](./references/coderabbit-methodology.md). These techniques raise review quality toward bot-reviewer parity without depending on CodeRabbit runtime. The learnings half pairs with `ywc-review-learnings`, which owns `docs/review-learnings.md`.
+
+**Recurring real-world defects catalog** — every reviewer worker additionally consults [`references/recurring-defects.md`](./references/recurring-defects.md), a derived-from-data catalog of the defect classes that production bot reviewers (CodeRabbit, Codex Review) flag most often: data-layer access-boundary (ownership / tenant isolation), data-integrity / `NULL` handling, error-swallowing, external-call resilience, validation / fail-fast, HTTP-status semantics, and test fidelity. Each worker's "High-frequency real-world checks" section points at its catalog slice. The catalog tells the reviewer *where real bugs cluster*; the per-aspect rubric still governs severity and escalation.
 
 ## Confidence Gate
 
@@ -197,4 +221,5 @@ The gate score must appear in the report header. Per-finding `[P1]` / `[P2]` mar
 
 - **upstream**: `ywc-sequential-executor` or `ywc-parallel-executor` (auto-invoked via `--review` flag)
 - **downstream**: PR creation
-- **pattern source**: [`references/advisor-pattern.md`](../references/advisor-pattern.md)
+- **pairs with**: `ywc-review-learnings` — loaded in Step 0 (`read`) to apply accumulated review preferences and called in Step 7 (`update --source review`) to capture new ones
+- **pattern source**: [`references/advisor-pattern.md`](../references/advisor-pattern.md), [`references/coderabbit-methodology.md`](./references/coderabbit-methodology.md)

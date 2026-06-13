@@ -103,7 +103,7 @@ Anti-patterns to avoid:
 
 <New tables, columns, indexes, or schema changes. Use `N/A — no data model change` if applicable.>
 
-**Before drafting this section, scan [schema-invariants.md](schema-invariants.md).** It enumerates the mechanical rules that produce `BLOCKED` migrations or runtime FK errors when omitted (Prisma bilateral `@relation`, FK cascade ↔ API status mapping, NOT NULL backfill, index policy). Most of them are not visible in a single-table view; they only manifest at `prisma generate` or at first delete attempt.
+**Before drafting this section, scan [../../references/schema/core.md](../../references/schema/core.md) and the matching stack file (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`).** The shared guide enumerates the mechanical rules that produce `BLOCKED` migrations or runtime FK errors when omitted (bilateral relations, FK cascade ↔ API status mapping, NOT NULL backfill, index policy). Most of them are not visible in a single-table view; they only manifest at schema generation or at first delete attempt.
 
 ### Table: `<table_name>`
 

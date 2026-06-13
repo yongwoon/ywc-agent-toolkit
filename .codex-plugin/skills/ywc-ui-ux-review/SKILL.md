@@ -7,7 +7,8 @@ description: >-
   "usability audit", "design review", "accessibility review", "사용성 점검",
   "디자인 리뷰", "UX 監査", "UI レビュー". Do not use for backend/API review (use
   ywc-impl-review), product/business strategy review (use ywc-product-review),
-  or code-only review without a running UI.
+  renewing an existing generic or AI-slop-looking visual design (use
+  ywc-design-renew), or code-only review without a running UI.
 ---
 
 # UI/UX Review — Hybrid (Code + Live UI)
@@ -158,3 +159,18 @@ For all other borderline cases — High vs Medium, Medium vs Low, uncertain evid
 - Fabricate findings without code or runtime evidence
 - Replace formal user testing with real users
 - Score subjective beauty — every judgment is anchored to a heuristic
+
+## Validation
+
+Before finalizing, report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Scope: <screens/files reviewed>
+Findings: <counts by severity tier>
+Evidence: <static and/or live UI evidence used>
+Validation: <heuristic citations and location checks>
+Next action: <top recommended fix or "none">
+```
+
+Verify that every finding has a heuristic citation, a concrete location, and a specific recommendation; static-only limitations are disclosed; and no redesign or code refactor is performed by this review-only skill.

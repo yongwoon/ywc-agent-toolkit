@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-project-scaffold",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Design a FastAPI project structure for a medium-sized REST service using DDD.",
+      "expected_output": "Returns a structured scaffold report with Scaffold, Rationale, Boundaries, Validation, and Next action fields, plus directory roles, dependency direction, Status, and validation against language/framework/architecture constraints.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Scaffold a Go CLI project, but do not generate code files.",
+      "expected_output": "Provides structure and rationale only, avoids boilerplate code, and excludes Docker/CI/deployment assets unless separately requested.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Suggest a monorepo layout including Kubernetes manifests and GitHub Actions.",
+      "expected_output": "Explains application-source layout while refusing deployment and CI/CD directories as out of scope for this skill.",
+      "files": []
+    }
+  ]
+}

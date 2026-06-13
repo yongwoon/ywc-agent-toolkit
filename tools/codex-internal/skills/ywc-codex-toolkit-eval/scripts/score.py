@@ -1,459 +1,460 @@
 #!/usr/bin/env python3
-"""Mechanical (deterministic) scorer for ywc-codex-toolkit-eval.
+"""Mechanical scorer for this repository's Codex skill/agent evaluation.
 
-Scores the structural / token / integrity axes that need no model judgment:
-  skills -> S2 (structure), S4 (token economy), S5 (integrity), S1-collision signal
-  agents -> A3 (tool minimality), A4 (output contract), A5 (model present),
-            A2-collision signal
-
-Judgment axes (S1 precision/recall, S3, S6, A1, A2 precision, A6) are emitted as
-null for the agent judge pass to fill. Usage:
-
-  python3 score.py --target codex/skills --format json
-  python3 score.py --target all --format markdown
-  python3 score.py --ci          # regression gate vs history.mechanical.json
-
-Stdlib only — no third-party dependencies (matches repo convention for skill scripts).
+This script intentionally scores only deterministic axes. Judgment axes stay
+null so a model judge can fill them without pretending the mechanical pass is a
+final quality verdict.
 """
+
 from __future__ import annotations
 
 import argparse
-import datetime
+import datetime as dt
 import json
-import os
 import re
 import sys
 from pathlib import Path
 
-# --- repo roots ------------------------------------------------------------
-
-REPO_ROOT = Path(__file__).resolve().parents[5]
-SKILL_ROOTS = ["codex/skills"]
-AGENT_ROOTS = ["codex/agents"]
-REQUIRED_LOCALES = ["README.md", "README.en.md", "README.ja.md", "README.ko.md"]
-FULL_LOCALES = REQUIRED_LOCALES + ["README.es.md", "README.zh.md"]
-COLLISION_JACCARD = 0.18  # word-trigram Jaccard above this = likely description collision
-HISTORY_MECH = Path(__file__).resolve().parent.parent / "evals" / "history.mechanical.json"
-
-HANGUL = re.compile(r"[가-힣]")
-KANA = re.compile(r"[぀-ヿ]")
-MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit", "Bash"}
-READONLY_HINT = re.compile(r"review|audit|analyst|reviewer|read-only", re.IGNORECASE)
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover
+    tomllib = None  # type: ignore[assignment]
 
 
-# --- frontmatter / file parsing -------------------------------------------
+SKILL_ROOT = Path("codex/skills")
+AGENT_ROOT = Path("codex/agents")
+REQUIRED_READMES = ("README.md", "README.en.md", "README.ja.md", "README.ko.md")
+DEFAULT_HISTORY = Path(__file__).resolve().parent.parent / "evals" / "history.mechanical.json"
 
-def split_frontmatter(text: str) -> tuple[dict, str]:
-    """Return (frontmatter-dict, body) for a Markdown file with YAML frontmatter."""
-    if not text.startswith("---"):
+SKILL_WEIGHTS = {
+    "S1": 0.18,
+    "S2": 0.14,
+    "S3": 0.10,
+    "S4": 0.17,
+    "S5": 0.13,
+    "S6": 0.10,
+    "S7": 0.10,
+    "S8": 0.08,
+}
+AGENT_WEIGHTS = {
+    "A1": 0.16,
+    "A2": 0.14,
+    "A3": 0.16,
+    "A4": 0.13,
+    "A5": 0.10,
+    "A6": 0.14,
+    "A7": 0.09,
+    "A8": 0.08,
+}
+
+CLAUDE_ONLY_PATTERNS = (
+    r"tools/claude-code/skills",
+    r"tools/claude-code/agents",
+    r"Task\(subagent_type=",
+    r"allowed-tools:",
+    r"(?<![\w/-])/ywc-[a-z0-9-]+\b",
+)
+
+
+def split_frontmatter(text: str) -> tuple[dict[str, str], str]:
+    if not text.startswith("---\n"):
         return {}, text
-    end = text.find("\n---", 3)
+    end = text.find("\n---", 4)
     if end == -1:
         return {}, text
-    fm_raw = text[3:end].strip("\n")
-    body = text[end + 4:]
-    return parse_yaml_lite(fm_raw), body
+    return parse_yaml_lite(text[4:end]), text[end + 4 :]
 
 
-def parse_yaml_lite(fm_raw: str) -> dict:
-    """Minimal YAML reader: top-level `key:` plus folded (>-) multi-line values."""
+def parse_yaml_lite(raw: str) -> dict[str, str]:
     fields: dict[str, str] = {}
-    key = None
+    key: str | None = None
     buf: list[str] = []
-    for line in fm_raw.splitlines():
-        m = re.match(r"^([A-Za-z_][\w-]*):\s?(.*)$", line)
-        if m and not line.startswith(" "):
+    for line in raw.splitlines():
+        match = re.match(r"^([A-Za-z_][\w-]*):\s*(.*)$", line)
+        if match and not line.startswith((" ", "\t")):
             if key is not None:
-                fields[key] = " ".join(s.strip() for s in buf).strip()
-            key, first = m.group(1), m.group(2).strip()
-            buf = [] if first in (">-", ">", "|", "|-", "") else [first]
+                fields[key] = " ".join(part.strip() for part in buf).strip().strip("'\"")
+            key = match.group(1)
+            first = match.group(2).strip()
+            buf = [] if first in (">", ">-", "|", "|-", "") else [first]
         elif key is not None:
             buf.append(line.strip())
     if key is not None:
-        fields[key] = " ".join(s.strip() for s in buf).strip()
+        fields[key] = " ".join(part.strip() for part in buf).strip().strip("'\"")
     return fields
 
 
-def parse_toml_lite(text: str) -> tuple[dict, str]:
-    """Read top-level key = value pairs + the developer_instructions block from a Codex agent."""
-    fields: dict[str, str] = {}
-    for m in re.finditer(r'^([a-z_]+)\s*=\s*"([^"]*)"', text, re.MULTILINE):
-        fields[m.group(1)] = m.group(2)
-    block = re.search(r'developer_instructions\s*=\s*"""(.*?)"""', text, re.DOTALL)
-    instructions = block.group(1) if block else ""
-    return fields, instructions
+def parse_agent_toml(path: Path) -> tuple[dict[str, object], str, list[str]]:
+    if tomllib is None:
+        return {}, "", ["Python tomllib is unavailable; use Python 3.11 or newer."]
+    try:
+        text = path.read_text(encoding="utf-8")
+        data = tomllib.loads(text)
+    except Exception as exc:  # noqa: BLE001 - surfaced as mechanical evidence
+        return {}, "", [f"TOML parse error: {exc}"]
+    instructions = data.get("developer_instructions", "")
+    return data, instructions if isinstance(instructions, str) else "", []
 
 
-# --- scoring helpers -------------------------------------------------------
-
-def word_trigrams(desc: str) -> set:
-    # Unicode-aware: capture Hangul / Kana / Latin tokens so collisions between
-    # Korean/Japanese-heavy descriptions are detected, not silently dropped.
-    words = re.findall(r"[^\W\d_]{3,}", desc.lower(), flags=re.UNICODE)
-    return {tuple(words[i:i + 3]) for i in range(len(words) - 2)}
+def score_from_checks(checks: dict[str, bool]) -> int:
+    if not checks:
+        return 0
+    return round(sum(1 for passed in checks.values() if passed) / len(checks) * 4)
 
 
-def jaccard(a: set, b: set) -> float:
-    if not a or not b:
-        return 0.0
-    return len(a & b) / len(a | b)
+def line_count(text: str) -> int:
+    return len(text.splitlines())
 
 
-def find_collisions(items: list[dict]) -> dict:
-    """Map item-name -> [(sibling, jaccard)] for description overlaps above threshold."""
-    grams = {it["name"]: word_trigrams(it["description"]) for it in items}
-    out: dict[str, list] = {}
-    names = list(grams)
-    for i, a in enumerate(names):
-        for b in names[i + 1:]:
-            j = jaccard(grams[a], grams[b])
-            if j >= COLLISION_JACCARD:
-                # only a real collision if neither names the other as an exclusion
-                ad = next(x["description"] for x in items if x["name"] == a)
-                bd = next(x["description"] for x in items if x["name"] == b)
-                if not _has_explicit_antitrigger(ad, b) and not _has_explicit_antitrigger(bd, a):
-                    out.setdefault(a, []).append([b, round(j, 3)])
-                    out.setdefault(b, []).append([a, round(j, 3)])
-    return out
+def relative_key(path: Path, repo_root: Path) -> str:
+    return str(path.relative_to(repo_root))
 
 
-def _clauses(text: str) -> list[str]:
-    return [c.strip() for c in re.split(r"[\n\r.!?;。！？；]+|,\s+", text) if c.strip()]
-
-
-def _mentions_skill(clause: str, skill: str) -> bool:
-    return bool(re.search(rf"(?<![\w-]){re.escape(skill)}(?![\w-])", clause, re.IGNORECASE))
-
-
-def _is_antitrigger_clause(clause: str) -> bool:
-    return bool(
-        re.search(r"\b(do not use|don't use|avoid using)\b", clause, re.IGNORECASE)
-        or re.search(r"\buse\s+ywc-[\w-]+\b", clause, re.IGNORECASE)
+def find_repo_root(start: Path) -> Path:
+    probe = start if start.is_dir() else start.parent
+    for candidate in [probe, *probe.parents]:
+        if (candidate / SKILL_ROOT).is_dir() or (candidate / AGENT_ROOT).is_dir():
+            return candidate
+    raise RuntimeError(
+        f"could not locate repository root containing {SKILL_ROOT} or {AGENT_ROOT} from {start}"
     )
 
 
-def _has_explicit_antitrigger(desc: str, sibling: str) -> bool:
-    return any(
-        _is_antitrigger_clause(clause) and _mentions_skill(clause, sibling)
-        for clause in _clauses(desc)
-    )
+def readme_checks(skill_dir: Path) -> dict[str, bool]:
+    return {name: (skill_dir / name).is_file() for name in REQUIRED_READMES}
 
 
-def band(n: int, thresholds: list[int]) -> int:
-    """Map a count to a 0-5 score given ascending pass thresholds (len 5)."""
-    score = 0
-    for t in thresholds:
-        if n >= t:
-            score += 1
-    return min(score, 5)
+def has_openai_yaml(skill_dir: Path) -> bool:
+    path = skill_dir / "agents" / "openai.yaml"
+    if not path.is_file():
+        return False
+    text = path.read_text(encoding="utf-8")
+    return all(marker in text for marker in ("interface:", "display_name:", "short_description:", "default_prompt:"))
 
 
-# --- skill scoring ---------------------------------------------------------
-
-def score_skill(d: Path, collisions: dict) -> dict:
-    fm, body = split_frontmatter((d / "SKILL.md").read_text(encoding="utf-8"))
-    name = fm.get("name", d.name)
-    desc = fm.get("description", "")
-    body_lines = body.count("\n") + 1
-    signals: dict = {}
-
-    # S2 structure compliance (A1-A14 subset)
-    checks = {
-        "A1_name_prefix": name.startswith("ywc-") and name == d.name,
-        "A2_use_when": desc.startswith("(ywc) Use when"),
-        "A3_anti_trigger": "Do not use for" in desc,
-        "A4_multilingual": bool(HANGUL.search(desc) and KANA.search(desc)),
-        "A6_announce": "**Announce at start:**" in body[:400],
-        "A7_rationalization": "## Rationalization Defense" in body
-        and body.count("\n|", body.find("## Rationalization Defense"),
-                       body.find("## Rationalization Defense") + 2000) >= 6,
-        "A8_body_cap": body_lines <= 500,
-        "A9_no_force_load": not re.search(r"@ywc-[\w-]+", body),
-        "A11_locales": all((d / loc).exists() for loc in REQUIRED_LOCALES),
-        "A14_ref_pointers": _refs_have_pointers(d, body),
-    }
-    s2 = round(sum(checks.values()) / len(checks) * 5)
-    signals["structure_checks"] = {k: bool(v) for k, v in checks.items()}
-
-    # S4 token economy
-    over_extracted = _over_extracted_refs(d)
-    desc_is_lean = len(desc) < 900 and not re.search(r"\bStep \d", desc)
-    s4 = 5
-    if body_lines > 500:
-        s4 -= 2
-    if body_lines > 700:
-        s4 -= 1
-    if not desc_is_lean:
-        s4 -= 1
-    if over_extracted:
-        s4 -= 1
-    s4 = max(0, min(5, s4))
-    signals["body_lines"] = body_lines
-    signals["over_extracted_refs"] = over_extracted
-
-    # S5 consistency & integrity
-    missing_required = [loc for loc in REQUIRED_LOCALES if not (d / loc).exists()]
-    missing_full = [loc for loc in FULL_LOCALES if not (d / loc).exists()]
-    dangling = _dangling_ref_links(d, body)
-    bad_pointers = _unresolved_sibling_pointers(desc)
-    s5 = 5
-    if missing_full and not missing_required:
-        s5 -= 1
-    if dangling:
-        s5 -= 2
-    if bad_pointers:
-        s5 -= 1
-    if missing_required:
-        s5 = 0
-    s5 = max(0, min(5, s5))
-    signals["missing_locales"] = missing_full
-    signals["dangling_ref_links"] = dangling
-    signals["unresolved_anti_trigger_pointers"] = bad_pointers
-
-    # S1 collision sub-signal (judge fills precision/recall)
-    coll = collisions.get(name, [])
-    signals["collision_pairs"] = coll
-
-    return {
-        "name": name,
-        "kind": "skill",
-        "axes": {"S1": None, "S2": s2, "S3": None, "S4": s4, "S5": s5, "S6": None},
-        "s1_collision_cap": 3 if coll else None,
-        "signals": signals,
-    }
+def referenced_files_exist(skill_dir: Path, body: str) -> list[str]:
+    missing: list[str] = []
+    for match in re.finditer(r"\((references/[^)#\s]+)\)", body):
+        rel = match.group(1)
+        if not (skill_dir / rel).is_file():
+            missing.append(rel)
+    return sorted(set(missing))
 
 
-def _refs_have_pointers(d: Path, body: str) -> bool:
-    ref_dir = d / "references"
+def reference_files_are_linked(skill_dir: Path, body: str) -> bool:
+    ref_dir = skill_dir / "references"
     if not ref_dir.is_dir():
         return True
-    for ref in ref_dir.glob("*.md"):
-        if ref.name not in body:
-            return False
-    return True
+    return all(ref.name in body for ref in ref_dir.glob("*.md"))
 
 
-def _over_extracted_refs(d: Path) -> list:
-    ref_dir = d / "references"
-    if not ref_dir.is_dir():
-        return []
-    return [r.name for r in ref_dir.glob("*.md")
-            if r.read_text(encoding="utf-8").count("\n") < 30]
+def score_progressive_disclosure(skill_dir: Path, body: str) -> int:
+    lines = line_count(body)
+    linked = reference_files_are_linked(skill_dir, body)
+    if lines <= 500 and linked:
+        return 4
+    if lines <= 550 and linked:
+        return 3
+    if lines <= 700:
+        return 2
+    return 1 if lines <= 1000 else 0
 
 
-def _dangling_ref_links(d: Path, body: str) -> list:
-    out = []
-    for m in re.finditer(r"\(references/([\w.-]+)\)", body):
-        if not (d / "references" / m.group(1)).exists():
-            out.append(m.group(1))
-    return out
+def score_output_contract(skill_dir: Path, body: str) -> int:
+    checks = {
+        "output_format": "## Output Format" in body or "Output:" in body,
+        "validation": "## Validation" in body or "Validation Checklist" in body,
+        "evals_or_scripts": (skill_dir / "evals").is_dir() or (skill_dir / "scripts").is_dir(),
+        "status_or_template": "Status:" in body or "```text" in body,
+    }
+    return score_from_checks(checks)
 
 
-def _unresolved_sibling_pointers(desc: str) -> list:
-    out = []
-    for clause in _clauses(desc):
-        if not _is_antitrigger_clause(clause):
+def score_bundle_maintainability(skill_dir: Path, body: str) -> int:
+    missing_links = referenced_files_exist(skill_dir, body)
+    checks = {
+        "readmes": all(readme_checks(skill_dir).values()),
+        "openai_yaml": has_openai_yaml(skill_dir),
+        "reference_links": not missing_links,
+        "references_linked": reference_files_are_linked(skill_dir, body),
+    }
+    return score_from_checks(checks)
+
+
+def score_runtime_fit(frontmatter: dict[str, str], body: str) -> int:
+    combined = json.dumps(frontmatter, ensure_ascii=False) + "\n" + body
+    hits = [pattern for pattern in CLAUDE_ONLY_PATTERNS if re.search(pattern, combined)]
+    if not hits:
+        return 4
+    if len(hits) == 1:
+        return 3
+    if len(hits) == 2:
+        return 2
+    return 1
+
+
+def score_skill(skill_dir: Path, repo_root: Path) -> dict[str, object]:
+    skill_md = skill_dir / "SKILL.md"
+    text = skill_md.read_text(encoding="utf-8")
+    frontmatter, body = split_frontmatter(text)
+    declared_name = frontmatter.get("name", "")
+    description = frontmatter.get("description", "")
+    schema_checks = {
+        "frontmatter_name": declared_name == skill_dir.name,
+        "frontmatter_description": bool(description),
+        "strict_frontmatter_keys": set(frontmatter).issubset({"name", "description"}),
+        "required_readmes": all(readme_checks(skill_dir).values()),
+        "openai_yaml": has_openai_yaml(skill_dir),
+    }
+    axes: dict[str, int | None] = {
+        "S1": None,
+        "S2": score_from_checks(schema_checks),
+        "S3": score_progressive_disclosure(skill_dir, body),
+        "S4": None,
+        "S5": score_output_contract(skill_dir, body),
+        "S6": score_bundle_maintainability(skill_dir, body),
+        "S7": score_runtime_fit(frontmatter, body),
+        "S8": None,
+    }
+    return with_totals(
+        {
+            "kind": "skill",
+            "name": skill_dir.name,
+            "path": relative_key(skill_dir, repo_root),
+            "axes": axes,
+            "final_total": None,
+            "signals": {
+                "body_lines": line_count(body),
+                "structure_checks": schema_checks,
+                "missing_readmes": [name for name, ok in readme_checks(skill_dir).items() if not ok],
+                "missing_reference_links": referenced_files_exist(skill_dir, body),
+            },
+        },
+        SKILL_WEIGHTS,
+    )
+
+
+def score_agent(path: Path, repo_root: Path, skill_text_index: str) -> dict[str, object]:
+    data, instructions, errors = parse_agent_toml(path)
+    name = data.get("name")
+    description = data.get("description")
+    sandbox_mode = data.get("sandbox_mode")
+    model = data.get("model")
+    reasoning = data.get("model_reasoning_effort")
+    structural_checks = {
+        "toml_parse": not errors,
+        "name_matches_file": name == path.stem,
+        "description": isinstance(description, str) and bool(description.strip()),
+        "developer_instructions": bool(instructions.strip()),
+        "sandbox_mode": sandbox_mode in {"read-only", "workspace-write", "danger-full-access"},
+        "model": isinstance(model, str) and bool(model.strip()),
+        "reasoning_effort": isinstance(reasoning, str) and bool(reasoning.strip()),
+        "no_claude_fields": not any(key in data for key in ("tools", "permissionMode")),
+    }
+    readonly_role = bool(re.search(r"review|audit|analyst|reviewer|read-only", f"{path.stem} {description}", re.I))
+    sandbox_score = 4
+    if sandbox_mode != "read-only" and readonly_role:
+        sandbox_score = 1
+    elif sandbox_mode not in {"read-only", "workspace-write"}:
+        sandbox_score = 2
+    output_checks = {
+        "output_marker": "Output:" in instructions,
+        "status_line": "Status:" in instructions,
+        "shared_states": all(
+            state in instructions
+            for state in ("DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT")
+        ),
+    }
+    caller_refs = len(re.findall(rf"(?<![\w-]){re.escape(path.stem)}(?![\w-])", skill_text_index))
+    axes: dict[str, int | None] = {
+        "A1": None,
+        "A2": score_from_checks(structural_checks) if not errors else 0,
+        "A3": None,
+        "A4": sandbox_score,
+        "A5": 4 if model and reasoning else (2 if model else 0),
+        "A6": score_from_checks(output_checks),
+        "A7": 4 if caller_refs else 1,
+        "A8": None,
+    }
+    return with_totals(
+        {
+            "kind": "agent",
+            "name": path.stem,
+            "path": relative_key(path, repo_root),
+            "axes": axes,
+            "final_total": None,
+            "signals": {
+                "toml_errors": errors,
+                "structural_checks": structural_checks,
+                "sandbox_mode": sandbox_mode,
+                "model": model,
+                "caller_reference_count": caller_refs,
+            },
+        },
+        AGENT_WEIGHTS,
+    )
+
+
+def with_totals(item: dict[str, object], weights: dict[str, float]) -> dict[str, object]:
+    axes = item["axes"]
+    assert isinstance(axes, dict)
+    mechanical_points = 0.0
+    mechanical_max = 0.0
+    for axis, score in axes.items():
+        if score is None:
             continue
-        for m in re.finditer(r"\buse\s+(ywc-[\w-]+)\b", clause, re.IGNORECASE):
-            sib = m.group(1)
-            if not any((REPO_ROOT / r / sib).is_dir() for r in SKILL_ROOTS):
-                out.append(sib)
-    return out
+        weight = weights[axis]
+        mechanical_points += (int(score) / 4) * weight * 100
+        mechanical_max += weight * 100
+    item["mechanical_points"] = round(mechanical_points, 2)
+    item["mechanical_max_points"] = round(mechanical_max, 2)
+    return item
 
 
-# --- agent scoring ---------------------------------------------------------
+def collect_skill_text(repo_root: Path) -> str:
+    parts: list[str] = []
+    root = repo_root / SKILL_ROOT
+    if not root.is_dir():
+        return ""
+    for path in root.glob("*/SKILL.md"):
+        parts.append(path.read_text(encoding="utf-8"))
+    return "\n".join(parts)
 
-def score_agent(path: Path, collisions: dict) -> dict:
-    if path.suffix == ".toml":
-        fm, instr = parse_toml_lite(path.read_text(encoding="utf-8"))
-        name = fm.get("name", path.stem)
-        desc = fm.get("description", "")
-        tools_raw = ""
-        sandbox = fm.get("sandbox_mode", "")
-        model = fm.get("model", "")
-        is_codex = True
-    else:
-        fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
-        name = fm.get("name", path.stem)
-        desc = fm.get("description", "")
-        tools_raw = fm.get("tools", "")
-        instr = body
-        sandbox = ""
-        model = fm.get("model", "")
-        is_codex = False
 
-    readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(desc))
-    signals: dict = {}
-
-    # A3 tool minimality
-    if is_codex:
-        a3 = 5 if sandbox == "read-only" else (3 if readonly_role else 4)
-    else:
-        tools = set(re.findall(r"[A-Z]\w+", tools_raw))
-        mutating = tools & MUTATING_TOOLS
-        if "*" in tools_raw:
-            a3 = 1
-        elif readonly_role and mutating:
-            a3 = 3
-        elif mutating and not readonly_role:
-            a3 = 4
-        else:
-            a3 = 5
-        signals["tools"] = sorted(tools)
-        signals["mutating_tools"] = sorted(mutating)
-    signals["sandbox_mode"] = sandbox
-    signals["readonly_role"] = readonly_role
-
-    # A4 output contract. Codex agents should define a parseable Status block
-    # in developer_instructions so orchestrating skills can consume the result.
-    has_status = "Status:" in instr or "Status :" in instr
-    has_contract_ref = "subagent-status-actions" in instr
-    states = sum(s in instr for s in ("DONE", "BLOCKED", "NEEDS_CONTEXT", "DONE_WITH_CONCERNS"))
-    if is_codex:
-        a4 = 5 if (has_status and states >= 3) else (3 if has_status else 0)
-    else:
-        a4 = 5 if (has_status or has_contract_ref) else (2 if re.search(r"output|format|return", instr, re.I) else 1)
-    signals["has_status_contract"] = has_status
-    signals["has_contract_ref"] = has_contract_ref
-    signals["contract_states"] = states
-
-    # A5 model present (judge refines tier fit)
-    a5 = 4 if model else 0
-    signals["model"] = model
-
-    # A2 collision sub-signal
-    coll = collisions.get(name, [])
-    signals["collision_pairs"] = coll
-
+def evaluate(repo_root: Path, target: str, item: str | None) -> dict[str, object]:
+    roots: dict[str, list[dict[str, object]]] = {}
+    if target in ("all", str(SKILL_ROOT)):
+        skill_root = repo_root / SKILL_ROOT
+        skills = []
+        if skill_root.is_dir():
+            for skill_dir in sorted(skill_root.iterdir()):
+                if skill_dir.is_dir() and (skill_dir / "SKILL.md").is_file():
+                    if item is None or skill_dir.name == item:
+                        skills.append(score_skill(skill_dir, repo_root))
+        roots[str(SKILL_ROOT)] = skills
+    if target in ("all", str(AGENT_ROOT)):
+        agent_root = repo_root / AGENT_ROOT
+        agents = []
+        skill_text_index = collect_skill_text(repo_root)
+        if agent_root.is_dir():
+            for agent_path in sorted(agent_root.glob("*.toml")):
+                if item is None or agent_path.stem == item:
+                    agents.append(score_agent(agent_path, repo_root, skill_text_index))
+        roots[str(AGENT_ROOT)] = agents
     return {
-        "name": name,
-        "kind": "agent",
-        "axes": {"A1": None, "A2": None, "A3": a3, "A4": a4, "A5": a5, "A6": None},
-        "a2_collision_cap": 3 if coll else None,
-        "signals": signals,
+        "schema": 1,
+        "mode": "mechanical",
+        "generated_at": dt.date.today().isoformat(),
+        "repo_root": str(repo_root),
+        "roots": roots,
+        "note": "Judgment axes are null; final_total is intentionally unavailable in mechanical mode.",
     }
 
 
-# --- orchestration ---------------------------------------------------------
-
-def collect_skills(root: Path) -> list:
-    return [d for d in sorted(root.iterdir())
-            if d.is_dir() and (d / "SKILL.md").exists()]
-
-
-def collect_agents(root: Path) -> list:
-    return sorted([p for p in root.glob("ywc-*.md")] + [p for p in root.glob("ywc-*.toml")])
-
-
-def evaluate(target: str) -> dict:
-    results: dict[str, list] = {}
-    roots = []
-    if target == "all":
-        roots = SKILL_ROOTS + AGENT_ROOTS
-    else:
-        roots = [target]
-    for rel in roots:
-        root = REPO_ROOT / rel
-        if not root.is_dir():
-            continue
-        if "agents" in rel:
-            items = collect_agents(root)
-            descs = []
-            for p in items:
-                if p.suffix == ".toml":
-                    fm, _ = parse_toml_lite(p.read_text(encoding="utf-8"))
-                else:
-                    fm, _ = split_frontmatter(p.read_text(encoding="utf-8"))
-                descs.append({"name": fm.get("name", p.stem),
-                              "description": fm.get("description", "")})
-            collisions = find_collisions(descs)
-            results[rel] = [score_agent(p, collisions) for p in items]
-        else:
-            dirs = collect_skills(root)
-            descs = []
-            for d in dirs:
-                fm, _ = split_frontmatter((d / "SKILL.md").read_text(encoding="utf-8"))
-                descs.append({"name": fm.get("name", d.name),
-                              "description": fm.get("description", "")})
-            collisions = find_collisions(descs)
-            results[rel] = [score_skill(d, collisions) for d in dirs]
-    return results
-
-
-def mechanical_table(results: dict) -> str:
-    lines = []
-    for rel, items in results.items():
-        lines.append(f"\n## {rel}  ({len(items)} items)\n")
-        axes = list(items[0]["axes"].keys()) if items else []
-        lines.append("| Item | " + " | ".join(axes) + " | collisions |")
-        lines.append("|------|" + "----|" * (len(axes) + 1))
-        for it in items:
-            cells = []
-            for a in axes:
-                v = it["axes"][a]
-                cells.append("·" if v is None else str(v))
-            ncoll = len(it["signals"].get("collision_pairs", []))
-            lines.append(f"| {it['name']} | " + " | ".join(cells) + f" | {ncoll} |")
-    lines.append("\n(· = judgment axis, filled by the agent judge pass)")
-    return "\n".join(lines)
-
-
-def flatten_mech(results: dict) -> dict:
-    flat = {}
-    for rel, items in results.items():
-        for it in items:
-            flat[f"{rel}/{it['name']}"] = {a: v for a, v in it["axes"].items() if v is not None}
+def flatten_mechanical(payload: dict[str, object]) -> dict[str, dict[str, int]]:
+    flat: dict[str, dict[str, int]] = {}
+    roots = payload["roots"]
+    assert isinstance(roots, dict)
+    for items in roots.values():
+        assert isinstance(items, list)
+        for item in items:
+            assert isinstance(item, dict)
+            axes = item["axes"]
+            assert isinstance(axes, dict)
+            path = item["path"]
+            assert isinstance(path, str)
+            flat[path] = {axis: int(score) for axis, score in axes.items() if score is not None}
     return flat
 
 
-def ci_gate(results: dict) -> int:
-    current = flatten_mech(results)
-    if not HISTORY_MECH.exists():
-        HISTORY_MECH.parent.mkdir(parents=True, exist_ok=True)
-        HISTORY_MECH.write_text(json.dumps(current, indent=2) + "\n", encoding="utf-8")
-        print("[ci] baseline written, no prior mechanical scores to compare. PASS")
-        return 0
-    prior = json.loads(HISTORY_MECH.read_text(encoding="utf-8"))
-    regressions = []
-    for key, axes in current.items():
-        for axis, val in axes.items():
-            old = prior.get(key, {}).get(axis)
-            if old is not None and val < old:
-                regressions.append(f"{key} {axis}: {old} -> {val}")
+def write_baseline(history_file: Path, payload: dict[str, object]) -> None:
+    history_file.parent.mkdir(parents=True, exist_ok=True)
+    history = {
+        "schema": 1,
+        "updated_at": dt.date.today().isoformat(),
+        "items": flatten_mechanical(payload),
+    }
+    history_file.write_text(json.dumps(history, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def run_ci(history_file: Path, payload: dict[str, object]) -> int:
+    if not history_file.is_file():
+        print(f"[ci] missing mechanical baseline: {history_file}")
+        print("[ci] run with --update-baseline after reviewing the current mechanical scores.")
+        return 2
+    prior = json.loads(history_file.read_text(encoding="utf-8"))
+    prior_items = prior.get("items", {})
+    current = flatten_mechanical(payload)
+    regressions: list[str] = []
+    for path, axes in current.items():
+        old_axes = prior_items.get(path, {})
+        for axis, new_score in axes.items():
+            old_score = old_axes.get(axis)
+            if isinstance(old_score, int) and new_score < old_score:
+                regressions.append(f"{path} {axis}: {old_score} -> {new_score}")
     if regressions:
         print("[ci] MECHANICAL REGRESSION DETECTED:")
-        for r in regressions:
-            print("  ▼ " + r)
-        print(f"[ci] {len(regressions)} regression(s). FAIL")
+        for regression in regressions:
+            print(f"  - {regression}")
         return 1
-    HISTORY_MECH.write_text(json.dumps(current, indent=2) + "\n", encoding="utf-8")
     print(f"[ci] {len(current)} items, no mechanical regression. PASS")
     return 0
 
 
+def markdown(payload: dict[str, object]) -> str:
+    lines = [f"# Codex Mechanical Scorecard - {payload['generated_at']}", "", "Mode: mechanical (partial)"]
+    roots = payload["roots"]
+    assert isinstance(roots, dict)
+    for root, items in roots.items():
+        assert isinstance(items, list)
+        lines.extend(["", f"## {root} ({len(items)} items)", ""])
+        if not items:
+            lines.append("_No items found._")
+            continue
+        axes = list(items[0]["axes"].keys())
+        lines.append("| Item | " + " | ".join(axes) + " | Mechanical points | Final |")
+        lines.append("|---|" + "|".join("---:" for _ in axes) + "|---:|---|")
+        for item in items:
+            axis_values = [
+                "·" if item["axes"][axis] is None else str(item["axes"][axis])
+                for axis in axes
+            ]
+            lines.append(
+                f"| `{item['name']}` | "
+                + " | ".join(axis_values)
+                + f" | {item['mechanical_points']}/{item['mechanical_max_points']} | partial |"
+            )
+    lines.append("")
+    lines.append("`·` means the axis requires the judgment pass.")
+    return "\n".join(lines)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=None)
+    parser.add_argument("--target", choices=["all", str(SKILL_ROOT), str(AGENT_ROOT)], default="all")
+    parser.add_argument("--item", default=None)
+    parser.add_argument("--format", choices=["json", "markdown"], default="json")
+    parser.add_argument("--history-file", type=Path, default=DEFAULT_HISTORY)
+    parser.add_argument("--ci", action="store_true", help="compare against baseline without rewriting it")
+    parser.add_argument("--update-baseline", action="store_true", help="write the current mechanical baseline")
+    return parser.parse_args()
+
+
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--target", default="all")
-    ap.add_argument("--item", default=None)
-    ap.add_argument("--format", choices=["json", "markdown"], default="json")
-    ap.add_argument("--ci", action="store_true")
-    args = ap.parse_args()
-
-    results = evaluate(args.target)
-    if args.item:
-        results = {rel: [it for it in items if it["name"] == args.item]
-                   for rel, items in results.items()}
-        results = {rel: items for rel, items in results.items() if items}
-
+    args = parse_args()
+    repo_root = find_repo_root((args.repo_root or Path(__file__).resolve()).resolve())
+    payload = evaluate(repo_root, args.target, args.item)
+    if args.update_baseline:
+        write_baseline(args.history_file, payload)
+        print(f"[baseline] wrote {args.history_file}")
+        return 0
     if args.ci:
-        return ci_gate(results)
-
+        return run_ci(args.history_file, payload)
     if args.format == "markdown":
-        stamp = datetime.date.today().isoformat()
-        print(f"# Mechanical Scorecard — {stamp}")
-        print(mechanical_table(results))
+        print(markdown(payload))
     else:
-        print(json.dumps(results, indent=2, ensure_ascii=False))
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
 

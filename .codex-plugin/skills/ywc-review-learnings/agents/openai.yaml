@@ -1,0 +1,4 @@
+interface:
+  display_name: "YWC Review Learnings"
+  short_description: "Accumulate per-project code review preferences"
+  default_prompt: "Use $ywc-review-learnings to read, update, list, or curate docs/review-learnings.md so future implementation reviews apply project-specific review preferences."

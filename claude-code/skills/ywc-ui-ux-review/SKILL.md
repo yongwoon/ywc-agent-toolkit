@@ -1,11 +1,7 @@
 ---
 name: ywc-ui-ux-review
-version: 1.0.0
-description: "(ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (Chrome DevTools MCP) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '사용성 점검', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), or code-only review without a running UI."
-category: review
-phase: quality
-requires: []
-advisor_budget: 2
+description: >-
+  (ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (Chrome DevTools MCP) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '사용성 점검', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), aesthetic / visual de-slop renewal of a generic / 'AI-made'-looking surface (use ywc-design-renew), or code-only review without a running UI.
 ---
 
 # UI/UX Review — Hybrid (Code + Live UI)
@@ -38,12 +34,6 @@ When tempted to skip a step, check this table first:
 - Visual hierarchy / typography / spacing / color audit
 - Pre-release UX checks against WCAG 2.2 AA
 - Cross-cutting design review against an internal design system
-
-## Arguments
-
-| Parameter | Format | Example | Description |
-|-----------|--------|---------|-------------|
-| `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
 
 ## Workflow
 

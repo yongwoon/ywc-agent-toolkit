@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.19.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.18.0...v1.19.0) (2026-06-13)
+
+
+### ### Added
+
+* **skills:** review quality — ywc-review-learnings + CodeRabbit methodology + DB schema SoT ([#74](https://github.com/yongwoon/ywc-agent-toolkit/issues/74)) ([3e7a2b7](https://github.com/yongwoon/ywc-agent-toolkit/commit/3e7a2b7883fffb588ea7f70705836fb410ab2d4c))
+
+
+### ### Documentation
+
+* **readme:** improve navigation with quick-start, goal table, skill links, and pipeline diagram ([#72](https://github.com/yongwoon/ywc-agent-toolkit/issues/72)) ([3fdea6f](https://github.com/yongwoon/ywc-agent-toolkit/commit/3fdea6f0881b551473dc39a04430e39eff4700a3))
+
 ## [1.18.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.17.0...v1.18.0) (2026-06-12)
 
 

@@ -107,7 +107,7 @@ Wait for subagents only when their results are needed for the next critical-path
 
 For dependent roles, pass only the necessary prior result into the next subagent. Avoid forwarding full transcripts or unrelated context.
 
-## Output
+## Output Format
 
 Return a concise synthesis:
 
@@ -117,3 +117,16 @@ Return a concise synthesis:
 - Files changed
 - Verification run
 - Remaining risks or follow-up decisions
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Team: <roles used and why>
+Accepted outputs: <subagent outputs accepted or rejected>
+Local work: <what the main agent completed>
+Verification: <commands or checks run>
+Next action: <follow-up decision or "none">
+```
+
+## Validation
+
+Before finalizing, verify that each subagent had a bounded prompt, ownership boundaries did not overlap unsafely, accepted outputs were reviewed before use, files changed are listed, and any verification gaps or rejected outputs are reported.

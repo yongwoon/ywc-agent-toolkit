@@ -1,11 +1,7 @@
 ---
 name: ywc-task-generator
-version: 1.0.0
-description: (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", "ywc-task-generator", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
-category: spec
-phase: planning
-requires: [ywc-spec-validate]
-advisor_budget: 1
+description: >-
+  (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
 ---
 
 # Task Generator
@@ -72,6 +68,7 @@ For the full language detection examples, language-specific writing rules (techn
 - Database migrations must always be separated into their own task — in every mode
 - Include schema/model definitions
 - Never mix migration and feature implementation
+- Point the migration task's `task.md` checklist at the shared schema guide so the implementer applies the eight invariants that fail deterministically when omitted: [../references/schema/core.md](../references/schema/core.md) (Part B) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`)
 
 ### 4. Library Introduction Separation (Safety Invariant)
 - Create a dedicated task when introducing a new library/framework — in every mode
@@ -105,14 +102,7 @@ Gather information about the project environment to generate realistic tasks. Th
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Determine the next starting number with the bundled script — it scans **both** `tasks/` and `tasks/completed/` and prints the next batch prefix, so a number that was already used and archived is never reused:
-
-  ```bash
-  bash claude-code/skills/ywc-task-generator/scripts/next-task-number.sh [tasks-dir]
-  # prints e.g. 000017-010  (000001-010 when no tasks exist yet)
-  ```
-
-  The rule it implements (stated here so you can verify the output): completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010` (e.g. highest `000016-040` → new batch `000017-010`). If `tasks/` is empty but `tasks/completed/` is not, the same `+1 phase` rule still applies.
+- Determine the next starting number by scanning **both** `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`). Completed tasks are moved out of `<tasks-dir>/` into `<tasks-dir>/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning only the active root misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `<tasks-dir>/` or in `<tasks-dir>/completed/` — the new batch starts at `000017-010`. If `<tasks-dir>/` is empty (every task already completed and archived), fall back to the highest number in `<tasks-dir>/completed/` and apply the same `+1 phase` rule.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -132,7 +122,7 @@ Review the specification for completeness and verify that sufficient information
 
 ### Step 4: Confirm Language
 
-If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails or is ambiguous, ask:
+If the user has not specified an output language, ask:
 
 > "Which language should the task documents be written in? (korean / japanese / english)"
 
@@ -213,7 +203,7 @@ Each task name follows this format:
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
-- **Starting PHASE for a new batch**: when any tasks already exist, scan both `tasks/` and `tasks/completed/`, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `tasks/completed/`.
+- **Starting PHASE for a new batch**: when any tasks already exist, scan both `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`), take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `<tasks-dir>/completed/`.
 
 **Category:**
 - `lib` — New library/framework introduction
@@ -261,31 +251,22 @@ Each task name follows this format:
 
 ### Step 9: Directory and File Generation
 
-Use the path specified by the user for output. If not specified, default to `tasks/`.
+Use the resolved `--tasks-dir` path specified by the user for output. If not specified, default to `tasks/`.
 
 Generate the following structure for each task:
 
 ```
-tasks/[TASK_NAME]/
+<tasks-dir>/[TASK_NAME]/
 ├── README.md
 ├── task.md
 └── test.md (optional — included when manual verification is needed)
 ```
 
-Scaffold each task directory deterministically with the bundled script, then fill the generated files with content — never hand-retype the structure:
-
-```bash
-bash claude-code/skills/ywc-task-generator/scripts/scaffold-task-dir.sh \
-  <task-name> [--out tasks] [--with-test]
-# lays down <out>/<task-name>/{README.md,task.md[,test.md]} from the templates,
-# substituting the [TASK_NAME] placeholder; blocks path traversal and overwrites.
-```
-
-The script copies from the templates below; refer to them for the content you write into each generated file:
+Refer to templates in the `references/` directory when writing files:
 - `references/README.md.template` — Task overview and dependency documentation
 - `references/task.md.template` — Implementation checklist
-- `references/test.md.template` — Manual test plan (only with `--with-test`)
-- `references/dependency-graph.md.template` — Top-level dependency summary (written once per batch, not per task)
+- `references/test.md.template` — Manual test plan
+- `references/dependency-graph.md.template` — Top-level dependency summary
 
 #### README.md Core Elements
 
@@ -360,7 +341,7 @@ Write structured scenario-based tests (Steps + Expected Result).
 
 ### Step 10: Generate Dependency Graph
 
-After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order.
+After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level. This file serves as the single source of truth for execution order.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 
@@ -421,50 +402,6 @@ When parallel execution is expected, verify that each task is safe for isolated 
 ## Example
 
 User input: "Break down the user authentication spec into tasks. In Korean." (Granularity Mode: `human`)
-
-Output task list:
-
-| Phase   | Task Name                            | Category | Description                                       |
-|---------|--------------------------------------|----------|---------------------------------------------------|
-| 000001  | `000001-010-db-create-user-table`    | db       | User table migration                              |
-| 000001  | `000001-020-lib-setup-bcrypt`        | lib      | Password hashing library introduction             |
-| 000001  | `000001-030-domain-user-entity`      | domain   | User entity and repository implementation         |
-| 000002  | `000002-010-api-user-registration`   | api      | Registration API endpoint                         |
-| 000002  | `000002-020-api-user-login`          | api      | Login API endpoint                                |
-| 000003  | `000003-010-ui-registration-form`    | ui       | Registration form implementation                  |
-| 000003  | `000003-020-ui-login-form`           | ui       | Login form implementation                         |
-
-Generated directory structure:
-
-```text
-tasks/
-├── dependency-graph.md
-├── 000001-010-db-create-user-table/
-│   ├── README.md
-│   └── task.md
-├── 000001-020-lib-setup-bcrypt/
-│   ├── README.md
-│   └── task.md
-├── 000001-030-domain-user-entity/
-│   ├── README.md
-│   └── task.md
-├── 000002-010-api-user-registration/
-│   ├── README.md
-│   └── task.md
-├── 000002-020-api-user-login/
-│   ├── README.md
-│   └── task.md
-├── 000003-010-ui-registration-form/
-│   ├── README.md
-│   ├── task.md
-│   └── test.md
-└── 000003-020-ui-login-form/
-    ├── README.md
-    ├── task.md
-    └── test.md
-```
-
-**In `llm` mode**, the same spec would likely collapse to ~4–5 tasks — e.g., `000001-010-db-create-user-table`, `000001-020-lib-setup-bcrypt`, `000002-010-api-user-auth` (bundled domain + api for registration and login), `000003-010-ui-user-auth-forms` (bundled registration and login forms). DB migration and library introduction remain separate per Safety Invariants.
 
 ---
 

@@ -3,52 +3,56 @@
   "description": "Seed activation cases for the S1/A2 trigger judge. Positive cases drive recall; negative drive precision; collision pairs stress precision against the nearest sibling. Expand per item over time — every evaluated item should reach >=3 positives and >=2 collisions.",
   "cases": [
     {
-      "id": "commit-pos-1",
-      "prompt": "지금까지 한 작업 커밋해줘",
-      "expected": "ywc-commit",
+      "id": "agent-tsreviewer-pos-1",
+      "prompt": "이 TypeScript 코드의 타입 시스템과 async 정확성 리뷰해줘",
+      "expected": "ywc-typescript-reviewer",
       "kind": "positive"
     },
     {
-      "id": "commit-pos-2",
-      "prompt": "commit and push these changes",
-      "expected": "ywc-commit",
-      "kind": "positive"
-    },
-    {
-      "id": "commit-vs-createpr-1",
-      "prompt": "이 브랜치 PR 올려줘",
-      "expected": "ywc-create-pr",
+      "id": "agent-tsreviewer-vs-pyreviewer-1",
+      "prompt": "이 Python 코드 asyncio랑 타입 힌트 리뷰해줘",
+      "expected": "ywc-python-reviewer",
       "kind": "collision",
-      "impostor": "ywc-commit",
-      "note": "commit must NOT win — create-pr owns PR creation"
+      "impostor": "ywc-typescript-reviewer",
+      "note": "language reviewers share trigram surface — each must only win its own language"
     },
     {
-      "id": "createpr-pos-1",
-      "prompt": "feature 다 됐으니 풀리퀘 만들어줘",
-      "expected": "ywc-create-pr",
+      "id": "agentic-pos-1",
+      "prompt": "agentic 모드로 이 기능을 spec부터 PR까지 끝까지 진행해줘",
+      "expected": "ywc-agentic",
       "kind": "positive"
     },
     {
-      "id": "specvalidate-vs-implreview-1",
-      "prompt": "이 사양서 완성도랑 일관성 검토해줘",
-      "expected": "ywc-spec-validate",
-      "kind": "collision",
-      "impostor": "ywc-impl-review",
-      "note": "spec-only review — impl-review must NOT win (no code yet)"
-    },
-    {
-      "id": "implreview-pos-1",
-      "prompt": "구현 끝났는데 PR 전에 코드 검증해줘",
-      "expected": "ywc-impl-review",
+      "id": "architect-pos-1",
+      "prompt": "이 architecture 결정의 trade-off를 read-only로 검토해줘",
+      "expected": "ywc-architect",
       "kind": "positive"
     },
     {
-      "id": "plan-vs-productreview-1",
-      "prompt": "이 기능 비즈니스적으로 가치 있는지 검토해줘",
-      "expected": "ywc-product-review",
+      "id": "architect-vs-performance-1",
+      "prompt": "서비스 경계를 나누는 architecture trade-off를 검토해줘",
+      "expected": "ywc-architect",
       "kind": "collision",
-      "impostor": "ywc-plan",
-      "note": "product/business reasoning — plan must NOT win"
+      "impostor": "ywc-performance-engineer",
+      "note": "architecture decision must win over performance tuning"
+    },
+    {
+      "id": "brainstorm-pos-1",
+      "prompt": "아이디어가 아직 흐릿한데 접근법을 같이 브레인스토밍해줘",
+      "expected": "ywc-brainstorm",
+      "kind": "positive"
+    },
+    {
+      "id": "changelogreleasenotes-pos-1",
+      "prompt": "이번 릴리즈의 CHANGELOG와 사용자용 release notes를 작성해줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive"
+    },
+    {
+      "id": "codegen-pos-1",
+      "prompt": "이 spec을 기준으로 병렬 code generation을 실행해줘",
+      "expected": "ywc-code-gen",
+      "kind": "positive"
     },
     {
       "id": "codex-toolkiteval-pos-1",
@@ -85,10 +89,120 @@
       "note": "authoring-rule repair — skill-author owns structural fixes, codex-toolkit-eval only scores them"
     },
     {
-      "id": "neg-weather-1",
-      "prompt": "오늘 도쿄 날씨 알려줘",
-      "expected": null,
-      "kind": "negative"
+      "id": "commit-pos-1",
+      "prompt": "지금까지 한 작업 커밋해줘",
+      "expected": "ywc-commit",
+      "kind": "positive"
+    },
+    {
+      "id": "commit-pos-2",
+      "prompt": "commit and push these changes",
+      "expected": "ywc-commit",
+      "kind": "positive"
+    },
+    {
+      "id": "commit-vs-createpr-1",
+      "prompt": "이 브랜치 PR 올려줘",
+      "expected": "ywc-create-pr",
+      "kind": "collision",
+      "impostor": "ywc-commit",
+      "note": "commit must NOT win — create-pr owns PR creation"
+    },
+    {
+      "id": "confidencegate-pos-1",
+      "prompt": "이 구현을 시작해도 되는지 confidence gate로 점검해줘",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive"
+    },
+    {
+      "id": "createpr-pos-1",
+      "prompt": "feature 다 됐으니 풀리퀘 만들어줘",
+      "expected": "ywc-create-pr",
+      "kind": "positive"
+    },
+    {
+      "id": "createpr-vs-commit-2",
+      "prompt": "커밋은 끝났으니 GitHub PR을 만들어줘",
+      "expected": "ywc-create-pr",
+      "kind": "collision",
+      "impostor": "ywc-commit",
+      "note": "PR creation must win over commit"
+    },
+    {
+      "id": "debugrootcause-pos-1",
+      "prompt": "테스트가 실패하는 근본 원인을 체계적으로 찾아줘",
+      "expected": "ywc-debug-rootcause",
+      "kind": "positive"
+    },
+    {
+      "id": "designrenew-pos-1",
+      "prompt": "기존 화면 디자인이 너무 평범하니 더 나은 UI로 리뉴얼해줘",
+      "expected": "ywc-design-renew",
+      "kind": "positive"
+    },
+    {
+      "id": "e2eteststrategy-pos-1",
+      "prompt": "웹앱의 E2E 테스트 전략을 설계해줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive"
+    },
+    {
+      "id": "finishbranch-pos-1",
+      "prompt": "이 feature branch를 PR merge와 task complete까지 마무리해줘",
+      "expected": "ywc-finish-branch",
+      "kind": "positive"
+    },
+    {
+      "id": "gentestcase-pos-1",
+      "prompt": "이 PR diff를 보고 수동 QA 테스트케이스를 생성해줘",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive"
+    },
+    {
+      "id": "goreviewer-pos-1",
+      "prompt": "이 Go 코드의 concurrency와 error handling을 리뷰해줘",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "goreviewer-vs-tsreviewer-1",
+      "prompt": "이 Go goroutine과 context cancellation 코드를 리뷰해줘",
+      "expected": "ywc-go-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "Go reviewer must win for Go code"
+    },
+    {
+      "id": "handlepr-vs-createpr-1",
+      "prompt": "이미 열린 PR의 리뷰 코멘트를 처리해줘",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "collision",
+      "impostor": "ywc-create-pr",
+      "note": "existing PR review handling must not create a new PR"
+    },
+    {
+      "id": "handleprreviews-pos-1",
+      "prompt": "PR 리뷰 코멘트를 반영하고 남은 항목을 정리해줘",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "positive"
+    },
+    {
+      "id": "implreview-pos-1",
+      "prompt": "구현 끝났는데 PR 전에 코드 검증해줘",
+      "expected": "ywc-impl-review",
+      "kind": "positive"
+    },
+    {
+      "id": "incidentpostmortem-pos-1",
+      "prompt": "어제 장애에 대한 incident postmortem을 작성해줘",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive"
+    },
+    {
+      "id": "mergedependabot-pos-1",
+      "prompt": "쌓여 있는 Dependabot PR들을 안전하게 병합해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive"
     },
     {
       "id": "neg-recipe-1",
@@ -97,18 +211,292 @@
       "kind": "negative"
     },
     {
-      "id": "agent-tsreviewer-pos-1",
-      "prompt": "이 TypeScript 코드의 타입 시스템과 async 정확성 리뷰해줘",
-      "expected": "ywc-typescript-reviewer",
+      "id": "neg-weather-1",
+      "prompt": "오늘 도쿄 날씨 알려줘",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "onboardrepo-pos-1",
+      "prompt": "처음 보는 repository라 구조와 개발 명령을 온보딩해줘",
+      "expected": "ywc-onboard-repo",
       "kind": "positive"
     },
     {
-      "id": "agent-tsreviewer-vs-pyreviewer-1",
-      "prompt": "이 Python 코드 asyncio랑 타입 힌트 리뷰해줘",
+      "id": "parallelexecutor-pos-1",
+      "prompt": "독립적인 tasks를 병렬 worktree로 실행해줘",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "performance-vs-architect-1",
+      "prompt": "LCP와 bundle regression 원인을 성능 관점에서 분석해줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "collision",
+      "impostor": "ywc-architect",
+      "note": "performance evidence must win over architecture advisor"
+    },
+    {
+      "id": "performanceengineer-pos-1",
+      "prompt": "이 endpoint latency와 bundle size regression을 성능 관점에서 리뷰해줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-pos-1",
+      "prompt": "이 변경을 구현하기 전에 구체적인 plan을 세워줘",
+      "expected": "ywc-plan",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-vs-brainstorm-1",
+      "prompt": "아이디어가 막연해서 어떤 방향이 나을지 같이 탐색해줘",
+      "expected": "ywc-brainstorm",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "rough idea exploration belongs to brainstorm"
+    },
+    {
+      "id": "plan-vs-productreview-1",
+      "prompt": "이 기능 비즈니스적으로 가치 있는지 검토해줘",
+      "expected": "ywc-product-review",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "product/business reasoning — plan must NOT win"
+    },
+    {
+      "id": "plan-vs-specwriter-1",
+      "prompt": "이 rough feature idea를 구현 전 plan으로 정리해줘",
+      "expected": "ywc-plan",
+      "kind": "collision",
+      "impostor": "ywc-spec-writer",
+      "note": "planning rough change is not project specification writing"
+    },
+    {
+      "id": "productreview-pos-1",
+      "prompt": "이 기능이 사용자와 시장 관점에서 가치가 있는지 product review 해줘",
+      "expected": "ywc-product-review",
+      "kind": "positive"
+    },
+    {
+      "id": "productreview-vs-implreview-1",
+      "prompt": "기능의 시장 가치와 사용자 가치만 검토해줘",
+      "expected": "ywc-product-review",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "product review must not become code implementation review"
+    },
+    {
+      "id": "projectdocs-pos-1",
+      "prompt": "이 프로젝트의 개발자 문서를 새로 작성해줘",
+      "expected": "ywc-project-docs",
+      "kind": "positive"
+    },
+    {
+      "id": "projectscaffold-pos-1",
+      "prompt": "FastAPI 프로젝트 구조를 scaffold 형태로 설계해줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive"
+    },
+    {
+      "id": "pyreviewer-vs-goreviewer-1",
+      "prompt": "이 Python asyncio 코드의 typing과 예외 처리를 리뷰해줘",
       "expected": "ywc-python-reviewer",
       "kind": "collision",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "language reviewers share trigram surface — each must only win its own language"
+      "impostor": "ywc-go-reviewer",
+      "note": "Python reviewer must win for Python code"
+    },
+    {
+      "id": "pythonreviewer-pos-1",
+      "prompt": "이 Python 코드의 typing과 asyncio 사용을 리뷰해줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "receivereview-pos-1",
+      "prompt": "방금 받은 code review feedback을 분석해서 수정 계획을 세워줘",
+      "expected": "ywc-receive-review",
+      "kind": "positive"
+    },
+    {
+      "id": "refactorclean-pos-1",
+      "prompt": "사용하지 않는 export와 dead code를 정리해줘",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive"
+    },
+    {
+      "id": "releaseprlist-pos-1",
+      "prompt": "release PR description에 병합된 PR 목록을 업데이트해줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive"
+    },
+    {
+      "id": "releaseprlist-vs-createpr-1",
+      "prompt": "release PR 본문에 merged PR list를 넣어줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "collision",
+      "impostor": "ywc-create-pr",
+      "note": "release PR list update must not create a new PR"
+    },
+    {
+      "id": "reviewlearnings-pos-1",
+      "prompt": "이번 review에서 배운 recurring rule을 review learnings에 기록해줘",
+      "expected": "ywc-review-learnings",
+      "kind": "positive"
+    },
+    {
+      "id": "rootcause-vs-securityengineer-1",
+      "prompt": "테스트 실패 원인 후보를 evidence-for/evidence-against로 순위화해줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "collision",
+      "impostor": "ywc-security-engineer",
+      "note": "root-cause analysis must win when there is no security boundary"
+    },
+    {
+      "id": "rootcauseanalyst-pos-1",
+      "prompt": "실패 원인 후보를 evidence 기반으로 순위화해줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive"
+    },
+    {
+      "id": "securityaudit-pos-1",
+      "prompt": "인증과 권한 로직을 보안 관점에서 감사해줘",
+      "expected": "ywc-security-audit",
+      "kind": "positive"
+    },
+    {
+      "id": "securityaudit-vs-implreview-1",
+      "prompt": "authz 로직만 OWASP 기준으로 보안 감사해줘",
+      "expected": "ywc-security-audit",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "security-only audit must win over general implementation review"
+    },
+    {
+      "id": "securityengineer-pos-1",
+      "prompt": "이 OWASP authz risk를 보안 전문가로 검토해줘",
+      "expected": "ywc-security-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "securityengineer-vs-rootcause-1",
+      "prompt": "auth bypass 가능성이 있는 exploit chain을 보안 전문가로 검토해줘",
+      "expected": "ywc-security-engineer",
+      "kind": "collision",
+      "impostor": "ywc-root-cause-analyst",
+      "note": "security verdict must win over root-cause analyst"
+    },
+    {
+      "id": "sequentialexecutor-pos-1",
+      "prompt": "tasks 000004-010부터 000005-010까지 순차 실행해줘",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "skillauthor-pos-1",
+      "prompt": "새 ywc skill을 Codex 규칙에 맞게 작성해줘",
+      "expected": "ywc-skill-author",
+      "kind": "positive"
+    },
+    {
+      "id": "specvalidate-pos-1",
+      "prompt": "작성한 spec의 완성도와 일관성을 검증해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "positive"
+    },
+    {
+      "id": "specvalidate-vs-implreview-1",
+      "prompt": "이 사양서 완성도랑 일관성 검토해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "spec-only review — impl-review must NOT win (no code yet)"
+    },
+    {
+      "id": "specwriter-pos-1",
+      "prompt": "프로젝트 사양서를 최신 구현 기준으로 업데이트해줘",
+      "expected": "ywc-spec-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "specwriter-vs-specvalidate-1",
+      "prompt": "프로젝트 사양서를 현재 구현 기준으로 작성해줘",
+      "expected": "ywc-spec-writer",
+      "kind": "collision",
+      "impostor": "ywc-spec-validate",
+      "note": "authoring spec must win over validation"
+    },
+    {
+      "id": "taskgenerator-pos-1",
+      "prompt": "이 spec을 구현 가능한 task들로 분해해줘",
+      "expected": "ywc-task-generator",
+      "kind": "positive"
+    },
+    {
+      "id": "taskgenerator-vs-specvalidate-1",
+      "prompt": "검증 끝난 spec을 tasks 디렉터리로 분해해줘",
+      "expected": "ywc-task-generator",
+      "kind": "collision",
+      "impostor": "ywc-spec-validate",
+      "note": "task decomposition must win after validation"
+    },
+    {
+      "id": "tddritual-pos-1",
+      "prompt": "이 bugfix를 TDD ritual로 red-green-refactor 진행해줘",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive"
+    },
+    {
+      "id": "teamassemble-pos-1",
+      "prompt": "backend, frontend, QA 역할로 팀을 구성해서 작업을 나눠줘",
+      "expected": "ywc-team-assemble",
+      "kind": "positive"
+    },
+    {
+      "id": "techresearch-pos-1",
+      "prompt": "이 기능에 쓸 라이브러리 후보를 기술적으로 비교 조사해줘",
+      "expected": "ywc-tech-research",
+      "kind": "positive"
+    },
+    {
+      "id": "tsreviewer-vs-pyreviewer-2",
+      "prompt": "이 TypeScript React hook의 타입 안정성을 리뷰해줘",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-python-reviewer",
+      "note": "TypeScript reviewer must win for TS/React code"
+    },
+    {
+      "id": "ubiquitouslanguage-pos-1",
+      "prompt": "도메인 용어를 ubiquitous language 문서로 정리해줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive"
+    },
+    {
+      "id": "uiuxreview-pos-1",
+      "prompt": "이 화면의 UX와 accessibility를 heuristic 기준으로 리뷰해줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive"
+    },
+    {
+      "id": "uiuxreview-vs-productreview-1",
+      "prompt": "이 화면의 WCAG와 usability 문제를 리뷰해줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "collision",
+      "impostor": "ywc-product-review",
+      "note": "UI/UX heuristic review must win over product review"
+    },
+    {
+      "id": "verifydone-pos-1",
+      "prompt": "완료라고 말하기 전에 검증 evidence를 확인해줘",
+      "expected": "ywc-verify-done",
+      "kind": "positive"
+    },
+    {
+      "id": "worktrees-pos-1",
+      "prompt": "이 task용 git worktree를 만들고 audit해줘",
+      "expected": "ywc-worktrees",
+      "kind": "positive"
     }
   ]
 }

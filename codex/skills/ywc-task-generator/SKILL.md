@@ -68,6 +68,7 @@ For the full language detection examples, language-specific writing rules (techn
 - Database migrations must always be separated into their own task — in every mode
 - Include schema/model definitions
 - Never mix migration and feature implementation
+- Point the migration task's `task.md` checklist at the shared schema guide so the implementer applies the eight invariants that fail deterministically when omitted: [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`)
 
 ### 4. Library Introduction Separation (Safety Invariant)
 - Create a dedicated task when introducing a new library/framework — in every mode

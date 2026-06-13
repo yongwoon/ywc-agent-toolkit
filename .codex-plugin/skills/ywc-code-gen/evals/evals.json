@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-code-gen",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/invite-members.md --feature \"team invite flow\" --tdd.",
+      "expected_output": "Checks or creates the feature branch, then runs the Reuse Gate first. Includes the spec, project context, and ubiquitous language in each worker payload when available. Dispatches Backend, Frontend, and QA workers in parallel through Codex subagents, including backend/frontend/qa references and prompts/implementer-base.md. Limits Phase 2 advisor candidates to at most five and reports generated files with P1/P2 provenance. Because --tdd is set, preserves RED/GREEN/REFACTOR checkpoint commit boundaries and presents Verification Gate results before Completion Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-code-gen --feature \"billing dashboard\" without a spec file.",
+      "expected_output": "Because --spec is missing, does not start generation. Returns NEEDS_CONTEXT stating that a spec file path is required, and does not create a branch, edit files, or dispatch workers.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Generate CRUD from this spec. Create it from scratch even if the existing users module is nearly the same.",
+      "expected_output": "Runs the Reuse Gate unless --skip-reuse-check is present. If existing internal code satisfies at least 80% of the requirements, classifies it as Adopt and does not create a new scaffold until the user confirms full generation. Does not ignore existing functionality or duplicate implementation.",
+      "files": []
+    }
+  ]
+}

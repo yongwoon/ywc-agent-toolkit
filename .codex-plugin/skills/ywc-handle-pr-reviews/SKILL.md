@@ -8,8 +8,9 @@ description: >-
   "리뷰 코멘트 처리", "PR comment 처리", "レビュー対応", "レビューコメント対応".
   Do not use for receiving standalone reviewer-shaped feedback before PR
   automation (use ywc-receive-review), creating a new PR (use ywc-create-pr),
-  performing a code review yourself (use ywc-impl-review), or changes outside an
-  open PR context.
+  performing a code review yourself (use ywc-impl-review), storing or reading
+  durable review preferences as learnings (use ywc-review-learnings), or changes
+  outside an open PR context.
 ---
 
 # Handle PR Review Comments
@@ -206,6 +207,23 @@ Report the results so the user has a clear picture of what happened:
 
 - Follow any additional instructions in `$ARGUMENTS`
 - When in doubt about a reviewer's intent, ask the user rather than guessing — misinterpreting feedback wastes more time than a quick clarification
+
+## Output Format
+
+Return a PR review handling report:
+
+```text
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+PR: <number or URL>
+Processed: <count and source of comments handled>
+Skipped: <comments deferred with reason>
+Validation: <tests or CI checks rerun>
+Next action: <remaining review/CI action or "none">
+```
+
+## Validation
+
+Before finalizing, verify that every actionable comment is either addressed or explicitly deferred, reviewer intent was not guessed when ambiguous, fixes stay within PR scope, and CI or local verification was rerun after code changes.
 
 ## Integration
 

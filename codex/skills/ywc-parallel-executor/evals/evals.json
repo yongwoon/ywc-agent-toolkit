@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-parallel-executor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-parallel-executor --all --tasks-dir tasks/ --local-merge.",
+      "expected_output": "In pre-flight, checks the clean working tree, base branch, tasks/dependency-graph.md, and stale worktree audit. Builds waves from Depends On, Conflicts With, and Shared Surfaces in the dependency graph, then runs each same-wave task in a separate worktree and branch. Keeps wave boundaries as hard gates, and each task must complete delivery, Mark Complete, and worktree cleanup before the next wave starts. The Completion Report includes task status, merge SHA, worktree cleanup status, final audit, and Completion Status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Run two tasks with Conflicts With entries in tasks/dependency-graph.md in the same parallel wave.",
+      "expected_output": "Treats Conflicts With as a hard constraint, not a hint. Does not place the two tasks in the same wave; instead adjusts the wave boundary or reports a reconsider verdict. Does not run a conflict pair concurrently even if the user wants faster execution.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Use $ywc-parallel-executor 000001-010..000001-030 --per-task-pr.",
+      "expected_output": "Does not merely create each per-task PR and move on. Performs the full lifecycle: PR creation, CI wait, bot review polling, CI re-gate after bot fixes, gh pr merge --delete-branch, base sync, and completion marker commit/push. Preserves the worktree and branch for failed tasks and cleans up only successful tasks.",
+      "files": []
+    }
+  ]
+}
