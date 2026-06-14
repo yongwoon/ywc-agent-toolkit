@@ -362,7 +362,11 @@ def ci_gate(results: dict) -> int:
         return 0
     prior = json.loads(HISTORY_MECH.read_text(encoding="utf-8"))
     regressions = []
+    for key in sorted(set(prior) - set(current)):
+        regressions.append(f"{key}: removed from current mechanical results")
     for key, axes in current.items():
+        for axis in sorted(set(prior.get(key, {})) - set(axes)):
+            regressions.append(f"{key} {axis}: removed from current mechanical results")
         for axis, val in axes.items():
             old = prior.get(key, {}).get(axis)
             if old is not None and val < old:
