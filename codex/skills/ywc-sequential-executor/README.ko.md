@@ -28,6 +28,14 @@ Phase+Sequence prefix 로도 지정할 수 있습니다:
 /ywc-sequential-executor 000001-010..000002-030
 ```
 
+### Aggregate PR 실행
+
+Range 전체를 하나의 work branch에 누적한 뒤 최종 PR 1개로 delivery합니다:
+
+```text
+/ywc-sequential-executor 000001-010..000002-030 --aggregate-pr --group-name billing-rollout
+```
+
 ### 다음 Task 자동 감지
 
 Task 를 지정하지 않으면 dependency graph 를 분석하여 실행 가능한 다음 Task 를 자동 선택합니다:
@@ -45,10 +53,13 @@ Task 를 지정하지 않으면 dependency graph 를 분석하여 실행 가능�
 | `--skip-ci-wait`         | CI 대기 및 auto-merge skip (PR 생성만)                                               |                            |
 | `--draft`                | Draft PR 생성, merge skip                                                            |                            |
 | `--local-merge`          | PR 없이 로컬에서 base branch 로 merge 후 push (Step 4 verification 은 동일하게 실행) |                            |
+| `--aggregate-pr`         | Range 를 하나의 work branch에 누적한 뒤 final work -> base PR 1개로 delivery         | `--aggregate-pr`           |
+| `--group-name <name>`    | Aggregate work branch 이름 지정 (`work/<name>`). `--aggregate-pr`에서만 유효         | `--group-name billing-rollout` |
 | `--base-branch <branch>` | Base branch 지정 (default: auto-detect)                                              | `--base-branch develop`    |
 | `--dry-run`              | 실행 계획만 표시 (Task 순서, dependency, mode). 실제 실행하지 않음                    |                            |
 
-> `--local-merge`, `--draft`, `--skip-ci-wait` 는 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
+> `--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` 는 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
+> `--group-name`은 `--aggregate-pr` 없이 사용할 수 없습니다.
 > `--local-merge` 는 **원격 CI 를 거치지 않으므로** 로컬 verification (lint/typecheck/test) 만이 merge 의 안전장치입니다. 민감한 변경에는 권장하지 않습니다.
 
 ## Execution Cycle
@@ -69,6 +80,12 @@ Task 마다: base branch checkout → pull → feature branch 생성 → 구현 
 Task 마다: base branch checkout → pull → feature branch 생성 → 구현 → local merge → push → 반복
 ```
 
+**`--aggregate-pr` mode:**
+
+```text
+work/<name> 생성 → Task 마다 work branch에서 feature branch 생성 → work branch로 local merge → 마지막에 work -> base PR 1개 생성/ready/CI/bot/merge
+```
+
 **`--draft` / `--skip-ci-wait` mode:**
 
 ```text
@@ -85,6 +102,7 @@ Step 1: Dependency Validation & Spec Loading
 
 Step 2: Branch Creation (매 Task 마다 실행 — range 에서도 건너뛰지 않음)
   └─ (normal/local-merge) git checkout <base> && git pull && git checkout -b feature/<task-name>
+  └─ (--aggregate-pr) work branch 에서 feature branch 생성
   └─ (range+draft/skip-ci-wait) 이전 feature branch 에서 분기 (chain branching)
 
 Step 3: Implementation
@@ -96,6 +114,7 @@ Step 4: Task Verification
 Step 5: PR Creation
   └─ create-pr Skill 호출 (security check, CI pre-push validation 포함)
   └─ (--local-merge) skip — PR 생성하지 않음
+  └─ (--aggregate-pr) 각 Task 는 work branch 로 local merge
 
 Step 6: CI Verification & Merge
   └─ gh pr checks --watch → gh pr merge --delete-branch
@@ -111,6 +130,9 @@ Step 8: Mark Complete
 
 Step 9: Next Task (Range mode)
   └─ 남은 Task 가 있으면 Step 1 로 돌아가 전체 Cycle 반복 (Step 2 포함)
+
+Final Aggregate PR (--aggregate-pr only)
+  └─ 마지막 Task 후 work -> base PR 생성, ready 전환, CI, bot review, merge-readiness, merge, local base sync
 ```
 
 ## PR Language
@@ -159,9 +181,15 @@ Step 9: Next Task (Range mode)
 /ywc-sequential-executor 000001-010..000002-030 --draft --pr-lang ko
 ```
 
+### Aggregate PR 로 group delivery
+
+```text
+/ywc-sequential-executor 000001-010..000003-020 --aggregate-pr --group-name billing-rollout --pr-lang ko
+```
+
 ### Flag 충돌 시 동작
 
-`--local-merge`, `--draft`, `--skip-ci-wait` 를 동시에 지정하면 Skill 은 실행을 중단하고 어떤 mode 를 의도했는지 되묻습니다. 이 세 flag 는 서로 다른 종료 상태를 만들기 때문입니다 (전자는 PR 없음 + merge 완료, 후자 둘은 PR 있음 + merge 없음).
+`--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` 를 동시에 지정하면 Skill 은 실행을 중단하고 어떤 mode 를 의도했는지 되묻습니다. 이 네 flag 는 서로 다른 종료 상태를 만들기 때문입니다.
 
 ```text
 /ywc-sequential-executor 000001-010 --local-merge --draft

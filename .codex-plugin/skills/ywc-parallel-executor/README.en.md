@@ -31,8 +31,13 @@ Follow the Arguments or Workflow sections in [SKILL.md](./SKILL.md) for supporte
 | `--local-merge` | Locally merges each task into the base branch and pushes immediately. No PR is created. |
 | `--draft` | Accumulates task changes through local merges, then creates one aggregate draft PR at the end. |
 | `--per-task-pr` | For each task, creates a PR, waits for CI, handles bot reviews, refreshes against the latest base, merges the PR, syncs base, and marks the task complete. |
+| `--aggregate-pr` | Groups the whole invocation into one aggregate branch and PR, then completes ready → CI → bot review → merge. |
 
 In `--per-task-pr`, an earlier task in the same wave may advance the base branch. Before merging, the executor checks whether the PR branch contains the latest base; if not, it merges the base into the worktree branch, pushes, and re-verifies CI. A base-refresh conflict is reported as `BLOCKED`, and the PR is not merged using CI results from an older head SHA.
+
+## Group Execution
+
+Use `--aggregate-pr --group-name <name>` when many tasks should be delivered as one group-level PR. To run multiple groups concurrently, use one independent clone per group rather than worktrees. The canonical procedure and concurrency rules live in [references/aggregate-pr.md](./references/aggregate-pr.md).
 
 ## Output
 

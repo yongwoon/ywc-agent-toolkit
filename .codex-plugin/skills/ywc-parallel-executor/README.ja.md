@@ -31,8 +31,13 @@ $ywc-parallel-executor
 | `--local-merge` | 各 task を base branch に local merge して即時 push します。PR は作成しません。 |
 | `--draft` | 各 task の変更を local merge で蓄積し、最後に aggregate draft PR を作成します。 |
 | `--per-task-pr` | 各 task ごとに PR 作成、CI 待機、bot review 対応、最新 base refresh、PR merge、base sync、Mark Complete まで実行します。 |
+| `--aggregate-pr` | invocation 全体を 1 つの aggregate branch と PR にまとめ、ready → CI → bot review → merge まで完了します。 |
 
 `--per-task-pr` では、同じ wave の先行 task が base branch を進める場合があります。そのため merge 直前に PR branch が最新 base を含むか確認し、遅れている場合は worktree branch に base を merge して push し、CI を再確認します。Base refresh conflict は `BLOCKED` として報告し、古い head SHA の CI 結果だけで PR を merge しません。
+
+## Group 実行
+
+`--aggregate-pr --group-name <name>` は、多数の task を group 単位の単一 PR として delivery する場合に使います。複数 group を同時実行する場合は、worktree ではなく group ごとに独立した clone を使うのが安全です。詳細な手順と並行性ルールは [references/aggregate-pr.md](./references/aggregate-pr.md) を基準にします。
 
 ## 出力
 

@@ -28,6 +28,14 @@ Execute consecutive tasks sequentially in a loop:
 /ywc-sequential-executor 000001-010..000002-030
 ```
 
+### Aggregate PR Execution
+
+Accumulate the full range on one work branch, then deliver it as one final PR:
+
+```text
+/ywc-sequential-executor 000001-010..000002-030 --aggregate-pr --group-name billing-rollout
+```
+
 ### Auto-detect Next Task
 
 When no task is specified, the Skill analyzes the dependency graph and selects the next executable task:
@@ -45,10 +53,13 @@ When no task is specified, the Skill analyzes the dependency graph and selects t
 | `--skip-ci-wait` | Skip CI wait and auto-merge (PR creation only) | |
 | `--draft` | Create draft PR, skip merge | |
 | `--local-merge` | Skip PR entirely — merge the feature branch into the base branch locally and push (Step 4 verification still runs) | |
+| `--aggregate-pr` | Accumulate the range on one work branch, then deliver one final work -> base PR | `--aggregate-pr` |
+| `--group-name <name>` | Name the aggregate work branch (`work/<name>`). Valid only with `--aggregate-pr` | `--group-name billing-rollout` |
 | `--base-branch <branch>` | Base branch override (default: auto-detect) | `--base-branch develop` |
 | `--dry-run` | Show execution plan (task order, dependencies, mode) without executing | |
 
-> `--local-merge`, `--draft`, and `--skip-ci-wait` are mutually exclusive. The Skill stops and asks which mode you intended if more than one is passed.
+> `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. The Skill stops and asks which mode you intended if more than one is passed.
+> `--group-name` cannot be used without `--aggregate-pr`.
 > `--local-merge` **does not run remote CI**, so the only safety net for the merge is the local verification in Step 4 (lint/typecheck/test). Avoid it for sensitive changes.
 
 ## Execution Cycle
@@ -67,6 +78,11 @@ Per task: checkout base → pull → create feature branch → implement → PR 
 Per task: checkout base → pull → create feature branch → implement → local merge → push → repeat
 ```
 
+**`--aggregate-pr` mode:**
+```text
+Create work/<name> → per task: branch from work branch → local merge into work branch → final one work -> base PR with ready/CI/bot/merge
+```
+
 **`--draft` / `--skip-ci-wait` mode:**
 ```text
 Per task: branch from previous feature branch (chain branching) → implement → draft PR → repeat
@@ -82,6 +98,7 @@ Step 1: Dependency Validation & Spec Loading
 
 Step 2: Branch Creation (runs for every task — never skipped in range mode)
   └─ (normal/local-merge) git checkout <base> && git pull && git checkout -b feature/<task-name>
+  └─ (--aggregate-pr) Create feature branch from work branch
   └─ (range+draft/skip-ci-wait) Branch from previous feature branch (chain branching)
 
 Step 3: Implementation
@@ -93,6 +110,7 @@ Step 4: Task Verification
 Step 5: PR Creation
   └─ Invoke create-pr Skill (includes security check, CI pre-push validation)
   └─ (--local-merge) skip — no PR is created
+  └─ (--aggregate-pr) Each task local-merges into the work branch
 
 Step 6: CI Verification & Merge
   └─ gh pr checks --watch → gh pr merge --delete-branch
@@ -108,6 +126,9 @@ Step 8: Mark Complete
 
 Step 9: Next Task (Range mode)
   └─ Return to Step 1 and repeat the full cycle (including Step 2) if tasks remain
+
+Final Aggregate PR (--aggregate-pr only)
+  └─ After the last task, create the work -> base PR, mark ready, run CI, handle bot review, pass merge-readiness, merge, and sync local base
 ```
 
 ## PR Language
@@ -156,9 +177,15 @@ This Skill works with:
 /ywc-sequential-executor 000001-010..000002-030 --draft --pr-lang ko
 ```
 
+### Group delivery with aggregate PR
+
+```text
+/ywc-sequential-executor 000001-010..000003-020 --aggregate-pr --group-name billing-rollout --pr-lang ko
+```
+
 ### Flag conflict behavior
 
-If `--local-merge`, `--draft`, and `--skip-ci-wait` are passed together, the Skill stops and asks which mode you actually want. These flags produce incompatible end states (the first means "no PR, merged"; the others mean "PR exists, not merged"), so the Skill refuses to guess.
+If `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are passed together, the Skill stops and asks which mode you actually want. These flags produce incompatible end states, so the Skill refuses to guess.
 
 ```text
 /ywc-sequential-executor 000001-010 --local-merge --draft

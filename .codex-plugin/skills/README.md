@@ -4,7 +4,7 @@ Codex 전용 `ywc-*` Skill 목록입니다. 이 directory는 `bash scripts/insta
 
 ## PR Conflict & Merge-Readiness Resolution
 
-PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-finish-branch`, `ywc-parallel-executor`)은 canonical conflict 절차인 [`references/pr-conflict-resolution.md`](./references/pr-conflict-resolution.md)를 사용해야 합니다. `SKILL.md` 본문에 같은 logic을 중복 작성하지 말고, `pr-bot-polling.md`와 동일하게 `> **Action required**: Read [../references/pr-conflict-resolution.md]` 포인터를 둡니다.
+PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-finish-branch`, `ywc-sequential-executor`, `ywc-parallel-executor`)은 canonical conflict 절차인 [`references/pr-conflict-resolution.md`](./references/pr-conflict-resolution.md)를 사용해야 합니다. `SKILL.md` 본문에 같은 logic을 중복 작성하지 말고, `pr-bot-polling.md`와 동일하게 `> **Action required**: Read [../references/pr-conflict-resolution.md]` 포인터를 둡니다.
 
 이 reference는 놓치기 쉬운 두 가지 사실을 고정합니다:
 
@@ -30,7 +30,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-project-docs` | `ywc-project-docs` | "project docs를 한국어로 작성해줘" | 한국어/日本語 Project 문서 생성 (docs/ Directory 구조 준수) |
 | `ywc-ubiquitous-language` | `ywc-ubiquitous-language` | "ubiquitous language 정리해줘" | 도메인 공유 어휘 문서 생성·추출·업데이트 |
 | `ywc-task-generator` | `ywc-task-generator` | "spec을 task로 분해해줘" | Specification을 dependency-safe한 구현 Task로 분해 |
-| `ywc-sequential-executor` | `ywc-sequential-executor` | "task를 순차 실행해줘" | Task를 Branch → Implement → Commit → PR → CI → Merge → Cleanup 까지 순차 실행 |
+| `ywc-sequential-executor` | `ywc-sequential-executor` | "task를 순차 실행해줘" | Task를 순차 실행하고, `--aggregate-pr`에서는 work branch 누적 후 최종 PR 1개로 delivery |
 | `ywc-parallel-executor` | `ywc-parallel-executor` | "독립 task를 병렬 실행해줘" | Git Worktree 격리 기반 Task 병렬 실행 |
 | `ywc-code-gen` | `ywc-code-gen` | "plan대로 code generation 해줘" | Backend / Frontend / QA 병렬 Code 생성 |
 | `ywc-impl-review` | `ywc-impl-review` | "구현 결과 review 해줘" | 구현 Review 및 specialist agent routing |
@@ -155,6 +155,16 @@ ywc-changelog-release-notes  # (Release 시) CHANGELOG.md + User Release Notes �
 | Task에 의존성이 있고 순서가 중요함 | `ywc-sequential-executor` |
 | 독립 Task가 2개 이상이고 병렬 실행으로 시간 절약 가능 | `ywc-parallel-executor` |
 | 신규 Feature를 풀스택으로 한 번에 생성 (Backend + Frontend + QA 동시) | `ywc-code-gen` |
+
+### Sequential Aggregate Delivery
+
+`ywc-sequential-executor --aggregate-pr`는 range 실행에서 각 task를 별도 feature branch로 구현하되, Step 5에서 real base가 아니라 하나의 work branch로 local merge합니다. 마지막 task까지 work branch에 누적한 뒤 단일 work -> base PR을 만들고, ready 전환, CI, bot review, merge-readiness gate, merge, local base sync까지 완료해야 `DONE`입니다.
+
+```text
+Use $ywc-sequential-executor to run tasks 001010..003020 with --aggregate-pr --group-name billing-rollout.
+```
+
+`--group-name <name>`은 aggregate mode에서만 유효하며 work branch를 `work/<name>`으로 고정합니다. 이름을 생략하면 executor가 base branch와 timestamp로 work branch를 만듭니다. Stale `.ywc-run-state.json`이 현재 요청 range와 맞지 않으면 자동 resume하지 않고, 저장된 run-state를 이어갈지 삭제하고 새 run으로 시작할지 명시 선택을 요구합니다.
 
 ## Validation
 

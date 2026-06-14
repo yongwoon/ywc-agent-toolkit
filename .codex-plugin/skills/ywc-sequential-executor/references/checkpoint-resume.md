@@ -29,7 +29,25 @@ If the file exists, apply these checks in order:
    - Compare `completed` list against `tasks/completed/` entries — report any mismatch as a warning.
    - If `current_step >= 2` and `branch` is set: run `git branch --list <branch>`. If the branch is gone, set `branch` to `null` and regress `current_step` to `1`.
 
-4. **Offer resume**:
+4. **Intent-match guard (run before offering resume)** — compare the current invocation's explicit task specifier/range against the saved run's scope. Prefer saved `range`; if it is absent or incomplete, fall back to parsing saved `args`.
+   - **No explicit specifier** (auto-detect mode) → skip this guard and continue to step 5. Auto-detect reasonably means "continue the interrupted run."
+   - **Matching specifier** → continue to step 5. A match means the requested single task or range is the same as the saved `range`, or is a subset of the saved task set.
+   - **Mismatching specifier** → treat the checkpoint as stale for the current intent. Do **not** auto-resume, and do not silently discard the state. Surface the divergence and require an explicit choice:
+
+     ```text
+     Stale run-state for a different scope found:
+       Saved run : <saved range / args> (last checkpoint <date>, mode <mode>)
+       Requested : <current specifier>
+
+     These do not match. Choose:
+       [1] Resume the saved run — the requested specifier is ignored
+       [2] Discard the saved run and start the requested specifier — delete
+           .ywc-run-state.json, then run Pre-flight fresh
+     ```
+
+     This guard prevents a stale run-state from hijacking a freshly requested range.
+
+5. **Offer resume**:
    ```
    Resumable run found:
      Last checkpoint : <last_checkpoint>
@@ -38,8 +56,8 @@ If the file exists, apply these checks in order:
    Resume? [Y/n]
    ```
 
-5. If **Y** — skip Pre-flight and jump to `current_task` at `current_step`.
-6. If **N** — delete `.ywc-run-state.json` and proceed with a fresh run.
+6. If **Y** — skip Pre-flight and jump to `current_task` at `current_step`.
+7. If **N**, or if the user chooses option [2] from the mismatch branch — delete `.ywc-run-state.json` and proceed with a fresh run.
 
 ## 3. State File Format
 
@@ -49,7 +67,7 @@ Location: `.ywc-run-state.json` in the project root. Always `.gitignore`d.
 {
   "executor": "sequential",
   "args": "<original arguments>",
-  "mode": "local-merge|draft|skip-ci-wait|normal",
+  "mode": "local-merge|draft|skip-ci-wait|aggregate-pr|normal",
   "tasks_dir": "tasks/",
   "range": ["<task-1>", "<task-2>"],
   "completed": [],
@@ -72,7 +90,7 @@ Update the file at the following events. The skill's per-step Checkpoint markers
 | Pre-flight passes | Initialize file; `started_at`, `range`, `mode`, `tasks_dir` |
 | Step 2 complete | `current_task`, `current_step: 2`, `branch: "feature/<name>"` |
 | Step 4 complete | `current_step: 4` |
-| Step 5 complete (finish-branch returned DONE) | `current_step: 8` (legacy value, preserved for resume compat); `branch: null` for `normal-pr`/`local-merge`; push task to `completed` |
+| Step 5 complete (finish-branch returned DONE) | `current_step: 8` (legacy value, preserved for resume compat); `branch: null` for `normal-pr`/`local-merge`/`aggregate-pr`; push task to `completed` |
 | Step 6 transition (next task starts) | `current_task: <next-task>`, `current_step: 0` |
 | All tasks done | `rm -f .ywc-run-state.json` |
 
