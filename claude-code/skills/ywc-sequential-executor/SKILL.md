@@ -28,6 +28,8 @@ When tempted to skip a step, check this table first:
 | "normal-pr range: CI passed and no bot comments yet — proceed to merge" | Bot reviewers post 1–5 minutes after CI completes, not immediately. `ywc-finish-branch` runs a mandatory 60-second initial wait plus a 300-second polling window before concluding no bots are active. `BOT_COUNT == 0` right after CI is not evidence that no bots are active — it means they have not posted yet. The polling window is a required wait gate in range mode, not a pause to skip. |
 | "Last task in `--local-merge` range: no following task needs this merge, skip finish-branch" | Step 5 (Delivery) is unconditional — **every** task, including the last, must have its feature branch merged into base, the completion-marker committed, and the push executed via `ywc-finish-branch`. Without it, the implementation code is stranded on an orphaned feature branch, `tasks/completed/` is wrong, and the remote base branch is missing the work. The absence of a next task is not a reason to skip delivery. |
 | "Last task in normal-pr range: it's the last one, no need to omit `--defer-push`" | `--defer-push` must be **omitted** on the last task in `normal-pr` range — that omission IS the flush. If `--defer-push` is set on the last task, all accumulated completion-marker commits stay local and are never pushed. The last task's `ywc-finish-branch` invocation performs the single batch push; no separate `git push` runs after the loop. |
+| "`--aggregate-pr`: all tasks local-merged onto the work branch, the run is done" | The work branch is not the base branch. The group is delivered only when the single `work → base` PR is created, marked ready, CI-verified, bot-reviewed, **merged**, and local base synced (Section C of [references/aggregate-pr.md](./references/aggregate-pr.md)). A work branch full of merged tasks with no merged PR is an incomplete group. |
+| "`--aggregate-pr`: per task, deliver to the real base like local-merge" | Per-task delivery targets the **work branch** (`--base-branch work/<name>` in finish-branch local-merge), never the real base. Merging tasks straight onto the real base would defeat the single-PR goal and mutate base before review. Each task branches from and merges into the work branch only. |
 
 **Violating the letter of these rules is violating the spirit.** Sequential execution exists because each task's correctness depends on the previous task's stable state.
 
@@ -48,8 +50,10 @@ Parse `$ARGUMENTS` for the following parameters:
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no mode explanations, no advisor notes |
 | `--review` | flag | | Auto-run /ywc-impl-review after each task, before PR creation or merge |
 | `--run-tests-locally` | flag | | Before merging in `--local-merge` mode, detect and run the project's test command. On failure: mark task FAIL and do not merge. Ignored in PR-based modes. |
+| `--aggregate-pr` | flag | | Deliver the whole range as **one work branch + one PR**: each task is local-merged onto a `work/<name>` branch sequentially, then a single PR delivers the group to the base branch (ready → CI → bot → merge). The real base is never mutated until the final merge. See [references/aggregate-pr.md](./references/aggregate-pr.md) |
+| `--group-name` | `--group-name <name>` | `--group-name project-health` | Names the work branch (`work/<name>`). `--aggregate-pr` only; defaults to `work/<base-branch>-<timestamp>` when omitted |
 
-**Flag conflicts**: `--local-merge`, `--draft`, and `--skip-ci-wait` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want. The reason is that `--local-merge` skips PRs entirely while the other two assume a PR exists — silently picking one would surprise the user.
+**Flag conflicts**: `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want. The reason is that `--local-merge` skips PRs entirely while the others assume a PR exists — silently picking one would surprise the user. `--group-name` is valid only with `--aggregate-pr`.
 
 Example:
 ```text
@@ -70,8 +74,8 @@ When `--dry-run` is set, perform Pre-flight and Task Resolution as usual, then d
 
 - Resolved task list in execution order (with phase+sequence and full name)
 - Dependency status for each task (satisfied / pending)
-- Active mode flags (`--draft`, `--skip-ci-wait`, `--local-merge`, or normal)
-- Base branch that would be used
+- Active mode flags (`--draft`, `--skip-ci-wait`, `--local-merge`, `--aggregate-pr`, or normal)
+- Base branch that would be used (and, for `--aggregate-pr`, the `work/<name>` branch that would be created)
 
 Do **not** create branches, modify files, or run any git commands beyond read-only operations (`git branch --show-current`, `git status`). Exit after displaying the plan.
 
@@ -83,7 +87,7 @@ Do **not** create branches, modify files, or run any git commands beyond read-on
 
 ## Pre-flight
 
-> **Resume check first**: Before running the checks below, look for `.ywc-run-state.json` in the project root. If it exists, follow the **Resume Detection** procedure in [Checkpoint and Resume](#checkpoint-and-resume). If the user confirms resume, skip Pre-flight and jump to the saved task and step. If the user declines or there is no state file, proceed with the checks below.
+> **Resume check first**: Before running the checks below, look for `.ywc-run-state.json` in the project root. If it exists, follow the **Resume Detection** procedure in [Checkpoint and Resume](#checkpoint-and-resume). If the user confirms resume, skip Pre-flight and jump to the saved task and step. If the user declines or there is no state file, proceed with the checks below. **Intent-match guard (do not skip)**: if this invocation specifies an explicit range/task that does **not** match the saved run's `range`, never silently resume — surface the divergence and require an explicit choice (resume the saved run vs discard it and start the new range), per the guard in [references/checkpoint-resume.md](./references/checkpoint-resume.md). A new range hijacked by a stale interrupted run is the failure this guard prevents.
 
 Before starting execution, verify these conditions:
 
@@ -119,6 +123,8 @@ A task is **done** only when **all** of the following have happened, in this ord
 **A merged-but-not-moved task is not done.** Mark Task Complete is part of the task definition, not optional bookkeeping; `ywc-finish-branch` enforces it and refuses to return `DONE` if the move did not verify. If finish-branch returns anything other than `DONE`, the task is incomplete — go back and resolve before transitioning.
 
 `--draft` and `--skip-ci-wait` are the only documented exceptions: in those modes finish-branch ends at PR creation, the task stays in `<tasks-dir>/<task-name>`, and the user is expected to re-run the executor (or merge the PRs manually) to finalize them.
+
+**`--aggregate-pr` adds a group-level gate on top of the per-task definition.** Each task is "done" against the **work branch** (local-merged, marked complete on the work branch, pushed). The **group** is done only when the single `work → base` PR has been created, marked ready, passed CI, cleared bot review, passed the merge-readiness gate, and been **merged** with local base synced — see Section C/E of [references/aggregate-pr.md](./references/aggregate-pr.md). A run whose work PR is created but unmerged is `DONE_WITH_CONCERNS`, never `DONE`.
 
 ## Pre-authorizing Tool Permissions (required for range execution)
 
@@ -234,6 +240,8 @@ git checkout -b feature/<task-name>
 
 This solves the code-availability problem that Step 1's dependency-validation exception alone cannot address: the exception lets the dependency check pass, but without chain branching the implementation code from the previous task would be missing.
 
+**`--aggregate-pr` mode:** create the `work/<name>` branch once before the loop (Section A of [references/aggregate-pr.md](./references/aggregate-pr.md)), then branch every task from the **work branch** (`git checkout work/<name> && git checkout -b feature/<task-name>`). Each task's Step 5 local-merges back into the work branch, so the next task sees all prior work — the same guarantee normal/local-merge mode gets from the base branch, but isolated on the work branch.
+
 Branch name format: `feature/<task-name>` (e.g., `feature/000001-010-db-create-users-table`)
 
 **Checkpoint**: Update `.ywc-run-state.json` — set `current_task` to `<task-name>`, `current_step` to `2`, `branch` to `feature/<task-name>`, and `last_checkpoint` to current UTC time.
@@ -323,7 +331,10 @@ After Step 4 verification (and optional Step 4.5 review) passes, the rest of the
 | `--local-merge` | `local-merge` |
 | `--draft` | `draft` |
 | `--skip-ci-wait` | `skip-ci-wait` |
+| `--aggregate-pr` | `local-merge` **with `--base-branch work/<name>`** (per task) — accumulates onto the work branch, not the real base |
 | (none — default) | `normal-pr` |
+
+**`--aggregate-pr` final delivery (after the last task):** the per-task loop above merges every task onto the `work/<name>` branch. Once the **last** task's local-merge completes, deliver the whole group as a single `work → base` PR (create via `ywc-create-pr --skip-post-ci-check`, then mark ready → CI → bot → merge-readiness gate → `gh pr merge` → sync). The completion markers committed during the loop ride into base through that one merge — do **not** re-Mark-Complete. The exact command sequence is Section C of [references/aggregate-pr.md](./references/aggregate-pr.md).
 
 **⚠️ DO NOT SKIP THIS STEP FOR THE LAST TASK.** The single most common failure in `--local-merge` range mode is jumping from Step 4 directly to the Completion Report for the last task. There is no exception. Even when there are no remaining tasks in the range, `ywc-finish-branch` **must** be invoked — it performs the git merge, push, completion-marker commit, and branch deletion. Skipping it leaves the implementation code on an orphaned feature branch with nothing pushed to the remote base branch.
 

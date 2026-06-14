@@ -30,6 +30,10 @@ When tempted to skip a step, check this table first:
 | "All waves done in `--draft` mode — go straight to Completion Report" | For `--draft`, before the Completion Report the aggregate draft branch must be created and pushed (Step 5 pre-report). The run does not end at the last wave's 4i; the Step 5 pre-report steps are required. |
 | "`--per-task-pr`: the PR is created, move to the next task" | `--per-task-pr` is now a full-lifecycle mode. Creating the PR is not delivery — you must wait for CI to pass, handle bot reviews, **merge the PR** (`gh pr merge --delete-branch`), sync local base, and commit + push the completion marker, all within the task's slot in the wave (Step 4e (a)+(b)). A created-but-unmerged PR is an incomplete task. |
 | "`--per-task-pr`: CI is green, merge the PR" | A sibling task in the same wave may have merged first, leaving this PR `CONFLICTING` or `BEHIND`. Refresh the branch against the latest base (Step 4e (a) step 4, merge-not-rebase per `references/pr-conflict-resolution.md`) and re-verify CI before `gh pr merge`. A real textual conflict on refresh marks the task `BLOCKED` — never force-merge. |
+| "`--aggregate-pr`: the single PR is created, the group is done" | `--aggregate-pr` is full-lifecycle, not draft. Creating the aggregate PR is not delivery — you must mark it ready, wait for CI, handle bot reviews, pass the merge-readiness gate, **merge it** (`gh pr merge --delete-branch`), and sync local base. A created-but-unmerged aggregate PR is an incomplete group. See [references/aggregate-pr.md](references/aggregate-pr.md) §B. |
+| "`--aggregate-pr`: re-Mark-Complete the tasks after the PR merges" | Each task's `chore: mark … as completed` commit already landed on the aggregate branch during its wave (`--defer-push` local merge, same as `--draft`). The aggregate PR merge carries those marker commits into base. Running Mark Complete again would double-move directories. Do **not** re-mark. |
+| "Run several `--aggregate-pr` groups in parallel in this one clone" | They share the local `<base>` branch ref, which the `--draft`-style accumulation mutates (`git reset --hard origin/<base>` + per-task merges) — concurrent groups corrupt each other's base accumulation. Parallel groups need **one clone per group** (or run them back-to-back). See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
+| "Use git worktrees to split the parallel groups inside one clone" | Worktrees separate the working tree and the untracked `.ywc-run-state.json`, but **share `.git` refs** — the local `<base>` branch is shared and can be checked out in only one worktree, so the accumulation still collides at the ref layer. Worktrees are not an isolation boundary for this mode; use separate clones. See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
 
 **Violating the letter of these rules is violating the spirit.** Parallel execution is faster only when wave isolation is honored.
 
@@ -40,20 +44,24 @@ When tempted to skip a step, check this table first:
 | Task specifier | `<name>` or `<start>..<end>` | `000001-010..000002-040` | Single task or range. Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; range matching uses lexical order. |
 | `--all` | flag | | Execute all tasks |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir tasks/` | Tasks directory (default: tasks/) |
+| `--pr-lang` | `--pr-lang <lang>` | `--pr-lang ko` | PR title/description language passed to PR creation (used by `--aggregate-pr`'s final `ywc-create-pr` call). Default: auto-detect from CLAUDE.md or AGENTS.md, fallback to the project's dominant language |
 | `--review` | flag | | Auto-run /ywc-impl-review on each task's worktree branch before the wave merge (Step 4d). Applies the recurring-defects catalog to catch bot-flagged defect classes before the PR opens |
 | `--local-merge` | flag | | No PR, merge and push to base-branch directly |
 | `--draft` | flag | | Create draft PR after all tasks complete |
 | `--per-task-pr` | flag | | Per task: create the PR, wait for CI, handle bot reviews, then **merge the PR** (`gh pr merge --delete-branch`), sync base, and mark complete — the full lifecycle, mirroring `ywc-sequential-executor`'s default `normal-pr` mode |
+| `--aggregate-pr` | flag | | Whole invocation → **one** branch + **one** PR. Tasks still run in parallel (waves) and accumulate onto a single aggregate branch (same per-wave merge as `--draft`); the end-of-run PR is marked ready, CI-verified, bot-reviewed, and **merged**. The full-lifecycle twin of `--draft`. See [references/aggregate-pr.md](references/aggregate-pr.md) |
+| `--group-name` | `--group-name <name>` | `--group-name payments` | Names the aggregate branch (`aggregate/<name>`) and disambiguates concurrent groups. `--aggregate-pr` only; defaults to `aggregate/<base-branch>-<timestamp>` when omitted |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no worktree audit lines, no mode explanations |
 
 `--review` can be combined with other flags.
 
-**Flag conflicts**: `--local-merge`, `--draft`, and `--per-task-pr` are mutually exclusive. If multiple are specified, ask for clarification before execution.
+**Flag conflicts**: `--local-merge`, `--draft`, `--per-task-pr`, and `--aggregate-pr` are mutually exclusive. If multiple are specified, ask for clarification before execution. `--group-name` is valid only with `--aggregate-pr`.
 
-**Default behavior**: When none of `--local-merge`, `--draft`, or `--per-task-pr` is specified, ask the user which mode to use before execution. Do not silently default to any mode — the user must explicitly choose how completed tasks are delivered. Present the three options:
+**Default behavior**: When none of `--local-merge`, `--draft`, `--per-task-pr`, or `--aggregate-pr` is specified, ask the user which mode to use before execution. Do not silently default to any mode — the user must explicitly choose how completed tasks are delivered. Present the four options:
 1. `--local-merge` — No PR, merge and push to base-branch directly
-2. `--draft` — Create a single draft PR after all tasks complete
+2. `--draft` — Create a single draft PR after all tasks complete (left open for human merge)
 3. `--per-task-pr` — Create, CI-verify, bot-review, and **merge** an individual PR per task (full lifecycle, like `ywc-sequential-executor`'s default)
+4. `--aggregate-pr` — One branch + one PR for the whole invocation, CI-verified, bot-reviewed, and **merged** (the full-lifecycle twin of `--draft`)
 
 ## Definition of Done
 
@@ -64,7 +72,9 @@ A task is **done** only when **all** of the following have happened, in this ord
 3. For `--local-merge` and `--per-task-pr`: every merge / PR-merge and completion-marker commit was pushed immediately during the wave. For `--draft`: the deferred local merge commits accumulate locally and are pushed once at the end of all waves before the Completion Report.
 4. The worktree was removed and the feature branch was deleted (Step 4g) — finish-branch leaves the local branch alive when called with `--keep-branch`, which is mandatory in this skill because the worktree owns the branch checkout. Step 4g is therefore the source of truth for branch deletion in parallel execution.
 
-If any of the four is missing, the task is incomplete regardless of how `git log --oneline base-branch` looks. The Wave Delivery + Mark Complete step (Step 4e — `ywc-finish-branch` for `--local-merge`/`--draft`, inline `gh pr merge` + Mark Complete for `--per-task-pr`) writes the code and the contract; Step 4g releases the worktree and the branch.
+If any of the four is missing, the task is incomplete regardless of how `git log --oneline base-branch` looks. The Wave Delivery + Mark Complete step (Step 4e — `ywc-finish-branch` for `--local-merge`/`--draft`/`--aggregate-pr`, inline `gh pr merge` + Mark Complete for `--per-task-pr`) writes the code and the contract; Step 4g releases the worktree and the branch.
+
+**`--aggregate-pr` group-level done**: in addition to every task satisfying the four conditions above (delivered via the same `--draft`-style per-wave local merge with `--defer-push`), the **group** is done only when the single aggregate PR has been marked ready, passed CI, cleared bot review, passed the merge-readiness gate, and been **merged** with local base synced (Step 5 + [references/aggregate-pr.md](references/aggregate-pr.md) §B). A run whose aggregate PR is created but unmerged is `DONE_WITH_CONCERNS` at best, never `DONE`.
 
 ## Non-Stop Execution Principle
 
@@ -84,7 +94,7 @@ The "Zero output between transitions" rule applies to the gap between Step 4g/4h
 
 ## Pre-flight
 
-> **Resume check first**: Before running the checks below, look for `.ywc-run-state.json` in the project root. If it exists, follow the **Resume Detection** procedure in [Checkpoint and Resume](#checkpoint-and-resume). If the user confirms resume, skip Pre-flight and jump to the saved wave and pending tasks. If the user declines or there is no state file, proceed with the checks below.
+> **Resume check first**: Before running the checks below, look for `.ywc-run-state.json` in the project root. If it exists, follow the **Resume Detection** procedure in [Checkpoint and Resume](#checkpoint-and-resume). If the user confirms resume, skip Pre-flight and jump to the saved wave and pending tasks. If the user declines or there is no state file, proceed with the checks below. **Intent-match guard (do not skip)**: if this invocation specifies an explicit range/task that does **not** match the saved run's tasks, never silently resume — surface the divergence and require an explicit choice (resume the saved run vs discard it and start the new range), per the guard in the [Resume Detection](#resume-detection) procedure. A new range hijacked by a stale interrupted run is the failure this guard prevents.
 
 Verify the following conditions before starting:
 
@@ -109,7 +119,7 @@ Verify the following conditions before starting:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
 bash claude-code/skills/scripts/update-state.py init-parallel \
-  --mode <local-merge|draft|per-task-pr> --tasks-dir <tasks-dir> \
+  --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"]},{"wave":2,"tasks":["t-c"]}]'
 ```
 The `--waves` array is the wave plan from Step 3 — one entry per wave, `tasks` listing that wave's task-directory names. See the schema in [Checkpoint and Resume](#checkpoint-and-resume).
@@ -139,7 +149,23 @@ If the file exists:
 1. **Executor check** — `executor` must be `"parallel"`. If `"sequential"`, warn: *"State belongs to sequential-executor. Cannot resume as parallel."* Stop until user deletes the file.
 2. **Age check** — if `last_checkpoint` is older than 48 hours, treat as stale. Ask: *"Stale checkpoint found (<date>). Delete and start fresh? [Y/n]"*
 3. **Worktree validation** — for each task in the in-progress wave's `pending` list, check whether `../worktree-<task-name>` exists. If a worktree is missing, add a warning: the agent must recreate it in Step 4a before implementation can continue.
-4. **Offer resume**:
+4. **Intent-match guard (run before offering resume)** — compare the current invocation's explicit task specifier/range against the saved run's tasks (`waves[].tasks`; `args` is the fallback):
+   - **No explicit specifier** (auto-detect mode) → skip this guard; proceed to step 5 (resuming the prior run is the sensible default).
+   - **Specifier matches** the saved tasks (same range, or a subset of the saved set) → proceed to step 5.
+   - **Specifier does NOT match** the saved tasks → the user intends a **new** run. **Do not auto-resume**, and do not default to either option — surface the divergence and wait for an explicit choice:
+     ```
+     ⚠️ Stale run-state for a different scope found:
+        Saved run : <saved waves' tasks / args>  (last checkpoint <date>, mode <mode>)
+        Requested : <current specifier>
+     These do not match. Choose:
+       [1] Resume the saved run — your requested <specifier> is ignored
+       [2] Discard the saved run and start <specifier> — first delete
+           .ywc-run-state.json and remove the saved run's leftover worktrees and
+           branches (`ywc-worktrees --mode prune`, then `git branch -D
+           feature/<saved-task>` for each), then run Pre-flight fresh
+     ```
+     This guard exists because the most damaging silent failure is a freshly requested range being **hijacked** by an interrupted prior run's state — exactly the case where an interrupted `--aggregate-pr` run silently resumes when a later, different range is requested.
+5. **Offer resume** (only when the guard passed — auto-detect, or a matching specifier):
    ```
    Resumable run found:
      Last checkpoint : <last_checkpoint>
@@ -148,8 +174,8 @@ If the file exists:
      Pending         : <pending>
    Resume? [Y/n]
    ```
-5. If **Y** — skip Pre-flight and jump to Wave `resume_wave`, skipping already-merged tasks.
-6. If **N** — delete `.ywc-run-state.json` and proceed with a fresh run.
+6. If **Y** — skip Pre-flight and jump to Wave `resume_wave`, skipping already-merged tasks.
+7. If **N**, or the guard's option **[2]** — delete `.ywc-run-state.json` (and for [2], also remove the saved run's worktrees/branches) and proceed with a fresh run.
 
 ### State File Format
 
@@ -159,7 +185,7 @@ Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
 {
   "executor": "parallel",
   "args": "<original arguments>",
-  "mode": "local-merge|draft|per-task-pr",
+  "mode": "local-merge|draft|per-task-pr|aggregate-pr",
   "tasks_dir": "tasks/",
   "current_wave": 0,
   "waves": [
@@ -368,6 +394,7 @@ For each task in the wave **sequentially** (topological order within the wave) �
 |---|---|
 | `--local-merge` | `--mode local-merge --keep-branch` (push every task immediately) |
 | `--draft` | `--mode local-merge --keep-branch --defer-push` (push deferred to end of all waves; a single draft PR is created in Step 5) |
+| `--aggregate-pr` | `--mode local-merge --keep-branch --defer-push` (**identical to `--draft` per wave**; Step 5 lifts the accumulated state onto one branch and runs the full merge lifecycle per [references/aggregate-pr.md](references/aggregate-pr.md) §B) |
 
 ```bash
 /ywc-finish-branch \
@@ -450,35 +477,25 @@ No task should be in an in-between state (e.g. moved to `completed/` but branch 
 
 ### Step 5: Completion Report
 
-**`--draft` mode: Aggregate Draft PR** (execute before the report below)
+**`--draft` and `--aggregate-pr` modes: Aggregate PR** (execute before the report below)
 
-When `--draft` is specified, all task changes have accumulated locally on base-branch via wave merges with `--defer-push`. After all waves pass the Wave Audit:
+Both modes accumulate all task changes locally on base-branch via wave merges with
+`--defer-push`, then lift that state onto a single branch and open one PR. The full
+command sequences live in [references/aggregate-pr.md](references/aggregate-pr.md):
 
-1. Create an aggregate branch from the current local base-branch state:
-   ```bash
-   DRAFT_BRANCH="draft/<base-branch>-$(date +%Y%m%d-%H%M%S)"
-   git checkout -b "$DRAFT_BRANCH"
-   git push origin "$DRAFT_BRANCH"
-   ```
-2. Reset the local base-branch to match the remote (the aggregate branch now holds all the changes):
-   ```bash
-   git checkout <base-branch>
-   git reset --hard origin/<base-branch>
-   ```
-3. Create the draft PR targeting base-branch:
-   ```bash
-   gh pr create --draft \
-     --base <base-branch> \
-     --head "$DRAFT_BRANCH" \
-     --title "<title summarising all completed tasks>" \
-     --body "<bullet list of completed tasks with their one-line descriptions>"
-   ```
-4. Poll for bot reviews using [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews` for this PR. After review fixes are pushed, re-verify CI:
-   ```bash
-   gh pr checks "$DRAFT_BRANCH_PR_NUMBER"
-   ```
-   If any check fails, diagnose and fix (lint/format auto-fix first, then type/test/build manual fix), commit, push, and re-verify. Up to **2 fix attempts**. The PR stays as draft after all fixes — do not un-draft or merge.
-5. Capture the PR URL; include it in the Completion Report below.
+- **`--draft`** → §A: create `draft/<base>-<timestamp>`, push, reset local base, open a
+  **draft** PR, poll bots, re-verify CI, and **stop** (left open for a human to merge).
+  Capture the PR URL for the report.
+- **`--aggregate-pr`** → §B: create `aggregate/<group-name>` (or timestamped), push, reset
+  local base, open the PR, **mark it ready**, CI-verify, bot-review, pass the
+  merge-readiness gate, **merge** (`gh pr merge --delete-branch`), and sync local base. The
+  completion-marker commits ride into base through this single merge — do not re-Mark
+  Complete. Capture the merged PR URL for the report.
+
+> **Action required**: Read [references/aggregate-pr.md](references/aggregate-pr.md) before
+> executing either path — it carries the exact branch names, the CI/bot/merge-readiness
+> gates (reusing `pr-bot-polling.md` and `pr-conflict-resolution.md`), and the §C
+> multi-group concurrency rules.
 
 **`--per-task-pr` mode: no end-of-run push** — each task's PR was already merged via `gh pr merge --delete-branch` and its completion-marker commit was already pushed during the task's slot in the wave (Step 4e (a) step 5 and (b)). There is nothing deferred to flush here, and the individual PRs are merged and closed on the remote — not left open. Proceed directly to the report below.
 

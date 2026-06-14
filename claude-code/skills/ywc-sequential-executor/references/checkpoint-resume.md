@@ -29,7 +29,22 @@ If the file exists, apply these checks in order:
    - Compare `completed` list against `tasks/completed/` entries — report any mismatch as a warning.
    - If `current_step >= 2` and `branch` is set: run `git branch --list <branch>`. If the branch is gone, set `branch` to `null` and regress `current_step` to `1`.
 
-4. **Offer resume**:
+4. **Intent-match guard (run before offering resume)** — compare the current invocation's explicit task specifier/range against the saved run's tasks (`range`; `args` is the fallback):
+   - **No explicit specifier** (auto-detect mode) → skip this guard; proceed to step 5 (resuming the prior run is the sensible default).
+   - **Specifier matches** the saved `range` (same range, or a subset) → proceed to step 5.
+   - **Specifier does NOT match** the saved `range` → the user intends a **new** run. **Do not auto-resume**, and do not default to either option — surface the divergence and wait for an explicit choice:
+     ```
+     ⚠️ Stale run-state for a different scope found:
+        Saved run : <saved range / args>  (last checkpoint <date>, mode <mode>)
+        Requested : <current specifier>
+     These do not match. Choose:
+       [1] Resume the saved run — your requested <specifier> is ignored
+       [2] Discard the saved run and start <specifier> — delete
+           .ywc-run-state.json, then run Pre-flight fresh
+     ```
+     This guard exists because the most damaging silent failure is a freshly requested range being **hijacked** by an interrupted prior run's state.
+
+5. **Offer resume** (only when the guard passed — auto-detect, or a matching specifier):
    ```
    Resumable run found:
      Last checkpoint : <last_checkpoint>
@@ -38,8 +53,8 @@ If the file exists, apply these checks in order:
    Resume? [Y/n]
    ```
 
-5. If **Y** — skip Pre-flight and jump to `current_task` at `current_step`.
-6. If **N** — delete `.ywc-run-state.json` and proceed with a fresh run.
+6. If **Y** — skip Pre-flight and jump to `current_task` at `current_step`.
+7. If **N**, or the guard's option **[2]** — delete `.ywc-run-state.json` and proceed with a fresh run.
 
 ## 3. State File Format
 
@@ -49,7 +64,7 @@ Location: `.ywc-run-state.json` in the project root. Always `.gitignore`d.
 {
   "executor": "sequential",
   "args": "<original arguments>",
-  "mode": "local-merge|draft|skip-ci-wait|normal",
+  "mode": "local-merge|draft|skip-ci-wait|normal|aggregate-pr",
   "tasks_dir": "tasks/",
   "range": ["<task-1>", "<task-2>"],
   "completed": [],

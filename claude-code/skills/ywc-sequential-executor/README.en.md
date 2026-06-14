@@ -45,11 +45,36 @@ When no task is specified, the Skill analyzes the dependency graph and selects t
 | `--skip-ci-wait` | Skip CI wait and auto-merge (PR creation only) | |
 | `--draft` | Create draft PR, skip merge | |
 | `--local-merge` | Skip PR entirely — merge the feature branch into the base branch locally and push (Step 4 verification still runs) | |
+| `--aggregate-pr` | Deliver the whole range as one work branch + one PR (local-merge each task onto `work/<name>` sequentially, then one `work → base` PR) | |
+| `--group-name <name>` | Names the work branch (`work/<name>`). `--aggregate-pr` only; defaults to `work/<base>-<timestamp>` | `--group-name project-health` |
 | `--base-branch <branch>` | Base branch override (default: auto-detect) | `--base-branch develop` |
 | `--dry-run` | Show execution plan (task order, dependencies, mode) without executing | |
 
-> `--local-merge`, `--draft`, and `--skip-ci-wait` are mutually exclusive. The Skill stops and asks which mode you intended if more than one is passed.
+> `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. The Skill stops and asks which mode you intended if more than one is passed.
 > `--local-merge` **does not run remote CI**, so the only safety net for the merge is the local verification in Step 4 (lint/typecheck/test). Avoid it for sensitive changes.
+
+### Group Execution (`--aggregate-pr`)
+
+Use `--aggregate-pr` to **accumulate a range onto one work branch and deliver it as a single PR per group**. The whole range is processed in one flow:
+
+1. Create the `work/<name>` branch once, from the base branch.
+2. Run each task in the range **sequentially against the work branch** (each task local-merges into the work branch → the next task branches from the updated work branch).
+3. After the last task, open **one `work → base` PR** → ready → CI → bot review → merge → base sync.
+4. Report.
+
+The real base (main) is **not modified** until the final PR merges. There are no worktrees or waves — purely sequential, so it is simpler and safer than the parallel variant.
+
+```text
+/ywc-sequential-executor 000024-010..000025-030 --aggregate-pr --group-name project-health --review --pr-lang ko
+```
+
+- `--review`: gate each task through `/ywc-impl-review` before it joins the work branch
+- `--pr-lang ko`: fix the final PR title/description language
+- Preview task order and the work branch to be created with `--dry-run`.
+
+See [references/aggregate-pr.md](./references/aggregate-pr.md) for the full procedure.
+
+> Note: a leftover `.ywc-run-state.json` from an interrupted run causes the next invocation to resume that run, ignoring your new range. Delete `.ywc-run-state.json` first when you intend a new range.
 
 ## Execution Cycle
 
