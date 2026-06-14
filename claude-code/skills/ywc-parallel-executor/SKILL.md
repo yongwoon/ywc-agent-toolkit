@@ -34,6 +34,8 @@ When tempted to skip a step, check this table first:
 | "`--aggregate-pr`: re-Mark-Complete the tasks after the PR merges" | Each task's `chore: mark … as completed` commit already landed on the aggregate branch during its wave (`--defer-push` local merge, same as `--draft`). The aggregate PR merge carries those marker commits into base. Running Mark Complete again would double-move directories. Do **not** re-mark. |
 | "Run several `--aggregate-pr` groups in parallel in this one clone" | They share the local `<base>` branch ref, which the `--draft`-style accumulation mutates (`git reset --hard origin/<base>` + per-task merges) — concurrent groups corrupt each other's base accumulation. Parallel groups need **one clone per group** (or run them back-to-back). See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
 | "Use git worktrees to split the parallel groups inside one clone" | Worktrees separate the working tree and the untracked `.ywc-run-state.json`, but **share `.git` refs** — the local `<base>` branch is shared and can be checked out in only one worktree, so the accumulation still collides at the ref layer. Worktrees are not an isolation boundary for this mode; use separate clones. See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
+| "Each wave has only one task — worktrees add nothing, just work on the aggregate branch" | Worktree-per-task (Step 4a) is unconditional, independent of wave width and delivery mode. A fully linear chain (every wave = 1 task) is the **wrong input** for this skill — stop and route to ywc-sequential-executor per the Step 2 Linear-chain guard. Never invent an `aggregate-branch-serial` path. |
+| "`--aggregate-pr` accumulates on the aggregate branch, so check it out and commit there" | `--aggregate-pr` changes only **end-of-run** delivery (Step 5 / §B). Per-task execution (Step 4a–4e) is identical to every mode: isolated worktree + feature branch + `--defer-push` local merge. The aggregate branch is carved at Step 5, never used as the per-task work surface. |
 
 **Violating the letter of these rules is violating the spirit.** Parallel execution is faster only when wave isolation is honored.
 
@@ -241,6 +243,8 @@ Separate tasks into waves based on dependency relationships:
 - **Wave N**: Tasks that become executable after all Wave N-1 tasks complete
 - If a circular dependency is detected, stop immediately and report
 
+**Linear-chain guard**: if every planned wave contains exactly one task, the input is a strictly sequential chain — there is no concurrency to exploit and worktree isolation is pure overhead. Stop and tell the user that `ywc-sequential-executor` (with `--aggregate-pr` for single-PR delivery) is the correct tool; proceed in parallel only on explicit user confirmation. Never silently work directly on the base or aggregate branch.
+
 #### Planning Advisor (optional, Pattern C)
 
 Wave Planning is the critical upfront decision in this skill — a wrong wave boundary cascades into unnecessary serialization (waste) or unsafe parallelism (merge conflicts and broken dependencies) across every subsequent wave. Because the damage is expensive to undo once worktrees and feature branches exist, this is the right place to apply **Pattern C** from [advisor-pattern.md](../references/advisor-pattern.md): a **single** upfront Opus advisor call before worktree creation begins.
@@ -289,6 +293,11 @@ Repeat the following for each wave. **Each task must have its own independent wo
 **4a. Create Worktrees** — For each task in the wave:
 ```bash
 git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
+```
+
+**4a-verify (mechanical gate — do not skip)**: before Step 4b, confirm each task's worktree physically exists. Implementing a task on the base/aggregate branch working tree (the `aggregate-branch-serial` deviation) violates the isolation contract regardless of wave width. Re-run Step 4a on failure — never reach 4b without one isolated worktree per task:
+```bash
+for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktree-$t$" || { echo "GATE FAIL: worktree-$t missing"; exit 1; }; done
 ```
 
 **Checkpoint**: `bash claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
@@ -528,12 +537,6 @@ Display the following after all waves are complete:
 This is the preferred format for CI scripts or automation that parse the report output.
 
 **Reporting Symbols**: Use the shared vocabulary in [symbols.md](../references/symbols.md) for the per-task status column, the worktree cleanup status column, and the wave-level summary line. **Parallel-specific addition**: `🚨` for `LEAKED` worktree or branch detected by the final audit (Step 5) — surface explicitly, never reduce to `❌`. Leaks are a distinct severity category the user must act on regardless of overall run status. For multi-step worktree lifecycle traces, use the flow operator `»` (e.g. `worktree ✅ » impl ✅ » verify ✅ » merge ✅ » cleanup ✅`).
-
-Example wave summary row:
-
-```
-Wave 2 (3 tasks)  | ✅ 2  ❌ 1  | force-cleaned: 0  preserved: 1  LEAKED: 0
-```
 
 **Completion Status**: End every report with one of these four declarations on its own line. This is the final line of the report — nothing follows it.
 

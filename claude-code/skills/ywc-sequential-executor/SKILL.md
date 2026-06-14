@@ -387,10 +387,14 @@ Both `ywc-finish-branch` (Step 5) and the optional `/ywc-impl-review` invocation
 If executing a range:
 
 1. Check if there are remaining tasks in the range. If no remaining tasks, and Step 5 has returned `DONE` for the current task, proceed to the Completion Report.
-2. **Pre-transition state check (`normal-pr` and `local-merge` modes):** Run the bundled verification script:
+2. **Pre-transition state check (`normal-pr`, `local-merge`, and `--aggregate-pr` modes):** Run the bundled verification script, passing the branch the next task will branch from — `<base-branch>` in `normal-pr`/`local-merge`, or `work/<name>` in `--aggregate-pr`. The script is mode-agnostic and checks the same 4 conditions against whichever integration branch it receives. Skip for `--draft`/`--skip-ci-wait`, which chain-branch from the still-alive previous feature branch:
    ```bash
+   # normal-pr / local-merge (integration branch is the base branch):
    bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
      <base-branch> <completed-task-name> [<tasks-dir>]
+   # --aggregate-pr (integration branch is the work branch):
+   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+     work/<name> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.
 3. Transition to the next task **immediately and silently** — emit no text output, do not ask for confirmation, do not summarize. The next output after Step 5 of this task is the first tool call (reading `README.md`) of Step 1 of the next task — not any text. Suppress any transition-message impulse and issue the tool call instead.

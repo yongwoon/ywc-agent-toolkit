@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
-# verify-transition.sh <base-branch> <completed-task-name> [tasks-dir]
+# verify-transition.sh <integration-branch> <completed-task-name> [tasks-dir]
 #
 # Runs the 4-condition pre-transition state check between tasks in range mode.
 # All four conditions must pass before moving to the next task.
 #
+# <integration-branch> is the branch each task merges into and the loop returns to:
+# the base branch in normal-pr / local-merge mode, or the work branch in --aggregate-pr
+# mode. The script is mode-agnostic — pass whichever branch the next task branches from.
+#
 # Conditions checked:
-#   1. Current branch == base branch
+#   1. Current branch == integration branch (base, or work/<name> in --aggregate-pr)
 #   2. Feature branch feature/<completed-task> no longer exists
 #   3. Working tree is clean (tracked modifications → FAIL; untracked only → WARN)
 #   4. tasks-dir/completed/<completed-task> exists AND tasks-dir/<completed-task> is gone

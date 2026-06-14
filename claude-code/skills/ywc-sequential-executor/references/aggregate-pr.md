@@ -68,6 +68,18 @@ working tree on the work branch, so the next task's Step 2 `git checkout "$WORK_
 runs cleanly. This is the same code-availability guarantee `--local-merge` provides, but
 accumulating on the work branch instead of the real base.
 
+Before transitioning to the next task, run the same pre-transition gate the other modes use
+(Step 6.2), passing the **work branch** as the integration argument:
+
+```bash
+bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+  "$WORK_BRANCH" <completed-task-name> <tasks-dir>
+```
+
+Condition 1 then asserts the working tree is back on `$WORK_BRANCH`, condition 2 that the
+feature branch was deleted, and condition 4 that the task moved to `completed/`. Do not start
+the next task without exit 0 — this is the aggregate-pr equivalent of the base-branch gate.
+
 A `BLOCKED` task halts the range exactly as in other modes (four-step triage, then surface).
 The work branch retains the tasks merged so far; resume picks up at the failed task.
 
