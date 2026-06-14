@@ -160,6 +160,8 @@ ywc-changelog-release-notes  # (Release 시) CHANGELOG.md + User Release Notes �
 
 `ywc-sequential-executor --aggregate-pr`는 range 실행에서 각 task를 별도 feature branch로 구현하되, Step 5에서 real base가 아니라 하나의 work branch로 local merge합니다. 마지막 task까지 work branch에 누적한 뒤 단일 work -> base PR을 만들고, ready 전환, CI, bot review, merge-readiness gate, merge, local base sync까지 완료해야 `DONE`입니다.
 
+절차상 Step 2는 각 task branch를 work branch에서 만들고, Step 5는 해당 feature branch를 work branch로 local merge하며, 마지막 task 후 final step에서 work -> base PR을 생성·merge합니다.
+
 ```text
 Use $ywc-sequential-executor to run tasks 001010..003020 with --aggregate-pr --group-name billing-rollout.
 ```
