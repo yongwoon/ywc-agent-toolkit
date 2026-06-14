@@ -66,6 +66,15 @@ For every task in the range, run the normal execution cycle with these substitut
 
 Each task must pass verification, local-merge into `$WORK_BRANCH`, move its task directory to `<tasks-dir>/completed/<task-name>`, commit `chore: mark <task-name> as completed`, push `$WORK_BRANCH`, and delete its feature branch before the next task starts.
 
+Before transitioning to the next task, run the same Step 6.2 gate used by the other completed modes, passing `$WORK_BRANCH` as the integration branch:
+
+```bash
+bash codex/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+  "$WORK_BRANCH" <completed-task-name> <tasks-dir>
+```
+
+Condition 1 then asserts the working tree is back on `$WORK_BRANCH`, condition 2 that `feature/<task-name>` was deleted, and condition 4 that the task moved to `completed/`. Do not start the next task without exit 0.
+
 A `BLOCKED` task halts the range as in other sequential modes. Preserve the feature branch and work branch for recovery; do not skip ahead.
 
 ## C. Final Delivery: One Work -> Base PR

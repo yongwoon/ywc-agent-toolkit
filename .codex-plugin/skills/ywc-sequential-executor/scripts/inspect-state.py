@@ -6,9 +6,9 @@ The executor writes .ywc-run-state.json automatically — use this script to ins
 validate, or reset state from the command line.
 
 Usage:
-  python scripts/save-state.py           # Human-readable state summary
-  python scripts/save-state.py --json    # Raw JSON dump
-  python scripts/save-state.py --reset   # Delete state file (force fresh run)
+  python scripts/inspect-state.py           # Human-readable state summary
+  python scripts/inspect-state.py --json    # Raw JSON dump
+  python scripts/inspect-state.py --reset   # Delete state file (force fresh run)
 
 Run from the project root (same directory as .ywc-run-state.json).
 """
@@ -115,8 +115,8 @@ def main() -> None:
     print(f"  File: {STATE_FILE.resolve()}")
     print()
     print("Commands:")
-    print("  python scripts/save-state.py --json    # raw JSON")
-    print("  python scripts/save-state.py --reset   # delete state, force fresh run")
+    print("  python scripts/inspect-state.py --json    # raw JSON")
+    print("  python scripts/inspect-state.py --reset   # delete state, force fresh run")
 
 
 if __name__ == "__main__":

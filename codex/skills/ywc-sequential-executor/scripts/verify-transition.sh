@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# verify-transition.sh <base-branch> <completed-task-name> [tasks-dir]
+# verify-transition.sh <integration-branch> <completed-task-name> [tasks-dir]
 #
 # Runs the 4-condition pre-transition state check between tasks in range mode.
 # All four conditions must pass before moving to the next task.
 #
+# <integration-branch> is the branch each task merges into and the loop returns to:
+# the base branch in normal-pr / local-merge mode, or work/<name> in --aggregate-pr.
+#
 # Conditions checked:
-#   1. Current branch == base branch
+#   1. Current branch == integration branch
 #   2. Feature branch feature/<completed-task> no longer exists
 #   3. Working tree is clean (tracked modifications → FAIL; untracked only → WARN)
 #   4. tasks-dir/completed/<completed-task> exists AND tasks-dir/<completed-task> is gone
@@ -16,27 +19,27 @@
 #
 # Usage:
 #   bash codex/skills/ywc-sequential-executor/scripts/verify-transition.sh \
-#     <base-branch> <completed-task-name> [tasks-dir]
+#     <integration-branch> <completed-task-name> [tasks-dir]
 #   tasks-dir defaults to "tasks/"
 
 set -euo pipefail
 
-BASE_BRANCH="${1:-}"
+INTEGRATION_BRANCH="${1:-}"
 COMPLETED_TASK="${2:-}"
 TASKS_DIR="${3:-tasks/}"
 
-if [ -z "$BASE_BRANCH" ] || [ -z "$COMPLETED_TASK" ]; then
-  echo "Usage: verify-transition.sh <base-branch> <completed-task-name> [tasks-dir]" >&2
+if [ -z "$INTEGRATION_BRANCH" ] || [ -z "$COMPLETED_TASK" ]; then
+  echo "Usage: verify-transition.sh <integration-branch> <completed-task-name> [tasks-dir]" >&2
   exit 1
 fi
 
 FAILED=0
 
-# ── Condition 1: current branch must equal base branch ──────────────────────
+# ── Condition 1: current branch must equal integration branch ───────────────
 CURRENT=$(git branch --show-current 2>/dev/null || echo "")
-if [ "$CURRENT" != "$BASE_BRANCH" ]; then
-  echo "FAIL [1]: Current branch is '$CURRENT', expected '$BASE_BRANCH'"
-  echo "  Fix: git checkout $BASE_BRANCH"
+if [ "$CURRENT" != "$INTEGRATION_BRANCH" ]; then
+  echo "FAIL [1]: Current branch is '$CURRENT', expected '$INTEGRATION_BRANCH'"
+  echo "  Fix: git checkout $INTEGRATION_BRANCH"
   FAILED=1
 fi
 

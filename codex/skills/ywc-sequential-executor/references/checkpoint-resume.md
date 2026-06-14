@@ -90,20 +90,20 @@ Update the file at the following events. The skill's per-step Checkpoint markers
 | Pre-flight passes | Initialize file; `started_at`, `range`, `mode`, `tasks_dir` |
 | Step 2 complete | `current_task`, `current_step: 2`, `branch: "feature/<name>"` |
 | Step 4 complete | `current_step: 4` |
-| Step 5 complete (finish-branch returned DONE) | `current_step: 8` (legacy value, preserved for resume compat); `branch: null` for `normal-pr`/`local-merge`/`aggregate-pr`; push task to `completed` |
+| Step 5 complete (finish-branch returned DONE) | `current_step: 8` (legacy value, preserved for resume compat); `branch: null` for `normal-pr`/`local-merge`/`aggregate-pr` (feature branch deleted; in `aggregate-pr`, working tree returns to `work/<name>`); push task to `completed` |
 | Step 6 transition (next task starts) | `current_task: <next-task>`, `current_step: 0` |
 | All tasks done | `rm -f .ywc-run-state.json` |
 
 ## 5. Manual Inspection
 
 ```bash
-python <path-to-skill>/scripts/save-state.py           # state summary
+python <path-to-skill>/scripts/inspect-state.py        # state summary
 python <path-to-skill>/scripts/resume-state.py         # validate + resume point
 python <path-to-skill>/scripts/resume-state.py --json  # machine-readable output
 rm .ywc-run-state.json                                  # reset (force fresh run)
 ```
 
-The `save-state.py` and `resume-state.py` helpers live under `scripts/` next to this reference.
+The `inspect-state.py` and `resume-state.py` helpers live under `scripts/` next to this reference.
 
 ## 6. .gitignore Wiring
 

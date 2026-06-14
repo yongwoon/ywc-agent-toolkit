@@ -34,6 +34,8 @@ When tempted to skip a step, check this table first:
 | "`--aggregate-pr`: re-Mark-Complete the tasks after the PR merges" | Each task's `chore: mark ... as completed` commit already landed on the aggregate branch during its wave (`--defer-push` local merge, same as `--draft`). The aggregate PR merge carries those marker commits into base. Running Mark Complete again would double-move directories. Do **not** re-mark. |
 | "Run several `--aggregate-pr` groups in parallel in this one clone" | They share the local `<base>` branch ref, which the `--draft`-style accumulation mutates (`git reset --hard origin/<base>` + per-task merges) — concurrent groups corrupt each other's base accumulation. Parallel groups need **one clone per group** (or run them back-to-back). See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
 | "Use git worktrees to split the parallel groups inside one clone" | Worktrees separate the working tree and the untracked `.ywc-run-state.json`, but **share `.git` refs** — the local `<base>` branch is shared and can be checked out in only one worktree, so the accumulation still collides at the ref layer. Worktrees are not an isolation boundary for this mode; use separate clones. See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
+| "Each wave has one task, so work directly on the aggregate branch" | A fully linear chain is the wrong input for this skill. Stop at Step 2 and route to `ywc-sequential-executor`; never invent an `aggregate-branch-serial` path. |
+| "`--aggregate-pr` means commit tasks on the aggregate branch" | `--aggregate-pr` changes only end-of-run delivery. Per-task execution still requires isolated worktree + feature branch + local merge; the aggregate branch is created in Step 5, never used as a task workspace. |
 
 **Violating the letter of these rules is violating the spirit.** Parallel execution is faster only when wave isolation is honored.
 
@@ -158,6 +160,8 @@ Separate tasks into waves based on dependency relationships:
 - **Wave N**: Tasks that become executable after all Wave N-1 tasks complete
 - If a circular dependency is detected, stop immediately and report
 
+**Linear-chain guard**: if every planned wave contains exactly one task, stop before worktree creation and route the user to `ywc-sequential-executor` (with `--aggregate-pr` when they want single-PR delivery). Proceed in parallel only after explicit user confirmation; never work directly on the base or aggregate branch.
+
 #### Planning Advisor (optional, Pattern C)
 
 Wave Planning is the critical upfront decision in this skill — a wrong wave boundary cascades into unnecessary serialization (waste) or unsafe parallelism (merge conflicts and broken dependencies) across every subsequent wave. Because the damage is expensive to undo once worktrees and feature branches exist, this is the right place to apply **Pattern C** from [advisor-pattern.md](../references/advisor-pattern.md): a **single** upfront advisor call before worktree creation begins.
@@ -213,6 +217,8 @@ $ywc-worktrees --mode create \
 ```
 
 Record the resolved worktree path for the subagent payload. Record the resolved root (`worktree_root`) and root kind (`standard` or `legacy`) in `.ywc-run-state.json` so resume validation checks the same location used during creation.
+
+**4a-verify (mechanical gate — do not skip)**: before Step 4b, confirm each task's resolved path appears in `git worktree list --porcelain` and is an existing directory. If any path is missing, re-run Step 4a or stop `BLOCKED`; never spawn agents and never fall back to the base or aggregate branch working tree.
 
 **Checkpoint**: use the same `STATE_SCRIPT` resolver above, then run `python3 "$STATE_SCRIPT" wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 

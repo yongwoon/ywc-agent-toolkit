@@ -7,7 +7,7 @@ every wave / task event. That is pure deterministic JSON mutation (move a task
 ``last_checkpoint``), and doing it by hand risks malformed JSON, stale
 timestamps, and dropped fields. This script applies exactly one mutation, stamps
 ``last_checkpoint`` with the current UTC time, and writes atomically. The
-read-only ``save-state.py`` / ``resume-state.py`` already prove the schema.
+read-only inspection / resume helpers already prove the schema.
 
 Run from the project root (same directory as ``.ywc-run-state.json``).
 
