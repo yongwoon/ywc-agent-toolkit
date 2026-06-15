@@ -24,6 +24,10 @@ $ywc-parallel-executor
 
 지원 option과 mode는 [SKILL.md](./SKILL.md)의 Arguments 또는 Workflow section을 따릅니다.
 
+## Docker Isolation
+
+Docker Compose를 사용하는 task worktree에서는 executor가 `ywc-docker-isolate`에 port isolation을 위임합니다. Worktree 생성 전 selected task stack을 audit하고, 각 worktree 검증 후 task별 deterministic port를 setup하며, 성공한 task는 worktree prune 전에 stack을 teardown합니다. `BLOCKED` 또는 preserved worktree는 복구를 위해 Docker state를 유지합니다.
+
 ## Delivery Modes
 
 | Mode | 동작 |
