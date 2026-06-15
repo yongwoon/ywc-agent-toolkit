@@ -10,6 +10,7 @@
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/ywc-plans/example.md --advisor-budget 0
 ```
 
 ## 审查维度
@@ -28,6 +29,10 @@
 ## 输出格式
 
 按严重程度分类的问题（严重 / 警告 / 建议），每项附带文件:行号引用和改进建议。
+
+## Advisor Budget
+
+`--advisor-budget <n>` 设置本次 invocation 的 Phase 2 advisor budget。省略时使用默认值 `2`；`0` 会禁用 advisor escalation。报告头包含 `Phase 2 advisor calls used: X of N (...)` 和 `Advisor budget status: available | disabled | exhausted | advisor-required | not-reported`。
 
 ## 触发条件
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec Ready"
+  short_description: "Converge a goal or spec until it is ready for task generation"
+  default_prompt: "Use $ywc-spec-ready to validate and iteratively refine this goal or existing specification until ywc-spec-validate returns DONE, then print the ywc-task-generator handoff without implementing code."

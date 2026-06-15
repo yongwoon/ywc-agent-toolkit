@@ -6,6 +6,7 @@ A Spec Reviewer Agent Skill that validates specification quality after writing s
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/ywc-plans/example.md --advisor-budget 0
 ```
 
 ## Review Dimensions
@@ -24,6 +25,10 @@ A Spec Reviewer Agent Skill that validates specification quality after writing s
 ## Output Format
 
 Issues classified by severity (Critical / Warning / Suggestion), each with file:line references and improvement suggestions.
+
+## Advisor Budget
+
+`--advisor-budget <n>` sets the Phase 2 advisor budget for this invocation. Omitted uses the default `2`; `0` disables advisor escalation. The report header includes `Phase 2 advisor calls used: X of N (...)` and `Advisor budget status: available | disabled | exhausted | advisor-required | not-reported`.
 
 ## Triggering
 
