@@ -13,7 +13,9 @@ priority resolution (`.worktrees/` > CLAUDE.md `worktree_root` >
 - `--mode audit` — detect stale / leaked / missing worktrees (Pre-flight or
   wave-end)
 - `--mode prune` — post-merge cleanup (`git worktree remove` + local branch
-  delete + `git worktree prune` + verify)
+  delete + `git worktree prune` + verify). Pass `--keep-branch` to remove only
+  the worktree and preserve the local branch (e.g. keeping an integration branch
+  for a later trunk PR).
 
 For the full argument table and priority resolution chain, see
 [SKILL.md](./SKILL.md).

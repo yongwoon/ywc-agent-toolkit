@@ -244,6 +244,7 @@ Separate tasks into waves based on dependency relationships:
 - If a circular dependency is detected, stop immediately and report
 
 **Linear-chain guard**: if every planned wave contains exactly one task, the input is a strictly sequential chain — there is no concurrency to exploit and worktree isolation is pure overhead. Stop and tell the user that `ywc-sequential-executor` (with `--aggregate-pr` for single-PR delivery) is the correct tool; proceed in parallel only on explicit user confirmation. Never silently work directly on the base or aggregate branch.
+> **Granularity cross-ref**: routing a linear chain to `ywc-sequential-executor --worktree` is **not** a violation of this guard — sequential's `--worktree` is a *run-level* worktree wrapping the whole run in one tree (tasks still run sequentially inside it), a different granularity from the *task-level*, one-per-task worktrees this guard governs.
 
 #### Planning Advisor (optional, Pattern C)
 

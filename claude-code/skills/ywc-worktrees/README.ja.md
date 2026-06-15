@@ -11,7 +11,9 @@ lifecycle 管理 skill。Worktree priority resolution (`.worktrees/` > CLAUDE.md
 - `--mode audit` — Stale / leaked / missing worktree の検出 (Pre-flight
   または wave 終了時)
 - `--mode prune` — Post-merge cleanup (`git worktree remove` + local branch
-  delete + `git worktree prune` + verify)
+  delete + `git worktree prune` + verify)。`--keep-branch` flag を渡すと worktree
+  のみ削除し local branch は保持します (例: integration branch を最終 trunk PR
+  用に残す場合)。
 
 argument table と priority chain の詳細は [SKILL.md](./SKILL.md) を参照して
 ください。

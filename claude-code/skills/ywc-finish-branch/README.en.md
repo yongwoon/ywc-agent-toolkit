@@ -12,7 +12,7 @@ A single-responsibility extraction of the delivery logic that `ywc-sequential-ex
 - **Post-merge hard gate**: confirms the merge actually ran via `git log -1 --format="%s"`
 - **Definition of Done enforced**: moves the task directory to `<tasks-dir>/completed/` with a verification gate
 - **Bot review polling compatible**: `--bot-action sequential|parallel` matches the caller's CI strategy
-- **Worktree-agnostic**: leaves worktree lifecycle to the parallel executor for a clean responsibility boundary
+- **Worktree-lifecycle-agnostic, but worktree-aware**: worktree creation/removal stays with the caller, yet passing `--worktree-path <path>` runs every git command in Steps 1 and 5–8 as `git -C <path>`, so delivery can happen inside the run worktree created by `ywc-sequential-executor --worktree` (delivery semantics unchanged — only the working directory differs)
 
 ## Usage
 
