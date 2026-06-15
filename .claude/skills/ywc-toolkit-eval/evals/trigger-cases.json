@@ -95,6 +95,40 @@
       "kind": "collision",
       "impostor": "ywc-typescript-reviewer",
       "note": "language reviewers share trigram surface — each must only win its own language"
+    },
+    {
+      "id": "specready-pos-1",
+      "prompt": "이 사양서를 spec-validate DONE 까지 자동으로 수렴시켜줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive"
+    },
+    {
+      "id": "specready-pos-2",
+      "prompt": "loop ywc-plan validate until the spec is ready for task-generator",
+      "expected": "ywc-spec-ready",
+      "kind": "positive"
+    },
+    {
+      "id": "specready-pos-3",
+      "prompt": "spec ready loop 돌려서 plan validate 반복해줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive"
+    },
+    {
+      "id": "specready-vs-specvalidate-1",
+      "prompt": "이 사양서 완성도 한 번만 검토해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "collision",
+      "impostor": "ywc-spec-ready",
+      "note": "one-shot review — spec-ready (the convergence loop) must NOT win on a single review"
+    },
+    {
+      "id": "specready-vs-agentic-1",
+      "prompt": "이 목표를 코드까지 전체 파이프라인으로 자동 실행해줘",
+      "expected": "ywc-agentic",
+      "kind": "collision",
+      "impostor": "ywc-spec-ready",
+      "note": "full goal-to-code pipeline — spec-ready only converges a spec, agentic owns the end-to-end loop"
     }
   ]
 }

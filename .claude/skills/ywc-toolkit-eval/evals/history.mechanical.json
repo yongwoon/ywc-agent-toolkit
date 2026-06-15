@@ -149,6 +149,11 @@
     "S4": 5,
     "S5": 5
   },
+  "claude-code/skills/ywc-spec-ready": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
   "claude-code/skills/ywc-spec-validate": {
     "S2": 4,
     "S4": 5,

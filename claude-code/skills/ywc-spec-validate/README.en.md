@@ -30,7 +30,7 @@ A Spec Reviewer Agent Skill that validates specification quality after writing s
 
 ### Phase 2 — Advisor (Opus, up to 2 calls)
 
-Opus Advisor provides judgment for ambiguous findings only.
+Opus Advisor provides judgment for ambiguous findings only. `--advisor-budget <n>` controls the per-invocation escalation count; `--advisor-budget 0` disables escalation and reports those findings as normal Suggestions (for orchestrator cost guarding).
 
 ## Output Format
 

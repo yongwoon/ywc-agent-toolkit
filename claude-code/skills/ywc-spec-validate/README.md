@@ -30,7 +30,7 @@
 
 ### Phase 2 — Advisor (Opus, 최대 2회)
 
-모호한 Findings에 한해 Opus Advisor가 판단을 제공합니다.
+모호한 Findings에 한해 Opus Advisor가 판단을 제공합니다. `--advisor-budget <n>` 으로 호출당 escalation 횟수를 제어할 수 있으며, `--advisor-budget 0` 이면 escalation 을 비활성화하고 해당 Finding 을 일반 Suggestion 으로 보고합니다 (orchestrator 의 비용 가드용).
 
 ## 출력 형식
 

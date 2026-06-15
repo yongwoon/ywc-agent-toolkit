@@ -30,7 +30,7 @@
 
 ### Phase 2 — Advisor（Opus、最大 2 回）
 
-曖昧な Finding に限り Opus Advisor が判断を提供します。
+曖昧な Finding に限り Opus Advisor が判断を提供します。`--advisor-budget <n>` で呼び出しごとの escalation 回数を制御でき、`--advisor-budget 0` の場合は escalation を無効化し、該当 Finding を通常の Suggestion として報告します（orchestrator の cost guard 用）。
 
 ## 出力形式
 
