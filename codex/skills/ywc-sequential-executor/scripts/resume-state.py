@@ -56,16 +56,45 @@ def git_branch_exists(branch: str) -> bool:
     return bool(result.stdout.strip())
 
 
-def completed_on_disk(tasks_dir: str) -> list[str]:
-    completed_path = Path(tasks_dir) / "completed"
+def completed_on_disk(tasks_dir: str, base_dir: Path = Path(".")) -> list[str]:
+    completed_path = base_dir / tasks_dir / "completed"
     if not completed_path.exists():
         return []
     return [d.name for d in completed_path.iterdir() if d.is_dir()]
 
 
-def fail(msg: str, as_json: bool, hint: str = "") -> None:
+def git_worktree_paths() -> list[Path]:
+    result = subprocess.run(
+        ["git", "worktree", "list", "--porcelain"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return []
+    paths: list[Path] = []
+    for line in result.stdout.splitlines():
+        if line.startswith("worktree "):
+            paths.append(Path(line.removeprefix("worktree ")))
+    return paths
+
+
+def discover_state_file() -> tuple[Path | None, list[Path]]:
+    if STATE_FILE.exists():
+        return STATE_FILE, []
+
+    candidates = [
+        path / ".ywc-run-state.json"
+        for path in git_worktree_paths()
+        if (path / ".ywc-run-state.json").exists()
+    ]
+    if len(candidates) == 1:
+        return candidates[0], candidates
+    return None, candidates
+
+
+def fail(msg: str, as_json: bool, hint: str = "", status: str = "error") -> None:
     if as_json:
-        print(json.dumps({"status": "error", "reason": msg, "hint": hint}))
+        print(json.dumps({"status": status, "reason": msg, "hint": hint}))
     else:
         print(f"CANNOT RESUME: {msg}")
         if hint:
@@ -80,13 +109,21 @@ def main() -> None:
     parser.add_argument("--json", dest="as_json", action="store_true")
     args = parser.parse_args()
 
-    if not STATE_FILE.exists():
+    state_file, candidates = discover_state_file()
+    if state_file is None:
+        if candidates:
+            fail(
+                "Multiple worktree checkpoint states found",
+                args.as_json,
+                "Inspect candidates: " + ", ".join(str(path) for path in candidates),
+                "needs_context",
+            )
         fail("No .ywc-run-state.json found", args.as_json, "This is a fresh run.")
 
     try:
-        state = json.loads(STATE_FILE.read_text())
+        state = json.loads(state_file.read_text())
     except json.JSONDecodeError as exc:
-        fail(f"Cannot parse state file: {exc}", args.as_json, "Run: rm .ywc-run-state.json")
+        fail(f"Cannot parse state file: {exc}", args.as_json, f"Run: rm {state_file}")
 
     executor = state.get("executor")
     if executor != "sequential":
@@ -106,11 +143,12 @@ def main() -> None:
         )
 
     tasks_dir = state.get("tasks_dir", "tasks/")
+    state_base = state_file.parent if state.get("worktree_mode") else Path(".")
     warnings: list[str] = []
 
     # Cross-validate completed tasks
     state_completed = set(state.get("completed", []))
-    disk_completed = set(completed_on_disk(tasks_dir))
+    disk_completed = set(completed_on_disk(tasks_dir, state_base))
     missing_from_disk = state_completed - disk_completed
     extra_on_disk = disk_completed - state_completed
     if missing_from_disk:
@@ -162,6 +200,12 @@ def main() -> None:
         "remaining": remaining,
         "mode": state.get("mode", "unknown"),
         "tasks_dir": tasks_dir,
+        "state_file": str(state_file),
+        "worktree_mode": bool(state.get("worktree_mode")),
+        "worktree_path": state.get("worktree_path"),
+        "integration_branch": state.get("integration_branch"),
+        "start_point": state.get("start_point"),
+        "run_task_name": state.get("run_task_name"),
         "warnings": warnings,
     }
 

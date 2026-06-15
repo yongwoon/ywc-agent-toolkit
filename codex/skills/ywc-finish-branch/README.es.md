@@ -16,7 +16,7 @@ Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequ
 - **Puerta dura post-merge**: confirma que el merge realmente se ejecutó vía `git log -1 --format="%s"`
 - **Definición de Hecho aplicada**: mueve el directorio de tarea a `<tasks-dir>/completed/` con una puerta de verificación
 - **Compatible con polling de revisión de bot**: `--bot-action sequential|parallel` coincide con la estrategia CI del llamador
-- **Agnóstico de worktree**: deja el ciclo de vida del worktree al ejecutor paralelo para un límite limpio de responsabilidades
+- **Modo worktree-path**: `--worktree-path <path>` ejecuta la entrega con `git -C <path>` para worktrees secuenciales de ejecución, mientras la creación/eliminación queda en el llamador
 
 ## Uso
 
@@ -39,6 +39,13 @@ Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequ
 ```
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
+```
+
+### Modo worktree path
+
+```
+/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+  --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 
 ### Disparadores en lenguaje natural

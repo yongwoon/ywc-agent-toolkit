@@ -16,7 +16,7 @@
 - **合并后硬性关卡**：通过 `git log -1 --format="%s"` 确认合并实际执行
 - **强制执行完成定义**：将任务目录移动到 `<tasks-dir>/completed/` 并设有验证关卡
 - **兼容 Bot 审查轮询**：`--bot-action sequential|parallel` 与调用者的 CI 策略匹配
-- **Worktree 无关**：将 worktree 生命周期留给并行执行器，保持清晰的职责边界
+- **Worktree-path 模式**：`--worktree-path <path>` 使用 `git -C <path>` 在顺序运行级 worktree 中执行交付，创建/删除仍由调用方负责
 
 ## 使用方法
 
@@ -39,6 +39,13 @@
 ```
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
+```
+
+### Worktree path 模式
+
+```
+/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+  --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 
 ### 自然语言触发词

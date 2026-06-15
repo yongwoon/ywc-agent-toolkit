@@ -13,7 +13,13 @@ priority resolution (`.worktrees/` > CLAUDE.md `worktree_root` >
 - `--mode audit` — detect stale / leaked / missing worktrees (Pre-flight or
   wave-end)
 - `--mode prune` — post-merge cleanup (`git worktree remove` + local branch
-  delete + `git worktree prune` + verify)
+  delete or `--keep-branch` preserve + `git worktree prune` + verify)
+
+## `--keep-branch`
+
+`--keep-branch` is prune-only. It removes the worktree and stale metadata while
+preserving `--branch`; non-aggregate `ywc-sequential-executor --worktree` uses
+it to keep the accumulated integration branch after run worktree cleanup.
 
 For the full argument table and priority resolution chain, see
 [SKILL.md](./SKILL.md).
@@ -25,8 +31,8 @@ For the full argument table and priority resolution chain, see
 | `scripts/audit-worktrees.sh` | Core audit logic for `--mode audit` |
 | `scripts/cleanup-worktree.sh` | Core cleanup and branch deletion logic for `--mode prune` |
 
-Both scripts are centralized under this skill so callers do not maintain
-divergent worktree audit or cleanup logic.
+Both scripts were moved from `ywc-parallel-executor/scripts/` via `git mv` to
+preserve their commit history.
 
 ## Design Source
 
@@ -44,8 +50,8 @@ dispatched at runtime.
   [`ywc-finish-branch`](../ywc-finish-branch/) (Step 5 / 8 cleanup)
 - **downstream**: none (leaf-operation skill)
 
-## Bundle Scope
+## Root Maintenance
 
-This Codex skill follows the same worktree lifecycle contract as the Claude
-Code counterpart, while using the Codex bundle path
-(`codex/skills/ywc-worktrees/`) as the source for scripts and metadata.
+This skill ships identical content to the claude-code and codex-skill roots
+because worktree management is a universal feature. There is no auto-sync (the
+sync hook was removed); each root is maintained independently.

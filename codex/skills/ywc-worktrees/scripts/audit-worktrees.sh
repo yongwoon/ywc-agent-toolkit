@@ -9,7 +9,7 @@
 #   1  Audit failed: findings printed on stdout
 #   2  Usage error
 
-set -euo pipefail
+set -uo pipefail
 
 DO_PRUNE=0
 EXPECT=""

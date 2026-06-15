@@ -3,216 +3,45 @@
   "evals": [
     {
       "id": 1,
-      "name": "single-task-basic",
-      "prompt": "/ywc-sequential-executor 001010-db-create-users-table --pr-lang ja",
-      "description": "Single task execution with Japanese PR language. Tasks directory contains 3 tasks across 2 phases. Task 001010 is a root task with no dependencies.",
-      "expected_behavior": [
-        "Verify clean working tree and on base branch",
-        "Check 001010 has no dependencies (root task) — skip dependency validation",
-        "Create branch: feature/001010-db-create-users-table",
-        "Read task.md and implement according to checklist",
-        "Commit at logical boundaries with project convention",
-        "Run Task Verify commands",
-        "Invoke create-pr skill (PR title and description in Japanese)",
-        "Wait for CI with gh pr checks --watch",
-        "Merge with --delete-branch",
-        "git checkout main && git pull origin main",
-        "mv tasks/001010-db-create-users-table tasks/completed/001010-db-create-users-table",
-        "Commit and push the completion marker"
-      ],
-      "edge_cases": [
-        "What if working tree is dirty?",
-        "What if already on a feature branch?"
-      ]
+      "prompt": "Use $ywc-sequential-executor 000001-010..000001-030 --tasks-dir tasks/ --local-merge --run-tests-locally.",
+      "expected_output": "Range의 각 task를 독립 feature branch로 순차 실행한다. 각 task마다 dependency validation, task README/spec loading, branch lifecycle, implementation, Task Verify, touched tests, full project test suite, lint/typecheck/build를 통과해야 한다. --run-tests-locally와 --local-merge가 함께 있으므로 local test command를 merge 전에 실행한다. 모든 task는 ywc-finish-branch delivery를 거치며 마지막 task도 예외 없이 merge, Mark Complete, push, branch cleanup까지 완료한다.",
+      "files": []
     },
     {
       "id": 2,
-      "name": "range-execution-with-dependencies",
-      "prompt": "/ywc-sequential-executor 001010..001030 --pr-lang ko",
-      "description": "Range execution of 3 tasks in Phase 001. Task 001020 depends on 001010, task 001030 depends on 001020. Tests the full loop including dependency validation between iterations.",
-      "expected_behavior": [
-        "Resolve range: 001010, 001020, 001030",
-        "--- Task 001010 ---",
-        "No dependency — execute full cycle (branch, implement, PR, CI, merge, sync, mark complete)",
-        "--- Task 001020 ---",
-        "Verify 001010 is in tasks/completed/ — proceed",
-        "Execute full cycle",
-        "--- Task 001030 ---",
-        "Verify 001020 is in tasks/completed/ — proceed",
-        "Execute full cycle",
-        "Display completion report: 3 tasks executed, all PR URLs"
-      ],
-      "edge_cases": [
-        "What if CI fails on task 001020 and can't be fixed?",
-        "Does the loop correctly stop and report?",
-        "Is the completion marker committed before starting next task?"
-      ]
+      "prompt": "Use $ywc-sequential-executor 000001-010 --local-merge --draft.",
+      "expected_output": "--local-merge와 --draft가 mutually exclusive임을 감지하고 branch creation이나 file edit 전에 멈춘다. 둘 중 어떤 delivery mode를 원하는지 확인을 요청하고 임의로 한 mode를 선택하지 않는다.",
+      "files": []
     },
     {
       "id": 3,
-      "name": "auto-detect-next-task",
-      "prompt": "/ywc-sequential-executor",
-      "description": "No task specified. Tasks directory has 5 tasks. Tasks 001010 and 001020 are already in completed/. Task 002010 depends on 001010 (satisfied). Task 001030 depends on 001020 (satisfied). Task 002020 depends on 002010 (not satisfied).",
-      "expected_behavior": [
-        "Read dependency-graph.md",
-        "Check tasks/completed/ — find 001010 and 001020",
-        "Identify ready tasks: 001030 (deps satisfied), 002010 (deps satisfied)",
-        "Select lowest sequence in earliest phase: 001030",
-        "Execute single task cycle for 001030"
-      ],
-      "edge_cases": [
-        "What if no tasks are ready (all have unmet dependencies)?",
-        "What if completed/ directory doesn't exist yet?",
-        "What if multiple tasks in different phases are both ready?"
-      ]
+      "prompt": "Use $ywc-sequential-executor --dry-run --tasks-dir tasks/.",
+      "expected_output": "Read-only pre-flight와 task resolution만 수행한다. Resolved task list, dependency status, active mode flags, base branch를 출력하고 branch 생성, file modification, commit, PR creation, merge를 하지 않는다.",
+      "files": []
     },
     {
       "id": 4,
-      "name": "ci-failure-retry",
-      "prompt": "/ywc-sequential-executor 001010-db-create-users-table --pr-lang ja",
-      "description": "CI fails after PR creation. Tests the retry logic: read failure details, attempt fix, push, wait again. After 2 failed attempts, stop and notify user.",
-      "expected_behavior": [
-        "Execute Steps 1-5 normally",
-        "Step 6: gh pr checks fails",
-        "Read failure details with gh pr checks",
-        "Attempt to fix the failing check",
-        "Push fix commit",
-        "Wait for CI again",
-        "If fails again: attempt fix #2",
-        "If still fails: STOP and output failure report to user",
-        "Report includes: which checks failed, what was tried, PR URL"
-      ],
-      "edge_cases": [
-        "What if the fix introduces new failures?",
-        "What if CI is stuck (not failing, just pending)?"
-      ]
+      "prompt": "Use $ywc-sequential-executor 000001-010..000001-030 --aggregate-pr --group-name checkout-hardening --tasks-dir tasks/.",
+      "expected_output": "--aggregate-pr range 실행 전에 dedicated work branch `work/checkout-hardening`를 base에서 생성하고 remote에 push한다. 각 task branch는 real base가 아니라 work branch에서 생성하며, task delivery는 per-task local-merge로 `work/checkout-hardening`에 누적한다. final delivery는 단일 `work -> base` PR lifecycle로 진행한다: create PR, ready, CI wait, bot review polling, merge-readiness gate, merge, local base sync. Final work PR이 아직 unmerged이면 전체 run은 DONE_WITH_CONCERNS로 보고하고, real base는 final PR merge 전까지 mutate하지 않았음을 명시한다.",
+      "files": []
     },
     {
       "id": 5,
-      "name": "draft-mode-skip-merge",
-      "prompt": "/ywc-sequential-executor 001010..001020 --draft --pr-lang en",
-      "description": "Draft mode: create PRs but skip CI wait and merge. Tests that Steps 6-8 are correctly skipped.",
-      "expected_behavior": [
-        "--- Task 001010 ---",
-        "Execute Steps 1-5 (branch from base, implement, verify, PR as draft)",
-        "Skip Step 6 (CI wait and merge)",
-        "Step 7: git checkout <base-branch> (no pull — nothing merged)",
-        "Skip Step 8 (mark complete — task not merged)",
-        "--- Task 001020 ---",
-        "Step 1: Dependency check — 001010 not in completed/ but PR was created in this range → exception applies, proceed",
-        "Step 2: Chain branching — create feature/001020 from feature/001010 (not base branch) so 001010 code is available",
-        "Execute Steps 3-5 (implement, verify, PR as draft)",
-        "Skip Steps 6-8",
-        "Display completion report: 2 tasks, both PRs as draft, remind user to review and merge manually"
-      ],
-      "edge_cases": [
-        "Does chain branching correctly pick up the previous feature branch?",
-        "What if the previous feature branch was deleted unexpectedly?",
-        "Are deferred completion-marker pushes handled correctly (no push until end)?"
-      ]
+      "prompt": "A stale .ywc-run-state.json from $ywc-sequential-executor 000001-010..000001-030 exists, then the user runs $ywc-sequential-executor 000002-010..000002-030 --tasks-dir tasks/.",
+      "expected_output": "Resume Detection에서 saved range와 current explicit range의 intent-match를 먼저 검증한다. 저장된 range와 현재 명시 range가 다르면 silent resume을 금지하고, saved run resume과 stale run-state discard/new run 중 명시 선택을 요구한다. 사용자의 선택 전에는 branch creation, file edit, task execution을 시작하지 않는다.",
+      "files": []
     },
     {
       "id": 6,
-      "name": "local-merge-single-task",
-      "prompt": "/ywc-sequential-executor 001010-db-create-users-table --local-merge",
-      "description": "Local merge mode: skip PR creation, merge locally with --no-ff, push to base branch. Verifies that Steps 5 (PR) is skipped, Step 6 uses local merge, Step 7 is no-op, and Step 8 marks complete normally.",
-      "expected_behavior": [
-        "Pre-flight: verify clean tree, on base branch, gh CLI ready",
-        "Step 1: Read README.md, validate no dependencies for root task",
-        "Step 2: git checkout -b feature/001010-db-create-users-table",
-        "Step 3: Implement according to task.md",
-        "Step 4: Run Task Verify, task-local tests, full project test suite, lint/typecheck",
-        "Step 5: SKIP entirely (--local-merge)",
-        "Step 6: git checkout <base> && git pull && git merge --no-ff feature/001010-db-create-users-table && git push && git branch -d",
-        "Step 7: Already on base branch, no action needed",
-        "Step 8: mv to completed/, commit, push",
-        "Completion report: 1 task, local-merge with merge commit SHA, remind no remote CI ran"
-      ],
-      "edge_cases": [
-        "What if git merge --no-ff reports a conflict?",
-        "What if git push is rejected (remote moved)?",
-        "What if the base branch has diverged since step 2?"
-      ]
+      "prompt": "Use $ywc-sequential-executor 000001-010..000001-030 --worktree --dry-run --base-branch main.",
+      "expected_output": "--worktree가 delivery mode가 아니라 execution-location flag임을 유지한다. Dry-run은 read-only로 task order, dependency status, active mode flags, base branch와 함께 planned run worktree path, integration_branch, start_point, and $WT/.ywc-run-state.json state path를 출력한다. Branch, worktree, state file, PR, commit은 생성하지 않는다.",
+      "files": []
     },
     {
       "id": 7,
-      "name": "dry-run-range",
-      "prompt": "/ywc-sequential-executor 001010..002030 --dry-run --pr-lang ja",
-      "description": "Dry run mode on a range: should display the execution plan without performing any mutations. Verifies that no branches are created, no files are modified, and no git write operations occur.",
-      "expected_behavior": [
-        "Pre-flight: verify tasks directory exists, read dependency-graph.md",
-        "Resolve range: list all tasks between 001010 and 002030",
-        "Display execution plan:",
-        "  - Task list in order with phase+sequence and full name",
-        "  - Dependency status for each task (satisfied / pending)",
-        "  - Mode: normal (no --draft/--skip-ci-wait/--local-merge)",
-        "  - PR language: ja",
-        "  - Base branch: auto-detected",
-        "No branches created, no files modified, no commits, no PRs",
-        "Exit after displaying plan"
-      ],
-      "edge_cases": [
-        "What if some tasks in the range have unmet dependencies?",
-        "Does --dry-run combined with --draft show the correct mode?",
-        "What if the tasks directory doesn't exist?"
-      ]
-    },
-    {
-      "id": 8,
-      "name": "new-format-naming-single-task",
-      "prompt": "/ywc-sequential-executor 000001-010-db-create-users-table --pr-lang ko",
-      "description": "Single task execution using the new 6-3 hyphenated naming format (6-digit PHASE + hyphen + 3-digit SEQUENCE) produced by the updated ywc-task-generator. Verifies that the executor correctly parses the new format and that prefix matching still works with it.",
-      "expected_behavior": [
-        "Parse task specifier: accept hyphenated form 000001-010-db-create-users-table",
-        "Pre-flight: verify clean working tree and on base branch",
-        "Step 1: Validate dependencies (root task has none)",
-        "Step 2: git checkout -b feature/000001-010-db-create-users-table",
-        "Step 3: Implement according to task.md",
-        "Step 4: Run Task Verify, task-local tests, full suite, lint/typecheck",
-        "Step 5-6: Create PR and merge with --delete-branch",
-        "Step 7: git checkout <base-branch> && git pull",
-        "Step 8: mv tasks/000001-010-db-create-users-table tasks/completed/000001-010-db-create-users-table, commit, push"
-      ],
-      "edge_cases": [
-        "What if user mixes legacy 001010-* and new 000001-010-* formats in the same session?",
-        "Does prefix matching 000001-010 correctly resolve to 000001-010-db-create-users-table?",
-        "What if a range spans legacy and new formats (e.g., 001010..000002-010)?"
-      ]
-    },
-    {
-      "id": 9,
-      "name": "aggregate-pr-range-delivery",
-      "prompt": "/ywc-sequential-executor 000001-010..000001-030 --aggregate-pr --group-name checkout-hardening --tasks-dir tasks/",
-      "description": "Aggregate PR mode: execute a range through one dedicated work branch and one final work -> base PR.",
-      "expected_behavior": [
-        "Create work/checkout-hardening from the real base branch and push it before the task loop",
-        "Create each task feature branch from the current work branch, not from the real base branch",
-        "Deliver each task with finish-branch local-merge targeting work/checkout-hardening",
-        "Keep the real base branch unchanged until final PR merge",
-        "After the last task, create one work -> base PR, mark it ready, wait for CI, handle bot reviews, run merge-readiness, merge, and sync local base",
-        "Do not re-Mark-Complete after the final aggregate PR merges"
-      ],
-      "edge_cases": [
-        "What if work/checkout-hardening already exists?",
-        "What if the final work -> base PR is created but not merged?",
-        "What if base advances before the final merge-readiness gate?"
-      ]
-    },
-    {
-      "id": 10,
-      "name": "resume-intent-mismatch",
-      "prompt": "A stale .ywc-run-state.json from /ywc-sequential-executor 000001-010..000001-030 exists, then the user runs /ywc-sequential-executor 000002-010..000002-030 --tasks-dir tasks/.",
-      "description": "Resume detection must not let an old range hijack a new explicit range.",
-      "expected_behavior": [
-        "Compare the saved range against the current explicit range before offering resume",
-        "If the saved range and requested range mismatch, do not silently resume",
-        "Ask the user to choose between resuming the saved run and discarding the stale run-state for a fresh run",
-        "Do not create branches, edit files, or execute tasks before that choice"
-      ],
-      "edge_cases": [
-        "What if the user provided no explicit specifier?",
-        "What if the requested range is a subset of the saved range?"
-      ]
+      "prompt": "A previous $ywc-sequential-executor 000001-010..000001-030 --worktree run stopped with BLOCKED and preserved a run worktree containing .ywc-run-state.json; the project root has no state file.",
+      "expected_output": "Resume Detection은 root .ywc-run-state.json 부재를 확인한 뒤 git worktree list --porcelain으로 preserved run worktree state를 탐색한다. Matching candidate가 하나이면 executor, age, branch, completed tasks, intent-match를 검증한 뒤 resume candidate로 제시한다. Multiple candidates가 있으면 NEEDS_CONTEXT로 candidate paths를 출력하고 임의 선택하지 않는다. Non-DONE 상태에서는 $WT, integration_branch, current feature branch를 cleanup하지 않는다.",
+      "files": []
     }
   ]
 }
