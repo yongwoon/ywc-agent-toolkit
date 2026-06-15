@@ -56,6 +56,7 @@ When tempted to skip a step, check this table first:
 | `--root` | `<path>` | `--root .worktrees` | Fallback worktree root when the project has neither `.worktrees/` nor `CLAUDE.md` `worktree_root`. Project-level configuration wins over this value. |
 | `--expect` | `<task1,task2,...>` | `--expect 000001-010,000001-020` | (Audit only) Comma-separated list of task names that should currently have a worktree. Any extra or missing worktree fails the audit. |
 | `--force` | flag | | (Prune only) Pass `--force` to `git worktree remove` even if the worktree is dirty. Use only when the caller has confirmed the worktree's contents are disposable. |
+| `--keep-branch` | flag | | (Prune only) Remove the worktree and prune stale metadata, but **skip** the local branch deletion (`git branch -d`) and its verification. Same semantics as `ywc-finish-branch --keep-branch`: use when the branch must survive the worktree teardown (e.g. an integration branch a caller will later raise a trunk PR from). |
 
 ## Modes
 
@@ -64,7 +65,7 @@ When tempted to skip a step, check this table first:
 | `resolve` | `.worktrees/` presence, CLAUDE.md `worktree_root`, `--root` | nothing | Caller wants to know where a worktree would land before committing to create. Returns the resolved path on stdout. |
 | `create` | resolved root + `--task-name` + `--branch` + `--base-branch` | `git worktree add` | Per-task worktree creation. Called by `ywc-parallel-executor` Step 4 for each in-wave task. |
 | `audit` | resolved root contents + `--expect` (optional) | nothing (read-only) | Pre-flight or wave-end audit. Reports stale, leaked, or unexpected worktrees. |
-| `prune` | resolved root + `--task-name` + optional `--branch` | `git worktree remove` + local branch delete + `git worktree prune` | Post-merge cleanup. Called by `ywc-finish-branch` Step 5/8 and `ywc-parallel-executor` Step 4g. |
+| `prune` | resolved root + `--task-name` + optional `--branch` + optional `--keep-branch` | `git worktree remove` + local branch delete (skipped when `--keep-branch`) + `git worktree prune` | Post-merge cleanup. Called by `ywc-finish-branch` Step 5/8 and `ywc-parallel-executor` Step 4g. `--keep-branch` preserves the branch (e.g. `ywc-sequential-executor --worktree` non-aggregate teardown). |
 
 Modes are mutually exclusive — `--mode` takes exactly one value. The caller chooses the mode based on the lifecycle stage; this skill does not infer.
 
@@ -116,9 +117,10 @@ Error handling: if `git worktree add` fails (locked, branch already exists elsew
 2. Run the bundled `scripts/cleanup-worktree.sh` against the resolved task worktree path. The script:
    - Verifies the path is under the resolved root (refuses to operate on paths outside).
    - Runs `git worktree remove <path>` (or `--force` if `--force` was passed).
-   - Deletes the local branch with `git branch -d <branch>` (default `feature/<task-name>`) after the worktree is released.
+   - Deletes the local branch with `git branch -d <branch>` (default `feature/<task-name>`) after the worktree is released — **unless `--keep-branch` is set**, in which case the branch deletion and its verification are skipped. The branch name is treated as a git ref (it may legitimately contain `/`, e.g. `integration/run-<slug>` or `work/<name>`); only `--task-name`, which forms a path component, is allowlisted to `^[A-Za-z0-9_-]+$`.
+   - If the target branch does not exist (e.g. an `--aggregate-pr` integration branch already merged and deleted by its final PR), the deletion step is idempotent — it logs and continues rather than failing.
    - Runs `git worktree prune` to clear any stale metadata.
-   - Verifies the path is gone, the metadata row is removed, and the local branch no longer exists.
+   - Verifies the path is gone, the metadata row is removed, and (when `--keep-branch` is not set) the local branch no longer exists.
 3. Exit 0 if cleanup verified; exit 1 with details on stdout if any step failed.
 
 The script refuses to operate on dirty worktrees unless `--force` is set — this is the discipline that catches accidental deletion of work in progress.

@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
-# cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] <task-name>
+# cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] [--keep-branch] <task-name>
 #
 # Removes the resolved task worktree, deletes the local feature branch with
 # git's merge-safety check, prunes stale metadata, and verifies the result.
+#
+# With --keep-branch, the local branch deletion (and its verification) is
+# skipped: only the worktree is removed and stale metadata pruned. This mirrors
+# ywc-finish-branch's --keep-branch semantics and lets a caller (e.g. the
+# ywc-sequential-executor --worktree non-aggregate path) tear down the run
+# worktree while preserving the integration branch for a later trunk PR.
 #
 # Exit codes:
 #   0  Cleanup verified
@@ -14,10 +20,11 @@ set -euo pipefail
 ROOT_ARG=""
 BRANCH=""
 FORCE=0
+KEEP_BRANCH=0
 TASK_NAME=""
 
 usage() {
-  echo "Usage: cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] <task-name>" >&2
+  echo "Usage: cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] [--keep-branch] <task-name>" >&2
 }
 
 while [[ $# -gt 0 ]]; do
@@ -32,6 +39,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --force)
       FORCE=1; shift
+      ;;
+    --keep-branch)
+      KEEP_BRANCH=1; shift
       ;;
     -h|--help)
       usage; exit 0
@@ -180,7 +190,9 @@ else
 fi
 
 # ── Step 2: Delete local branch ──────────────────────────────────────────────
-if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+if [ "$KEEP_BRANCH" -eq 1 ]; then
+  echo "INFO [2]: --keep-branch set — preserving local branch '$BRANCH' (worktree-remove only)"
+elif git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
   if git branch -d "$BRANCH" 2>"$ERR_FILE"; then
     echo "OK [2]: branch deleted: $BRANCH"
   else
@@ -215,7 +227,7 @@ if [ "$FAILED" -eq 0 ]; then
     echo "FAIL [verify]: worktree metadata still exists: $WORKTREE_PATH"
     FAILED=1
   fi
-  if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+  if [ "$KEEP_BRANCH" -eq 0 ] && git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
     echo "FAIL [verify]: branch still exists: $BRANCH"
     FAILED=1
   fi

@@ -13,8 +13,8 @@ lifecycle 관리 skill 의 한국어 요약본. 전체 문서는 [SKILL.md](./SK
 - 3-root sync (claude-code / codex-skill / pi-skills) — `is_diverged()`
   대상 외
 - Bundled scripts: `scripts/audit-worktrees.sh`, `scripts/cleanup-worktree.sh`
-  (prune 시 worktree 제거 + local branch 삭제, 이전
-  `ywc-parallel-executor/scripts/` 에서 `git mv` 로 이전, history 보존)
+  (prune 시 worktree 제거 + local branch 삭제, `--keep-branch` 시 worktree 만 제거하고
+  branch 보존, 이전 `ywc-parallel-executor/scripts/` 에서 `git mv` 로 이전, history 보존)
 
 ## 호출 패턴
 
