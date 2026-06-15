@@ -237,7 +237,12 @@ def score_agent(path: Path, collisions: dict) -> dict:
     sandbox = ""
     model = fm.get("model", "")
 
-    readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(desc))
+    # Read-only role must be inferred from the agent's OWN role statement (name
+    # or the description prefix before "Triggers:"), not from incidental mentions
+    # of "review"/"audit" in its dispatcher trigger list — otherwise a coder/test
+    # agent dispatched BY a review skill is wrongly flagged read-only (A3 false-).
+    role_text = desc.split("Triggers:")[0]
+    readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(role_text))
     signals: dict = {}
 
     # A3 tool minimality
