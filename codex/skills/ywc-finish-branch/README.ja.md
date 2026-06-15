@@ -12,7 +12,7 @@ Feature Branch を Base Branch に deliver する Codex Skill です。Mark-PR-r
 - **Post-merge Hard Gate**: `git log -1 --format="%s"` で merge の実行を検証
 - **Mark Task Complete の Definition of Done を強制**: `<tasks-dir>/completed/` への移動を verification 含めて実施
 - **Bot Review Polling 互換**: `--bot-action sequential|parallel` で caller の CI 戦略に合わせて挙動を切替
-- **Worktree 非関与**: parallel-executor 側の worktree lifecycle と責任境界を明確に分離
+- **Worktree-path mode**: `--worktree-path <path>` で sequential run-level worktree 内の delivery を `git -C <path>` 기준にし、作成/削除は caller が保持
 
 ## 使い方
 
@@ -35,6 +35,13 @@ Feature Branch を Base Branch に deliver する Codex Skill です。Mark-PR-r
 ```
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
+```
+
+### Worktree path mode
+
+```
+/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+  --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 
 ### 自然言語トリガー
