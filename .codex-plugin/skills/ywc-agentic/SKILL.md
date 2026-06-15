@@ -49,7 +49,7 @@ When tempted to bypass a rule, check this table first:
 | `--resume` | flag | — | Skip the Plan Phase and resume from existing `tasks/` (Resume Mode). |
 | `--dry-run` | flag | — | Print the planned phase sequence only; invoke no skills and make no changes. |
 | `--terse` | flag | — | Minimal output — phase headers and the final report only, no per-phase prose. |
-| `--pr-lang` | `--pr-lang <lang>` | `auto` | PR title/description language, forwarded to the executor. `auto` infers from `CLAUDE.md`. |
+| `--pr-lang` | `--pr-lang <lang>` | `auto` | PR title/description language, forwarded to the executor. `auto` infers from `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or recent PRs. |
 
 ## Workflow
 
@@ -67,7 +67,7 @@ Read the goal from the positional `<goal>` argument or the `--goal` flag. If bot
 
 Read the project's convention files to ground every downstream skill call:
 
-- `CLAUDE.md`, `AGENTS.md` — project rules, language policy, CI commands.
+- `AGENTS.md`, `CODEX.md`, `CLAUDE.md` — project rules, language policy, CI commands.
 - `package.json` / `pyproject.toml` / `Makefile` / `go.mod` — language and build/test/lint commands.
 - `docs/ubiquitous-language.md` (if present) — canonical domain terms to forward to the executor.
 
@@ -112,7 +112,7 @@ Medium/Large goals only. Skipped on the Small Path.
    ```text
    ywc-task-generator --tasks-dir <tasks-dir>
    ```
-   `ywc-task-generator` infers the output language from `CLAUDE.md`; no `--lang` is passed unless the user requested one.
+   `ywc-task-generator` infers the output language from project guidance files; no `--lang` is passed unless the user requested one.
 2. Read `<tasks-dir>/dependency-graph.md` and select the executor:
    - `--executor` is explicit → use that executor.
    - `--executor auto` and the graph yields **multiple waves with independent tasks** → `ywc-parallel-executor`.
@@ -231,7 +231,7 @@ End the report with one Completion Status line — nothing follows it:
 Before treating an `ywc-agentic` run as complete, verify:
 
 - [ ] A goal was received (positional or `--goal`); the run did not start without one.
-- [ ] Project context was read (`CLAUDE.md` / build files) before any skill invocation.
+- [ ] Project context was read (`AGENTS.md` / `CODEX.md` / `CLAUDE.md` / build files) before any skill invocation.
 - [ ] Mode was decided explicitly (Resume vs. Full) per the Step 2 rule.
 - [ ] The pre-iteration `git rev-parse HEAD` SHA was recorded **before** the executor ran, every iteration.
 - [ ] Every Evaluate Phase used the **original full spec** for `--spec` and `<pre-iter-sha>..HEAD` for `--git-range`.

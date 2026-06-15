@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docker Isolate"
+  short_description: "Isolate Docker compose host ports for parallel worktrees"
+  default_prompt: "Use $ywc-docker-isolate to run setup, teardown, or audit for Docker host-port isolation in a task worktree. Apply deterministic port allocation, preserve tracked compose files, and use the bundled scripts through the skill-call modes."

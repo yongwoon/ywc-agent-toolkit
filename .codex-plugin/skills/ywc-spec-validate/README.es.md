@@ -10,6 +10,7 @@ Una habilidad de Agente Revisor de Especificaciones que valida la calidad de las
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/ywc-plans/example.md --advisor-budget 0
 ```
 
 ## Dimensiones de Revisión
@@ -28,6 +29,10 @@ Una habilidad de Agente Revisor de Especificaciones que valida la calidad de las
 ## Formato de Salida
 
 Problemas clasificados por severidad (Crítico / Advertencia / Sugerencia), cada uno con referencias de archivo:línea y sugerencias de mejora.
+
+## Advisor Budget
+
+`--advisor-budget <n>` establece el presupuesto de asesores de Phase 2 para esta invocación. Si se omite, usa el valor predeterminado `2`; `0` desactiva advisor escalation. El encabezado del reporte incluye `Phase 2 advisor calls used: X of N (...)` y `Advisor budget status: available | disabled | exhausted | advisor-required | not-reported`.
 
 ## Activación
 

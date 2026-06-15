@@ -6,6 +6,7 @@
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/ywc-plans/example.md --advisor-budget 0
 ```
 
 ## 検討観点
@@ -24,6 +25,10 @@
 ## 出力形式
 
 Critical / Warning / Suggestion の重大度別に分類し、各 Issue にファイル:行の参照および改善提案を付与します。
+
+## Advisor Budget
+
+`--advisor-budget <n>` はこの invocation の Phase 2 advisor budget です。省略時は default `2` と同等で、`0` は advisor escalation を無効化します。Report header には `Phase 2 advisor calls used: X of N (...)` と `Advisor budget status: available | disabled | exhausted | advisor-required | not-reported` が含まれます。
 
 ## Triggering
 
