@@ -24,8 +24,8 @@ When tempted to skip a step, check this table first:
 | "Task spec is unclear, I'll infer from neighbors" | Stop. Inferring from neighbors compounds error across the sequence. Ask user. |
 | "Local merge with `--local-merge` is faster, default to it" | Default is PR-based. `--local-merge` only when user explicitly opts in (e.g., personal repo). |
 | "Lint/format failed in Step 4 with --draft, I'll stop and report" | Lint/format failures are auto-fixable. Run the project's fix command (e.g., `eslint --fix`, `prettier --write`, `ruff --fix`), commit the result, re-run verification, then continue to Step 5. Only stop if auto-fix fails to resolve residual errors after 2 attempts. |
-| "--draft creates the PR and stops — bot review is for later" | Bot review bots (CodeRabbit, Codex Review, AI Review) post on draft PRs immediately. After finish-branch creates the draft PR, poll for reviews and invoke ywc-handle-pr-reviews. The PR stays draft — responding now avoids a round-trip after un-drafting. |
-| "normal-pr range: CI passed and no bot comments yet — proceed to merge" | Bot reviewers post 1–5 minutes after CI completes, not immediately. `ywc-finish-branch` runs a mandatory 60-second initial wait plus a 300-second polling window before concluding no bots are active. `BOT_COUNT == 0` right after CI is not evidence that no bots are active — it means they have not posted yet. The polling window is a required wait gate in range mode, not a pause to skip. |
+| "--draft creates the PR and stops — bot review is for later" | Bot review bots (CodeRabbit, Codex Review, Claude Review) post on draft PRs immediately. After finish-branch creates the draft PR, poll for reviews and invoke ywc-handle-pr-reviews. The PR stays draft — responding now avoids a round-trip after un-drafting. |
+| "normal-pr range: CI passed and no review artifacts yet — proceed to merge" | Bot reviewers post 1–5 minutes after CI completes, not immediately. `ywc-finish-branch` runs a mandatory 60-second initial wait plus a 300-second polling window before concluding no unresolved artifacts exist. A zero count right after CI is not evidence that no bots are active — it means they have not posted yet. The polling window is a required wait gate in range mode, not a pause to skip. |
 | "Last task in `--local-merge` range: no following task needs this merge, skip finish-branch" | Step 5 (Delivery) is unconditional — **every** task, including the last, must have its feature branch merged into base, the completion-marker committed, and the push executed via `ywc-finish-branch`. Without it, the implementation code is stranded on an orphaned feature branch, `tasks/completed/` is wrong, and the remote base branch is missing the work. The absence of a next task is not a reason to skip delivery. |
 | "Last task in normal-pr range: it's the last one, no need to omit `--defer-push`" | `--defer-push` must be **omitted** on the last task in `normal-pr` range — that omission IS the flush. If `--defer-push` is set on the last task, all accumulated completion-marker commits stay local and are never pushed. The last task's `ywc-finish-branch` invocation performs the single batch push; no separate `git push` runs after the loop. |
 
@@ -46,23 +46,18 @@ Parse `$ARGUMENTS` for the following parameters:
 | `--aggregate-pr` | flag | | Deliver the whole invocation through one `work/<name>` branch and one final work -> base PR. Each task still gets its own feature branch and is local-merged into the work branch. |
 | `--group-name` | `--group-name <name>` | `--group-name payments` | Names the aggregate work branch (`work/<name>`). Valid only with `--aggregate-pr`; defaults to `work/<base-branch>-<timestamp>` when omitted. |
 | `--base-branch` | `--base-branch <branch>` | `--base-branch develop` | Base branch override. Default: auto-detect (develop > main > master) |
+| `--worktree` | flag | | Run the whole invocation inside one run-level worktree. It is not a delivery mode; see [references/worktree-run.md](./references/worktree-run.md). |
 | `--dry-run` | flag | | Show the execution plan (task order, dependencies, modes) without executing anything |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no mode explanations, no advisor notes |
-| `--review` | flag | | Auto-run `ywc-impl-review` after each task, before PR creation or merge |
+| `--review` | flag | | Auto-run ywc-impl-review after each task, before PR creation or merge |
 | `--run-tests-locally` | flag | | Before merging in `--local-merge` mode, detect and run the project's test command. On failure: mark task FAIL and do not merge. Ignored in PR-based modes. |
 
 **Flag conflicts**: `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want. The reason is that each mode has a different branch and PR lifecycle — silently picking one would surprise the user. `--group-name` is valid only with `--aggregate-pr`; if it is supplied without `--aggregate-pr`, stop and ask whether the user intended aggregate delivery.
 
-Example:
-```text
-/ywc-sequential-executor 000001-010 --local-merge --draft
-# → Stop. Report: "--local-merge and --draft are mutually exclusive
-#   (local-merge produces no PR; draft requires one). Which mode did you want?"
-```
-
 `--review` can be combined with any delivery mode flag.
 
 `--run-tests-locally` has no effect without `--local-merge` (PR CI handles tests in PR-based modes).
+`--worktree` is orthogonal to delivery mode flags and may combine with any mode; it changes execution location only.
 
 If no task specifier is given, detect the next executable task from the dependency graph.
 
@@ -74,6 +69,7 @@ When `--dry-run` is set, perform Pre-flight and Task Resolution as usual, then d
 - Dependency status for each task (satisfied / pending)
 - Active mode flags (`--draft`, `--skip-ci-wait`, `--local-merge`, `--aggregate-pr`, or normal)
 - Base branch that would be used
+- For `--worktree`: planned run worktree path, integration branch, state path, and start point
 - For `--aggregate-pr`: the derived work branch (`work/<group-name>` or `work/<base-branch>-<timestamp>`) and the final work -> base PR target
 
 Do **not** create branches, modify files, or run any git commands beyond read-only operations (`git branch --show-current`, `git status`). Exit after displaying the plan.
@@ -95,23 +91,18 @@ Before starting execution, verify these conditions:
 3. **gh CLI ready** — `gh auth status` must succeed.
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
+6. **Worktree run setup** — If `--worktree` is set, follow [references/worktree-run.md](./references/worktree-run.md) for audit/create, `$WT` state placement, resume discovery, and cleanup.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the task range, and add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Also add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
-STATE_SCRIPT="codex/skills/scripts/update-state.py"
-[ -f "$STATE_SCRIPT" ] || STATE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/update-state.py"
-python3 "$STATE_SCRIPT" init-sequential \
-  --mode <local-merge|draft|skip-ci-wait|aggregate-pr|normal> --tasks-dir <tasks-dir> \
-  --range '["000001-010-...","000001-020-..."]'
 ```
-The `--range` array is the ordered list of task-directory names this run will execute. Per-step checkpoint writes then use `update-state.py task-step <task> <step>` (Steps 2/4) and `update-state.py task-complete <task>` (after Step 5 delivery); see the schema and event table in [Checkpoint and Resume](#checkpoint-and-resume).
 
 ## External URL Policy
 
 Tasks generated by `ywc-task-generator` may list external URLs in `Spec Reference > Primary Sources`. Fetching external content mid-task is unpredictable (network, rate limits, SSO walls) and is also a privacy decision the user must make once per project.
 
-**Procedure**: at Pre-flight, check `Codex approval settings or the project-local policy file` for `taskExecutor.externalSpecUrls`. If present, use it silently. If missing, ask the user **once** to choose `deny` (default), `allow`, or `allowlist`, then persist the decision under the `taskExecutor` key (preserving every other key in the file). During Step 1b enforcement, apply the chosen policy: `deny` skips all `http(s)://` URLs, `allow` fetches everything, `allowlist` fetches only matching host+path prefixes.
+**Procedure**: at Pre-flight, check `.codex/settings.local.json` for `ywDevSequentialExecutor.externalSpecUrls`. If present, use it silently. If missing, ask the user **once** to choose `deny` (default), `allow`, or `allowlist`, then persist the decision under the `ywDevSequentialExecutor` key (preserving every other key in the file). During Step 1b enforcement, apply the chosen policy: `deny` skips all `http(s)://` URLs, `allow` fetches everything, `allowlist` fetches only matching host+path prefixes.
 
 **For full procedure, jsonc schema, exact prompt wording, and rationale**, see [references/external-url-policy.md](./references/external-url-policy.md).
 
@@ -131,21 +122,22 @@ A task is **done** only when **all** of the following have happened, in this ord
 
 ## Pre-authorizing Tool Permissions (required for range execution)
 
-The Non-Stop Execution Principle below governs LLM-level pausing, but it cannot override Codex tool permission layer — every unprompted `git`/`gh`/`mv` command can independently block on user confirmation. In range mode this is the **single most common reason execution stops mid-range**: each `git checkout`, `git push`, `git mv`, and `gh pr` in every task triggers an individual prompt.
+The Non-Stop Execution Principle below governs LLM-level pausing, but it cannot override Codex's tool approval layer — every unprompted `git`/`gh`/`mv` command can independently block on user confirmation. In range mode this is the **single most common reason execution stops mid-range**: each `git checkout`, `git push`, `git mv`, and `gh pr` in every task triggers an individual prompt.
 
 > **Required for range execution**: Without pre-authorization, every `git`/`gh`/`mv` command in every task will pause for user approval — directly breaking the Non-Stop Execution Principle. Complete this setup before starting any range; it is not optional.
 
-The fix is a one-time `Codex approval settings or the project-local policy file` setup that pre-authorizes a small set of read-only and task-scoped Bash patterns. The same permissions are used by both `ywc-sequential-executor` and `ywc-parallel-executor`.
+The fix is a one-time Codex command-approval setup that pre-authorizes a small set of read-only and task-scoped command prefixes. The same permissions are used by both `ywc-sequential-executor` and `ywc-parallel-executor`.
 
 **For the full pattern list, narrow fallback for strict policies, privacy notes, and diagnosis steps when pre-authorization is not enough**, see [../references/local-merge-permissions.md](../references/local-merge-permissions.md).
 
 ## Plan Critical Review (Pattern C, range mode)
 
-When a range of **3+ tasks** is about to start and the plan was either generated in a prior session or modified since, run a one-shot upfront high-capability advisor (Pattern C from [../references/advisor-pattern.md](../references/advisor-pattern.md)) over the dependency graph + first/last task summaries. The verdict is `proceed` or `reconsider with refinements`; on the latter, surface the refinements to the user and stop — do not auto-apply. The full invocation conditions, payload shape, output format, and budget accounting (consumes 1 of the 3 advisor calls) live in [references/plan-critical-review.md](./references/plan-critical-review.md). Skip the review for single-task, ≤2 task ranges, auto-detect mode, or when `ywc-task-generator` ran in the same session.
+When a range of **3+ tasks** is about to start and the plan was either generated in a prior session or modified since, run a one-shot upfront advisor (Pattern C from [../references/advisor-pattern.md](../references/advisor-pattern.md)) over the dependency graph + first/last task summaries. The verdict is `proceed` or `reconsider with refinements`; on the latter, surface the refinements to the user and stop — do not auto-apply. The full invocation conditions, payload shape, output format, and budget accounting (consumes 1 of the 3 advisor calls) live in [references/plan-critical-review.md](./references/plan-critical-review.md). Skip the review for single-task, ≤2 task ranges, auto-detect mode, or when `ywc-task-generator` ran in the same session.
 
 ## Checkpoint and Resume
 
 The executor writes `.ywc-run-state.json` in the project root after each major step. If a range run is interrupted, you can resume from the last checkpoint — completed tasks are skipped and the in-progress task restarts at its last saved step.
+With `--worktree`, state lives at `$WT/.ywc-run-state.json`; root state remains the legacy default. Resume Detection checks root state first, then preserved run worktrees.
 
 **Resume detection runs before Pre-flight.** For the resume procedure (executor/age/git validation, intent-match guard, resume offer prompt), the on-disk state schema, the per-step Checkpoint event table, and manual inspection commands, see [references/checkpoint-resume.md](./references/checkpoint-resume.md). The per-step `**Checkpoint**` markers below in Steps 2/4/5 reference the event table in that document — update `last_checkpoint` to the current UTC time on every write. The legacy `current_step: 8` value is preserved for resume compatibility with state files written by older skill versions; new runs reach the same logical state via Step 5 (Delivery).
 
@@ -175,6 +167,7 @@ For each task, execute these steps in order. **If executing a range, repeat the 
 ### Per-Task Branch Lifecycle (range mode overview)
 
 Each task in a range gets its own feature branch — never reuse a branch across tasks. Starting point depends on mode: **normal / `--local-merge`** branch from a fresh base branch; **`--aggregate-pr`** branch from the dedicated `work/<name>` branch; **`--draft` / `--skip-ci-wait`** chain-branch from the previous feature branch (prior tasks are not merged, so their code would be missing otherwise). For per-mode diagrams, the decision table, and the "non-stop transitions ≠ non-stop coding on one branch" rationale (the single most common range-mode failure), see [references/branch-lifecycle.md](./references/branch-lifecycle.md). For the aggregate work branch lifecycle, see [references/aggregate-pr.md](./references/aggregate-pr.md).
+When `--worktree` is active, the same lifecycle runs inside `$WT`; git commands, file edits, verification, finish-branch, and transition gates must be `$WT` scoped per [references/worktree-run.md](./references/worktree-run.md).
 
 ### Non-Stop Execution Principle
 
@@ -186,7 +179,7 @@ The unit for this skill is **task**. Sequential-specific Allowed Stop Reasons: d
 
 ### Advisor Escalation Policy
 
-This skill follows **Pattern A** from [../references/advisor-pattern.md](../references/advisor-pattern.md): a single inherited-model executor with bounded higher-capability advisor escalation. **Budget**: up to **3 advisor escalations per invocation** (single-task or range alike); exceeding requires explicit justification in the Completion Report. **Context payload rule**: forward only the decision point (≤100 lines), never the full task README, spec, repo state, or prior Execution Cycle turns; advisor returns a ≤200-word verdict.
+This skill follows **Pattern A** from [../references/advisor-pattern.md](../references/advisor-pattern.md): a single inherited-model executor with bounded advisor escalation. **Budget**: up to **3 advisor calls per invocation** (single-task or range alike); exceeding requires explicit justification in the Completion Report. **Context payload rule**: forward only the decision point (≤100 lines), never the full task README, spec, repo state, or prior Execution Cycle turns; advisor returns a ≤200-word verdict.
 
 The escalation conditions remaining in this skill's scope — Spec Reference conflict (Step 1b), verification first failure with unclear cause (Step 4), Stop Condition borderline (Step 3) — are defined in [references/advisor-escalation.md](./references/advisor-escalation.md). Merge conflict and CI first-failure escalations (originally conditions 3 and 4 in that reference) move to `ywc-finish-branch`'s scope at Step 5; finish-branch consumes its own `advisor_budget: 1` for those escalations independently of this skill's budget of 3.
 
@@ -206,7 +199,7 @@ Read the task's `README.md` in full. This step has two purposes: verify dependen
 Locate the `## Spec Reference` section in `README.md`. Three sub-fields drive Step 3 implementation:
 
 - **Primary Sources** — the source-of-truth documents.
-  - For each project-relative path, read the file (or the specific section/anchor if given). If the path is missing, attempt a fuzzy recovery before stopping: search for files with a similar basename (case-insensitive, ignoring directory) using `find` or `rg --files`. If exactly one candidate is found, use it and log a warning noting the path mismatch. If zero or multiple candidates are found, **stop** and report — the spec is the contract, and silently proceeding would guarantee divergence.
+  - For each project-relative path, read the file (or the specific section/anchor if given). If the path is missing, attempt a fuzzy recovery before stopping: search for files with a similar basename (case-insensitive, ignoring directory) using `find` or `Glob`. If exactly one candidate is found, use it and log a warning noting the path mismatch. If zero or multiple candidates are found, **stop** and report — the spec is the contract, and silently proceeding would guarantee divergence.
   - For each external URL (`http://` / `https://`), apply the [External URL Policy](#external-url-policy) determined in Pre-flight. Urls skipped by policy are logged, not errors.
   - If the field is `N/A — no external spec`, skip loading and proceed. This is a legitimate state for housekeeping / refactor / config tasks.
 - **Summary** — a 2–5 sentence orientation. Read it even when Primary Sources are fully available; it captures the intent behind the linked content and is the fastest way to re-anchor if you get lost mid-implementation.
@@ -218,8 +211,17 @@ If the `Spec Reference` section is entirely absent from `README.md` (i.e. the ta
 
 **Every task gets its own feature branch.** This applies to both single-task and range execution. Never run multiple tasks on the same branch — each task's changes must be isolated so they can be reviewed, merged, and rolled back independently.
 
+**Normal / local-merge mode (including range execution):**
+```bash
+git checkout <base-branch>
+git pull origin <base-branch>
+git checkout -b feature/<task-name>
+```
+
+This applies to **every task in a range**, not just the first one. After each task completes its cycle (verify → finish-branch delivery), the next task starts fresh from the updated base branch. `ywc-finish-branch` (Step 5) leaves the working tree on `<base-branch>` for `normal-pr` and `local-merge` modes, so this command sequence runs cleanly without manual setup.
+
 **Aggregate PR mode (`--aggregate-pr`):**
-Create the work branch once before the first task, from the real base branch, then push it:
+Before the first task, create and push the work branch once from the real base branch. The work branch is the per-task delivery target for the entire range; the real base branch is not mutated until the final work -> base PR merges.
 
 ```bash
 # With --group-name <name>:
@@ -233,7 +235,7 @@ git checkout -b "$WORK_BRANCH"
 git push -u origin "$WORK_BRANCH"
 ```
 
-For every task, branch from the current work branch rather than the real base:
+For each task, branch from the current work branch:
 
 ```bash
 git checkout "$WORK_BRANCH"
@@ -242,15 +244,6 @@ git checkout -b feature/<task-name>
 ```
 
 After Step 5 local-merges the task into `$WORK_BRANCH`, the next task branches from that updated work branch and sees all prior task changes. See [references/aggregate-pr.md](./references/aggregate-pr.md) for the complete work branch lifecycle and final delivery gate.
-
-**Normal / local-merge mode (including range execution):**
-```bash
-git checkout <base-branch>
-git pull origin <base-branch>
-git checkout -b feature/<task-name>
-```
-
-This applies to **every task in a range**, not just the first one. After each task completes its cycle (verify → finish-branch delivery), the next task starts fresh from the updated base branch. `ywc-finish-branch` (Step 5) leaves the working tree on `<base-branch>` for `normal-pr` and `local-merge` modes, so this command sequence runs cleanly without manual setup.
 
 **Range + draft/skip-ci-wait mode (chain branching):**
 When executing a range with `--draft` or `--skip-ci-wait`, earlier tasks are not merged into the base branch, so their code changes are absent from it. To ensure dependent tasks can build on prior work, create each subsequent branch from the **previous task's feature branch** instead of the base branch:
@@ -270,17 +263,17 @@ This solves the code-availability problem that Step 1's dependency-validation ex
 
 Branch name format: `feature/<task-name>` (e.g., `feature/000001-010-db-create-users-table`)
 
-**Checkpoint**: use the `STATE_SCRIPT` resolver from State Init, then run `python3 "$STATE_SCRIPT" task-step <task-name> 2 --branch feature/<task-name>`.
+**Checkpoint**: Update `.ywc-run-state.json` — set `current_task` to `<task-name>`, `current_step` to `2`, `branch` to `feature/<task-name>`, and `last_checkpoint` to current UTC time.
 
 ### Step 3: Implementation
 
 Read the task's `task.md` and implement according to the checklist. The `Spec Reference` section loaded in Step 1b is the authoritative source of intent — when `task.md` and the spec disagree, the spec wins and the discrepancy should be noted in the PR description. If `docs/ubiquitous-language.md` exists in the project root, read it now and apply canonical term names throughout implementation — identifiers matching a "Synonyms to Avoid" entry are a naming violation.
 
-If the task touches database schema, migrations, ORM models, relations, indexes, tenant scoping, or enum domains, read the shared schema guide before editing: [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`). Apply the eight mechanical invariants during implementation; do not leave them to review to discover.
-
 **Question-First gate (run before any code change):** After reading `task.md` and the Spec Reference, enumerate genuinely ambiguous decisions whose wrong answer would force a rewrite (interface shape, data model, naming that conflicts with existing code, library choice when more than one is installed). If the list is non-empty, **stop and return `NEEDS_CONTEXT`** with the questions enumerated — do not infer from neighboring tasks. Inferring silently compounds error across the sequence and is the most expensive failure mode. For the canonical procedure, what counts as genuine ambiguity, and the question format, see [../references/question-first-gate.md](../references/question-first-gate.md).
 
 **Simplicity + Surgical Changes (enforce throughout implementation):** Implement the minimum code that satisfies the task spec — no speculative features, no unsolicited abstractions, no "flexibility" that wasn't asked for. When editing existing code: touch only files within the declared Ownership; do not improve adjacent code, comments, or formatting unless they are the direct subject of this task. If you notice unrelated issues, mention them in the PR description — do not fix them. Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify before committing.
+
+**Schema-aware implementation (when the task touches DB):** If the task adds, modifies, or removes tables, columns, indexes, or relations, read the shared [../references/schema/core.md](../references/schema/core.md) and the one stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`) before writing the migration. The eight mechanical invariants there (bilateral relations, cascade ↔ API status, NOT NULL backfill, FK index, composite uniqueness, multi-tenant scope, enum domain, `timestamptz`) fail deterministically at generate time or first write when omitted, and a migration task is the single point where they must all be right.
 
 1. **Check Prerequisites** — Verify all prerequisite items are satisfied
 2. **Respect Edit Scope** — Only modify files within the declared Ownership from `README.md`
@@ -293,28 +286,25 @@ If the task touches database schema, migrations, ORM models, relations, indexes,
    - **TDD is preferred**: write the failing test first, then the implementation that makes it pass. This gives you a concrete definition of done and prevents "test written to match the code"
    - Do **not** skip, comment out, or weaken assertions to make tests pass — fix the implementation instead
 5. **Honor Stop Conditions** — If any stop condition is triggered, halt and report to the user
-6. **Commit incrementally** — Create commits at logical boundaries (per implementation step or per logical unit). Tests and the code they cover should land in the same commit (or a test-first commit immediately preceding the implementation commit). Follow the project's commit convention from CLAUDE.md or recent git log
+6. **Commit incrementally** — Create commits at logical boundaries (per implementation step or per logical unit). Tests and the code they cover should land in the same commit (or a test-first commit immediately preceding the implementation commit). Follow the project's commit convention from `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or recent git log.
 
 Commit guidelines:
 - Each commit should be a coherent, reviewable unit
 - Follow the project's commit message convention
-- Add a `Co-Authored-By` trailer when Claude generated the changes. Use the format specified in the project's CLAUDE.md or commit convention; if none is specified, default to `Co-Authored-By: Codex <noreply@openai.com>`
+- Add a co-author trailer only when the repository's commit convention or the user explicitly requires one. Do not fabricate a provider-specific trailer.
 - Stage specific files by name (never `git add -A` or `git add .`)
 
-**Completeness Gate (required before first commit):** Before creating the first commit for this task, run the shared stub-pattern check on the modified files (exits non-zero if any stub is found):
+**Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
 
 ```bash
-FILES="$(git diff --name-only HEAD)"
-if [ -n "$FILES" ]; then
-  STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
-  [ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
-  printf '%s\n' "$FILES" | xargs bash "$STUB_SCRIPT"
-fi
+git diff --name-only HEAD 2>/dev/null | xargs grep -lnE \
+  "TO""DO:.*imple""ment|FIX""ME|raise Not""ImplementedError|throw new Error\(.*[Nn]ot [Ii]mple""mented" \
+  2>/dev/null || echo "OK: no stub patterns found"
 ```
 
 If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.
 
-**Exception**: `TODO` comments in *test* files (e.g., `// TODO: add edge case for overflow`) are permitted. `TODO` in implementation files are not.
+**Exception**: to-do comments in *test* files (for example, an edge-case reminder) are permitted. Stub markers in implementation files are not.
 
 ### Step 4: Task Verification
 
@@ -330,7 +320,7 @@ Run verification in three layers, from narrowest to broadest. Each layer must pa
 
 If any layer fails: **fix the code, never the test** — no `skip`/`xit`/`.only`, no commented-out or relaxed assertions. Re-run the failing layer plus any earlier layer the fix could invalidate. For a failure in a test unrelated to the current task, investigate whether the task actually caused it (shared state, fixtures, ordering) before dismissing as flaky. **Layer 4 lint/format exception**: running the project's auto-fix command is step zero and does not count toward the 2-attempt limit — the limit starts only if auto-fix leaves residual errors. After **2 fix attempts** (post-auto-fix for Layer 4, or 2 direct attempts for other layers), stop and report layer + failing test name(s) + error output + attempts made. Never proceed to Step 5 with a failing full suite — local catch saves a CI round trip and keeps `main` healthy.
 
-**Checkpoint**: use the `STATE_SCRIPT` resolver from State Init, then run `python3 "$STATE_SCRIPT" task-step <task-name> 4`.
+**Checkpoint**: Update `.ywc-run-state.json` — set `current_step` to `4`, `last_checkpoint` to current UTC time.
 
 **`--run-tests-locally` gate (applies only when `--run-tests-locally` is set AND `--local-merge` is active)**: After all four verification layers pass, detect the project's test command from CLAUDE.md or `package.json` (scripts field). Run it before proceeding to Step 5 (merge). On failure: mark the task FAIL and do not merge — surface the test output to the user and stop. If no test command can be detected: emit a warning and proceed to Step 5 without blocking.
 
@@ -340,13 +330,13 @@ If `--review` is set, invoke `ywc-impl-review` on the current feature branch aft
 
 This is optional — it adds time and tokens but catches design issues, naming problems, and patterns that automated tests miss. It pairs especially well with `--local-merge`, where no remote CI runs and this review becomes the last quality gate before code reaches the base branch.
 
-The review applies the [recurring real-world defects catalog](../ywc-impl-review/references/recurring-defects.md) — the classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation / fail-fast, HTTP status, test fidelity) that PR-review bots such as CodeRabbit flag most. In PR-based modes (`normal-pr`, `--draft`, `--skip-ci-wait`), catching these *before* the PR opens directly reduces the bot-review round-trips handled later by `ywc-handle-pr-reviews` — the issue is fixed on the feature branch instead of in a follow-up review cycle.
+The review applies the `ywc-impl-review` recurring real-world defects catalog — the classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation / fail-fast, HTTP status, test fidelity) that PR-review bots such as CodeRabbit flag most. In PR-based modes (`normal-pr`, `--draft`, `--skip-ci-wait`), catching these *before* the PR opens directly reduces the bot-review round-trips handled later by `ywc-handle-pr-reviews`.
 
 **Handling the review's status return**: `ywc-impl-review` emits one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — in particular, `BLOCKED` triggers the four-step triage (context → reasoning → scope → plan) before surfacing to the user, and `DONE_WITH_CONCERNS` requires reading the concerns to decide whether they are correctness-level (fix and re-review) or observation-level (carry forward to the Completion Report).
 
 ### Step 5: Delivery (delegated to `ywc-finish-branch`)
 
-After Step 4 verification (and optional Step 4.5 review) passes, the rest of the task — PR creation, CI wait, bot polling, merge (PR or local), post-merge verification, Mark Task Complete, and local branch cleanup — is delivered by [ywc-finish-branch](../ywc-finish-branch/SKILL.md). This skill does not duplicate that logic.
+After Step 4 verification (and optional Step 4.5 review) passes, the rest of the task — PR creation, CI wait, bot polling, merge (PR or local), post-merge verification, Mark Task Complete, and local branch cleanup — is delivered by `ywc-finish-branch`. This skill does not duplicate that logic.
 
 **Mode mapping** (this skill's flag → finish-branch `--mode`):
 
@@ -363,7 +353,7 @@ After Step 4 verification (and optional Step 4.5 review) passes, the rest of the
 **Invocation** (unconditional — every task in a range, **including the last task**, runs through this exact delegation; the optional `--defer-push` flag controls **only** whether the Mark-Complete commit is pushed at the end of finish-branch Step 7, and never affects PR creation, CI wait, bot polling, merge, post-merge verification, or Mark Complete itself):
 
 ```bash
-/ywc-finish-branch \
+$ywc-finish-branch \
   --mode <mapped-mode> \
   --branch feature/<task-name> \
   --base-branch <base-branch-or-$WORK_BRANCH> \
@@ -379,7 +369,7 @@ After Step 4 verification (and optional Step 4.5 review) passes, the rest of the
 For `--aggregate-pr`, invoke finish-branch as a per-task local merge into the work branch:
 
 ```bash
-/ywc-finish-branch \
+$ywc-finish-branch \
   --mode local-merge \
   --branch feature/<task-name> \
   --base-branch "$WORK_BRANCH" \
@@ -395,11 +385,23 @@ This preserves the normal per-task verification, merge, post-merge verification,
 
 **Handling finish-branch's status return**: ywc-finish-branch ends with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular, `BLOCKED` triggers the four-step triage (context → reasoning → scope → plan) before surfacing to the user, and `DONE_WITH_CONCERNS` requires reading the concerns to decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report).
 
+**Status Routing** — Apply to `ywc-finish-branch` and optional `ywc-impl-review` returns:
+
+| Returned status | Caller action |
+|---|---|
+| `DONE` | Proceed to Step 6, or to the Completion Report if this was the last task. |
+| `DONE_WITH_CONCERNS` | Observation concerns go to the Completion Report; correctness concerns require a fix and re-dispatch before proceeding. |
+| `BLOCKED` | Run the four-step triage; if unresolved, halt the range and surface the failing task plus blocker excerpt. |
+| `NEEDS_CONTEXT` | Provide missing context and re-dispatch; do not infer from prior tasks. |
+| Status absent or unparseable | Treat as `BLOCKED`, halt the range, and surface the raw payload. |
+
+`BLOCKED` returns preserve the task branch and any in-progress merge state. The task directory stays in `<tasks-dir>/<task-name>` rather than moving to `completed/`; after the blocker is resolved, Resume Detection should restart from the failed task's delivery step.
+
 **Mode-skip semantics**: for `--mode draft` and `--mode skip-ci-wait`, finish-branch's responsibility ends at PR creation (not at merge or Mark Complete). The task remains in `<tasks-dir>/<task-name>` (not moved to `completed/`) and no completion marker is committed; the user is expected to re-run the executor (or merge the PRs manually) to finalize. This does not apply to `--aggregate-pr`: per-task delivery is a real local-merge into `$WORK_BRANCH`, and the final group PR lifecycle below is mandatory.
 
-**`--draft` bot review**: After finish-branch returns with the draft PR URL, run the bot review polling loop from [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews` for this PR. The PR stays as draft after review response — do not un-draft or merge.
+**`--draft` bot review**: After finish-branch returns with the draft PR URL, run the bot review polling loop from [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If unresolved artifacts exist, invoke `ywc-handle-pr-reviews` for this PR. The PR stays as draft after review response — do not un-draft or merge.
 
-**Checkpoint**: use the `STATE_SCRIPT` resolver from State Init after finish-branch returns. For `normal-pr`, `local-merge`, and `--aggregate-pr` when finish-branch returned `DONE`, run `python3 "$STATE_SCRIPT" task-complete <task-name>` so the task is appended to `completed`, `branch` is cleared, and the next task becomes current. For `draft` / `skip-ci-wait`, run `python3 "$STATE_SCRIPT" task-step <task-name> 8 --branch feature/<task-name>` instead; do not append to `completed`, because the task is intentionally incomplete until the draft PR is merged.
+**Checkpoint**: Update `.ywc-run-state.json` after finish-branch returns — set `current_step` to `8` (final pre-completion checkpoint, preserved for resume compatibility with older state files); set `branch` to `null` for `normal-pr`, `local-merge`, and `--aggregate-pr` (finish-branch deleted the feature branch) or keep `feature/<task-name>` for `draft` / `skip-ci-wait` (branch stays alive). Append `<task-name>` to `completed` only when finish-branch returned `DONE` and the task was finalized through `normal-pr`, `local-merge`, or `--aggregate-pr`. For `draft` / `skip-ci-wait`, do not append; the task is intentionally incomplete.
 
 ### Step 6: Next Task (Range Mode Only)
 
@@ -410,11 +412,10 @@ If executing a range:
 1. Check if there are remaining tasks in the range. If no remaining tasks, and Step 5 has returned `DONE` for the current task, proceed to the Completion Report.
 2. **Pre-transition state check (`normal-pr`, `local-merge`, and `--aggregate-pr` modes):** Run the bundled verification script, passing the branch the next task will branch from — `<base-branch>` in `normal-pr`/`local-merge`, or `$WORK_BRANCH` in `--aggregate-pr`. The script is mode-agnostic and checks the same 4 conditions against whichever integration branch it receives:
    ```bash
-   VERIFY_SCRIPT="codex/skills/ywc-sequential-executor/scripts/verify-transition.sh"
-   [ -f "$VERIFY_SCRIPT" ] || VERIFY_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-sequential-executor/scripts/verify-transition.sh"
-   bash "$VERIFY_SCRIPT" <base-branch-or-$WORK_BRANCH> <completed-task-name> [<tasks-dir>]
+   bash <path-to-skill>/scripts/verify-transition.sh \
+     <base-branch-or-$WORK_BRANCH> <completed-task-name> [<tasks-dir>]
    ```
-   Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch-or-$WORK_BRANCH>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.
+   Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.
 3. Transition to the next task **immediately and silently** — emit no text output, do not ask for confirmation, do not summarize. The next output after Step 5 of this task is the first tool call (reading `README.md`) of Step 1 of the next task — not any text. Suppress any transition-message impulse and issue the tool call instead.
 4. **Go back to Step 1** and repeat the full cycle (Step 1 → Step 5) for the next task. Step 2 runs again for every task — each task gets its own fresh feature branch.
 
@@ -431,6 +432,7 @@ After all tasks are executed, display:
 - Each task: name, PR URL, PR status (draft / open / merged) — or `local-merge` with the merge commit SHA when `--local-merge` is used
 - Any tasks that were skipped or failed (with reason)
 - Current branch and sync status
+- If in worktree mode: run worktree path, integration branch, state cleanup, and preserved branch/recovery command when applicable
 - If in draft/skip-ci-wait mode: remind user that PRs need manual review and merge
 - If in local-merge mode: remind user that no PR was created and no CI ran remotely — only the local verification from Step 4 gates the merge
 - If in aggregate-pr mode: list the final aggregate PR URL and status; it must be marked ready, CI-verified, bot-cleared, merge-readiness checked, merged, and locally synced before the run can report `DONE`
@@ -439,16 +441,7 @@ After all tasks are executed, display:
 1. The task table (name | status | PR URL or merge SHA)
 2. The `Completion Status` line
 
-This is the preferred format for CI scripts or automation that parse the report output.
-
 **Reporting Symbols**: Use the shared vocabulary in [symbols.md](../references/symbols.md) for the per-task status column and inline step traces. The symbol is a scan aid, not a replacement for the status text — keep both. For multi-step traces inside a single task report, use the flow operator `»` (e.g. `branch ✅ » impl ✅ » verify ✅ » PR ✅ » merge ✅`). Do not use symbols inside commit messages, PR titles, or generated source code — they belong to the report layer only.
-
-Example task table row:
-
-```
-000003-010-add-auth-middleware  | ✅ merged   | https://github.com/.../pull/142
-000003-020-add-rate-limiting    | 🚫 blocked  | depends on 000003-010 (failed)
-```
 
 **Completion Status**: End every report with one of these four declarations on its own line. This is the final line of the report — nothing follows it.
 
@@ -470,14 +463,31 @@ test ! -f .ywc-run-state.json && echo "OK: state cleaned" || echo "WARNING: stat
 
 If the verification line prints `WARNING`, the run is `DONE_WITH_CONCERNS`, not `DONE` — surface the leftover file path in the Completion Report.
 
-## PR Language Detection
+## Output Format
 
-When `--pr-lang` is not specified, detect the language in this priority:
+The final output is the Completion Report. In normal verbosity it includes the
+full task table and mode-specific caveats; under `--terse`, emit only the table
+and status line:
 
-1. **CLAUDE.md** — Look for language directives (e.g., "Git commits: Japanese", "Documentation: Korean")
-2. **AGENTS.md** — Look for language preferences
-3. **Recent PR history** — `gh pr list --limit 5 --json title,body` to detect dominant language
-4. **Fallback** — English
+```text
+| Task | Status | PR URL or merge SHA |
+|---|---|---|
+| 000001-010-example | merged | <sha-or-url> |
+
+Completion Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+```
+
+## Validation
+
+Before emitting the Completion Report, verify:
+
+- [ ] The current task reached `ywc-finish-branch` unless the run stopped before implementation
+- [ ] `verify-transition.sh` passed before moving between range tasks
+- [ ] Completed tasks are under `<tasks-dir>/completed/`
+- [ ] In `--worktree` mode, `$WT` state cleanup/preservation and integration branch handling match [worktree-run.md](./references/worktree-run.md)
+- [ ] In `--aggregate-pr` mode, the final work -> base PR was marked ready, CI-verified, bot-cleared, merge-readiness checked, merged, and local base was synced
+- [ ] `.ywc-run-state.json` was removed or reported as a concern
+- [ ] The final line is exactly one Completion Status declaration
 
 ## Error Handling
 

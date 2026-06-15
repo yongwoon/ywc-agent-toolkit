@@ -12,7 +12,7 @@ for each task in range:
   git checkout <base-branch> && git pull origin <base-branch>
   git checkout -b feature/<task-name>
   → implement → verify → create PR → CI
-  → [automated review comments?]
+  → [unresolved automated review artifacts?]
       yes → ywc-handle-pr-reviews → re-run CI (loop until clean)
       no  → (skip)
   → merge PR
@@ -22,7 +22,7 @@ for each task in range:
 
 Each task starts from a **fresh, up-to-date base branch**. The PR merge updates the base branch on the remote, and `git pull` after merge brings those updates into local before the next task starts.
 
-The automated review step is **conditional** — it only runs when a repository has configured review bots such as CodeRabbit, Codex Review, or Claude Review. Repositories without these tools skip the step entirely. When automated review comments exist, `ywc-handle-pr-reviews` processes them and pushes any fixes; CI is then re-verified before the merge proceeds.
+The automated review step is **conditional** — it only runs when a repository has configured review bots such as CodeRabbit, Codex Review, or Claude Review. Repositories without these tools skip the step entirely. When unresolved review artifacts exist (line threads, PR comments, top-level reviews, or review-like failed checks), `ywc-handle-pr-reviews` processes them and pushes any fixes; CI is then re-verified before the merge proceeds.
 
 ## `--local-merge` mode
 

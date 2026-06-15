@@ -32,10 +32,12 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-task-generator` | `ywc-task-generator` | "spec을 task로 분해해줘" | Specification을 dependency-safe한 구현 Task로 분해 |
 | `ywc-sequential-executor` | `ywc-sequential-executor` | "task를 순차 실행해줘" | Task를 순차 실행하고, `--aggregate-pr`에서는 work branch 누적 후 최종 PR 1개로 delivery |
 | `ywc-parallel-executor` | `ywc-parallel-executor` | "독립 task를 병렬 실행해줘" | Git Worktree 격리 기반 Task 병렬 실행 |
+| `ywc-docker-isolate` | `ywc-docker-isolate` | "worktree Docker port 격리해줘" | 병렬 worktree별 Docker Compose port isolation audit/setup/teardown |
 | `ywc-code-gen` | `ywc-code-gen` | "plan대로 code generation 해줘" | Backend / Frontend / QA 병렬 Code 생성 |
 | `ywc-impl-review` | `ywc-impl-review` | "구현 결과 review 해줘" | 구현 Review 및 specialist agent routing |
 | `ywc-review-learnings` | `ywc-review-learnings` | "review learnings 학습해줘" | Project별 review 선호를 `docs/review-learnings.md`에 누적 |
 | `ywc-spec-validate` | `ywc-spec-validate` | "spec 품질 검증해줘" | Specification 품질 Review |
+| `ywc-spec-ready` | `ywc-spec-ready` | "spec을 task 생성 가능 상태로 수렴시켜줘" | spec readiness loop, advisor budget 기반 validate/update 반복 후 task-generator handoff |
 | `ywc-spec-writer` | `ywc-spec-writer` | "specification을 갱신해줘" | Specification 작성·갱신 |
 | `ywc-tech-research` | `ywc-tech-research` | "기술 조사해줘" | Library / Implementation 비교 및 기술 조사 |
 | `ywc-plan` | `ywc-plan` | "이 아이디어를 plan/spec으로 정리해줘" | Rough idea → 구현 직전 artifact |

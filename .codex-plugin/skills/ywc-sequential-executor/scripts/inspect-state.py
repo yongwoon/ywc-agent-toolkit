@@ -8,6 +8,7 @@ validate, or reset state from the command line.
 Usage:
   python scripts/inspect-state.py           # Human-readable state summary
   python scripts/inspect-state.py --json    # Raw JSON dump
+  python scripts/inspect-state.py --state-file <path>
   python scripts/inspect-state.py --reset   # Delete state file (force fresh run)
 
 Run from the project root (same directory as .ywc-run-state.json).
@@ -41,23 +42,30 @@ def main() -> None:
     )
     parser.add_argument("--reset", action="store_true", help="Delete the state file")
     parser.add_argument("--json", dest="as_json", action="store_true", help="Print raw JSON")
+    parser.add_argument(
+        "--state-file",
+        type=Path,
+        default=STATE_FILE,
+        help="Checkpoint file to inspect. Defaults to .ywc-run-state.json in the current directory.",
+    )
     args = parser.parse_args()
+    state_file = args.state_file
 
     if args.reset:
-        if STATE_FILE.exists():
-            STATE_FILE.unlink()
-            print("State file deleted. Next run will start fresh.")
+        if state_file.exists():
+            state_file.unlink()
+            print(f"State file deleted: {state_file}. Next run will start fresh.")
         else:
             print("No state file found — already clean.")
         return
 
-    if not STATE_FILE.exists():
-        print("No checkpoint state found (.ywc-run-state.json does not exist).")
+    if not state_file.exists():
+        print(f"No checkpoint state found ({state_file} does not exist).")
         print("The executor has not been run, or completed successfully and cleaned up.")
         return
 
     try:
-        state = json.loads(STATE_FILE.read_text())
+        state = json.loads(state_file.read_text())
     except json.JSONDecodeError as exc:
         print(f"ERROR: Cannot parse state file: {exc}")
         print("Run with --reset to delete the corrupted file.")
@@ -112,7 +120,12 @@ def main() -> None:
         print("  This state file may belong to ywc-parallel-executor.")
 
     print()
-    print(f"  File: {STATE_FILE.resolve()}")
+    if state.get("worktree_mode"):
+        print(f"  Worktree    : {state.get('worktree_path', 'unknown')}")
+        print(f"  Integration : {state.get('integration_branch', 'unknown')}")
+        print(f"  Run task    : {state.get('run_task_name', 'unknown')}")
+
+    print(f"  File: {state_file.resolve()}")
     print()
     print("Commands:")
     print("  python scripts/inspect-state.py --json    # raw JSON")

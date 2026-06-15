@@ -28,6 +28,10 @@ $ywc-parallel-executor
 
 Sigue las secciones Arguments o Workflow de [SKILL.md](./SKILL.md) para las opciones y modos compatibles.
 
+## Aislamiento Docker
+
+Para worktrees de tareas que usan Docker Compose, el executor delega el aislamiento de puertos en `ywc-docker-isolate`: audita los stacks de las tareas seleccionadas antes de crear worktrees, configura puertos deterministas por tarea despues de verificar cada worktree y desmonta los stacks de tareas exitosas antes de podar worktrees. Los worktrees `BLOCKED` o preservados conservan su estado Docker para recuperacion.
+
 ## Modos de entrega
 
 | Mode | Comportamiento |

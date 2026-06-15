@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
-# cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] <task-name>
+# cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] [--keep-branch] <task-name>
 #
-# Removes the resolved task worktree, deletes the local feature branch with
-# git's merge-safety check, prunes stale metadata, and verifies the result.
+# Removes the resolved task worktree, deletes or preserves the local branch,
+# prunes stale metadata, and verifies the result.
 #
 # Exit codes:
 #   0  Cleanup verified
 #   1  Cleanup failed; details printed on stdout
 #   2  Usage error
 
-set -euo pipefail
+set -uo pipefail
 
 ROOT_ARG=""
 BRANCH=""
 FORCE=0
+KEEP_BRANCH=0
 TASK_NAME=""
 
 usage() {
-  echo "Usage: cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] <task-name>" >&2
+  echo "Usage: cleanup-worktree.sh [--root <path>] [--branch <branch>] [--force] [--keep-branch] <task-name>" >&2
 }
 
 while [[ $# -gt 0 ]]; do
@@ -32,6 +33,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --force)
       FORCE=1; shift
+      ;;
+    --keep-branch)
+      KEEP_BRANCH=1; shift
       ;;
     -h|--help)
       usage; exit 0
@@ -179,8 +183,15 @@ else
   echo "INFO [1]: worktree path '$WORKTREE_PATH' not found — skipping remove"
 fi
 
-# ── Step 2: Delete local branch ──────────────────────────────────────────────
-if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+# ── Step 2: Delete or preserve local branch ─────────────────────────────────
+if [ "$KEEP_BRANCH" -eq 1 ]; then
+  if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+    echo "OK [2]: branch preserved: $BRANCH"
+  else
+    echo "FAIL [2]: branch '$BRANCH' not found; cannot preserve missing branch"
+    FAILED=1
+  fi
+elif git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
   if git branch -d "$BRANCH" 2>"$ERR_FILE"; then
     echo "OK [2]: branch deleted: $BRANCH"
   else
@@ -215,7 +226,12 @@ if [ "$FAILED" -eq 0 ]; then
     echo "FAIL [verify]: worktree metadata still exists: $WORKTREE_PATH"
     FAILED=1
   fi
-  if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+  if [ "$KEEP_BRANCH" -eq 1 ]; then
+    if ! git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+      echo "FAIL [verify]: preserved branch is missing: $BRANCH"
+      FAILED=1
+    fi
+  elif git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
     echo "FAIL [verify]: branch still exists: $BRANCH"
     FAILED=1
   fi
