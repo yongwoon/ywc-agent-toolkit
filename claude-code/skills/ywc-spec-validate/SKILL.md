@@ -38,6 +38,7 @@ When tempted to skip a step, check this table first:
 | `--mode` | `--mode standard\|socratic` | `--mode socratic` | Output style. `standard` (default) returns the finding report and gate verdict; `socratic` returns learning questions instead. See [references/socratic-mode.md](references/socratic-mode.md). |
 | `--focus` | `--focus <area>` | `--focus architecture` | Optional focus hint. When Council Escalation triggers, the generic 4 voices are replaced with domain expert profiles for the chosen area. Valid: `requirements`, `architecture`, `testing`, `compliance`. See [references/expert-profiles.md](references/expert-profiles.md). |
 | `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md). Orthogonal to `--mode` |
+| `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 0` | Opus advisor escalation budget for this invocation. Default: current behavior (≤2). `0` disables Phase 2 escalation entirely — ambiguous advisor candidates are reported as normal Suggestions (with a "would have escalated but budget=0" note) instead of being escalated. Used by orchestrators (e.g. `ywc-spec-ready`) to cap cumulative advisor cost across iterations. |
 
 ## Execution Steps
 
@@ -105,7 +106,7 @@ When tempted to skip a step, check this table first:
 
 ### Summary
 - Critical: N, Warning: M, Suggestion: K
-- Phase 2 advisor calls used: X of 2 ({single-advisor|council|none})
+- Phase 2 advisor calls used: X of N ({single-advisor|council|none})   (N = applied budget; default 2, or the `--advisor-budget` value)
 
 ### Precedent Site Coverage
 | Precedent site (`file:line` + what runs there) | Spec coverage: Replicated / Deferred-with-reason / OMITTED |
@@ -151,7 +152,9 @@ This routes findings into the `## Iteration N Amendments` append flow described 
 
 This skill runs Phase 1 as 4 parallel Sonnet subagents (one per dimension) and aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, the orchestrator escalates to an Opus advisor using the Task tool with `model: opus`. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.
 
-**Budget**: up to 2 Opus advisor calls per invocation. Unused budget is good. Spec review is smaller in scope than impl-review, so the cap is tighter.
+**Budget**: up to 2 Opus advisor calls per invocation by default. Unused budget is good. Spec review is smaller in scope than impl-review, so the cap is tighter.
+
+**`--advisor-budget <n>` override**: when set, `<n>` is the hard ceiling on Phase 2 Opus calls for this invocation (default 2). The report header's `Phase 2 advisor calls used: X of N` line reflects the applied budget as `N` so an orchestrator can track cumulative spend across iterations. When `--advisor-budget 0`, Phase 2 escalation is **disabled entirely**: each finding that would have escalated is instead reported as a normal Suggestion carrying a one-line `would have escalated but budget=0` rationale — it is **never silently dropped**. This lets a loop driver (e.g. `ywc-spec-ready`) run cheap deterministic passes and spend advisor budget only when it chooses to.
 
 **Escalation conditions** — each must satisfy all three properties from [advisor-pattern.md §5](../references/advisor-pattern.md) (objective trigger, irreversibility, ambiguity):
 
@@ -254,3 +257,5 @@ When consumed by an orchestrator that cannot prompt for human input (e.g., ywc-a
 | BLOCKED | Stop execution; surface a structured triage report containing: (1) attempted triage steps, (2) verbatim blocker text, (3) proposed default action |
 | NEEDS_CONTEXT | Stop execution; surface a structured triage report containing: (1) attempted triage steps, (2) verbatim blocker text, (3) proposed default action |
 | SOCRATIC | Stop execution and report to user — SOCRATIC output is not a handoff signal; re-run without `--mode socratic` to obtain a gate verdict |
+
+> **Looped consumer**: the table's `max 1 retry` is the default for non-loop consumers (e.g. `ywc-agentic` Step 3 historically). When **multi-iteration** convergence is required, the dedicated `ywc-spec-ready` skill drives the `DONE_WITH_CONCERNS → ywc-plan --update-spec → re-validate` cycle repeatedly under its own `--max-iterations` cap and stall guards, and passes the remaining advisor budget via `--advisor-budget`. Use `ywc-spec-ready` instead of hand-rolling more than one retry.

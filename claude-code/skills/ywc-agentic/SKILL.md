@@ -94,7 +94,11 @@ Skipped entirely in **Resume Mode**. In **Full Mode** (first iteration) and on *
    `--non-interactive` makes `ywc-plan` fill open questions with anchored defaults instead of prompting. `--output` pins the artifact path so later steps and re-plans can locate it.
 2. Branch on the scale verdict from `ywc-plan`:
    - **Small** → take the **Small Path**: `ywc-plan` produced a `plan.md`. Skip Steps 4 and the executor; go directly to `ywc-code-gen` in Step 5 (Small Path). `ywc-task-generator` is not used.
-   - **Medium / Large** → `ywc-plan` produced a spec. Run `ywc-spec-validate` against it; if `ywc-spec-validate` reports any CRITICAL issue, stop and report (the spec is not safe to decompose). Otherwise continue to Step 4 (Task Phase).
+   - **Medium / Large** → `ywc-plan` produced a spec. Drive it to a task-ready state by delegating to `ywc-spec-ready` (the spec-convergence loop), not a single `ywc-spec-validate` call:
+     ```text
+     /ywc-spec-ready --spec <spec-path> --max-advisor-calls <agentic's remaining global advisor budget>
+     ```
+     `ywc-spec-ready` loops `ywc-spec-validate` ↔ `ywc-plan --update-spec` until `DONE` (or its own cap / stall guard). **Do not pass `ywc-agentic`'s `--max-iterations`** to it — the two ceilings are independent: `ywc-agentic --max-iterations` bounds the outer impl-review (code) loop, while `ywc-spec-ready --max-iterations` (default 5) bounds the inner spec-convergence loop. If `ywc-spec-ready` returns `DONE`, continue to Step 4 (Task Phase); if it returns `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT` (unresolved Critical, cap, or stall), stop and report — the spec is not safe to decompose.
 
 **Re-plan — iteration N > 1 after an Evaluate Fail:**
 
@@ -249,7 +253,8 @@ Before treating an `ywc-agentic` run as complete, verify:
 - **upstream**: the user's natural-language goal (no predecessor skill).
 - **downstream** (orchestrated, not chained):
   - `ywc-plan` — Plan Phase, with `--non-interactive` / `--output` (Full Mode) and `--update-spec` / `--failure-context` (Re-plan).
-  - `ywc-spec-validate` — Medium/Large spec quality gate before task decomposition.
+  - `ywc-spec-ready` — Medium/Large spec-convergence loop in Step 3 (drives `ywc-spec-validate` ↔ `ywc-plan --update-spec` to `DONE`); independent `--max-iterations` from this skill's outer loop.
+  - `ywc-spec-validate` — the per-iteration quality gate that `ywc-spec-ready` invokes (not called directly by this skill).
   - `ywc-task-generator` — Task Phase, with `--tasks-dir`.
   - `ywc-sequential-executor` / `ywc-parallel-executor` — Execute Phase, in `--local-merge` mode.
   - `ywc-impl-review` — Evaluate Phase, with `--spec` (original) and `--git-range`.

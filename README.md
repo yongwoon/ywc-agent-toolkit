@@ -8,7 +8,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 37     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Claude Code | 38     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
 | Codex       | 37     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ## Prerequisites
@@ -187,6 +187,7 @@ versions include Codex-compatible frontmatter and tool guidance.
 | [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | Shape rough ideas before writing a formal plan or spec |
 | [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | Check readiness and risk before starting substantial implementation |
 | [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | Generate repository onboarding context for unfamiliar projects |
+| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | Recursively converge a spec to ywc-spec-validate DONE (validate ↔ ywc-plan --update-spec loop, default max 5 iterations) |
 
 ### Task & Execution
 
