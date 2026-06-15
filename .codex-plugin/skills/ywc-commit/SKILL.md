@@ -209,11 +209,12 @@ git push
 - Use `--force` or `--force-with-lease` **only when the user explicitly requests it**. If a default push is rejected as non-fast-forward, explain the situation and present the options.
 - After pushing, report the current branch and latest commit hash in one line.
 
-## Report Format
+## Output Format
 
 After all commits are done, report concisely:
 
 ```
+Status: DONE | BLOCKED
 ✅ N commit(s) created [+ pushed]
   1. <hash> <type>(<scope>): <summary>
   2. <hash> <type>(<scope>): <summary>

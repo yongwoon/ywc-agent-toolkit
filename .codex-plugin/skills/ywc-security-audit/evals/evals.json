@@ -1,0 +1,16 @@
+{
+  "skill_name": "ywc-security-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit an API route that accepts user input, calls an external URL, and returns database records.",
+      "expected_output": "Produces a security audit report with OWASP category mapping, severity rationale, evidence, recommended fixes, and Completion Status.",
+      "expectations": [
+        "Checks access control, SSRF, input validation, secrets, and rate limiting",
+        "Cites file/line or configuration evidence for every finding",
+        "Escalates ambiguous Critical/High findings as [P2] with advisor budget accounting",
+        "Does not include secrets or full files in snippets"
+      ]
+    }
+  ]
+}

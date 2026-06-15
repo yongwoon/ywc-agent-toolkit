@@ -132,6 +132,10 @@ This skill runs the full OWASP Top 10 deep analysis on a single inherited-model 
 
 Report escalations in the output: mark Phase 2 findings with `[P2]` prefix and include the advisor's verdict. This preserves auditability of which security calls involved frontier judgment and lets the user calibrate their trust in the severity assignments.
 
+## Validation
+
+Before returning the audit, verify that each finding cites a file/line or config source, maps to an OWASP category, includes severity rationale, redacts secrets from snippets, and records every advisor escalation as `[P2]` with budget usage.
+
 ## Integration
 
 - **upstream**: After implementation or periodic review

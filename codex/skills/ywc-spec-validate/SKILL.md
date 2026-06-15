@@ -246,6 +246,10 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 
 The gate score must appear in the report header alongside the Critical/High/Medium/Low finding counts. A required dimension scoring below 50 forces STOP regardless of aggregate.
 
+## Validation
+
+Before handing off to `ywc-task-generator`, verify that every Critical/Warning/Suggestion cites spec evidence, precedent-site coverage is either replicated or deferred with a reason, advisor/council usage is counted, and the Confidence Gate status matches the reported band.
+
 ## Integration
 
 - **Primary upstream** — `ywc-spec-writer`: validates `docs/specification/` section files (`01-overview.md` … `07-glossary.md`). All 4 review dimensions (completeness, consistency, feasibility, code compatibility) apply fully.

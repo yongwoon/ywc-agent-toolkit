@@ -412,7 +412,7 @@ done
 
 No task should be in an in-between state (e.g. moved to `completed/` but branch still alive, or worktree removed but directory not moved). If the audit reports `LEAKED` or `DRIFT`, **do not transition** — surface the offending task name to the user; transitioning forward with a missing Mark-Complete silently corrupts dependency resolution for every downstream wave.
 
-### Step 5: Completion Report
+## Output Format (Step 5 Completion Report)
 
 **`--draft` and `--aggregate-pr` modes: Aggregate PR** (execute before the report below)
 
@@ -491,7 +491,7 @@ Wave 2 (3 tasks)  | ✅ 2  ❌ 1  | force-cleaned: 0  preserved: 1  LEAKED: 0
 rm -f .ywc-run-state.json
 ```
 
-## Wave Failure Handling
+## Validation and Wave Failure Handling
 
 - **1 task fails**: Preserve its branch and worktree (do **not** run Step 4g for it), merge remaining successful tasks normally. Skip subsequent wave tasks that depend on the failed task. Record the preserved worktree path and branch name for the Completion Report.
 - **Merge conflict**: Report conflicting files and related tasks, ask user to resolve manually. Do not auto-abort or force. The conflicting task's worktree and branch are preserved as in the single-task failure case.

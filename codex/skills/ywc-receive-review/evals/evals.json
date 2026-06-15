@@ -1,0 +1,16 @@
+{
+  "skill_name": "ywc-receive-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Handle three PR review comments: one typo, one failing test claim, and one suggestion that conflicts with an ADR.",
+      "expected_output": "Reads every comment fully, fixes the typo with verification, investigates the test claim before replying, and pushes back on the ADR conflict with a technical question.",
+      "expectations": [
+        "Does not use performative agreement language",
+        "Orders work as blockers, simple fixes, then complex fixes",
+        "Includes verification evidence for implemented fixes",
+        "Ends with a Status line and explicit blockers or remaining questions"
+      ]
+    }
+  ]
+}

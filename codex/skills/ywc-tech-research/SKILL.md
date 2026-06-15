@@ -151,6 +151,10 @@ Output depth is controlled by `--depth` (default: 50):
 | `BLOCKED` | Cannot research the topic — context7 returned nothing and no official docs are publicly accessible |
 | `NEEDS_CONTEXT` | Topic is too vague to produce a useful recommendation without clarification from the user |
 
+## Validation
+
+Before returning the recommendation, verify that official sources were checked first, source dates are present, stale/community-only evidence is labeled, unsupported claims are marked `[INFERRED]`, and the final status reflects any missing benchmark or compatibility evidence.
+
 ## Integration
 
 - **upstream**: None (standalone execution)
