@@ -8,7 +8,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 36     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Claude Code | 37     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
 | Codex       | 37     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ## Prerequisites
@@ -199,6 +199,7 @@ versions include Codex-compatible frontmatter and tool guidance.
 | [`ywc-agentic`](claude-code/skills/ywc-agentic/README.md) | Autonomously orchestrate the ywc-\* pipeline from a goal (Plan → Execute → Evaluate → Repeat, max 3 iterations) |
 | [`ywc-tdd-ritual`](claude-code/skills/ywc-tdd-ritual/README.md) | Drive feature and bugfix work through a red-green-refactor loop |
 | [`ywc-worktrees`](claude-code/skills/ywc-worktrees/README.md) | Create, audit, prune, and resolve worktree-based task isolation |
+| [`ywc-docker-isolate`](claude-code/skills/ywc-docker-isolate/README.md) | Deterministically isolate per-worktree Docker host ports for parallel runs (setup / teardown / audit) |
 
 ### Review & Verification
 

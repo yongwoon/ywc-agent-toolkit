@@ -44,6 +44,11 @@
     "S4": 4,
     "S5": 4
   },
+  "claude-code/skills/ywc-docker-isolate": {
+    "S2": 5,
+    "S4": 4,
+    "S5": 4
+  },
   "claude-code/skills/ywc-e2e-test-strategy": {
     "S2": 4,
     "S4": 5,
