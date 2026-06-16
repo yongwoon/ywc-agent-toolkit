@@ -432,6 +432,7 @@ def markdown(payload: dict[str, object]) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=None)
+    parser.add_argument("--mode", choices=["mechanical", "judge", "full"], default="mechanical")
     parser.add_argument("--target", choices=["all", str(SKILL_ROOT), str(AGENT_ROOT)], default="all")
     parser.add_argument("--item", default=None)
     parser.add_argument("--format", choices=["json", "markdown"], default="json")
@@ -443,8 +444,20 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if args.mode != "mechanical":
+        print(
+            f"error: score.py only supports --mode mechanical; {args.mode} is skill-mediated",
+            file=sys.stderr,
+        )
+        return 2
     repo_root = find_repo_root((args.repo_root or Path(__file__).resolve()).resolve())
     payload = evaluate(repo_root, args.target, args.item)
+    if args.item is not None:
+        roots = payload["roots"]
+        assert isinstance(roots, dict)
+        if not any(items for items in roots.values()):
+            print(f"error: item not found: {args.item} in {args.target}", file=sys.stderr)
+            return 2
     if args.update_baseline:
         write_baseline(args.history_file, payload)
         print(f"[baseline] wrote {args.history_file}")
