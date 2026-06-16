@@ -32,3 +32,39 @@ graph LR
   A --> C[000008-010-infra-eval-surface-validation]
   B --> C
 ```
+
+---
+
+## Batch 2 — ywc-toolkit-eval (Claude Code) Quality Improvements
+
+- Spec: `docs/ywc-plans/ywc-toolkit-eval-improvements.md`
+- Granularity mode: `llm` · Language: korean
+- Starting phase: `000009` (phases `000007`–`000008` are occupied by the codex batch above)
+- Independent of the codex batch — no cross-dependency.
+
+### Phase 000009 - Eval Scorer Fixes, Docs Alignment, Case Coverage
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000009-010-domain-eval-scorer-logic` | domain | (root) |
+| `000009-020-test-eval-scorer-unit-tests` | test | `000009-010` |
+| `000009-030-docs-rubric-skill-alignment` | docs | `000009-010` |
+| `000009-040-test-trigger-cases-authoring` | test | `000009-010` |
+| `000009-050-infra-final-verification` | infra | `000009-010`, `-020`, `-030`, `-040` |
+
+### Parallel Execution Notes (Batch 2)
+
+- Initial ready set: `000009-010-domain-eval-scorer-logic` (solo — owns `score.py` + `history.mechanical.json`, atomic rebaseline).
+- After `000009-010` merges: `000009-020`, `000009-030`, `000009-040` are parallel-safe (disjoint files: `test_score.py` / docs+rubric / `trigger-cases.json`).
+- `000009-050` waits for all four; verification only (no source edits).
+- **Hard gate (Spec Amendment A3):** `000009-010`'s A5/A7 logic change and the `history.mechanical.json` rebaseline must land in the **same commit**, or CI (`validate.yml --ci`) may go red.
+
+```mermaid
+graph LR
+  D[000009-010-domain-eval-scorer-logic] --> E[000009-020-test-eval-scorer-unit-tests]
+  D --> F[000009-030-docs-rubric-skill-alignment]
+  D --> G[000009-040-test-trigger-cases-authoring]
+  E --> H[000009-050-infra-final-verification]
+  F --> H
+  G --> H
+```
