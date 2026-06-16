@@ -1,0 +1,20 @@
+{
+  "name": "ywc-agent-toolkit",
+  "interface": {
+    "displayName": "YWC Agent Toolkit"
+  },
+  "plugins": [
+    {
+      "name": "ywc-agent-toolkit",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development"
+    }
+  ]
+}

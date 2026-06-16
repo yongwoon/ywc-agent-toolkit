@@ -317,6 +317,52 @@ check_codex_plugin_manifest() {
   rm -rf "$tmp_dir"
 }
 
+check_codex_plugin_marketplace() {
+  local marketplace=".agents/plugins/marketplace.json"
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: jq is required to validate .agents/plugins/marketplace.json"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if [ ! -f "$marketplace" ]; then
+    echo "ERROR: .agents/plugins/marketplace.json is missing"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if ! jq empty "$marketplace" >/dev/null 2>&1; then
+    echo "ERROR: .agents/plugins/marketplace.json is not valid JSON"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if ! jq -e '.name == "ywc-agent-toolkit"' "$marketplace" >/dev/null; then
+    echo "ERROR: .agents/plugins/marketplace.json name must be ywc-agent-toolkit"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! jq -e '.interface.displayName == "YWC Agent Toolkit"' "$marketplace" >/dev/null; then
+    echo "ERROR: .agents/plugins/marketplace.json interface.displayName must be YWC Agent Toolkit"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! jq -e '
+    .plugins
+    | type == "array"
+    and any(.[]; .name == "ywc-agent-toolkit"
+      and .source.source == "local"
+      and .source.path == "./"
+      and .policy.installation == "AVAILABLE"
+      and .policy.authentication == "ON_INSTALL"
+      and .category == "Development")
+  ' "$marketplace" >/dev/null; then
+    echo "ERROR: .agents/plugins/marketplace.json must expose ywc-agent-toolkit from source.path ./"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
 check_agent_file() {
   local file="$1"
   local base
@@ -501,6 +547,7 @@ check_codex_plan_handoff
 
 echo "==> Validating Codex plugin package..."
 check_codex_plugin_manifest
+check_codex_plugin_marketplace
 
 echo "==> Validating codex agents..."
 check_codex_agents
