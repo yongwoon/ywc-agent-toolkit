@@ -112,10 +112,12 @@ def _excluded_in_anti_trigger(desc: str, sibling: str) -> bool:
     current catalog clauses are English (Amendment A4); localized clause
     detection is deferred.
     """
-    idx = desc.find("Do not use for")
-    if idx == -1:
+    m = re.search(r"Do not use for(?P<clause>.*?)(?:[.!?\n]|$)", desc, re.IGNORECASE)
+    if not m:
         return False
-    return sibling in desc[idx:]
+    clause = m.group("clause").lower()
+    target = sibling.lower()
+    return re.search(rf"(?<![a-z0-9-]){re.escape(target)}(?![a-z0-9-])", clause) is not None
 
 
 def find_collisions(items: list[dict]) -> dict:
