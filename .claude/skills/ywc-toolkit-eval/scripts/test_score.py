@@ -180,9 +180,9 @@ class CiItemGuardTest(unittest.TestCase):
             before, "committed baseline must exist for the byte-equality check to be load-bearing")
         proc = subprocess.run(
             [sys.executable, str(SCRIPT), "--ci", "--item", "ywc-commit"],
-            capture_output=True, text=True,
+            capture_output=True, text=True, timeout=60,
         )
-        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(proc.returncode, 2)
         self.assertIn("cannot be combined", proc.stderr)
         after = baseline.read_bytes() if baseline.exists() else None
         self.assertEqual(before, after)
