@@ -71,7 +71,7 @@ Mechanical (presence) + judgment (adherence). Claude Code agents should define a
 
 ## A5 — Model-Tier Appropriateness (weight 15)
 
-Mechanical heuristic + judgment. Is the agent on the right model for its cognitive load? Frontier judgment (architecture, root-cause, security boundary) → Opus; standard implementation/review → Sonnet; mechanical enumeration (coverage counting, formatting) → Haiku.
+Mechanical heuristic + judgment. Is the agent on the right model for its cognitive load? The mechanical heuristic (`score.py`, FR3) infers the expected tier from role keywords in the agent **name**: frontier judgment (`architect`, `root-cause`, `critic`) → Opus; documentation / formatting / mechanical enumeration (`doc-writer`, `documentation`, `formatting`, `mechanical`, `enumeration`) → Haiku; **everything else — including `security`, `reviewer`, `coder`, `engineer` — → Sonnet**. Security review in this toolkit is static analysis on Sonnet by design and is NOT an Opus-expected role. Mechanical bands: declared == expected → 5; over-provisioned → 3; under-provisioned → 2; model present but tier unrecognized → 4; no model → 0. The judgment tier may refine within these.
 
 | Score | Band |
 |---|---|

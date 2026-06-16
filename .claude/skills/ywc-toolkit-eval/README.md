@@ -9,7 +9,7 @@ Claude Code `ywc-*` Skill 과 Claude Code Agent 품질을 **등급(0~5, 가중 1
 | 축 | 가중치 | 내용 |
 | --- | --- | --- |
 | S1 Activation 정확도 | 30 | Trigger precision/recall + sibling 충돌 |
-| S2 구조 Compliance | 15 | ywc-skill-author A1~A14 준수율 |
+| S2 구조 Compliance | 15 | ywc-skill-author A1~A14 중 기계 점검 가능한 10개 하위집합 준수율 (A5/A10/A12/A13 제외) |
 | S3 Behavioral 효능 | 20 | SKILL.md 만 따라도 의도한 산출물이 나오는가 |
 | S4 토큰 경제성 | 10 | Tier-1 leanness, 본문 ≤500, Tier-3 추출 적정 |
 | S5 일관성/무결성 | 15 | README locale, pointer resolve, dangling ref |

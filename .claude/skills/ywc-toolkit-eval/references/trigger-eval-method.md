@@ -73,4 +73,4 @@ The judge must NOT read SKILL.md bodies. Real activation happens on Tier-1 metad
 
 ## Determinism Note
 
-`Math.random()`-style nondeterminism is not used; the judge is asked for its single best match, and ties are broken by listing order. Re-running the judge on the same descriptions and cases should yield the same precision/recall within ±1 case. A larger swing means the descriptions are genuinely ambiguous — that is itself an S1 signal, not noise to average away.
+No nondeterministic sampling is used; the judge returns its single best match, and ties are broken by listing order. Re-running the judge on the same descriptions and cases should yield the same precision/recall within ±1 case. A larger swing means the descriptions are genuinely ambiguous — that is itself an S1 signal, not noise to average away.
