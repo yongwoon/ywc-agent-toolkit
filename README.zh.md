@@ -46,25 +46,28 @@
 
 ### Codex CLI 插件目录
 
-本仓库在 [`.codex-plugin/`](.codex-plugin/) 下包含 Codex 插件分发所需的打包元数据，插件本地 skill 会镜像到 `.codex-plugin/skills/`，并由 `bash scripts/validate.sh` 检查是否保持最新。这表示 `ywc-agent-toolkit` 已为 Codex CLI/App 插件安装做好准备，但不表示它已经在官方 Codex 市场上架。
+本仓库在 [`.codex-plugin/`](.codex-plugin/) 下包含 Codex 插件分发所需的打包元数据，并在 [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) 提供仓库范围的 marketplace catalog。插件本地 skill 会镜像到 `.codex-plugin/skills/`，并由 `bash scripts/validate.sh` 检查是否保持最新。将本仓库添加为 Codex plugin marketplace source 后，可以在 Codex 中搜索 `ywc-agent-toolkit`，但这不表示它已经上架到官方 OpenAI-curated marketplace。
 
-当包含本仓库的 Codex 插件市场或来源可用时：
+将本仓库添加为 Codex plugin marketplace source：
+
+```bash
+codex plugin marketplace add yongwoon/ywc-agent-toolkit
+```
+
+然后打开插件目录：
 
 ```text
-# Shell
 codex
-
-# 在交互式 Codex 会话中
 /plugins
 ```
 
-在交互式 Codex 会话中打开插件目录，搜索 `yongwoon/ywc-agent-toolkit` 的 **ywc-agent-toolkit**，然后选择 **Install plugin**。
+在交互式 Codex 会话中选择 **YWC Agent Toolkit** marketplace 标签页，搜索 **ywc-agent-toolkit**，然后选择 **Install plugin**。
 
 ### Codex App Plugins 侧边栏
 
-在 Codex App 中，从侧边栏打开 **Plugins**，搜索或浏览 **ywc-agent-toolkit**，确认插件来源是 `yongwoon/ywc-agent-toolkit`，然后在插件详情页安装。
+在 Codex App 中，从侧边栏打开 **Plugins**，选择 **YWC Agent Toolkit** source，然后搜索或浏览 **ywc-agent-toolkit**。确认插件来源是 `yongwoon/ywc-agent-toolkit`，然后在插件详情页安装。
 
-在本仓库出现在你可用的 Codex 插件来源之前，请使用下面的 bash fallback。
+如果你的环境无法使用 marketplace source installation，请使用下面的 bash fallback。
 
 ### bash 脚本 fallback
 

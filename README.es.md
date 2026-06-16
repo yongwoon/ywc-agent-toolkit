@@ -45,25 +45,28 @@ Las skills se instalan automáticamente en `~/.claude/skills/` sin necesidad de 
 
 ### Directorio de plugins de Codex CLI
 
-Este repositorio incluye metadatos de empaquetado para plugins de Codex en [`.codex-plugin/`](.codex-plugin/), con las skills locales del plugin reflejadas en `.codex-plugin/skills/` y verificadas por `bash scripts/validate.sh`. Esto prepara `ywc-agent-toolkit` para instalación como plugin en Codex CLI/App, pero no implica que ya esté listado en un marketplace oficial de Codex.
+Este repositorio incluye metadatos de empaquetado para plugins de Codex en [`.codex-plugin/`](.codex-plugin/) y un catálogo de marketplace con alcance de repositorio en [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Las skills locales del plugin se reflejan en `.codex-plugin/skills/` y se verifican con `bash scripts/validate.sh`. Esto permite que `ywc-agent-toolkit` aparezca en la búsqueda de Codex después de añadir este repositorio como fuente de marketplace de plugins, pero no implica que esté listado en el marketplace oficial curado por OpenAI.
 
-Cuando exista un marketplace o una fuente de plugins de Codex que incluya este repositorio:
+Añada este repositorio como fuente de marketplace de plugins de Codex:
+
+```bash
+codex plugin marketplace add yongwoon/ywc-agent-toolkit
+```
+
+Luego abra el directorio de plugins:
 
 ```text
-# Shell
 codex
-
-# Dentro de la sesión interactiva de Codex
 /plugins
 ```
 
-Dentro de la sesión interactiva de Codex, abra el directorio de plugins, busque **ywc-agent-toolkit** de `yongwoon/ywc-agent-toolkit` y seleccione **Install plugin**.
+Dentro de la sesión interactiva de Codex, elija la pestaña de marketplace **YWC Agent Toolkit**, busque **ywc-agent-toolkit** y seleccione **Install plugin**.
 
 ### Barra lateral Plugins de Codex App
 
-En Codex App, abra **Plugins** desde la barra lateral, busque o explore **ywc-agent-toolkit**, confirme que la fuente del plugin sea `yongwoon/ywc-agent-toolkit` e instálelo desde la vista de detalles del plugin.
+En Codex App, abra **Plugins** desde la barra lateral, elija la fuente **YWC Agent Toolkit**, busque o explore **ywc-agent-toolkit**, confirme que la fuente del plugin sea `yongwoon/ywc-agent-toolkit` e instálelo desde la vista de detalles del plugin.
 
-Hasta que este repositorio aparezca en una fuente de plugins de Codex disponible para usted, use el fallback bash de abajo.
+Si la instalación de fuentes de marketplace no está disponible en su entorno, use el fallback bash de abajo.
 
 ### Script bash fallback
 
