@@ -49,9 +49,11 @@ When no task is specified, the Skill analyzes the dependency graph and selects t
 | `--group-name <name>` | Names the work branch (`work/<name>`). `--aggregate-pr` only; defaults to `work/<base>-<timestamp>` | `--group-name project-health` |
 | `--base-branch <branch>` | Base branch override (default: auto-detect) | `--base-branch develop` |
 | `--dry-run` | Show execution plan (task order, dependencies, mode) without executing | |
+| `--worktree` | Run the **whole range inside one isolated git worktree** so the main checkout stays free. Run-level isolation — tasks still run strictly sequentially. Independent flag, combines with all four delivery modes and `--review`. See [references/worktree-run.md](./references/worktree-run.md) | `--worktree` |
 
 > `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. The Skill stops and asks which mode you intended if more than one is passed.
 > `--local-merge` **does not run remote CI**, so the only safety net for the merge is the local verification in Step 4 (lint/typecheck/test). Avoid it for sensitive changes.
+> `--worktree` is **independent** of the mutual-exclusion group above (not a fifth member). A Docker stack started inside the worktree can collide with the host's existing dev stack on host ports (owned by the host-isolation follow-up); because tasks run sequentially, *parallel* port contention does not arise.
 
 ### Group Execution (`--aggregate-pr`)
 

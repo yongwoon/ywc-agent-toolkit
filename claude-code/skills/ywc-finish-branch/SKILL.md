@@ -49,8 +49,15 @@ When tempted to skip a step, check this table first:
 | `--bot-action` | `sequential` \| `parallel` | `--bot-action sequential` | Post-bot polling behavior. Default: `sequential` (re-run CI after bot fixes). Use `parallel` when called from a wave loop where CI does not re-gate between bot iterations. |
 | `--defer-push` | flag | | Skip the push of the Mark Complete commit. Used by range-mode callers that batch pushes at the end of the range. |
 | `--keep-branch` | flag | | Skip the local feature branch deletion (`git branch -d`). Used by `ywc-parallel-executor`, where the branch is checked out in a worktree at the time of merge — `git branch -d` would fail until the worktree is removed. Caller takes responsibility for the eventual `git worktree remove` + `git branch -d`. |
+| `--worktree-path` | `<path>` | `--worktree-path /abs/run-000024-010-000024-020` | Run every git operation in Steps 1 and 5–8 as `git -C <path> …` so the delivery acts on the run worktree's HEAD instead of the main checkout. When unset, all git commands run against the repo root (current behavior — 100% backward compatible). Passed by `ywc-sequential-executor --worktree`; worktree creation and removal stay the caller's responsibility. See [Worktree-path mode](#worktree-path-mode). |
 
 **Mode-flag mutual exclusivity**: `--mode` is a single value; conflicts are impossible by construction. The caller is responsible for resolving ambiguity (e.g., the upstream executor's `--draft` and `--local-merge` flags must be collapsed into one `--mode` value before invoking this skill).
+
+## Worktree-path mode
+
+When `--worktree-path <path>` is set, **every git command this skill issues** — the Step 1 `git branch --list` / `git rev-parse` validations, the Step 5 merge/checkout/pull/push/branch-delete sequence, the Step 6 post-merge `git log`, the Step 7 `git check-ignore` / `git mv` / `git commit` / post-move check, and the Step 8 checkout/pull/branch-delete — runs as `git -C <path> …`. The delivery semantics are unchanged: CI wait, bot-review polling, the merge-readiness gate, and Mark Task Complete behave identically; only the working directory the git commands act on differs (the run worktree instead of the main checkout). `gh` commands (`gh pr ready` / `gh pr checks` / `gh pr merge` / `gh pr view`) operate on the remote PR, not a working tree, so they are unaffected by `--worktree-path`.
+
+**HEAD invariant (per-task feature branch deletion is safe).** At the moment Step 5 runs, the run worktree's HEAD is on the **integration branch** (the worktree's permanent checkout). finish-branch creates/merges `feature/<task-name>` and then checks out the integration branch *before* deleting `feature/<task-name>`, so the per-task branch is never the worktree's current checkout when `git branch -d` runs. The integration branch (and the trunk base branch) is **never** a deletion target here — finish-branch only deletes the per-task `feature/<task-name>`. This is why per-task branch deletion succeeds inside a worktree without needing `--keep-branch`: only a branch that is *checked out* in a worktree is undeletable, and the per-task branch is not.
 
 ## Modes
 
@@ -84,6 +91,8 @@ For `--mode draft` and `--mode skip-ci-wait`, conditions 2–5 are intentionally
 - Confirm `--base-branch` is reachable (`git rev-parse --verify <base-branch>` succeeds).
 - Confirm `--task-name` matches an entry under `<tasks-dir>/` (not under `<tasks-dir>/completed/`).
 - For PR-based modes: confirm `gh auth status` succeeds.
+
+When `--worktree-path <path>` is set, run the `git branch --list` and `git rev-parse` validations as `git -C <path> …` (see [Worktree-path mode](#worktree-path-mode)).
 
 If any check fails, return `NEEDS_CONTEXT` with the specific missing input. Do not proceed with partial information.
 
@@ -216,6 +225,8 @@ git push origin <base-branch>          # omit when --defer-push is set
 git branch -d feature/<task-name>      # omit when --keep-branch is set (parallel wave loop case)
 ```
 
+When `--worktree-path <path>` is set, prefix every git command above with `-C <path>` (e.g. `git -C <path> checkout <base-branch>`, `git -C <path> merge --no-ff feature/<task-name> …`, `git -C <path> branch -d feature/<task-name>`); here `<base-branch>` is the run's integration branch (the worktree's checkout). Per the [Worktree-path mode](#worktree-path-mode) HEAD invariant, the integration branch is checked out before the per-task `feature/<task-name>` is deleted, so the delete succeeds.
+
 For all other modes: skip — merge happens later (manual for `draft`, caller for `skip-ci-wait` and `per-task-pr`).
 
 **Why `git merge --no-ff` specifically** (not cherry-pick, not direct commit on main): preserves original commit SHAs, marks the task boundary in `git log --graph`, and lets `git branch -d` act as a built-in safety check that refuses to delete an unmerged branch. Full rationale lives in the upstream executor's `references/branch-lifecycle.md`.
@@ -228,7 +239,7 @@ For `--mode normal-pr` and `--mode local-merge`:
 ```bash
 git log -1 --format="%s"
 ```
-The output **must** begin with `Merge branch 'feature/`. If not, the merge did not execute correctly — investigate and retry before proceeding to Step 7. Do not write a completion marker for a merge that did not happen; downstream tasks would resolve dependencies against a broken contract.
+The output **must** begin with `Merge branch 'feature/`. If not, the merge did not execute correctly — investigate and retry before proceeding to Step 7. Do not write a completion marker for a merge that did not happen; downstream tasks would resolve dependencies against a broken contract. When `--worktree-path <path>` is set, run this check as `git -C <path> log -1 --format="%s"`.
 
 ### Step 7: Mark Task Complete
 
@@ -242,6 +253,8 @@ bash claude-code/skills/scripts/mark-complete.sh <tasks-dir> <task-name> [--push
 
 Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
 
+When `--worktree-path <path>` is set, run `mark-complete.sh` so its `git check-ignore` / `git mv` / `git commit` and post-move `git log` operate on the worktree (invoke it with the worktree as the working directory, e.g. `cd <path> && bash <repo>/claude-code/skills/scripts/mark-complete.sh …`); the `<tasks-dir>` move acts on `<path>/<tasks-dir>/…` directly, and the verification checks resolve against the worktree's HEAD (see [Worktree-path mode](#worktree-path-mode)).
+
 **Push strategy**: pass `--push` to `mark-complete.sh` for `--mode local-merge` and for `--mode normal-pr` when `--defer-push` is **not** set. Otherwise pass `--defer-push` (the script's default) so the caller can batch completion-marker commits and push them once at the end of the range. The caller is responsible for the eventual push when deferral is requested.
 
 For `--mode draft`, `--mode skip-ci-wait`, `--mode per-task-pr`: skip Step 7 entirely. The task is not yet merged; marking it complete would be incorrect.
@@ -254,7 +267,7 @@ git checkout <base-branch>
 git pull origin <base-branch>
 git branch -d feature/<task-name>      # omit when --keep-branch is set
 ```
-The local branch must be deleted explicitly because `gh pr merge --delete-branch` only removes the remote. Skip the deletion when `--keep-branch` is set — the caller (typically `ywc-parallel-executor`) will release the worktree and delete the branch in its own cleanup step.
+The local branch must be deleted explicitly because `gh pr merge --delete-branch` only removes the remote. Skip the deletion when `--keep-branch` is set — the caller (typically `ywc-parallel-executor`) will release the worktree and delete the branch in its own cleanup step. When `--worktree-path <path>` is set, run all three commands as `git -C <path> …` (here `<base-branch>` is the run's integration branch); the per-task `feature/<task-name>` deletion is safe because the worktree HEAD is on the integration branch per the [Worktree-path mode](#worktree-path-mode) invariant.
 
 For `--mode local-merge`: already handled inside Step 5's command sequence (which honors `--keep-branch` likewise).
 
@@ -318,4 +331,4 @@ Each of these is a hidden defect that breaks the next task's dependency resoluti
 
 ## Notes
 
-This skill is a single-task delivery unit. It does not iterate over a range, manage a wave, or maintain checkpoint state — those concerns belong to the calling executor. Worktree creation and removal are intentionally out of scope, because the lifecycle differs between sequential (no worktree) and parallel (per-task worktree); placing it here would force one of the two callers to special-case its cleanup.
+This skill is a single-task delivery unit. It does not iterate over a range, manage a wave, or maintain checkpoint state — those concerns belong to the calling executor. Worktree **creation and removal** are intentionally out of scope, because the lifecycle differs between callers; placing it here would force one of them to special-case its cleanup. What this skill *does* support is **operating inside a caller-supplied worktree** via `--worktree-path` (see [Worktree-path mode](#worktree-path-mode)): `ywc-sequential-executor --worktree` runs its whole range inside one run worktree and passes that path so finish-branch's git commands target the worktree HEAD, while the worktree's own create/prune lifecycle stays with that caller. The historical "sequential (no worktree)" assumption now reads: sequential delivers in the main checkout *unless* `--worktree` is active, in which case `--worktree-path` redirects the git commands; parallel still owns its per-task worktrees.

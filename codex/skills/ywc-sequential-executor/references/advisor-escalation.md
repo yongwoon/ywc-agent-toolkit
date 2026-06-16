@@ -6,16 +6,16 @@
 
 ## Pattern overview
 
-This skill runs the full Execution Cycle on a single inherited-model executor. For a small number of **decision points** where a wrong judgment is expensive to undo, the executor may request one higher-capability advisor pass using the Codex delegation mechanism available in the current session. If no delegation tool is available, run the same advisor checklist inline and record the fallback. This follows **Pattern A** from the shared advisor-pattern reference — escalation inside a single subagent, with frontier judgment applied only where it actually matters.
+This skill runs the full Execution Cycle on a single inherited-model executor. For a small number of **decision points** where a wrong judgment is expensive to undo, the executor may escalate to a higher-capability advisor subagent. This follows **Pattern A** from the shared advisor-pattern reference — escalation inside the execution flow, with frontier judgment applied only where it actually matters.
 
-The goal is **not** to use high-capability reasoning for everything. The goal is to reserve advisor reasoning for the few decisions where:
+The goal is **not** to use advisor escalation for everything. The goal is to reserve frontier reasoning for the few decisions where:
 - the cost of being wrong is high (irreversibility),
 - the right answer is genuinely ambiguous (not just unfamiliar), and
 - the trigger is objective enough that the executor can recognize the situation without already knowing the answer.
 
 ## Budget
 
-Up to **3 advisor escalations per invocation** (applies to single-task and range execution alike). Unused budget is good. Exceeding the budget requires an explicit justification in the Completion Report.
+Up to **3 advisor calls per invocation** (applies to single-task and range execution alike). Unused budget is good. Exceeding the budget requires an explicit justification in the Completion Report.
 
 ## Escalation conditions
 
@@ -57,7 +57,7 @@ Pattern A's cost savings come from keeping the advisor payload small. If you for
 
 - **Forward only the decision point**: the specific Step, the evidence (failing test output, diff excerpt, spec excerpt), and the binding constraint. Target ≤100 lines of payload.
 - **Do NOT forward**: the full task README, the full spec, the full repository state, or prior Execution Cycle turns.
-- **Advisor returns a short verdict** (≤200 words) containing the recommended action and a one-line rationale. The advisor pass does not run tools; the parent executor continues with the advice.
+- **Advisor returns a short verdict** (≤200 words) containing the recommended action and a one-line rationale. The advisor subagent does not run tools; the parent executor continues with the advice.
 
 ## Explicit non-goals
 

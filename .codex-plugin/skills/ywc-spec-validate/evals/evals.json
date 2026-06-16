@@ -1,0 +1,16 @@
+{
+  "skill_name": "ywc-spec-validate",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Validate docs/specification for a feature that omits error states and conflicts with an existing API route.",
+      "expected_output": "Returns a spec review report with Summary, Precedent Site Coverage, Critical Issues, Warning Issues, Suggestions, and Completion Status.",
+      "expectations": [
+        "Flags missing error states and API route conflicts with spec evidence",
+        "Records precedent-site coverage as replicated, deferred with reason, or omitted",
+        "Counts advisor or council usage when escalation occurs",
+        "Blocks handoff to ywc-task-generator unless the final status is DONE"
+      ]
+    }
+  ]
+}

@@ -194,6 +194,16 @@ After all items are clarified and verified, implement in this order:
 
 Test each fix individually. Verify each via `ywc-verify-done` before claiming "fix applied".
 
+## Output Format
+
+```text
+Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+Items handled: <n>
+Implemented fixes: <file:line + verification command>
+Pushbacks/questions: <technical reason + question>
+Remaining blockers: <none or explicit blocker>
+```
+
 ## Integration
 
 - **Upstream callers**: user invocation; `ywc-handle-pr-reviews` (per inline-comment iteration — this skill is its attitude layer); `ywc-finish-branch` (post-CI bot reviews surfaced by `scripts/poll-pr-reviews.sh`).

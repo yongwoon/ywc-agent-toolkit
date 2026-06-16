@@ -1,0 +1,16 @@
+{
+  "skill_name": "ywc-tech-research",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Compare two current SDKs for a production integration and recommend one.",
+      "expected_output": "Returns a source-backed research report with comparative analysis, recommendation, project-specific considerations, references, and Completion Status.",
+      "expectations": [
+        "Checks official documentation before community sources",
+        "Records source recency and flags stale evidence",
+        "Labels inferred or single-source claims",
+        "Uses DONE_WITH_CONCERNS when benchmark, license, or compatibility evidence is incomplete"
+      ]
+    }
+  ]
+}

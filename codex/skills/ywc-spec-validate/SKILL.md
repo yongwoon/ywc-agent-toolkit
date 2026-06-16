@@ -39,6 +39,7 @@ When tempted to skip a step, check this table first:
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
 | `--mode` | `--mode standard\|socratic` | `--mode socratic` | Output style. `standard` (default) returns the finding report and gate verdict; `socratic` returns learning questions instead. See [references/socratic-mode.md](references/socratic-mode.md). |
 | `--focus` | `--focus <area>` | `--focus architecture` | Optional focus hint. When Council Escalation triggers, the generic 4 voices are replaced with domain expert profiles for the chosen area. Valid: `requirements`, `architecture`, `testing`, `compliance`. See [references/expert-profiles.md](references/expert-profiles.md). |
+| `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 0` | Optional Phase 2 advisor budget for this invocation. `n` must be an integer `>= 0`. Omitted preserves current behavior, equivalent to invocation budget `2`. `0` disables Phase 2 advisor escalation. |
 
 ## Execution Steps
 
@@ -82,7 +83,7 @@ When tempted to skip a step, check this table first:
    - **Confirmed findings** — dimension label, severity (Critical / Warning / Suggestion), file:line, description, improvement
    - **Advisor candidates** — findings where two reasonable interpretations exist (include the specific choice and its consequence, ≤100 lines per candidate)
 
-   **Step 4b — Aggregate**: Combine and deduplicate findings by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 2), prioritizing Critical over Warning. Log any dropped candidates in the report.
+   **Step 4b — Aggregate**: Combine and deduplicate findings by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 2), prioritizing Critical over Warning. If `--advisor-budget <n>` is supplied, use `n` as the invocation-level advisor budget after validating that it is an integer `>= 0`; invalid values stop as `NEEDS_CONTEXT` before advisor escalation or report generation. Log any dropped candidates in the report. With `--advisor-budget 0`, do not silently drop advisor candidates: emit them as Phase 1 findings with the note `advisor candidate not escalated: budget disabled` where applicable.
 
    The 4-dimension analysis runs the same way regardless of `--mode`; the mode only changes how findings are presented in step 5.
 
@@ -106,7 +107,8 @@ When tempted to skip a step, check this table first:
 
 ### Summary
 - Critical: N, Warning: M, Suggestion: K
-- Phase 2 advisor calls used: X of 2 ({single-advisor|council|none})
+- Phase 2 advisor calls used: X of N ({single-advisor|council|none|disabled|budget-exhausted})
+- Advisor budget status: {available|disabled|exhausted|advisor-required|not-reported}
 
 ### Precedent Site Coverage
 | Precedent site (`file:line` + what runs there) | Spec coverage: Replicated / Deferred-with-reason / OMITTED |
@@ -134,14 +136,14 @@ When tempted to skip a step, check this table first:
 | `DONE` | Review complete, no Critical findings |
 | `DONE_WITH_CONCERNS` | Review complete but Critical issues were found — the spec needs revision before task decomposition |
 | `BLOCKED` | Review cannot proceed — spec file missing, or a Phase 2 advisor returned an inconclusive verdict |
-| `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
+| `NEEDS_CONTEXT` | `--spec` argument is missing, the file is empty/unreadable, or a numeric argument such as `--advisor-budget` is invalid |
 | `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
 
 **Re-plan handoff on `DONE_WITH_CONCERNS`** — after printing the report body, append the following one-liner so the user (or an interactive orchestrator) can resolve findings via `ywc-plan` Re-plan Mode instead of rewriting the spec from scratch:
 
 ```
 To address the Critical findings above without losing validated sections, run:
-/ywc-plan --update-spec <spec-path> --failure-context "<one-paragraph summary of the Critical findings>"
+ywc-plan --update-spec <spec-path> --failure-context "<one-paragraph summary of the Critical findings>"
 ```
 
 This routes findings into the `## Iteration N Amendments` append flow described in `ywc-plan` Step 4c, preserving validated portions of the spec. Print this line only on `DONE_WITH_CONCERNS` — `DONE`, `BLOCKED`, `NEEDS_CONTEXT`, and `SOCRATIC` do not benefit from Re-plan Mode. For programmatic consumers (e.g., `ywc-agentic`), the Programmatic Consumer Policy below already invokes the equivalent flow; this surface is for interactive users who would otherwise re-write from scratch.
@@ -150,7 +152,16 @@ This routes findings into the `## Iteration N Amendments` append flow described 
 
 This skill runs Phase 1 as 4 parallel Codex workers (one per dimension) when delegation is available, then aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, request a short higher-capability advisor pass with a bounded payload. If delegation is unavailable, run the advisor checklist inline as a separate bounded pass and record the fallback in the report. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.
 
-**Budget**: up to 2 high-capability advisor calls per invocation. Unused budget is good. Spec review is smaller in scope than impl-review, so the cap is tighter.
+**Budget**: up to 2 high-capability advisor calls per invocation by default. `--advisor-budget <n>` overrides the invocation-level budget without creating a loop-total budget. Omitted flag preserves current behavior (`2`). `--advisor-budget 0` disables Phase 2 advisor escalation and records eligible advisor candidates as Phase 1 findings with `advisor candidate not escalated: budget disabled` where applicable. Unused budget is good. Spec review is smaller in scope than impl-review, so the default cap is tighter.
+
+**Advisor budget report contract**:
+
+- `Phase 2 advisor calls used: X of N (...)` must use the effective invocation budget as `N`, after applying `--advisor-budget` or the default.
+- `Advisor budget status: available` means advisor budget remains after deterministic review.
+- `Advisor budget status: disabled` means `N == 0` and no Phase 2 escalation was attempted.
+- `Advisor budget status: exhausted` means all available advisor calls were consumed, but the review still reached a deterministic Completion Status.
+- `Advisor budget status: advisor-required` is allowed only when the reviewer cannot produce a deterministic finding without escalation; Completion Status must then be `BLOCKED` or `NEEDS_CONTEXT`.
+- `Advisor budget status: not-reported` is reserved for programmatic consumers parsing legacy reports; newly generated reports must emit one of the other values.
 
 **Escalation conditions** — each must satisfy all three properties from [advisor-pattern.md §5](../references/advisor-pattern.md) (objective trigger, irreversibility, ambiguity):
 
@@ -214,7 +225,7 @@ When `--focus <area>` is set on the invocation and Council Escalation triggers, 
 
 Use generic Council (no `--focus`) when the trade-off spans two or more areas, or when the spec covers multiple domains and no single focus dominates. Mixing generic voices and focus profiles within a single Council session breaks anti-anchoring — pick one mode per session.
 
-Council escalation consumes the full 2-advisor budget. Do not use council and single-advisor escalation in the same invocation.
+Council escalation consumes one advisor call per selected voice. It is available only when the effective invocation budget `N` is at least the selected voice count; otherwise use at most one single-advisor escalation or record the candidate as not escalated due to insufficient council budget. Do not use council and single-advisor escalation in the same invocation.
 
 ## Confidence Gate
 
@@ -235,6 +246,10 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 
 The gate score must appear in the report header alongside the Critical/High/Medium/Low finding counts. A required dimension scoring below 50 forces STOP regardless of aggregate.
 
+## Validation
+
+Before handing off to `ywc-task-generator`, verify that every Critical/Warning/Suggestion cites spec evidence, precedent-site coverage is either replicated or deferred with a reason, advisor/council usage is counted, and the Confidence Gate status matches the reported band.
+
 ## Integration
 
 - **Primary upstream** — `ywc-spec-writer`: validates `docs/specification/` section files (`01-overview.md` … `07-glossary.md`). All 4 review dimensions (completeness, consistency, feasibility, code compatibility) apply fully.
@@ -253,3 +268,27 @@ When consumed by an orchestrator that cannot prompt for human input (e.g., ywc-a
 | BLOCKED | Stop execution; surface a structured triage report containing: (1) attempted triage steps, (2) verbatim blocker text, (3) proposed default action |
 | NEEDS_CONTEXT | Stop execution; surface a structured triage report containing: (1) attempted triage steps, (2) verbatim blocker text, (3) proposed default action |
 | SOCRATIC | Stop execution and report to user — SOCRATIC output is not a handoff signal; re-run without `--mode socratic` to obtain a gate verdict |
+
+Generic orchestrators keep the max-1 retry fallback above. `ywc-spec-ready` is the explicit multi-iteration consumer and owns its total advisor budget, convergence detection, and append-only loop log; `ywc-spec-validate` must not invoke `ywc-spec-ready`.
+
+#### Machine-Readable Advisor Budget Example
+
+This block is the canonical source for programmatic consumers. Allowed values, required field presence, and header literals are normative; surrounding prose is informative. README locale files are derived mirrors and must not redefine this contract.
+
+```yaml
+human_report_headers:
+  phase_2_advisor_calls_used: "Phase 2 advisor calls used: X of N ({single-advisor|council|none|disabled|budget-exhausted})"
+  advisor_budget_status: "Advisor budget status: <value>"
+normalized_consumer_fields:
+  advisor_budget_status:
+    source_labels:
+      - "Advisor budget status"
+      - "advisor_budget_status"
+    allowed_values:
+      - "available"
+      - "disabled"
+      - "exhausted"
+      - "advisor-required"
+      - "not-reported"
+    parse_rule: "Generated reports emit the human label; consumers normalize to advisor_budget_status."
+```

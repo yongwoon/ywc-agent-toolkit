@@ -9,7 +9,7 @@
 Claude Code および Codex 向けの開発ワークフロー自動化スキル集です。
 計画立案・仕様書作成・タスク分解・コード生成・レビュー・リリースまでをカバーします。
 
-現在、Claude Code skill 36 個、Codex skill 37 個、Claude Code agent 12 個、Codex custom agent 7 個を提供しています。
+現在、Claude Code skill 38 個、Codex skill 37 個、Claude Code agent 12 個、Codex custom agent 7 個を提供しています。
 
 ## 前提条件
 

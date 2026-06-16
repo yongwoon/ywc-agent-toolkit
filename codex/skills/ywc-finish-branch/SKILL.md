@@ -44,6 +44,7 @@ When tempted to skip a step, check this table first:
 | `--bot-action` | `sequential` \| `parallel` | `--bot-action sequential` | Post-bot polling behavior. Default: `sequential` (re-run CI after bot fixes). Use `parallel` when called from a wave loop where CI does not re-gate between bot iterations. |
 | `--defer-push` | flag | | Skip the push of the Mark Complete commit. Used by range-mode callers that batch pushes at the end of the range. |
 | `--keep-branch` | flag | | Skip the local feature branch deletion (`git branch -d`). Used by `ywc-parallel-executor`, where the branch is checked out in a worktree at the time of merge — `git branch -d` would fail until the worktree is removed. Caller takes responsibility for the eventual `git worktree remove` + `git branch -d`. |
+| `--worktree-path` | `<path>` | `--worktree-path ../worktree-run-001010` | Run merge, verification, and Mark Complete commands against the supplied worktree using `git -C <path>` and path-scoped task moves. Used by `ywc-sequential-executor --worktree`. |
 
 **Mode-flag mutual exclusivity**: `--mode` is a single value; conflicts are impossible by construction. The caller is responsible for resolving ambiguity (e.g., the upstream executor's `--draft` and `--local-merge` flags must be collapsed into one `--mode` value before invoking this skill).
 
@@ -58,6 +59,29 @@ When tempted to skip a step, check this table first:
 | `per-task-pr` | yes | no (caller handles per-wave CI) | no (caller merges locally for wave progression) | no (caller marks complete in wave loop) | no | `ywc-parallel-executor` per-task PR delivery |
 
 `per-task-pr` is the special mode used inside `ywc-parallel-executor`'s wave loop — this skill creates and pushes the PR but stops short of merging or marking complete, because wave-level orchestration handles those steps. For all other modes, this skill executes the full lifecycle.
+
+## Worktree-path Mode
+
+When `--worktree-path <path>` is supplied, this skill remains a single-branch
+delivery unit but scopes filesystem and git operations to that worktree:
+
+- Validate the path exists and is a git worktree before changing branches.
+- Use `git -C <path>` for branch checks, merge, post-merge verification,
+  marker commits, and branch cleanup.
+- Resolve `<tasks-dir>` relative to `<path>` for Mark Complete so the run-level
+  worktree state and task directories move together.
+- Do not create or remove the worktree here. `ywc-sequential-executor
+  --worktree` owns run-level worktree creation and cleanup through
+  `ywc-worktrees --mode prune --keep-branch`.
+
+Example local-merge command shape:
+
+```bash
+git -C <path> checkout <base-branch>
+git -C <path> pull origin <base-branch>
+git -C <path> merge --no-ff feature/<task-name> -m "Merge branch 'feature/<task-name>'"
+git -C <path> push origin <base-branch>
+```
 
 ## Definition of Done
 
@@ -78,6 +102,7 @@ For `--mode draft` and `--mode skip-ci-wait`, conditions 2–5 are intentionally
 - Confirm `--branch` exists locally (`git branch --list <branch>` returns the branch).
 - Confirm `--base-branch` is reachable (`git rev-parse --verify <base-branch>` succeeds).
 - Confirm `--task-name` matches an entry under `<tasks-dir>/` (not under `<tasks-dir>/completed/`).
+- If `--worktree-path` is supplied, confirm the path exists and use `git -C <path>` for all subsequent git commands.
 - For PR-based modes: confirm `gh auth status` succeeds.
 
 If any check fails, return `NEEDS_CONTEXT` with the specific missing input. Do not proceed with partial information.
@@ -204,11 +229,11 @@ gh pr merge <pr-number> --delete-branch
 For `--mode local-merge`:
 ```bash
 # Caller has already verified its Step 4 (Task Verification); this skill does not re-verify.
-git checkout <base-branch>
-git pull origin <base-branch>
+git checkout <base-branch>             # or: git -C <path> checkout <base-branch>
+git pull origin <base-branch>          # or: git -C <path> pull origin <base-branch>
 git merge --no-ff feature/<task-name> -m "Merge branch 'feature/<task-name>'"
-git push origin <base-branch>          # omit when --defer-push is set
-git branch -d feature/<task-name>      # omit when --keep-branch is set (parallel wave loop case)
+git push origin <base-branch>          # omit when --defer-push is set; use git -C <path> in worktree-path mode
+git branch -d feature/<task-name>      # omit when --keep-branch is set; use git -C <path> in worktree-path mode
 ```
 
 For all other modes: skip — merge happens later (manual for `draft`, caller for `skip-ci-wait` and `per-task-pr`).
@@ -236,6 +261,11 @@ MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
 [ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
 bash "$MARK_SCRIPT" <tasks-dir> <task-name> [--push | --defer-push]
 ```
+
+In `--worktree-path` mode, run the marker script from `<path>` or pass a
+`<tasks-dir>` that resolves inside `<path>`; the post-move verification must
+prove `<path>/<tasks-dir>/completed/<task-name>` exists and
+`<path>/<tasks-dir>/<task-name>` is gone.
 
 Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
 

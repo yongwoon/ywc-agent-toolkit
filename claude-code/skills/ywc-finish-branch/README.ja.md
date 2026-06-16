@@ -12,7 +12,7 @@ Feature Branch を Base Branch に deliver する Claude Code Skill です。Mar
 - **Post-merge Hard Gate**: `git log -1 --format="%s"` で merge の実行を検証
 - **Mark Task Complete の Definition of Done を強制**: `<tasks-dir>/completed/` への移動を verification 含めて実施
 - **Bot Review Polling 互換**: `--bot-action sequential|parallel` で caller の CI 戦略に合わせて挙動を切替
-- **Worktree 非関与**: parallel-executor 側の worktree lifecycle と責任境界を明確に分離
+- **Worktree lifecycle 非関与、ただし worktree 内動作は対応**: worktree の生成/削除は caller 責任だが、`--worktree-path <path>` を渡すと Steps 1・5–8 のすべての git コマンドを `git -C <path>` で実行し、`ywc-sequential-executor --worktree` が作成した run worktree の中で delivery 可能 (delivery の意味は不変、working dir のみ変更)
 
 ## 使い方
 

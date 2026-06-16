@@ -6,16 +6,16 @@
 
 The standard Pre-flight checks the **environment** (clean working tree, gh auth, tasks directory present). It does not check the **plan**: missing tasks, contradictory specifications, ordering issues, or dependency-graph errors that only surface mid-range when a task fails for reasons unrelated to its own implementation.
 
-A wrong plan is the most expensive failure mode in range mode, because the cost compounds: every subsequent task either inherits the broken assumption or has to be re-run after the plan is fixed. A 1-time upfront higher-capability advisor pass (Pattern C from [../../references/advisor-pattern.md](../../references/advisor-pattern.md)) is cheaper than the rework forced by a plan defect discovered at task 7 of 12.
+A wrong plan is the most expensive failure mode in range mode, because the cost compounds: every subsequent task either inherits the broken assumption or has to be re-run after the plan is fixed. A 1-time upfront advisor call (Pattern C from [../../references/advisor-pattern.md](../../references/advisor-pattern.md)) is cheaper than the rework forced by a plan defect discovered at task 7 of 12.
 
-This is the same shape `ywc-parallel-executor` already uses for its **Wave Planning Advisor** — a single upfront advisor pass before worktree creation begins. Sequential adopts the same pattern for the same reason: the damage is expensive to undo once branches and commits exist.
+This is the same shape `ywc-parallel-executor` already uses for its **Wave Planning Advisor** — a single upfront advisor call before worktree creation begins. Sequential adopts the same pattern for the same reason: the damage is expensive to undo once branches and commits exist.
 
 ## 2. When to Invoke
 
 **Skip the review** for any of these:
 - Single-task invocation (no range).
 - Range size of **2 tasks or fewer**.
-- Auto-detect mode (`/ywc-sequential-executor` with no specifier) when only one task is eligible.
+- Auto-detect mode (`$ywc-sequential-executor` with no specifier) when only one task is eligible.
 - The plan was generated within the same session by `ywc-task-generator` followed immediately by this skill — the generator already validates dependency-graph correctness, and a re-review duplicates work.
 
 **Invoke the review** when **all three** of the following hold:
@@ -31,7 +31,7 @@ If the conditions are not met, skip the review silently and proceed to Task Reso
 
 ## 3. How to Invoke
 
-Use Codex subagent delegation when the current session exposes a delegation tool. Request one higher-capability advisor pass with this payload (≤200 lines total). If no delegation tool is available, run the same advisor checklist inline and record the fallback in the final handoff:
+Spawn one higher-capability advisor subagent. Payload (≤200 lines total):
 
 - **Dependency-graph excerpt** — task names + `Depends On` + `Conflicts With` + Phase numbers, in topological order. Do not forward full task READMEs.
 - **First-and-last task summaries** — Goal + Ownership + Spec Reference Primary Sources (path-only) for the first task in the range and the last task in the range. Skip the middle tasks unless their Goal or Ownership is unusual.
@@ -45,7 +45,7 @@ Ask the advisor for three things:
 
 ## 4. Budget
 
-This counts as **one** of the 3 advisor escalations in the skill's `advisor_budget`. It is upfront and one-shot — no mid-range escalation extends it. If the advisor returns "reconsider with refinements", report the refinements to the user and stop; do not auto-apply the refinements and do not start the range.
+This counts as **one** of the 3 advisor calls in the skill's `advisor_budget`. It is upfront and one-shot — no mid-range escalation extends it. If the advisor returns "reconsider with refinements", report the refinements to the user and stop; do not auto-apply the refinements and do not start the range.
 
 The Pattern A per-step budget of 3 still applies to the rest of the run; the Plan Critical Review consumes 1 of those 3 when it runs. If a range run hits the per-step budget after this review fires, that is a signal of plan-level fragility — surface it in the Completion Report as a `DONE_WITH_CONCERNS` even if all tasks completed.
 

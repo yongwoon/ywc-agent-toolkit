@@ -115,7 +115,7 @@ Verify the following conditions before starting:
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
 
-   Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises.
+   Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash claude-code/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
 
 **State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
 ```bash
@@ -159,6 +159,7 @@ Separate tasks into waves based on dependency relationships:
 - If a circular dependency is detected, stop immediately and report
 
 **Linear-chain guard**: if every planned wave contains exactly one task, the input is a strictly sequential chain — there is no concurrency to exploit and worktree isolation is pure overhead. Stop and tell the user that `ywc-sequential-executor` (with `--aggregate-pr` for single-PR delivery) is the correct tool; proceed in parallel only on explicit user confirmation. Never silently work directly on the base or aggregate branch.
+> **Granularity cross-ref**: routing a linear chain to `ywc-sequential-executor --worktree` is **not** a violation of this guard — sequential's `--worktree` is a *run-level* worktree wrapping the whole run in one tree (tasks still run sequentially inside it), a different granularity from the *task-level*, one-per-task worktrees this guard governs.
 
 #### Planning Advisor (optional, Pattern C)
 
@@ -214,6 +215,8 @@ git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
 ```bash
 for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktree-$t$" || { echo "GATE FAIL: worktree-$t missing"; exit 1; }; done
 ```
+
+**4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash claude-code/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
 
 **Checkpoint**: `bash claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 
@@ -359,7 +362,7 @@ Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never 
 
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 
-For each task whose Step 4e delivery completed (DONE):
+For each task whose Step 4e delivery completed (DONE), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-only loop, a BLOCKED-preserved task (whose 4g is skipped) is never torn down (AC6):
 
 ```bash
 bash claude-code/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>

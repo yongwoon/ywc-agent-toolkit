@@ -1897,6 +1897,82 @@
       "prompt": "Who won the FIFA World Cup in 2022?",
       "expected": null,
       "kind": "negative"
+    },
+    {
+      "id": "agent-tsreviewer-vs-pyreviewer-1",
+      "prompt": "이 Python 코드 asyncio랑 타입 힌트 리뷰해줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "language reviewers share trigram surface — each must only win its own language"
+    },
+    {
+      "id": "specready-pos-1",
+      "prompt": "이 사양서를 spec-validate DONE 까지 자동으로 수렴시켜줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive"
+    },
+    {
+      "id": "specready-pos-2",
+      "prompt": "loop ywc-plan validate until the spec is ready for task-generator",
+      "expected": "ywc-spec-ready",
+      "kind": "positive"
+    },
+    {
+      "id": "specready-pos-3",
+      "prompt": "spec ready loop 돌려서 plan validate 반복해줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive"
+    },
+    {
+      "id": "specready-vs-specvalidate-1",
+      "prompt": "이 사양서 완성도 한 번만 검토해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "collision",
+      "impostor": "ywc-spec-ready",
+      "note": "one-shot review — spec-ready (the convergence loop) must NOT win on a single review"
+    },
+    {
+      "id": "specready-vs-agentic-1",
+      "prompt": "이 목표를 코드까지 전체 파이프라인으로 자동 실행해줘",
+      "expected": "ywc-agentic",
+      "kind": "collision",
+      "impostor": "ywc-spec-ready",
+      "note": "full goal-to-code pipeline — spec-ready only converges a spec, agentic owns the end-to-end loop"
+    },
+    {
+      "id": "docker-isolate-pos-1",
+      "prompt": "worktree마다 docker compose 포트가 충돌해 — host 포트 격리해줘",
+      "expected": "ywc-docker-isolate",
+      "kind": "positive"
+    },
+    {
+      "id": "docker-isolate-pos-2",
+      "prompt": "port is already allocated when running parallel worktree docker stacks — isolate them",
+      "expected": "ywc-docker-isolate",
+      "kind": "positive"
+    },
+    {
+      "id": "docker-isolate-pos-3",
+      "prompt": "worktree ごとに Docker ポートを分離して COMPOSE_PROJECT_NAME を分けて",
+      "expected": "ywc-docker-isolate",
+      "kind": "positive"
+    },
+    {
+      "id": "docker-isolate-vs-worktrees-1",
+      "prompt": "격리된 worktree 워크스페이스를 만들고 정리해줘",
+      "expected": "ywc-worktrees",
+      "kind": "collision",
+      "impostor": "ywc-docker-isolate",
+      "note": "worktree lifecycle (create/prune) — docker-isolate only allocates host ports, must NOT win"
+    },
+    {
+      "id": "docker-isolate-vs-parallel-executor-1",
+      "prompt": "병렬 실행 중 worktree docker host 포트 충돌만 해결해줘",
+      "expected": "ywc-docker-isolate",
+      "kind": "collision",
+      "impostor": "ywc-parallel-executor",
+      "note": "specific host-port collision fix — parallel-executor orchestrates tasks, docker-isolate owns the port block"
     }
   ]
 }

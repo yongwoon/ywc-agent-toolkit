@@ -1,0 +1,16 @@
+{
+  "skill_name": "ywc-impl-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review implementation against docs/specification/03-behavior.md with --advisor-budget 2.",
+      "expected_output": "Returns an implementation review report with Architecture, Design, Devex, Security, Testing, Fix Priority, Advisor Budget Report, and Completion Status sections.",
+      "expectations": [
+        "Every finding includes a file/line or verified command output",
+        "Phase 1 and Phase 2 findings keep [P1] and [P2] provenance markers",
+        "Advisor calls are counted and capped by --advisor-budget",
+        "Confidence Gate band maps to DONE, DONE_WITH_CONCERNS, BLOCKED, or NEEDS_CONTEXT"
+      ]
+    }
+  ]
+}

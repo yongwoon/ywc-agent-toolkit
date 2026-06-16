@@ -217,6 +217,10 @@ In addition, when the report's gate band lands in **PROCEED** and findings inclu
 
 The gate score must appear in the report header. Per-finding `[P1]` / `[P2]` markers remain unchanged — they describe escalation history, while the gate describes overall report confidence.
 
+## Validation
+
+Before returning the report, verify that every finding includes source evidence, Phase 2 advisor usage is counted against the budget, the Confidence Gate band maps to the final status, and any "verified" claim includes the fresh command output required by `ywc-verify-done`.
+
 ## Integration
 
 - **upstream**: `ywc-sequential-executor` or `ywc-parallel-executor` (auto-invoked via `--review` flag)

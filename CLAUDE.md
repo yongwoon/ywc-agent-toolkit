@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repository Is
 
-A skill and agent distribution toolkit for **Claude Code** (36 skills, 12 agents) and **Codex** (37 skills, 7 custom agents). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
+A skill and agent distribution toolkit for **Claude Code** (38 skills, 12 agents) and **Codex** (37 skills, 7 custom agents). Skills are installed locally via `scripts/install.sh` and activate inside the respective AI tool by matching user intent from `description:` frontmatter.
 
 ## Key Commands
 
