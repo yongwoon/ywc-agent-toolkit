@@ -98,7 +98,7 @@ linter / tests, or execute the application.
   as part of the bounded payload; if a new probe is needed the agent
   names the specific command in the recommendation
 - Review non-Python code — `.ts` belongs to ywc-typescript-reviewer,
-  `.go` to a Go reviewer (future Tier 2), etc.; mixed-language diffs
+  `.go` to ywc-go-reviewer, etc.; mixed-language diffs
   surface the non-Python files with `NEEDS_CONTEXT` ("forward to the
   language-specific reviewer")
 - Step into sibling-aspect domains: structural module boundaries →

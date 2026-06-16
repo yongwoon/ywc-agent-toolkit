@@ -32,9 +32,9 @@ description: >-
   alternative to the generic Opus advisor); natural language phrases
   "Go 코드 리뷰", "Go code review", "go-reviewer", "Goコードレビュー",
   "goroutine leak 점검", "channel 패턴 검토", "context 전파 확인",
-  "error wrapping 검토". Do not use for: non-Go code (TypeScript /
-  Python / Swift / Rust have their own Tier 2 reviewers — currently
-  TypeScript / Python shipped, Swift / Rust follow-up), writing or
+  "error wrapping 검토". Do not use for: non-Go code (use
+  ywc-typescript-reviewer for TypeScript/JavaScript, ywc-python-reviewer
+  for Python; Swift / Rust Tier 2 reviewers follow-up), writing or
   modifying code (this agent is read-only — fixes go to
   ywc-backend-coder), architectural redesign decisions (route to
   ywc-architect), security analysis (route to ywc-security-engineer),

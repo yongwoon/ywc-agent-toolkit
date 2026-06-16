@@ -13,8 +13,8 @@ description: >-
   ambiguous (TS Phase 2 alternative to the generic Opus advisor); natural
   language phrases "TypeScript 코드 리뷰", "TS code review",
   "typescript-reviewer", "TypeScript型レビュー", "ts-prune 결과 점검 외".
-  Do not use for: non-TypeScript code (Python / Go / Swift / Rust have their
-  own Tier 2 reviewers in follow-up PRs), writing or modifying code (this
+  Do not use for: non-TypeScript code (use ywc-python-reviewer for Python,
+  ywc-go-reviewer for Go; Swift / Rust Tier 2 reviewers follow-up), writing or modifying code (this
   agent is read-only — fixes go to ywc-frontend-coder / ywc-backend-coder),
   architectural redesign decisions (route to ywc-architect), security analysis
   (route to ywc-security-engineer), running the TypeScript compiler / type
