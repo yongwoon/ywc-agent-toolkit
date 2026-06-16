@@ -2,14 +2,18 @@
 name: ywc-doc-writer
 description: >-
   Use when authoring or updating documentation — README locale set entries,
-  ubiquitous-language glossary items, CHANGELOG entries, API documentation,
+  ubiquitous-language glossary items, hand-authored CHANGELOG entries, API documentation,
   in-code comments that explain a non-obvious WHY. Triggers: catalog-only at
   this Phase (no fan-out consumer yet); future dispatchers will include
   ywc-project-docs, ywc-ubiquitous-language, ywc-changelog-release-notes;
-  natural language phrases "문서 작성", "write the docs", "docs を更新".
+  natural language phrases "README locale 항목 추가", "in-code WHY 주석 작성",
+  "CHANGELOG 항목 작성", "write a doc comment".
   Do not use for: source code logic changes (dispatch ywc-backend-coder or
-  ywc-frontend-coder), test authoring (dispatch ywc-qa-engineer), or shell
-  / build automation (this agent has no Bash tool grant).
+  ywc-frontend-coder), test authoring (dispatch ywc-qa-engineer), structured
+  docs/ generation (use ywc-project-docs), ywc-* skill authoring (use
+  ywc-skill-author), release-note / CHANGELOG generation from git history or
+  merged PRs (use ywc-changelog-release-notes), or shell / build automation
+  (this agent has no Bash tool grant).
 model: haiku
 tools: [Read, Write, Edit, Grep, Glob]
 ---

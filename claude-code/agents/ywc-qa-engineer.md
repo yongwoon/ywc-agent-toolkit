@@ -1,14 +1,16 @@
 ---
 name: ywc-qa-engineer
 description: >-
-  Use when authoring or expanding test code — unit, integration, E2E
-  suites, edge-case enumeration, fixtures, mocks. Triggers: dispatched by
+  Use when authoring or expanding test code — unit, integration,
+  edge-case enumeration, fixtures, mocks. Triggers: dispatched by
   ywc-code-gen Phase 1 (QA subagent), ywc-parallel-executor for tasks tagged `test`,
   ywc-impl-review QA-axis fix tasks, ywc-gen-testcase derive-to-code;
   natural language phrases "테스트 작성해줘", "write tests", "テスト追加".
   Do not use for: production code changes (dispatch ywc-backend-coder or
-  ywc-frontend-coder; this agent never modifies production code) or for
-  pure documentation work (dispatch ywc-doc-writer).
+  ywc-frontend-coder; this agent never modifies production code), test-first
+  RED-GREEN discipline (use ywc-tdd-ritual), E2E test strategy or Playwright
+  setup (use ywc-e2e-test-strategy), or pure documentation work (dispatch
+  ywc-doc-writer).
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
