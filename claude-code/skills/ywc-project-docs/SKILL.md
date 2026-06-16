@@ -1,7 +1,7 @@
 ---
 name: ywc-project-docs
 version: 2.2.0
-description: "(ywc) Use when the user wants to generate or add project docs/ documentation in Korean or Japanese (Task, Architecture, Specification, Product, operational guides). Triggers: '문서 작성', '문서 만들어', '문서 추가해', 'document this', 'write a doc', 'add to docs/', 'ドキュメント作成', 'ドキュメントを書いて', '文書作成'. Do not use for code comments, README at repo root, English-only documentation, skill authoring (use ywc-skill-author), domain glossary entries (use ywc-ubiquitous-language), changelog or release notes (use ywc-changelog-release-notes), or for writing implementation tasks (use ywc-task-generator)."
+description: "(ywc) Use when the user wants to generate or add project docs/ documentation in Korean or Japanese (Task, Architecture, Specification, Product, operational guides). Triggers: '문서 작성', '문서 만들어', '문서 추가해', 'document this', 'write a doc', 'add to docs/', 'ドキュメント作成', 'ドキュメントを書いて', '文書作成'. Do not use for code comments, README at repo root, English-only documentation, skill authoring (use ywc-skill-author), domain glossary entries (use ywc-ubiquitous-language), changelog or release notes (use ywc-changelog-release-notes), writing implementation tasks (use ywc-task-generator), or for README-locale entries / in-code WHY comments / hand-authored CHANGELOG entries (use ywc-doc-writer)."
 category: spec
 phase: planning
 requires: []

@@ -11,7 +11,9 @@ description: >-
   diff — finish the feature, then clean), for behavior-changing refactors
   (use ywc-tdd-ritual + ywc-code-gen so behavior is captured by tests first),
   or for performance / architecture restructuring (out of scope — this skill
-  is byte-for-byte equivalence on the public surface).
+  is byte-for-byte equivalence on the public surface). The SAFE-deletion worker
+  ywc-refactor-cleaner runs only via this skill's classification phase — do not
+  invoke it standalone.
 category: maintenance
 phase: cleanup
 requires: []
