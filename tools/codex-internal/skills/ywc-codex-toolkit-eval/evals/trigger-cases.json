@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Seed activation cases for the S1/A2 trigger judge. Positive cases drive recall; negative drive precision; collision pairs stress precision against the nearest sibling. Expand per item over time — every evaluated item should reach >=3 positives and >=2 collisions.",
+  "description": "Seed activation cases for the S1/A1 trigger judge. Positive cases drive recall; negative drive precision; collision pairs stress precision against the nearest sibling. Expand per item over time — every evaluated item should reach >=3 positives and >=2 collisions.",
   "cases": [
     {
       "id": "agent-tsreviewer-pos-1",

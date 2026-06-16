@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 SCRIPT = Path(__file__).with_name("score.py")
+EVAL_ROOT = SCRIPT.parent.parent / "evals"
 
 
 class ScoreScriptTest(unittest.TestCase):
@@ -98,6 +99,30 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
             check=False,
         )
 
+    def trigger_coverage(self) -> tuple[dict[str, dict[str, int]], list[dict[str, int | str]]]:
+        cases = json.loads((EVAL_ROOT / "trigger-cases.json").read_text(encoding="utf-8"))["cases"]
+        counts: dict[str, dict[str, int]] = {}
+        for case in cases:
+            expected = case.get("expected")
+            if isinstance(expected, str):
+                counts.setdefault(expected, {"positive": 0, "impostor": 0})
+                if case.get("kind") == "positive":
+                    counts[expected]["positive"] += 1
+            impostor = case.get("impostor")
+            if isinstance(impostor, str):
+                counts.setdefault(impostor, {"positive": 0, "impostor": 0})
+                counts[impostor]["impostor"] += 1
+        undercovered = [
+            {
+                "item": item,
+                "positive": coverage["positive"],
+                "impostor": coverage["impostor"],
+            }
+            for item, coverage in sorted(counts.items())
+            if coverage["positive"] < 3 or coverage["impostor"] < 2
+        ]
+        return counts, undercovered
+
     def test_json_marks_judgment_axes_as_partial(self) -> None:
         proc = self.run_score("--target", "all", "--format", "json")
 
@@ -155,6 +180,14 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         self.assertEqual(proc.returncode, 0, proc.stderr)
         payload = json.loads(proc.stdout)
         self.assertEqual([item["name"] for item in payload["roots"]["codex/skills"]], ["ywc-example"])
+
+    def test_trigger_fixture_covers_internal_evaluator(self) -> None:
+        counts, undercovered = self.trigger_coverage()
+        target = counts["ywc-codex-toolkit-eval"]
+
+        self.assertIsInstance(undercovered, list)
+        self.assertGreaterEqual(target["positive"], 3, undercovered)
+        self.assertGreaterEqual(target["impostor"], 2, undercovered)
 
     def test_ci_detects_regression_without_rewriting_history(self) -> None:
         history = self.repo / "history.mechanical.json"

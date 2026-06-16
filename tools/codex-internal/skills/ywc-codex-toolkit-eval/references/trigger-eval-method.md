@@ -1,4 +1,4 @@
-# Trigger Evaluation Method (S1 / A2)
+# Trigger Evaluation Method (S1 / A1)
 
 Activation accuracy is the highest-weighted axis because it is a property of the **whole catalog**, not a single file. This document defines how `evals/trigger-cases.json` is built and how the activation judge turns it into precision and recall.
 
@@ -49,7 +49,7 @@ For each item the activation judge receives ONLY:
 - the sibling descriptions for the same root (so collisions can be adjudicated),
 - the case set.
 
-For each case the judge predicts the single best-matching item from the descriptions alone (this mirrors how Claude's auto-trigger sees skills — description only, no body). Then:
+For each case the judge predicts the single best-matching item from the descriptions alone (this mirrors Codex metadata activation — description only, no body). Then:
 
 ```text
 TP = positive cases where predicted == expected
@@ -63,9 +63,9 @@ precision = TP / (TP + FP)        # over cases where the item was predicted or e
 
 A `collision` case counts as a false positive for the impostor **and** (if the owner was not predicted) a false negative for the owner — one authored pair stresses both sides.
 
-## Mapping to the S1 / A2 Band
+## Mapping to the S1 / A1 Band
 
-Take `min(precision, recall)` first — a skill with perfect recall but 0.5 precision is over-firing and must not score above the precision band. Then apply the band table in `skill-rubric.md` (S1) or `agent-rubric.md` (A2). Apply the mechanical collision cap last: if `score.py` flagged an unresolved n-gram overlap pair, S1/A2 is capped at 3 even when the judged precision/recall is higher, because the next sibling description edit can flip the result.
+Take `min(precision, recall)` first — a skill with perfect recall but 0.5 precision is over-firing and must not score above the precision band. Then apply the band table in `skill-rubric.md` (S1) or `agent-rubric.md` (A1). Apply the mechanical collision cap last: if `score.py` flagged an unresolved n-gram overlap pair, S1/A1 is capped at 3 even when the judged precision/recall is higher, because the next sibling description edit can flip the result.
 
 ## Why Description-Only
 
