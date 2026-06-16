@@ -53,7 +53,7 @@ When tempted to bypass a rule, check this table first:
 |-----------|--------|---------|-------------|
 | `--target` | `--target <root>` | `--target codex/skills` | Mechanical scorer target: `codex/skills`, `codex/agents`, or `all` (default). |
 | `--item` | `--item <name>` | `--item ywc-plan` | Score one Codex skill or agent instead of the whole root. |
-| `--mode` | `--mode <m>` | `--mode mechanical` | Evaluation mode: `mechanical`, `judge`, or `full` (default). |
+| `--mode` | `--mode <m>` | `--mode mechanical` | Skill-level evaluation mode: `mechanical`, `judge`, or `full`. Direct `score.py` runs support `mechanical` only; `judge` and `full` are skill-mediated workflows. |
 | `--ci` | flag | `--ci` | Compare deterministic axes against `evals/history.mechanical.json` without rewriting it. |
 | `--update-baseline` | flag | `--update-baseline` | Write the reviewed current mechanical baseline after checking the markdown output. |
 | `--only` | `--only <scope>` | `--only agents` | Inventory gate scope: `skills`, `agents`, or all. |
@@ -97,7 +97,7 @@ locale files, missing `agents/openai.yaml`, or TOML key presence by memory.
 Run the deterministic scorecard:
 
 ```bash
-python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --format markdown
+python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --mode mechanical --format markdown
 ```
 
 For CI or pre-PR regression checks:
@@ -196,7 +196,8 @@ After each improvement batch, rerun Step 1 and Step 2 for the affected scope.
 Before claiming the evaluation is complete, verify:
 
 - [ ] `inventory_gate.py` was run for the stated scope.
-- [ ] `score.py --format markdown` was run unless `--mode judge` was explicit.
+- [ ] `score.py --mode mechanical --format markdown` was run for mechanical evidence unless skill-level `--mode judge` was explicit.
+- [ ] Expected negative checks, such as missing `--item` and stale wording searches, were run as assertion-shaped commands (`! <command>` or equivalent).
 - [ ] Every scored skill used [references/skill-rubric.md](references/skill-rubric.md).
 - [ ] Every scored agent used [references/agent-rubric.md](references/agent-rubric.md).
 - [ ] Mechanical-only mode is reported as partial, not final quality.
