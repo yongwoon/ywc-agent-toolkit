@@ -114,6 +114,48 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         self.assertIsNone(skill["final_total"])
         self.assertGreater(skill["mechanical_points"], 0)
 
+    def test_mode_mechanical_matches_default_shape(self) -> None:
+        default_proc = self.run_score("--target", "codex/skills", "--format", "json")
+        explicit_proc = self.run_score(
+            "--mode", "mechanical", "--target", "codex/skills", "--format", "json"
+        )
+
+        self.assertEqual(default_proc.returncode, 0, default_proc.stderr)
+        self.assertEqual(explicit_proc.returncode, 0, explicit_proc.stderr)
+        default_payload = json.loads(default_proc.stdout)
+        explicit_payload = json.loads(explicit_proc.stdout)
+        self.assertEqual(default_payload["mode"], "mechanical")
+        self.assertEqual(explicit_payload["mode"], "mechanical")
+        self.assertEqual(
+            [item["path"] for item in default_payload["roots"]["codex/skills"]],
+            [item["path"] for item in explicit_payload["roots"]["codex/skills"]],
+        )
+
+    def test_unsupported_judge_mode_fails_clearly(self) -> None:
+        proc = self.run_score("--mode", "judge", "--target", "codex/skills")
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("score.py only supports --mode mechanical", proc.stderr)
+        self.assertIn("judge", proc.stderr)
+
+    def test_missing_item_fails_with_item_and_target(self) -> None:
+        proc = self.run_score(
+            "--target", "codex/skills", "--item", "no-such-skill", "--format", "markdown"
+        )
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("no-such-skill", proc.stderr)
+        self.assertIn("codex/skills", proc.stderr)
+
+    def test_targeted_item_returns_one_skill(self) -> None:
+        proc = self.run_score(
+            "--target", "codex/skills", "--item", "ywc-example", "--format", "json"
+        )
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        payload = json.loads(proc.stdout)
+        self.assertEqual([item["name"] for item in payload["roots"]["codex/skills"]], ["ywc-example"])
+
     def test_ci_detects_regression_without_rewriting_history(self) -> None:
         history = self.repo / "history.mechanical.json"
         history.write_text(
