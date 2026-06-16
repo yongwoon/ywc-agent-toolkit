@@ -15,6 +15,8 @@ advisor_budget: 5
 
 Graded quality-evaluation harness for the toolkit's own Claude Code `ywc-*` skills and custom agents. Where `ywc-skill-author` defines the **binary compliance rules** for *building* a skill, this skill produces a **graded scorecard** (0–5 per axis, weighted to 100) for *existing* Claude Code skills and agents, ranks the weakest items, and persists score history so quality trends are visible release over release. Input: a target root (`claude-code/skills`, `claude-code/agents`, or both). Output: `evals/scorecard.md` (per-item axis scores + prioritized backlog) and an appended `evals/history.json` row. Codex skill/agent evaluation is owned by `tools/codex-internal/skills/ywc-codex-toolkit-eval`.
 
+> **Internal-only skill (locale-exempt):** `ywc-toolkit-eval` lives under `.claude/skills/` as a toolkit-maintenance tool and is **not** distributed under `claude-code/skills/`. It is therefore exempt from the en/ja/ko README locale-set requirement that `scripts/validate.sh` enforces on distributed skills.
+
 The harness is **two-tier** by design, because not every quality axis can be measured deterministically:
 
 | Tier | How | Axes | CI |
@@ -40,12 +42,22 @@ When tempted to bypass a rule, check this table first:
 
 ## Arguments
 
+Two distinct surfaces: the deterministic `score.py` flags, and the skill/orchestrator-level arguments this skill interprets but **never** passes to the script.
+
+**`score.py` flags** (consumed by `scripts/score.py`):
+
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--target` | `--target <root>` | `--target claude-code/skills` | Root to evaluate: `claude-code/skills`, `claude-code/agents`, or `all` (default). |
+| `--item` | `--item <name>` | `--item ywc-commit` | Score a single skill/agent instead of the whole root. Rejected when combined with `--ci`. |
+| `--format` | `--format <fmt>` | `--format markdown` | Output format: `json` (default) or `markdown`. |
+| `--ci` | flag | | Mechanical-only; compares against the committed `evals/history.mechanical.json` baseline and exits non-zero on any per-axis mechanical regression. Used by the CI gate. |
+
+**Skill / orchestrator arguments** (interpreted by this skill; not `score.py` flags):
+
+| Parameter | Format | Example | Description |
+|-----------|--------|---------|-------------|
 | `--mode` | `--mode <m>` | `--mode mechanical` | `mechanical` (script only), `judge` (model pass only), or `full` (both, default). |
-| `--item` | `--item <name>` | `--item ywc-commit` | Score a single skill/agent instead of the whole root. |
-| `--ci` | flag | | Mechanical-only, compares against the committed `evals/history.mechanical.json` baseline and exits non-zero on any per-axis mechanical regression. Used by the CI gate. |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Max Opus judge escalations for genuinely ambiguous activation/boundary calls. Default 5. |
 
 ## Scoring Model
@@ -57,7 +69,7 @@ Each item is scored on six axes, each `0–5`, combined by fixed weights into a 
 | Axis | Weight | Tier |
 |---|---|---|
 | S1 Activation accuracy (trigger precision/recall + collision) | 30 | collision = mechanical, precision/recall = judgment |
-| S2 Structure compliance (ywc-skill-author A1–A14) | 15 | mechanical |
+| S2 Structure compliance (10-rule mechanical subset of ywc-skill-author A1–A14; A5/A10/A12/A13 out of mechanical scope) | 15 | mechanical |
 | S3 Behavioral efficacy (does following SKILL.md produce the right outcome) | 20 | judgment |
 | S4 Token economy (Tier-1 leanness, ≤500 body, Tier-3 extraction) | 10 | mechanical |
 | S5 Consistency & integrity (locale set, pointer resolution, dangling refs) | 15 | mechanical |
@@ -118,9 +130,9 @@ Append one row to `evals/history.json`: timestamp, per-item totals, and catalog-
 ## Output Format
 
 ```text
-# Toolkit Scorecard — 2026-06-12
+# Toolkit Scorecard — 2026-06-12   (illustrative example — numbers are not current)
 
-## claude-code/skills  (36 items, mean 82/100)
+## claude-code/skills  (38 items, mean 82/100)
 
 | Item | S1 | S2 | S3 | S4 | S5 | S6 | Total | Weakest |
 |------|----|----|----|----|----|----|-------|---------|

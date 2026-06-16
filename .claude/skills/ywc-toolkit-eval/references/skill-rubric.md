@@ -30,7 +30,7 @@ Mechanical sub-signal (caps S1 at 3 until fixed): if `score.py` reports an n-gra
 
 ## S2 — Structure Compliance (weight 15)
 
-Mechanical. Counts satisfied `ywc-skill-author` rules A1–A14. Score = round(satisfied / applicable × 5). Applicable excludes rules that genuinely do not apply (e.g., A13 evals when the skill has no verifiable output — counted as satisfied-by-exemption, not as a miss).
+Mechanical. Scores the **10-rule mechanical structural subset** of `ywc-skill-author`'s A1–A14 — the rules `scripts/score.py` can verify deterministically. Score = round(satisfied / 10 × 5). This is deliberately **not** full A1–A14 coverage: A5 (model-tier — agents only), A10, A12, and A13 are out of mechanical scope (judgment-tier or exempt-by-design) and are excluded from the denominator. The 10 checked rules:
 
 | Signal | Rule |
 |---|---|
@@ -39,7 +39,7 @@ Mechanical. Counts satisfied `ywc-skill-author` rules A1–A14. Score = round(sa
 | description contains `Do not use for` | A3 |
 | description has Korean + Japanese chars (multilingual) | A4 |
 | first body line is `**Announce at start:**` | A6 |
-| `## Rationalization Defense` with ≥5 table rows | A7 |
+| `## Rationalization Defense` with ≥5 data rows (excluding the header and separator rows) | A7 |
 | body ≤ 500 lines | A8 |
 | no `@`-prefixed skill cross-reference | A9 |
 | required README locale set (md/en/ja/ko) present; full-set (es/zh) completeness scored under S5 | A11 |
