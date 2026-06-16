@@ -6,8 +6,9 @@ description: >-
   the existing ywc-* skills orchestrated autonomously through Plan → Execute →
   Evaluate → Repeat to deliver code implementation. Triggers: "agentic",
   "autonomous workflow", "goal to code", "ywc-agentic", "자율 실행", "自律実行".
-  Do not use for one-off skill invocations, manual task implementation, or when
-  the user wants explicit control over each phase.
+  Do not use for one-off skill invocations, manual task implementation, executing
+  pre-generated tasks/ directories (use ywc-sequential-executor or
+  ywc-parallel-executor), or when the user wants explicit control over each phase.
 category: meta
 phase: orchestration
 requires: [ywc-plan, ywc-spec-validate, ywc-task-generator, ywc-impl-review]
