@@ -7,9 +7,9 @@
 ## 사용 방법
 
 ```bash
-$ywc-codex-toolkit-eval --mode full --target all
+$ywc-codex-toolkit-eval --target all
 python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py --json
-python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --target codex/skills --format markdown
+python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --mode mechanical --target codex/skills --format markdown
 python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
 ```
 
