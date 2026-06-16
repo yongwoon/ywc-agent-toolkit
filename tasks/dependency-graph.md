@@ -68,3 +68,42 @@ graph LR
   F --> H
   G --> H
 ```
+
+---
+
+## Batch 3 — ywc-toolkit Activation & Boundary Fixes (Claude catalog)
+
+- Spec: `docs/ywc-plans/ywc-toolkit-activation-fixes.md` (spec-ready DONE, 2 iterations)
+- Granularity mode: `llm` · Language: korean
+- Starting phase: `000010` (phases `000007`–`000009` occupied by prior batches)
+- Independent of prior batches — no cross-dependency. Targets `claude-code/agents` + `claude-code/skills` descriptions only (Codex mirror deferred).
+
+### Phase 000010 — Description / Structure Edits
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000010-010-docs-reviewer-anti-triggers` | docs | (root) |
+| `000010-020-docs-agent-dispatch-boundaries` | docs | (root) |
+| `000010-030-docs-skill-anti-triggers` | docs | (root) |
+| `000010-040-refactor-parallel-executor-extraction` | refactor | (root) |
+
+### Phase 000011 — Re-baseline & Re-score (hard gate)
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000011-010-infra-rebaseline-rescore` | infra | `000010-010`, `-020`, `-030`, `-040` |
+
+### Parallel Execution Notes (Batch 3)
+
+- Initial ready set: `000010-010`, `000010-020`, `000010-030`, `000010-040` are **all parallel-safe** — each owns a disjoint set of files (3 reviewer agents / qa+doc agents / 4 skill SKILL.md / parallel-executor skill). No inter-task dependency within Phase 000010.
+- None of the Phase 000010 tasks edit `history.mechanical.json`; each verifies read-only with `score.py --format json` (NOT `--ci`).
+- **Hard gate:** `000011-010` waits for all four Phase 000010 tasks to merge, then runs the single `score.py --ci` re-baseline + full `ywc-toolkit-eval` re-score. Re-baselining before all edits land would produce an incomplete baseline.
+- FR mapping: FR1→010, FR2+FR3→020, FR4–FR7→030, FR8→040, FR9→000011-010.
+
+```mermaid
+graph LR
+  I[000010-010-docs-reviewer-anti-triggers] --> M[000011-010-infra-rebaseline-rescore]
+  J[000010-020-docs-agent-dispatch-boundaries] --> M
+  K[000010-030-docs-skill-anti-triggers] --> M
+  L[000010-040-refactor-parallel-executor-extraction] --> M
+```
