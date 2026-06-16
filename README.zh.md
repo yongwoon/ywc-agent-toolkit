@@ -46,7 +46,9 @@
 
 ### Codex CLI 插件目录
 
-本仓库在 [`.codex-plugin/`](.codex-plugin/) 下包含 Codex 插件分发所需的打包元数据，并在 [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) 提供仓库范围的 marketplace catalog。插件本地 skill 会镜像到 `.codex-plugin/skills/`，并由 `bash scripts/validate.sh` 检查是否保持最新。将本仓库添加为 Codex plugin marketplace source 后，可以在 Codex 中搜索 `ywc-agent-toolkit`，但这不表示它已经上架到官方 OpenAI-curated marketplace。
+本仓库采用与 Superpowers 相同的 multi-harness packaging pattern：Claude Code 元数据位于 [`.claude-plugin/`](.claude-plugin/)，Codex 元数据位于 [`.codex-plugin/`](.codex-plugin/)。Codex 的 source of truth 是 [codex/skills](codex/skills)。仓库范围的 Codex marketplace catalog [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) 暴露 generated plugin package `plugins/ywc-agent-toolkit`，其中的 `skills/` 目录由 `bash scripts/sync-codex-plugin.sh` 从 `codex/skills` 生成，并由 `bash scripts/validate.sh` 检查是否保持最新。
+
+将本仓库添加为 Codex plugin marketplace source 后，可以在 Codex 中安装 `ywc-agent-toolkit`，但这不表示它已经上架到官方 OpenAI-curated marketplace。
 
 将本仓库添加为 Codex plugin marketplace source：
 
@@ -54,7 +56,19 @@
 codex plugin marketplace add yongwoon/ywc-agent-toolkit
 ```
 
-然后打开插件目录：
+如果之前已经添加过 marketplace，请先刷新 Git snapshot：
+
+```bash
+codex plugin marketplace upgrade ywc-agent-toolkit
+```
+
+然后从已配置的 marketplace 直接安装：
+
+```bash
+codex plugin add ywc-agent-toolkit@ywc-agent-toolkit
+```
+
+或打开插件目录：
 
 ```text
 codex
@@ -68,6 +82,19 @@ codex
 在 Codex App 中，从侧边栏打开 **Plugins**，选择 **YWC Agent Toolkit** source，然后搜索或浏览 **ywc-agent-toolkit**。确认插件来源是 `yongwoon/ywc-agent-toolkit`，然后在插件详情页安装。
 
 如果你的环境无法使用 marketplace source installation，请使用下面的 bash fallback。
+
+### Codex skill 维护 workflow
+
+Codex skill 请在 [codex/skills](codex/skills) 中修改。`plugins/ywc-agent-toolkit/skills` 是 `codex plugin add` 使用的 generated marketplace package，不要把它作为 primary source 直接编辑。
+
+修改 `codex/skills` 后，请更新并验证两种安装路径：
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+bash fallback（`bash scripts/install.sh --codex`）会直接从 `codex/skills` 安装。marketplace flow（`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`）会从 generated package `plugins/ywc-agent-toolkit` 安装。
 
 ### bash 脚本 fallback
 

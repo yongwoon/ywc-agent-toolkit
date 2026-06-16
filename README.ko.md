@@ -46,7 +46,9 @@ Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니�
 
 ### Codex CLI 플러그인 디렉터리
 
-이 저장소는 Codex 플러그인 배포를 위한 패키징 메타데이터를 [`.codex-plugin/`](.codex-plugin/) 아래에 포함하고, repo 범위 마켓플레이스 catalog를 [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)에 제공합니다. 플러그인 로컬 skill은 `.codex-plugin/skills/`에 미러링되며 `bash scripts/validate.sh`가 최신 상태를 검사합니다. 이 저장소를 Codex plugin marketplace source로 추가하면 `ywc-agent-toolkit`을 Codex에서 검색할 수 있지만, 공식 OpenAI curated marketplace에 등록되었다는 의미는 아닙니다.
+이 저장소는 Superpowers와 같은 multi-harness 패키징 방식을 따릅니다. Claude Code 메타데이터는 [`.claude-plugin/`](.claude-plugin/) 아래에, Codex 메타데이터는 [`.codex-plugin/`](.codex-plugin/) 아래에 분리되어 있습니다. Codex의 source of truth는 [codex/skills](codex/skills)입니다. repo 범위 Codex marketplace catalog인 [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)은 generated plugin package인 `plugins/ywc-agent-toolkit`을 노출하며, 그 안의 `skills/` 디렉터리는 `bash scripts/sync-codex-plugin.sh`가 `codex/skills`에서 생성하고 `bash scripts/validate.sh`가 최신 상태를 검사합니다.
+
+이 저장소를 Codex plugin marketplace source로 추가하면 Codex에서 `ywc-agent-toolkit`을 설치할 수 있지만, 공식 OpenAI curated marketplace에 등록되었다는 의미는 아닙니다.
 
 이 저장소를 Codex plugin marketplace source로 추가하세요:
 
@@ -54,7 +56,19 @@ Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니�
 codex plugin marketplace add yongwoon/ywc-agent-toolkit
 ```
 
-그다음 플러그인 디렉터리를 여세요:
+이미 marketplace를 추가한 상태라면 Git snapshot을 먼저 갱신하세요:
+
+```bash
+codex plugin marketplace upgrade ywc-agent-toolkit
+```
+
+그다음 설정된 marketplace에서 바로 설치하세요:
+
+```bash
+codex plugin add ywc-agent-toolkit@ywc-agent-toolkit
+```
+
+또는 플러그인 디렉터리를 여세요:
 
 ```text
 codex
@@ -68,6 +82,19 @@ codex
 Codex App에서는 사이드바의 **Plugins**를 열고 **YWC Agent Toolkit** source를 선택한 뒤 **ywc-agent-toolkit**을 검색하거나 찾으세요. 플러그인 소스가 `yongwoon/ywc-agent-toolkit`인지 확인하고 플러그인 상세 화면에서 설치하세요.
 
 사용 중인 환경에서 marketplace source 설치를 사용할 수 없다면 아래 bash fallback을 사용하세요.
+
+### Codex skill 유지보수 workflow
+
+Codex skill은 [codex/skills](codex/skills)에서 수정하세요. `plugins/ywc-agent-toolkit/skills`는 `codex plugin add`가 사용하는 generated marketplace package이므로 primary source로 직접 수정하지 마세요.
+
+`codex/skills`를 변경한 뒤에는 양쪽 설치 경로를 모두 갱신하고 검증하세요:
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+bash fallback(`bash scripts/install.sh --codex`)은 `codex/skills`에서 직접 설치합니다. marketplace flow(`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`)는 generated package인 `plugins/ywc-agent-toolkit`에서 설치합니다.
 
 ### bash 스크립트 fallback
 

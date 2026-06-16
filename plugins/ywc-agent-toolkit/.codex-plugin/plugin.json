@@ -1,0 +1,41 @@
+{
+  "name": "ywc-agent-toolkit",
+  "version": "1.16.0",
+  "description": "Claude Code and Codex skills for development workflow automation, planning, specification, task generation, review, and delivery.",
+  "author": {
+    "name": "yongwoon",
+    "url": "https://github.com/yongwoon"
+  },
+  "repository": "https://github.com/yongwoon/ywc-agent-toolkit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "skills",
+    "workflow",
+    "automation",
+    "development",
+    "planning",
+    "tdd"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "YWC Agent Toolkit",
+    "shortDescription": "Codex skills for planning, implementation, review, and delivery workflows.",
+    "longDescription": "YWC Agent Toolkit packages Codex skills that support structured software delivery: planning, specification writing, task generation, implementation support, reviews, pull requests, and release workflows.",
+    "developerName": "yongwoon",
+    "category": "Development",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $ywc-plan to clarify this change request and route it to the right workflow.",
+      "Use $ywc-task-generator to turn an approved specification into implementation tasks.",
+      "Use $ywc-sequential-executor to run generated tasks through delivery in order."
+    ],
+    "websiteURL": "https://github.com/yongwoon/ywc-agent-toolkit",
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}

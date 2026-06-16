@@ -372,6 +372,15 @@ bash scripts/install.sh --help
 
 > **주의:** 동일 이름의 기존 Global Skill 은 덮어써집니다. 보존이 필요하면 먼저 `${CODEX_HOME:-~/.codex}/skills/` 를 Backup 하거나, `CODEX_HOME`으로 다른 경로에 설치해보세요.
 
+**Marketplace package 동기화:**
+
+`codex/skills/`는 Codex skill의 source of truth입니다. `codex plugin add`로 설치되는 marketplace package는 `plugins/ywc-agent-toolkit/skills/`에 커밋되는 generated artifact이며, Codex는 설치 시 bash script를 실행하지 않습니다. 따라서 `codex/skills/`를 수정한 뒤 marketplace 설치도 최신으로 유지하려면 아래 명령을 실행하고 결과를 함께 커밋하세요.
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
 **특징:**
 
 - 컴퓨터의 모든 Project에서 활성화

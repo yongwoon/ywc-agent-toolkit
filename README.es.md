@@ -45,7 +45,9 @@ Las skills se instalan automáticamente en `~/.claude/skills/` sin necesidad de 
 
 ### Directorio de plugins de Codex CLI
 
-Este repositorio incluye metadatos de empaquetado para plugins de Codex en [`.codex-plugin/`](.codex-plugin/) y un catálogo de marketplace con alcance de repositorio en [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json). Las skills locales del plugin se reflejan en `.codex-plugin/skills/` y se verifican con `bash scripts/validate.sh`. Esto permite que `ywc-agent-toolkit` aparezca en la búsqueda de Codex después de añadir este repositorio como fuente de marketplace de plugins, pero no implica que esté listado en el marketplace oficial curado por OpenAI.
+Este repositorio sigue el mismo patrón de empaquetado multi-harness que proyectos como Superpowers: los metadatos de Claude Code viven en [`.claude-plugin/`](.claude-plugin/), mientras que los metadatos de Codex viven en [`.codex-plugin/`](.codex-plugin/). La fuente de verdad de Codex es [codex/skills](codex/skills). El catálogo de marketplace de Codex con alcance de repositorio en [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) expone el paquete generado `plugins/ywc-agent-toolkit`; su directorio `skills/` se produce desde `codex/skills` con `bash scripts/sync-codex-plugin.sh` y se verifica con `bash scripts/validate.sh`.
+
+Esto permite instalar `ywc-agent-toolkit` desde Codex después de añadir este repositorio como fuente de marketplace de plugins, pero no implica que esté listado en el marketplace oficial curado por OpenAI.
 
 Añada este repositorio como fuente de marketplace de plugins de Codex:
 
@@ -53,7 +55,19 @@ Añada este repositorio como fuente de marketplace de plugins de Codex:
 codex plugin marketplace add yongwoon/ywc-agent-toolkit
 ```
 
-Luego abra el directorio de plugins:
+Si el marketplace ya estaba añadido, actualice primero su snapshot de Git:
+
+```bash
+codex plugin marketplace upgrade ywc-agent-toolkit
+```
+
+Luego instale directamente desde el marketplace configurado:
+
+```bash
+codex plugin add ywc-agent-toolkit@ywc-agent-toolkit
+```
+
+O abra el directorio de plugins:
 
 ```text
 codex
@@ -67,6 +81,19 @@ Dentro de la sesión interactiva de Codex, elija la pestaña de marketplace **YW
 En Codex App, abra **Plugins** desde la barra lateral, elija la fuente **YWC Agent Toolkit**, busque o explore **ywc-agent-toolkit**, confirme que la fuente del plugin sea `yongwoon/ywc-agent-toolkit` e instálelo desde la vista de detalles del plugin.
 
 Si la instalación de fuentes de marketplace no está disponible en su entorno, use el fallback bash de abajo.
+
+### Flujo de mantenimiento para skills de Codex
+
+Edite las skills de Codex en [codex/skills](codex/skills). No edite `plugins/ywc-agent-toolkit/skills` como fuente primaria; es el generated marketplace package usado por `codex plugin add`.
+
+Después de cambiar `codex/skills`, actualice y verifique ambas rutas de instalación:
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+El bash fallback (`bash scripts/install.sh --codex`) instala directamente desde `codex/skills`. El marketplace flow (`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`) instala desde el generated package `plugins/ywc-agent-toolkit`.
 
 ### Script bash fallback
 

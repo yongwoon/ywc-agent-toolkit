@@ -8,7 +8,7 @@
       "name": "ywc-agent-toolkit",
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "./plugins/ywc-agent-toolkit"
       },
       "policy": {
         "installation": "AVAILABLE",

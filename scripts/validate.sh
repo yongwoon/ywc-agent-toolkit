@@ -177,7 +177,9 @@ check_path_under_codex_plugin() {
 
 check_codex_plugin_manifest() {
   local manifest=".codex-plugin/plugin.json"
-  local required field value tmp_dir expected_dir diff_output unsafe_paths_file
+  local package_manifest="plugins/ywc-agent-toolkit/.codex-plugin/plugin.json"
+  local package_skills="plugins/ywc-agent-toolkit/skills"
+  local required field value tmp_dir expected_root expected_dir expected_manifest diff_output unsafe_paths_file
 
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required to validate .codex-plugin/plugin.json"
@@ -207,6 +209,14 @@ check_codex_plugin_manifest() {
 
   if [ "$(jq -r '.skills // empty' "$manifest")" != "./skills/" ]; then
     echo "ERROR: .codex-plugin/plugin.json skills must be ./skills/"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -f "$package_manifest" ]; then
+    echo "ERROR: Codex package manifest is missing: $package_manifest"
+    ERRORS=$((ERRORS + 1))
+  elif ! diff -u "$manifest" "$package_manifest" >/dev/null; then
+    echo "ERROR: $package_manifest is stale; run: bash scripts/sync-codex-plugin.sh"
     ERRORS=$((ERRORS + 1))
   fi
 
@@ -259,58 +269,65 @@ check_codex_plugin_manifest() {
     check_path_under_codex_plugin "screenshots" "$value"
   done < <(jq -r '.interface.screenshots[]? | strings' "$manifest")
 
-  if [ ! -d .codex-plugin/skills ]; then
-    echo "ERROR: .codex-plugin/skills is missing"
+  if [ ! -d "$package_skills" ]; then
+    echo "ERROR: Codex package skills directory is missing: $package_skills"
     ERRORS=$((ERRORS + 1))
     return
   fi
 
-  if [ ! -f .codex-plugin/skills/ywc-plan/SKILL.md ]; then
-    echo "ERROR: .codex-plugin/skills/ywc-plan/SKILL.md is missing"
+  if [ ! -f "$package_skills/ywc-plan/SKILL.md" ]; then
+    echo "ERROR: $package_skills/ywc-plan/SKILL.md is missing"
     ERRORS=$((ERRORS + 1))
   fi
 
-  if [ -n "$(find .codex-plugin/skills -type l -print -quit)" ]; then
-    echo "ERROR: .codex-plugin/skills must not contain symlinks"
+  if [ -n "$(find plugins/ywc-agent-toolkit -type l -print -quit)" ]; then
+    echo "ERROR: Codex package root must not contain symlinks"
     ERRORS=$((ERRORS + 1))
   fi
 
   unsafe_paths_file="$(mktemp)"
-  if rg -n '(bash|python|cp) codex/skills/' .codex-plugin/skills >"$unsafe_paths_file"; then
-    echo "ERROR: .codex-plugin/skills contains workspace-relative executable command paths"
+  if rg -n '(bash|python|cp) codex/skills/' "$package_skills" >"$unsafe_paths_file"; then
+    echo "ERROR: $package_skills contains workspace-relative executable command paths"
     sed -n '1,20p' "$unsafe_paths_file"
     ERRORS=$((ERRORS + 1))
   fi
   rm -f "$unsafe_paths_file"
 
-  if [ -f codex/skills/ywc-plan/SKILL.md ] && [ -f .codex-plugin/skills/ywc-plan/SKILL.md ]; then
+  if [ -f codex/skills/ywc-plan/SKILL.md ] && [ -f "$package_skills/ywc-plan/SKILL.md" ]; then
     if ! diff -u \
       <(sed -n '/^---$/,/^---$/p' codex/skills/ywc-plan/SKILL.md) \
-      <(sed -n '/^---$/,/^---$/p' .codex-plugin/skills/ywc-plan/SKILL.md) >/dev/null; then
-      echo "ERROR: .codex-plugin/skills/ywc-plan/SKILL.md frontmatter does not match source codex/skills/ywc-plan/SKILL.md"
+      <(sed -n '/^---$/,/^---$/p' "$package_skills/ywc-plan/SKILL.md") >/dev/null; then
+      echo "ERROR: $package_skills/ywc-plan/SKILL.md frontmatter does not match source codex/skills/ywc-plan/SKILL.md"
       ERRORS=$((ERRORS + 1))
     fi
   fi
 
   tmp_dir="$(mktemp -d)"
-  expected_dir="$tmp_dir/skills"
-  if ! CODEX_PLUGIN_DEST_DIR="$expected_dir" bash scripts/sync-codex-plugin.sh >/dev/null; then
+  expected_root="$tmp_dir/plugin"
+  expected_dir="$expected_root/skills"
+  expected_manifest="$expected_root/.codex-plugin/plugin.json"
+  if ! CODEX_PLUGIN_ROOT="$expected_root" bash scripts/sync-codex-plugin.sh >/dev/null; then
     echo "ERROR: failed to build expected Codex plugin skills package"
     rm -rf "$tmp_dir"
     ERRORS=$((ERRORS + 1))
     return
   fi
 
-  if ! diff_output="$(diff -qr "$expected_dir" .codex-plugin/skills)"; then
-    echo "ERROR: .codex-plugin/skills is stale; run: bash scripts/sync-codex-plugin.sh"
+  if ! diff_output="$(diff -qr "$expected_dir" "$package_skills")"; then
+    echo "ERROR: $package_skills is stale; run: bash scripts/sync-codex-plugin.sh"
     printf '%s\n' "$diff_output" | sed -n '1,20p'
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! diff -u "$expected_manifest" "$package_manifest" >/dev/null; then
+    echo "ERROR: $package_manifest is stale; run: bash scripts/sync-codex-plugin.sh"
     ERRORS=$((ERRORS + 1))
   fi
 
   if ! diff -u \
     <(find codex/skills -type f -perm -111 | sed 's#^codex/skills/##' | sort) \
-    <(find .codex-plugin/skills -type f -perm -111 | sed 's#^.codex-plugin/skills/##' | sort) >/dev/null; then
-    echo "ERROR: .codex-plugin/skills executable file modes do not match codex/skills"
+    <(find "$package_skills" -type f -perm -111 | sed "s#^$package_skills/##" | sort) >/dev/null; then
+    echo "ERROR: $package_skills executable file modes do not match codex/skills"
     ERRORS=$((ERRORS + 1))
   fi
 
@@ -319,6 +336,7 @@ check_codex_plugin_manifest() {
 
 check_codex_plugin_marketplace() {
   local marketplace=".agents/plugins/marketplace.json"
+  local package_root="plugins/ywc-agent-toolkit"
 
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required to validate .agents/plugins/marketplace.json"
@@ -353,12 +371,22 @@ check_codex_plugin_marketplace() {
     | type == "array"
     and any(.[]; .name == "ywc-agent-toolkit"
       and .source.source == "local"
-      and .source.path == "./"
+      and .source.path == "./plugins/ywc-agent-toolkit"
       and .policy.installation == "AVAILABLE"
       and .policy.authentication == "ON_INSTALL"
       and .category == "Development")
   ' "$marketplace" >/dev/null; then
-    echo "ERROR: .agents/plugins/marketplace.json must expose ywc-agent-toolkit from source.path ./"
+    echo "ERROR: .agents/plugins/marketplace.json must expose ywc-agent-toolkit from source.path ./plugins/ywc-agent-toolkit"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -f "$package_root/.codex-plugin/plugin.json" ]; then
+    echo "ERROR: Codex marketplace package must include $package_root/.codex-plugin/plugin.json"
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if [ ! -d "$package_root/skills" ]; then
+    echo "ERROR: Codex marketplace package must include $package_root/skills"
     ERRORS=$((ERRORS + 1))
   fi
 }
@@ -439,7 +467,7 @@ check_internal_toolkit_eval() {
   check_skill_dir "$internal_dir/"
   check_readme_set "$internal_dir/"
 
-  for leaked_dir in codex/skills/ywc-codex-toolkit-eval .codex-plugin/skills/ywc-codex-toolkit-eval; do
+  for leaked_dir in codex/skills/ywc-codex-toolkit-eval plugins/ywc-agent-toolkit/skills/ywc-codex-toolkit-eval; do
     if [ -e "$leaked_dir" ]; then
       echo "ERROR: internal-only ywc-codex-toolkit-eval must not be packaged at $leaked_dir"
       ERRORS=$((ERRORS + 1))

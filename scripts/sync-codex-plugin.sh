@@ -3,10 +3,18 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_DIR="$ROOT_DIR/codex/skills"
-DEST_DIR="${CODEX_PLUGIN_DEST_DIR:-$ROOT_DIR/.codex-plugin/skills}"
+PLUGIN_ROOT="${CODEX_PLUGIN_ROOT:-$ROOT_DIR/plugins/ywc-agent-toolkit}"
+DEST_DIR="${CODEX_PLUGIN_DEST_DIR:-$PLUGIN_ROOT/skills}"
+MANIFEST_SRC="$ROOT_DIR/.codex-plugin/plugin.json"
+MANIFEST_DEST="${CODEX_PLUGIN_MANIFEST_DEST:-$PLUGIN_ROOT/.codex-plugin/plugin.json}"
 
 if [[ ! -d "$SOURCE_DIR" ]]; then
   echo "ERROR: Codex skill source directory not found: $SOURCE_DIR" >&2
+  exit 1
+fi
+
+if [[ ! -f "$MANIFEST_SRC" ]]; then
+  echo "ERROR: Codex plugin manifest not found: $MANIFEST_SRC" >&2
   exit 1
 fi
 
@@ -15,7 +23,10 @@ if find "$SOURCE_DIR" -type l | grep -q .; then
   exit 1
 fi
 
-# codex/skills is the source of truth; .codex-plugin/skills is packaging output.
+# codex/skills is the source of truth; plugins/ywc-agent-toolkit is packaging output.
+mkdir -p "$(dirname "$MANIFEST_DEST")"
+cp "$MANIFEST_SRC" "$MANIFEST_DEST"
+
 rm -rf "$DEST_DIR"
 mkdir -p "$DEST_DIR"
 
@@ -43,4 +54,5 @@ while IFS= read -r -d '' file; do
   mv "$tmp_file" "$file"
 done < <(find "$DEST_DIR" -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' \) -print0)
 
+echo "Synced $MANIFEST_SRC -> $MANIFEST_DEST"
 echo "Synced codex/skills -> $DEST_DIR"

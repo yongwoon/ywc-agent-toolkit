@@ -9,6 +9,7 @@ Each skill keeps its main instructions in `SKILL.md`, with optional supporting m
 Codex custom agents live under `codex/agents/` as one TOML file per agent.
 Shared bundle metadata sits at the root: `README.md`, `CHANGELOG.md`, `VERSION`.
 Installation logic lives in `scripts/install.sh`.
+For Codex skills, `codex/skills/` is the source of truth. The marketplace package under `plugins/ywc-agent-toolkit/skills/` is generated from it by `bash scripts/sync-codex-plugin.sh`; do not edit the generated package first.
 
 ## Build, Test, and Development Commands
 
@@ -18,6 +19,8 @@ Installation logic lives in `scripts/install.sh`.
 - `bash scripts/install.sh --codex ywc-task-generator ywc-tech-research`: 지정한 스킬만 설치하고 agents는 건드리지 않습니다.
 - `bash scripts/install.sh --list --codex`: 설치 가능한 모든 Codex 스킬을 나열합니다.
 - `bash scripts/install.sh --list --codex-agents`: 설치 가능한 모든 Codex custom agents를 나열합니다.
+- `bash scripts/sync-codex-plugin.sh`: `codex/skills/` 변경 사항을 Codex marketplace package인 `plugins/ywc-agent-toolkit/skills/`로 동기화합니다.
+- `bash scripts/validate.sh`: source install 구조와 marketplace package가 모두 최신인지 검증합니다.
 - `find codex/skills codex/agents -maxdepth 3 -type f`: 번들에 필요한 파일이 포함되어 있는지 빠르게 확인합니다.
 - `git diff --stat`: review scope before committing documentation or skill changes
 
