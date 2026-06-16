@@ -86,7 +86,7 @@
   },
   "claude-code/skills/ywc-parallel-executor": {
     "S2": 4,
-    "S4": 3,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-plan": {
