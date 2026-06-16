@@ -192,61 +192,61 @@
   "claude-code/agents/ywc-architect": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-backend-coder": {
     "A3": 4,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-doc-writer": {
     "A3": 4,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-frontend-coder": {
     "A3": 3,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-go-reviewer": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-performance-engineer": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-python-reviewer": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-qa-engineer": {
     "A3": 3,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-refactor-cleaner": {
     "A3": 4,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-root-cause-analyst": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-security-engineer": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   },
   "claude-code/agents/ywc-typescript-reviewer": {
     "A3": 5,
     "A4": 5,
-    "A5": 4
+    "A5": 5
   }
 }

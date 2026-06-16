@@ -40,6 +40,21 @@ KANA = re.compile(r"[぀-ヿ]")
 MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit", "Bash"}
 READONLY_HINT = re.compile(r"review|audit|analyst|reviewer|read-only", re.IGNORECASE)
 
+# A5 model-tier heuristic (FR3) — role keywords matched against the agent NAME,
+# the canonical role id. Descriptions are deliberately NOT matched: they
+# cross-reference sibling agents (e.g. "route to ywc-architect"), which would
+# false-flag many agents as Opus-expected. Authoritative mapping and the pinned
+# 12-agent table live in references/agent-rubric.md §A5 (Amendment A1).
+A5_OPUS_ROLE_KW = ("architect", "root-cause", "root_cause", "rootcause", "critic")
+A5_HAIKU_ROLE_KW = ("doc-writer", "documentation", "formatting",
+                    "mechanical", "enumeration")
+A5_TIER_RANK = {"haiku": 1, "sonnet": 2, "opus": 3}
+
+# FR1b coverage gate — per-item trigger-case minimums (signals-only, never axes).
+TRIGGER_CASES = Path(__file__).resolve().parent.parent / "evals" / "trigger-cases.json"
+COVERAGE_MIN_POSITIVES = 3
+COVERAGE_MIN_COLLISIONS = 2
+
 
 # --- frontmatter / file parsing -------------------------------------------
 
@@ -89,19 +104,34 @@ def jaccard(a: set, b: set) -> float:
     return len(a & b) / len(a | b)
 
 
+def _excluded_in_anti_trigger(desc: str, sibling: str) -> bool:
+    """True if `sibling` is named inside the description's 'Do not use for' clause (FR6).
+
+    Clause-aware, not substring-anywhere: a sibling mentioned only in a
+    cooperative/positive sentence no longer suppresses a real collision. All
+    current catalog clauses are English (Amendment A4); localized clause
+    detection is deferred.
+    """
+    idx = desc.find("Do not use for")
+    if idx == -1:
+        return False
+    return sibling in desc[idx:]
+
+
 def find_collisions(items: list[dict]) -> dict:
     """Map item-name -> [(sibling, jaccard)] for description overlaps above threshold."""
     grams = {it["name"]: word_trigrams(it["description"]) for it in items}
+    descs = {it["name"]: it["description"] for it in items}
     out: dict[str, list] = {}
     names = list(grams)
     for i, a in enumerate(names):
         for b in names[i + 1:]:
             j = jaccard(grams[a], grams[b])
             if j >= COLLISION_JACCARD:
-                # only a real collision if neither names the other as an exclusion
-                ad = next(x["description"] for x in items if x["name"] == a)
-                bd = next(x["description"] for x in items if x["name"] == b)
-                if b not in ad and a not in bd:
+                # real collision unless each names the other inside its own
+                # "Do not use for" anti-trigger clause (FR6 — clause-aware)
+                if not (_excluded_in_anti_trigger(descs[a], b)
+                        or _excluded_in_anti_trigger(descs[b], a)):
                     out.setdefault(a, []).append([b, round(j, 3)])
                     out.setdefault(b, []).append([a, round(j, 3)])
     return out
@@ -116,9 +146,91 @@ def band(n: int, thresholds: list[int]) -> int:
     return min(score, 5)
 
 
+def expected_model_tier(name: str) -> str:
+    """Infer an agent's expected model tier from its role keywords (FR3).
+
+    Matched against the agent NAME only — see the A5_*_ROLE_KW note above.
+    Opus = frontier judgment (architecture, root-cause, critic);
+    Haiku = doc / formatting / mechanical enumeration; everything else = Sonnet.
+    """
+    hay = name.lower()
+    if any(k in hay for k in A5_OPUS_ROLE_KW):
+        return "opus"
+    if any(k in hay for k in A5_HAIKU_ROLE_KW):
+        return "haiku"
+    return "sonnet"
+
+
+def declared_model_tier(model: str) -> str | None:
+    """Normalize a declared `model:` value to a tier, or None if unrecognized."""
+    m = model.lower()
+    for tier in ("opus", "sonnet", "haiku"):
+        if tier in m:
+            return tier
+    return None
+
+
+def a5_model_band(name: str, model: str) -> int:
+    """Band the declared model against the expected tier (FR3).
+
+    match -> 5; over-provisioned -> 3; under-provisioned -> 2; no model -> 0;
+    model present but tier unrecognized -> 4 (cannot verify). Bands are pinned
+    by references/agent-rubric.md §A5 (Amendment A1: the 12 current agents all
+    score 5).
+    """
+    if not model:
+        return 0
+    declared = declared_model_tier(model)
+    if declared is None:
+        return 4
+    expected = expected_model_tier(name)
+    if declared == expected:
+        return 5
+    return 3 if A5_TIER_RANK[declared] > A5_TIER_RANK[expected] else 2
+
+
+def load_coverage() -> dict:
+    """Per-item trigger-case coverage from trigger-cases.json (FR1b).
+
+    Returns {item_name: {"positives": int, "collisions": int, "sufficient": bool}}.
+    Collisions count cases where the item is the owner (`expected`) or the near
+    sibling (`impostor`), per the paired convention; a single case id is not
+    double-counted for the same item. Missing file -> empty map.
+    """
+    if not TRIGGER_CASES.exists():
+        return {}
+    data = json.loads(TRIGGER_CASES.read_text(encoding="utf-8"))
+    pos: dict[str, int] = {}
+    coll: dict[str, int] = {}
+    seen_ids: set[str] = set()
+    for c in data.get("cases", []):
+        cid = c.get("id")
+        if cid is not None:
+            if cid in seen_ids:
+                continue  # a duplicate case id must not inflate coverage counts
+            seen_ids.add(cid)
+        kind = c.get("kind")
+        if kind == "positive":
+            exp = c.get("expected")
+            if exp:
+                pos[exp] = pos.get(exp, 0) + 1
+        elif kind == "collision":
+            for name in {v for v in (c.get("expected"), c.get("impostor")) if v}:
+                coll[name] = coll.get(name, 0) + 1
+    out: dict[str, dict] = {}
+    for name in set(pos) | set(coll):
+        p, m = pos.get(name, 0), coll.get(name, 0)
+        out[name] = {
+            "positives": p,
+            "collisions": m,
+            "sufficient": p >= COVERAGE_MIN_POSITIVES and m >= COVERAGE_MIN_COLLISIONS,
+        }
+    return out
+
+
 # --- skill scoring ---------------------------------------------------------
 
-def score_skill(d: Path, collisions: dict) -> dict:
+def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     fm, body = split_frontmatter((d / "SKILL.md").read_text(encoding="utf-8"))
     name = fm.get("name", d.name)
     desc = fm.get("description", "")
@@ -132,9 +244,7 @@ def score_skill(d: Path, collisions: dict) -> dict:
         "A3_anti_trigger": "Do not use for" in desc,
         "A4_multilingual": bool(HANGUL.search(desc) and KANA.search(desc)),
         "A6_announce": "**Announce at start:**" in body[:400],
-        "A7_rationalization": "## Rationalization Defense" in body
-        and body.count("\n|", body.find("## Rationalization Defense"),
-                       body.find("## Rationalization Defense") + 2000) >= 6,
+        "A7_rationalization": _rationalization_data_rows(body) >= 5,
         "A8_body_cap": body_lines <= 500,
         "A9_no_force_load": not re.search(r"@ywc-[\w-]+", body),
         "A11_locales": all((d / loc).exists() for loc in REQUIRED_LOCALES),
@@ -182,6 +292,10 @@ def score_skill(d: Path, collisions: dict) -> dict:
     coll = collisions.get(name, [])
     signals["collision_pairs"] = coll
 
+    # FR1b coverage — signals-only; S1 stays null in axes (Amendment A2)
+    signals["coverage"] = coverage.get(
+        name, {"positives": 0, "collisions": 0, "sufficient": False})
+
     return {
         "name": name,
         "kind": "skill",
@@ -217,18 +331,41 @@ def _dangling_ref_links(d: Path, body: str) -> list:
     return out
 
 
+def _rationalization_data_rows(body: str) -> int:
+    """Count data rows in the Rationalization Defense table (FR4).
+
+    Data rows = table lines (lstripped, starting with '|') minus the separator
+    row(s) and the header row. Returns 0 when the section is absent. The rubric
+    (references/skill-rubric.md A7) requires >= 5 data rows.
+    """
+    idx = body.find("## Rationalization Defense")
+    if idx == -1:
+        return 0
+    nxt = body.find("\n## ", idx + 1)
+    section = body[idx:nxt if nxt != -1 else len(body)]
+    rows = [ln for ln in section.splitlines() if ln.lstrip().startswith("|")]
+    seps = [ln for ln in rows if set(ln.strip()) <= set("|-: ")]
+    data = len(rows) - len(seps)
+    if data > 0:
+        data -= 1  # drop the header row
+    return max(0, data)
+
+
 def _unresolved_sibling_pointers(desc: str) -> list:
+    """Flag `use ywc-<name>` pointers resolving to neither a skill dir nor an agent file (FR10)."""
     out = []
     for m in re.finditer(r"use (ywc-[\w-]+)", desc):
         sib = m.group(1)
-        if not any((REPO_ROOT / r / sib).is_dir() for r in SKILL_ROOTS):
+        in_skill = any((REPO_ROOT / r / sib).is_dir() for r in SKILL_ROOTS)
+        in_agent = any((REPO_ROOT / r / f"{sib}.md").is_file() for r in AGENT_ROOTS)
+        if not (in_skill or in_agent):
             out.append(sib)
     return out
 
 
 # --- agent scoring ---------------------------------------------------------
 
-def score_agent(path: Path, collisions: dict) -> dict:
+def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
     name = fm.get("name", path.stem)
     desc = fm.get("description", "")
@@ -267,13 +404,18 @@ def score_agent(path: Path, collisions: dict) -> dict:
     signals["has_contract_ref"] = has_contract_ref
     signals["contract_states"] = states
 
-    # A5 model present (judge refines tier fit)
-    a5 = 4 if model else 0
+    # A5 model-tier appropriateness (FR3 — role<->tier heuristic, was constant 4)
+    a5 = a5_model_band(name, model)
     signals["model"] = model
+    signals["model_expected"] = expected_model_tier(name)
 
     # A2 collision sub-signal
     coll = collisions.get(name, [])
     signals["collision_pairs"] = coll
+
+    # FR1b coverage — signals-only; A2 stays null in axes (Amendment A2)
+    signals["coverage"] = coverage.get(
+        name, {"positives": 0, "collisions": 0, "sufficient": False})
 
     return {
         "name": name,
@@ -297,6 +439,7 @@ def collect_agents(root: Path) -> list:
 
 def evaluate(target: str) -> dict:
     results: dict[str, list] = {}
+    coverage = load_coverage()
     roots = []
     if target == "all":
         roots = SKILL_ROOTS + AGENT_ROOTS
@@ -314,7 +457,7 @@ def evaluate(target: str) -> dict:
                 descs.append({"name": fm.get("name", p.stem),
                               "description": fm.get("description", "")})
             collisions = find_collisions(descs)
-            results[rel] = [score_agent(p, collisions) for p in items]
+            results[rel] = [score_agent(p, collisions, coverage) for p in items]
         else:
             dirs = collect_skills(root)
             descs = []
@@ -323,7 +466,7 @@ def evaluate(target: str) -> dict:
                 descs.append({"name": fm.get("name", d.name),
                               "description": fm.get("description", "")})
             collisions = find_collisions(descs)
-            results[rel] = [score_skill(d, collisions) for d in dirs]
+            results[rel] = [score_skill(d, collisions, coverage) for d in dirs]
     return results
 
 
@@ -390,11 +533,29 @@ def main() -> int:
     ap.add_argument("--ci", action="store_true")
     args = ap.parse_args()
 
+    # FR2: --ci writes the full-catalog regression baseline; combining it with
+    # --item would overwrite history.mechanical.json with a single-item partial.
+    # Reject before evaluate()/ci_gate() so no baseline write can happen.
+    if args.ci and args.item:
+        print("[error] --ci cannot be combined with --item: the regression "
+              "baseline would be overwritten with a single-item partial. "
+              "Run --ci without --item, or drop --ci to score one item.",
+              file=sys.stderr)
+        return 2
+
     results = evaluate(args.target)
     if args.item:
         results = {rel: [it for it in items if it["name"] == args.item]
                    for rel, items in results.items()}
         results = {rel: items for rel, items in results.items() if items}
+
+    # FR1b: catalog-level coverage summary (stderr keeps stdout JSON-clean).
+    below = sum(1 for items in results.values() for it in items
+                if not it["signals"].get("coverage", {}).get("sufficient", False))
+    total = sum(len(items) for items in results.values())
+    print(f"[coverage] {below} items below minimum (of {total}; need "
+          f">= {COVERAGE_MIN_POSITIVES} positives & "
+          f">= {COVERAGE_MIN_COLLISIONS} collisions per item)", file=sys.stderr)
 
     if args.ci:
         return ci_gate(results)
