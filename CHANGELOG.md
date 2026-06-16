@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** port PR conflict and merge-readiness handling to Codex PR workflow skills from develop-with-llm PR #101.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.21.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.20.0...v1.21.0) (2026-06-16)
+
+
+### ### Added
+
+* **skills:** add --aggregate-pr to claude-code & codex executors ([#85](https://github.com/yongwoon/ywc-agent-toolkit/issues/85)) ([95ab0e1](https://github.com/yongwoon/ywc-agent-toolkit/commit/95ab0e19aa2cd7b9cc77a7582a3d5cbc05de83c6))
+* **skills:** toolkit-eval harness fixes + catalog activation/boundary resolution ([#88](https://github.com/yongwoon/ywc-agent-toolkit/issues/88)) ([561943a](https://github.com/yongwoon/ywc-agent-toolkit/commit/561943acc978981037df6b21ec6b0f7ae0ac1dec))
+* **skills:** worktree 실행 및 Codex 평가 계약 개선 ([#87](https://github.com/yongwoon/ywc-agent-toolkit/issues/87)) ([8383883](https://github.com/yongwoon/ywc-agent-toolkit/commit/8383883bdf353cc11b37ac0d3adb5b30e42e04a5))
+
 ## [1.20.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.19.0...v1.20.0) (2026-06-13)
 
 
