@@ -1,7 +1,103 @@
 {
   "schema": 1,
-  "description": "Seed activation cases for the S1/A2 trigger judge. Positive cases drive recall; negative drive precision; collision pairs stress precision against the nearest sibling. Expand per item over time — every evaluated item should reach >=3 positives and >=2 collisions.",
+  "description": "Activation trigger-case dataset for ywc-toolkit-eval. Covers all 50 evaluated items (38 skills + 12 agents) with >= 3 positives and >= 2 collision appearances each. Mix of Korean, English, and Japanese prompts. Task 000009-040.",
   "cases": [
+    {
+      "id": "agentic-pos-1",
+      "prompt": "자율 실행 모드로 이 기능 전체 구현해줘",
+      "expected": "ywc-agentic",
+      "kind": "positive"
+    },
+    {
+      "id": "agentic-pos-2",
+      "prompt": "autonomous workflow: implement the user authentication feature from goal to code",
+      "expected": "ywc-agentic",
+      "kind": "positive"
+    },
+    {
+      "id": "agentic-pos-3",
+      "prompt": "自律実行でこの機能を最初から実装してください",
+      "expected": "ywc-agentic",
+      "kind": "positive"
+    },
+    {
+      "id": "agentic-pos-4",
+      "prompt": "この目標を渡すので、計画から実装まで自律的に回して仕上げてほしい",
+      "expected": "ywc-agentic",
+      "kind": "positive"
+    },
+    {
+      "id": "brainstorm-pos-1",
+      "prompt": "이런 기능 만들고 싶은데 어떻게 시작할까?",
+      "expected": "ywc-brainstorm",
+      "kind": "positive"
+    },
+    {
+      "id": "brainstorm-pos-2",
+      "prompt": "let's brainstorm a new notification system idea",
+      "expected": "ywc-brainstorm",
+      "kind": "positive"
+    },
+    {
+      "id": "brainstorm-pos-3",
+      "prompt": "アイディアがあるんだけど一緒に考えてほしい",
+      "expected": "ywc-brainstorm",
+      "kind": "positive"
+    },
+    {
+      "id": "brainstorm-pos-4",
+      "prompt": "새 feature 구상 중인데 어떻게 만들지 같이 이야기해보자",
+      "expected": "ywc-brainstorm",
+      "kind": "positive"
+    },
+    {
+      "id": "changelog-pos-1",
+      "prompt": "이번 릴리즈 CHANGELOG 작성해줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive"
+    },
+    {
+      "id": "changelog-pos-2",
+      "prompt": "generate release notes from the merged PRs in this sprint",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive"
+    },
+    {
+      "id": "changelog-pos-3",
+      "prompt": "リリースノートを作成してください",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive"
+    },
+    {
+      "id": "changelog-pos-4",
+      "prompt": "변경 이력 업데이트하고 CHANGELOG.md 만들어줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive"
+    },
+    {
+      "id": "code-gen-pos-1",
+      "prompt": "코드 생성해줘 — Backend API랑 Frontend UI 동시에 만들어야 해",
+      "expected": "ywc-code-gen",
+      "kind": "positive"
+    },
+    {
+      "id": "code-gen-pos-2",
+      "prompt": "full-stack generation for the order management CRUD from the spec",
+      "expected": "ywc-code-gen",
+      "kind": "positive"
+    },
+    {
+      "id": "code-gen-pos-3",
+      "prompt": "APIとUIを同時にコード生成してください",
+      "expected": "ywc-code-gen",
+      "kind": "positive"
+    },
+    {
+      "id": "code-gen-pos-4",
+      "prompt": "scaffold feature: generate API + QA layer in parallel from the spec",
+      "expected": "ywc-code-gen",
+      "kind": "positive"
+    },
     {
       "id": "commit-pos-1",
       "prompt": "지금까지 한 작업 커밋해줘",
@@ -10,91 +106,1797 @@
     },
     {
       "id": "commit-pos-2",
-      "prompt": "commit and push these changes",
+      "prompt": "commit and push these changes to the branch",
       "expected": "ywc-commit",
       "kind": "positive"
     },
     {
-      "id": "commit-vs-createpr-1",
-      "prompt": "이 브랜치 PR 올려줘",
-      "expected": "ywc-create-pr",
-      "kind": "collision",
-      "impostor": "ywc-commit",
-      "note": "commit must NOT win — create-pr owns PR creation"
+      "id": "commit-pos-3",
+      "prompt": "커밋 해줘 — 스테이징까지 다 해줘",
+      "expected": "ywc-commit",
+      "kind": "positive"
     },
     {
-      "id": "createpr-pos-1",
+      "id": "confidence-gate-pos-1",
+      "prompt": "구현 시작해도 돼? confidence gate 점검해줘",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive"
+    },
+    {
+      "id": "confidence-gate-pos-2",
+      "prompt": "should I proceed with the implementation? run a confidence check first",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive"
+    },
+    {
+      "id": "confidence-gate-pos-3",
+      "prompt": "実装に進んで良いか確信度チェックをしてください",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive"
+    },
+    {
+      "id": "confidence-gate-pos-4",
+      "prompt": "is this ready to implement? 착수 준비 됐는지 확인해줘",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive"
+    },
+    {
+      "id": "create-pr-pos-1",
+      "prompt": "PR 만들어줘 — 이 브랜치 리뷰 올려야 해",
+      "expected": "ywc-create-pr",
+      "kind": "positive"
+    },
+    {
+      "id": "create-pr-pos-2",
+      "prompt": "push and create a pull request for this feature branch",
+      "expected": "ywc-create-pr",
+      "kind": "positive"
+    },
+    {
+      "id": "create-pr-pos-3",
+      "prompt": "プルリク作成してください",
+      "expected": "ywc-create-pr",
+      "kind": "positive"
+    },
+    {
+      "id": "create-pr-pos-4",
       "prompt": "feature 다 됐으니 풀리퀘 만들어줘",
       "expected": "ywc-create-pr",
       "kind": "positive"
     },
     {
-      "id": "specvalidate-vs-implreview-1",
-      "prompt": "이 사양서 완성도랑 일관성 검토해줘",
-      "expected": "ywc-spec-validate",
-      "kind": "collision",
-      "impostor": "ywc-impl-review",
-      "note": "spec-only review — impl-review must NOT win (no code yet)"
+      "id": "debug-rootcause-pos-1",
+      "prompt": "왜 안 돼? 이 버그 원인 찾아줘",
+      "expected": "ywc-debug-rootcause",
+      "kind": "positive"
     },
     {
-      "id": "implreview-pos-1",
-      "prompt": "구현 끝났는데 PR 전에 코드 검증해줘",
+      "id": "debug-rootcause-pos-2",
+      "prompt": "debug this test failure and find the root cause before fixing",
+      "expected": "ywc-debug-rootcause",
+      "kind": "positive"
+    },
+    {
+      "id": "debug-rootcause-pos-3",
+      "prompt": "ビルドが落ちてるんだけど原因を調べてデバッグして",
+      "expected": "ywc-debug-rootcause",
+      "kind": "positive"
+    },
+    {
+      "id": "debug-rootcause-pos-4",
+      "prompt": "이상한 동작 디버깅해줘 — 원인 파악 먼저 하고 fix 제안해줘",
+      "expected": "ywc-debug-rootcause",
+      "kind": "positive"
+    },
+    {
+      "id": "design-renew-pos-1",
+      "prompt": "이 화면 디자인이 너무 평범해 보여 — 리뉴얼해줘",
+      "expected": "ywc-design-renew",
+      "kind": "positive"
+    },
+    {
+      "id": "design-renew-pos-2",
+      "prompt": "de-slop this UI — it looks too AI-generated and generic",
+      "expected": "ywc-design-renew",
+      "kind": "positive"
+    },
+    {
+      "id": "design-renew-pos-3",
+      "prompt": "AIっぽいデザインを直してもっと個性的にして",
+      "expected": "ywc-design-renew",
+      "kind": "positive"
+    },
+    {
+      "id": "design-renew-pos-4",
+      "prompt": "이 페이지 AI slop 점검하고 디자인 개선해줘 — LLM이 만든 것 같아",
+      "expected": "ywc-design-renew",
+      "kind": "positive"
+    },
+    {
+      "id": "e2e-test-strategy-pos-1",
+      "prompt": "E2E 테스트 전략 세우고 Playwright 설정해줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive"
+    },
+    {
+      "id": "e2e-test-strategy-pos-2",
+      "prompt": "set up playwright from scratch and generate a test for the checkout critical path",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive"
+    },
+    {
+      "id": "e2e-test-strategy-pos-3",
+      "prompt": "E2Eテスト戦略を設計してPlaywrightを設定してください",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive"
+    },
+    {
+      "id": "e2e-test-strategy-pos-4",
+      "prompt": "e2e coverage 점검해줘 — critical path 자동화 전략 잡아줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive"
+    },
+    {
+      "id": "finish-branch-pos-1",
+      "prompt": "이 feature branch 마무리해줘 — merge까지 전부",
+      "expected": "ywc-finish-branch",
+      "kind": "positive"
+    },
+    {
+      "id": "finish-branch-pos-2",
+      "prompt": "finish branch and deliver it to main — CI wait and merge",
+      "expected": "ywc-finish-branch",
+      "kind": "positive"
+    },
+    {
+      "id": "finish-branch-pos-3",
+      "prompt": "ブランチ完了 — CIを待ってマージまで",
+      "expected": "ywc-finish-branch",
+      "kind": "positive"
+    },
+    {
+      "id": "finish-branch-pos-4",
+      "prompt": "task 마감해줘 — branch merge하고 local cleanup까지",
+      "expected": "ywc-finish-branch",
+      "kind": "positive"
+    },
+    {
+      "id": "gen-testcase-pos-1",
+      "prompt": "이 PR에 대한 테스트 케이스 생성해줘 — QA checklist 만들어줘",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive"
+    },
+    {
+      "id": "gen-testcase-pos-2",
+      "prompt": "generate a manual testsheet for this release range",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive"
+    },
+    {
+      "id": "gen-testcase-pos-3",
+      "prompt": "テストシートを作ってください — 手動確認用のQAチェックリスト",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive"
+    },
+    {
+      "id": "gen-testcase-pos-4",
+      "prompt": "수기 검증 시트 생성해줘 — developer + QA 둘 다 포함해서",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive"
+    },
+    {
+      "id": "handle-pr-reviews-pos-1",
+      "prompt": "PR 리뷰 코멘트 처리해줘 — 다 대응하고 답장해줘",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "positive"
+    },
+    {
+      "id": "handle-pr-reviews-pos-2",
+      "prompt": "address all PR review comments and reply to each thread",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "positive"
+    },
+    {
+      "id": "handle-pr-reviews-pos-3",
+      "prompt": "レビュー対応してください — 全コメントに返信して修正もして",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "positive"
+    },
+    {
+      "id": "handle-pr-reviews-pos-4",
+      "prompt": "GitHub PR의 모든 리뷰 코멘트 fix하고 응답해줘",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "positive"
+    },
+    {
+      "id": "impl-review-pos-1",
+      "prompt": "구현 검증해줘 — PR 올리기 전에 코드 리뷰 해줘",
       "expected": "ywc-impl-review",
       "kind": "positive"
     },
     {
-      "id": "plan-vs-productreview-1",
+      "id": "impl-review-pos-2",
+      "prompt": "run an implementation review against the spec before creating the PR",
+      "expected": "ywc-impl-review",
+      "kind": "positive"
+    },
+    {
+      "id": "impl-review-pos-3",
+      "prompt": "実装レビューをお願いします — 仕様との適合性を確認して",
+      "expected": "ywc-impl-review",
+      "kind": "positive"
+    },
+    {
+      "id": "impl-review-pos-4",
+      "prompt": "구현 끝났는데 PR 전에 코드 검증해줘 — 5개 축으로 점검",
+      "expected": "ywc-impl-review",
+      "kind": "positive"
+    },
+    {
+      "id": "incident-postmortem-pos-1",
+      "prompt": "장애 회고 작성해줘 — 이번 프로덕션 장애 포스트모텀",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive"
+    },
+    {
+      "id": "incident-postmortem-pos-2",
+      "prompt": "write a postmortem for last night's outage with timeline and root cause",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive"
+    },
+    {
+      "id": "incident-postmortem-pos-3",
+      "prompt": "インシデントレポートを書いてください — 障害の振り返り",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive"
+    },
+    {
+      "id": "incident-postmortem-pos-4",
+      "prompt": "장애 보고서 만들어줘 — 5 Whys 분석하고 재발 방지책까지",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive"
+    },
+    {
+      "id": "merge-dependabot-pos-1",
+      "prompt": "디펜다봇 PR 모아서 머지해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive"
+    },
+    {
+      "id": "merge-dependabot-pos-2",
+      "prompt": "batch merge all pending dependabot PRs with CI verification",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive"
+    },
+    {
+      "id": "merge-dependabot-pos-3",
+      "prompt": "依存関係更新のDependabot PRをマージしてください",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive"
+    },
+    {
+      "id": "onboard-repo-pos-1",
+      "prompt": "이 repo 처음인데 전체 구조 설명해줘",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive"
+    },
+    {
+      "id": "onboard-repo-pos-2",
+      "prompt": "onboard me to this codebase and generate a CLAUDE.md",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive"
+    },
+    {
+      "id": "onboard-repo-pos-3",
+      "prompt": "このコードベースを案内してCLAUDE.mdを生成してください",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive"
+    },
+    {
+      "id": "onboard-repo-pos-4",
+      "prompt": "리포 분석해줘 — 이 codebase를 이해하게 해줘, 처음이야",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive"
+    },
+    {
+      "id": "parallel-executor-pos-1",
+      "prompt": "병렬 실행해줘 — tasks/ 폴더에 있는 독립 task 동시에 실행",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "parallel-executor-pos-2",
+      "prompt": "execute tasks in parallel using git worktrees for isolation",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "parallel-executor-pos-3",
+      "prompt": "並列実行でワークツリーを使って同時にタスクを実行して",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "parallel-executor-pos-4",
+      "prompt": "독립적인 작업들을 워크트리로 격리해서 동시에 빠르게 실행해줘",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-pos-1",
+      "prompt": "이 기능 어떻게 진행할지 plan 세워줘",
+      "expected": "ywc-plan",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-pos-2",
+      "prompt": "make a plan for implementing the new payment flow",
+      "expected": "ywc-plan",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-pos-3",
+      "prompt": "実装のプランを立ててください",
+      "expected": "ywc-plan",
+      "kind": "positive"
+    },
+    {
+      "id": "plan-pos-4",
+      "prompt": "계획 세워줘 — task 만들기 전에 전체 구조부터 잡자",
+      "expected": "ywc-plan",
+      "kind": "positive"
+    },
+    {
+      "id": "product-review-pos-1",
+      "prompt": "비즈니스 관점에서 서비스 개선 포인트 리뷰해줘",
+      "expected": "ywc-product-review",
+      "kind": "positive"
+    },
+    {
+      "id": "product-review-pos-2",
+      "prompt": "run a product review — user value, growth, and risk perspective",
+      "expected": "ywc-product-review",
+      "kind": "positive"
+    },
+    {
+      "id": "product-review-pos-3",
+      "prompt": "プロダクトレビューをお願いします — サービス改善の観点で",
+      "expected": "ywc-product-review",
+      "kind": "positive"
+    },
+    {
+      "id": "product-review-pos-4",
+      "prompt": "이 서비스 what should we improve — product feedback 5개 관점으로",
+      "expected": "ywc-product-review",
+      "kind": "positive"
+    },
+    {
+      "id": "project-docs-pos-1",
+      "prompt": "문서 작성해줘 — Architecture 문서를 docs/에 추가해줘",
+      "expected": "ywc-project-docs",
+      "kind": "positive"
+    },
+    {
+      "id": "project-docs-pos-2",
+      "prompt": "write a technical doc for this feature and add it to docs/ in Korean",
+      "expected": "ywc-project-docs",
+      "kind": "positive"
+    },
+    {
+      "id": "project-docs-pos-3",
+      "prompt": "ドキュメントを書いてdocs/に追加してください",
+      "expected": "ywc-project-docs",
+      "kind": "positive"
+    },
+    {
+      "id": "project-docs-pos-4",
+      "prompt": "이 기능 설계 문서 만들어줘 — Korean으로 docs/ 안에 넣어줘",
+      "expected": "ywc-project-docs",
+      "kind": "positive"
+    },
+    {
+      "id": "project-scaffold-pos-1",
+      "prompt": "Next.js + TypeScript 프로젝트 구조 설계해줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive"
+    },
+    {
+      "id": "project-scaffold-pos-2",
+      "prompt": "scaffold a new project folder layout for a Go microservice",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive"
+    },
+    {
+      "id": "project-scaffold-pos-3",
+      "prompt": "FastAPIプロジェクトのフォルダ構成を設計してください",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive"
+    },
+    {
+      "id": "project-scaffold-pos-4",
+      "prompt": "디렉토리 구조 설계해줘 — Django + React 풀스택 프로젝트 skeleton",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive"
+    },
+    {
+      "id": "receive-review-pos-1",
+      "prompt": "리뷰 받았어 — 대응하기 전에 기술적으로 검증해줘",
+      "expected": "ywc-receive-review",
+      "kind": "positive"
+    },
+    {
+      "id": "receive-review-pos-2",
+      "prompt": "I received code review feedback — help me respond without blindly agreeing",
+      "expected": "ywc-receive-review",
+      "kind": "positive"
+    },
+    {
+      "id": "receive-review-pos-3",
+      "prompt": "レビューを受け取ったので対応する前に検証してください",
+      "expected": "ywc-receive-review",
+      "kind": "positive"
+    },
+    {
+      "id": "receive-review-pos-4",
+      "prompt": "PR comment 처리 전에 review feedback 먼저 검증해줘 — 동의 전에 확인",
+      "expected": "ywc-receive-review",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-clean-pos-1",
+      "prompt": "dead code 제거해줘 — unused import 정리하고 knip 돌려줘",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-clean-pos-2",
+      "prompt": "remove unused exports and run a dead code cleanup pass on this codebase",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-clean-pos-3",
+      "prompt": "未使用のimportを整理してデッドコードを削除してください",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-clean-pos-4",
+      "prompt": "refactor clean — depcheck 돌리고 안 쓰는 의존성 제거해줘",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive"
+    },
+    {
+      "id": "release-pr-list-pos-1",
+      "prompt": "릴리즈 PR 정리해줘 — develop→main PR 리스트 만들어줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive"
+    },
+    {
+      "id": "release-pr-list-pos-2",
+      "prompt": "generate the merged PR list grouped by author for the release PR description",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive"
+    },
+    {
+      "id": "release-pr-list-pos-3",
+      "prompt": "リリースPR一覧を作成してください — 著者別にグループ化して",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive"
+    },
+    {
+      "id": "release-pr-list-pos-4",
+      "prompt": "릴리스 노트용 PR 목록 만들어줘 — 이번 스프린트 merged PR 정리",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive"
+    },
+    {
+      "id": "review-learnings-pos-1",
+      "prompt": "이 지적 학습해둬 — review learnings에 추가해줘",
+      "expected": "ywc-review-learnings",
+      "kind": "positive"
+    },
+    {
+      "id": "review-learnings-pos-2",
+      "prompt": "accumulate this review feedback as a durable project learning for future reviews",
+      "expected": "ywc-review-learnings",
+      "kind": "positive"
+    },
+    {
+      "id": "review-learnings-pos-3",
+      "prompt": "レビュー学習を更新してください — このフィードバックを記録して",
+      "expected": "ywc-review-learnings",
+      "kind": "positive"
+    },
+    {
+      "id": "review-learnings-pos-4",
+      "prompt": "이건 false positive야 — review memory에 기억해줘, 앞으로 지적하지 말고",
+      "expected": "ywc-review-learnings",
+      "kind": "positive"
+    },
+    {
+      "id": "security-audit-pos-1",
+      "prompt": "보안 점검 해줘 — OWASP 기준으로 인증 코드 감사해줘",
+      "expected": "ywc-security-audit",
+      "kind": "positive"
+    },
+    {
+      "id": "security-audit-pos-2",
+      "prompt": "run a security audit on this authentication module",
+      "expected": "ywc-security-audit",
+      "kind": "positive"
+    },
+    {
+      "id": "security-audit-pos-3",
+      "prompt": "セキュリティ監査をしてください — OWASP Top 10で確認して",
+      "expected": "ywc-security-audit",
+      "kind": "positive"
+    },
+    {
+      "id": "security-audit-pos-4",
+      "prompt": "취약점 분석해줘 — 외부 API 입력 처리하는 코드 보안 리뷰",
+      "expected": "ywc-security-audit",
+      "kind": "positive"
+    },
+    {
+      "id": "sequential-executor-pos-1",
+      "prompt": "순차 실행해줘 — tasks/000001-010부터 순서대로 구현해줘",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "sequential-executor-pos-2",
+      "prompt": "execute tasks in order through the full lifecycle — run all remaining tasks sequentially",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "sequential-executor-pos-3",
+      "prompt": "タスクを順次実行してください — ライフサイクル全体を通して",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "sequential-executor-pos-4",
+      "prompt": "implement tasks 000002-020 through 000005-010 in strict sequence — start implementing",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive"
+    },
+    {
+      "id": "skill-author-pos-1",
+      "prompt": "새 ywc skill 만들어줘 — ywc-xxx 스킬 생성해줘",
+      "expected": "ywc-skill-author",
+      "kind": "positive"
+    },
+    {
+      "id": "skill-author-pos-2",
+      "prompt": "create a new ywc skill and apply the canonical ywc rules",
+      "expected": "ywc-skill-author",
+      "kind": "positive"
+    },
+    {
+      "id": "skill-author-pos-3",
+      "prompt": "新しいスキルを正規のルールセットに従って作成してください",
+      "expected": "ywc-skill-author",
+      "kind": "positive"
+    },
+    {
+      "id": "skill-author-pos-4",
+      "prompt": "ywc skill audit 해줘 — 기존 스킬 룰 점검하고 개선해줘",
+      "expected": "ywc-skill-author",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-validate-pos-1",
+      "prompt": "사양 검토해줘 — 구현 전에 spec 완성도 점검",
+      "expected": "ywc-spec-validate",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-validate-pos-2",
+      "prompt": "review this specification for completeness and feasibility before task breakdown",
+      "expected": "ywc-spec-validate",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-validate-pos-3",
+      "prompt": "仕様レビューをしてください — 実装前の点検",
+      "expected": "ywc-spec-validate",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-validate-pos-4",
+      "prompt": "이 사양서 완성도랑 일관성 검토해줘 — is this spec complete?",
+      "expected": "ywc-spec-validate",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-writer-pos-1",
+      "prompt": "사양서 작성해줘 — docs/specification/에 프로젝트 사양 만들어줘",
+      "expected": "ywc-spec-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-writer-pos-2",
+      "prompt": "generate a full project specification document in docs/specification/",
+      "expected": "ywc-spec-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-writer-pos-3",
+      "prompt": "仕様書を作成してください — docs/specification/に書いて",
+      "expected": "ywc-spec-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "spec-writer-pos-4",
+      "prompt": "write spec — 전체 사양서 작성해줘, 프로젝트 전체 기술",
+      "expected": "ywc-spec-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "task-generator-pos-1",
+      "prompt": "spec to tasks 분해해줘 — task 생성해줘",
+      "expected": "ywc-task-generator",
+      "kind": "positive"
+    },
+    {
+      "id": "task-generator-pos-2",
+      "prompt": "decompose this specification into implementation tasks with dependency graph",
+      "expected": "ywc-task-generator",
+      "kind": "positive"
+    },
+    {
+      "id": "task-generator-pos-3",
+      "prompt": "仕様からタスクを生成してください",
+      "expected": "ywc-task-generator",
+      "kind": "positive"
+    },
+    {
+      "id": "task-generator-pos-4",
+      "prompt": "작업 분해해줘 — spec 보고 tasks/ 디렉토리에 task 만들어줘",
+      "expected": "ywc-task-generator",
+      "kind": "positive"
+    },
+    {
+      "id": "tdd-ritual-pos-1",
+      "prompt": "TDD로 이 기능 구현해줘 — 테스트 먼저 작성해",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive"
+    },
+    {
+      "id": "tdd-ritual-pos-2",
+      "prompt": "test-first: write the failing test before any production code — RED-GREEN cycle",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive"
+    },
+    {
+      "id": "tdd-ritual-pos-3",
+      "prompt": "テストファーストで実装してください — RED-GREEN-REFACTORで",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive"
+    },
+    {
+      "id": "tdd-ritual-pos-4",
+      "prompt": "회귀 테스트 추가하고 RED-GREEN 사이클 따라서 구현해줘 — 테스트 우선",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive"
+    },
+    {
+      "id": "tech-research-pos-1",
+      "prompt": "기술 조사해줘 — 상태 관리 라이브러리 비교해줘",
+      "expected": "ywc-tech-research",
+      "kind": "positive"
+    },
+    {
+      "id": "tech-research-pos-2",
+      "prompt": "research and compare library options for background job processing",
+      "expected": "ywc-tech-research",
+      "kind": "positive"
+    },
+    {
+      "id": "tech-research-pos-3",
+      "prompt": "ライブラリ比較をしてください — 技術調査をお願いします",
+      "expected": "ywc-tech-research",
+      "kind": "positive"
+    },
+    {
+      "id": "tech-research-pos-4",
+      "prompt": "어떤 걸 쓸까? — GraphQL vs REST 비교 조사해줘 best way to implement",
+      "expected": "ywc-tech-research",
+      "kind": "positive"
+    },
+    {
+      "id": "ubiquitous-language-pos-1",
+      "prompt": "도메인 용어 정리해줘 — ubiquitous language 문서 만들어줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive"
+    },
+    {
+      "id": "ubiquitous-language-pos-2",
+      "prompt": "create a domain glossary and extract ubiquitous language from the codebase",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive"
+    },
+    {
+      "id": "ubiquitous-language-pos-3",
+      "prompt": "プロジェクト用語集を作成してください — ドメイン語彙を整理して",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive"
+    },
+    {
+      "id": "ubiquitous-language-pos-4",
+      "prompt": "DDD 용어 정리해줘 — 용어집 업데이트해줘, domain glossary 만들어줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive"
+    },
+    {
+      "id": "ui-ux-review-pos-1",
+      "prompt": "UI/UX review 해줘 — 사용성과 접근성 점검해줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive"
+    },
+    {
+      "id": "ui-ux-review-pos-2",
+      "prompt": "run a usability audit on the running UI — information architecture and accessibility",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive"
+    },
+    {
+      "id": "ui-ux-review-pos-3",
+      "prompt": "UX監査をしてください — 情報アーキテクチャとアクセシビリティを確認",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive"
+    },
+    {
+      "id": "ui-ux-review-pos-4",
+      "prompt": "디자인 리뷰 해줘 — 정보 구조와 WCAG 접근성 확인해줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive"
+    },
+    {
+      "id": "verify-done-pos-1",
+      "prompt": "완료 검증해줘 — 다 됐는지 확인하고 커밋 전에 체크",
+      "expected": "ywc-verify-done",
+      "kind": "positive"
+    },
+    {
+      "id": "verify-done-pos-2",
+      "prompt": "verify done — check tests pass and build succeeds before claiming complete",
+      "expected": "ywc-verify-done",
+      "kind": "positive"
+    },
+    {
+      "id": "verify-done-pos-3",
+      "prompt": "完了確認をお願いします — マージ前の検証",
+      "expected": "ywc-verify-done",
+      "kind": "positive"
+    },
+    {
+      "id": "verify-done-pos-4",
+      "prompt": "끝났어 — 완료 주장 전에 verify done 해줘, 다 됐나 검증",
+      "expected": "ywc-verify-done",
+      "kind": "positive"
+    },
+    {
+      "id": "worktrees-pos-1",
+      "prompt": "worktree 생성해줘 — 이 task용 isolated workspace 만들어줘",
+      "expected": "ywc-worktrees",
+      "kind": "positive"
+    },
+    {
+      "id": "worktrees-pos-2",
+      "prompt": "audit worktrees and prune stale ones after merges",
+      "expected": "ywc-worktrees",
+      "kind": "positive"
+    },
+    {
+      "id": "worktrees-pos-3",
+      "prompt": "ワークツリーを作成して並列タスク用のワークスペースを用意して",
+      "expected": "ywc-worktrees",
+      "kind": "positive"
+    },
+    {
+      "id": "worktrees-pos-4",
+      "prompt": "git worktree 정리해줘 — prune하고 경로 결정해줘",
+      "expected": "ywc-worktrees",
+      "kind": "positive"
+    },
+    {
+      "id": "architect-pos-1",
+      "prompt": "아키텍처 판단해줘 — 모듈 경계 어떻게 나눌지 결정해야 해",
+      "expected": "ywc-architect",
+      "kind": "positive"
+    },
+    {
+      "id": "architect-pos-2",
+      "prompt": "architectural decision: should we use hexagonal or layered architecture here?",
+      "expected": "ywc-architect",
+      "kind": "positive"
+    },
+    {
+      "id": "architect-pos-3",
+      "prompt": "アーキテクチャ判断をお願いします — 依存方向をどうするか",
+      "expected": "ywc-architect",
+      "kind": "positive"
+    },
+    {
+      "id": "architect-pos-4",
+      "prompt": "design trade-off analysis: abstraction vs duplication for this shared module boundary",
+      "expected": "ywc-architect",
+      "kind": "positive"
+    },
+    {
+      "id": "backend-coder-pos-1",
+      "prompt": "백엔드 구현해줘 — API endpoint와 DB 쿼리 작성",
+      "expected": "ywc-backend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "backend-coder-pos-2",
+      "prompt": "implement the REST API endpoints and business logic layer",
+      "expected": "ywc-backend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "backend-coder-pos-3",
+      "prompt": "バックエンドを実装してください — APIとDBクエリを書いて",
+      "expected": "ywc-backend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "backend-coder-pos-4",
+      "prompt": "implement the API: POST /orders endpoint with database schema migration",
+      "expected": "ywc-backend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "doc-writer-pos-1",
+      "prompt": "문서 작성해줘 — README locale set 업데이트해줘",
+      "expected": "ywc-doc-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "doc-writer-pos-2",
+      "prompt": "write the docs — update the README and add API documentation comments",
+      "expected": "ywc-doc-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "doc-writer-pos-3",
+      "prompt": "ドキュメントを更新してください — READMEのロケールセットを書いて",
+      "expected": "ywc-doc-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "doc-writer-pos-4",
+      "prompt": "CHANGELOG エントリを追加して — Keep a Changelogスタイルで",
+      "expected": "ywc-doc-writer",
+      "kind": "positive"
+    },
+    {
+      "id": "frontend-coder-pos-1",
+      "prompt": "프론트엔드 구현해줘 — UI 컴포넌트 만들고 접근성 맞춰줘",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "frontend-coder-pos-2",
+      "prompt": "build the UI component with state management and routing",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "frontend-coder-pos-3",
+      "prompt": "フロントエンドを実装してください — UIコンポーネントとスタイリング",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "frontend-coder-pos-4",
+      "prompt": "UI を実装して — checkout formのコンポーネントとバリデーション",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive"
+    },
+    {
+      "id": "go-reviewer-pos-1",
+      "prompt": "이 Go 코드 리뷰해줘 — goroutine leak 체크하고 채널 패턴 점검",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "go-reviewer-pos-2",
+      "prompt": "review this Go code for context cancellation and error wrapping patterns",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "go-reviewer-pos-3",
+      "prompt": "Goコードのレビューをお願いします — goroutineライフサイクルとinterface設計",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "go-reviewer-pos-4",
+      "prompt": "check this Go code for race conditions and sync.WaitGroup usage — Go-specific",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "performance-engineer-pos-1",
+      "prompt": "성능 분석해줘 — N+1 쿼리랑 번들 사이즈 점검해줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "performance-engineer-pos-2",
+      "prompt": "analyze performance: Core Web Vitals LCP and bundle budget violations",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "performance-engineer-pos-3",
+      "prompt": "パフォーマンス分析をしてください — N+1クエリとバンドルサイズ",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "performance-engineer-pos-4",
+      "prompt": "profile this hot loop and find allocation churn under GC pressure",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "python-reviewer-pos-1",
+      "prompt": "이 Python 코드 리뷰해줘 — async correctness랑 type annotation 점검",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "python-reviewer-pos-2",
+      "prompt": "review this Python code for asyncio correctness and Django ORM N+1 patterns",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "python-reviewer-pos-3",
+      "prompt": "Pythonコードのレビューをお願いします — 型システムとasync確認",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "python-reviewer-pos-4",
+      "prompt": "check the FastAPI Pydantic v2 model usage and dependency injection patterns",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "qa-engineer-pos-1",
+      "prompt": "테스트 작성해줘 — unit test랑 integration test 추가해줘",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "qa-engineer-pos-2",
+      "prompt": "write tests for the new feature — unit and integration coverage",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "qa-engineer-pos-3",
+      "prompt": "テストを追加してください — unitとintegrationテスト",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "qa-engineer-pos-4",
+      "prompt": "coverage 올려줘 — edge case와 에러 경로 테스트 추가해줘",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-cleaner-pos-1",
+      "prompt": "dead code 삭제 worker — SAFE tier 항목들 하나씩 grep 확인하고 삭제해줘",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-cleaner-pos-2",
+      "prompt": "execute the safe deletion loop — per-item grep verify then delete each unused export",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-cleaner-pos-3",
+      "prompt": "knip結果の安全なものだけ削除してください",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive"
+    },
+    {
+      "id": "refactor-cleaner-pos-4",
+      "prompt": "デッドコード削除ワーカー — SAFEティアの項目を一つずつ削除して",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive"
+    },
+    {
+      "id": "root-cause-analyst-pos-1",
+      "prompt": "root cause 분석해줘 — 5 Whys로 이 버그 근본 원인 파악",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive"
+    },
+    {
+      "id": "root-cause-analyst-pos-2",
+      "prompt": "5 whys analysis: why does this test keep failing after multiple fix attempts?",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive"
+    },
+    {
+      "id": "root-cause-analyst-pos-3",
+      "prompt": "原因分析をお願いします — なぜこれが何度fixしても失敗するのか",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive"
+    },
+    {
+      "id": "root-cause-analyst-pos-4",
+      "prompt": "근본 원인 찾아줘 — 3번 fix 시도했는데 계속 같은 문제 발생, 아키텍처 문제인지",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive"
+    },
+    {
+      "id": "security-engineer-pos-1",
+      "prompt": "OWASP 점검해줘 — 이 인증 코드 정적 security review 해줘",
+      "expected": "ywc-security-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "security-engineer-pos-2",
+      "prompt": "static security review: threat modeling on this auth diff and secret scan",
+      "expected": "ywc-security-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "security-engineer-pos-3",
+      "prompt": "セキュリティレビューをお願いします — シークレットスキャンも含めて",
+      "expected": "ywc-security-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "security-engineer-pos-4",
+      "prompt": "PII surface scan and OWASP severity-rated finding triage on these files",
+      "expected": "ywc-security-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "typescript-reviewer-pos-1",
+      "prompt": "TypeScript 코드 리뷰해줘 — 타입 시스템 심층 점검",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "typescript-reviewer-pos-2",
+      "prompt": "review this TypeScript code for strict type correctness and React hooks rules",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "typescript-reviewer-pos-3",
+      "prompt": "TypeScript型レビューをお願いします — tsconfig strictの確認も",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "typescript-reviewer-pos-4",
+      "prompt": "TS code review — async patterns and module resolution issues in .tsx files",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive"
+    },
+    {
+      "id": "agentic-vs-sequential-executor-1",
+      "prompt": "자율 실행 모드로 spec부터 구현까지 전체 ywc pipeline 돌려줘",
+      "expected": "ywc-agentic",
+      "kind": "collision",
+      "impostor": "ywc-sequential-executor",
+      "note": "agentic orchestrates autonomously end-to-end; sequential-executor runs predefined tasks/ in strict order"
+    },
+    {
+      "id": "agentic-vs-parallel-executor-1",
+      "prompt": "goal to code — autonomous workflow로 이 기능 구현해줘",
+      "expected": "ywc-agentic",
+      "kind": "collision",
+      "impostor": "ywc-parallel-executor",
+      "note": "agentic creates and runs the full pipeline autonomously; parallel-executor needs a pre-existing tasks/ directory"
+    },
+    {
+      "id": "sequential-executor-vs-parallel-executor-1",
+      "prompt": "tasks/ 폴더 독립 task들 동시에 실행해줘 — 워크트리 격리해서 병렬로",
+      "expected": "ywc-parallel-executor",
+      "kind": "collision",
+      "impostor": "ywc-sequential-executor",
+      "note": "parallel-executor wins for simultaneous execution; sequential-executor runs in strict order"
+    },
+    {
+      "id": "code-gen-vs-sequential-executor-1",
+      "prompt": "spec 보고 Backend + Frontend + QA 동시에 코드 생성해줘",
+      "expected": "ywc-code-gen",
+      "kind": "collision",
+      "impostor": "ywc-sequential-executor",
+      "note": "code-gen does multi-layer parallel generation from spec; sequential-executor runs tasks/ in order"
+    },
+    {
+      "id": "code-gen-vs-parallel-executor-1",
+      "prompt": "풀스택 코드 생성 — API랑 UI 동시에 생성해줘 spec에서",
+      "expected": "ywc-code-gen",
+      "kind": "collision",
+      "impostor": "ywc-parallel-executor",
+      "note": "code-gen generates Backend+Frontend+QA layers; parallel-executor runs pre-existing tasks/ entries"
+    },
+    {
+      "id": "commit-vs-create-pr-1",
+      "prompt": "이 브랜치 PR 올려줘",
+      "expected": "ywc-create-pr",
+      "kind": "collision",
+      "impostor": "ywc-commit",
+      "note": "create-pr owns PR creation; commit only stages and commits"
+    },
+    {
+      "id": "create-pr-vs-finish-branch-1",
+      "prompt": "feature branch 완전히 마무리해줘 — PR 열고 CI 기다리고 merge까지",
+      "expected": "ywc-finish-branch",
+      "kind": "collision",
+      "impostor": "ywc-create-pr",
+      "note": "finish-branch covers full delivery lifecycle through merge; create-pr only opens the PR"
+    },
+    {
+      "id": "finish-branch-vs-commit-1",
+      "prompt": "변경 커밋하고 PR 만든 다음 merge까지 전부 해줘",
+      "expected": "ywc-finish-branch",
+      "kind": "collision",
+      "impostor": "ywc-commit",
+      "note": "finish-branch delivers the full branch lifecycle; commit only stages changes"
+    },
+    {
+      "id": "merge-dependabot-vs-create-pr-1",
+      "prompt": "pending Dependabot PR 모두 CI 확인하고 merge해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "collision",
+      "impostor": "ywc-create-pr",
+      "note": "merge-dependabot specifically handles dependabot PRs; create-pr is for opening new PRs"
+    },
+    {
+      "id": "release-pr-list-vs-changelog-1",
+      "prompt": "릴리즈 PR description에 들어갈 merged PR 목록 작성자별로 만들어줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "collision",
+      "impostor": "ywc-changelog-release-notes",
+      "note": "release-pr-list generates a PR table for the release PR body; changelog generates CHANGELOG.md entries"
+    },
+    {
+      "id": "changelog-vs-release-pr-list-1",
+      "prompt": "이번 릴리즈 변경 이력 CHANGELOG.md에 정리해줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "collision",
+      "impostor": "ywc-release-pr-list",
+      "note": "changelog-release-notes writes CHANGELOG.md; release-pr-list is for the PR body table"
+    },
+    {
+      "id": "changelog-vs-commit-1",
+      "prompt": "릴리즈 노트 생성해줘 — git history에서 what changed in this release 정리",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "collision",
+      "impostor": "ywc-commit",
+      "note": "changelog-release-notes generates notes from git history; commit stages and commits files"
+    },
+    {
+      "id": "finish-branch-vs-create-pr-1",
+      "prompt": "branch 마감해줘 — PR ready로 바꾸고 CI 기다리고 merge까지 전부",
+      "expected": "ywc-finish-branch",
+      "kind": "collision",
+      "impostor": "ywc-create-pr",
+      "note": "finish-branch does full delivery including CI wait and merge; create-pr only opens the PR"
+    },
+    {
+      "id": "merge-dependabot-vs-finish-branch-1",
+      "prompt": "dependency security updates PR들 CI 확인하고 merge해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "collision",
+      "impostor": "ywc-finish-branch",
+      "note": "merge-dependabot handles dependabot/security update PRs; finish-branch handles feature branch delivery"
+    },
+    {
+      "id": "plan-vs-brainstorm-1",
+      "prompt": "결제 기능 구체적인 구현 계획 세워줘 — 어떻게 진행할지",
+      "expected": "ywc-plan",
+      "kind": "collision",
+      "impostor": "ywc-brainstorm",
+      "note": "plan wins when intent is clear and concrete; brainstorm is for vague half-formed ideas"
+    },
+    {
+      "id": "brainstorm-vs-plan-1",
+      "prompt": "새 채팅 기능 같은 거 만들면 어떨까 — 아이디어 구상해보자",
+      "expected": "ywc-brainstorm",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "brainstorm wins for vague 'let's build' framing before intent is pinned"
+    },
+    {
+      "id": "spec-writer-vs-plan-1",
+      "prompt": "전체 프로젝트 사양서 작성해줘 — docs/specification/에 넣어줘",
+      "expected": "ywc-spec-writer",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "spec-writer writes the formal specification document; plan creates an implementation plan"
+    },
+    {
+      "id": "plan-vs-spec-writer-1",
+      "prompt": "구현 계획 세워줘 — spec 쓰기 전 단계, 어떻게 진행할지",
+      "expected": "ywc-plan",
+      "kind": "collision",
+      "impostor": "ywc-spec-writer",
+      "note": "plan routes to the right skill and produces plan.md; spec-writer authors the full specification document"
+    },
+    {
+      "id": "spec-validate-vs-spec-writer-1",
+      "prompt": "작성한 spec 검토해줘 — 완성도와 실현 가능성 점검",
+      "expected": "ywc-spec-validate",
+      "kind": "collision",
+      "impostor": "ywc-spec-writer",
+      "note": "spec-validate reviews an existing spec; spec-writer creates a new one"
+    },
+    {
+      "id": "task-generator-vs-spec-validate-1",
+      "prompt": "spec을 implementation tasks로 분해해줘 — task 생성",
+      "expected": "ywc-task-generator",
+      "kind": "collision",
+      "impostor": "ywc-spec-validate",
+      "note": "task-generator decomposes spec into tasks/; spec-validate reviews spec quality"
+    },
+    {
+      "id": "confidence-gate-vs-spec-validate-1",
+      "prompt": "구현 시작 전에 준비 상태 점검해줘 — 착수 가능한지 확인",
+      "expected": "ywc-confidence-gate",
+      "kind": "collision",
+      "impostor": "ywc-spec-validate",
+      "note": "confidence-gate scores implementation readiness; spec-validate reviews spec quality"
+    },
+    {
+      "id": "tech-research-vs-brainstorm-1",
+      "prompt": "React vs Vue vs Svelte 비교 조사해줘 — 어떤 걸 쓸까",
+      "expected": "ywc-tech-research",
+      "kind": "collision",
+      "impostor": "ywc-brainstorm",
+      "note": "tech-research compares specific technology options; brainstorm explores vague feature ideas"
+    },
+    {
+      "id": "confidence-gate-vs-verify-done-1",
+      "prompt": "이 구현 완료됐는지 검증해줘 — 다 됐어?",
+      "expected": "ywc-verify-done",
+      "kind": "collision",
+      "impostor": "ywc-confidence-gate",
+      "note": "verify-done gates completion claims; confidence-gate gates implementation start"
+    },
+    {
+      "id": "spec-validate-vs-impl-review-1",
+      "prompt": "이 사양서 완성도랑 일관성 검토해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "spec-only review — impl-review must NOT win when no code exists yet"
+    },
+    {
+      "id": "task-generator-vs-plan-1",
+      "prompt": "spec 보고 tasks 만들어줘 — 의존성 그래프 포함해서 분해",
+      "expected": "ywc-task-generator",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "task-generator decomposes a written spec into task files; plan is the pre-spec planning step"
+    },
+    {
+      "id": "tech-research-vs-plan-1",
+      "prompt": "라이브러리 비교 조사해줘 — spec 쓰기 전에 기술 선택해야 해",
+      "expected": "ywc-tech-research",
+      "kind": "collision",
+      "impostor": "ywc-plan",
+      "note": "tech-research investigates options before spec; plan converts an already-decided idea into implementation plan"
+    },
+    {
+      "id": "debug-rootcause-vs-incident-postmortem-1",
+      "prompt": "프로덕션 장애 원인 분석해줘 — 5 Whys로 구조적 회고까지",
+      "expected": "ywc-incident-postmortem",
+      "kind": "collision",
+      "impostor": "ywc-debug-rootcause",
+      "note": "incident-postmortem wins for structured retrospective on production outages; debug-rootcause is for active debugging"
+    },
+    {
+      "id": "debug-rootcause-vs-root-cause-analyst-1",
+      "prompt": "이 버그 원인 못 찾겠어 — 깊이 파고들어서 근본 원인 분석해줘",
+      "expected": "ywc-debug-rootcause",
+      "kind": "collision",
+      "impostor": "ywc-root-cause-analyst",
+      "note": "debug-rootcause is the user-facing skill; root-cause-analyst is the read-only agent dispatched internally"
+    },
+    {
+      "id": "root-cause-analyst-vs-debug-rootcause-1",
+      "prompt": "5 Whys 체인으로 이 실패 원인 심층 분석해줘 — 가설 추적 포함",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "collision",
+      "impostor": "ywc-debug-rootcause",
+      "note": "root-cause-analyst is directly dispatched for deep 5-Whys reasoning; debug-rootcause is the outer skill"
+    },
+    {
+      "id": "incident-postmortem-vs-root-cause-analyst-1",
+      "prompt": "장애 포스트모텀 작성해줘 — 타임라인과 근본 원인 분석 포함",
+      "expected": "ywc-incident-postmortem",
+      "kind": "collision",
+      "impostor": "ywc-root-cause-analyst",
+      "note": "incident-postmortem produces the structured report; root-cause-analyst is invoked internally for 5-Whys"
+    },
+    {
+      "id": "security-audit-vs-security-engineer-1",
+      "prompt": "보안 감사 해줘 — 이 코드 OWASP Top 10 기준으로 점검",
+      "expected": "ywc-security-audit",
+      "kind": "collision",
+      "impostor": "ywc-security-engineer",
+      "note": "security-audit is the user-facing orchestrating skill; security-engineer is the read-only agent it dispatches"
+    },
+    {
+      "id": "security-engineer-vs-security-audit-1",
+      "prompt": "OWASP 점검 agent 직접 돌려줘 — secret scan, 위협 모델링 bounded scope로",
+      "expected": "ywc-security-engineer",
+      "kind": "collision",
+      "impostor": "ywc-security-audit",
+      "note": "security-engineer agent does bounded-scope static analysis; security-audit is the orchestrating skill"
+    },
+    {
+      "id": "impl-review-vs-security-audit-1",
+      "prompt": "구현 리뷰 해줘 — 보안 포함 5개 축 전체 검토",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "impostor": "ywc-security-audit",
+      "note": "impl-review covers all 5 axes including security; security-audit is only for security-specific review"
+    },
+    {
+      "id": "security-audit-vs-impl-review-1",
+      "prompt": "인증 코드만 집중적으로 보안 점검해줘 — OWASP 취약점 분석",
+      "expected": "ywc-security-audit",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "security-audit is specifically for auth/external-facing code; impl-review is broader"
+    },
+    {
+      "id": "security-engineer-vs-impl-review-1",
+      "prompt": "이 diff 보안 경계 분석해줘 — static analysis로 위협 모델링",
+      "expected": "ywc-security-engineer",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "security-engineer does bounded static security analysis; impl-review is the broader 5-axis code review"
+    },
+    {
+      "id": "refactor-clean-vs-refactor-cleaner-1",
+      "prompt": "dead code 정리 해줘 — knip 돌리고 분류해서 SAFE tier 삭제",
+      "expected": "ywc-refactor-clean",
+      "kind": "collision",
+      "impostor": "ywc-refactor-cleaner",
+      "note": "refactor-clean is the user-facing skill that runs detection and classifies; refactor-cleaner executes deletions"
+    },
+    {
+      "id": "refactor-cleaner-vs-refactor-clean-1",
+      "prompt": "SAFE 분류된 dead code 항목들 하나씩 grep 확인하고 삭제 실행해줘",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "collision",
+      "impostor": "ywc-refactor-clean",
+      "note": "refactor-cleaner executes the per-item safe deletion loop; refactor-clean owns classification and orchestration"
+    },
+    {
+      "id": "impl-review-vs-typescript-reviewer-1",
+      "prompt": "TypeScript 코드 구현 리뷰해줘 — 타입 시스템과 전반적인 품질 5축",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "impl-review runs the full 5-axis review and dispatches typescript-reviewer internally; typescript-reviewer is the sub-agent"
+    },
+    {
+      "id": "typescript-reviewer-vs-impl-review-1",
+      "prompt": "이 .tsx 파일들 TypeScript 타입 심층 리뷰 해줘 — strict 준수 점검, TS 전용",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "typescript-reviewer does TS-specific deep dive; impl-review is broader and language-agnostic"
+    },
+    {
+      "id": "go-reviewer-vs-impl-review-1",
+      "prompt": "이 Go 파일 goroutine 패턴이랑 channel 설계 집중 리뷰해줘 — Go 전용",
+      "expected": "ywc-go-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "go-reviewer does Go-specific deep analysis; impl-review is language-agnostic"
+    },
+    {
+      "id": "python-reviewer-vs-impl-review-1",
+      "prompt": "Python async 코드 PEP 484 타입 시스템 심층 리뷰 해줘 — Python 전용",
+      "expected": "ywc-python-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "python-reviewer does Python-specific deep analysis; impl-review is language-agnostic"
+    },
+    {
+      "id": "go-reviewer-vs-python-reviewer-1",
+      "prompt": "이 .go 파일 goroutine leak 체크하고 context cancellation 점검해줘",
+      "expected": "ywc-go-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-python-reviewer",
+      "note": "Go code uses goroutines/channels — go-reviewer owns it; python-reviewer handles .py files only"
+    },
+    {
+      "id": "python-reviewer-vs-typescript-reviewer-1",
+      "prompt": "FastAPI endpoint 코드 타입 힌트랑 asyncio 패턴 리뷰해줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "FastAPI is Python; typescript-reviewer handles TS/JS only"
+    },
+    {
+      "id": "typescript-reviewer-vs-python-reviewer-1",
+      "prompt": "이 .ts 파일 type-system depth 심층 리뷰해줘 — Vue Composition API 포함",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-python-reviewer",
+      "note": "Vue/TS files are TS domain; python-reviewer handles Python only"
+    },
+    {
+      "id": "go-reviewer-vs-typescript-reviewer-1",
+      "prompt": "이 서버 코드 interface 설계랑 error handling 패턴 리뷰해줘 — Go 파일",
+      "expected": "ywc-go-reviewer",
+      "kind": "collision",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "Go interfaces and error wrapping are Go-reviewer territory; typescript-reviewer handles .ts/.tsx only"
+    },
+    {
+      "id": "handle-pr-reviews-vs-receive-review-1",
+      "prompt": "PR 리뷰 코멘트 받았어 — 코드 수정하고 각 스레드에 답장해줘",
+      "expected": "ywc-handle-pr-reviews",
+      "kind": "collision",
+      "impostor": "ywc-receive-review",
+      "note": "handle-pr-reviews automates fetching and replying to PR threads; receive-review is the verification attitude layer"
+    },
+    {
+      "id": "receive-review-vs-handle-pr-reviews-1",
+      "prompt": "리뷰 피드백 받았어 — 동의하기 전에 기술적으로 검증해줘",
+      "expected": "ywc-receive-review",
+      "kind": "collision",
+      "impostor": "ywc-handle-pr-reviews",
+      "note": "receive-review enforces verify-before-agree discipline; handle-pr-reviews does the automation"
+    },
+    {
+      "id": "review-learnings-vs-receive-review-1",
+      "prompt": "이 리뷰 지적 사항 앞으로도 기억해줘 — 학습으로 저장해줘",
+      "expected": "ywc-review-learnings",
+      "kind": "collision",
+      "impostor": "ywc-receive-review",
+      "note": "review-learnings stores durable preferences; receive-review is for responding in the moment"
+    },
+    {
+      "id": "review-learnings-vs-handle-pr-reviews-1",
+      "prompt": "이번 리뷰에서 얻은 선호도 누적해서 review memory에 기록해줘",
+      "expected": "ywc-review-learnings",
+      "kind": "collision",
+      "impostor": "ywc-handle-pr-reviews",
+      "note": "review-learnings accumulates durable preferences; handle-pr-reviews handles live PR thread responses"
+    },
+    {
+      "id": "product-review-vs-plan-1",
       "prompt": "이 기능 비즈니스적으로 가치 있는지 검토해줘",
       "expected": "ywc-product-review",
       "kind": "collision",
       "impostor": "ywc-plan",
-      "note": "product/business reasoning — plan must NOT win"
+      "note": "product-review covers business/service reasoning; plan must NOT win for business-value questions"
     },
     {
-      "id": "toolkiteval-pos-1",
-      "prompt": "toolkit skill들 품질 평가하고 점수 매겨줘",
-      "expected": "ywc-toolkit-eval",
-      "kind": "positive"
+      "id": "product-review-vs-impl-review-1",
+      "prompt": "이 서비스 개선 포인트 뭐가 있어? — 비즈니스 관점 review",
+      "expected": "ywc-product-review",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "product-review is business/service level; impl-review is code-level"
     },
     {
-      "id": "toolkiteval-pos-2",
-      "prompt": "evaluate the agents and give me a scorecard",
-      "expected": "ywc-toolkit-eval",
-      "kind": "positive"
+      "id": "project-docs-vs-doc-writer-1",
+      "prompt": "docs/ 에 아키텍처 문서 Korean으로 추가해줘",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "impostor": "ywc-doc-writer",
+      "note": "project-docs generates Korean/Japanese structured docs in docs/; doc-writer handles README locales and CHANGELOG"
     },
     {
-      "id": "toolkiteval-vs-skillauthor-1",
-      "prompt": "새 ywc skill 만들어줘",
+      "id": "doc-writer-vs-project-docs-1",
+      "prompt": "README locale set 업데이트해줘 — README.ko.md 추가해줘",
+      "expected": "ywc-doc-writer",
+      "kind": "collision",
+      "impostor": "ywc-project-docs",
+      "note": "doc-writer owns README locale sets; project-docs generates structured project documentation in docs/"
+    },
+    {
+      "id": "ubiquitous-language-vs-project-docs-1",
+      "prompt": "도메인 용어 정리해서 glossary 만들어줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "collision",
+      "impostor": "ywc-project-docs",
+      "note": "ubiquitous-language creates domain vocabulary; project-docs generates architecture/spec documentation"
+    },
+    {
+      "id": "project-docs-vs-ubiquitous-language-1",
+      "prompt": "프로젝트 아키텍처 문서 작성해줘 — 설계 의사결정 기록",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "impostor": "ywc-ubiquitous-language",
+      "note": "project-docs handles architecture documentation; ubiquitous-language focuses on domain vocabulary"
+    },
+    {
+      "id": "onboard-repo-vs-project-scaffold-1",
+      "prompt": "이 기존 repository 처음 보는데 구조 파악해줘 — CLAUDE.md 만들어줘",
+      "expected": "ywc-onboard-repo",
+      "kind": "collision",
+      "impostor": "ywc-project-scaffold",
+      "note": "onboard-repo surveys an existing unfamiliar repo; project-scaffold designs new project structures"
+    },
+    {
+      "id": "project-scaffold-vs-onboard-repo-1",
+      "prompt": "새 FastAPI 프로젝트 폴더 구조 만들어줘 — 처음부터 설계해줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "collision",
+      "impostor": "ywc-onboard-repo",
+      "note": "project-scaffold creates a new structure from scratch; onboard-repo surveys an existing repo"
+    },
+    {
+      "id": "skill-author-vs-project-docs-1",
+      "prompt": "새 ywc skill SKILL.md 작성해줘 — canonical rule 따라서",
       "expected": "ywc-skill-author",
       "kind": "collision",
-      "impostor": "ywc-toolkit-eval",
-      "note": "authoring — toolkit-eval scores existing skills, must NOT win on creation"
+      "impostor": "ywc-project-docs",
+      "note": "skill-author creates ywc-* skill files; project-docs generates project documentation in docs/"
+    },
+    {
+      "id": "changelog-vs-project-docs-1",
+      "prompt": "이번 릴리즈 변경 사항 문서화해줘 — release notes로 정리",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "collision",
+      "impostor": "ywc-project-docs",
+      "note": "changelog-release-notes produces CHANGELOG.md; project-docs creates architectural/spec documents"
+    },
+    {
+      "id": "doc-writer-vs-ubiquitous-language-1",
+      "prompt": "이 모듈 API 문서 작성해줘 — JSDoc 스타일로 in-code 설명 추가",
+      "expected": "ywc-doc-writer",
+      "kind": "collision",
+      "impostor": "ywc-ubiquitous-language",
+      "note": "doc-writer handles in-code comments and API docs; ubiquitous-language creates domain glossary entries"
+    },
+    {
+      "id": "skill-author-vs-doc-writer-1",
+      "prompt": "ywc skill README.ko.md 작성해줘 — ywc-skill-author 사용해서",
+      "expected": "ywc-skill-author",
+      "kind": "collision",
+      "impostor": "ywc-doc-writer",
+      "note": "skill-author owns ywc-* skill file authoring; doc-writer handles general README locale sets"
+    },
+    {
+      "id": "tdd-ritual-vs-qa-engineer-1",
+      "prompt": "테스트 먼저 작성하고 그다음 구현해줘 — TDD 사이클로 RED-GREEN",
+      "expected": "ywc-tdd-ritual",
+      "kind": "collision",
+      "impostor": "ywc-qa-engineer",
+      "note": "tdd-ritual enforces the RED-GREEN-REFACTOR writing discipline; qa-engineer authors test code as worker"
+    },
+    {
+      "id": "qa-engineer-vs-tdd-ritual-1",
+      "prompt": "이 모듈 unit test와 integration test 작성해줘 — edge cases 포함",
+      "expected": "ywc-qa-engineer",
+      "kind": "collision",
+      "impostor": "ywc-tdd-ritual",
+      "note": "qa-engineer authors comprehensive test code; tdd-ritual enforces the writing order discipline"
+    },
+    {
+      "id": "gen-testcase-vs-qa-engineer-1",
+      "prompt": "이 PR 수동 검증 체크리스트 만들어줘 — QA 시트 생성",
+      "expected": "ywc-gen-testcase",
+      "kind": "collision",
+      "impostor": "ywc-qa-engineer",
+      "note": "gen-testcase generates manual testsheets for developer+QA; qa-engineer writes automated test code"
+    },
+    {
+      "id": "e2e-test-strategy-vs-qa-engineer-1",
+      "prompt": "Playwright로 E2E 테스트 작성해줘 — 로그인 플로우 자동화 전략",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "impostor": "ywc-qa-engineer",
+      "note": "e2e-test-strategy handles Playwright setup and E2E strategy; qa-engineer writes unit/integration tests"
+    },
+    {
+      "id": "verify-done-vs-tdd-ritual-1",
+      "prompt": "구현 완료했어 — 테스트 통과하는지 확인해줘 완료 검증",
+      "expected": "ywc-verify-done",
+      "kind": "collision",
+      "impostor": "ywc-tdd-ritual",
+      "note": "verify-done gates completion claims; tdd-ritual is the writing-time RED-GREEN discipline"
+    },
+    {
+      "id": "gen-testcase-vs-e2e-test-strategy-1",
+      "prompt": "릴리즈 전 체크리스트 만들어줘 — 이 PR 수동 검증 시트",
+      "expected": "ywc-gen-testcase",
+      "kind": "collision",
+      "impostor": "ywc-e2e-test-strategy",
+      "note": "gen-testcase creates manual verification sheets; e2e-test-strategy designs automated Playwright suites"
+    },
+    {
+      "id": "design-renew-vs-ui-ux-review-1",
+      "prompt": "이 UI 너무 template 같아 보여 — AI가 만든 것 같아 de-slop해줘",
+      "expected": "ywc-design-renew",
+      "kind": "collision",
+      "impostor": "ywc-ui-ux-review",
+      "note": "design-renew addresses AI-slop visual redesign; ui-ux-review covers usability, IA, and accessibility"
+    },
+    {
+      "id": "ui-ux-review-vs-design-renew-1",
+      "prompt": "이 앱 사용성 점검해줘 — 정보 구조랑 WCAG 접근성 기준으로",
+      "expected": "ywc-ui-ux-review",
+      "kind": "collision",
+      "impostor": "ywc-design-renew",
+      "note": "ui-ux-review handles usability, IA, and accessibility; design-renew handles aesthetic de-slop"
+    },
+    {
+      "id": "frontend-coder-vs-design-renew-1",
+      "prompt": "새 UI 컴포넌트 만들어줘 — 접근성 챙겨서 처음부터 구현해줘",
+      "expected": "ywc-frontend-coder",
+      "kind": "collision",
+      "impostor": "ywc-design-renew",
+      "note": "frontend-coder builds new UI components; design-renew renews existing UI aesthetics"
+    },
+    {
+      "id": "design-renew-vs-frontend-coder-1",
+      "prompt": "기존 랜딩 페이지 디자인 갱신해줘 — AI slop 제거하고 개성 있게",
+      "expected": "ywc-design-renew",
+      "kind": "collision",
+      "impostor": "ywc-frontend-coder",
+      "note": "design-renew audits and renews existing page visual identity; frontend-coder implements new components"
+    },
+    {
+      "id": "ui-ux-review-vs-impl-review-1",
+      "prompt": "이 UI 코드 리뷰해줘 — 접근성이랑 사용성 점검해줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "collision",
+      "impostor": "ywc-impl-review",
+      "note": "ui-ux-review is specifically for UI/UX with live exploration; impl-review is broader code quality"
+    },
+    {
+      "id": "backend-coder-vs-architect-1",
+      "prompt": "주문 관리 API 구현해줘 — endpoint 코드 작성해줘 backend",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "impostor": "ywc-architect",
+      "note": "backend-coder writes code; architect is read-only and only reasons about design trade-offs"
+    },
+    {
+      "id": "architect-vs-backend-coder-1",
+      "prompt": "이 서비스 레이어 분리 결정이 맞는지 판단해줘 — 아키텍처 trade-off",
+      "expected": "ywc-architect",
+      "kind": "collision",
+      "impostor": "ywc-backend-coder",
+      "note": "architect reasons about module boundaries and irreversibility; backend-coder implements"
+    },
+    {
+      "id": "backend-coder-vs-frontend-coder-1",
+      "prompt": "REST API endpoint 구현해줘 — POST /users handler 서버 사이드",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "impostor": "ywc-frontend-coder",
+      "note": "API endpoints are server-side; frontend-coder handles client-side UI"
+    },
+    {
+      "id": "frontend-coder-vs-backend-coder-1",
+      "prompt": "React 컴포넌트 만들어줘 — state management 포함해서 클라이언트 사이드",
+      "expected": "ywc-frontend-coder",
+      "kind": "collision",
+      "impostor": "ywc-backend-coder",
+      "note": "React components are client-side; backend-coder handles server logic"
+    },
+    {
+      "id": "performance-engineer-vs-backend-coder-1",
+      "prompt": "이 쿼리 너무 느려 — N+1 문제 분석하고 개선 방법 찾아줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "collision",
+      "impostor": "ywc-backend-coder",
+      "note": "performance-engineer analyzes and diagnoses performance issues; backend-coder implements fixes after diagnosis"
+    },
+    {
+      "id": "backend-coder-vs-performance-engineer-1",
+      "prompt": "쿼리 개선해줘 — select_related 추가하고 missing index DDL 달아줘",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "impostor": "ywc-performance-engineer",
+      "note": "backend-coder implements the concrete fix; performance-engineer diagnoses and recommends"
+    },
+    {
+      "id": "architect-vs-performance-engineer-1",
+      "prompt": "이 시스템 레이어 분리로 performance 문제 해결할 수 있는지 판단해줘",
+      "expected": "ywc-architect",
+      "kind": "collision",
+      "impostor": "ywc-performance-engineer",
+      "note": "architect judges architectural irreversibility decisions; performance-engineer profiles and diagnoses"
+    },
+    {
+      "id": "worktrees-vs-parallel-executor-1",
+      "prompt": "worktree 정리해줘 — 오래된 것들 prune하고 경로 확인",
+      "expected": "ywc-worktrees",
+      "kind": "collision",
+      "impostor": "ywc-parallel-executor",
+      "note": "worktrees manages the git worktree lifecycle; parallel-executor uses worktrees for task execution"
+    },
+    {
+      "id": "parallel-executor-vs-worktrees-1",
+      "prompt": "독립 tasks 병렬로 워크트리 격리해서 실행해줘 — tasks/ 디렉토리에서",
+      "expected": "ywc-parallel-executor",
+      "kind": "collision",
+      "impostor": "ywc-worktrees",
+      "note": "parallel-executor orchestrates task execution using worktrees; worktrees just manages the workspace lifecycle"
     },
     {
       "id": "neg-weather-1",
-      "prompt": "오늘 도쿄 날씨 알려줘",
+      "prompt": "내일 서울 날씨 어때?",
       "expected": null,
       "kind": "negative"
     },
     {
       "id": "neg-recipe-1",
-      "prompt": "김치찌개 레시피 알려줘",
+      "prompt": "파스타 카르보나라 레시피 알려줘",
       "expected": null,
       "kind": "negative"
     },
     {
-      "id": "agent-tsreviewer-pos-1",
-      "prompt": "이 TypeScript 코드의 타입 시스템과 async 정확성 리뷰해줘",
-      "expected": "ywc-typescript-reviewer",
-      "kind": "positive"
+      "id": "neg-general-chat-1",
+      "prompt": "요즘 AI 트렌드가 어떤지 설명해줘",
+      "expected": null,
+      "kind": "negative"
     },
     {
-      "id": "agent-tsreviewer-vs-pyreviewer-1",
-      "prompt": "이 Python 코드 asyncio랑 타입 힌트 리뷰해줘",
-      "expected": "ywc-python-reviewer",
-      "kind": "collision",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "language reviewers share trigram surface — each must only win its own language"
+      "id": "neg-math-1",
+      "prompt": "1부터 100까지 더하면 얼마야?",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-translation-1",
+      "prompt": "이 문장 영어로 번역해줘: 안녕하세요",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-schedule-1",
+      "prompt": "내일 오후 3시 회의 일정 잡아줘",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-sports-1",
+      "prompt": "어제 야구 경기 결과 알려줘",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-cooking-1",
+      "prompt": "What's a good substitute for butter in baking?",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-geography-1",
+      "prompt": "東京から大阪まで新幹線で何時間かかりますか？",
+      "expected": null,
+      "kind": "negative"
+    },
+    {
+      "id": "neg-trivia-1",
+      "prompt": "Who won the FIFA World Cup in 2022?",
+      "expected": null,
+      "kind": "negative"
     }
   ]
 }
