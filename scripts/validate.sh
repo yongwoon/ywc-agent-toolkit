@@ -337,7 +337,7 @@ check_codex_plugin_manifest() {
 check_release_versions() {
   local release_manifest=".release-please-manifest.json"
   local release_config=".release-please-config.json"
-  local expected file version required_extra_file
+  local expected file version required_extra_file version_file
 
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required to validate release versions"
@@ -351,6 +351,24 @@ check_release_versions() {
     return
   fi
 
+  if ! jq empty "$release_manifest" >/dev/null 2>&1; then
+    echo "ERROR: $release_manifest is not valid JSON"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if ! jq empty "$release_config" >/dev/null 2>&1; then
+    echo "ERROR: $release_config is not valid JSON"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if [ ! -f VERSION ]; then
+    echo "ERROR: VERSION is missing"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
   expected="$(jq -r '.["."] // empty' "$release_manifest")"
   if [ -z "$expected" ]; then
     echo "ERROR: .release-please-manifest.json is missing package version for ."
@@ -358,7 +376,13 @@ check_release_versions() {
     return
   fi
 
-  if [ "$(tr -d '[:space:]' < VERSION)" != "$expected" ]; then
+  if ! version_file="$(tr -d '[:space:]' < VERSION)"; then
+    echo "ERROR: failed to read VERSION"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if [ "$version_file" != "$expected" ]; then
     echo "ERROR: VERSION must match release-please version $expected"
     ERRORS=$((ERRORS + 1))
   fi
@@ -374,14 +398,24 @@ check_release_versions() {
       ERRORS=$((ERRORS + 1))
       continue
     fi
-    version="$(jq -r '.version // empty' "$file")"
+    if ! version="$(jq -r '.version // empty' "$file" 2>/dev/null)"; then
+      echo "ERROR: versioned manifest is not valid JSON: $file"
+      ERRORS=$((ERRORS + 1))
+      continue
+    fi
     if [ "$version" != "$expected" ]; then
       echo "ERROR: $file version must be $expected, got $version"
       ERRORS=$((ERRORS + 1))
     fi
   done
 
-  if [ "$(jq -r '.packages["."]."version-file" // empty' "$release_config")" != "VERSION" ]; then
+  if ! version_file="$(jq -r '.packages["."]."version-file" // empty' "$release_config" 2>/dev/null)"; then
+    echo "ERROR: $release_config is not valid JSON"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if [ "$version_file" != "VERSION" ]; then
     echo "ERROR: .release-please-config.json must set packages[.].version-file to VERSION"
     ERRORS=$((ERRORS + 1))
   fi
