@@ -61,8 +61,8 @@ When tempted to bypass a rule, check this table first:
 Run **all six signal-gathering passes** (no Read tool — Glob and Grep only). The fastest path is the bundled script, which runs every pass in one shot and prints the structured summary:
 
 ```bash
-RECON_SCRIPT="codex/skills/ywc-onboard-repo/scripts/recon.sh"
-[ -f "$RECON_SCRIPT" ] || RECON_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-onboard-repo/scripts/recon.sh"
+RECON_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-onboard-repo/scripts/recon.sh"
+[ -f "$RECON_SCRIPT" ] || RECON_SCRIPT="codex/skills/ywc-onboard-repo/scripts/recon.sh"
 bash "$RECON_SCRIPT" [repo-dir]
 ```
 

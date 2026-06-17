@@ -200,8 +200,8 @@ Any subagent output containing the following patterns is treated as a failed gen
 Catch the high-confidence comment/marker stubs mechanically before delivering (more reliable than self-review; exits non-zero on any hit):
 
 ```bash
-STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
-[ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
+STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
+[ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
 bash "$STUB_SCRIPT" <generated-file>...
 ```
 

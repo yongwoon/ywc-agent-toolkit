@@ -136,7 +136,9 @@ For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construc
 Run the bundled script to extract the task number and English slug without regex parsing:
 
 ```bash
-python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
+TITLE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-finish-branch/scripts/build-pr-title.py"
+[ -f "$TITLE_SCRIPT" ] || TITLE_SCRIPT="codex/skills/ywc-finish-branch/scripts/build-pr-title.py"
+python "$TITLE_SCRIPT" <task-name>
 # TASK_NUMBER=000001-010
 # SLUG_EN=Db Create Users Table
 ```
@@ -146,7 +148,9 @@ python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
 For English PRs (`--pr-lang en`), use `--format title` to get the complete title directly:
 
 ```bash
-python codex/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
+TITLE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-finish-branch/scripts/build-pr-title.py"
+[ -f "$TITLE_SCRIPT" ] || TITLE_SCRIPT="codex/skills/ywc-finish-branch/scripts/build-pr-title.py"
+python "$TITLE_SCRIPT" <task-name> --format title
 # [000001-010] Db Create Users Table
 ```
 
@@ -257,8 +261,8 @@ For `--mode normal-pr` and `--mode local-merge`:
 Use the shared marker script — it handles the `.gitignore` branch, the mandatory marker commit, and the post-move verification in one deterministic step (exits non-zero if anything failed):
 
 ```bash
-MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
-[ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
+MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
+[ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
 bash "$MARK_SCRIPT" <tasks-dir> <task-name> [--push | --defer-push]
 ```
 

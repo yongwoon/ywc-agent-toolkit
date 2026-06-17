@@ -92,7 +92,9 @@ For locale-specific writing rules (formality level, term policy), see [reference
 If `docs/specification/` does not exist, run:
 
 ```bash
-bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/init-spec-structure.sh" <lang> "<ProjectName>"
+INIT_SPEC_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/init-spec-structure.sh"
+[ -f "$INIT_SPEC_SCRIPT" ] || INIT_SPEC_SCRIPT="codex/skills/ywc-spec-writer/scripts/init-spec-structure.sh"
+bash "$INIT_SPEC_SCRIPT" <lang> "<ProjectName>"
 ```
 
 This creates the 7-section skeleton without any LLM calls. For the full section layout and writing templates, see [references/spec-structure.md](references/spec-structure.md).
@@ -104,8 +106,10 @@ For incremental modes, identify which spec sections need updating before writing
 **Commit-based**
 
 ```bash
+DETECT_SECTIONS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+[ -f "$DETECT_SECTIONS_SCRIPT" ] || DETECT_SECTIONS_SCRIPT="codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
 git diff <ref>^..<ref> --name-only \
-  | bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+  | bash "$DETECT_SECTIONS_SCRIPT"
 ```
 
 **Task-based (single task)** — read the task `README.md` for its `category` field and apply the mapping in [references/section-mapping.md](references/section-mapping.md).
@@ -114,11 +118,13 @@ git diff <ref>^..<ref> --name-only \
 
 ```bash
 # Resolve range / glob / multi-id to absolute task directory paths
-bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-paths.sh" \
+RESOLVE_TASK_PATHS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-paths.sh"
+[ -f "$RESOLVE_TASK_PATHS_SCRIPT" ] || RESOLVE_TASK_PATHS_SCRIPT="codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh"
+bash "$RESOLVE_TASK_PATHS_SCRIPT" \
   000002-010..000003-020
 
 # Quote glob patterns so the user's shell does not expand or reject them first.
-bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-paths.sh" \
+bash "$RESOLVE_TASK_PATHS_SCRIPT" \
   '000002-*'
 
 # For each resolved path: read README.md → category → look up in section-mapping.md
@@ -128,8 +134,12 @@ bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-pa
 **PR-based (single or multiple PRs)** — fetch the changed-file union, then feed it into `detect-affected-sections.sh`:
 
 ```bash
-bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh" 42 43 51 \
-  | bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+COLLECT_PR_FILES_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh"
+[ -f "$COLLECT_PR_FILES_SCRIPT" ] || COLLECT_PR_FILES_SCRIPT="codex/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh"
+DETECT_SECTIONS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+[ -f "$DETECT_SECTIONS_SCRIPT" ] || DETECT_SECTIONS_SCRIPT="codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+bash "$COLLECT_PR_FILES_SCRIPT" 42 43 51 \
+  | bash "$DETECT_SECTIONS_SCRIPT"
 ```
 
 Additionally, for `--from-pr` / `--from-prs`, fetch each PR's title + body as narrative context:

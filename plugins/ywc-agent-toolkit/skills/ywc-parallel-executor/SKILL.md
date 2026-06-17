@@ -121,8 +121,8 @@ Verify the following conditions before starting:
 **State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
-STATE_SCRIPT="codex/skills/scripts/update-state.py"
-[ -f "$STATE_SCRIPT" ] || STATE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/update-state.py"
+STATE_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/update-state.py"
+[ -f "$STATE_SCRIPT" ] || STATE_SCRIPT="codex/skills/scripts/update-state.py"
 python3 "$STATE_SCRIPT" init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"]},{"wave":2,"tasks":["t-c"]}]'
@@ -341,8 +341,8 @@ $ywc-finish-branch \
 **For `--per-task-pr`** — the merge already happened in (a) step 5, so do **not** call finish-branch (its `local-merge` would attempt a redundant merge, and its `normal-pr` assumes the feature branch is the current checkout, which it is not under the worktree model). Instead, run the same Mark Complete that finish-branch would, then push immediately:
 
 ```bash
-MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
-[ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
+MARK_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh"
+[ -f "$MARK_SCRIPT" ] || MARK_SCRIPT="codex/skills/scripts/mark-complete.sh"
 bash "$MARK_SCRIPT" <tasks-dir> <task-name> --push
 ```
 

@@ -66,7 +66,9 @@ gh repo view --json nameWithOwner --jq .nameWithOwner
 Retrieve all unresolved PR review comments and filter out those that do not need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
 
 ```bash
-bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh" \
+FETCH_UNRESOLVED_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh"
+[ -f "$FETCH_UNRESOLVED_SCRIPT" ] || FETCH_UNRESOLVED_SCRIPT="codex/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh"
+bash "$FETCH_UNRESOLVED_SCRIPT" \
   {owner}/{repo} {pr_number}
 # exit 0 -> JSON array of unresolved threads on stdout (may be [])
 # exit 1 -> gh CLI error (not authenticated or PR not found)
