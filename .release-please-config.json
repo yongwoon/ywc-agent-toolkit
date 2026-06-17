@@ -3,6 +3,7 @@
   "packages": {
     ".": {
       "release-type": "simple",
+      "version-file": "VERSION",
       "bump-patch-for-minor-pre-major": false,
       "include-component-in-tag": false,
       "changelog-sections": [
@@ -24,6 +25,16 @@
         {
           "type": "json",
           "path": "plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".codex-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "plugins/ywc-agent-toolkit/.codex-plugin/plugin.json",
           "jsonpath": "$.version"
         }
       ]
