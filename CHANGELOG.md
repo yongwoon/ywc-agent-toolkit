@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** port PR conflict and merge-readiness handling to Codex PR workflow skills from develop-with-llm PR #101.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.21.2](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.21.1...v1.21.2) (2026-06-17)
+
+
+### ### Fixed
+
+* **release:** sync Codex plugin versions ([#91](https://github.com/yongwoon/ywc-agent-toolkit/issues/91)) ([a6120b1](https://github.com/yongwoon/ywc-agent-toolkit/commit/a6120b10cb48e8377438f2abcd749181b24abf5b))
+
 ## [1.21.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.21.0...v1.21.1) (2026-06-17)
 
 
