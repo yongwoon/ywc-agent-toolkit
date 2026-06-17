@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+upstream=""
+if upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null)"; then
+  base="$upstream"
+elif git rev-parse --verify origin/main >/dev/null 2>&1; then
+  base="origin/main"
+elif git rev-parse --verify origin/master >/dev/null 2>&1; then
+  base="origin/master"
+else
+  base=""
+fi
+
+changed_files=""
+if [ -n "$base" ]; then
+  changed_files="$(git diff --name-only "$base"...HEAD || true)"
+fi
+changed_files="${changed_files}
+$(git diff --name-only || true)
+$(git diff --cached --name-only || true)"
+
+if ! printf '%s\n' "$changed_files" | grep -qE '^(codex/skills/|plugins/ywc-agent-toolkit/|\.codex-plugin/plugin\.json|scripts/sync-codex-plugin\.sh|scripts/validate\.sh)$'; then
+  exit 0
+fi
+
+echo "Codex skill/package changes detected; checking generated marketplace package..."
+bash scripts/sync-codex-plugin.sh
+
+if ! git diff --quiet -- plugins/ywc-agent-toolkit .codex-plugin/plugin.json; then
+  echo "ERROR: Codex marketplace package was stale." >&2
+  echo "Generated files were updated. Commit them before pushing:" >&2
+  echo "  git add -A plugins/ywc-agent-toolkit .codex-plugin/plugin.json" >&2
+  echo "  git commit" >&2
+  exit 1
+fi
+
+bash scripts/validate.sh

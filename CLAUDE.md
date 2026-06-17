@@ -29,6 +29,9 @@ bash scripts/install.sh --list --codex-agents
 
 # Validate skill structure locally (mirrors CI)
 bash scripts/validate.sh
+
+# Install repository Git hooks for Codex package sync/validation
+bash scripts/install-git-hooks.sh
 ```
 
 Override install paths via environment variables:
@@ -57,7 +60,11 @@ codex/skills/references/           # shared Codex reference docs linked by multi
 codex/skills/scripts/              # shared Codex helper scripts installed with skills
 scripts/
   install.sh                       # install/prune/list entry point
+  install-git-hooks.sh             # sets core.hooksPath to .githooks
   validate.sh                      # local CI mirror
+.githooks/
+  pre-commit                       # syncs plugins/ywc-agent-toolkit when codex/skills changes
+  pre-push                         # blocks stale Codex generated package before push
 .github/workflows/
   validate.yml                     # skill structure + shellcheck + dry-run
   markdownlint.yml                 # README*.md lint

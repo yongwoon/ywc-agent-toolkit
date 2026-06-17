@@ -87,7 +87,15 @@ codex
 
 Codex skill 请在 [codex/skills](codex/skills) 中修改。`plugins/ywc-agent-toolkit/skills` 是 `codex plugin add` 使用的 generated marketplace package，不要把它作为 primary source 直接编辑。
 
-修改 `codex/skills` 后，请更新并验证两种安装路径：
+请先安装一次 repository Git hooks，让 Codex marketplace package 自动保持同步：
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+安装 hooks 后，当 commit 中 staged 了 `codex/skills` 变更时，会运行 `bash scripts/sync-codex-plugin.sh`，自动 stage generated package `plugins/ywc-agent-toolkit`，然后运行 `bash scripts/validate.sh`。包含 Codex skill/package 变更的 push 也会运行 stale package check 和 validation。
+
+如果当前环境没有安装 hooks，请在 commit 前手动运行同样的命令：
 
 ```bash
 bash scripts/sync-codex-plugin.sh

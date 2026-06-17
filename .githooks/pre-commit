@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR || true)"
+
+if ! printf '%s\n' "$staged_files" | grep -qE '^(codex/skills/|\.codex-plugin/plugin\.json|scripts/sync-codex-plugin\.sh)$'; then
+  exit 0
+fi
+
+if printf '%s\n' "$staged_files" | grep -qE '^plugins/ywc-agent-toolkit/skills/' &&
+   ! printf '%s\n' "$staged_files" | grep -qE '^codex/skills/'; then
+  echo "ERROR: plugins/ywc-agent-toolkit/skills is generated from codex/skills." >&2
+  echo "Edit codex/skills first, then run bash scripts/sync-codex-plugin.sh." >&2
+  exit 1
+fi
+
+echo "Codex skills changed; syncing marketplace package..."
+bash scripts/sync-codex-plugin.sh
+
+git add -A plugins/ywc-agent-toolkit
+
+echo "Validating repository after Codex package sync..."
+bash scripts/validate.sh

@@ -87,7 +87,15 @@ Codex App에서는 사이드바의 **Plugins**를 열고 **YWC Agent Toolkit** s
 
 Codex skill은 [codex/skills](codex/skills)에서 수정하세요. `plugins/ywc-agent-toolkit/skills`는 `codex plugin add`가 사용하는 generated marketplace package이므로 primary source로 직접 수정하지 마세요.
 
-`codex/skills`를 변경한 뒤에는 양쪽 설치 경로를 모두 갱신하고 검증하세요:
+Codex marketplace package가 자동으로 최신 상태를 유지되도록 repository Git hook을 한 번 설치하세요:
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+Hook이 설치되어 있으면 `codex/skills` 변경이 staged된 commit에서 `bash scripts/sync-codex-plugin.sh`를 실행하고, generated package인 `plugins/ywc-agent-toolkit`을 자동 stage한 뒤 `bash scripts/validate.sh`를 실행합니다. Codex skill/package 변경이 포함된 push에서도 stale package 검사와 validation을 실행합니다.
+
+Hook을 설치하지 않은 환경에서는 commit 전에 같은 명령을 수동으로 실행하세요:
 
 ```bash
 bash scripts/sync-codex-plugin.sh

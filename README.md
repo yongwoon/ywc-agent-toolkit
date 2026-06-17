@@ -87,7 +87,15 @@ If marketplace source installation is unavailable in your environment, use the b
 
 Edit Codex skills in [codex/skills](codex/skills). Do not edit `plugins/ywc-agent-toolkit/skills` as the primary source; it is the generated marketplace package used by `codex plugin add`.
 
-After changing `codex/skills`, update and verify both install paths:
+Install repository Git hooks once so Codex marketplace packaging stays in sync automatically:
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+With the hooks installed, commits that stage `codex/skills` changes run `bash scripts/sync-codex-plugin.sh`, stage the generated `plugins/ywc-agent-toolkit` package, and then run `bash scripts/validate.sh`. Pushes that include Codex skill or package changes also run the stale-package check and validation.
+
+If hooks are not installed, run the same commands manually before committing:
 
 ```bash
 bash scripts/sync-codex-plugin.sh
