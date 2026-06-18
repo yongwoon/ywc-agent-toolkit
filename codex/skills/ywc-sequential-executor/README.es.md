@@ -55,6 +55,10 @@ Cuando no se especifica ninguna tarea, la Skill analiza el grafo de dependencias
 > `--local-merge`, `--draft` y `--skip-ci-wait` son mutuamente excluyentes. La Skill se detiene y pregunta qué modo se pretendía si se pasa más de uno.
 > `--local-merge` **no ejecuta CI remoto**, por lo que la única red de seguridad para el merge es la verificación local del Paso 4 (lint/typecheck/test). Evítalo para cambios sensibles.
 
+## Contrato y baseline TDD
+
+Para tareas que cambian comportamiento, el executor registra los contratos públicos cambiados y los internos críticos antes de implementar, y requiere primero una prueba fallida o una aserción de contrato. Los casos docs-only, config-only, mecánicos o sin harness se informan como excepciones TDD explícitas. El reporte final incluye contratos cambiados, pruebas de contrato, internos críticos y excepciones.
+
 ## Ciclo de Ejecución
 
 Para cada tarea, los siguientes pasos se ejecutan en orden. **En modo de rango, el ciclo completo (Paso 1 → Paso 8) se repite para cada tarea. Cada tarea obtiene su propia rama de función independiente.**

@@ -42,6 +42,18 @@
       "prompt": "A previous $ywc-sequential-executor 000001-010..000001-030 --worktree run stopped with BLOCKED and preserved a run worktree containing .ywc-run-state.json; the project root has no state file.",
       "expected_output": "Resume Detection은 root .ywc-run-state.json 부재를 확인한 뒤 git worktree list --porcelain으로 preserved run worktree state를 탐색한다. Matching candidate가 하나이면 executor, age, branch, completed tasks, intent-match를 검증한 뒤 resume candidate로 제시한다. Multiple candidates가 있으면 NEEDS_CONTEXT로 candidate paths를 출력하고 임의 선택하지 않는다. Non-DONE 상태에서는 $WT, integration_branch, current feature branch를 cleanup하지 않는다.",
       "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Use $ywc-sequential-executor 000002-010-add-team-invites --tasks-dir tasks/ --local-merge.",
+      "expected_output": "Behavior-changing task이므로 Step 3에서 Changed Public Contracts, Critical Internals, Cross-Module Impact를 먼저 확인한다. 구현 전에 failing unit/integration/contract test 또는 intended reason으로 failing하는 existing assertion을 작성/확인하고, 그 테스트를 green으로 만든 뒤 Task Verify, touched tests, full suite, lint/typecheck/build를 순서대로 실행한다. Completion Report에 Changed Public Contracts, contract/behavior tests, Critical Internals, TDD Exceptions를 기록한다.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Use $ywc-sequential-executor 000002-020-docs-update-readme --tasks-dir tasks/ --local-merge.",
+      "expected_output": "Docs-only task에 가짜 failing test를 만들지 않는다. Step 3에서 `TDD Exception: docs-only, no executable behavior`를 기록하고 task.md의 Task Verify와 repository validation을 실행한다. Completion Report에 Changed Public Contracts N/A, Contract Tests N/A, Critical Internals N/A, TDD Exceptions의 reason을 포함한다.",
+      "files": []
     }
   ]
 }

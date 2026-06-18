@@ -29,6 +29,10 @@ $ywc-sequential-executor
 - `--worktree`: sequential invocation 全体を main checkout の外にある単一 run worktree で実行します。Delivery mode ではないため、他の mode flag と組み合わせられます。
 - Stale `.ywc-run-state.json` guard: 保存済み run-state が今回の明示 range と一致しない場合、自動 resume せず、保存済み run-state を続けるか削除して新しい run を開始するかの選択を求めます。
 
+## Contract / TDD baseline
+
+振る舞いを変更する task では、実装前に changed public contracts と critical internals を記録し、failing test または contract assertion を先に確認します。docs-only、config-only、mechanical、no-harness の場合は明示的な TDD exception として報告します。Completion report には changed contracts、contract tests、critical internals、exceptions を含めます。
+
 ```bash
 $ywc-sequential-executor 001010..003020 --aggregate-pr --group-name billing-rollout
 ```

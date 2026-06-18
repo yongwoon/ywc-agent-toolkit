@@ -29,6 +29,10 @@ Follow the Arguments or Workflow sections in [SKILL.md](./SKILL.md) for supporte
 - `--worktree`: runs the whole sequential invocation inside one run worktree outside the main checkout. It is not a delivery mode and can combine with other mode flags.
 - Stale `.ywc-run-state.json` guard: when the saved run-state does not match the newly requested explicit range, the executor does not auto-resume. It asks whether to resume the saved run-state or delete it and start the new run.
 
+## Contract and TDD baseline
+
+For behavior-changing tasks, the executor records changed public contracts and critical internals before implementation, then requires a failing test or contract assertion first. Docs-only, config-only, mechanical, and no-harness cases are reported as explicit TDD exceptions. Completion reports include changed contracts, contract tests, critical internals, and exceptions.
+
 ```bash
 $ywc-sequential-executor 001010..003020 --aggregate-pr --group-name billing-rollout
 ```

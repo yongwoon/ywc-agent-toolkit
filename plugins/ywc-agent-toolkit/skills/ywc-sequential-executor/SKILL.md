@@ -28,6 +28,9 @@ When tempted to skip a step, check this table first:
 | "normal-pr range: CI passed and no review artifacts yet — proceed to merge" | Bot reviewers post 1–5 minutes after CI completes, not immediately. `ywc-finish-branch` runs a mandatory 60-second initial wait plus a 300-second polling window before concluding no unresolved artifacts exist. A zero count right after CI is not evidence that no bots are active — it means they have not posted yet. The polling window is a required wait gate in range mode, not a pause to skip. |
 | "Last task in `--local-merge` range: no following task needs this merge, skip finish-branch" | Step 5 (Delivery) is unconditional — **every** task, including the last, must have its feature branch merged into base, the completion-marker committed, and the push executed via `ywc-finish-branch`. Without it, the implementation code is stranded on an orphaned feature branch, `tasks/completed/` is wrong, and the remote base branch is missing the work. The absence of a next task is not a reason to skip delivery. |
 | "Last task in normal-pr range: it's the last one, no need to omit `--defer-push`" | `--defer-push` must be **omitted** on the last task in `normal-pr` range — that omission IS the flush. If `--defer-push` is set on the last task, all accumulated completion-marker commits stay local and are never pushed. The last task's `ywc-finish-branch` invocation performs the single batch push; no separate `git push` runs after the loop. |
+| "I'll add tests after implementation once the shape is clear" | For behavior-changing tasks, write or identify the failing test / contract test first. Use [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) for allowed exceptions; do not backfill tests to match already-written code. |
+| "This task only changes internals, so no contract note is needed" | If any exported function, endpoint, DTO, schema contract, component props, CLI flag, event, or worker protocol changes, record the public contract before implementation and report it. |
+| "I reviewed the whole implementation, so gray-box reporting is unnecessary" | Gray-box review focuses on public contracts and critical internals. Report Changed Public Contracts, Critical Internals, and TDD Exceptions instead of dumping internal implementation detail. |
 
 **Violating the letter of these rules is violating the spirit.** Sequential execution exists because each task's correctness depends on the previous task's stable state.
 
@@ -278,15 +281,16 @@ Read the task's `task.md` and implement according to the checklist. The `Spec Re
 1. **Check Prerequisites** — Verify all prerequisite items are satisfied
 2. **Respect Edit Scope** — Only modify files within the declared Ownership from `README.md`
 3. **Follow Implementation Steps** — Execute each step in order, checking off as completed. Keep the Spec Reference's `Out of Scope (from spec)` list in mind at every step — if an implementation step tempts you toward an Out of Scope item, stop and re-read the step; the item likely belongs to a different task.
-4. **Write tests and test cases (required)** — Every task must ship with tests. If `task.md` lists specific test requirements, follow them. Otherwise, author tests appropriate to the change:
+4. **Contract + TDD baseline** — Before behavior-changing implementation, apply [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md): record Changed Public Contracts and Critical Internals, then write or identify the failing regression/unit/integration/contract test before implementation. Allowed exceptions are docs-only, config-only, mechanical/metadata work, no practical local harness, or explicit user override; report each as `TDD Exception: <reason>`. Keep tests focused on public behavior and stable contracts, not private helper shape.
+5. **Write tests and test cases (required)** — Every behavior-changing task must ship with tests unless an allowed TDD exception is recorded. If `task.md` lists specific test requirements, follow them. Otherwise, author tests appropriate to the change:
    - **Unit tests** for new functions, classes, or modules (happy path + edge cases + error paths)
    - **Integration tests** when the task touches boundaries (DB, HTTP, IPC, external services)
    - **Regression tests** when the task fixes a bug — the test should fail on the old code and pass on the new code
    - Place tests in the project's existing test directory using its existing framework and naming convention (discover via `ls`/`find` before creating new structures)
-   - **TDD is preferred**: write the failing test first, then the implementation that makes it pass. This gives you a concrete definition of done and prevents "test written to match the code"
+   - **TDD baseline is required for behavior changes**: write or identify the failing test first, then the implementation that makes it pass. This gives you a concrete definition of done and prevents "test written to match the code"
    - Do **not** skip, comment out, or weaken assertions to make tests pass — fix the implementation instead
-5. **Honor Stop Conditions** — If any stop condition is triggered, halt and report to the user
-6. **Commit incrementally** — Create commits at logical boundaries (per implementation step or per logical unit). Tests and the code they cover should land in the same commit (or a test-first commit immediately preceding the implementation commit). Follow the project's commit convention from `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or recent git log.
+6. **Honor Stop Conditions** — If any stop condition is triggered, halt and report to the user
+7. **Commit incrementally** — Create commits at logical boundaries (per implementation step or per logical unit). Tests and the code they cover should land in the same commit (or a test-first commit immediately preceding the implementation commit). Follow the project's commit convention from `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or recent git log.
 
 Commit guidelines:
 - Each commit should be a coherent, reviewable unit
@@ -430,6 +434,7 @@ After all tasks are executed, display:
 
 - Total tasks executed: N
 - Each task: name, PR URL, PR status (draft / open / merged) — or `local-merge` with the merge commit SHA when `--local-merge` is used
+- Contract report per task: Changed Public Contracts, contract/behavior tests that first failed and then passed, Critical Internals reviewed, and TDD Exceptions (or `N/A`)
 - Any tasks that were skipped or failed (with reason)
 - Current branch and sync status
 - If in worktree mode: run worktree path, integration branch, state cleanup, and preserved branch/recovery command when applicable
