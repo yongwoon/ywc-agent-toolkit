@@ -107,3 +107,88 @@ graph LR
   K[000010-030-docs-skill-anti-triggers] --> M
   L[000010-040-refactor-parallel-executor-extraction] --> M
 ```
+
+---
+
+## Batch 4 — Codex Executor Contract-First / Test-First Skill Improvements
+
+- Spec: `docs/ywc-plans/codex-executor-tdd-deep-module-gray-box.md`
+- Granularity mode: `llm` · Language: korean
+- Starting phase: `000012` (phases `000001`–`000011` occupied by existing/completed batches)
+- Codex-only boundary: targets `codex/skills/**` source and generated plugin sync only; no `claude-code/**` edits.
+
+### Phase 000012 — Shared Contract + Skill Surface Updates
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000012-010-docs-shared-tdd-boundary-contract` | docs | (root) |
+| `000012-020-docs-code-gen-contract-first` | docs | `000012-010` |
+| `000012-030-docs-sequential-executor-test-first` | docs | `000012-010` |
+| `000012-040-docs-parallel-executor-contract-gates` | docs | `000012-010` |
+
+### Phase 000013 — Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000013-010-infra-codex-executor-contract-validation` | infra | `000012-010`, `-020`, `-030`, `-040` |
+
+### Parallel Execution Notes (Batch 4)
+
+- Initial ready set: `000012-010-docs-shared-tdd-boundary-contract`.
+- After `000012-010` merges: `000012-020`, `000012-030`, and `000012-040` are parallel-safe because they own disjoint skill directories.
+- `000013-010` waits for all Phase 000012 tasks, then runs install scan, optional generated plugin sync, and full repository validation.
+- Conflict notes: the three skill tasks share only the new reference semantics and README localization expectations. They must not edit each other's skill directories.
+- Hard boundary: no `claude-code/**` edits in Batch 4. Generated plugin output, if needed, belongs only to `000013-010`.
+- FR mapping: FR-1→000012-010, FR-2→000012-020, FR-3→000012-030, FR-4→000012-040, FR-5→all Phase 000012 tasks, FR-6→000013-010.
+
+```mermaid
+graph LR
+  N[000012-010-docs-shared-tdd-boundary-contract] --> O[000012-020-docs-code-gen-contract-first]
+  N --> P[000012-030-docs-sequential-executor-test-first]
+  N --> Q[000012-040-docs-parallel-executor-contract-gates]
+  N --> R[000013-010-infra-codex-executor-contract-validation]
+  O --> R
+  P --> R
+  Q --> R
+```
+
+## Batch 5 — Claude Code Executor TDD / Deep Module / Gray Box Improvements
+
+- Spec: `docs/ywc-plans/claude-code-executor-tdd-deep-module-gray-box.md`
+- Granularity mode: `llm`
+- Starting phase: `000014` (phases `000001`–`000013` occupied by existing/completed batches)
+- Scope: claude-code only (the codex twin is Batch 4, phases `000012`–`000013`).
+
+### Phase 000014 — Shared Reference + Skill Surface Updates
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000014-010-docs-shared-tdd-boundary-contract` | docs | (root) |
+| `000014-020-docs-code-gen-red-gate-deep-module` | docs | `000014-010` |
+| `000014-030-docs-sequential-executor-test-first` | docs | `000014-010` |
+| `000014-040-docs-parallel-executor-contract-gates` | docs | `000014-010` |
+
+### Phase 000015 — Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000015-010-infra-claude-executor-contract-validation` | infra | `000014-010`, `-020`, `-030`, `-040` |
+
+### Parallel Execution Notes (Batch 5)
+
+- Initial ready set: `000014-010-docs-shared-tdd-boundary-contract`.
+- After `000014-010` merges: `000014-020`, `000014-030`, `000014-040` are parallel-safe — each owns a disjoint `claude-code/skills/<skill>/` directory and only read-links the shared reference.
+- `000015-010` is a **hard gate**: it waits for all four Phase 000014 tasks, then runs install scan + `scripts/validate.sh` + markdownlint and asserts the claude-code-only boundary.
+- Hard boundary: no `codex/**` or `plugins/**` edits in Batch 5. The TDD-default divergence from Batch 4 (codex) is intentional and recorded in the spec.
+- FR mapping: FR-1→000014-010, FR-2→000014-020, FR-3→000014-030, FR-4→000014-040, FR-5→all Phase 000014 tasks, FR-6→000015-010.
+
+```mermaid
+graph LR
+  S[000014-010-docs-shared-tdd-boundary-contract] --> T[000014-020-docs-code-gen-red-gate-deep-module]
+  S --> U[000014-030-docs-sequential-executor-test-first]
+  S --> V[000014-040-docs-parallel-executor-contract-gates]
+  S --> W[000015-010-infra-claude-executor-contract-validation]
+  T --> W
+  U --> W
+  V --> W
+```
