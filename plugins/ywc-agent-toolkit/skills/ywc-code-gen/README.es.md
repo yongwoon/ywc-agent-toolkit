@@ -22,7 +22,7 @@ Una Skill para generar código en múltiples capas simultáneamente. Ejecuta los
 
 ## Contrato y baseline TDD
 
-Antes de ejecutar los workers, la Skill prepara un Contract Snapshot compartido para que Backend, Frontend y QA usen los mismos contratos públicos. La generación que cambia comportamiento es test-first por defecto; `--tdd` habilita commits de checkpoint RED/GREEN/REFACTOR más estrictos.
+Antes de ejecutar los workers, la Skill prepara un Contract Snapshot compartido para que Backend, Frontend y QA usen los mismos public contracts. La generación que cambia comportamiento es test-first por defecto; `--tdd` habilita checkpoint commits RED/GREEN/REFACTOR más estrictos.
 
 ## Relación con sequential-executor
 
