@@ -25,6 +25,7 @@ When tempted to bend a rule, check this table first:
 | "Spec Reference is empty for this task, I'll skip the section" | Never omit. Use `N/A — housekeeping/refactor only` when there is no spec. Empty section = ambiguity. |
 | "Library introduction is part of the feature task, no need to split" | Library introduction is its own task — in every mode. Safety invariant. |
 | "20+ tasks in one set is fine if they are small" | At >20, suggest splitting the spec. A task set that does not fit in human review will not be reviewed. |
+| "Task Verify = run the build, that's enough" | A green build proves the code compiles, not that THIS task's behavior exists. Each task's Task Verify must assert the task's specific outcome — a test that exercises the new behavior, or a command whose output changes when the task is done. A bare project-wide `build`/`lint` gate passes even when the task did nothing. |
 
 **Violating the letter of these rules is violating the spirit.** Safety invariants (DB migration separation, library introduction separation, phase hard gates) have no exceptions.
 
@@ -279,7 +280,7 @@ Each README.md must include the following:
   - **Depends On**: Predecessor tasks this task depends on (specify what each provides)
   - **Depended By**: Successor tasks that depend on this task (specify what each needs)
 - **Key Files**: List of files expected to be created or modified
-- **Notes**: Important considerations, design decisions
+- **Notes**: Important considerations, design decisions, and **Assumptions** — any spec ambiguity resolved during decomposition, with the interpretation chosen, so the implementer can challenge it instead of inheriting a silent guess
 - **Out of Scope**: What is intentionally excluded
 - **Parallel Execution Metadata**:
   - **Ownership**: Files, directories, modules, contracts this task may modify
@@ -317,11 +318,12 @@ Each task.md must include the following:
 - **Prerequisites**: Predecessor task completion status to verify before starting (checkbox format)
 - **Allowed Edit Scope**: A brief restatement of the `README.md` Ownership as an operational boundary
 - **Stop Conditions**: Conditions under which the implementer should stop and report rather than continuing
+- **Acceptance Criteria**: The task's verifiable behavioral goal in `When <trigger>, system does <behavior>, observable as <concrete check>` form — distinct from the imperative Implementation Steps below. This is the declarative success target the implementer loops against; the steps are one way to reach it.
 - **Implementation Steps**: Specific implementation steps (checkbox format)
   - Each step must reference specific files, modules, functions, or behaviors
   - Do not use generic placeholders like "implement core logic" or "handle edge cases"
   - Example: `Create src/models/user.ts with User entity definition`
-- **Task Verify**: Task-specific verification command checklist
+- **Task Verify**: Task-specific verification command checklist — each command must assert this task's specific outcome (a test exercising the new behavior, or a command whose output changes), never only a project-wide `build`/`lint` gate
 - **Verification**: Confirm lint, typecheck, test, and build pass (use the project's actual commands)
 
 #### test.md (optional)
@@ -376,6 +378,8 @@ After generating all tasks, verify the following:
 - [ ] Specific Implementation Steps included (no generic placeholders)
 - [ ] Prerequisites section included
 - [ ] Allowed Edit Scope and Stop Conditions included
+- [ ] Acceptance Criteria included in `When <trigger>, does <behavior>, observable as <check>` form (distinct from Implementation Steps)
+- [ ] Each task's Task Verify includes ≥1 task-specific assertion that fails if the task's behavior is absent (not only a project-wide gate like bare `build`/`lint`)
 - [ ] Verification commands match the project's actual commands (based on context collected in Step 2)
 
 **Consistency:**

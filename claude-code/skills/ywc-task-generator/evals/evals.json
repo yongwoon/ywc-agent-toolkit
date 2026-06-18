@@ -54,6 +54,12 @@
       "prompt": "기존 tasks/ directory에 legacy format (`001010-*`) task 가 이미 있고, 지금부터 신규 task 는 new format (`000001-010-*`) 으로 생성하고 싶어. 다음 spec 을 한국어로 분해해줘. 기존 task 와의 dependency 도 표시해줘. Granularity mode 는 human 으로.\n\n기존 tasks:\n- tasks/001010-db-create-orders-table/\n- tasks/001020-api-order-crud/\n\n새 기능:\n- 주문 status 변경 시 email 발송 (Resend)\n- 주문 취소 기능 (환불 제외)",
       "expected_output": "신규 task 는 000002-010-* 형식으로 생성 (기존 Phase 001 에 이어 Phase 000002 로 시작). 기존 legacy task 는 이름 그대로 Depends On 에 참조하여 전환기 공존 가능. 새 library (Resend) 도입은 독립 task 로 분리. dependency-graph.md 에 legacy format (`001010`, `001020`) 과 new format (`000002-010` 등) 이 함께 표시됨. Safety Invariant 유지 (DB migration 및 library 도입 분리).",
       "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "다음 spec 을 한국어로 task 분해해줘. Granularity mode 는 human. 각 task 의 성공 기준이 검증 가능해야 해.\n\n## 장바구니 수량 제한\n- 한 상품당 최대 99개까지만 담을 수 있도록 제한\n- 초과 시 400 에러 반환\n- 기술스택: Hono + Kysely + PostgreSQL",
+      "expected_output": "생성된 각 task.md 는 (1) `When <trigger>, system does <behavior>, observable as <concrete check>` 형태의 Acceptance Criteria 를 Implementation Steps 와 별도로 포함하고, (2) Task Verify 가 맨 build/lint 같은 project-wide gate 가 아니라 이 task 의 동작을 단언하는 명령(예: 99개 초과 시 400 을 검증하는 test) 을 ≥1개 포함하며, (3) spec 모호성을 분해 중 해소했다면 README Notes 의 Assumptions 에 선택한 해석을 기록한다. Goal-driven 검증: 동작이 없으면 Task Verify 가 실패해야 한다.",
+      "files": []
     }
   ]
 }
