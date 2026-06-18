@@ -8,7 +8,7 @@
 | Scope | full sweep (`--target all`) |
 | Assets evaluated | 48 (41 skills, 7 agents) |
 | Gate failures | 0 |
-| Lowest carried-forward grade | A / 3.51 (`codex/skills/ywc-code-gen`) |
+| Lowest carried-forward grade | B / 3.47 (`codex/skills/ywc-create-pr`) |
 
 ## Gate Summary
 
@@ -115,14 +115,14 @@ harness proves behavioral examples for read-only reviewer-style agents.
 |---|---|---:|---:|---|---|
 | `codex/skills/ywc-code-gen` | skill | A | 3.51 | S5=3, S7=3 | Carried forward from scoreboard; fresh mechanical run still reports 51.25/57.0. |
 | `codex/skills/ywc-finish-branch` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; selected for both S7 wording and S5 fixture follow-up. |
-| `codex/skills/ywc-plan` | skill | A | 3.67 | S7=3, S5=3 | Carried forward; selected for S7 wording follow-up. |
+| `codex/skills/ywc-plan` | skill | A | 3.67 | S7=2 carried-forward judgment; fresh mechanical S7=3 and S5=3 | Carried forward; selected for S7 wording follow-up because both scoreboard judgment and fresh mechanical evidence flag runtime-fit work. |
 | `codex/skills/ywc-refactor-clean` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; selected for S7 wording follow-up. |
 | `codex/skills/ywc-tdd-ritual` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; selected for S7 wording follow-up. |
 | `codex/skills/ywc-spec-ready` | skill | A | 3.87 | S5=3 | Carried forward; selected for objective eval fixture follow-up. |
 | `codex/skills/ywc-verify-done` | skill | A | 3.87 | S5=3 | Carried forward; selected for objective eval fixture follow-up. |
 | `codex/skills/ywc-agentic` | skill | A | 3.77 | S5=3 | Carried forward; selected for objective eval fixture review. |
 | `codex/skills/ywc-brainstorm` | skill | A | 3.77 | S5=3 | Carried forward; selected for objective eval fixture review. |
-| `codex/agents/*.toml` | agent | A | 3.92 or better | A8=3 for 5 reviewer/advisor agents | Carried forward; mechanical gates all pass. |
+| `codex/agents/*.toml` | agent | A | 3.92 or better | A8=3 evidence limitation across all 7 agents | Carried forward; mechanical gates all pass. |
 
 ## Priority Backlog
 
