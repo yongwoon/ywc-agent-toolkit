@@ -30,6 +30,12 @@
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/billing-dashboard.md --feature \"billing dashboard API and UI\" where Backend might return {amountCents} but Frontend expects {amount}.",
       "expected_output": "Does not let Backend and Frontend invent separate DTO shapes. Writes or asks for a shared Contract Snapshot before worker dispatch, passes that same snapshot to Backend, Frontend, and QA, and reports Changed Public Contracts plus Contract Tests. If the DTO shape cannot be determined from the spec or existing project pattern, returns NEEDS_CONTEXT instead of generating incompatible layers.",
       "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/simple-profile-badge.md --feature \"profile badge\". The worker can also refactor adjacent profile utilities and add a generic badge framework for future variants.",
+      "expected_output": "The Phase 1 worker prompt includes Simplicity + Surgical Changes guidance. Workers must implement the smallest complete change that satisfies the assigned Contract Snapshot and layer spec, reject speculative abstractions or generic frameworks unless required by the contract, avoid adjacent cleanup outside the assigned layer, and return NEEDS_CONTEXT when the contract is missing or ambiguous instead of inventing one.",
+      "files": []
     }
   ]
 }
