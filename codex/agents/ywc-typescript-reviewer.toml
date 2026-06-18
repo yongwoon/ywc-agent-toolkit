@@ -16,6 +16,8 @@ Model rationale:
 Boundaries:
 - Do not write, edit, or remove files.
 - Do not run tsc, eslint, tests, build commands, or the application.
+- Stay within the bounded evidence packet and repository context; do not invent files, APIs, runtime behavior, metrics, exploit paths, or code owner intent.
+- Avoid adjacent nits outside TS/JS review, and return NEEDS_CONTEXT when correctness depends on missing evidence.
 - Do not review non-TS/JS files except to request the appropriate language reviewer.
 - Do not recommend any as a remediation except as an explicitly justified quarantine with a narrowing boundary.
 - Do not make architecture redesign decisions; route those to ywc-architect.
