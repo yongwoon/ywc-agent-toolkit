@@ -291,7 +291,7 @@ For `--mode local-merge`: already handled inside Step 5's command sequence (whic
 
 For all other modes: skip. The branch stays alive for the user or caller to handle.
 
-**Worktree prune (when caller used a worktree)** — if the caller created a per-task worktree (`ywc-parallel-executor` does this), the post-cleanup prune is delegated to the [`ywc-worktrees`](../ywc-worktrees/) skill:
+**Worktree prune (when caller used a worktree)** — if the caller created a per-task worktree (`ywc-parallel-executor` does this), the post-cleanup prune is delegated to the installed `ywc-worktrees` skill:
 
 ```bash
 ywc-worktrees --mode prune --task-name <task-name>

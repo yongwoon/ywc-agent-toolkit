@@ -18,7 +18,7 @@ When tempted to skip a step, check this table first:
 |---|---|
 | "Reuse Gate is overhead, the spec is clear" | Reuse Gate prevents reimplementing existing code. Skip only with `--skip-reuse-check`. |
 | "Phase 1 output looks fine, no need for Phase 2" | Phase 2 is for genuinely ambiguous design decisions. Phase 1 confidence ≠ correctness. |
-| "I'll use `// TODO: implement` and let the user fill it in" | Stubs are CI failures. **Never deliver a stub** — see Banned Output Patterns. |
+| "I'll leave a placeholder comment and let the user fill it in" | Stubs are CI failures. **Never deliver a stub** — see Banned Output Patterns. |
 | "Token budget is tight, truncating mid-function is OK" | Stop at a clean function boundary and write `[PAUSED — N of M files complete]`. Never mid-function. |
 | "I generated test `describe` blocks, that counts as test coverage" | Empty `describe` without `it` is a stub. Tests need real assertions. |
 | "Verification gate failed, but the change is small" | Run the failing layer once more after one fix attempt. Then BLOCKED if still failing. Don't ship. |
@@ -157,7 +157,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    - After any cleanup or refactor: `git commit -m "refactor: clean up <feature>"`.
    - If tests do not fail in RED state, that is a test authoring error — stop and report `DONE_WITH_CONCERNS`.
 
-   The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined in [`ywc-tdd-ritual`](../ywc-tdd-ritual/SKILL.md). When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
+   The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined by the installed `ywc-tdd-ritual` skill. When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
 
 ## Output Format
 
@@ -224,11 +224,11 @@ bash "$STUB_SCRIPT" <generated-file>...
 The script gates the comment/marker forms below; the prose shortcuts and bare `...`/`pass` placeholders still need your own read, since they false-positive in real code and docs.
 
 **Code stubs (never acceptable in generated files):**
-- `// TODO: implement` / `// FIXME` / any implementation replaced by a comment only
+- placeholder comments in place of real implementation
 - `// ... rest of code` / `// ...` / `/* ... */` used to omit logic
 - `// similar to above` / `// same as X` / `// follows the same pattern`
 - Bare `...` or `pass` as a placeholder for omitted logic
-- `throw new Error("Not implemented")` or language equivalents (`raise NotImplementedError`, `todo!()`, `unimplemented!()`)
+- runtime "not implemented" throws or language equivalents such as Python/Rust placeholder macros
 
 **Prose shortcuts (never acceptable in generated files):**
 - "The rest follows the same pattern"

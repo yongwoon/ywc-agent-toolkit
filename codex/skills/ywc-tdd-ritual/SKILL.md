@@ -141,7 +141,7 @@ The cycle produces three commit shapes per behavior, in this order. (Skip the RE
 | GREEN | `feat: <one-line behavior>` or `fix: <bug>` | New test passes; broader suite passes |
 | REFACTOR | `refactor: <what was tightened>` | All tests still pass |
 
-Per-stage verification blocks follow `ywc-verify-done`'s shape (command → exit code → claim) — see [`ywc-verify-done/SKILL.md`](../ywc-verify-done/SKILL.md). The RED commit's verification block proves the test failed; the GREEN commit's proves it passes; the REFACTOR commit's proves nothing broke.
+Per-stage verification blocks follow `ywc-verify-done`'s shape (command → exit code → claim). The RED commit's verification block proves the test failed; the GREEN commit's proves it passes; the REFACTOR commit's proves nothing broke.
 
 When delegated from `ywc-code-gen --tdd`, the executor emits these three commits per behavior automatically and threads the verification block into its per-step report.
 
@@ -179,5 +179,5 @@ Before declaring a behavior complete, verify:
 |---|---|
 | [references/red-green-checklist.md](references/red-green-checklist.md) | Walking through the per-step entry / exit conditions during the cycle |
 | [references/test-shape-cookbook.md](references/test-shape-cookbook.md) | Picking the right shape of test for the behavior (state vs interaction, unit vs integration, snapshot vs assertion) |
-| [../ywc-verify-done/SKILL.md](../ywc-verify-done/SKILL.md) | Per-step verification block shape (command + exit code + claim) |
-| [../ywc-debug-rootcause/SKILL.md](../ywc-debug-rootcause/SKILL.md) | When an existing test starts failing during a cycle, route the investigation here before another fix attempt |
+| `ywc-verify-done` | Per-step verification block shape (command + exit code + claim) |
+| `ywc-debug-rootcause` | When an existing test starts failing during a cycle, route the investigation here before another fix attempt |
