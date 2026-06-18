@@ -61,7 +61,8 @@ The result is therefore `PASS_WITH_ACTIONS`, not plain `PASS`.
 
 ### S5 Output and Verification Contract
 
-The fresh mechanical run still shows S5=3 for these skills:
+The initial 2026-06-18 mechanical sweep identified S5=3 for these skills
+before this batch's fixture update:
 
 - `ywc-agentic`
 - `ywc-brainstorm`
@@ -123,14 +124,14 @@ harness proves behavioral examples for read-only reviewer-style agents.
 | Asset | Kind | Grade | Composite | Weakest dimension | Evidence |
 |---|---|---:|---:|---|---|
 | `codex/skills/ywc-code-gen` | skill | A | 3.51 | S5=3, S7=3 | Carried forward from scoreboard; fresh mechanical run still reports 51.25/57.0. |
-| `codex/skills/ywc-finish-branch` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; selected for both S7 wording and S5 fixture follow-up. |
+| `codex/skills/ywc-finish-branch` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; received an objective fixture, but still needs broader output/validation contract work for S5. |
 | `codex/skills/ywc-plan` | skill | A | 3.67 | S7=2 carried-forward judgment; fresh mechanical S7=3 and S5=3 | Carried forward; selected for S7 wording follow-up because both scoreboard judgment and fresh mechanical evidence flag runtime-fit work. |
 | `codex/skills/ywc-refactor-clean` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; selected for S7 wording follow-up. |
 | `codex/skills/ywc-tdd-ritual` | skill | A | 3.77 | S5=3, S7=3 | Carried forward; selected for S7 wording follow-up. |
-| `codex/skills/ywc-spec-ready` | skill | A | 3.87 | S5=3 | Carried forward; selected for objective eval fixture follow-up. |
-| `codex/skills/ywc-verify-done` | skill | A | 3.87 | S5=3 | Carried forward; selected for objective eval fixture follow-up. |
-| `codex/skills/ywc-agentic` | skill | A | 3.77 | S5=3 | Carried forward; selected for objective eval fixture review. |
-| `codex/skills/ywc-brainstorm` | skill | A | 3.77 | S5=3 | Carried forward; selected for objective eval fixture review. |
+| `codex/skills/ywc-spec-ready` | skill | A | 3.87 | S5 fixture gap closed | Fixture update raises mechanical S5 to 4; no follow-up is tracked for this cycle. |
+| `codex/skills/ywc-verify-done` | skill | A | 3.87 | S5 fixture gap closed | Fixture update raises mechanical S5 to 4; no follow-up is tracked for this cycle. |
+| `codex/skills/ywc-agentic` | skill | A | 3.77 | S5=3 | Received an objective fixture, but still needs broader output/validation contract work for S5. |
+| `codex/skills/ywc-brainstorm` | skill | A | 3.77 | S5 fixture gap closed | Fixture update raises mechanical S5 to 4; no follow-up is tracked for this cycle. |
 | `codex/agents/*.toml` | agent | A | 3.92 or better | A8=3 evidence limitation across all 7 agents | Carried forward; mechanical gates all pass. |
 
 ## Priority Backlog
@@ -139,10 +140,10 @@ harness proves behavioral examples for read-only reviewer-style agents.
    Evidence: fresh mechanical score reports S7=3 for each selected target.
    Owner: Codex skill authoring polish.
    Re-score target: S7 -> 4 where wording can be clarified without behavior changes.
-2. [Medium] `codex/skills/ywc-spec-ready`, `ywc-verify-done`, `ywc-finish-branch`, `ywc-agentic`, `ywc-brainstorm` - add objective S5 eval fixtures or record omission reasons.
-   Evidence: fresh mechanical score reports S5=3 for each selected target.
+2. [Medium] `codex/skills/ywc-finish-branch`, `ywc-agentic` - tighten the remaining S5 output/validation contract shape.
+   Evidence: all five prioritized targets now have objective fixtures, but targeted scoring still reports S5=3 for these two skills.
    Owner: skill owners.
-   Re-score target: S5 -> 4 when a deterministic fixture is suitable.
+   Re-score target: S5 -> 4 when the remaining contract shape is explicit enough for deterministic validation.
 3. [Medium] `codex/agents/*.toml` - document a bounded A8 behavioral evidence strategy.
    Evidence: agent mechanical gates pass, but A8 remains a judgment axis without smoke/eval artifacts.
    Owner: Codex agent evaluation docs.
