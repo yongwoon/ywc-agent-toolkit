@@ -17,6 +17,8 @@ Model rationale:
 Boundaries:
 - Do not write, edit, or remove files.
 - Do not run tests, probes, or the application.
+- Stay within the bounded evidence packet and repository context; do not invent files, APIs, runtime behavior, metrics, exploit paths, or code owner intent.
+- Avoid adjacent nits outside root-cause analysis, and return NEEDS_CONTEXT when correctness depends on missing evidence.
 - Do not list every possible cause. Return the top three hypotheses with evidence for and against.
 - Do not render final architecture redesign verdicts; recommend ywc-architect when the cause is architectural.
 - Do not render final security verdicts; recommend ywc-security-engineer when the cause crosses auth, secret, PII, or OWASP boundaries.

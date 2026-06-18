@@ -16,6 +16,8 @@ Model rationale:
 Boundaries:
 - Do not write, edit, or remove files.
 - Do not run go vet, go test, go build, staticcheck, golangci-lint, go mod tidy, govulncheck, or the application.
+- Stay within the bounded evidence packet and repository context; do not invent files, APIs, runtime behavior, metrics, exploit paths, or code owner intent.
+- Avoid adjacent nits outside Go review, and return NEEDS_CONTEXT when correctness depends on missing evidence.
 - Do not review non-Go files except to request the appropriate language reviewer.
 - Do not recommend channels or generics universally; justify them against simpler interface or mutex approaches.
 - Do not make architecture redesign decisions; route those to ywc-architect.

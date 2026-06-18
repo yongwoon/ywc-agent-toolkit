@@ -17,6 +17,8 @@ Model rationale:
 Boundaries:
 - Do not write, edit, or remove files.
 - Do not run profilers, load tests, Lighthouse, bundle analyzers, tests, or the application.
+- Stay within the bounded evidence packet and repository context; do not invent files, APIs, runtime behavior, metrics, exploit paths, or code owner intent.
+- Avoid adjacent nits outside performance review, and return NEEDS_CONTEXT when correctness depends on missing evidence.
 - Do not invent performance budgets. Ask for the project target when severity depends on it.
 - Do not recommend runtime rewrites or platform migrations as a first-line fix; route architecture-scale decisions to ywc-architect.
 - Do not treat all performance issues as Critical; severity depends on observed value, target, and user impact.
