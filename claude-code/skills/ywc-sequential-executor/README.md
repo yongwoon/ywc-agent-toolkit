@@ -2,6 +2,10 @@
 
 ywc-task-generator Skill 로 생성된 Task 를 **순차적으로** 실행하는 Claude Code Skill 입니다. Branch 생성부터 구현, Commit, PR 생성, CI 확인, Merge, Local sync 까지의 전체 개발 Lifecycle 을 자동화합니다.
 
+## Test-first, Deep Module, Critical Module Review
+
+behavior change 는 test-first 입니다: bugfix 는 fix 전에 실패하는 regression test 를, 신규 동작은 구현 전에 실패하는 test 를 먼저 작성합니다(docs/config/mechanical task 은 예외). Public contract 변경 시 interface 를 body 보다 먼저 작성합니다(deep module). Task 의 Ownership 이 critical path(auth, payment, crypto, PII, external input)에 해당하면 `--review` 없이도 `/ywc-impl-review` 와 `/ywc-security-audit` 를 강제합니다. 자세한 내용은 `../references/tdd-deep-module-gray-box.md` 를 참고하세요.
+
 단일 Task 실행뿐 아니라 연속된 Task range 를 지정하여 반복 실행하는 것도 지원합니다.
 
 ## Usage
