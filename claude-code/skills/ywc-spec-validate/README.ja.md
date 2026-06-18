@@ -16,6 +16,7 @@
 | 一貫性               | 文書間の用語/Format/Data 構造の不一致                     |
 | 実現可能性           | 現在の Stack で実装可能かどうか                           |
 | 既存 Code との整合性 | 現在の DB Schema、API Route Pattern との競合有無          |
+| Simplicity           | 明示 Scope がまだ要求しない抽象化・設定可能性・汎用性(過剰設計)の有無 — 実現可能性 Pass 内で Warning として表面化 |
 
 ## 実行 Agent
 

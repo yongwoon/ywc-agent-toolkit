@@ -27,6 +27,7 @@ When tempted to bypass a rule, check this table first:
 |---|---|
 | "User said 'just plan it', I'll skip the codebase investigation" | Codebase investigation is mandatory before drafting either artifact. Plans written without reading existing code, `CLAUDE.md`, or `docs/architecture/` produce conflicts that surface during implementation. The agent always feels confident; the user still suffers the rework. |
 | "Scale looks ambiguous, I'll default to Small to keep things light" | Default to **Medium** when ambiguous, not Small. Small path skips spec review and task decomposition — wrong scale call cascades into untracked scope creep. The cost of writing a spec for an actually-Small change is one wasted hour; the cost of skipping a spec for an actually-Medium change is rework across multiple sessions. |
+| "The request has two plausible readings, I'll pick the likelier one" | When two interpretations materially change scope, data model, or the meaning of the change, present **both** to the user with the consequence of each — do not silently choose. The default-to-Medium rule resolves **scale** ambiguity only; it is not licence to resolve **intent** ambiguity by guessing. A silently-chosen interpretation is the most expensive rework source because it stays invisible until implementation contradicts it. |
 | "DB migration is part of the change, I'll bundle it into the Small plan" | Any change touching `migrations/`, `prisma/schema.prisma`, `*.sql`, or equivalent is **never Small**. DB migration must be its own task — escalate to Medium path so `ywc-task-generator` can split it. Safety invariant — same rule as `ywc-task-generator`. |
 | "User wants to start coding now, I'll skip ywc-spec-validate on the Medium spec" | The Medium/Large path **must** route through `ywc-spec-validate` before `ywc-task-generator`. Skipping spec review is the failure mode `ywc-task-generator`'s `requires: [ywc-spec-validate]` exists to prevent. Run review even when the user is impatient. |
 | "Out of Scope is obvious, I'll leave it implicit" | Always write Out of Scope explicitly — both in the Small `plan.md` and the Medium spec. The implicit version is the one the agent silently expands during implementation. Empty Out of Scope = guaranteed scope drift. |
@@ -81,6 +82,8 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 | **Done When** | "How will we know it's complete? What observable outcome proves success?" | Done conditions become the Acceptance Criteria in the artifact. |
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
+
+If an anchor answer contradicts another anchor or the codebase evidence gathered in Step 2, **STOP** — name the contradiction explicitly and ask before proceeding. Do not silently reconcile it by picking one side.
 
 **`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
 
