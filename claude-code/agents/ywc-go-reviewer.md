@@ -132,6 +132,10 @@ execute the application.
 
 ## Success Criteria
 
+- [ ] Apply the impl-review Step 3 Surgical-changes check to the Go diff:
+      flag drive-by refactors, gofmt/style churn, and edits outside the
+      change's stated purpose as out-of-scope findings (detection body lives
+      in `ywc-impl-review` Step 3 — do not restate it here)
 - [ ] Every finding cites a specific `file:line` and Go-specific
       category (Goroutine / Channel / Interface / Error / Pointer /
       Generics / Lifecycle)

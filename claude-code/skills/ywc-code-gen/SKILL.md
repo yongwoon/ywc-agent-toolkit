@@ -24,6 +24,7 @@ When tempted to skip a step, check this table first:
 | "Verification gate failed, but the change is small" | Run the failing layer once more after one fix attempt. Then BLOCKED if still failing. Don't ship. |
 | "This generation is on `main`, branch creation is bureaucracy" | Always feature branch. Generation on main is a regression vector. |
 | "The spec has multiple cases, I'll design a flexible abstraction" | Simplicity First. Build exactly what the spec describes. Unsolicited flexibility is scope creep disguised as good engineering. |
+| "It works, so the length is fine" | Working ≠ minimal. A 200-line block that could be 50 is a rewrite, not a pass — the Confidence Gate's Minimalism dimension fails an overcomplicated-but-passing implementation. |
 | "I'll add error handling for edge cases that might come up later" | No error handling for scenarios the spec doesn't mention. Trust the spec's boundary conditions. |
 | "This helper could be reused elsewhere, I'll make it generic" | Single-use code needs no abstraction. Extract to shared only when the spec explicitly requires it or reuse is confirmed by the Reuse Gate. |
 | "I improved the adjacent module's code quality while I was in the file" | Surgical Changes. Remove those improvements. They belong to a different PR and a different review boundary. |
@@ -153,6 +154,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    | Type check | `tsc --noEmit` / `mypy` / `pyright` | No new errors |
    | Lint | `eslint` / `ruff` / `golangci-lint` (project's lint command) | No new errors |
    | Tests | `npm test` / `pytest` / `go test ./...` | All tests pass |
+   | Diff scope | `git diff --stat` | Only spec-named files changed; no incidental reformatting or drive-by edits in adjacent code |
 
    If no build or test command is configured in `package.json` / project config, note "No verification configured — manual check required" and set Completion Status to `DONE_WITH_CONCERNS`.
 
@@ -177,6 +179,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Phase 2 advisor calls (Opus): X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
+- Diff scope: {clean | N drive-by edits removed} — only spec-named files changed
+- Minimalism (Confidence Gate): {score} — {one-line note if < 90}
 - TDD mode: {default-red-gate | --tdd}
 - Tests RED→GREEN: {confirmed | N/A (exception: <reason>)}
 - Critical modules (internal review required): {none | <file list> — /ywc-security-audit REQUIRED}
@@ -260,6 +264,7 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 
 - **Architecture compliance** — Generated code that introduces new patterns inconsistent with the existing structure produces costly cleanup downstream. Verify against the project's actual layout, not against generic conventions.
 - **Reuse verified** — Before emitting any new utility, helper, or service, the relevant existing modules (`src/utils/`, `lib/`, project dependencies) must have been searched. Reimplementing existing functionality is a gate failure even if the new code is correct.
+- **Minimalism** — A senior engineer would not call the generated code overcomplicated for what the spec requires. Working ≠ minimal: a passing implementation that is materially longer or more abstracted than the spec needs (a 200-line block that could be 50, speculative options/configurability) is a gate failure, not a pass.
 
 **Band-to-status mapping** for this skill:
 
