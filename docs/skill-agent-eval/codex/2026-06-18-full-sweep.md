@@ -17,7 +17,10 @@ python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/inventory_gat
 Result: PASS.
 skill_count=41, agent_count=7, skill_gate_passed=true, agent_gate_failures=0.
 skills_missing_openai_yaml=[], skills_incomplete_locale_readmes=[].
-Embedded validation mirror passed, including Codex plugin package staleness and mechanical regression checks.
+Initial embedded validation mirror passed at report creation time. Later source
+edits in this batch can make the generated Codex plugin package stale until
+`000021-010-infra-codex-eval-sync-validation` runs `scripts/sync-codex-plugin.sh`
+and `scripts/validate.sh`.
 ```
 
 ## Mechanical Scorecard
@@ -116,8 +119,11 @@ This cycle prioritizes frequently invoked or executor-adjacent skills:
 ### A8 Behavioral Evidence
 
 All 7 Codex agents pass mechanical gates with 60.0/60.0 mechanical points.
-Their A8 grade is still evidence-limited because no current smoke fixture
-harness proves behavioral examples for read-only reviewer-style agents.
+`tools/codex-internal/skills/ywc-codex-toolkit-eval/references/agent-behavioral-evidence.md`
+now defines the bounded read-only fixture shape, required smoke cases, and
+per-agent-family signals for future A8 evidence. A8 remains evidence-limited
+because the current evaluator still has no agent smoke harness that consumes and
+passes those fixtures.
 
 ## Scorecards
 
@@ -132,7 +138,7 @@ harness proves behavioral examples for read-only reviewer-style agents.
 | `codex/skills/ywc-verify-done` | skill | A | 3.87 | S5 fixture gap closed | Fixture update raises mechanical S5 to 4; no follow-up is tracked for this cycle. |
 | `codex/skills/ywc-agentic` | skill | A | 3.77 | S5=3 | Received an objective fixture, but still needs broader output/validation contract work for S5. |
 | `codex/skills/ywc-brainstorm` | skill | A | 3.77 | S5 fixture gap closed | Fixture update raises mechanical S5 to 4; no follow-up is tracked for this cycle. |
-| `codex/agents/*.toml` | agent | A | 3.92 or better | A8=3 evidence limitation across all 7 agents | Carried forward; mechanical gates all pass. |
+| `codex/agents/*.toml` | agent | A | 3.92 or better | A8=3 evidence limitation across all 7 agents | Carried forward; behavioral evidence strategy exists, but no harness consumes fixtures yet. |
 
 ## Priority Backlog
 
@@ -144,20 +150,21 @@ harness proves behavioral examples for read-only reviewer-style agents.
    Evidence: all five prioritized targets now have objective fixtures, but targeted scoring still reports S5=3 for these two skills.
    Owner: skill owners.
    Re-score target: S5 -> 4 when the remaining contract shape is explicit enough for deterministic validation.
-3. [Medium] `codex/agents/*.toml` - document a bounded A8 behavioral evidence strategy.
-   Evidence: agent mechanical gates pass, but A8 remains a judgment axis without smoke/eval artifacts.
-   Owner: Codex agent evaluation docs.
-   Re-score target: A8 -> 4 only after fixture or smoke evidence exists and passes.
+3. [Medium] agent smoke harness - implement fixture execution for the bounded A8 strategy.
+   Evidence: agent mechanical gates pass and the fixture strategy is documented, but A8 remains a judgment axis until smoke/eval artifacts execute successfully.
+   Owner: Codex evaluator tooling.
+   Re-score target: A8 -> 4 only after fixture files exist, the harness executes them, and passing evidence is cited.
 
 ## Decisions
 
 - No evaluator scoring code or mechanical baseline was changed in this task.
 - No scoreboard movement is claimed here; the scoreboard update belongs to the next task and must cite this report.
 - No Codex skill, Codex agent, generated plugin, `.claude/**`, or `claude-code/**` files were edited by this report task.
+- No Codex agent TOML was edited for A8; the current task only documents the read-only evidence strategy and defers harness implementation.
 - Judgment-sensitive axes are carried forward explicitly to avoid presenting mechanical PASS as final quality.
 
 ## Next Cycle
 
-- Recommended scope: execute the remaining tasks in this batch: scoreboard update, S7 wording polish, S5 fixtures, A8 evidence strategy, then sync and validation.
-- Highest-priority item: complete evidence-backed S7/S5/A8 improvements without broadening beyond Codex eval surfaces.
+- Recommended scope: finish sync and validation for this batch, then schedule a separate agent smoke harness if A8 should move to 4.
+- Highest-priority item: complete evidence-backed S7/S5 improvements and keep A8 at 3 until executable agent fixture evidence exists.
 - Mechanical baseline update needed: no.

@@ -73,6 +73,7 @@ Each dimension is scored `0-4`. Weighted composite maps to:
 |---|---|
 | [references/skill-rubric.md](references/skill-rubric.md) | Codex skill dimensions S1-S8 |
 | [references/agent-rubric.md](references/agent-rubric.md) | Codex TOML agent dimensions A1-A8 |
+| [references/agent-behavioral-evidence.md](references/agent-behavioral-evidence.md) | Codex agent A8 smoke/eval evidence strategy |
 | [references/scorecard-format.md](references/scorecard-format.md) | Report, backlog, and scoreboard format |
 | [references/trigger-eval-method.md](references/trigger-eval-method.md) | Activation/dispatch precision and recall method |
 
