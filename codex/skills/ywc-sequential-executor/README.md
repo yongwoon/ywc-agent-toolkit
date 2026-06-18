@@ -66,6 +66,10 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 > `--worktree` 는 delivery mode 가 아니라 execution-location flag 입니다.
 > `--local-merge` 는 **원격 CI 를 거치지 않으므로** 로컬 verification (lint/typecheck/test) 만이 merge 의 안전장치입니다. 민감한 변경에는 권장하지 않습니다.
 
+## Contract / TDD baseline
+
+동작 변경 task는 구현 전에 changed public contracts와 critical internals를 기록하고, failing test 또는 contract assertion을 먼저 확인합니다. docs-only, config-only, mechanical, no-harness 경우는 명시적인 TDD exception으로 보고합니다. Completion report에는 changed contracts, contract tests, critical internals, exceptions가 포함됩니다.
+
 ## Execution Cycle
 
 각 Task 에 대해 다음 Step 을 순서대로 실행합니다. Range mode 에서는 Task 마다 전체 Cycle 을 반복합니다.

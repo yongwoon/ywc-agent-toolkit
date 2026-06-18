@@ -55,6 +55,10 @@
 > `--local-merge`、`--draft` 和 `--skip-ci-wait` 互斥。如果传入多个，Skill 会停止并询问您的意图。
 > `--local-merge` **不运行远程 CI**，因此合并的唯一安全网是步骤 4 中的本地验证（lint/typecheck/test）。敏感变更请避免使用。
 
+## Contract 和 TDD baseline
+
+对于改变行为的任务，executor 会在实现前记录 changed public contracts 和 critical internals，并先要求失败测试或契约断言。docs-only、config-only、mechanical 或没有可用 harness 的情况会作为明确的 TDD exception 报告。最终报告包含 changed contracts、contract tests、critical internals 和 exceptions。
+
 ## 执行周期
 
 对于每个任务，按顺序执行以下步骤。**在范围模式下，完整周期（步骤 1 → 步骤 8）对每个任务重复执行。每个任务有其独立的功能分支。**
