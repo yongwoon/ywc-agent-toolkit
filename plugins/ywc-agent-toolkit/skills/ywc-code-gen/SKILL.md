@@ -28,7 +28,8 @@ When tempted to skip a step, check this table first:
 | "This helper could be reused elsewhere, I'll make it generic" | Single-use code needs no abstraction. Extract to shared only when the spec explicitly requires it or reuse is confirmed by the Reuse Gate. |
 | "I improved the adjacent module's code quality while I was in the file" | Surgical Changes. Remove those improvements. They belong to a different PR and a different review boundary. |
 | "I'll design the module interface as I generate the implementation" | Gray Box: design the public interface before generating the body. Write the API signatures and their contracts first — that is a design decision that belongs to you, not the AI. Generate only the implementation body. Interface decisions made under generation pressure produce shallow modules that are expensive to fix later. |
-| "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. Without test feedback, AI-generated implementations grow unchecked until they crash at runtime. Use `--tdd` to enforce RED → GREEN → REFACTOR, or write failing test stubs before any implementation code. |
+| "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. For behavior-changing work, create or identify the failing test or contract assertion before final implementation. `--tdd` is the stricter RED → GREEN → REFACTOR checkpoint mode; baseline generation is still test-first unless an explicit exception applies. |
+| "Backend and Frontend can agree on DTOs after generation" | Contract Snapshot first. Backend, Frontend, and QA must receive the same Changed Public Contracts / Critical Internals / Cross-Module Impact payload before workers generate incompatible shapes. |
 
 **Violating the letter of these rules is violating the spirit.** A stub committed today is a runtime crash tomorrow.
 
@@ -39,7 +40,7 @@ When tempted to skip a step, check this table first:
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
 | `--feature` | `--feature "desc"` | `--feature "auto-target API"` | Feature description to generate (required) |
 | `--skip-reuse-check` | flag | | Skip the Step 0 reuse gate and proceed directly to generation |
-| `--tdd` | flag | | Enable TDD checkpoint commits after each RED/GREEN/REFACTOR stage |
+| `--tdd` | flag | | Enable strict RED/GREEN/REFACTOR checkpoint commits; baseline generation still follows test-first / contract-test-first behavior without this flag |
 
 ## Advisor Pattern
 
@@ -95,12 +96,19 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
-3. **Phase 1 — Parallel Generation** — Use Codex subagent delegation to spawn three workers in parallel when the environment supports subagents. Do not pass Claude Code-only named dispatch fields; Codex workers receive their role from the prompt and the layer reference file:
+2.5. **Contract Snapshot** — Before dispatching workers, apply [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) and write a shared snapshot for this generation. Include:
+   - **Changed Public Contracts** — backend API signatures, request/response DTOs, service interfaces, frontend props/hooks contracts, test seams, and `N/A` entries for uninvolved layers.
+   - **Critical Internals** — auth, payment, data-loss, concurrency, external-input, or other modules requiring internal review rather than gray-box-only verification.
+   - **Cross-Module Impact** — callers, generated clients, UI consumers, test fixtures, task worker protocols, and README/user-facing behavior that rely on the same public surface.
+
+   If a public surface is required but the snapshot cannot state its contract, return `NEEDS_CONTEXT`; do not let workers invent incompatible shapes independently.
+
+3. **Phase 1 — Parallel Generation** — Use Codex subagent delegation to spawn three workers in parallel when the environment supports subagents. Pass the same Contract Snapshot to every worker. Do not pass Claude Code-only named dispatch fields; Codex workers receive their role from the prompt and the layer reference file:
    - **Backend worker** — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Include [references/backend-agent.md](references/backend-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload. When the brief includes a DB migration, inject the shared schema guide into the dispatch prompt — [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`) — so the generated migration honors the eight invariants instead of relying on model defaults.
    - **Frontend worker** — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Include [references/frontend-agent.md](references/frontend-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
    - **QA worker** — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Include [references/qa-agent.md](references/qa-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload.
 
-   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (AGENTS.md / CODEX.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/backend-agent.md`, `references/frontend-agent.md`, or `references/qa-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
+   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the Contract Snapshot from Step 2.5, (iii) the project context (AGENTS.md / CODEX.md / package.json / equivalent), (iv) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (v) the layer's role reference (`references/backend-agent.md`, `references/frontend-agent.md`, or `references/qa-agent.md`), and (vi) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
    **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Do not silently retry on the same input.
 
@@ -130,6 +138,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 7. **Verification Gate** — After writing all generated files, run these checks in order. If a check fails, attempt one fix and re-run that layer. If it still fails after the fix attempt, stop and report before declaring DONE. Do not stop at first failure without attempting a fix.
 
+   First run the contract or authored/touched tests derived from the Contract Snapshot. Broad build/lint/test commands come after the contract-level feedback is green. For behavior-changing work without `--tdd`, this is the baseline TDD mode: failing test or existing failing assertion first, implementation second, broad verification last. If an allowed exception from [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) applies, report it as `TDD Mode: baseline exception - <reason>`.
+
    **Surface format**: every verification result in this gate must follow `ywc-verify-done` — the verification block (command, output excerpt, exit code) appears **before** the Completion Status line, no `should` / `probably` / `seems` language in the claim, and a failing check is surfaced as `DONE_WITH_CONCERNS` (or routed to `ywc-debug-rootcause` when ≥2 fixes fail on the same layer) rather than a bare "Done" with the failure tucked below.
 
    | Phase | Command (adapt to project tooling) | Pass Condition |
@@ -141,7 +151,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    If no build or test command is configured in `package.json` / project config, note "No verification configured — manual check required" and set Completion Status to `DONE_WITH_CONCERNS`.
 
-   **When `--tdd` is set**, instead of running tests only at the end, enforce checkpoint commits at each stage:
+   **When `--tdd` is set**, enforce strict checkpoint commits at each stage:
    - After generating the test file (RED state): `git commit -m "test: add tests for <feature>"` — verify tests fail before committing.
    - After implementing code that makes tests pass (GREEN state): `git commit -m "feat: implement <feature>"`.
    - After any cleanup or refactor: `git commit -m "refactor: clean up <feature>"`.
@@ -169,6 +179,12 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 ### Design Decisions (Phase 2)
 1. [P2] {decision point} → {chosen alternative}
    Rationale: {one-line rationale from advisor}
+
+### Contract Snapshot
+- Changed Public Contracts: {interfaces / DTOs / props / endpoints / N/A}
+- Contract Tests: {tests authored or executed / N/A}
+- TDD Mode: {baseline | strict --tdd | baseline exception - reason}
+- Critical Internals Reviewed: {critical modules reviewed / N/A}
 
 ### Per-Agent Summary
 (Summary of what each agent generated)

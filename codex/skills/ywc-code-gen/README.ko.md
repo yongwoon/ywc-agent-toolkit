@@ -16,6 +16,10 @@
 | Frontend Agent (sonnet) | UI Component, Query Hook, State 관리      |
 | QA Agent (sonnet)       | Unit Test, Integration Test, E2E Scenario |
 
+## Contract / TDD baseline
+
+Worker 실행 전에 Backend, Frontend, QA 가 같은 public contract 를 보도록 Contract Snapshot 을 준비합니다. 동작 변경이 있는 생성은 기본적으로 test-first 로 진행하며, `--tdd`는 더 엄격한 RED/GREEN/REFACTOR checkpoint commit 모드입니다.
+
 ## sequential-executor 와의 관계
 
 - **sequential-executor**: 순차 실행 (의존성이 있는 작업에 적합)

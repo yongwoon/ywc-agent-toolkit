@@ -18,6 +18,18 @@
       "prompt": "Generate CRUD from this spec. Create it from scratch even if the existing users module is nearly the same.",
       "expected_output": "Runs the Reuse Gate unless --skip-reuse-check is present. If existing internal code satisfies at least 80% of the requirements, classifies it as Adopt and does not create a new scaffold until the user confirms full generation. Does not ignore existing functionality or duplicate implementation.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/team-invite.md --feature \"team invite flow\".",
+      "expected_output": "Runs the baseline contract-test-first flow even though --tdd is not set. Creates a Contract Snapshot with Changed Public Contracts, Critical Internals, and Cross-Module Impact before Phase 1 dispatch. Requires behavior-changing workers to author or identify failing tests or contract assertions before final implementation, reports TDD Mode: baseline, and runs contract/authored tests before broad build/lint/test verification.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/billing-dashboard.md --feature \"billing dashboard API and UI\" where Backend might return {amountCents} but Frontend expects {amount}.",
+      "expected_output": "Does not let Backend and Frontend invent separate DTO shapes. Writes or asks for a shared Contract Snapshot before worker dispatch, passes that same snapshot to Backend, Frontend, and QA, and reports Changed Public Contracts plus Contract Tests. If the DTO shape cannot be determined from the spec or existing project pattern, returns NEEDS_CONTEXT instead of generating incompatible layers.",
+      "files": []
     }
   ]
 }

@@ -16,6 +16,10 @@ A Skill for generating code across multiple layers simultaneously. Runs Backend 
 | Frontend Agent (sonnet) | UI Component, Query Hook, State Management |
 | QA Agent (sonnet)       | Unit Test, Integration Test, E2E Scenario  |
 
+## Contract and TDD baseline
+
+Before workers run, the skill prepares a shared Contract Snapshot so Backend, Frontend, and QA use the same public contracts. Behavior-changing generation is test-first by default; `--tdd` enables stricter RED/GREEN/REFACTOR checkpoint commits.
+
 ## Relationship with sequential-executor
 
 - **sequential-executor**: Sequential execution (suitable for tasks with dependencies)
