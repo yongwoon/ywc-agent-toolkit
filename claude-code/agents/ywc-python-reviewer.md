@@ -125,6 +125,10 @@ linter / tests, or execute the application.
 
 ## Success Criteria
 
+- [ ] Apply the impl-review Step 3 Surgical-changes check to the Python diff:
+      flag drive-by refactors, black/isort/import-reorder churn, and edits
+      outside the change's stated purpose as out-of-scope findings (detection
+      body lives in `ywc-impl-review` Step 3 — do not restate it here)
 - [ ] Every finding cites a specific `file:line` and Python-specific
       category (Type system / Async / Framework / GIL / Lifecycle)
 - [ ] Severity rated: Critical / High / Medium / Low / Info per the

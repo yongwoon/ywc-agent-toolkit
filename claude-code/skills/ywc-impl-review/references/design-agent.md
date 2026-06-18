@@ -63,6 +63,22 @@ Verify only the necessary surface is exported.
 - Are types that should be `Partial<T>` / `Pick<T, ...>` instead full re-declarations?
 - Is the new module's public API documented in a way that does not require reading internal files?
 
+### 7. Surgical Changes — Design Aspect
+
+Verify every public-surface change traces to the spec.
+
+- Were signatures, return shapes, or exports changed "while we're here" without the spec requiring it? Drive-by signature changes are out of scope.
+- Were unrelated public-API edits bundled with the requested change?
+- Each changed public symbol should trace to a spec line or PR-description intent — flag the ones that do not.
+
+### 8. Simplicity — Design Aspect
+
+Verify the interface is the minimum the spec requires.
+
+- Does the interface or function expose more than the spec asks for (extra parameters, options, overloads, generality)?
+- Could the same contract be expressed in materially fewer moving parts? An over-built public surface at the API seam is the hardest to walk back later.
+- Would a senior engineer call this interface overcomplicated for what the spec needs? Speculative configurability is a Warning, not a feature.
+
 ## Severity Criteria
 
 | Severity | Criteria |
