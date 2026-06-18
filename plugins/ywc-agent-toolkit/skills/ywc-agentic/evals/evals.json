@@ -18,6 +18,12 @@
       "prompt": "Only update the copy on a small settings screen. Use agentic and handle it automatically.",
       "expected_output": "When ywc-plan returns a Small verdict, uses the Small Path. Does not invoke ywc-task-generator, ywc-sequential-executor, or ywc-parallel-executor; instead runs ywc-code-gen directly. Still preserves pre-iteration SHA recording, ywc-impl-review evaluation, loop control, agentic-log, and Completion Report rules.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Run agentic mode for a medium feature. The implementation review returns DONE_WITH_CONCERNS with one correctness concern and one observation.",
+      "expected_output": "Treats the correctness concern as blocking the iteration handoff and routes it back into the implementation loop before marking the iteration complete. Carries only observation-level concerns into the final report. Does not proceed to the next iteration or claim DONE until the correctness concern is fixed and re-reviewed.",
+      "files": []
     }
   ]
 }

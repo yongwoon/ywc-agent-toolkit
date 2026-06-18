@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-spec-ready",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-spec-ready --spec docs/ywc-plans/profile-upload.md --max-iterations 3 to prepare this existing spec for task generation.",
+      "expected_output": "Validates the existing spec path in place and preserves that same path for every validation and re-plan iteration. Runs ywc-spec-validate with a per-iteration advisor budget capped at 2. If validation returns DONE, prints the exact next command `ywc-task-generator docs/ywc-plans/profile-upload.md` and reports Completion Status DONE.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-spec-ready \"Build a billing dashboard\" --spec docs/ywc-plans/billing.md.",
+      "expected_output": "Returns NEEDS_CONTEXT before invoking any sibling skill because goal text and --spec are mutually exclusive. It does not create an output spec, does not write a loop log, and does not consume advisor budget.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Use $ywc-spec-ready --spec ../outside.md to validate an existing spec.",
+      "expected_output": "Rejects the path before validation because it escapes the repository/spec directory contract. Returns NEEDS_CONTEXT with the invalid path and does not run ywc-spec-validate or modify files.",
+      "files": []
+    }
+  ]
+}

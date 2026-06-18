@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-verify-done",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Verify that my docs-only change is complete. I ran `bash scripts/validate.sh` earlier today and it passed.",
+      "expected_output": "Does not accept the cached result as evidence. Identifies the exact command that proves the current claim, runs it fresh in the current turn, reads the output and exit code, then places a verification block before the completion claim. If the command is not run fresh, it refuses to claim DONE.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "The tests should pass now. Mark this as done.",
+      "expected_output": "Rejects the unverified wording. Runs the relevant test command or asks for the command if it cannot identify one. The final claim must avoid forbidden vocabulary such as should, probably, seems, or I think, and must cite command output with exit code 0.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "A subagent says it completed the patch successfully. Verify done and proceed.",
+      "expected_output": "Treats the subagent report as insufficient by itself. Checks the VCS diff or artifact paths independently, runs the verification command that proves the claim, and only then emits the verification block and claim. If the artifact is missing or verification fails, routes the failure instead of claiming completion.",
+      "files": []
+    }
+  ]
+}

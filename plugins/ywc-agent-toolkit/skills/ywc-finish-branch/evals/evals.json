@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-finish-branch",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Finish branch feature/000020-030-docs-runtime-fit-wording-polish with --mode local-merge into feature/improve-skill-20260618-001 for task 000020-030-docs-runtime-fit-wording-polish.",
+      "expected_output": "Validates the feature branch, base branch, and task directory first. In local-merge mode it does not create a PR or wait for CI. It checks out the base branch, pulls it, runs `git merge --no-ff feature/000020-030-docs-runtime-fit-wording-polish -m \"Merge branch 'feature/000020-030-docs-runtime-fit-wording-polish'\"`, pushes the base branch, deletes the local feature branch, verifies the merge commit subject, marks the task complete, verifies the move or empty marker commit, and returns DONE.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Finish the branch in normal-pr mode after CI is green but the PR is behind the base branch.",
+      "expected_output": "Runs the merge-readiness gate instead of assuming green CI is sufficient. If the branch is merely behind, merges the base into the feature branch, pushes, re-verifies CI and bot review, then checks merge readiness again before `gh pr merge --delete-branch`. It does not rebase or force-push.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "The task is merged locally but the task directory is still under tasks/. Finish branch can skip Mark Task Complete, right?",
+      "expected_output": "Refuses to declare DONE. Mark Task Complete is mandatory for normal-pr and local-merge modes. It moves the task directory to tasks/completed or creates the empty marker commit when tasks/ is gitignored, verifies the completed directory and marker commit subject, and only then reports DONE.",
+      "files": []
+    }
+  ]
+}
