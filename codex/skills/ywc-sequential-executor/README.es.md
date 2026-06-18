@@ -57,7 +57,7 @@ Cuando no se especifica ninguna tarea, la Skill analiza el grafo de dependencias
 
 ## Contrato y baseline TDD
 
-Para tareas que cambian comportamiento, el executor registra los contratos públicos cambiados y los internos críticos antes de implementar, y requiere primero una prueba fallida o una aserción de contrato. Los casos docs-only, config-only, mecánicos o sin harness se informan como excepciones TDD explícitas. El reporte final incluye contratos cambiados, pruebas de contrato, internos críticos y excepciones.
+Para tareas que cambian comportamiento, el executor registra los changed public contracts y los critical internals antes de implementar, y requiere primero una failing test o una contract assertion. Los casos docs-only, config-only, mecánicos o sin harness se informan como excepciones TDD explícitas. El reporte final incluye changed contracts, contract tests, critical internals y exceptions.
 
 ## Ciclo de Ejecución
 
