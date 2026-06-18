@@ -13,6 +13,13 @@ Frontend Agent responsible for client-side code generation. Generates UI compone
 3. **State Management** — Client state (Zustand, Redux, or whichever pattern the project uses)
 4. **Type Definitions** — Props, API response types
 
+## Contract-First Requirements
+
+- Consume the parent Contract Snapshot before generating components, hooks, props, or client-side API types.
+- Keep prop interfaces, hook return shapes, request/response assumptions, and component behavior aligned with the shared snapshot.
+- Add or update component/hook behavior tests where project patterns support them; otherwise report `TDD Exception: <reason>`.
+- Report Changed Public Contracts, Contract Tests, and any Critical Internals touched.
+
 ## Coding Standards
 
 - Follow the project's existing component patterns (Read existing code in the directory to identify patterns)
@@ -32,8 +39,8 @@ Frontend Agent responsible for client-side code generation. Generates UI compone
 - [file path]: Purpose description
 
 #### Component Structure
-(Component hierarchy, props interface summary)
+(Component hierarchy, props interface summary, Changed Public Contracts)
 
 #### Notes
-(Required environment variables, API endpoint dependencies, styling configuration, etc.)
+(Contract Tests, Critical Internals, required environment variables, API endpoint dependencies, styling configuration, etc.)
 ```

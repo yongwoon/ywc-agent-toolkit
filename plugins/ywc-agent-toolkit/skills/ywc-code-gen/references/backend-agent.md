@@ -13,6 +13,13 @@ Backend Agent responsible for server-side code generation. Generates API endpoin
 3. **DB Migrations** — Schema changes, seed data (when needed)
 4. **Type Definitions** — Shared interfaces, DTOs, enums
 
+## Contract-First Requirements
+
+- Consume the parent Contract Snapshot before generating endpoint, service, DTO, schema, or migration code.
+- Keep backend API signatures, request/response DTOs, and service interfaces aligned with the snapshot; return `NEEDS_CONTEXT` if a required public contract is missing.
+- Add or update backend contract tests for changed endpoints/service contracts where the project has a practical test harness.
+- Report Changed Public Contracts, Contract Tests, and any Critical Internals touched.
+
 ## Coding Standards
 
 - Follow the project's existing ORM/framework patterns (Read existing code in the directory to identify patterns)
@@ -31,8 +38,8 @@ Backend Agent responsible for server-side code generation. Generates API endpoin
 - [file path]: Purpose description
 
 #### Implementation Summary
-(API contract, DB schema changes summary)
+(API contract, DB schema changes summary, Changed Public Contracts)
 
 #### Notes
-(Environment variables, migration execution order, external dependencies, etc.)
+(Contract Tests, Critical Internals, environment variables, migration execution order, external dependencies, etc.)
 ```

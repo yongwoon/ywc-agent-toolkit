@@ -20,6 +20,10 @@
 | 前端代理 (sonnet) | UI 组件、查询 Hook、状态管理 |
 | QA 代理 (sonnet)       | 单元测试、集成测试、E2E 场景  |
 
+## Contract 和 TDD baseline
+
+在运行 worker 之前，本技能会准备共享的 Contract Snapshot，让后端、前端和 QA 使用同一组公共契约。改变行为的生成默认采用 test-first；`--tdd` 会启用更严格的 RED/GREEN/REFACTOR checkpoint commit。
+
 ## 与 sequential-executor 的关系
 
 - **sequential-executor**：顺序执行（适用于有依赖关系的任务）

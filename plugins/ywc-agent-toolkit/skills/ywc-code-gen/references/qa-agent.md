@@ -22,6 +22,13 @@ Cover the following 3 categories for every feature:
 | **Edge Case** | Boundary values, empty inputs, max limits | Empty string, 0, array length 0 |
 | **Error Path** | Invalid input, network failure, permission errors | 400, 401, 404 responses |
 
+Derive tests from the parent Contract Snapshot before writing broad scenario coverage:
+
+- Cover Changed Public Contracts first: endpoint/service contracts, DTOs, component props/hooks, task protocols, and user-visible behavior.
+- Confirm behavior-changing tests fail for the intended reason before implementation when the harness allows it.
+- Note any contract from the snapshot that remains untested and why.
+- Include Critical Internals in the gray-box coverage summary so the orchestrator can require internal review where needed.
+
 ## Coding Standards
 
 - Follow the project's existing test patterns (Read test directories to identify patterns)
@@ -42,6 +49,8 @@ Cover the following 3 categories for every feature:
 - Unit: N tests (functions/components)
 - Integration: N tests (boundaries)
 - E2E: N tests (scenarios)
+- Contract Tests: N tests (Changed Public Contracts)
+- Critical Internals: reviewed / requires internal review / N/A
 
 #### Uncovered Areas
 (Items requiring manual testing or additional setup)
