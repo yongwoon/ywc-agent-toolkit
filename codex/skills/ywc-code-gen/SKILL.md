@@ -225,10 +225,10 @@ The script gates the comment/marker forms below; the prose shortcuts and bare `.
 
 **Code stubs (never acceptable in generated files):**
 - placeholder comments in place of real implementation
-- `// ... rest of code` / `// ...` / `/* ... */` used to omit logic
-- `// similar to above` / `// same as X` / `// follows the same pattern`
-- Bare `...` or `pass` as a placeholder for omitted logic
-- runtime "not implemented" throws or language equivalents such as Python/Rust placeholder macros
+- ellipsis-style comments used to omit logic
+- comments that say the omitted implementation is similar to another block
+- bare ellipsis or no-op placeholders standing in for omitted logic
+- runtime "not implemented" throws or language equivalents such as Python placeholder exceptions and Rust placeholder macros
 
 **Prose shortcuts (never acceptable in generated files):**
 - "The rest follows the same pattern"
@@ -241,7 +241,7 @@ The script gates the comment/marker forms below; the prose shortcuts and bare `.
 - Functions or methods with a signature but no real body
 - Test `describe`/`context` blocks with no `it`/`test`/`spec` cases inside them
 - Type definitions using `any` / `unknown` as a placeholder for real types
-- Config or schema files containing `YOUR_VALUE_HERE` or `<replace_me>` tokens
+- Config or schema files containing obvious replacement-token placeholders
 
 **Scope creep / drive-by edits (never acceptable in generated output):**
 - Reformatting or restyling files the spec did not name — adjacent imports reordered, whitespace fixed, blank lines normalized, formatter run repo-wide because "it was easier than configuring the scope"
