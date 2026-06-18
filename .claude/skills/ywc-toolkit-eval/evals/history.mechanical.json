@@ -1,6 +1,6 @@
 {
   "claude-code/skills/ywc-agentic": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 4
   },
@@ -20,7 +20,7 @@
     "S5": 5
   },
   "claude-code/skills/ywc-commit": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 5
   },
@@ -50,7 +50,7 @@
     "S5": 4
   },
   "claude-code/skills/ywc-e2e-test-strategy": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 5
   },
@@ -60,8 +60,8 @@
     "S5": 5
   },
   "claude-code/skills/ywc-gen-testcase": {
-    "S2": 4,
-    "S4": 3,
+    "S2": 5,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-handle-pr-reviews": {
@@ -90,7 +90,7 @@
     "S5": 4
   },
   "claude-code/skills/ywc-parallel-executor": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 5
   },
@@ -105,12 +105,12 @@
     "S5": 5
   },
   "claude-code/skills/ywc-project-docs": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-project-scaffold": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 5
   },
@@ -120,7 +120,7 @@
     "S5": 4
   },
   "claude-code/skills/ywc-refactor-clean": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 4
   },
@@ -155,7 +155,7 @@
     "S5": 4
   },
   "claude-code/skills/ywc-spec-validate": {
-    "S2": 4,
+    "S2": 5,
     "S4": 5,
     "S5": 5
   },
