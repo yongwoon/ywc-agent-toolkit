@@ -39,6 +39,15 @@ A claim presented as Verified that is actually Inferred or Recalled is a defect.
 
 When the cost of verification is high, prefer to mark a claim Inferred or Recalled rather than skip it. Honest uncertainty beats false confidence.
 
+## 3.5 Assumption & Ambiguity Discipline
+
+Builds on §3: when evidence is insufficient, do not manufacture it.
+
+- **State assumptions only when labeled.** An assumption presented as fact is the §3 defect; an assumption labeled "Inferred" is honest.
+- **Do not invent.** Requirements, file behavior, API contracts, benchmark or test results, and user intent are never fabricated to fill a gap.
+- **When the next correct step depends on missing context, stop.** Return `NEEDS_CONTEXT` or ask the smallest blocking question — do not guess and proceed.
+- **When a request admits two interpretations that materially change scope, data model, or meaning, surface both** — do not silently pick one. (Authoring skills — `ywc-plan`, `ywc-spec-writer`, `ywc-task-generator` — own how this surfaces; this section names the principle.)
+
 ## 4. Reuse Discipline
 
 Before writing new code, a skill must check three sources in order:
@@ -72,6 +81,17 @@ When a skill encounters an unexpected failure (test failure, build error, tool e
 3. **Report root cause, not symptom.** "The test failed because the database fixture was reset between cases" is a finding. "I made the test pass" is not.
 
 If root cause cannot be identified within a reasonable budget, the skill must STOP (per [confidence-gate.md](./confidence-gate.md)) and report what it learned, not paper over the failure.
+
+## 6.5 Goal-Driven Execution
+
+Transform a task into verifiable success criteria, then loop until each is met.
+
+- **Start from the goal and its success criteria**, not a list of steps. Tie every implementation, review, or task-generation step to a named outcome.
+- **Keep changes surgical.** Do not perform adjacent cleanup, style churn, or speculative redesign that the goal does not require — the operational rubric is [readable-code.md](./readable-code.md) §G and its anti-dogma guardrails (§5 Scope Discipline governs the same boundary at the workflow level).
+- **Write the test before the fix when the change is behavioral** — confirm it fails (RED) for the intended reason first. The full discipline is in [tdd-deep-module-gray-box.md](./tdd-deep-module-gray-box.md) §2.
+- **Declare done only after goal-specific verification has run** (or a documented blocker/exception). A green global build is not evidence that this task's behavior exists.
+
+> Naming note: the "Simplicity First" facet of this discipline surfaces under different labels by skill — the **Simplicity** review dimension in `ywc-spec-validate`, the **Minimalism** confidence dimension in `ywc-code-gen`, and "과설계" (over-engineering) in Korean docs. Same principle, context-specific label.
 
 ## 7. Output Discipline
 
