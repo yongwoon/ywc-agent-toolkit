@@ -23,6 +23,7 @@ The failure mode: an LLM generates a large body of code, then runs the type chec
 Rules for behavior-changing work:
 
 - A failing test must **exist and be confirmed RED** before the implementation is finalized. RED must fail for the *intended* reason (the behavior is unimplemented) — not because the test itself throws (import error, typo, bad fixture).
+- If an existing regression or behavior test already fails for the intended reason, record it and use that as the RED state instead of authoring a duplicate test.
 - Implement the **minimum** that turns the test GREEN. Refactor only after green.
 - Keep the loop short: prefer the smallest unit that produces real feedback over a big-bang generate-then-verify pass.
 
@@ -55,7 +56,7 @@ Default (non-critical): verify the public contract / contract tests pass and del
 
 `auth` · `authn` · `authz` · `session` · `oauth` · `jwt` · `token` · `password` · `credential` · `secret` · `crypto` · `encrypt` · `decrypt` · `sign` / `verify` · `payment` · `billing` · `invoice` · `checkout` · `finance` · `ledger` · `wallet` · PII / personal-data handlers · external-input boundaries (`webhook`, `upload`, `deserialize`)
 
-A project may extend this set via a `critical_paths` entry in `CLAUDE.md` (its entries are additive). When in doubt, treat as critical — fail safe toward more review.
+A project may extend this set via an additive `critical_paths` list in `CLAUDE.md`, for example `critical_paths: ["packages/auth/**", "billing/**"]`. When in doubt, treat as critical — fail safe toward more review.
 
 **Detection timing differs by skill** (do not conflate):
 
@@ -69,7 +70,7 @@ A project may extend this set via a `critical_paths` entry in `CLAUDE.md` (its e
 
 ## Allowed exceptions
 
-Docs-only edits, pure formatting, metadata, generated README locale updates, and mechanical/config-only changes may skip the §2 RED state — but must **state the reason** (e.g., "config-only, no observable behavior"). Never fabricate empty tests to satisfy the gate; an empty `describe`/`it` with no real assertion is a stub, not a test.
+Docs-only edits, pure formatting, metadata, generated README locale updates, and mechanical/config-only changes may skip the §2 RED state — but must report `TDD Exception: <reason>` (e.g., `TDD Exception: config-only, no observable behavior`). Never fabricate empty tests to satisfy the gate; an empty `describe`/`it` with no real assertion is a stub, not a test.
 
 ## Reporting contract
 
