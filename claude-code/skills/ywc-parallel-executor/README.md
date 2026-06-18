@@ -79,7 +79,7 @@ wait
 
 1. dependency-graph.md 파싱
 2. Wave 계획 수립 (Topological Sort)
-3. Wave 단위 실행: Worktree 생성 → Agent 병렬 실행 → Merge → Worktree 삭제
+3. Wave 단위 실행: Worktree 생성 → Agent 병렬 실행 → 검증(Task Verify + 전체/영향범위 회귀 suite + Ownership scope gate) → Merge → Worktree 삭제
 
 ## Task → Agent 자동 매핑
 

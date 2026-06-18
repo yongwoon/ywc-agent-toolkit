@@ -107,7 +107,7 @@ Phase 2 exit condition: a concrete diff between the broken and working version, 
 Apply the scientific method.
 
 1. **Form a single hypothesis.** Write it down in the shape: "X is the root cause because Y; if I change Z minimally, the test should pass." Vague hypotheses do not survive Step 2.
-2. **Test the smallest possible change.** Change one variable. Do not bundle "while I'm here" edits.
+2. **Test the smallest possible change.** Change one variable. Do not bundle "while I'm here" edits. **If the bug is automatable, the failing test from Phase 4 §1 must already exist and be confirmed RED before this change is applied** — pull the regression test ahead of the first fix so the reproduction is machine-checkable, not a manual observation a fix can accidentally mask.
 3. **Verify the result.**
    - Pass → proceed to Phase 4.
    - Fail → form a **new** hypothesis. Do **not** layer another fix on top of the failed one.

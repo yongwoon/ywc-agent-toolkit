@@ -304,6 +304,12 @@ If any stub patterns appear in implementation files, complete the implementation
 
 **Exception**: `TODO` comments in *test* files (e.g., `// TODO: add edge case for overflow`) are permitted. `TODO` in implementation files are not.
 
+**Ownership-scope Gate (required before first commit):** mechanize the prose Surgical-changes rule. Run `git diff --name-only HEAD` and confirm every changed path falls within the task's declared Ownership from `README.md`. Any file outside Ownership is a scope-creep signal — either it is a genuine dependency the task missed (stop and report `BLOCKED`) or a drive-by edit (revert it). Do not commit out-of-Ownership files with an unexplained justification.
+
+```bash
+git diff --name-only HEAD   # every path must match the README Ownership globs
+```
+
 ### Step 4: Task Verification
 
 Run verification in three layers, from narrowest to broadest. Each layer must pass before moving on.

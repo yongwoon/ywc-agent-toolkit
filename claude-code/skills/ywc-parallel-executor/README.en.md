@@ -79,7 +79,7 @@ See [references/aggregate-pr.md](./references/aggregate-pr.md) for the full proc
 
 1. Parse dependency-graph.md
 2. Plan Waves (Topological Sort)
-3. Execute per Wave: Create Worktree → Parallel Agent execution → Merge → Delete Worktree
+3. Execute per Wave: Create Worktree → Parallel Agent execution → Verify (Task Verify + full/impacted regression suite + Ownership scope gate) → Merge → Delete Worktree
 
 ## Task → Agent Auto-Mapping
 

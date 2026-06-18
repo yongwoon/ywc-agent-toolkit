@@ -79,7 +79,7 @@ wait
 
 1. dependency-graph.md の Parse
 2. Wave 計画の策定 (Topological Sort)
-3. Wave 単位で実行: Worktree 作成 → Agent 並列実行 → Merge → Worktree 削除
+3. Wave 単位で実行: Worktree 作成 → Agent 並列実行 → 検証(Task Verify + 全体/影響範囲 regression suite + Ownership scope gate) → Merge → Worktree 削除
 
 ## Task → Agent 自動マッピング
 
