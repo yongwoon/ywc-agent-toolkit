@@ -37,6 +37,11 @@ HISTORY_MECH = Path(__file__).resolve().parent.parent / "evals" / "history.mecha
 
 HANGUL = re.compile(r"[가-힣]")
 KANA = re.compile(r"[぀-ヿ]")
+# Japanese evidence for A4: kana OR a CJK ideograph. Trigger phrases are often
+# kanji-only compounds ("自律実行", "並列実行") with no kana; a kana-only check
+# wrongly fails them. HANGUL is required separately, so a CJK ideograph
+# alongside Hangul reliably indicates a Japanese (not Chinese) trigger here.
+JAPANESE = re.compile(r"[぀-ヿ一-鿿]")
 MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit", "Bash"}
 READONLY_HINT = re.compile(r"review|audit|analyst|reviewer|read-only", re.IGNORECASE)
 
@@ -70,6 +75,19 @@ def split_frontmatter(text: str) -> tuple[dict, str]:
     return parse_yaml_lite(fm_raw), body
 
 
+def _unquote_scalar(value: str) -> str:
+    """Strip surrounding YAML quotes and unescape, so a double-quoted
+    `"(ywc) Use when ... \"trigger\""` scalar yields the same plain text a
+    folded/plain scalar would. Without this, structure checks that match the
+    leading `(ywc) Use when` prefix get a spurious `"` at position 0."""
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("\"", "'"):
+        inner = value[1:-1]
+        if value[0] == "\"":
+            return inner.replace('\\"', '"').replace("\\\\", "\\")
+        return inner.replace("''", "'")
+    return value
+
+
 def parse_yaml_lite(fm_raw: str) -> dict:
     """Minimal YAML reader: top-level `key:` plus folded (>-) multi-line values."""
     fields: dict[str, str] = {}
@@ -79,13 +97,13 @@ def parse_yaml_lite(fm_raw: str) -> dict:
         m = re.match(r"^([A-Za-z_][\w-]*):\s?(.*)$", line)
         if m and not line.startswith(" "):
             if key is not None:
-                fields[key] = " ".join(s.strip() for s in buf).strip()
+                fields[key] = _unquote_scalar(" ".join(s.strip() for s in buf).strip())
             key, first = m.group(1), m.group(2).strip()
             buf = [] if first in (">-", ">", "|", "|-", "") else [first]
         elif key is not None:
             buf.append(line.strip())
     if key is not None:
-        fields[key] = " ".join(s.strip() for s in buf).strip()
+        fields[key] = _unquote_scalar(" ".join(s.strip() for s in buf).strip())
     return fields
 
 
@@ -243,8 +261,8 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     checks = {
         "A1_name_prefix": name.startswith("ywc-") and name == d.name,
         "A2_use_when": desc.startswith("(ywc) Use when"),
-        "A3_anti_trigger": "Do not use for" in desc,
-        "A4_multilingual": bool(HANGUL.search(desc) and KANA.search(desc)),
+        "A3_anti_trigger": bool(re.search(r"Do not use (?:for|during|when|in)\b", desc)),
+        "A4_multilingual": bool(HANGUL.search(desc) and JAPANESE.search(desc)),
         "A6_announce": "**Announce at start:**" in body[:400],
         "A7_rationalization": _rationalization_data_rows(body) >= 5,
         "A8_body_cap": body_lines <= 500,

@@ -188,5 +188,35 @@ class CiItemGuardTest(unittest.TestCase):
         self.assertEqual(before, after)
 
 
+class FrontmatterAndStructureTest(unittest.TestCase):
+    """Guards the three false-positive fixes: quoted-scalar parsing (A2),
+    kanji-only Japanese (A4), and flexible anti-trigger phrasing (A3)."""
+
+    def test_double_quoted_scalar_is_unquoted(self) -> None:
+        fm = score.parse_yaml_lite(
+            'name: ywc-x\ndescription: "(ywc) Use when \\"foo\\" happens. Do not use for bar."')
+        self.assertTrue(fm["description"].startswith("(ywc) Use when"))
+        self.assertIn('"foo"', fm["description"])  # escaped quotes restored
+
+    def test_single_quoted_scalar_is_unquoted(self) -> None:
+        fm = score.parse_yaml_lite("name: ywc-x\ndescription: '(ywc) Use when it''s time'")
+        self.assertEqual(fm["description"], "(ywc) Use when it's time")
+
+    def test_folded_scalar_unaffected(self) -> None:
+        fm = score.parse_yaml_lite("name: ywc-x\ndescription: >-\n  (ywc) Use when a thing\n  spans lines")
+        self.assertEqual(fm["description"], "(ywc) Use when a thing spans lines")
+
+    def test_kanji_only_japanese_counts_for_a4(self) -> None:
+        # "자율 실행" (Hangul) + "自律実行" (kanji-only, no kana) is bilingual.
+        self.assertTrue(score.HANGUL.search("자율 실행 自律実行"))
+        self.assertTrue(score.JAPANESE.search("自律実行"))
+        self.assertFalse(score.KANA.search("自律実行"))  # documents why KANA alone failed
+
+    def test_anti_trigger_accepts_during(self) -> None:
+        import re
+        self.assertTrue(re.search(r"Do not use (?:for|during|when|in)\b",
+                                  "Do not use during active feature work, or for X."))
+
+
 if __name__ == "__main__":
     unittest.main()
