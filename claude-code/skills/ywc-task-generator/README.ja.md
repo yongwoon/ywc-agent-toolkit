@@ -103,7 +103,8 @@ Task を parallel execution する可能性がある場合、生成される Tas
 - `Shared Surfaces`
 - `Conflicts With`
 - `Parallelizable After`
-- `Task Verify`
+- `Task Verify` (project-wide gate ではなく、この task の動作を assert する command)
+- `Acceptance Criteria` (`When … does … observable as …`) + Notes の `Assumptions`
 
 > Primary Sources に外部 URL (Notion, Confluence, Figma など) を含める場合は project-level policy が必要です。Default は project-relative paths のみで、`sequential-executor` skill が policy を `.claude/settings.local.json` の `taskExecutor.externalSpecUrls` に保存して管理します。
 

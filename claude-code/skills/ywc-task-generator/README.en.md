@@ -103,7 +103,8 @@ Each `README.md` should include:
 - `Shared Surfaces`
 - `Conflicts With`
 - `Parallelizable After`
-- `Task Verify`
+- `Task Verify` (commands that assert this task's behavior, not just a project-wide gate)
+- `Acceptance Criteria` (`When … does … observable as …`) + `Assumptions` under Notes
 
 > External URLs in `Primary Sources` (Notion, Confluence, Figma, etc.) require a project-level policy. The default is project-relative paths only; `sequential-executor` stores the chosen policy in `.claude/settings.local.json` under `taskExecutor.externalSpecUrls`.
 

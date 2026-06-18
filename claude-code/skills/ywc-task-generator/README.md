@@ -109,7 +109,7 @@ Each `README.md` should include:
 - `Shared Surfaces`: shared contracts or boundaries that may create conflicts
 - `Conflicts With`: tasks that must not run in parallel
 - `Parallelizable After`: the minimum merged baseline required before the task can start safely
-- `Task Verify`: commands that prove the task is done
+- `Task Verify`: task-specific commands that assert this task's behavior (a test, or a command whose output changes) — not just a project-wide build/lint gate. Each `task.md` also carries an `Acceptance Criteria` (`When … does … observable as …`) and records any decomposition-time `Assumptions` under Notes.
 
 > External URLs in `Primary Sources` (Notion, Confluence, Figma, etc.) are gated by a project-level policy — default is project-relative paths only. The `sequential-executor` skill handles the policy and stores the decision in `.claude/settings.local.json` under `taskExecutor.externalSpecUrls`.
 
