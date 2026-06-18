@@ -1,0 +1,11 @@
+{
+  "skill_name": "ywc-skill-author",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use $ywc-skill-author to draft a new ywc-data-migration skill. Include a Rationalization Defense section.",
+      "expected_output": "The generated skill includes domain-specific Rationalization Defense rows for guessing missing migration context, adjacent schema cleanup, overbuilding abstractions, and declaring completion without goal-specific verification. The rows use concrete migration/execution shortcuts rather than generic slogans such as \"do not hallucinate\", \"stay focused\", or \"run tests\".",
+      "files": []
+    }
+  ]
+}
