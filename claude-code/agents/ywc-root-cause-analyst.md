@@ -132,6 +132,10 @@ the bounded payload):
 - `NEEDS_CONTEXT` — the bounded payload is missing a load-bearing signal (e.g.,
   a wrapped exception whose inner cause is in a frame the caller did not
   forward); bullets name the specific Read / Grep / probe that resolves it.
+  This includes a **missing reproduction**: when the payload carries no failing
+  test, deterministic repro command, or captured failure output, return
+  `NEEDS_CONTEXT` naming it as the required missing context — a root-cause
+  verdict on an unreproduced failure is unverifiable, so refuse rather than guess.
 
 Full evidence (hypothesis tables, 5 Whys with citations, contributing-factor
 list, architecture-vs-fix verdict reasoning) goes to a file under the caller's
