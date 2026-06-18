@@ -16,6 +16,7 @@ A Spec Reviewer Agent Skill that validates specification quality after writing s
 | Consistency        | Terminology/format/data structure mismatches across documents         |
 | Feasibility        | Whether it can be implemented with the current stack                  |
 | Code compatibility | Conflicts with existing DB Schema and API Route patterns              |
+| Simplicity         | Abstraction, configurability, or generality the stated scope does not yet require (over-engineering) — surfaced as a Warning within the Feasibility pass |
 
 ## Execution Agent
 

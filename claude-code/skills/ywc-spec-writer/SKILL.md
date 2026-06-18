@@ -145,6 +145,7 @@ Use the PR's `title` + `body` to inform spec wording (the "why") and record `hea
 
 **Non-negotiable writing rules for all modes:**
 - Zero program code in any spec output
+- When the source (task / PR / commit / design note) admits two readings that change the spec's meaning, record **both** under `## Open Questions` rather than silently picking one. A spec writer transcribes decided intent; it does not decide it. The silent pick is invisible until implementation contradicts the spec.
 - Write for a **dual audience**: business stakeholder (must be readable without engineering knowledge) AND `ywc-task-generator` (must be decomposable into concrete tasks). Vague prose serves neither — concrete numbers serve both.
 - Features use the user story format: "As a [user], I want [action] so that [benefit]"
 - Data and flows use plain-language descriptions
