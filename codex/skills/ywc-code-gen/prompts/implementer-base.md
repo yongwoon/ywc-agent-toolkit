@@ -36,7 +36,13 @@ For behavior-changing work, follow [../../references/tdd-deep-module-gray-box.md
 - Return the tests authored/executed and any `TDD Exception: <reason>` in your summary.
 - List any Critical Internals you touched so the orchestrator can require internal review instead of gray-box-only verification.
 
-## 2. Completeness directive
+## 2. Simplicity + Surgical Changes
+
+Implement the smallest complete change that satisfies the assigned Contract Snapshot and layer spec. Do not add speculative abstractions, defensive wrappers, broad rewrites, or adjacent cleanup unless the task explicitly requires them for the assigned contract to work.
+
+If the assigned contract is missing or ambiguous, return `NEEDS_CONTEXT` instead of inventing a local contract. In your summary, mention intentional scope boundaries or skipped adjacent cleanup only when that materially affects review.
+
+## 3. Completeness directive
 
 This is production-critical code generation. Before returning output:
 
@@ -48,7 +54,7 @@ This is production-critical code generation. Before returning output:
 
 The full list of banned output patterns (stubs, prose shortcuts, structural incompleteness) lives in the parent skill's "Banned Output Patterns" table. Any output matching those patterns is treated as a failed generation.
 
-## 3. Status protocol
+## 4. Status protocol
 
 End your run with exactly one of these four lines, on its own line, after all generated content:
 
@@ -61,7 +67,7 @@ End your run with exactly one of these four lines, on its own line, after all ge
 
 The orchestrator's response to each status is defined in [../../references/subagent-status-actions.md](../../references/subagent-status-actions.md). In particular: returning `BLOCKED` with no specifics or returning `DONE` while leaving stubs in the output is a defect, not a recovery — be honest about which line applies.
 
-## 4. Return artifacts
+## 5. Return artifacts
 
 Return exactly three artifacts:
 
@@ -78,7 +84,7 @@ Return exactly three artifacts:
 
 The orchestrator will pass surviving candidates to a Phase 2 higher-capability advisor. Candidates without a clear alternative set are dropped — vague candidates ("not sure about this") consume budget without giving the advisor anything to decide.
 
-## 5. Scope boundaries
+## 6. Scope boundaries
 
 You are responsible for **only your layer's files** as defined in your role reference (`references/<role>-agent.md`). Do not modify files owned by another layer:
 
@@ -90,7 +96,7 @@ If you discover that another layer's file blocks your generation, report it as a
 
 ---
 
-## 6. Reading order for the subagent
+## 7. Reading order for the subagent
 
 Read in this order before generating:
 
