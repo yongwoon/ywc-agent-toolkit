@@ -28,6 +28,10 @@ $ywc-parallel-executor
 
 Docker Compose를 사용하는 task worktree에서는 executor가 `ywc-docker-isolate`에 port isolation을 위임합니다. Worktree 생성 전 selected task stack을 audit하고, 각 worktree 검증 후 task별 deterministic port를 setup하며, 성공한 task는 worktree prune 전에 stack을 teardown합니다. `BLOCKED` 또는 preserved worktree는 복구를 위해 Docker state를 유지합니다.
 
+## Contract Gates
+
+Wave planning은 shared public contract를 단순 file path가 아닌 Shared Surfaces로 취급합니다. Worker payload는 Changed Public Contracts, Critical Internals, Cross-Module Impact, test evidence를 요구하며, 동작 변경 task가 authored/executed tests 없이 끝나려면 명시적인 TDD exception이 필요합니다.
+
 ## Delivery Modes
 
 | Mode | 동작 |

@@ -32,6 +32,10 @@ $ywc-parallel-executor
 
 对于使用 Docker Compose 的 task worktree，executor 会把端口隔离委托给 `ywc-docker-isolate`：创建 worktree 前 audit 已选择 task 的 stack，验证每个 worktree 后 setup 每个 task 的确定性端口，并在 prune worktree 前 teardown 成功 task 的 stack。`BLOCKED` 或 preserved worktree 会保留 Docker state 以便恢复。
 
+## Contract Gates
+
+Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文件路径。Worker payload 需要 Changed Public Contracts、Critical Internals、Cross-Module Impact 和 test evidence；改变行为的任务如果没有 authored/executed tests，必须提供明确的 TDD exception。
+
 ## Delivery Modes
 
 | Mode | 行为 |

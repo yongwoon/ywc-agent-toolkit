@@ -32,6 +32,10 @@ Sigue las secciones Arguments o Workflow de [SKILL.md](./SKILL.md) para las opci
 
 Para worktrees de tareas que usan Docker Compose, el executor delega el aislamiento de puertos en `ywc-docker-isolate`: audita los stacks de las tareas seleccionadas antes de crear worktrees, configura puertos deterministas por tarea despues de verificar cada worktree y desmonta los stacks de tareas exitosas antes de podar worktrees. Los worktrees `BLOCKED` o preservados conservan su estado Docker para recuperacion.
 
+## Contract Gates
+
+La planificacion de waves trata los contratos publicos compartidos como Shared Surfaces, no solo como rutas de archivo. Los payloads de workers requieren Changed Public Contracts, Critical Internals, Cross-Module Impact y evidencia de tests; las tareas que cambian comportamiento sin tests authored/executed necesitan una TDD exception explicita o quedan blocked/with concerns.
+
 ## Modos de entrega
 
 | Mode | Comportamiento |
