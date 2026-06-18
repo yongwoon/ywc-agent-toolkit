@@ -82,6 +82,15 @@ The current improvement cycle prioritizes objective fixture candidates:
 `ywc-spec-ready`, `ywc-verify-done`, `ywc-finish-branch`, `ywc-agentic`, and
 `ywc-brainstorm`.
 
+2026-06-18 fixture update: all five prioritized targets received objective
+behavior fixtures. `ywc-spec-ready`, `ywc-verify-done`, `ywc-finish-branch`,
+and `ywc-brainstorm` now have new `evals/evals.json` files; `ywc-agentic`
+received an additional review-loop fixture. No omission reason is needed for
+these five targets in this cycle. Mechanical S5 now reaches 4 for
+`ywc-spec-ready`, `ywc-verify-done`, and `ywc-brainstorm`; `ywc-finish-branch`
+and `ywc-agentic` remain S5=3 because their remaining S5 gap is in the broader
+output/validation contract shape rather than fixture absence alone.
+
 ### S7 Codex Runtime Fit
 
 The fresh mechanical run shows S7=3 for these skills:
