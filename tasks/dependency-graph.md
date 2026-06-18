@@ -286,3 +286,78 @@ graph LR
   S --> G
   T --> G
 ```
+
+---
+
+## Batch 8 — Codex Eval Quality Improvement Cycle
+
+- Spec: `docs/ywc-plans/codex-eval-quality-improvement-cycle.md`
+- Granularity mode: `llm`
+- Starting phase: `000020`
+- Scope: Codex eval report/scoreboard, selected Codex skill wording/eval fixtures, Codex agent A8 evidence strategy, generated plugin sync and validation.
+- Hard boundary: no `.claude/**`, no `claude-code/**`, no product code, no dependency churn, and no manual edits to generated plugin output before `bash scripts/sync-codex-plugin.sh`.
+
+### Phase 000020 — Evidence and Targeted Quality Improvements
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000020-010-docs-codex-eval-judgment-report` | docs | (root) |
+| `000020-020-docs-codex-eval-scoreboard-update` | docs | `000020-010` |
+| `000020-030-docs-runtime-fit-wording-polish` | docs | `000020-010` |
+| `000020-040-test-eval-fixture-coverage` | test | `000020-010` |
+| `000020-050-docs-agent-behavioral-evidence` | docs | `000020-010` |
+
+### Phase 000021 — Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000021-010-infra-codex-eval-sync-validation` | infra | `000020-010`, `-020`, `-030`, `-040`, `-050` |
+
+### Parallel Execution Notes (Batch 8)
+
+- Initial ready set: `000020-010-docs-codex-eval-judgment-report`.
+- After `000020-010` merges: `000020-020`, `000020-030`, `000020-040`, and `000020-050` are parallel-safe by primary ownership, with the caveat that `000020-040` and `000020-050` may append bounded notes to the 2026-06-18 report and must merge after the report exists.
+- `000020-030` and `000020-040` may both touch the `ywc-finish-branch` skill directory, but they own different files (`SKILL.md` vs `evals/evals.json`).
+- `000021-010` is a hard gate: it waits for all Phase `000020` tasks, then runs plugin sync, repository validation, Codex install scans, evaluator CI, and final diff scope checks.
+- FR mapping: FR-1→000020-010, FR-2→000020-020, FR-3→000020-030, FR-4→000020-040, FR-5→000020-050, FR-6→000021-010.
+
+```mermaid
+graph LR
+  A[000020-010-docs-codex-eval-judgment-report] --> B[000020-020-docs-codex-eval-scoreboard-update]
+  A --> C[000020-030-docs-runtime-fit-wording-polish]
+  A --> D[000020-040-test-eval-fixture-coverage]
+  A --> E[000020-050-docs-agent-behavioral-evidence]
+  A --> F[000021-010-infra-codex-eval-sync-validation]
+  B --> F
+  C --> F
+  D --> F
+  E --> F
+```
+
+---
+
+## Batch 9 — Toolkit-Eval Mechanical-Tier Fixes
+
+- Spec: `plan.md` (converged via ywc-spec-ready, DONE; see `## Iteration 1 Amendments`)
+- Granularity mode: `llm`
+- Starting phase: `000022`
+- Scope: 3 confirmed mechanical-tier skill defects (ywc-commit A4, ywc-spec-validate A2, ywc-gen-testcase A8) + eval baseline regeneration. Bundled as one llm vertical slice.
+- Hard boundary: only the 3 named distributed skills + their references + `history.mechanical.json`; no other skills, no product code.
+
+### Phase 000022 — Mechanical Findings + Baseline
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000022-010-docs-toolkit-eval-mechanical-fixes` | docs | (root) |
+
+- FR mapping: FR1→ywc-commit A4, FR2→ywc-spec-validate A2, FR3→ywc-gen-testcase A8 extraction, FR4→baseline regen (intra-task final step, depends on FR1–FR3).
+
+### Parallel Execution Notes (Batch 9)
+
+- Single task, single phase — no intra-batch parallelism. FR4's dependency on FR1–FR3 is handled as ordered steps inside the task.
+- Independent of Batch 8 (000020–000021): that batch's hard boundary excludes `.claude/**` and `claude-code/**`, so no shared-surface conflict on `history.mechanical.json` in practice.
+
+```mermaid
+graph LR
+  G[000022-010-docs-toolkit-eval-mechanical-fixes]
+```
