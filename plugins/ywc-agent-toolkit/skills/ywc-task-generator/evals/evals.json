@@ -54,6 +54,12 @@
       "prompt": "기존 tasks/ directory에 legacy format (`001010-*`) task 가 이미 있고, 지금부터 신규 task 는 new format (`000001-010-*`) 으로 생성하고 싶어. 다음 spec 을 한국어로 분해해줘. 기존 task 와의 dependency 도 표시해줘. Granularity mode 는 human 으로.\n\n기존 tasks:\n- tasks/001010-db-create-orders-table/\n- tasks/001020-api-order-crud/\n\n새 기능:\n- 주문 status 변경 시 email 발송 (Resend)\n- 주문 취소 기능 (환불 제외)",
       "expected_output": "신규 task 는 000002-010-* 형식으로 생성 (기존 Phase 001 에 이어 Phase 000002 로 시작). 기존 legacy task 는 이름 그대로 Depends On 에 참조하여 전환기 공존 가능. 새 library (Resend) 도입은 독립 task 로 분리. dependency-graph.md 에 legacy format (`001010`, `001020`) 과 new format (`000002-010` 등) 이 함께 표시됨. Safety Invariant 유지 (DB migration 및 library 도입 분리).",
       "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Break down a behavior-changing spec into llm-mode tasks in English. The spec has AC1 for API contract behavior and FR2 for verification requirements.",
+      "expected_output": "Each generated task.md Implementation Steps entry includes target file/module, Related AC/FR, Contract / Behavior Change, and Verification Command / Evidence. Task Verify entries include a task-specific command, Expected Passing Signal, Pre-change Failing Evidence / Exception, and Contract/Test Evidence. If a step cannot be traced to a spec outcome, the generated task is treated as not ready rather than silently accepted.",
+      "files": []
     }
   ]
 }

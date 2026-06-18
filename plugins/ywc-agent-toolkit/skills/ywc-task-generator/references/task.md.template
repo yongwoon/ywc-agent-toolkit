@@ -16,14 +16,33 @@ Verify these before starting:
 - [ ] Stop if another in-flight task already owns the surface this task now needs to edit
 
 ## Implementation Steps
-- [ ] [Specific step 1 — e.g., "Create `src/models/user.ts` with User entity definition"]
-- [ ] [Specific step 2 — e.g., "Add validation logic for email field"]
+- [ ] [Specific step 1 — target: `src/models/user.ts`; e.g., "Create User entity definition"]
+  - Related AC/FR: `[AC-1]` / `[FR-1]`
+  - Contract / Behavior Change: `[externally visible or task-visible behavior affected]`
+  - Verification Command / Evidence: `[task-specific command, test, diff review, or other concrete evidence]`
+- [ ] [Specific step 2 — target: `src/users/validation.ts`; e.g., "Add validation logic for email field"]
+  - Related AC/FR: `[AC-2]` / `[FR-2]`
+  - Contract / Behavior Change: `[expected validation behavior or explicit no-public-contract-change note]`
+  - Verification Command / Evidence: `[task-specific command, test, diff review, or other concrete evidence]`
 - [ ] [Specific step 3]
+  - Related AC/FR: `[AC/FR identifier]`
+  - Contract / Behavior Change: `[expected contract or behavior change]`
+  - Verification Command / Evidence: `[expected passing signal or evidence to collect]`
 - ...
+
+<!-- NOTE: A task is not ready if an implementation step cannot be traced to
+     a spec outcome. Split, rewrite, or remove untraceable steps before saving
+     the generated task. -->
 
 ## Task Verify
 - [ ] [Run task-specific verification command 1]
+  - Expected Passing Signal: `[exit 0, named assertion passes, expected output appears, etc.]`
+  - Pre-change Failing Evidence / Exception: `[RED evidence for bugfix/behavior tasks, or explicit exception reason]`
+  - Contract/Test Evidence: `[contract test, integration test, snapshot, diff review, or N/A with reason]`
 - [ ] [Run task-specific verification command 2]
+  - Expected Passing Signal: `[exit 0, named assertion passes, expected output appears, etc.]`
+  - Pre-change Failing Evidence / Exception: `[RED evidence for bugfix/behavior tasks, or explicit exception reason]`
+  - Contract/Test Evidence: `[contract test, integration test, snapshot, diff review, or N/A with reason]`
 
 ## Verification
 - [ ] lint passes (`[PROJECT_LINT_CMD]`)

@@ -26,9 +26,10 @@ When tempted to bypass a rule, check this table first:
 |---|---|
 | "<the most likely shortcut the agent will try>" | <why that shortcut produces a wrong result> |
 | "<the second most likely shortcut>" | <reality counter> |
-| "<a domain-specific anti-pattern, e.g., 'force-merge if CI is yellow'>" | <reality counter> |
-| "<a vague-language temptation, e.g., 'appropriate severity'>" | <reality counter — pick a concrete threshold> |
-| "<a scope-creep temptation, e.g., 'fix this unrelated bug while I'm here'>" | <reality counter — boundary> |
+| "<missing-context shortcut, e.g., 'infer the API shape from neighboring files'>" | <domain-specific NEEDS_CONTEXT / smallest blocking question rule> |
+| "<adjacent-cleanup shortcut, e.g., 'fix this unrelated bug while I'm here'>" | <domain-specific scope boundary> |
+| "<overbuilding shortcut, e.g., 'add a flexible abstraction for future variants'>" | <why future-proofing is not required for this skill> |
+| "<verification shortcut, e.g., 'the diff looks right, mark it done'>" | <goal-specific verification command or documented exception> |
 
 **Violating the letter of these rules is violating the spirit.** <One-sentence reminder of why honesty over speed matters in this domain.>
 
