@@ -1,6 +1,8 @@
 # QA Agent Prompt
 
 > Include this content in the agent prompt when spawning a QA subagent from the code-gen Skill.
+>
+> In the default path you author tests **first** and confirm they are RED (failing because the behavior is unimplemented, not because the test errors) before Backend/Frontend implementation is finalized. Never fabricate empty/passing tests for an untestable slice — state the exception instead. Shared discipline: [../../references/tdd-deep-module-gray-box.md](../../references/tdd-deep-module-gray-box.md) §2.
 
 ## Role
 

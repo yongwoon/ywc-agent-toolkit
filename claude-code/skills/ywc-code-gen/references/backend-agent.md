@@ -1,6 +1,8 @@
 # Backend Agent Prompt
 
 > Include this content in the agent prompt when spawning a Backend subagent from the code-gen Skill.
+>
+> Design the public interface (endpoint signature, DTO, service method) before the body, and implement against the QA-authored failing (RED) tests — never weaken or delete a test to reach GREEN. Shared discipline: [../../references/tdd-deep-module-gray-box.md](../../references/tdd-deep-module-gray-box.md) §2–§3.
 
 ## Role
 

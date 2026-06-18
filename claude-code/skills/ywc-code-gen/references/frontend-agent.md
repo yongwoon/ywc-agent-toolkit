@@ -1,6 +1,8 @@
 # Frontend Agent Prompt
 
 > Include this content in the agent prompt when spawning a Frontend subagent from the code-gen Skill.
+>
+> Design the public interface (component props, hook signature) before the body, and implement against the QA-authored failing (RED) tests — never weaken or delete a test to reach GREEN. Shared discipline: [../../references/tdd-deep-module-gray-box.md](../../references/tdd-deep-module-gray-box.md) §2–§3.
 
 ## Role
 
