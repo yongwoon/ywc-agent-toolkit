@@ -192,3 +192,97 @@ graph LR
   U --> W
   V --> W
 ```
+
+---
+
+## Batch 6 — Codex Karpathy Guideline Integration
+
+- Spec: `docs/ywc-plans/codex-karpathy-guideline-integration.md`
+- Granularity mode: `llm` · Language: korean
+- Starting phase: `000016` (phases `000001`–`000015` occupied by existing/completed batches)
+- Scope: Codex skills and Codex custom agents only. Generated plugin package updates happen only through `bash scripts/sync-codex-plugin.sh`.
+- Advisor pass: skipped because current tool policy allows subagent spawning only when the user explicitly requests delegation/subagents; local Pattern C phase review was applied instead.
+
+### Phase 000016 — Source Guidance Updates
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000016-010-docs-principles-guideline-gap` | docs | (root) |
+| `000016-020-docs-code-gen-worker-discipline` | docs | `000016-010` |
+| `000016-030-docs-task-template-goal-verification` | docs | `000016-010` |
+| `000016-040-docs-skill-author-future-proofing` | docs | `000016-010` |
+| `000016-050-docs-custom-agent-bounded-evidence` | docs | `000016-010` |
+
+### Phase 000017 — Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000017-010-infra-codex-karpathy-validation` | infra | `000016-010`, `-020`, `-030`, `-040`, `-050` |
+
+### Parallel Execution Notes (Batch 6)
+
+- Initial ready set: `000016-010-docs-principles-guideline-gap`.
+- After `000016-010` merges: `000016-020`, `000016-030`, `000016-040`, and `000016-050` are parallel-safe because they own disjoint source areas.
+- `000017-010` is a hard gate. It waits for all Phase `000016` tasks, then runs plugin sync, full repository validation, Codex skill list, Codex agent list, targeted `rg`, and final diff scope checks.
+- Conflict notes: `000016-020`, `000016-030`, and `000016-040` may each edit skill-local evals but not each other's skill directories. `000016-050` edits `codex/agents/**`, which is not synced into the plugin package.
+- Hard boundary: no `claude-code/**` edits, no new `karpathy-*` skill/agent, and no manual edits to `plugins/ywc-agent-toolkit/skills/**`.
+- FR mapping: FR-1→000016-010, FR-2→000016-020, FR-3→000016-030, FR-4→000016-040, FR-5→000016-050, FR-6→000016-020/030/040, FR-7→000017-010.
+
+```mermaid
+graph LR
+  X[000016-010-docs-principles-guideline-gap] --> Y[000016-020-docs-code-gen-worker-discipline]
+  X --> Z[000016-030-docs-task-template-goal-verification]
+  X --> AA[000016-040-docs-skill-author-future-proofing]
+  X --> AB[000016-050-docs-custom-agent-bounded-evidence]
+  X --> AC[000017-010-infra-codex-karpathy-validation]
+  Y --> AC
+  Z --> AC
+  AA --> AC
+  AB --> AC
+```
+
+## Batch 7
+
+- Spec: `docs/ywc-plans/claude-code-karpathy-guideline-integration.md` (DONE after spec-ready Iteration 2; Operative Sections → §Iteration 1 Amendments §A10)
+- Granularity mode: `llm`
+- Starting phase: `000018`
+- Rationale: Codex Karpathy batch occupies `000016-010..050` + `000017-010` (active). Claude Code batch starts at `000018` to avoid collision.
+- Scope: Claude Code skills/agents only. No `codex/**`, no product code, no new `karpathy-*` skill/agent.
+
+### Phase 000018 — Karpathy Discipline Integration (foundation + parallel per-skill)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000018-010-docs-principles-foundation` | docs | (root) |
+| `000018-020-docs-planning-discipline` | docs | `000018-010` |
+| `000018-030-docs-task-generator-goal-evals` | docs | `000018-010` |
+| `000018-040-docs-surgical-simplicity-detection` | docs | `000018-010` |
+| `000018-050-docs-execution-discipline` | docs | `000018-010` |
+
+### Phase 000019 — Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000019-010-infra-karpathy-validation` | infra | `000018-010`, `-020`, `-030`, `-040`, `-050` |
+
+### Parallel Execution Notes (Batch 7)
+
+- Initial ready set: `000018-010-docs-principles-foundation` (foundation; establishes canonical principle names in `references/principles.md`).
+- After `000018-010` merges: `000018-020`, `000018-030`, `000018-040`, `000018-050` are parallel-safe — disjoint Ownership across distinct skill/agent subtrees.
+- `000019-010` is a hard gate: waits for all Phase `000018`, then runs the §A5 extended `rg`, `validate.sh`, `install.sh --list --cc`, `--list --cc-agents`, and the `git diff --name-only` scope-boundary check.
+- Conflict notes: the four Phase 000018 parallel tasks own disjoint areas — 020 owns spec-validate/plan/spec-writer; 030 owns task-generator (incl. evals); 040 owns impl-review + 3 language reviewers + code-gen; 050 owns parallel/sequential executors + debug-rootcause + root-cause-analyst. None overlaps. All four only *read* `references/principles.md` (edited solely by 010).
+- Hard boundary: no `codex/**` edits, no new `karpathy-*` skill/agent, README sync only for the §A7 user-surface list (task-generator, spec-validate, plan, spec-writer, parallel-executor, code-gen).
+- FR mapping: FR-1→000018-010, FR-2/FR-3→000018-020, FR-4/FR-12→000018-030, FR-5/FR-7→000018-040, FR-6/FR-8/FR-9/FR-10→000018-050, FR-11→000019-010.
+
+```mermaid
+graph LR
+  P[000018-010-docs-principles-foundation] --> Q[000018-020-docs-planning-discipline]
+  P --> R[000018-030-docs-task-generator-goal-evals]
+  P --> S[000018-040-docs-surgical-simplicity-detection]
+  P --> T[000018-050-docs-execution-discipline]
+  P --> G[000019-010-infra-karpathy-validation]
+  Q --> G
+  R --> G
+  S --> G
+  T --> G
+```
