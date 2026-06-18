@@ -36,6 +36,8 @@ When tempted to skip a step, check this table first:
 | "Use git worktrees to split the parallel groups inside one clone" | Worktrees separate the working tree and the untracked `.ywc-run-state.json`, but **share `.git` refs** — the local `<base>` branch is shared and can be checked out in only one worktree, so the accumulation still collides at the ref layer. Worktrees are not an isolation boundary for this mode; use separate clones. See [references/aggregate-pr.md](references/aggregate-pr.md) §C. |
 | "Each wave has only one task — worktrees add nothing, just work on the aggregate branch" | Worktree-per-task (Step 4a) is unconditional, independent of wave width and delivery mode. A fully linear chain (every wave = 1 task) is the **wrong input** for this skill — stop and route to ywc-sequential-executor per the Step 2 Linear-chain guard. Never invent an `aggregate-branch-serial` path. |
 | "`--aggregate-pr` accumulates on the aggregate branch, so check it out and commit there" | `--aggregate-pr` changes only **end-of-run** delivery (Step 5 / §B). Per-task execution (Step 4a–4e) is identical to every mode: isolated worktree + feature branch + `--defer-push` local merge. The aggregate branch is carved at Step 5, never used as the per-task work surface. |
+| "Implement the whole wave, then verify everything at the wave end" | That is outrunning your headlights — behavior-changing tasks crash at runtime when test feedback comes only after a big batch. Tests gate implementation: a behavior-changing worker authors/confirms its failing test before its implementation (Step 4b directive). See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2. |
+| "Same-wave tasks share an API/DTO, they'll each just edit it" | A shared public surface edited by two parallel workers is a merge/design conflict waiting to happen. Define the contract before worker dispatch (or serialize the tasks across waves); design the interface before the body. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3 and the Shared Surfaces guard. |
 
 **Violating the letter of these rules is violating the spirit.** Parallel execution is faster only when wave isolation is honored.
 
@@ -241,6 +243,14 @@ for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktre
 
   > Implement the minimum code that satisfies this task — no speculative features, no unsolicited abstractions, no "flexibility" that wasn't asked for. When editing existing code: touch only files listed in your declared Ownership; do not improve adjacent code, comments, or formatting unless they are the direct subject of this task. If you notice unrelated issues, mention them in the PR description — do not fix them. Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify before committing.
 
+- **Interface-first (deep module) directive (append verbatim to every subagent prompt):**
+
+  > Before writing the body, design the public interface this task exposes or changes — function signature, endpoint, event payload, DTO, component props, CLI flag — and keep the implementation behind it. Do not split cohesive behavior into shallow single-use wrappers, and add an interface only for a real boundary (no speculative generality). A shallow-module maze is what the next reader, human or AI, gets lost in. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3.
+
+- **Test-first-where-feasible directive (append verbatim to every subagent prompt):**
+
+  > If this task changes observable behavior, author the test first and confirm it fails (RED) for the intended reason before implementing, then make it pass (GREEN) — do not weaken or delete a test to go green. Don't outrun your headlights: feedback speed is your speed limit. Docs/config/mechanical tasks may skip the RED state but must state the reason; never fabricate an empty/passing test for an untestable change. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2.
+
 **Handling each subagent's status return**: each subagent ends with `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular: `NEEDS_CONTEXT` → provide the missing context and re-dispatch the same subagent at the same model class (context is the cheapest fix); `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report). Do not silently retry the same subagent on the same input — change the input or the model class between attempts.
 
 ## Status Routing
@@ -261,7 +271,9 @@ The named worker subagents return payloads per [../references/subagent-status-ac
 
 **4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`
 
-**4d. Review (optional)** — If `--review` is set, auto-invoke `/ywc-impl-review` on the task's worktree branch after Task Verify (4c) passes and **before** the Wave Delivery (4e). Running the review while the code is still isolated in its worktree means any issue it surfaces is fixed before the change reaches the base branch. For `--local-merge` and `--draft`, this is the last quality gate where no remote bot review has run yet. For `--per-task-pr`, a remote bot review also runs after PR creation (Step 4e (a)), so here `--review` acts as a pre-PR gate that reduces the number of bot round-trips rather than being the only gate.
+**4d. Review (optional + forced for critical paths)** — If `--review` is set, auto-invoke `/ywc-impl-review` on the task's worktree branch after Task Verify (4c) passes and **before** the Wave Delivery (4e). Running the review while the code is still isolated in its worktree means any issue it surfaces is fixed before the change reaches the base branch. For `--local-merge` and `--draft`, this is the last quality gate where no remote bot review has run yet. For `--per-task-pr`, a remote bot review also runs after PR creation (Step 4e (a)), so here `--review` acts as a pre-PR gate that reduces the number of bot round-trips rather than being the only gate.
+
+**Critical-path auto-escalation (forced, even without `--review`).** Gray-box review is the default, but it is insufficient for critical modules. When a task's declared Ownership matches a critical path (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries — full list and `CLAUDE.md` `critical_paths` override in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4), invoke `/ywc-impl-review` **and** `/ywc-security-audit` on that task's worktree branch before its 4e delivery, regardless of `--review`. Detection is on the task's Ownership (known at wave planning). Non-critical tasks keep the default gray-box verification.
 
 The review applies the [recurring real-world defects catalog](../ywc-impl-review/references/recurring-defects.md) — the defect classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation, HTTP status, test fidelity) that PR-review bots flag most. Catching them here reduces the bot-review round-trips that would otherwise land on the aggregate/per-task PR.
 
@@ -431,6 +443,7 @@ Display the following after all waves are complete:
 - Total tasks executed, total waves
 - Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode
 - Failed/skipped tasks with reasons
+- Per-wave changed public contracts (interfaces/DTOs altered) and any critical-path tasks that triggered `/ywc-security-audit`
 - In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed
 - In `--per-task-pr` mode: each task's PR was created, CI-verified, bot-reviewed, and **merged** (`gh pr merge`); list each PR URL with its merged status
 - **Worktree cleanup status** — one line per task, in one of these categories (omitted when `--terse` is set):
