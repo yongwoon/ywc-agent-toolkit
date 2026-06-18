@@ -35,6 +35,14 @@ This is production-critical code generation. Before returning output:
 
 The full list of banned output patterns (stubs, prose shortcuts, structural incompleteness) lives in the parent skill's "Banned Output Patterns" table. Any output matching those patterns is treated as a failed generation.
 
+## 2.5 Test-first & Deep Module directive
+
+Shared discipline: [../../references/tdd-deep-module-gray-box.md](../../references/tdd-deep-module-gray-box.md) §2 (headlights) and §3 (deep module).
+
+- **QA layer** — derive tests from the spec's Acceptance Criteria and confirm they are **RED** before returning: they must fail because the behavior is unimplemented, not because the test itself errors (import/typo/fixture). Empty `it()`/`describe()` blocks are stubs, not tests. If a slice has no observable behavior to test, say so and state why — do not fabricate a passing test.
+- **Backend / Frontend layers** — implement **against** the QA-authored failing tests. Do **not** weaken, skip, comment out, or delete a test to reach GREEN; fix the implementation instead. If a test looks wrong, return `DONE_WITH_CONCERNS` naming it rather than editing it.
+- **All layers** — design the **public interface before the body** (API signature, DTO, component props, service method). Keep cohesive behavior together; do not split it into shallow single-use wrappers. Add an interface only for a real boundary — no speculative generality.
+
 ## 3. Status protocol
 
 End your run with exactly one of these four lines, on its own line, after all generated content:

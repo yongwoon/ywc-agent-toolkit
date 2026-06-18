@@ -2,6 +2,10 @@
 
 複数の Layer にわたるコードを同時に生成する Skill です。Backend + Frontend + QA Agent を並列で実行します。
 
+## Test-first・Deep Module・Critical Module Review
+
+default path は headlights を gate します：QA lane が Backend/Frontend 実装確定の前に失敗する(RED) test を先に作成します。`--tdd` はより強い full RED → GREEN → REFACTOR ritual を opt-in し、default minimal gate を置き換えます。Public interface を body より先に設計します(deep module)。生成ファイルが critical path(auth, payment, crypto, PII, external input)に触れる場合は internal review を要求し、`/ywc-security-audit` を required next step として明示します。詳細は `references/tdd-deep-module-gray-box.md` を参照してください。
+
 ## 使用方法
 
 ```text

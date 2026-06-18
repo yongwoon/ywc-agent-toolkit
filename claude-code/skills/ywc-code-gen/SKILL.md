@@ -27,8 +27,8 @@ When tempted to skip a step, check this table first:
 | "I'll add error handling for edge cases that might come up later" | No error handling for scenarios the spec doesn't mention. Trust the spec's boundary conditions. |
 | "This helper could be reused elsewhere, I'll make it generic" | Single-use code needs no abstraction. Extract to shared only when the spec explicitly requires it or reuse is confirmed by the Reuse Gate. |
 | "I improved the adjacent module's code quality while I was in the file" | Surgical Changes. Remove those improvements. They belong to a different PR and a different review boundary. |
-| "I'll design the module interface as I generate the implementation" | Gray Box: design the public interface before generating the body. Write the API signatures and their contracts first — that is a design decision that belongs to you, not the AI. Generate only the implementation body. Interface decisions made under generation pressure produce shallow modules that are expensive to fix later. |
-| "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. Without test feedback, AI-generated implementations grow unchecked until they crash at runtime. Use `--tdd` to enforce RED → GREEN → REFACTOR, or write failing test stubs before any implementation code. |
+| "I'll design the module interface as I generate the implementation" | Deep Module: design the public interface before generating the body. Write the API signatures and their contracts first — that is a design decision that belongs to you, not the AI. Generate only the implementation body. Interface decisions made under generation pressure produce shallow modules that are expensive to fix later. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3. |
+| "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. Without test feedback, AI-generated implementations grow unchecked until they crash at runtime. The default path already gates this: the QA lane authors failing (RED) tests **before** Backend/Frontend implementation is finalized (Phase 1). `--tdd` is the stronger opt-in superset (full RED → GREEN → REFACTOR with checkpoint commits). See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2. |
 
 **Violating the letter of these rules is violating the spirit.** A stub committed today is a runtime crash tomorrow.
 
@@ -46,6 +46,17 @@ When tempted to skip a step, check this table first:
 This skill uses **Pattern B (Two-Phase)** from [advisor-pattern.md](../references/advisor-pattern.md). Code generation decisions range from mechanical (scaffold a CRUD endpoint following the project's existing pattern) to genuinely design-heavy (choose between repository pattern vs service layer vs direct query, pick a state management boundary, decide a test seam). Running every generation agent on Opus wastes frontier capacity on the mechanical cases; running every agent on Sonnet undersells the design-heavy ones. Phase 1 generates the obvious cases at Sonnet cost; Phase 2 escalates only the genuinely ambiguous design decisions to a short Opus advisor pass.
 
 **Budget**: up to 5 Opus design-advisor calls per invocation, shared across all three agents. Most generation tasks should use fewer — Phase 2 is reserved for decisions where more than one valid implementation exists and the correct choice depends on project-specific context.
+
+## TDD Modes
+
+Two modes gate the headlights (don't let AI-generated code outrun test feedback). Canonical rules: [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2.
+
+| Mode | When | What it does | Cost |
+|---|---|---|---|
+| **Default (minimal RED gate)** | no `--tdd` | QA authors failing (RED) tests before Backend/Frontend implementation is finalized (Phase 1); Step 7 confirms RED→GREEN. **One** RED-before-implement checkpoint. | Fastest; gates the headlights without per-stage commits. |
+| **`--tdd` (full ritual)** | opt-in | Full RED → GREEN → REFACTOR with per-stage checkpoint commits, delegated to [`ywc-tdd-ritual`](../ywc-tdd-ritual/SKILL.md). | Stronger audit trail; more commits and time. |
+
+`--tdd` **supersedes** the default minimal gate — it is the strict superset, not an additional pass. Do not run both. The default stays opt-out-free (no flag flip); opt into `--tdd` when the per-stage audit trail is worth the extra commits.
 
 ## Continuous Execution Rule
 
@@ -95,7 +106,11 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 2. **Read Specification File** — Extract feature requirements from the `--spec` file.
 
-3. **Phase 1 — Parallel Generation** — Use the Task tool to spawn three subagents in parallel. Pass `subagent_type` and `model` explicitly on each call so the executor layer dispatches to the canonical Tier-1 worker agents at Sonnet cost:
+3. **Phase 1 — Generation with a default RED-first gate** — Use the Task tool to dispatch the canonical Tier-1 worker agents. Pass `subagent_type` and `model` explicitly on each call so the executor layer dispatches at Sonnet cost.
+
+   **Default ordering (no `--tdd`) — minimal RED-first gate (don't outrun the headlights):** for behavior-changing generation, dispatch the **QA subagent first** to author tests covering the spec's Acceptance Criteria, then **confirm they fail (RED)** for the intended reason (the behavior is unimplemented — not a test error). Only then dispatch the **Backend and Frontend subagents in parallel** to implement against those failing tests; Step 7 confirms the RED→GREEN transition. Backend and Frontend stay concurrent with each other — the only added ordering is QA-RED-before-implementation-finalized. If a lane has no observable behavior to test (pure config/scaffold), record the exception per [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) ("Allowed exceptions") and proceed — never fabricate empty tests (see Banned Output Patterns). With `--tdd`, the full RED → GREEN → REFACTOR ritual supersedes this minimal gate (see TDD Modes below). The shared discipline (headlights, deep module, gray-box) lives in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md).
+
+   The three worker agents:
    - **Backend subagent** (`subagent_type: ywc-backend-coder`, `model: sonnet`) — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). The persona lives in [`tools/claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md); the dispatch prompt only carries the task brief (spec excerpt, project context, ubiquitous-language table, and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md)). Role reference for historical authoring guidance: `references/backend-agent.md`. **When the brief includes a DB migration, inject the shared schema guide into the dispatch prompt** — [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`) — so the generated migration honors the eight invariants instead of relying on the model's defaults.
    - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`tools/claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
    - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`tools/claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
@@ -141,7 +156,9 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    If no build or test command is configured in `package.json` / project config, note "No verification configured — manual check required" and set Completion Status to `DONE_WITH_CONCERNS`.
 
-   **When `--tdd` is set**, instead of running tests only at the end, enforce checkpoint commits at each stage:
+   **Default RED→GREEN confirmation (no `--tdd`):** the QA-authored tests were confirmed RED in Phase 1; this gate's Tests row must now show them GREEN. Report the transition in the output (`Tests RED→GREEN: confirmed`), or `N/A (exception: <reason>)` when a lane took the no-observable-behavior exception. A test that was never RED first (written to match already-generated code) defeats the headlights gate — treat it as a test-authoring concern, not a pass.
+
+   **When `--tdd` is set** (supersedes the default minimal gate — do not run both), instead of running tests only at the end, enforce checkpoint commits at each stage:
    - After generating the test file (RED state): `git commit -m "test: add tests for <feature>"` — verify tests fail before committing.
    - After implementing code that makes tests pass (GREEN state): `git commit -m "feat: implement <feature>"`.
    - After any cleanup or refactor: `git commit -m "refactor: clean up <feature>"`.
@@ -160,6 +177,9 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Phase 2 advisor calls (Opus): X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
+- TDD mode: {default-red-gate | --tdd}
+- Tests RED→GREEN: {confirmed | N/A (exception: <reason>)}
+- Critical modules (internal review required): {none | <file list> — /ywc-security-audit REQUIRED}
 
 ### Generated Files
 - Backend: [file list, each marked [P1] or [P2]]
@@ -248,6 +268,8 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 | PROCEED (≥ 90) | DONE | Code is ready for `ywc-impl-review`. |
 | REVIEW (70 – 89) | DONE_WITH_CONCERNS | Emit code, but flag the weakest dimension and the rationale in the completion summary. The reviewer must see this. |
 | STOP (< 70) | BLOCKED | Do not emit code. Report what evidence (architecture scan, reuse search) is missing. |
+
+**Critical-module exception (gray-box is insufficient).** Default review is gray-box — verify the public contract and delegate internals. But when any generated file matches a critical path (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries — full list and `CLAUDE.md` `critical_paths` override in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4), the gate requires **internal** review of those modules, not just an interface check. `ywc-code-gen` cannot merge, so it escalates by surfacing: list the critical files in the completion report and add `/ywc-security-audit` to **Next Steps as REQUIRED** (not optional). Detection runs against the **generated file set after generation** (the file list does not exist before Phase 1).
 
 The gate score must appear in the completion summary together with the Backend / Frontend / QA file counts. The Phase 2 advisor budget (5 calls) covers gate evaluation; do not double-count.
 

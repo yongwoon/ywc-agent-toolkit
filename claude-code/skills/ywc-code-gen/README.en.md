@@ -2,6 +2,10 @@
 
 A Skill for generating code across multiple layers simultaneously. Runs Backend + Frontend + QA Agents in parallel.
 
+## Test-first, Deep Module, Critical Module Review
+
+The default path gates the headlights: the QA lane writes failing (RED) tests before Backend/Frontend implementation is finalized. `--tdd` opts into the stronger full RED → GREEN → REFACTOR ritual and supersedes the default minimal gate. Public interfaces are designed before bodies (deep module). When generated files touch a critical path (auth, payment, crypto, PII, external input), the run requires internal review and flags `/ywc-security-audit` as a required next step. See `references/tdd-deep-module-gray-box.md` for details.
+
 ## Usage
 
 ```text
