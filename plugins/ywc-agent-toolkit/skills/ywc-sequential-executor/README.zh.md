@@ -57,7 +57,7 @@
 
 ## Contract 和 TDD baseline
 
-对于改变行为的任务，executor 会在实现前记录 changed public contracts 和 critical internals，并先要求失败测试或契约断言。docs-only、config-only、mechanical 或没有可用 harness 的情况会作为明确的 TDD exception 报告。最终报告包含 changed contracts、contract tests、critical internals 和 exceptions。
+对于改变行为的任务，executor 会在实现前记录 changed public contracts 和 critical internals，并先要求 failing test 或 contract assertion。docs-only、config-only、mechanical 或没有可用 harness 的情况会作为明确的 TDD exception 报告。最终报告包含 changed contracts、contract tests、critical internals 和 exceptions。
 
 ## 执行周期
 
