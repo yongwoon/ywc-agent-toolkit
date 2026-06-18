@@ -170,7 +170,7 @@ Bundle delta:    -30 KB gzipped (-1.2 %)
 Lines removed:   ~450
 ```
 
-The verification block at the bottom MUST follow `ywc-verify-done`'s `command → exit code → claim` shape — see [`../ywc-verify-done/SKILL.md`](../ywc-verify-done/SKILL.md). The "PASS" / "FAIL" wording is required; vocabulary like "should pass" / "probably green" is forbidden by `ywc-verify-done`.
+The verification block at the bottom MUST follow `ywc-verify-done`'s `command → exit code → claim` shape. The "PASS" / "FAIL" wording is required; vocabulary like "should pass" / "probably green" is forbidden by `ywc-verify-done`.
 
 ## Integration
 
@@ -207,6 +207,6 @@ Before declaring the cleanup pass complete, verify:
 |---|---|
 | [references/detection-tools.md](references/detection-tools.md) | Picking a tool for a new ecosystem; writing the grep-based fallback for an unsupported language |
 | [references/safety-tiers.md](references/safety-tiers.md) | Classifying a borderline item (SAFE vs CAUTION vs DANGER) — full rules with concrete examples |
-| [../ywc-verify-done/SKILL.md](../ywc-verify-done/SKILL.md) | Per-batch verification block shape (command + exit code + claim) — mandatory at Step 7 |
-| [../ywc-code-gen/SKILL.md](../ywc-code-gen/SKILL.md) | When a "duplicate consolidation" turns out to require behavior reconciliation, route there |
-| [../ywc-confidence-gate/SKILL.md](../ywc-confidence-gate/SKILL.md) | Borderline CAUTION ↔ DANGER classifications — use the 5-dimension rubric to decide |
+| `ywc-verify-done` | Per-batch verification block shape (command + exit code + claim) — mandatory at Step 7 |
+| `ywc-code-gen` | When a "duplicate consolidation" turns out to require behavior reconciliation, route there |
+| `ywc-confidence-gate` | Borderline CAUTION ↔ DANGER classifications — use the 5-dimension rubric to decide |
