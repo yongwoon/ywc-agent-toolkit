@@ -1,0 +1,23 @@
+{
+  "skill_name": "ywc-brainstorm",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to build a lightweight team analytics dashboard. Brainstorm it with me.",
+      "expected_output": "Reads enough project context before asking questions, then runs one-question-at-a-time discovery over What, Why, Out of Scope, and Done When. It proposes 2-3 approaches with trade-offs, presents the selected design for approval, and stops at an explicit ywc-plan handoff. It does not write code, draft a spec, or invoke implementation skills.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Let's build a platform with auth, billing, chat, analytics, and admin tools. Start brainstorming.",
+      "expected_output": "Detects that the request spans multiple independent subsystems before normal questioning. It asks the user to narrow to one subsystem or decompose first, and does not proceed into a broad all-in-one design.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Just build the feature; no questions.",
+      "expected_output": "Does not treat speed as a waiver. It asks one consolidated question covering What, Why, Out of Scope, and Done When, then still requires design approval before handing off to ywc-plan. It does not jump directly to ywc-code-gen or an executor.",
+      "files": []
+    }
+  ]
+}
