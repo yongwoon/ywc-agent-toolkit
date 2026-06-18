@@ -13,6 +13,17 @@ An effective table:
 
 A table that lists generic "be careful" advice will be skipped by the agent. A table that names the exact shortcut the agent is about to take stops the bypass.
 
+## Required Domain-Specific Coverage
+
+Every new ywc-* skill must include domain-specific rows for these failure classes:
+
+| Failure class | Acceptable row shape | Unacceptable generic row |
+|---|---|---|
+| Guessing missing context | `"The API name is not specified, I can infer it from nearby files"` -> `If this API name becomes a public contract, return NEEDS_CONTEXT or ask the smallest blocking question.` | `"Do not hallucinate"` -> `Be accurate.` |
+| Adjacent cleanup | `"This file is messy, clean it while adding the requested rule"` -> `Adjacent cleanup changes review scope unless the task names it.` | `"Stay focused"` -> `Avoid scope creep.` |
+| Overbuilding | `"There may be future variants, add a flexible abstraction now"` -> `Future-proofing without a named requirement is overbuilding.` | `"Keep it simple"` -> `Do not overcomplicate.` |
+| Completion without goal-specific verification | `"The diff looks right, mark it done"` -> `Done requires the goal-specific verification command or a documented blocker/exception.` | `"Run tests"` -> `Verify your work.` |
+
 ## Anatomy of a Strong Row
 
 ```markdown

@@ -39,6 +39,12 @@ A claim presented as Verified that is actually Inferred or Recalled is a defect.
 
 When the cost of verification is high, prefer to mark a claim Inferred or Recalled rather than skip it. Honest uncertainty beats false confidence.
 
+## 3.1. Assumption & Ambiguity Discipline
+
+Assumptions are allowed only when they are explicitly labeled and tied to the evidence that made them necessary. A skill must not invent requirements, file behavior, API contracts, benchmark results, test results, or user intent to keep momentum.
+
+When the next correct step depends on missing context, return `NEEDS_CONTEXT` or ask the smallest blocking question. Prefer local evidence over memory, and prefer verified repository behavior over generic best practice.
+
 ## 4. Reuse Discipline
 
 Before writing new code, a skill must check three sources in order:
@@ -62,6 +68,12 @@ When a skill discovers an adjacent improvement opportunity that is outside the r
 This applies even when the adjacent improvement looks "obviously correct". The cost of an unrequested change exceeds the cost of a deferred note, because the reviewer must now evaluate two changes instead of one.
 
 Exception: if the adjacent change is required for the requested change to succeed (e.g., a missing import the requested code depends on), implement it and call it out explicitly.
+
+## 5.1. Goal-Driven Execution
+
+Start from the user's stated goal and success criteria. Each implementation, review, or task-generation step must stay tied to a named outcome; steps that cannot be traced to the goal are out of scope.
+
+Do not perform adjacent cleanup, style churn, or speculative redesign unless it is required to satisfy the goal. Declare done only after goal-specific verification has run, or after a documented blocker or exception explains why it cannot run.
 
 ## 6. Failure Discipline
 

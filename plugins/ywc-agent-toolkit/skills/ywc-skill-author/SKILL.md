@@ -25,6 +25,7 @@ When tempted to bypass a rule, check this table first:
 | "This skill is small, full structure is overkill" | Even small skills must follow the rule set. Inconsistency across siblings hurts skill activation accuracy. |
 | "Description trigger summary is fine, I'll skip 'Do not use for...'" | Description must include explicit anti-triggers. Without them, the skill collides with siblings under fuzzy matching. |
 | "Rationalization Defense table is generic, I'll copy from another skill" | Each table must be **domain-specific**. Generic tables become noise that the agent ignores. |
+| "I covered hallucination with one generic row, that is enough" | Future skills need domain-specific defenses for guessing missing context, adjacent cleanup, overbuilding, and completion without goal-specific verification. Each row must name the workflow shortcut it blocks. |
 | "References are optional, keep everything inline" | Body >500 lines violates progressive disclosure. Extract long sections to `references/`. |
 | "Skill name does not need `ywc-` prefix" | Always `ywc-` prefix. Differentiates from upstream skills and signals project ownership. |
 | "`agents/openai.yaml` is UI-only, so it can wait" | Stale UI metadata causes wrong skill chips and default prompts. Update it with every meaningful SKILL.md change. |
@@ -69,6 +70,8 @@ These rules apply to **every** ywc-* skill without exception.
 | A14 | Tier 3 extraction MUST trigger when any single inline section exceeds **30 lines of static content** (lookup tables, decision trees, vocabulary lists, code-block templates). Workflow / step prose stays in Tier 2 even when long, so the agent reads it on activation. See [references/progressive-disclosure.md](references/progressive-disclosure.md) for the full decision tree |
 | A15 | Each skill MUST ship `agents/openai.yaml` with `interface.display_name`, `interface.short_description`, and `interface.default_prompt` synchronized to SKILL.md |
 | A16 | Do not add auxiliary documentation such as per-skill `CHANGELOG.md`, `INSTALLATION_GUIDE.md`, or `QUICK_REFERENCE.md`; only `SKILL.md`, required locale READMEs, `agents/openai.yaml`, and truly needed resources belong in the skill folder |
+
+Rationalization Defense rows must cover the skill's concrete failure modes, including guessing missing context, adjacent cleanup, overbuilding abstractions, and declaring completion without goal-specific verification. Acceptable: `"This migration task only mentions one table; I can also normalize neighboring tables"` -> `Adjacent schema cleanup changes review scope and belongs in a separate task unless the spec names it.` Unacceptable: `"Do not hallucinate"` -> `Be careful.`
 
 ## Progressive Disclosure (3-Tier Loading Model)
 
