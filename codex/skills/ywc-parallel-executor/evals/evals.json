@@ -24,6 +24,18 @@
       "prompt": "A stale .ywc-run-state.json from $ywc-parallel-executor 000001-010..000001-030 exists with saved waves[].tasks, then the user runs $ywc-parallel-executor 000002-010..000002-030 --tasks-dir tasks/.",
       "expected_output": "Pre-flight Resume Detection validates intent-match between the saved waves[].tasks set and the current explicit range. If the saved task set and requested range mismatch, it refuses silent resume and requires an explicit choice between resuming the saved run and discarding the stale run-state for a new run. The discard path must include cleanup guidance for the saved worktrees and branches, not only deleting .ywc-run-state.json, and no wave planning or task execution starts before that choice.",
       "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Use $ywc-parallel-executor 000003-010..000003-020 --local-merge where both same-wave tasks edit the public Invite API contract.",
+      "expected_output": "Treats the shared public Invite API contract as a Shared Surface, not merely a file overlap. It does not dispatch both tasks independently in the same wave unless a shared contract is defined before dispatch; otherwise it serializes them into separate waves or reports a reconsider verdict. Worker payloads include Changed Public Contracts, Critical Internals, Cross-Module Impact, and tdd-deep-module-gray-box guidance.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "A behavior-changing worker in $ywc-parallel-executor returns DONE but lists no authored/touched tests and no TDD exception.",
+      "expected_output": "Does not merge the task as clean DONE. It requires task-local contract or behavior test evidence, re-dispatches the worker, marks the task DONE_WITH_CONCERNS with an explicit TDD exception, or blocks the task. The final report includes tests authored/executed, Changed Public Contracts, Critical Internals, and TDD Exceptions per task.",
+      "files": []
     }
   ]
 }

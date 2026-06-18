@@ -28,6 +28,10 @@ Follow the Arguments or Workflow sections in [SKILL.md](./SKILL.md) for supporte
 
 For task worktrees that use Docker Compose, the executor delegates port isolation to `ywc-docker-isolate`: it audits selected task stacks before creating worktrees, sets up deterministic per-task ports after each worktree is verified, and tears down successful task stacks before pruning worktrees. BLOCKED or preserved worktrees keep their Docker state for recovery.
 
+## Contract Gates
+
+Wave planning treats shared public contracts as Shared Surfaces, not just file paths. Worker payloads require Changed Public Contracts, Critical Internals, Cross-Module Impact, and test evidence; behavior-changing tasks without authored/executed tests must provide an explicit TDD exception or remain blocked/with concerns.
+
 ## Delivery Modes
 
 | Mode | Behavior |

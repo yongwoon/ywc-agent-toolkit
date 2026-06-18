@@ -19,7 +19,7 @@ When tempted to skip a step, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "Tasks look independent, run all in parallel" | Run only tasks whose Ownership and Shared Surfaces do not overlap. Dependency-graph.md is the source of truth. |
+| "Tasks look independent, run all in parallel" | Run only tasks whose Ownership and Shared Surfaces do not overlap. Shared Surfaces include public contract names, not just file paths. Dependency-graph.md is the source of truth. |
 | "Wave 1 had a partial failure, start Wave 2 anyway" | Wave boundary is a hard gate. All Wave N tasks must succeed before Wave N+1 starts. |
 | "Worktree cleanup is manual hassle, skip it" | Stale worktrees corrupt subsequent runs. Always cleanup after each task completes via `ywc-worktrees --mode prune` (see [`ywc-worktrees`](../ywc-worktrees/)). |
 | "Conflicts With is just a hint" | If two tasks declare Conflicts With each other, they cannot run in the same wave even if dependencies allow. |
@@ -60,11 +60,7 @@ When tempted to skip a step, check this table first:
 
 **Flag conflicts**: `--local-merge`, `--draft`, `--per-task-pr`, and `--aggregate-pr` are mutually exclusive. If multiple are specified, ask for clarification before execution. `--group-name` is valid only with `--aggregate-pr`.
 
-**Default behavior**: When none of `--local-merge`, `--draft`, `--per-task-pr`, or `--aggregate-pr` is specified, ask the user which mode to use before execution. Do not silently default to any mode — the user must explicitly choose how completed tasks are delivered. Present the four options:
-1. `--local-merge` — No PR, merge and push to base-branch directly
-2. `--draft` — Create a single draft PR after all tasks complete (left open for human merge)
-3. `--per-task-pr` — Create, CI-verify, bot-review, and **merge** an individual PR per task (full lifecycle, like `ywc-sequential-executor`'s default)
-4. `--aggregate-pr` — One branch + one PR for the whole invocation, CI-verified, bot-reviewed, and **merged** (the full-lifecycle twin of `--draft`)
+**Default behavior**: When none of `--local-merge`, `--draft`, `--per-task-pr`, or `--aggregate-pr` is specified, ask the user which mode to use before execution. Do not silently default to any mode. Present: `--local-merge` (direct merge/push), `--draft` (single draft PR left open), `--per-task-pr` (full lifecycle PR per task), or `--aggregate-pr` (one full-lifecycle PR for the whole invocation).
 
 ## Definition of Done
 
@@ -169,7 +165,7 @@ Wave Planning is the critical upfront decision in this skill — a wrong wave bo
 
 **When to invoke**:
 - Task count is 4 or more, AND
-- At least one of: any candidate wave contains 3+ concurrent tasks; `Conflicts With` declarations exist across the task set; `Shared Surfaces` overlap across candidate waves; or the first-pass topological sort produced a wave with mixed categories (e.g., `db` + `api` + `ui` in the same wave).
+- At least one of: any candidate wave contains 3+ concurrent tasks; `Conflicts With` declarations exist across the task set; `Shared Surfaces` / public contract names overlap across candidate waves; or the first-pass topological sort produced a wave with mixed categories (e.g., `db` + `api` + `ui` in the same wave).
 - **Skip for ≤3 tasks or purely linear task chains** — the topological order is obvious and frontier reasoning adds no value.
 
 **How to invoke**: Spawn one higher-capability advisor subagent. Payload (≤200 lines total):
@@ -259,6 +255,8 @@ If setup exits 1, mark that task `BLOCKED`, preserve its branch/worktree for rec
 
   > Implement the minimum code that satisfies this task — no speculative features, no unsolicited abstractions, no "flexibility" that wasn't asked for. When editing existing code: touch only files listed in your declared Ownership; do not improve adjacent code, comments, or formatting unless they are the direct subject of this task. If you notice unrelated issues, mention them in the PR description — do not fix them. Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify before committing.
 
+- **Contract + TDD directive (append verbatim):** Apply [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md). Before behavior-changing work, record Changed Public Contracts, Critical Internals, and Cross-Module Impact; write or identify the failing test/contract assertion first; return tests authored/executed plus any `TDD Exception: <reason>`.
+
 **Handling each subagent's status return**: each subagent ends with `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular: `NEEDS_CONTEXT` → provide the missing context and re-dispatch the same subagent at the same model class (context is the cheapest fix); `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report). Do not silently retry the same subagent on the same input — change the input or the model class between attempts.
 
 **Status Routing** — Apply to every per-task subagent return inside the wave loop:
@@ -271,7 +269,7 @@ If setup exits 1, mark that task `BLOCKED`, preserve its branch/worktree for rec
 | `NEEDS_CONTEXT` | Provide missing context and re-dispatch the same subagent at the same model class. |
 | Status absent or unparseable | Treat as `BLOCKED`; preserve the worktree and surface the raw payload. |
 
-**4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`
+**4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`. If behavior changed, also run authored/touched contract or behavior tests before broad verification; a worker with no test evidence must be re-dispatched, marked `DONE_WITH_CONCERNS`, or blocked with a TDD exception.
 
 **4d. Review (optional)** — If `--review` is set, auto-invoke `ywc-impl-review` on the task's worktree branch after Task Verify (4c) and before the Wave Delivery (4e). For `--local-merge`, `--draft`, and `--aggregate-pr`, this is the last quality gate before the change reaches base with no remote bot review yet. For `--per-task-pr`, a remote bot review also runs after PR creation (Step 4e (a)), so here `--review` acts as a pre-PR gate that reduces bot round-trips rather than being the only gate.
 
@@ -443,6 +441,7 @@ Display the following after all waves are complete:
 - In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed
 - In `--per-task-pr` mode: each task's PR was created, CI-verified, bot-reviewed, and **merged** (`gh pr merge`); list each PR URL with its merged status
 - In `--aggregate-pr` mode: the single aggregate PR was created, marked ready, CI-verified, bot-reviewed, merge-readiness checked, and **merged**; list the merged PR URL
+- Contract evidence: Changed Public Contracts, tests authored/executed, Critical Internals, and TDD Exceptions per task (or `N/A`)
 - **Worktree cleanup status** — one line per task, in one of these categories (omitted when `--terse` is set):
   - `clean` — worktree removed and branch deleted via Step 4g (the expected outcome for every successful task)
   - `force-cleaned` — `git worktree remove --force` was required; note the reason (lock, disposable artifacts, etc.)
