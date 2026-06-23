@@ -409,3 +409,48 @@ graph LR
   C --> E
   D --> E
 ```
+
+---
+
+## Batch 11 — Tier 2: Harness-Feedback Loop & Mission Persistence
+
+- Spec: `docs/ywc-plans/tier2-harness-feedback-and-mission-persistence.md`
+- Spec ready log: `docs/ywc-plans/tier2-harness-feedback-and-mission-persistence.spec-ready-log.md`
+- Granularity mode: `llm` · Language: english · Starting phase: `000025`
+- Scope: harness-improvement feedback loop (debug-rootcause / incident-postmortem emit systemic-prevention into ywc-review-learnings via `--source debug|incident`) and stateful mission persistence (new `ywc-project-mission` skill + `docs/project-mission.md`, read by ywc-plan, written from ywc-brainstorm).
+- Hard boundary: claude-code bundle only (no codex mirroring), markdown skill/doc edits only (no product code, no DB migration, no library introduction), propose+1-confirm apply mode.
+- Advisor pass: skipped (Pattern C optional; phase boundary obvious, exactly two feature areas).
+- No-AC requirements: none — every FR has a backing Acceptance Criterion.
+
+### Phase 000025 — Foundations + Consumer Integrations (intra-phase deps via Depends On)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000025-010-docs-review-learnings-prevention-sources` | docs | (root) |
+| `000025-020-docs-project-mission-skill` | docs | (root) |
+| `000025-030-docs-rootcause-postmortem-prevention-emit` | docs | `000025-010` |
+| `000025-040-docs-mission-brainstorm-plan-integration` | docs | `000025-020` |
+
+### Phase 000026 — Catalog & Conventions Finalization (hard gate)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000026-010-docs-catalog-claude-md-integration` | docs | `000025-010`, `000025-020`, `000025-030`, `000025-040` |
+
+### Parallel Execution Notes (Batch 11)
+
+- Initial ready set: `000025-010` and `000025-020` — disjoint ownership, parallel-safe.
+- `000025-030` runnable after `000025-010` merges (needs `--source debug|incident`); `000025-040` runnable after `000025-020` merges (needs `ywc-project-mission`). `000025-030` and `000025-040` are parallel-safe (disjoint ownership).
+- Phase-gate placement: `000025-030`/`000025-040` each depend on only ONE Phase 000025 task, so per the phase-gate rule they live in Phase 000025 (ordered via Depends On), not a separate phase.
+- Phase `000026` is a true hard gate: `000026-010` edits shared `claude-code/skills/README.md` + `CLAUDE.md` and starts only after ALL Phase 000025 tasks merge.
+- FR mapping: FR3→`000025-010`, FR4→`000025-020`, FR1/FR2→`000025-030`, FR5/FR6→`000025-040`, FR7/AC11→`000026-010`.
+
+```mermaid
+graph LR
+  A[000025-010-review-learnings-prevention-sources] --> C[000025-030-rootcause-postmortem-prevention-emit]
+  B[000025-020-project-mission-skill] --> D[000025-040-mission-brainstorm-plan-integration]
+  A --> E[000026-010-catalog-claude-md-integration]
+  B --> E
+  C --> E
+  D --> E
+```
