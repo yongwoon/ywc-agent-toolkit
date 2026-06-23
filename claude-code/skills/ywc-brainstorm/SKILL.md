@@ -48,6 +48,7 @@ When tempted to bypass the gate, check this table first:
 | "The user only wants approach A, I'll skip proposing alternatives" | Always propose 2–3 approaches with trade-offs. The user often *thinks* they want A but, when shown B and C, picks something else. Even if A wins, the explicit trade-off makes the design defensible during review. Lead with the recommendation, but show the alternatives. |
 | "The request is too big for one design, I'll start anyway and split later" | If the request describes multiple independent subsystems ("a platform with X, Y, Z, and analytics"), STOP and decompose first. Each subsystem gets its own brainstorm → plan → spec cycle. Starting before decomposition produces a spec the user does not actually want and tasks that have to be re-cut. |
 | "I'll skip the visible 'design presented' step and just start a `ywc-plan`" | The handoff to `ywc-plan` carries the approved design as input. Without an explicit approval step, `ywc-plan` has nothing concrete to operate on and will re-ask the same anchors — duplicating work, frustrating the user, and breaking the contract that each skill has a single responsibility. |
+| "This design clearly defines the mission — just write `docs/project-mission.md` during handoff" | The Step 6 mission persistence is **opt-in**: persisting durable intent to a committed, `@`-autoloaded file frames *every* future planning session, so it must be the user's choice, not an inferred write. Offer once via `ywc-project-mission update --source brainstorm`; on decline or silence, no-op. Writing it unasked, or blocking the handoff until the user answers, both violate the contract. |
 | "User wants to keep iterating in this session, I'll just keep brainstorming" | Once the design is approved, this skill terminates. Continuing to iterate inside the brainstorm scope reopens settled questions. If the user genuinely needs to change direction, end this skill, return to `ywc-brainstorm` for the *new* idea, and produce a new design doc. |
 
 **Violating the letter of these rules is violating the spirit.** The hard gate exists because every implementation skill is downstream of "the user said yes to this design."
@@ -149,6 +150,15 @@ Recommended approach: <one paragraph; alternatives noted as "ruled out because �
 (Detailed sections from Step 5 follow as context for ywc-plan.)
 ```
 
+**Optional: persist the mission.** After surfacing the handoff, offer once to persist the durable part of this design to the project mission file:
+
+```text
+Persist this to docs/project-mission.md? (Mission = What + Why, Success Criteria = Done When)
+→ /ywc-project-mission --mode update --source brainstorm   [y / skip]
+```
+
+If the user accepts, invoke `ywc-project-mission --mode update --source brainstorm`, mapping **What+Why** to the Mission / North-Star and each **Done When** item to a measurable Success Criterion; `ywc-project-mission`'s own CHANGESET confirmation gate still applies. If the user declines (or does not respond), it is a **clean no-op** — never write the mission file without acceptance, and never block the handoff on it. Only the *durable* anchors belong in the mission; a feature-specific Done-When is for `ywc-plan`, not the mission file.
+
 Never proceed to `ywc-code-gen`, `ywc-spec-writer`, `ywc-task-generator`, or any executor from this skill. The contract is: brainstorm produces an approved design; `ywc-plan` decides Small vs. Medium/Large and routes accordingly.
 
 ## Output Format
@@ -161,6 +171,7 @@ If the conversation runs long enough that the design needs a checkpoint, optiona
 
 - **Upstream callers:** User invocation; `ywc-plan` Step 1 (when an idea arrives via `ywc-plan` but has not yet been understood — `ywc-plan` delegates the clarification dialogue here).
 - **Downstream:** `ywc-plan` (always). Never `ywc-code-gen`, `ywc-spec-writer`, or any executor directly.
+- **Optional persistence:** `ywc-project-mission` (Step 6 — opt-in offer to persist the durable Mission (What+Why) + Success Criteria (Done When) via `update --source brainstorm`; declining is a clean no-op, the handoff never blocks on it).
 - **Pairs with:** `ywc-tech-research` (when the design hinges on a library / framework choice — pause this skill, run `ywc-tech-research`, then return), `ywc-product-review` (when the design needs business framing beyond what the user gave).
 
 ## Validation Checklist

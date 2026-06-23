@@ -72,6 +72,8 @@ After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-wr
 
 **Prerequisite:** If `docs/ubiquitous-language.md` exists, read it before asking any questions. The vocabulary defined there must frame the clarification dialogue itself — use canonical terms in your questions and note any "Synonyms to Avoid" so the user's answers are captured in the right terms from the start.
 
+**Prerequisite (mission framing):** If `docs/project-mission.md` exists, read it before asking any questions (best-effort, alongside the ubiquitous-language read above). Use its Mission / North-Star and active Success Criteria to **frame** the clarification dialogue — anchor questions to the stated mission, and seed the artifact's Acceptance Criteria from any Success Criterion this request advances. This is purely additive framing: the mission file's **absence is a clean no-op** (NFR2) — never block, delay, or re-derive planning because it is missing, and never treat its presence as overriding the user's stated intent for *this* request.
+
 Ask focused questions to extract four anchors. Use one round of consolidated questions (not back-and-forth) unless the user's initial input already covers some anchors.
 
 | Anchor | What to ask | Why it matters |
@@ -99,6 +101,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 - Existing `tasks/` directory if present — phase numbering and dependency context
 - Relevant `docs/ywc-plans/`, `docs/architecture/`, `docs/product/` if the project uses the LLM development guide layout
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and their "Synonyms to Avoid"; spec text and Out of Scope items must use canonical terms and never use synonym identifiers
+- `docs/project-mission.md` (if it exists) — Mission / North-Star + active Success Criteria; frame the plan's scope and seed Acceptance Criteria from criteria this request advances. Absence is a clean no-op (NFR2)
 - **Parent spec / design doc** named in the plan's own header (`Parent spec:`, `親 spec:`, `Spec Reference:`) — when the request is a follow-up or amendment to an existing plan, read the parent end-to-end. A follow-up that silently narrows the parent's explicit removal/scope list is a cross-document Consistency finding: in the LP column-drop follow-up, the parent said "delete `markDone`/`markFailed`" but the follow-up's removal list dropped `markDone`, which would have left a dangling write against the dropped column.
 
 #### Conditional reads (only when relevant to the request)
@@ -297,6 +300,15 @@ Next:
   3. (after tasks generated) /ywc-sequential-executor or /ywc-parallel-executor
 ```
 
+**Optional: mission write-back (AC14).** A plan *finalizes* a durable success criterion when it reaches this Step 5 handoff carrying **≥1 new durable success criterion** — a measurable, project-level done-condition that is not already present in `docs/project-mission.md` (a feature-only, throwaway done-condition does not count). When that holds, offer **once** to persist it:
+
+```text
+This plan finalized N new durable success criterion(s). Add to docs/project-mission.md?
+→ /ywc-project-mission --mode update --source plan   [y / skip]
+```
+
+On acceptance, invoke `ywc-project-mission --mode update --source plan` (its CHANGESET confirmation gate still applies). On decline or silence, it is a clean no-op — never write the mission file unasked, and never block the handoff on the answer. Skip the offer entirely when the plan introduces no new durable criterion (the common case for small/feature plans).
+
 Never proceed past the handoff. The user decides which downstream skill runs next — this skill is the planner, not the executor.
 
 ## Output Format
@@ -347,3 +359,4 @@ Before declaring the skill's task complete, verify:
 - **Downstream (Small path)**: `ywc-code-gen`, `ywc-sequential-executor`
 - **Downstream (Medium/Large path)**: `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
 - **Pairs with**: `ywc-product-review` (run before `ywc-plan` when business framing is unclear), `ywc-project-docs` (run after if `docs/` set is missing)
+- **Reads / writes-back**: `ywc-project-mission` — Step 1 reads `docs/project-mission.md` (best-effort) to frame clarification and seed Acceptance Criteria; Step 5 offers an opt-in `update --source plan` write-back when the plan finalizes ≥1 new durable success criterion. Both are no-ops on absence / decline (NFR2).
