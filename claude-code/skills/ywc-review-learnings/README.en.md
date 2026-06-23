@@ -35,7 +35,7 @@ Or via natural language:
 
 - (optional) `--mode read|update|list|curate` — force a mode (auto-detected if omitted)
 - (optional) `--target <glob|path...>` — review-target paths
-- (optional) `--source feedback|review|pr` — learning source for update mode (default `feedback`)
+- (optional) `--source feedback|review|pr|debug|incident` — learning source for update mode (default `feedback`; `debug`/`incident` capture root-cause / incident-prevention items)
 - (optional) `--pr <number>` — PR to harvest bot comments from with `--source pr`
 - (optional) `--output <path>` — learnings file path (default `docs/review-learnings.md`)
 - (optional) `--dry-run` — show the CHANGESET without writing

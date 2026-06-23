@@ -36,6 +36,7 @@ When tempted to bypass a rule, check this table first:
 | "This contradicts an old learning — keep both, let the reviewer decide" | Two contradictory learnings make the reviewer's behavior non-deterministic. Newest-wins: deprecate the old entry with a pointer to the new one (`~~strikethrough~~` + note), never silently delete. |
 | "Write the learnings without user confirmation, I inferred the intent" | An unconfirmed learning pollutes *every* future review on the matching glob. Always present the proposed ADD / MODIFY / DEPRECATE set for one confirmation round before writing. |
 | "Scope it `repo`-wide so it always applies" | Over-broad scope is the main source of review noise — a TypeScript naming rule applied to `*.sql` is pure friction. Scope to the narrowest file glob that captures the real pattern; reserve `repo` for genuinely universal conventions. |
+| "`--source debug`/`incident` came from a real bug, so write it straight in without the confirmation gate" | A debug/incident candidate is *still* an unconfirmed learning until the user approves the CHANGESET — a root cause that was specific to one incident can over-generalize into review noise on every matching path. These sources widen the intake, not the write path; the Steps 1–6 confirmation gate is mandatory for them too. |
 
 **Violating the letter of these rules is violating the spirit.** A learnings file full of unconfirmed, why-less, or over-scoped entries degrades review quality on every PR that touches a matching path — the opposite of its purpose.
 
@@ -45,7 +46,7 @@ When tempted to bypass a rule, check this table first:
 |-----------|--------|---------|-------------|
 | `--mode` | `--mode read\|update\|list\|curate` | auto-detect | Force a specific mode (see Mode Detection below) |
 | `--target` | `--target <glob\|path...>` | changed files | Review-target paths/globs whose applicable learnings should be loaded (`read`) or attributed (`update`) |
-| `--source` | `--source feedback\|review\|pr` | `feedback` | Where a new learning comes from in `update` mode (see Capture Sources) |
+| `--source` | `--source feedback\|review\|pr\|debug\|incident` | `feedback` | Where a new learning comes from in `update` mode (see Capture Sources) |
 | `--pr` | `--pr <number>` | — | With `--source pr`, harvest bot (CodeRabbit / Codex) review comments from this PR via `gh` and distill them into learnings. Optional convenience — never required |
 | `--output` | `--output <path>` | `docs/review-learnings.md` | Learnings file path |
 | `--dry-run` | flag | off | Show the proposed CHANGESET without writing to disk |
@@ -58,6 +59,14 @@ When tempted to bypass a rule, check this table first:
 | User is describing feedback on a finding ("this was wrong because…", "always flag…") | `update` |
 | File absent, user wants to start accumulating | `update` (creates the file with the first learning) |
 | User asks "what review learnings exist?" | `list` |
+
+> **`--source debug` / `--source incident` route through `update` unchanged.** A
+> confirmed root cause (from `ywc-debug-rootcause`) or an incident
+> recurrence-prevention item (from `ywc-incident-postmortem`) is just another
+> `update`-mode candidate: it enters the **same Steps 1–6 body**, the same
+> CHANGESET confirmation gate, and the same first-creation activation prompt.
+> There is no parallel write path — these sources only widen *where the
+> candidate comes from*, never *how it is written*.
 
 ## Workflow
 
@@ -101,8 +110,10 @@ Print the active learnings (optionally filtered by `--target` glob or category).
 | `feedback` (default) | A correction the user gave on a review finding — "that was a false positive because X" / "always flag Y because Z" | Take the user's reason verbatim as the *why*; classify polarity; confirm scope |
 | `review` | Confirmed recurring findings from a just-completed `ywc-impl-review` | Promote a finding the reviewer is confident about (especially one that recurs) into a `DO`/`DO-NOT` learning so it is caught earlier next time |
 | `pr` | Bot review comments (CodeRabbit / Codex) on a specific PR | `--pr <n>`; fetch via `gh`, keep only **accepted / resolved-by-fix** comments as `DO` learnings and **explicitly dismissed** ones (with the dismissal reason) as `FALSE-POSITIVE` learnings. A comment that was neither accepted nor dismissed is not yet a learning |
+| `debug` | A confirmed root cause from a `ywc-debug-rootcause` session worth preventing in review | Map the root-cause statement to the `Why`; classify polarity (usually `DO-NOT` — forbid the pattern that produced the bug, occasionally `DO` — require the guard that would have caught it); scope to the narrowest glob covering the defect class; record provenance `debug <symptom>` |
+| `incident` | A recurrence-preventing item from a `ywc-incident-postmortem` action list | Map the prevention item to the `Why` (the failure mode it stops from recurring); classify polarity (`DO` for a required safeguard, `DO-NOT` for a forbidden pattern); scope to the affected paths; record provenance `incident <id>` |
 
-The detailed harvest procedure for `--source pr` (the `gh` query and the accept-vs-dismiss classification) is in [references/capture-sources.md](references/capture-sources.md).
+The detailed harvest procedure for `--source pr` / `debug` / `incident` (the `gh` query, the accept-vs-dismiss classification, and the root-cause/prevention-item mapping) is in [references/capture-sources.md](references/capture-sources.md).
 
 ## Output Format
 
