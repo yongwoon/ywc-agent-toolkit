@@ -330,6 +330,18 @@ ywc-worktrees --mode prune --task-name <task-name>
 | `BLOCKED` | Cannot proceed — merge conflict, CI failure unfixable in 2 attempts, push rejected, or post-merge verification failed |
 | `NEEDS_CONTEXT` | One of `--branch`, `--base-branch`, `--task-name`, `--tasks-dir`, or `--mode` was missing or invalid; no work was performed |
 
+## Validation
+
+Before reporting `DONE`, verify:
+
+- [ ] Input validation passed for branch, base branch, task name, tasks directory, and mode.
+- [ ] PR-based modes created the expected PR and applied the documented CI / bot-review / merge-readiness gates.
+- [ ] `normal-pr` and `local-merge` modes produced a verified merge commit whose subject starts with `Merge branch 'feature/`.
+- [ ] Mark Task Complete moved the task under `<tasks-dir>/completed/<task-name>` or created the required empty marker commit for gitignored task directories.
+- [ ] The latest commit subject is exactly `chore: mark <task-name> as completed` after Mark Task Complete.
+- [ ] Local feature branch cleanup ran unless the selected mode or `--keep-branch` explicitly preserves it.
+- [ ] Required pushes completed, or `--defer-push` is reported as a caller-owned concern.
+
 ## Banned Output Patterns
 
 This skill produces operational side effects (commits, pushes, merges), not source code. The "Banned Output Patterns" idea applied here means: **never** declare `DONE` while leaving any of the following:

@@ -207,6 +207,25 @@ Emit one final report to the user:
 
 End the report with one Completion Status line — nothing follows it:
 
+## Output Format
+
+```text
+## Agentic Result: <goal-slug>
+
+### Iterations
+- Iteration <n>: <Pass|Fail|Blocked> — <one-line evidence>
+
+### Artifacts
+- Spec: <path-or-skipped>
+- Tasks: <tasks-dir-or-skipped>
+- Review: <ywc-impl-review status-or-skipped>
+
+### Completion Status
+<DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+```
+
+**Completion Status rules:**
+
 | Status | When |
 |---|---|
 | `DONE` | Final verdict Pass — implementation passed `ywc-impl-review`. |
