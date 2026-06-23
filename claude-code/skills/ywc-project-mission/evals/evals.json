@@ -1,0 +1,77 @@
+{
+  "skill_name": "ywc-project-mission",
+  "description": "Regression scenarios for the four-mode stateful-file behavior: first-creation activation prompt, idempotent no-op update, and deprecate-on-contradiction (newest-wins). Mirrors the ywc-review-learnings confirmation-gate contract.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "create-file-first-run",
+      "prompt": "이 프로젝트 Mission 기억해둬: 일본 건설업 SMB를 위한 근태관리 SaaS이고, 성공 기준은 현장 직원이 30초 안에 출퇴근 기록을 끝내는 것.",
+      "context": {
+        "preconditions": {
+          "docs/project-mission.md": "absent",
+          "$ARGUMENTS": "(none)"
+        }
+      },
+      "expected_behavior": [
+        "Mode auto-detects to `update` (user states durable intent, file absent).",
+        "Builds an ADD CHANGESET: one Mission/North-Star statement + one measurable Success Criterion (S001, e.g. 'on-site worker completes clock-in within 30s'), each with provenance `brainstorm` and today's date.",
+        "Presents the CHANGESET for one confirmation round before writing.",
+        "On confirmation, writes docs/project-mission.md with the file skeleton (Mission, Success Criteria table `ID | Criterion | Source | Added | Status`, Out of Scope, Change Log) and sets `<!-- updated: <today> -->`.",
+        "Because this is first creation, prints the `@docs/project-mission.md` CLAUDE.md activation prompt exactly once.",
+        "Prints a `Mission updated` confirmation block."
+      ],
+      "anti_behavior": [
+        "Writing the file without presenting the CHANGESET for confirmation.",
+        "Recording a non-measurable success criterion (e.g. 'be fast') instead of an observable done-condition.",
+        "Omitting provenance or the `Added` date on any entry.",
+        "Skipping the first-creation activation prompt, or printing it on a later non-creating run."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "idempotent-no-op-update",
+      "prompt": "Mission 다시 한 번 정리해줘 (내용은 직전과 동일).",
+      "context": {
+        "preconditions": {
+          "docs/project-mission.md": "exists with identical Mission + S001 already recorded",
+          "$ARGUMENTS": "--mode update"
+        }
+      },
+      "expected_behavior": [
+        "Reads the existing file and gathers the candidate from the source.",
+        "Classifies every candidate against the file and finds no difference — the confirmed CHANGESET is empty.",
+        "Idempotency gate (AC15/NFR3) triggers: makes NO file write, does NOT bump `<!-- updated: DATE -->`, appends NO Change Log row.",
+        "Reports 'mission unchanged' and stops."
+      ],
+      "anti_behavior": [
+        "Bumping the `<!-- updated: DATE -->` header on identical content.",
+        "Appending a Change Log row for a no-op.",
+        "Re-writing the file with reordered-but-equivalent content and calling it a change."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "deprecate-on-contradiction",
+      "prompt": "Success Criteria 바꾸자: 출퇴근 기록 목표를 30초가 아니라 중앙값 10초로 갱신해줘.",
+      "context": {
+        "preconditions": {
+          "docs/project-mission.md": "exists with active S001 'clock-in within 30s'",
+          "$ARGUMENTS": "--mode update --source plan"
+        }
+      },
+      "expected_behavior": [
+        "Recognizes the new criterion contradicts active S001 (same subject, different target).",
+        "Builds a CHANGESET pairing DEPRECATE (S001) with ADD (S002, measurable: 'median clock-in time under 10s', source `plan`, today's date) — newest-wins.",
+        "On confirmation, marks S001 `deprecated` with `~~strikethrough~~` and a `> deprecated <today>: superseded by S002` note; never hard-deletes S001.",
+        "Bumps `<!-- updated: <today> -->` and appends a Change Log row.",
+        "Prints a `Mission updated` confirmation block showing 1 ADD + 1 DEPRECATE."
+      ],
+      "anti_behavior": [
+        "Leaving both S001 and S002 active (two contradictory active criteria).",
+        "Hard-deleting S001 instead of deprecating it with strikethrough + reason.",
+        "Renumbering or reusing the S001 ID for the new entry."
+      ]
+    }
+  ]
+}
