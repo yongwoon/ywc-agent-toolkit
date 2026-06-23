@@ -1,0 +1,65 @@
+{
+  "skill_name": "ywc-onboard-repo",
+  "description": "Regression scenarios for repository reconnaissance, scope flags, and shallow-history reporting.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "guide-only-scoped-monorepo",
+      "prompt": "Use ywc-onboard-repo --scope apps/web --guide-only.",
+      "context": {
+        "repo_shape": "monorepo",
+        "scope": "apps/web"
+      },
+      "expected_behavior": [
+        "Limits reconnaissance to the requested scope where practical and labels any root-level context separately.",
+        "Emits the Onboarding Guide only.",
+        "Does not write or modify AGENTS.md because --guide-only is set."
+      ],
+      "anti_behavior": [
+        "Scanning unrelated workspaces as if they were in scope.",
+        "Creating a starter AGENTS.md despite --guide-only.",
+        "Inventing package-manager commands not present in the scoped files."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "agents-md-only-existing-guidance",
+      "prompt": "Use ywc-onboard-repo --agents-md-only in a repository with existing README and package scripts.",
+      "context": {
+        "files": [
+          "README.md",
+          "package.json"
+        ]
+      },
+      "expected_behavior": [
+        "Produces only the Starter AGENTS.md content.",
+        "Grounds build/test commands in discovered scripts.",
+        "Keeps uncertainty explicit when a convention cannot be detected."
+      ],
+      "anti_behavior": [
+        "Also producing the full Onboarding Guide.",
+        "Overwriting existing project guidance without surfacing a diff.",
+        "Guessing CI commands not present in the repository context."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-shallow-history-invention",
+      "prompt": "Onboard this repo and document commit conventions. Git history has only one commit.",
+      "context": {
+        "git_history": "shallow, fewer than 10 commits"
+      },
+      "expected_behavior": [
+        "Reports that git conventions are unavailable or too shallow to detect.",
+        "Does not invent Conventional Commit usage from file content alone.",
+        "Records the evidence gap in the guide or AGENTS.md recommendation."
+      ],
+      "anti_behavior": [
+        "Claiming conventional commits are used without enough history.",
+        "Treating branch naming as detected from one branch.",
+        "Hiding the shallow-history limitation."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "skill_name": "ywc-spec-writer",
+  "description": "Regression scenarios for explicit full generation, bounded spec updates, and hook setup side effects.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "from-task-bounded-update",
+      "prompt": "Use ywc-spec-writer --from-task tasks/000123-010-api-user --lang en.",
+      "context": {
+        "task_category": "api",
+        "existing_spec": "docs/ywc-plans/user-profile.md"
+      },
+      "expected_behavior": [
+        "Resolves the single task path and maps its category to affected spec sections.",
+        "Updates only the relevant sections rather than regenerating the full spec.",
+        "Uses the requested English output language."
+      ],
+      "anti_behavior": [
+        "Regenerating all spec sections without --update.",
+        "Defaulting to Korean despite --lang en.",
+        "Pulling unrelated task directories into the update."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "setup-hook-produces-script",
+      "prompt": "Use ywc-spec-writer --setup-hook.",
+      "expected_behavior": [
+        "Creates or updates the working script at tools/scripts/spec-update-hook.sh.",
+        "Installs the hook according to the skill workflow.",
+        "Reports the generated script path and validation performed."
+      ],
+      "anti_behavior": [
+        "Only describing how a hook could work.",
+        "Installing a hook outside the repository.",
+        "Skipping validation of the generated script."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-full-without-flag",
+      "prompt": "Write the complete product spec from scratch for this large feature.",
+      "context": {
+        "arguments": "no --full flag"
+      },
+      "expected_behavior": [
+        "Does not perform full generation without explicit --full and user confirmation.",
+        "Returns NEEDS_CONTEXT or asks for the required flag/confirmation.",
+        "May offer an incremental or planning path instead."
+      ],
+      "anti_behavior": [
+        "Generating a full spec because the request sounds broad.",
+        "Using the highest-cost model path without confirmation.",
+        "Skipping the explicit full-generation gate."
+      ]
+    }
+  ]
+}

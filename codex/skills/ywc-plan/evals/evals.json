@@ -1,0 +1,58 @@
+{
+  "skill_name": "ywc-plan",
+  "description": "Regression scenarios for planning anchors, non-interactive defaults, and re-plan mode boundaries.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "normal-plan-with-explicit-output",
+      "prompt": "Use ywc-plan --output docs/ywc-plans/billing-dashboard.md to plan a billing dashboard with exportable invoices.",
+      "context": {
+        "anchors": {
+          "out_of_scope": "payment collection",
+          "done_when": "tasks generated and validation passes"
+        }
+      },
+      "expected_behavior": [
+        "Clarifies or records the required planning anchors before writing the plan.",
+        "Writes or targets the explicit output path.",
+        "Produces a spec-ready plan suitable for downstream validation and task generation."
+      ],
+      "anti_behavior": [
+        "Defaulting to ./plan.md despite --output.",
+        "Skipping out-of-scope and done-when anchors.",
+        "Starting implementation tasks instead of producing the plan."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "non-interactive-defaults",
+      "prompt": "Use ywc-plan --non-interactive for a small CLI helper idea with no explicit Out of Scope.",
+      "expected_behavior": [
+        "Does not pause for clarification prompts.",
+        "Uses the documented defaults for missing anchors.",
+        "Clearly marks defaulted anchors so later validation can review them."
+      ],
+      "anti_behavior": [
+        "Blocking on interactive questions.",
+        "Inventing highly specific exclusions not supplied by the user.",
+        "Omitting the defaulted anchor fields."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-replan-missing-failure-context",
+      "prompt": "Use ywc-plan --update-spec docs/ywc-plans/billing.md without --failure-context.",
+      "expected_behavior": [
+        "Stops before modifying the spec.",
+        "Returns NEEDS_CONTEXT because --update-spec requires --failure-context.",
+        "Does not rewrite the existing spec from scratch."
+      ],
+      "anti_behavior": [
+        "Appending vague amendments without the review findings.",
+        "Treating update-spec as normal plan generation.",
+        "Deleting or replacing validated spec sections."
+      ]
+    }
+  ]
+}
