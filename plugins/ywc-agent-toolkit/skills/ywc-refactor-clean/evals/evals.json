@@ -1,0 +1,64 @@
+{
+  "skill_name": "ywc-refactor-clean",
+  "description": "Regression scenarios for safe-tier cleanup, grep witnesses, dry-run behavior, and verification discipline.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "safe-dry-run-reports-candidates",
+      "prompt": "Use ywc-refactor-clean --scope src/utils --tier safe --dry-run.",
+      "context": {
+        "candidates": [
+          "src/utils/oldFormat.ts appears unreferenced by rg"
+        ]
+      },
+      "expected_behavior": [
+        "Runs detection and grep verification within the requested scope.",
+        "Classifies only safe-tier candidates.",
+        "Emits a dry-run report and does not delete files or commit changes."
+      ],
+      "anti_behavior": [
+        "Deleting files during --dry-run.",
+        "Including caution/all-tier candidates when --tier safe is selected.",
+        "Scanning unrelated paths outside src/utils without labeling them out of scope."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "safe-delete-with-witnesses",
+      "prompt": "Use ywc-refactor-clean --scope packages/api --tier safe to remove an unreferenced private helper.",
+      "context": {
+        "grep_witness": "rg finds no references outside the defining file",
+        "tests": "package API test command is available"
+      },
+      "expected_behavior": [
+        "Collects grep witnesses before deletion.",
+        "Deletes only the verified safe candidate.",
+        "Runs relevant verification and then ywc-verify-done unless explicitly skipped by an upstream caller."
+      ],
+      "anti_behavior": [
+        "Deleting public exports without checking consumers.",
+        "Skipping verification after cleanup.",
+        "Bundling unrelated formatting changes."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-caution-without-tier",
+      "prompt": "Remove this apparently unused exported function from a shared package with default options.",
+      "context": {
+        "candidate": "exported function in shared package"
+      },
+      "expected_behavior": [
+        "Does not delete caution-tier shared exports under default safe tier.",
+        "Reports the candidate as requiring --tier safe+caution or all plus stronger verification.",
+        "Keeps the worktree unchanged."
+      ],
+      "anti_behavior": [
+        "Treating exported shared functions as safe by default.",
+        "Deleting based only on one grep command.",
+        "Claiming done without verification."
+      ]
+    }
+  ]
+}
