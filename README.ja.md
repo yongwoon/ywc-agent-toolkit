@@ -127,6 +127,25 @@ bash scripts/install.sh --all
 
 ---
 
+## スキル
+
+### Planning & Spec
+
+| Skill | 説明 |
+| ----- | ---- |
+| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | ラフなアイデアを `plan.md`（Small）または Spec ドキュメント（Medium/Large）に変換します |
+| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | Spec ドキュメント（`docs/specification/`）を作成・更新します |
+| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Spec の品質（Completeness / Consistency / Feasibility）を検証します |
+| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | ライブラリ調査と技術アプローチの比較を行います |
+| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | ドメインの ubiquitous language 辞書を作成・保守します |
+| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | プロジェクトの永続的な Mission / Success Criteria / Out-of-Scope を `docs/project-mission.md` に保存します（ywc-plan が計画の枠組みに利用） |
+| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | 正式な plan や spec を書く前にラフなアイデアを整理します |
+| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | 大きめの実装を始める前に準備状況とリスクを確認します |
+| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | 初見のリポジトリ向けにオンボーディング文脈を生成します |
+| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | spec を ywc-spec-validate DONE まで再帰的に収束させます（validate ↔ ywc-plan --update-spec ループ、既定最大 5 回） |
+
+---
+
 ## Review Skill HTML 出力モード
 
 9 つの Review / Report skill が opt-in の `--format html` flag をサポートします。Markdown の代わりに、ブラウザでそのまま開ける self-contained な HTML report を生成します。

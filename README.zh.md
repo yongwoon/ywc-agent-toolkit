@@ -127,6 +127,25 @@ bash scripts/install.sh --all
 
 ---
 
+## Skills
+
+### 规划与规格
+
+| Skill | 说明 |
+| ----- | ---- |
+| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | 将粗略想法转换为 `plan.md`（Small）或规格文档（Medium/Large） |
+| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | 编写和更新规格文档（`docs/specification/`） |
+| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | 验证规格质量（Completeness / Consistency / Feasibility） |
+| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | 调研库并比较技术方案 |
+| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | 创建并维护领域 ubiquitous language 词典 |
+| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | 将项目长期有效的 Mission / Success Criteria / Out-of-Scope 持久化到 `docs/project-mission.md`（ywc-plan 会读取它来框定规划） |
+| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | 在编写正式 plan 或 spec 之前整理粗略想法 |
+| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | 在开始较大实现前检查准备度和风险 |
+| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | 为不熟悉的仓库生成 onboarding 上下文 |
+| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | 递归收敛 spec 到 ywc-spec-validate DONE（validate ↔ ywc-plan --update-spec 循环，默认最多 5 次迭代） |
+
+---
+
 ## Review Skill HTML 输出模式
 
 9 个 Review / Report skill 支持可选的 `--format html` flag，生成可直接在浏览器中打开的 self-contained HTML 报告，而非 Markdown。

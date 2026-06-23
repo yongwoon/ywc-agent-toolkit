@@ -127,6 +127,25 @@ bash scripts/install.sh --all
 
 ---
 
+## Skills
+
+### Planning & Spec
+
+| Skill | 설명 |
+| ----- | ---- |
+| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | 러프한 아이디어를 `plan.md`(Small) 또는 Spec 문서(Medium/Large)로 변환합니다 |
+| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | Spec 문서(`docs/specification/`)를 작성하고 업데이트합니다 |
+| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Spec 품질(Completeness / Consistency / Feasibility)을 검증합니다 |
+| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | 라이브러리를 조사하고 기술 접근 방식을 비교합니다 |
+| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | 도메인 ubiquitous language 사전을 만들고 유지합니다 |
+| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | 프로젝트의 지속적인 Mission / Success Criteria / Out-of-Scope를 `docs/project-mission.md`에 저장합니다(ywc-plan이 계획의 프레임으로 읽음) |
+| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | 공식 plan 또는 spec을 작성하기 전에 러프한 아이디어를 정리합니다 |
+| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | 규모 있는 구현을 시작하기 전에 준비 상태와 리스크를 확인합니다 |
+| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | 익숙하지 않은 저장소를 위한 온보딩 컨텍스트를 생성합니다 |
+| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | spec을 ywc-spec-validate DONE 상태까지 재귀적으로 수렴시킵니다(validate ↔ ywc-plan --update-spec 루프, 기본 최대 5회) |
+
+---
+
 ## Review Skill HTML 출력 모드
 
 9개의 Review / Report skill이 opt-in `--format html` flag를 지원합니다. 이 flag는 Markdown 대신 브라우저에서 바로 열리는 self-contained HTML report를 생성합니다.

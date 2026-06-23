@@ -126,6 +126,25 @@ Consulte [README.md](README.md) para más detalles.
 
 ---
 
+## Skills
+
+### Planificación y especificación
+
+| Skill | Descripción |
+| ----- | ----------- |
+| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | Convierte una idea inicial en `plan.md` (Small) o en un documento de especificación (Medium/Large) |
+| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | Escribe y actualiza documentos de especificación (`docs/specification/`) |
+| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Valida la calidad de la especificación (Completeness / Consistency / Feasibility) |
+| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | Investiga librerías y compara enfoques técnicos |
+| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | Crea y mantiene un diccionario de ubiquitous language del dominio |
+| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | Persiste la Mission / Success Criteria / Out-of-Scope duradera del proyecto en `docs/project-mission.md` (ywc-plan lo lee para enmarcar la planificación) |
+| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | Da forma a ideas iniciales antes de escribir un plan o una especificación formal |
+| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | Comprueba preparación y riesgo antes de iniciar una implementación sustancial |
+| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | Genera contexto de onboarding para repositorios desconocidos |
+| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | Hace converger recursivamente una spec hasta ywc-spec-validate DONE (bucle validate ↔ ywc-plan --update-spec, máximo 5 iteraciones por defecto) |
+
+---
+
 ## Modo de salida HTML para Review Skills
 
 Nueve skills de revisión y reporte soportan un flag opt-in `--format html` que genera un informe HTML autocontenido y listo para el navegador, en lugar de Markdown.
