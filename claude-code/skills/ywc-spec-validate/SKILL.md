@@ -28,6 +28,7 @@ When tempted to skip a step, check this table first:
 | "Spec follows best practices, so complexity is fine" | The 4 base dimensions catch what is *missing* or *conflicting*, never what is *excessive*. Abstraction, configurability, or generality the stated scope does not yet require is over-engineering — surface it as a Simplicity Warning. Would a senior engineer call this spec overbuilt? |
 | "The spec contradicts CLAUDE.md, follow the spec" | Surface the conflict. Do not silently let the spec override project rules. |
 | "4-dimension review is fast enough sequentially" | Phase 1 fan-out cuts latency on large specs; each Sonnet subagent handles one dimension, reducing per-call context and preventing cross-dimension finding contamination. |
+| "Every spec deserves the full 2 advisor calls" | Right-size the *advisor/council* spend (not the cheap Sonnet fan-out): a single-section follow-up does not need the same Opus budget as a 15-AC multi-module spec. Spending advisor calls on a trivial spec wastes tokens; under-spending on a cross-cutting one misses real trade-offs. Apply the Complexity-Aware Budget Defaults before Phase 1. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
 
@@ -155,6 +156,16 @@ This routes findings into the `## Iteration N Amendments` append flow described 
 This skill runs Phase 1 as 4 parallel Sonnet subagents (one per dimension) and aggregates their findings. For a small number of **genuinely ambiguous** findings from Phase 1, the orchestrator escalates to an Opus advisor using the Task tool with `model: opus`. This follows **Pattern B** from [advisor-pattern.md](../references/advisor-pattern.md) — parallel executors in Phase 1, frontier judgment applied only where it actually matters in Phase 2.
 
 **Budget**: up to 2 Opus advisor calls per invocation by default. Unused budget is good. Spec review is smaller in scope than impl-review, so the cap is tighter.
+
+**Complexity-Aware Budget Defaults** — right-size the advisor/council spend to the spec's scope *before* Phase 1 (an explicit `--advisor-budget` always overrides this default):
+
+| Spec scope | Default advisor budget |
+|---|---|
+| Single-section follow-up / ≤2 modules touched | 0–1 |
+| Standard spec / 3–5 modules | 2 (current default) |
+| Cross-cutting / ≥15 acceptance criteria or >5 modules | 2, and prefer Council Escalation for the high-stakes finding |
+
+The Sonnet 4-dimension fan-out (Phase 1) always runs regardless of scope — it is cheap and catches omissions. Only the Opus Phase 2 / Council spend is right-sized here, so the "Right Job, Right Tool" saving never comes at the cost of missed findings.
 
 **`--advisor-budget <n>` override**: when set, `<n>` is the hard ceiling on Phase 2 Opus calls for this invocation (default 2). The report header's `Phase 2 advisor calls used: X of N` line reflects the applied budget as `N` so an orchestrator can track cumulative spend across iterations. When `--advisor-budget 0`, Phase 2 escalation is **disabled entirely**: each finding that would have escalated is instead reported as a normal Suggestion carrying a one-line `would have escalated but budget=0` rationale — it is **never silently dropped**. This lets a loop driver (e.g. `ywc-spec-ready`) run cheap deterministic passes and spend advisor budget only when it chooses to.
 

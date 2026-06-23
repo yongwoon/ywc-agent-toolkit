@@ -26,6 +26,8 @@ When tempted to skip a step, check this table first:
 | "Cite from memory, citation links optional" | Every claim needs a source link or version-specific reference. Unsourced claims are not research. |
 | "Combine pros/cons into one paragraph" | Use a structured trade-off matrix. Mixed prose hides the comparison. |
 | "Recommend without flagging unknowns" | If a dimension is unverified (e.g., long-term maintenance, license edge cases), explicitly state it as a gap. |
+| "Topic is clear enough — skip the scope questions and start searching" | Reversibility and success criteria decide *how deep* to research and what "winning" even means. Researching without them produces a comparison the user cannot act on, and over-researches a reversible one-off. Run the one consolidated clarify round in Step 1.5, then proceed. |
+| "Just use the default `--depth 50` for everything" | A reversible single-library lookup wastes tokens at depth 50; an irreversible architecture decision is under-served by it. Classify complexity in Step 1.5 and set the matching default depth — an explicit `--depth` argument still overrides. |
 
 **Violating the letter of these rules is violating the spirit.** Research without verifiable sources is opinion.
 
@@ -43,6 +45,21 @@ Parse `$ARGUMENTS` for:
 ## Execution Steps
 
 1. **Collect Project Context** — Read `CLAUDE.md`, `package.json`, and directory structure to identify the current tech stack and any constraints (runtime, license, bundle size).
+
+1.5. **Scope & Complexity Assessment** — Before gathering sources, settle scope and right-size the effort. This is the "Right Job, Right Tool" gate: it prevents wasted depth on a trivial lookup and prevents shallow research on an irreversible decision.
+
+   **Clarify (one consolidated round, only for items the topic/context leaves open)** — ask once, then proceed; never invent an answer:
+   - **Reversibility** — can this choice be changed later, or does it lock in a dependency, data format, or contract?
+   - **Success criteria** — what measurable property decides the winner (latency budget, bundle-size ceiling, license class, throughput)?
+   - **Out-of-scope** — which dimensions are explicitly *not* factors (e.g., "cost is irrelevant", "must be permissive-licensed")?
+
+   **Classify complexity → set the default `--depth`** (an explicit `--depth` argument always overrides this default):
+
+   | Class | Signal | Default `--depth` |
+   |-------|--------|-------------------|
+   | Simple | Single library, known-good pattern, reversible | 25 |
+   | Standard | 2–3 mature options compared, reversible | 50 |
+   | Complex | Architecture decision spanning concerns, version-specific behavior, or irreversible | 75–100 |
 
 2. **Plan Research Strategy** — Determine approach based on topic characteristics:
    - Library comparison → official docs + package registry stats + GitHub activity
