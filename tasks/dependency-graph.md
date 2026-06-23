@@ -361,3 +361,51 @@ graph LR
 graph LR
   G[000022-010-docs-toolkit-eval-mechanical-fixes]
 ```
+
+---
+
+## Batch 10 — Codex Agent and Skill Eval Harness Improvements
+
+- Spec: `docs/ywc-plans/codex-agent-skill-eval-harness-improvements.md`
+- Spec ready log: `docs/ywc-plans/codex-agent-skill-eval-harness-improvements.spec-ready-log.md`
+- Granularity mode: `llm` · Language: english
+- Starting phase: `000023`
+- Scope: Codex custom-agent smoke harness/evidence, missing Codex skill eval fixtures, selected Codex skill output-contract/progressive-disclosure cleanup, final Codex evaluation report and scoreboard update.
+- Hard boundary: no Claude Code skills or agents, no product code, no dependency churn, no live LLM/API/runtime invocation from the validator, and no manual edits to generated plugin output before `bash scripts/sync-codex-plugin.sh`.
+- Advisor pass: skipped. The skill's Pattern C advisor is optional, and current tool policy allows sub-agent spawning only when the user explicitly requests delegation/subagents; local phase-boundary review was applied instead.
+
+### Phase 000023 — Harness, Evidence, Fixtures, and Skill Contracts
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000023-010-infra-agent-smoke-harness` | infra | (root) |
+| `000023-020-test-agent-smoke-evidence` | test | `000023-010` |
+| `000023-030-test-skill-eval-fixtures` | test | (root) |
+| `000023-040-docs-codex-skill-contracts` | docs | `000023-030` |
+
+### Phase 000024 — Final Evaluation Publication
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000024-010-docs-eval-report-scoreboard` | docs | `000023-010`, `000023-020`, `000023-030`, `000023-040` |
+
+### Parallel Execution Notes (Batch 10)
+
+- Initial ready set: `000023-010-infra-agent-smoke-harness`, `000023-030-test-skill-eval-fixtures`.
+- After `000023-010` merges: `000023-020-test-agent-smoke-evidence` becomes runnable.
+- After `000023-030` merges: `000023-040-docs-codex-skill-contracts` becomes runnable.
+- `000023-030` and `000023-040` must not run in parallel because both touch Codex skill source directories and generated plugin sync surfaces.
+- `000023-010` and `000023-030` are parallel-safe: the former owns internal evaluator scripts; the latter owns selected skill eval files and generated counterparts.
+- `000023-020` and `000023-040` are parallel-safe after their respective predecessors merge: one owns agent smoke fixture/output evidence, the other owns Codex skill contract/progressive-disclosure edits.
+- Phase `000024` is a hard gate. `000024-010` starts only after all Phase `000023` tasks are complete, because report and scoreboard movement require the full evidence set.
+- FR mapping: FR-1/FR-3/FR-4/FR-5→`000023-010`, FR-1/FR-2→`000023-020`, FR-6→`000023-030`, FR-7/FR-8→`000023-040`, FR-9/FR-10→`000024-010`.
+
+```mermaid
+graph LR
+  A[000023-010-infra-agent-smoke-harness] --> B[000023-020-test-agent-smoke-evidence]
+  C[000023-030-test-skill-eval-fixtures] --> D[000023-040-docs-codex-skill-contracts]
+  A --> E[000024-010-docs-eval-report-scoreboard]
+  B --> E
+  C --> E
+  D --> E
+```
