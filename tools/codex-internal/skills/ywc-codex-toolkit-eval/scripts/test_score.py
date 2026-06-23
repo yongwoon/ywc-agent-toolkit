@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 SCRIPT = Path(__file__).with_name("score.py")
+AGENT_SMOKE_SCRIPT = Path(__file__).with_name("agent_smoke.py")
 EVAL_ROOT = SCRIPT.parent.parent / "evals"
 
 
@@ -89,6 +90,60 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
 """
 ''',
             encoding="utf-8",
+        )
+
+    def _write_agent_smoke_case(
+        self,
+        *,
+        fixture_id: str = "reviewer-happy-path",
+        agent: str = "ywc-reviewer",
+        output_path: str = "evals/agent-smoke-output/ywc-reviewer/happy.md",
+        expected_status: str = "DONE",
+        expected_signals: list[str] | None = None,
+        forbidden_signals: list[str] | None = None,
+        output_text: str | None = None,
+    ) -> tuple[Path, Path]:
+        evaluator = self.repo / "tools" / "codex-internal" / "skills" / "ywc-codex-toolkit-eval"
+        fixtures = evaluator / "evals" / "agent-smoke-fixtures.json"
+        outputs = evaluator / "evals" / "agent-smoke-output"
+        fixtures.parent.mkdir(parents=True)
+        signals = expected_signals if expected_signals is not None else ["bounded review"]
+        forbidden = forbidden_signals if forbidden_signals is not None else ["edit files"]
+        payload = {
+            "schema": 1,
+            "fixtures": [
+                {
+                    "id": fixture_id,
+                    "agent": agent,
+                    "output_path": output_path,
+                    "intent": "Validate bounded reviewer behavior.",
+                    "evidence_packet": {"summary": "Small static packet."},
+                    "expected_status": expected_status,
+                    "expected_signals": signals,
+                    "forbidden_signals": forbidden,
+                }
+            ],
+        }
+        fixtures.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        if output_text is not None:
+            output_file = evaluator / output_path
+            output_file.parent.mkdir(parents=True)
+            output_file.write_text(output_text, encoding="utf-8")
+        return fixtures, outputs
+
+    def run_agent_smoke(self, fixtures: Path, outputs: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(AGENT_SMOKE_SCRIPT),
+                "--fixtures",
+                str(fixtures),
+                "--outputs",
+                str(outputs),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
         )
 
     def run_score(self, *args: str) -> subprocess.CompletedProcess[str]:
@@ -283,6 +338,66 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
 
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("could not locate repository root", proc.stderr)
+
+    def test_agent_smoke_passes_with_expected_status_and_signals(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(
+            output_text="Fixture: reviewer-happy-path\nStatus: DONE\nbounded review\n"
+        )
+
+        proc = self.run_agent_smoke(fixtures, outputs)
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("PASS reviewer-happy-path", proc.stdout)
+
+    def test_agent_smoke_fails_on_missing_output(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case()
+
+        proc = self.run_agent_smoke(fixtures, outputs)
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("missing output", proc.stdout)
+
+    def test_agent_smoke_fails_on_missing_expected_signal(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(output_text="Status: DONE\n")
+
+        proc = self.run_agent_smoke(fixtures, outputs)
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("missing expected signal", proc.stdout)
+
+    def test_agent_smoke_fails_on_forbidden_signal(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(
+            output_text="Status: DONE\nbounded review\nedit files\n"
+        )
+
+        proc = self.run_agent_smoke(fixtures, outputs)
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("forbidden signal present", proc.stdout)
+
+    def test_agent_smoke_fails_on_unknown_agent(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(
+            agent="no-such-agent",
+            output_text="Status: DONE\nbounded review\n",
+        )
+
+        proc = self.run_agent_smoke(fixtures, outputs)
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("unknown agent", proc.stdout)
+
+    def test_agent_smoke_fails_on_duplicate_fixture_id(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(
+            output_text="Status: DONE\nbounded review\n"
+        )
+        payload = json.loads(fixtures.read_text(encoding="utf-8"))
+        payload["fixtures"].append(dict(payload["fixtures"][0]))
+        fixtures.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+        proc = self.run_agent_smoke(fixtures, outputs)
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("duplicate fixture id", proc.stdout)
 
 
 if __name__ == "__main__":
