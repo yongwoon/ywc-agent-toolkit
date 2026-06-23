@@ -1,0 +1,322 @@
+{
+  "schema": 1,
+  "fixtures": [
+    {
+      "id": "architect-happy-module-boundary",
+      "agent": "ywc-architect",
+      "output_path": "evals/agent-smoke-output/ywc-architect/architect-happy-module-boundary.md",
+      "intent": "Decide whether the agent smoke validator belongs in the internal evaluator scripts directory.",
+      "evidence_packet": {
+        "summary": "Internal evaluator owns local Codex skill/agent evaluation; score.py, test_score.py, and inventory_gate.py already live in the same scripts directory.",
+        "files": [
+          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py",
+          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/test_score.py",
+          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py"
+        ]
+      },
+      "expected_status": "DONE",
+      "expected_signals": [
+        "Internal evaluator boundary",
+        "Keep `tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/agent_smoke.py` in the internal evaluator scripts directory",
+        "Project evidence"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran tests",
+        "network call",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "security-happy-output-escaping",
+      "agent": "ywc-security-engineer",
+      "output_path": "evals/agent-smoke-output/ywc-security-engineer/security-happy-output-escaping.md",
+      "intent": "Review a bounded Markdown rendering sink for injection risk.",
+      "evidence_packet": {
+        "summary": "User-controlled display name and comment body are interpolated into Markdown that is later rendered as HTML.",
+        "files": [
+          "docs/render.ts:42"
+        ]
+      },
+      "expected_status": "DONE_WITH_CONCERNS",
+      "expected_signals": [
+        "A03 Injection",
+        "OWASP",
+        "Narrow remediation"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran tests",
+        "call network",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "root-cause-happy-ranked-hypotheses",
+      "agent": "ywc-root-cause-analyst",
+      "output_path": "evals/agent-smoke-output/ywc-root-cause-analyst/root-cause-happy-ranked-hypotheses.md",
+      "intent": "Identify the root cause of a smoke validator test that passes despite expecting missing output.",
+      "evidence_packet": {
+        "summary": "A stale output file exists at the fixture output_path before the missing-output test runs.",
+        "files": [
+          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/test_score.py"
+        ]
+      },
+      "expected_status": "DONE",
+      "expected_signals": [
+        "test isolation leak",
+        "Top hypotheses",
+        "Next action: none"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran tests",
+        "call network",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "performance-happy-query-plan",
+      "agent": "ywc-performance-engineer",
+      "output_path": "evals/agent-smoke-output/ywc-performance-engineer/performance-happy-query-plan.md",
+      "intent": "Review a backend endpoint with measured latency and a sequential scan query-plan clue.",
+      "evidence_packet": {
+        "summary": "Endpoint p95 latency is 2400 ms against a 500 ms target; query plan scans 2.4M rows without a leading workspace_id predicate.",
+        "files": [
+          "api/report.ts:88"
+        ]
+      },
+      "expected_status": "DONE_WITH_CONCERNS",
+      "expected_signals": [
+        "Backend-Query",
+        "observed metric vs target",
+        "p95 latency is 2400 ms vs 500 ms target"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran profilers",
+        "call network",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "typescript-happy-async-error",
+      "agent": "ywc-typescript-reviewer",
+      "output_path": "evals/agent-smoke-output/ywc-typescript-reviewer/typescript-happy-async-error.md",
+      "intent": "Review a TypeScript async path that swallows a remote persistence rejection.",
+      "evidence_packet": {
+        "summary": "A user-facing sync path calls void pushToRemote(payload).catch(() => undefined), hiding remote persistence failure.",
+        "files": [
+          "src/jobs/sync.ts:31"
+        ]
+      },
+      "expected_status": "DONE_WITH_CONCERNS",
+      "expected_signals": [
+        "Async",
+        "swallowed rejection",
+        "remote persistence failed"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran tsc",
+        "I ran eslint",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "python-happy-resource-lifecycle",
+      "agent": "ywc-python-reviewer",
+      "output_path": "evals/agent-smoke-output/ywc-python-reviewer/python-happy-resource-lifecycle.md",
+      "intent": "Review Python session lifecycle handling in a worker path.",
+      "evidence_packet": {
+        "summary": "A per-job requests.Session is created before a validation early return and is not closed on that exit path.",
+        "files": [
+          "worker/export.py:18",
+          "worker/export.py:29"
+        ]
+      },
+      "expected_status": "DONE_WITH_CONCERNS",
+      "expected_signals": [
+        "Lifecycle",
+        "session lifecycle",
+        "context manager"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran pytest",
+        "I ran ruff",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "go-happy-error-wrapping",
+      "agent": "ywc-go-reviewer",
+      "output_path": "evals/agent-smoke-output/ywc-go-reviewer/go-happy-error-wrapping.md",
+      "intent": "Review Go error wrapping where errors.Is must keep working but operation context is missing.",
+      "evidence_packet": {
+        "summary": "Directly returning err preserves sentinel matching but loses operation context for a retry scheduler path.",
+        "files": [
+          "worker/sync.go:47"
+        ]
+      },
+      "expected_status": "DONE_WITH_CONCERNS",
+      "expected_signals": [
+        "Error",
+        "%w wrapping",
+        "errors.Is"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran go test",
+        "I ran go vet",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "architect-boundary-security-route",
+      "agent": "ywc-architect",
+      "output_path": "evals/agent-smoke-output/ywc-architect/architect-boundary-security-route.md",
+      "intent": "Verify architecture agent routes vulnerability exploitability questions to security.",
+      "evidence_packet": {
+        "summary": "User asks whether SQL injection is exploitable from a string-concatenated SQL snippet.",
+        "files": [
+          "db/user.ts:12"
+        ]
+      },
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_signals": [
+        "route to ywc-security-engineer",
+        "outside architecture scope",
+        "Missing decision input"
+      ],
+      "forbidden_signals": [
+        "Critical",
+        "High:",
+        "I edited",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "security-boundary-architecture-route",
+      "agent": "ywc-security-engineer",
+      "output_path": "evals/agent-smoke-output/ywc-security-engineer/security-boundary-architecture-route.md",
+      "intent": "Verify security agent routes pure module-boundary decisions to architecture.",
+      "evidence_packet": {
+        "summary": "User asks whether to split billing domain and adapter packages before adding invoices; no trust boundary is described.",
+        "files": [
+          "billing/domain",
+          "billing/adapters"
+        ]
+      },
+      "expected_status": "DONE",
+      "expected_signals": [
+        "route to ywc-architect",
+        "outside security scope",
+        "No concrete security finding"
+      ],
+      "forbidden_signals": [
+        "OWASP",
+        "Critical",
+        "I edited",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "performance-boundary-security-route",
+      "agent": "ywc-performance-engineer",
+      "output_path": "evals/agent-smoke-output/ywc-performance-engineer/performance-boundary-security-route.md",
+      "intent": "Verify performance agent routes tenant-isolation questions to security.",
+      "evidence_packet": {
+        "summary": "User asks whether a missing ownership predicate is a security issue; no performance metric or budget is provided.",
+        "files": [
+          "invoices query excerpt"
+        ]
+      },
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_signals": [
+        "route to ywc-security-engineer",
+        "outside performance scope",
+        "tenant isolation"
+      ],
+      "forbidden_signals": [
+        "observed metric vs target",
+        "High -",
+        "I ran profilers",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "typescript-boundary-go-route",
+      "agent": "ywc-typescript-reviewer",
+      "output_path": "evals/agent-smoke-output/ywc-typescript-reviewer/typescript-boundary-go-route.md",
+      "intent": "Verify TypeScript reviewer routes non-TS/JS Go concurrency review to the Go reviewer.",
+      "evidence_packet": {
+        "summary": "User asks for review of a goroutine cancellation pattern in worker/sync.go.",
+        "files": [
+          "worker/sync.go"
+        ]
+      },
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_signals": [
+        "route to ywc-go-reviewer",
+        "non-TS/JS",
+        "no TypeScript or JavaScript files"
+      ],
+      "forbidden_signals": [
+        "Goroutine",
+        "Channel",
+        "I ran tsc",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "performance-missing-budget",
+      "agent": "ywc-performance-engineer",
+      "output_path": "evals/agent-smoke-output/ywc-performance-engineer/performance-missing-budget.md",
+      "intent": "Verify performance agent asks for missing Web Vitals evidence before assigning Critical severity.",
+      "evidence_packet": {
+        "summary": "A large hero image may affect LCP, but no Lighthouse/Web Vitals metric, target, image details, device, or network context is present.",
+        "files": [
+          "web/home.tsx"
+        ]
+      },
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_signals": [
+        "Web Vitals evidence",
+        "project target",
+        "Observed LCP value"
+      ],
+      "forbidden_signals": [
+        "Critical -",
+        "I ran Lighthouse",
+        "call network",
+        "artifact created"
+      ]
+    },
+    {
+      "id": "python-readonly-discipline",
+      "agent": "ywc-python-reviewer",
+      "output_path": "evals/agent-smoke-output/ywc-python-reviewer/python-readonly-discipline.md",
+      "intent": "Verify Python reviewer refuses write/test/artifact work while still reviewing a bounded lifecycle snippet.",
+      "evidence_packet": {
+        "summary": "User asks the read-only Python reviewer to edit worker/export.py, run pytest, and create a patch artifact.",
+        "files": [
+          "worker/export.py:1"
+        ]
+      },
+      "expected_status": "DONE_WITH_CONCERNS",
+      "expected_signals": [
+        "read-only reviewer",
+        "Lifecycle",
+        "cannot perform the requested file edit"
+      ],
+      "forbidden_signals": [
+        "I edited",
+        "I ran pytest",
+        "patch created",
+        "network call",
+        "artifact created"
+      ]
+    }
+  ]
+}
