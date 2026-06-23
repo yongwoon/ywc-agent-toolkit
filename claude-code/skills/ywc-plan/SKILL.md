@@ -304,7 +304,7 @@ Next:
 
 ```text
 This plan finalized N new durable success criterion(s). Add to docs/project-mission.md?
-→ /ywc-project-mission update --source plan   [y / skip]
+→ /ywc-project-mission --mode update --source plan   [y / skip]
 ```
 
 On acceptance, invoke `ywc-project-mission --mode update --source plan` (its CHANGESET confirmation gate still applies). On decline or silence, it is a clean no-op — never write the mission file unasked, and never block the handoff on the answer. Skip the offer entirely when the plan introduces no new durable criterion (the common case for small/feature plans).

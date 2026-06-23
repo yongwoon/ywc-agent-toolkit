@@ -154,7 +154,7 @@ Recommended approach: <one paragraph; alternatives noted as "ruled out because �
 
 ```text
 Persist this to docs/project-mission.md? (Mission = What + Why, Success Criteria = Done When)
-→ /ywc-project-mission update --source brainstorm   [y / skip]
+→ /ywc-project-mission --mode update --source brainstorm   [y / skip]
 ```
 
 If the user accepts, invoke `ywc-project-mission --mode update --source brainstorm`, mapping **What+Why** to the Mission / North-Star and each **Done When** item to a measurable Success Criterion; `ywc-project-mission`'s own CHANGESET confirmation gate still applies. If the user declines (or does not respond), it is a **clean no-op** — never write the mission file without acceptance, and never block the handoff on it. Only the *durable* anchors belong in the mission; a feature-specific Done-When is for `ywc-plan`, not the mission file.
