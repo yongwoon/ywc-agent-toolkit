@@ -90,6 +90,11 @@ List mitigation steps taken in real time (rollback, hotfix, manual data correcti
 **Step 6 — Prevention action items**
 Generate specific, assignable items with deadlines. Not "improve monitoring" — "Add DB connection pool alert by YYYY-MM-DD".
 
+Tag each item as **recurrence-preventing** (a code-level check that would stop this *class* of incident from recurring — e.g. "every ownership-scoped query carries the owner-key predicate") or **operational** (a runbook, alerting, on-call, or infra action — e.g. "add a DB pool alert", "document the rollback runbook"):
+
+- **Recurrence-preventing** items → offer to promote into the durable review memory: `ywc-review-learnings --mode update --source incident`. The prevention item becomes the learning's *why* (the failure mode it stops from recurring); provenance is `incident <id>`. This is an offer — `ywc-review-learnings`' confirmation gate still applies before any write.
+- **Operational** items → keep in the postmortem report only. They are **not** promoted to review learnings — a reviewer cannot enforce an alerting or runbook action, so routing it there would add noise. Retain it explicitly in the report's action list with its owner and deadline.
+
 **Step 7 — Lessons learned**
 What went well, what failed, what was surprising.
 
@@ -121,6 +126,7 @@ See [references/client-report-template.md](references/client-report-template.md)
 - **Dispatches `ywc-root-cause-analyst` (Step 4)**: Opus-tier analyst walks 5 Whys with per-level evidence citations + primary-cause vs contributing-factor separation. At most 1 dispatch per postmortem.
 - **Dispatches `ywc-security-engineer` (Step 4.5)**: when the Step 4 root cause crosses a security boundary (auth / authz / secret / PII / OWASP A01–A10). The advisor returns OWASP / CWE-cited findings and concrete remediation steps that feed back into the Root Cause section + Step 6 Prevention Action Items. Skipped when the incident is non-security.
 - **Before `ywc-changelog-release-notes`**: Incident action items may drive a patch release; key fixes feed into the next changelog.
+- **Promotes to `ywc-review-learnings` (Step 6)**: recurrence-preventing prevention items are offered to the durable review memory via `ywc-review-learnings --mode update --source incident` (provenance `incident <id>`); operational items (runbook / alerting / infra) stay in the report only and are not promoted.
 - Not part of the standard development pipeline — activates reactively after incidents occur.
 
 ## Common Mistakes
