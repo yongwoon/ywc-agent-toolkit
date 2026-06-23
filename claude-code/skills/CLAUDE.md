@@ -181,6 +181,50 @@ The flag must be forwarded explicitly in every delegation. Inferring it from
 context is unsafe because the call site may not know whether the upstream
 caller performed the update — explicit propagation makes the contract auditable.
 
+## Stateful-File Family and Harness-Feedback / Mission Edges
+
+Three skills share one architecture: a **per-project, committed Markdown file**
+maintained through `read` / `update` / `list` / `curate` modes with
+**user-confirmed writes** (an ADD / MODIFY / DEPRECATE CHANGESET, never an
+inferred-and-written entry), a first-creation `@`-activation prompt for
+`CLAUDE.md`, and a no-block invariant (absence never blocks the host workflow).
+They differ only in content domain:
+
+| Skill | File | Domain |
+|---|---|---|
+| `ywc-review-learnings` | `docs/review-learnings.md` | durable code-review preferences (what + why + polarity) |
+| `ywc-ubiquitous-language` | `docs/ubiquitous-language.md` | shared domain vocabulary (canonical terms + synonyms to avoid) |
+| `ywc-project-mission` | `docs/project-mission.md` | durable project intent (Mission / North-Star, measurable Success Criteria, Out-of-Scope) |
+
+When adding a fourth member, clone the four-mode + user-confirmed-write shape
+from `ywc-review-learnings` (the canonical template) and add a row here.
+
+### Cross-skill edges (harness-feedback loop + mission persistence)
+
+Four edges connect producers of durable knowledge to these files. Each is an
+**offer** subject to the target skill's own confirmation gate — never an
+automatic write — and each is a clean no-op on decline or file absence:
+
+1. **`ywc-debug-rootcause` → `ywc-review-learnings`** — Phase 4 §6 (Systemic
+   Prevention): a recurring root-cause class is offered to
+   `ywc-review-learnings --mode update --source debug` (provenance `debug <symptom>`);
+   a one-off cause is explicitly declared, not promoted.
+2. **`ywc-incident-postmortem` → `ywc-review-learnings`** — Step 6: a
+   recurrence-preventing prevention item routes to
+   `ywc-review-learnings --mode update --source incident` (provenance `incident <id>`);
+   operational items (runbook / alerting / infra) stay in the report only.
+3. **`ywc-brainstorm` → `ywc-project-mission`** — Step 6 Handoff: an opt-in offer
+   to persist Mission (What+Why) + Success Criteria (Done When) via
+   `ywc-project-mission --mode update --source brainstorm`.
+4. **`ywc-plan` ← `ywc-project-mission`** — Step 1 reads `docs/project-mission.md`
+   (best-effort) to frame clarification and seed Acceptance Criteria; Step 5
+   offers an opt-in `update --source plan` write-back when the plan finalizes a
+   new durable success criterion.
+
+Edges 1–2 form the harness-feedback loop (a confirmed defect tightens future
+review); edges 3–4 form mission persistence (durable intent frames future
+planning).
+
 ## Subagent Return Payload Contract and Structured Surface-to-User
 
 Skills that dispatch subagents via the Task tool (fan-out skills:

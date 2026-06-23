@@ -222,6 +222,7 @@ versions include Codex-compatible frontmatter and tool guidance.
 | [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Validate spec quality (Completeness / Consistency / Feasibility) |
 | [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | Research libraries and compare technical approaches |
 | [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | Create and maintain a domain ubiquitous language dictionary |
+| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | Persist the project's durable Mission / Success Criteria / Out-of-Scope in `docs/project-mission.md` (read by ywc-plan to frame planning) |
 | [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | Shape rough ideas before writing a formal plan or spec |
 | [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | Check readiness and risk before starting substantial implementation |
 | [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | Generate repository onboarding context for unfamiliar projects |
