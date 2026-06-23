@@ -184,20 +184,25 @@ caller performed the update — explicit propagation makes the contract auditabl
 ## Stateful-File Family and Harness-Feedback / Mission Edges
 
 Three skills share one architecture: a **per-project, committed Markdown file**
-maintained through `read` / `update` / `list` / `curate` modes with
-**user-confirmed writes** (an ADD / MODIFY / DEPRECATE CHANGESET, never an
-inferred-and-written entry), a first-creation `@`-activation prompt for
-`CLAUDE.md`, and a no-block invariant (absence never blocks the host workflow).
-They differ only in content domain:
+maintained through **mode-based access** with **user-confirmed writes** (an
+ADD / MODIFY / DEPRECATE CHANGESET, never an inferred-and-written entry), a
+first-creation `@`-activation prompt for `CLAUDE.md`, and a no-block invariant
+(absence never blocks the host workflow). They differ in content domain and in
+their exact mode set:
 
-| Skill | File | Domain |
-|---|---|---|
-| `ywc-review-learnings` | `docs/review-learnings.md` | durable code-review preferences (what + why + polarity) |
-| `ywc-ubiquitous-language` | `docs/ubiquitous-language.md` | shared domain vocabulary (canonical terms + synonyms to avoid) |
-| `ywc-project-mission` | `docs/project-mission.md` | durable project intent (Mission / North-Star, measurable Success Criteria, Out-of-Scope) |
+| Skill | File | Modes | Domain |
+|---|---|---|---|
+| `ywc-review-learnings` | `docs/review-learnings.md` | `read` / `update` / `list` / `curate` | durable code-review preferences (what + why + polarity) |
+| `ywc-project-mission` | `docs/project-mission.md` | `read` / `update` / `list` / `curate` | durable project intent (Mission / North-Star, measurable Success Criteria, Out-of-Scope) |
+| `ywc-ubiquitous-language` | `docs/ubiquitous-language.md` | `new` / `extract` / `update` | shared domain vocabulary (canonical terms + synonyms to avoid) |
 
-When adding a fourth member, clone the four-mode + user-confirmed-write shape
-from `ywc-review-learnings` (the canonical template) and add a row here.
+`ywc-review-learnings` and `ywc-project-mission` share the four-mode
+`read` / `update` / `list` / `curate` shape; `ywc-ubiquitous-language` uses a
+`new` / `extract` / `update` variant. What all three genuinely share is the
+per-project committed file, the user-confirmed CHANGESET write, the
+first-creation activation prompt, and the no-block invariant. When adding a new
+read/update/list/curate member, clone that four-mode shape from
+`ywc-review-learnings` (the canonical template) and add a row here.
 
 ### Cross-skill edges (harness-feedback loop + mission persistence)
 
