@@ -53,3 +53,27 @@ This mirrors CodeRabbit's own loop: it records a learning from an accepted sugge
 ### Generalize
 
 Bot comments are line-specific. Lift each to its class before writing (a `users.ts:42` SQL-injection comment becomes a `**/*.ts` or `**/*.sql` `DO` learning about parameterized queries), then run the same user-confirmation CHANGESET as every other source — never write harvested learnings without confirmation.
+
+## `--source debug` (root-cause harvest)
+
+A `ywc-debug-rootcause` session has confirmed a root cause and the user wants that lesson to make future reviews catch the same class of defect earlier. This is the harness-feedback loop: a bug found in production tightens the review that should have caught it.
+
+1. Take only a **confirmed** root cause — the symptom reproduced, the fix verified. A speculative or still-open hypothesis is not yet a learning.
+2. Map the root-cause statement to the `Why` **verbatim from the investigation** (the reviewer needs the causal reason, not the symptom). The symptom becomes the provenance, not the why.
+3. Classify polarity from the root cause:
+   - the bug came from *doing* something that should be forbidden → `DO-NOT` (the most common debug polarity)
+   - the bug came from *omitting* a guard/check that review should require → `DO`
+4. Generalize from the one defective line to the defect **class**, then scope to the narrowest glob covering that class (e.g. a missing-null-check that crashed one handler → `**/*.handler.ts` `DO`, not `repo`).
+5. Record provenance as `debug <symptom>` — the short symptom string identifies the originating investigation.
+6. Run the same CHANGESET confirmation as every other source.
+
+## `--source incident` (postmortem prevention harvest)
+
+A `ywc-incident-postmortem` produced a recurrence-prevention action item whose *review-enforceable* part should become a durable learning. Only the part a code reviewer can actually check belongs here — runbook or alerting actions do not.
+
+1. Take a prevention item from the postmortem's action list whose enforcement point is **a code-review check** (not an infra or process change).
+2. Map the item to the `Why` (the failure mode it stops from recurring — the postmortem already states it).
+3. Classify polarity: a required safeguard → `DO`; a forbidden pattern that triggered the incident → `DO-NOT`.
+4. Scope to the affected paths identified in the postmortem; generalize to the class, not the single file that failed.
+5. Record provenance as `incident <id>` — the incident identifier links the learning back to its postmortem.
+6. Run the same CHANGESET confirmation as every other source.
