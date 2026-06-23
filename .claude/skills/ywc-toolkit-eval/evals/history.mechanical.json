@@ -109,6 +109,11 @@
     "S4": 5,
     "S5": 5
   },
+  "claude-code/skills/ywc-project-mission": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 4
+  },
   "claude-code/skills/ywc-project-scaffold": {
     "S2": 5,
     "S4": 5,
