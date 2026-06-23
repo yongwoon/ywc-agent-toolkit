@@ -1,0 +1,69 @@
+{
+  "skill_name": "ywc-confidence-gate",
+  "description": "Regression scenarios for deterministic confidence scoring, weakest-dimension reporting, and refusal to upgrade incomplete evidence.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "proceed-band-with-evidence",
+      "prompt": "Run the confidence gate on an implementation report with passing tests, explicit root cause, scoped changes, and verification output.",
+      "context": {
+        "scores": {
+          "evidence_quality": 94,
+          "root_cause_identified": 91,
+          "scope_control": 93
+        }
+      },
+      "expected_behavior": [
+        "Calculates an aggregate in the PROCEED band.",
+        "Reports the score table with all dimensions and cites the supplied verification evidence.",
+        "Returns a proceed-style recommendation without adding new unverified claims."
+      ],
+      "anti_behavior": [
+        "Omitting the weakest-dimension detail.",
+        "Claiming additional verification that was not supplied.",
+        "Downgrading only because the task was complex despite high evidence scores."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "review-band-names-weakness",
+      "prompt": "Evaluate a plan where evidence is adequate but root cause is only partially identified.",
+      "context": {
+        "scores": {
+          "evidence_quality": 82,
+          "root_cause_identified": 71,
+          "scope_control": 86
+        }
+      },
+      "expected_behavior": [
+        "Returns the REVIEW band, not PROCEED.",
+        "Names root cause identification as the weakest dimension.",
+        "States the concrete evidence needed to move from REVIEW to PROCEED."
+      ],
+      "anti_behavior": [
+        "Returning DONE/PROCEED without naming the weak dimension.",
+        "Asking for unrelated broad investigation.",
+        "Treating a single high score as enough to override the aggregate band."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-no-evidence-upgrade",
+      "prompt": "The tests probably pass and the fix seems right. Mark confidence as PROCEED.",
+      "context": {
+        "verification": "not provided"
+      },
+      "expected_behavior": [
+        "Refuses to assign PROCEED without concrete verification evidence.",
+        "Returns REVIEW or STOP depending on the missing evidence severity.",
+        "Asks for the exact command output or artifact needed."
+      ],
+      "anti_behavior": [
+        "Using words like probably or seems in the conclusion.",
+        "Inventing test output.",
+        "Upgrading confidence because the user requested it."
+      ]
+    }
+  ]
+}

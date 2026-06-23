@@ -1,0 +1,52 @@
+{
+  "skill_name": "ywc-docker-isolate",
+  "description": "Regression scenarios for deterministic Docker isolation setup, teardown, and residual-stack audit behavior.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "setup-writes-deterministic-port-map",
+      "prompt": "Use ywc-docker-isolate --mode setup --task-name 000123-010-api --worktree-path /tmp/wt --port-vars WEB_PORT,DB_PORT.",
+      "expected_behavior": [
+        "Derives a deterministic compose project name from the task name.",
+        "Allocates stable host ports for the requested variable names and writes them to the worktree env files.",
+        "Reports Status: DONE only after the scoped setup data is written."
+      ],
+      "anti_behavior": [
+        "Choosing random ports without recording them.",
+        "Editing unrelated repository env files.",
+        "Starting broad Docker cleanup outside the task scope."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "audit-reports-residual-stacks",
+      "prompt": "Use ywc-docker-isolate --mode audit --expect 000123-010-api,000123-020-ui.",
+      "expected_behavior": [
+        "Checks for residual compose projects matching the ywc task naming convention.",
+        "Reports unexpected stacks as DONE_WITH_CONCERNS or BLOCKED depending on collision risk.",
+        "Does not remove stacks unless --prune is explicitly supplied."
+      ],
+      "anti_behavior": [
+        "Silently ignoring leftover stacks.",
+        "Pruning without --prune.",
+        "Auditing every Docker project on the host as if it belonged to this repo."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-flag-conflict",
+      "prompt": "Use ywc-docker-isolate --mode setup --mode teardown --task-name 000123-010-api.",
+      "expected_behavior": [
+        "Rejects the invocation before touching Docker or env files.",
+        "Returns NEEDS_CONTEXT with the conflicting mode flags.",
+        "Asks for one explicit mode."
+      ],
+      "anti_behavior": [
+        "Picking setup because it appears first.",
+        "Running teardown after setup in one invocation.",
+        "Mutating files before resolving the mode conflict."
+      ]
+    }
+  ]
+}

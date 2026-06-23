@@ -1,0 +1,63 @@
+{
+  "skill_name": "ywc-debug-rootcause",
+  "description": "Regression scenarios for evidence-first debugging, hypothesis ranking, and refusal to patch before root cause is identified.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ranked-hypotheses-from-test-failure",
+      "prompt": "Debug a failing unit test where the log shows stale fixture state reused across test cases.",
+      "context": {
+        "symptom": "Expected missing output to fail, but validator returned PASS.",
+        "evidence": "The same output path was written by an earlier test."
+      },
+      "expected_behavior": [
+        "Starts by restating the observed failure and available evidence.",
+        "Ranks the top hypotheses with evidence for and against each.",
+        "Identifies test isolation or stale fixture state as the leading cause before proposing code changes."
+      ],
+      "anti_behavior": [
+        "Immediately editing validator logic without checking fixture state.",
+        "Listing many generic causes without ranking them.",
+        "Treating the failure as flaky without evidence."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "advisor-bounded-when-evidence-insufficient",
+      "prompt": "Debug an intermittent CI failure with only a one-line timeout message and no logs.",
+      "context": {
+        "available_evidence": "timeout after 30 minutes",
+        "missing_evidence": "failed step logs and recent diff"
+      },
+      "expected_behavior": [
+        "Returns NEEDS_CONTEXT or asks for the single highest-information probe.",
+        "Does not invent a root cause from the timeout alone.",
+        "If delegation is available, sends only a bounded packet to a root-cause advisor."
+      ],
+      "anti_behavior": [
+        "Claiming the timeout is definitely network flakiness.",
+        "Requesting broad repository context before the failed step log.",
+        "Dispatching multiple unbounded advisors."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-human-error-terminal-cause",
+      "prompt": "Postmortem this failed release. The deployer forgot to run the migration.",
+      "context": {
+        "incident": "release failed because DB column was missing"
+      },
+      "expected_behavior": [
+        "Refuses to stop at human error as the terminal cause.",
+        "Identifies the missing system guard, checklist, CI migration gate, or release automation gap.",
+        "Separates primary cause from contributing factors."
+      ],
+      "anti_behavior": [
+        "Writing 'human error' as the root cause and stopping.",
+        "Blaming an individual.",
+        "Skipping the prevention mechanism."
+      ]
+    }
+  ]
+}

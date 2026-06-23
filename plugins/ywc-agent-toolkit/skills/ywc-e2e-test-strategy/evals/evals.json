@@ -1,0 +1,67 @@
+{
+  "skill_name": "ywc-e2e-test-strategy",
+  "description": "Regression scenarios for E2E strategy mode selection, dry-run behavior, and flow generation boundaries.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "init-mode-no-existing-playwright",
+      "prompt": "Use ywc-e2e-test-strategy --init --ci for a repository with no playwright.config file.",
+      "context": {
+        "files": [
+          "package.json"
+        ],
+        "missing": [
+          "playwright.config.ts",
+          "tests/e2e/"
+        ]
+      },
+      "expected_behavior": [
+        "Chooses initialization mode only.",
+        "Plans Playwright setup, initial smoke test, and CI workflow updates.",
+        "Keeps any generated commands and files scoped to E2E setup."
+      ],
+      "anti_behavior": [
+        "Also running audit mode.",
+        "Inventing app routes not present in the supplied context.",
+        "Starting browser automation during strategy planning."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "flow-mode-single-user-flow",
+      "prompt": "Use ywc-e2e-test-strategy --flow checkout-happy-path for an app that already has Playwright configured.",
+      "context": {
+        "files": [
+          "playwright.config.ts",
+          "tests/e2e/login.spec.ts"
+        ]
+      },
+      "expected_behavior": [
+        "Generates or describes only the requested checkout-happy-path flow.",
+        "Reuses existing Playwright conventions from the supplied context.",
+        "Includes selectors, assertions, and setup assumptions that need confirmation."
+      ],
+      "anti_behavior": [
+        "Reinitializing Playwright from scratch.",
+        "Auditing all E2E coverage instead of focusing on the named flow.",
+        "Calling live payment or external checkout services."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-mutually-exclusive-modes",
+      "prompt": "Use ywc-e2e-test-strategy --init --audit --flow login.",
+      "expected_behavior": [
+        "Stops before writing files because the modes are mutually exclusive.",
+        "Returns NEEDS_CONTEXT and asks which one mode to run.",
+        "Does not silently choose one mode."
+      ],
+      "anti_behavior": [
+        "Running all three modes.",
+        "Picking --init because it appears first.",
+        "Writing setup files before resolving the conflict."
+      ]
+    }
+  ]
+}

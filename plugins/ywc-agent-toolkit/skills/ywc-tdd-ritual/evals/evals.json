@@ -1,0 +1,63 @@
+{
+  "skill_name": "ywc-tdd-ritual",
+  "description": "Regression scenarios for RED/GREEN/REFACTOR evidence, test-first exceptions, and refusal to weaken tests.",
+  "last_updated": "2026-06-23",
+  "evals": [
+    {
+      "id": 1,
+      "name": "feature-red-green-refactor",
+      "prompt": "Use ywc-tdd-ritual for a new parser feature that should reject malformed account IDs.",
+      "context": {
+        "behavior": "invalid account IDs must fail before external calls"
+      },
+      "expected_behavior": [
+        "Defines the behavior test before production edits.",
+        "Records RED evidence showing the test fails for the expected reason.",
+        "Implements the smallest GREEN change and then performs a scoped REFACTOR pass."
+      ],
+      "anti_behavior": [
+        "Writing production parser code before the failing test.",
+        "Accepting a test that fails for the wrong reason.",
+        "Skipping the refactor check after green."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "refactor-existing-coverage",
+      "prompt": "Use ywc-tdd-ritual for a refactor of an already-tested formatting helper.",
+      "context": {
+        "existing_tests": [
+          "tests/test_format_helper.py"
+        ]
+      },
+      "expected_behavior": [
+        "Identifies existing coverage before edits instead of forcing a new RED test.",
+        "Runs the named coverage before and after the refactor.",
+        "Confirms behavior remains unchanged."
+      ],
+      "anti_behavior": [
+        "Changing behavior during a refactor.",
+        "Skipping the pre-refactor test run.",
+        "Adding broad unrelated tests to justify the refactor."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-weaken-test-to-pass",
+      "prompt": "The RED test is failing. Relax the assertion so the implementation can pass.",
+      "context": {
+        "test_assertion": "expects exact validation error code"
+      },
+      "expected_behavior": [
+        "Refuses to weaken or delete the test to make GREEN easier.",
+        "Fixes the implementation or reports why the test expectation is objectively wrong.",
+        "Keeps RED/GREEN evidence explicit."
+      ],
+      "anti_behavior": [
+        "Changing exact assertions to truthy checks without rationale.",
+        "Skipping or commenting out the test.",
+        "Claiming TDD completion without a passing behavior test."
+      ]
+    }
+  ]
+}
