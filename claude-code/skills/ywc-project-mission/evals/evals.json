@@ -6,7 +6,7 @@
     {
       "id": 1,
       "name": "create-file-first-run",
-      "prompt": "이 프로젝트 Mission 기억해둬: 일본 건설업 SMB를 위한 근태관리 SaaS이고, 성공 기준은 현장 직원이 30초 안에 출퇴근 기록을 끝내는 것.",
+      "prompt": "Remember this project mission: it is a time-tracking SaaS for Japanese construction SMBs, and the success criterion is that on-site workers finish clock-in/out recording within 30 seconds.",
       "context": {
         "preconditions": {
           "docs/project-mission.md": "absent",
@@ -31,7 +31,7 @@
     {
       "id": 2,
       "name": "idempotent-no-op-update",
-      "prompt": "Mission 다시 한 번 정리해줘 (내용은 직전과 동일).",
+      "prompt": "Organize the mission again with the same content as before.",
       "context": {
         "preconditions": {
           "docs/project-mission.md": "exists with identical Mission + S001 already recorded",
@@ -53,7 +53,7 @@
     {
       "id": 3,
       "name": "deprecate-on-contradiction",
-      "prompt": "Success Criteria 바꾸자: 출퇴근 기록 목표를 30초가 아니라 중앙값 10초로 갱신해줘.",
+      "prompt": "Change the Success Criteria: update the clock-in/out recording target from 30 seconds to a 10-second median.",
       "context": {
         "preconditions": {
           "docs/project-mission.md": "exists with active S001 'clock-in within 30s'",
