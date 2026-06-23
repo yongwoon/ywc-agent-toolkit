@@ -13,7 +13,7 @@ No fix may be proposed before Phase 1 (Investigation) is complete. The 4-phase p
 1. **Phase 1 — Root-cause investigation** — Read errors fully, reproduce reliably, check recent changes, instrument multi-component boundaries, trace data flow upstream to the origin.
 2. **Phase 2 — Pattern analysis** — Locate a working sibling in the same codebase, read it end-to-end, list every difference between broken and working (including ones that "cannot matter").
 3. **Phase 3 — Hypothesis and testing** — Form a single hypothesis in the shape "X is the root cause; minimal change Z fixes it"; test by changing one variable at a time.
-4. **Phase 4 — Implementation** — Write a regression test, apply a single fix, verify red-green-red, gate the completion claim through `ywc-verify-done`.
+4. **Phase 4 — Implementation** — Write a regression test, apply a single fix, verify red-green-red, gate the completion claim through `ywc-verify-done`, then emit systemic prevention (§6): a recurring class is offered to `ywc-review-learnings --source debug`, a one-off cause is explicitly declared.
 
 **If 3+ fixes fail on the same surface**, the situation is "architecture is wrong", not "fix harder". Stop and surface the design concern to the user — do not attempt a 4th fix.
 

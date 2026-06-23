@@ -42,6 +42,7 @@ When tempted to skip a phase, check this table first:
 | "Emergency, no time for the 4 phases" | The 4 phases take 15–30 minutes for a typical bug; guess-and-check takes 2–3 hours of thrashing with a 40% first-time-fix rate. Pressure makes the systematic path **faster**, not slower. |
 | "I'll try one quick fix, then investigate if it doesn't work" | The first fix sets the pattern for the session. After the first symptom-fix, every subsequent attempt becomes "fix something else", not "investigate". Do the investigation first. |
 | "I've already tried 3 fixes, one more should do it" | 3+ failed fixes on the same surface is a signal that the **architecture is wrong**, not that the next fix is right. Stop and question the pattern (Phase 4 §5). A 4th fix on bad architecture creates a 5th bug; the loop only terminates at a refactor or a redesign. |
+| "Fix verified — close the bug, skip the §6 prevention step" | A fix that is not promoted to a durable learning lets the *same class* of defect reappear in the next file or PR — the harness never gets smarter. Phase 4 §6 is a required exit step: either offer the recurring class to `ywc-review-learnings --source debug`, or explicitly declare it one-off. Silently skipping §6 forfeits the harness-feedback loop. Equally, do **not** force a one-off cause into a learning to "look thorough" — an over-general learning adds review noise on every matching path. |
 | "Test fails locally, I'll skip Phase 2 (pattern analysis) since I know the code" | Familiarity is the failure mode. The "I know this code" agent skips reading the *working* sibling implementation and reinvents a bug the sibling already solved. Always read a working reference end-to-end before fixing the broken one. |
 | "Logging at boundaries is overkill, I'll just read the source" | Multi-component systems (CI → build → sign; API → service → DB; controller → middleware → handler) fail at boundaries, not inside components. Source-reading without boundary logging produces false hypotheses about which component is at fault. |
 | "Symptom is intermittent, must be flakiness" | "Flakiness" is the label agents give to bugs they did not investigate. ≥95% of "flaky test" diagnoses turn out to be reproducible race conditions or environment leaks once instrumented. Skip the flakiness label and investigate. |
@@ -132,7 +133,14 @@ Fix the root cause, not the symptom.
 
    At this point, **do not attempt fix #4**. Surface the situation to the user with: (a) the three attempted fixes and why each failed, (b) the architectural concern, (c) a proposed redesign or pattern change. Continuing to fix is not perseverance — it is sunk-cost thrashing. See [references/architectural-stop-signals.md](references/architectural-stop-signals.md) for the surface format.
 
-Phase 4 exit condition: regression test passes + red-green-red cycle verified + `ywc-verify-done` block surfaced.
+#### §6 — Systemic Prevention (emit)
+
+Run this **after the fix's red-green-red verification (§4) succeeds**, on the normal completion path. It is **independent of the §5 architecture-suspicion branch** — it applies to any confirmed root cause, whether or not §5 was ever considered. Once the cause is confirmed, classify it:
+
+- **Recurring class** — a defect pattern that could plausibly reappear in other code paths or future changes. → Offer to promote it into the durable review memory: `ywc-review-learnings --mode update --source debug`. The root-cause statement becomes the learning's *why*; the symptom becomes provenance (`debug <symptom>`). This is an **offer**, not an automatic write — `ywc-review-learnings`' own confirmation gate still applies, so the user confirms the CHANGESET before anything is written.
+- **One-off** — a cause specific to this single incident with no generalizable pattern. → Print exactly: `No systemic learning warranted — one-off cause`. Do not invent a learning to fill the slot; a forced learning over-generalizes and adds review noise on every matching path.
+
+Phase 4 exit condition: regression test passes + red-green-red cycle verified + `ywc-verify-done` block surfaced + the §6 systemic-prevention emit decision made (a recurring class was offered to `ywc-review-learnings --source debug`, or the cause was explicitly declared one-off).
 
 ## Red Flags — STOP and return to Phase 1
 
@@ -175,7 +183,7 @@ When the investigation reveals an architectural concern (Phase 4 §5), the outpu
 ## Integration
 
 - **Upstream callers:** `ywc-verify-done` (when verification fails ≥2 times on the same surface), `ywc-impl-review` (when a Critical finding points to a defect with unclear root cause), `ywc-incident-postmortem` (live debugging that escalates into a postmortem still uses these 4 phases).
-- **Downstream:** `ywc-verify-done` (Phase 4 §3 — gate the fix's completion claim), `ywc-plan` (when architectural redesign is required after Phase 4 §5).
+- **Downstream:** `ywc-verify-done` (Phase 4 §3 — gate the fix's completion claim), `ywc-plan` (when architectural redesign is required after Phase 4 §5), `ywc-review-learnings` (Phase 4 §6 — promote a recurring root-cause class into the durable review memory via `--source debug`).
 - **Pairs with:** `ywc-impl-review` (when investigation reveals a class of defects, not a single one), `ywc-incident-postmortem` (post-resolution write-up).
 
 ## Validation Checklist

@@ -13,7 +13,7 @@ Phase 1 (Investigation) 을 통과하지 않으면 어떤 fix 도 제안할 수 
 1. **Phase 1 — Root-cause investigation** — Error 메시지 정독, 재현, recent change 점검, multi-component 경계에 diagnostic instrumentation, data flow 를 upstream 으로 추적
 2. **Phase 2 — Pattern analysis** — 같은 codebase 의 working reference 를 end-to-end 정독, broken 과 차이를 모두 list (특히 "matter 안 할 것 같은" 차이 포함)
 3. **Phase 3 — Hypothesis and testing** — "X 가 root cause; minimal change Z 로 해결될 것" 형식의 단일 가설, 한 번에 한 변수만 변경
-4. **Phase 4 — Implementation** — Regression test 작성 → 단일 fix → red-green-red verification → `ywc-verify-done` 으로 gating
+4. **Phase 4 — Implementation** — Regression test 작성 → 단일 fix → red-green-red verification → `ywc-verify-done` 으로 gating → §6 systemic prevention emit (recurring class 면 `ywc-review-learnings --source debug` 로 promote 제안, 아니면 one-off 명시)
 
 **3회 이상 같은 surface 에서 fix 가 실패하면** 그 상황은 "fix harder" 가 아니라 "architecture wrong" 입니다. 4번째 fix 를 시도하지 말고 사용자에게 설계 재논의를 surface 합니다.
 
