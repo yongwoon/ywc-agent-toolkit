@@ -90,7 +90,7 @@ List mitigation steps taken in real time (rollback, hotfix, manual data correcti
 **Step 6 — Prevention action items**
 Generate specific, assignable items with deadlines. Not "improve monitoring" — "Add DB connection pool alert by YYYY-MM-DD".
 
-Tag each item as **recurrence-preventing** (a code-level check that would stop this *class* of incident from recurring — e.g. "every ownership-scoped query carries the owner-key predicate") or **operational** (a runbook, alerting, on-call, or infra action — e.g. "add a DB pool alert", "document the rollback runbook"):
+Tag each item as **recurrence-preventing** (a code-level check that would stop this *class* of incident from recurring — e.g. "every ownership-scoped query carries the owner-key predicate", "reject writes that omit the required tenant key at the repository boundary", "add a schema constraint that prevents overlapping active subscriptions", or "centralize webhook signature verification behind one shared adapter") or **operational** (a runbook, alerting, on-call, or infra action — e.g. "add a DB pool alert", "document the rollback runbook"):
 
 - **Recurrence-preventing** items → offer to promote into the durable review memory: `ywc-review-learnings --mode update --source incident`. The prevention item becomes the learning's *why* (the failure mode it stops from recurring); provenance is `incident <id>`. This is an offer — `ywc-review-learnings`' confirmation gate still applies before any write.
 - **Operational** items → keep in the postmortem report only. They are **not** promoted to review learnings — a reviewer cannot enforce an alerting or runbook action, so routing it there would add noise. Retain it explicitly in the report's action list with its owner and deadline.
