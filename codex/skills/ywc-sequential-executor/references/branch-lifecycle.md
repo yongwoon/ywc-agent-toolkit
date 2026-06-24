@@ -12,9 +12,10 @@ for each task in range:
   git checkout <base-branch> && git pull origin <base-branch>
   git checkout -b feature/<task-name>
   → implement → verify → create PR → CI
-  → [unresolved automated review artifacts?]
-      yes → ywc-handle-pr-reviews → re-run CI (loop until clean)
-      no  → (skip)
+  → poll automated reviews
+  → ywc-handle-pr-reviews health sweep (regardless of BOT_COUNT == 0)
+      fixes applied → re-run CI and re-poll (loop until clean)
+      no artifacts / CI status clean / merge-readiness clean → continue
   → merge PR
   → git checkout <base-branch> && git pull
   → mark complete
@@ -22,7 +23,7 @@ for each task in range:
 
 Each task starts from a **fresh, up-to-date base branch**. The PR merge updates the base branch on the remote, and `git pull` after merge brings those updates into local before the next task starts.
 
-The automated review step is **conditional** — it only runs when a repository has configured review bots such as CodeRabbit, Codex Review, or Claude Review. Repositories without these tools skip the step entirely. When unresolved review artifacts exist (line threads, PR comments, top-level reviews, or review-like failed checks), `ywc-handle-pr-reviews` processes them and pushes any fixes; CI is then re-verified before the merge proceeds.
+The polling wait is bot-dependent, but the PR health sweep is not conditional. Invoke `ywc-handle-pr-reviews` after polling even when `BOT_COUNT == 0` so it can check review artifacts, CI status, and merge-readiness before merge. When unresolved review artifacts exist (line threads, PR comments, top-level reviews, or review-like failed checks), the handler processes them and pushes any fixes; CI is then re-verified before the merge proceeds.
 
 ## `--local-merge` mode
 
