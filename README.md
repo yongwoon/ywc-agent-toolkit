@@ -8,8 +8,8 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 38     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 37     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Claude Code | 41     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 41     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ## Prerequisites
 
@@ -330,8 +330,8 @@ Details: [`references/html-output.md`](claude-code/skills/references/html-output
 ## Recommended Development Pipeline
 
 This spine mirrors how the skills are actually invoked day to day, not the full
-catalog. One planning pass, a spec gate, task decomposition, then the executor as
-the workhorse — for each task it delivers end to end via `ywc-finish-branch`,
+catalog. One planning pass, a recursive spec-convergence gate (`ywc-spec-ready`),
+task decomposition, then the executor as the workhorse — for each task it delivers end to end via `ywc-finish-branch`,
 folding conformance review (`--review`), PR creation, bot-review handling, and
 merge in as sub-steps, so those rarely run standalone in the task-driven flow.
 
@@ -340,7 +340,7 @@ flowchart TD
     A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
     B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
     B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
-    C --> CV["ywc-spec-validate\ngate spec quality"]
+    C --> CV["ywc-spec-ready\nrecursively converge to validate DONE\n(loops ywc-spec-validate ↔ ywc-plan --update-spec)"]
     CV --> D
     D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
     E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
@@ -363,8 +363,33 @@ spec), and at release time `ywc-release-pr-list` + `ywc-changelog-release-notes`
 The remaining skills are situational, not part of every run — `ywc-debug-rootcause` (a test
 or build fails and the cause is unclear), `ywc-tdd-ritual` (strict red-green-refactor),
 `ywc-tech-research` (compare approaches before deciding), `ywc-impl-review` (standalone
-conformance review outside the executor), `ywc-agentic` (autonomously orchestrate the whole
-pipeline from a goal), and others in the [Skills](#skills) table above.
+conformance review outside the executor), `ywc-spec-validate` (a one-shot spec review
+outside the `ywc-spec-ready` loop), and others in the [Skills](#skills) table above.
+
+### Other pipelines
+
+Beyond the per-task spine, a few multi-skill flows are first-class, designed sequences:
+
+**Autonomous — goal → code in one command.** `ywc-agentic` turns a single goal into
+delivered code, orchestrating `ywc-plan → ywc-spec-validate → ywc-task-generator → executor
+→ ywc-impl-review` in a Plan → Execute → Evaluate → Repeat loop. It re-plans on review
+failure and stops at a user-set iteration ceiling — reach for it instead of driving the
+spine by hand.
+
+**Defect → root cause → prevention (harness-feedback loop).** When a bug or failing test
+appears, `ywc-debug-rootcause` drives it to the root cause; a recurring cause class is then
+offered to `ywc-review-learnings`, which `ywc-impl-review` and `ywc-design-renew` read on
+every later review — so a confirmed defect tightens future reviews. `ywc-incident-postmortem`
+feeds the same loop after a production incident.
+
+**Mission persistence.** `ywc-brainstorm` shapes a rough idea and offers to persist durable
+intent — Mission / Success Criteria / Out-of-Scope — via `ywc-project-mission`; `ywc-plan`
+reads that file to frame every later planning pass. Intent is captured once and reused
+across features.
+
+**New-codebase setup.** For a greenfield project, `ywc-project-scaffold` lays down the
+directory structure and `ywc-ubiquitous-language` seeds the domain glossary; for an existing
+unfamiliar repo, `ywc-onboard-repo` generates onboarding context before the first `ywc-plan`.
 
 ---
 

@@ -9,7 +9,7 @@
 Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니다.
 계획 수립, 사양서 작성, 태스크 분해, 코드 생성, 리뷰, 릴리스까지 전 과정을 지원합니다.
 
-현재 Claude Code skill 38개, Codex skill 37개, Claude Code agent 12개, Codex custom agent 7개를 제공합니다.
+현재 Claude Code skill 41개, Codex skill 41개, Claude Code agent 12개, Codex custom agent 7개를 제공합니다.
 
 ## 사전 요구사항
 
@@ -179,5 +179,45 @@ Codex에는 `ywc-*` skill을 보완하는 **7개**의 read-only specialist agent
 | `ywc-typescript-reviewer` | TypeScript / JavaScript 언어별 리뷰 | `read-only` |
 | `ywc-python-reviewer` | Python 언어별 리뷰 | `read-only` |
 | `ywc-go-reviewer` | Go 언어별 리뷰 | `read-only` |
+
+## 권장 개발 Pipeline
+
+이 spine은 전체 catalog가 아니라 skill이 실제로 매일 호출되는 방식을 반영합니다. 한 번의 planning pass, 재귀적 spec 수렴 gate(`ywc-spec-ready`), task 분해, 그리고 workhorse 역할의 executor — 각 task에 대해 `ywc-finish-branch`를 통해 end-to-end로 전달하며, 적합성 review(`--review`), PR 생성, bot review 처리, merge를 sub-step으로 포함하므로 task 기반 flow에서는 이들이 단독으로 실행되는 경우가 드뭅니다.
+
+```mermaid
+flowchart TD
+    A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
+    B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
+    B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
+    C --> CV["ywc-spec-ready\nrecursively converge to validate DONE\n(loops ywc-spec-validate ↔ ywc-plan --update-spec)"]
+    CV --> D
+    D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
+    E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
+```
+
+```bash
+# Step 4 example — run a task range with full delivery:
+ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
+# common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
+# (ywc-parallel-executor is the worktree-isolated alternative)
+```
+
+**Ad-hoc / non-task 변경**은 executor를 건너뛰고 수동으로 전달합니다: `ywc-create-pr`가 draft PR을 열고, `ywc-handle-pr-reviews`가 bot / human review를 green 상태로 이끕니다. `ywc-handle-pr-reviews`는 open PR에 새 review comment가 달릴 때마다(task 기반이든 아니든) 다시 실행하는 skill이기도 합니다.
+
+실제 작업에서 함께 사용되는 것: `ywc-ubiquitous-language`(spec 작성 전·중의 domain glossary), 그리고 release 시점의 `ywc-release-pr-list` + `ywc-changelog-release-notes`.
+
+나머지 skill은 상황에 따라 사용되며 매번 실행되지는 않습니다 — `ywc-debug-rootcause`(test나 build 실패의 원인이 불분명할 때), `ywc-tdd-ritual`(엄격한 red-green-refactor), `ywc-tech-research`(결정 전 접근 방식 비교), `ywc-impl-review`(executor 밖의 단독 적합성 review), `ywc-spec-validate`(`ywc-spec-ready` loop 밖의 일회성 spec review), 그리고 위 [Skills](#skills) 표의 기타 항목들.
+
+### Other pipelines
+
+per-task spine 외에도, 몇 가지 다중 skill flow가 설계된 1급 sequence로 존재합니다:
+
+**Autonomous — goal → code를 한 번의 명령으로.** `ywc-agentic`은 단일 goal을 전달된 code로 바꾸며, `ywc-plan → ywc-spec-validate → ywc-task-generator → executor → ywc-impl-review`를 Plan → Execute → Evaluate → Repeat loop로 orchestration합니다. review 실패 시 re-plan하고 사용자가 정한 iteration 상한에서 멈춥니다 — spine을 수동으로 운전하는 대신 이것을 사용하세요.
+
+**Defect → root cause → prevention (harness-feedback loop).** bug나 test 실패가 발생하면 `ywc-debug-rootcause`가 root cause까지 추적하고, 반복되는 cause class는 `ywc-review-learnings`로 offer됩니다. 이 파일은 이후 모든 review에서 `ywc-impl-review`와 `ywc-design-renew`가 읽으므로, 확인된 defect가 향후 review를 강화합니다. `ywc-incident-postmortem`은 production 장애 이후 동일한 loop에 기여합니다.
+
+**Mission persistence.** `ywc-brainstorm`은 대략적인 idea를 다듬고 durable한 intent — Mission / Success Criteria / Out-of-Scope — 를 `ywc-project-mission`으로 저장하도록 offer합니다. `ywc-plan`은 이후 모든 planning pass의 frame을 잡기 위해 이 파일을 읽습니다. intent는 한 번 캡처되어 여러 feature에 걸쳐 재사용됩니다.
+
+**New-codebase setup.** greenfield project의 경우 `ywc-project-scaffold`가 directory 구조를 잡고 `ywc-ubiquitous-language`가 domain glossary를 seed합니다. 기존의 낯선 repo의 경우 `ywc-onboard-repo`가 첫 `ywc-plan` 전에 onboarding context를 생성합니다.
 
 자세한 내용은 [README.md](README.md)를 참조하세요.

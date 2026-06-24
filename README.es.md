@@ -8,7 +8,7 @@
 
 Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de trabajo de desarrollo completo — desde la planificación y escritura de especificaciones hasta la generación de código, revisión y lanzamiento.
 
-Actualmente incluye 38 skills para Claude Code, 37 skills para Codex, 12 agentes de Claude Code y 7 custom agents de Codex.
+Actualmente incluye 41 skills para Claude Code, 41 skills para Codex, 12 agentes de Claude Code y 7 custom agents de Codex.
 
 ## Prerrequisitos
 
@@ -177,5 +177,45 @@ Codex incluye **7 agentes** especialistas de solo lectura que complementan los s
 | `ywc-typescript-reviewer` | Revisión específica de TypeScript / JavaScript | `read-only` |
 | `ywc-python-reviewer` | Revisión específica de Python | `read-only` |
 | `ywc-go-reviewer` | Revisión específica de Go | `read-only` |
+
+## Pipeline de desarrollo recomendado
+
+Esta spine refleja cómo se invocan realmente los skills en el día a día, no el catálogo completo. Una pasada de planificación, una puerta de convergencia recursiva de spec (`ywc-spec-ready`), descomposición en tasks, y luego el executor como caballo de batalla — para cada task entrega de extremo a extremo mediante `ywc-finish-branch`, integrando la review de conformidad (`--review`), la creación de PR, el manejo de bot review y el merge como sub-pasos, de modo que rara vez se ejecutan de forma aislada en el flujo basado en tasks.
+
+```mermaid
+flowchart TD
+    A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
+    B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
+    B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
+    C --> CV["ywc-spec-ready\nrecursively converge to validate DONE\n(loops ywc-spec-validate ↔ ywc-plan --update-spec)"]
+    CV --> D
+    D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
+    E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
+```
+
+```bash
+# Step 4 example — run a task range with full delivery:
+ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
+# common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
+# (ywc-parallel-executor is the worktree-isolated alternative)
+```
+
+**Los cambios ad-hoc / no basados en tasks** omiten el executor y se entregan manualmente: `ywc-create-pr` abre un draft PR, y luego `ywc-handle-pr-reviews` lleva la review de bot / humana hasta green. `ywc-handle-pr-reviews` es también lo que se vuelve a ejecutar cada vez que llegan nuevos review comments a un PR abierto — sea basado en tasks o no.
+
+También se usan en el trabajo real: `ywc-ubiquitous-language` (glosario de dominio, antes o durante la spec), y al momento del release `ywc-release-pr-list` + `ywc-changelog-release-notes`.
+
+Los skills restantes son situacionales, no forman parte de cada ejecución — `ywc-debug-rootcause` (falla un test o build y la causa no está clara), `ywc-tdd-ritual` (red-green-refactor estricto), `ywc-tech-research` (comparar enfoques antes de decidir), `ywc-impl-review` (review de conformidad independiente fuera del executor), `ywc-spec-validate` (una review de spec puntual fuera del loop de `ywc-spec-ready`), y otros en la tabla de [Skills](#skills) anterior.
+
+### Other pipelines
+
+Más allá de la spine por task, algunos flujos multi-skill son secuencias diseñadas de primera clase:
+
+**Autónomo — goal → code en un solo comando.** `ywc-agentic` convierte un único goal en code entregado, orquestando `ywc-plan → ywc-spec-validate → ywc-task-generator → executor → ywc-impl-review` en un loop Plan → Execute → Evaluate → Repeat. Replanifica ante un fallo de review y se detiene en un límite de iteraciones definido por el usuario — recúrralo en lugar de conducir la spine a mano.
+
+**Defect → causa raíz → prevención (harness-feedback loop).** Cuando aparece un bug o un test que falla, `ywc-debug-rootcause` lo lleva hasta la causa raíz; una clase de causa recurrente se ofrece entonces a `ywc-review-learnings`, que `ywc-impl-review` y `ywc-design-renew` leen en cada review posterior — de modo que un defect confirmado refuerza las reviews futuras. `ywc-incident-postmortem` alimenta el mismo loop tras un incidente en producción.
+
+**Persistencia de misión.** `ywc-brainstorm` da forma a una idea preliminar y ofrece persistir la intención duradera — Mission / Success Criteria / Out-of-Scope — mediante `ywc-project-mission`; `ywc-plan` lee ese archivo para enmarcar cada pasada de planificación posterior. La intención se captura una vez y se reutiliza entre features.
+
+**Configuración de codebase nuevo.** Para un proyecto greenfield, `ywc-project-scaffold` establece la estructura de directorios y `ywc-ubiquitous-language` siembra el glosario de dominio; para un repo existente desconocido, `ywc-onboard-repo` genera el contexto de onboarding antes del primer `ywc-plan`.
 
 Consulte [README.md](README.md) para más detalles.
