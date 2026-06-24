@@ -18,6 +18,12 @@
       "prompt": "Draft a temporary integration note for a feature that is not final yet.",
       "expected_output": "Routes pre-finalized content to the draft/todo area when appropriate and clearly reports official vs draft placement.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Create product-facing docs for billing plan limits and link them to the architecture and specification docs.",
+      "expected_output": "Routes product material into docs/product/, preserves cross-reference links to architecture and specification documents, and reports the docs/product path plus cross-reference decisions.",
+      "files": []
     }
   ]
 }
