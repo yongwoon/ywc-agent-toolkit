@@ -58,7 +58,7 @@ When tempted to bypass a rule, check this table first:
 
 ### Phase 1: Reconnaissance — Glob + Grep, never Read-all
 
-Run **all six signal-gathering passes** (no Read tool — Glob and Grep only). The fastest path is the bundled script, which runs every pass in one shot and prints the structured summary:
+Run **all seven signal-gathering passes** (no Read tool — Glob and Grep only). The fastest path is the bundled script, which runs every pass in one shot and prints the structured summary:
 
 ```bash
 RECON_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-onboard-repo/scripts/recon.sh"
@@ -76,8 +76,9 @@ Full per-pass tool invocations (for when you need to run or extend a single pass
 | 4. Directory structure | Top-level shape (2 levels) | Bash: `find . -maxdepth 2 -type d -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*'` |
 | 5. Tooling | Linter, formatter, CI, container | Glob: `.eslintrc*`, `biome.json`, `.prettierrc*`, `ruff.toml`, `Makefile`, `Dockerfile`, `docker-compose*`, `.github/workflows/`, `.env.example` |
 | 6. Test structure | Test framework, file convention | Glob: `**/*test*`, `**/*spec*`, `pytest.ini`, `jest.config.*`, `vitest.config.*`, `playwright.config.*` |
+| 7. Agent context | Existing agent rules to preserve and reconcile | Glob: `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.cursor/rules/`, `.github/copilot-instructions.md` |
 
-At the end of Phase 1, write a 10-line **Reconnaissance Summary** internally (not yet shown to the user): one line per pass, e.g. `Pass 1: package.json present, runtime = Node 20.x, scripts = dev/build/test/lint`.
+At the end of Phase 1, write a **Reconnaissance Summary** internally (not yet shown to the user): one line per pass, e.g. `Pass 1: package.json present, runtime = Node 20.x, scripts = dev/build/test/lint`.
 
 ### Phase 2: Architecture Mapping
 
@@ -176,6 +177,8 @@ Emit two outputs. Both are required unless `--guide-only` or `--agents-md-only` 
 #### Output B: Starter AGENTS.md (written to repo root)
 
 If an `AGENTS.md` already exists, **Read it first** and merge — preserve existing project-specific instructions, append a clearly-labeled `## Detected Conventions (<YYYY-MM-DD>)` section at the bottom with the new findings. Never overwrite.
+
+Before writing or enhancing `AGENTS.md`, read and reconcile the agent-context files found in Phase 1 (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.cursor/rules/`, `.github/copilot-instructions.md`). New AGENTS.md guidance must not contradict existing agent-context rules; when rules differ, preserve the stricter or more local project rule and note the reconciliation in the generated section.
 
 When no AGENTS.md exists, the canonical starter template lives in [`references/agents-md-starter.md`](references/agents-md-starter.md). Copy it and fill in the placeholders from Phases 1-3.
 
