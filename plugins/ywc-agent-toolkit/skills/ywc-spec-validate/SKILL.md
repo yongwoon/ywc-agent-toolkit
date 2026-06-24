@@ -37,6 +37,7 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
+| `--tasks` | `--tasks <dir>` | `--tasks tasks/` | Optional generated task directory to cross-check against the spec for Requirement Coverage and Task Provenance drift. |
 | `--mode` | `--mode standard\|socratic` | `--mode socratic` | Output style. `standard` (default) returns the finding report and gate verdict; `socratic` returns learning questions instead. See [references/socratic-mode.md](references/socratic-mode.md). |
 | `--focus` | `--focus <area>` | `--focus architecture` | Optional focus hint. When Council Escalation triggers, the generic 4 voices are replaced with domain expert profiles for the chosen area. Valid: `requirements`, `architecture`, `testing`, `compliance`. See [references/expert-profiles.md](references/expert-profiles.md). |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 0` | Optional Phase 2 advisor budget for this invocation. `n` must be an integer `>= 0`. Omitted preserves current behavior, equivalent to invocation budget `2`. `0` disables Phase 2 advisor escalation. |
@@ -86,6 +87,29 @@ When tempted to skip a step, check this table first:
    **Step 4b — Aggregate**: Combine and deduplicate findings by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 2), prioritizing Critical over Warning. If `--advisor-budget <n>` is supplied, use `n` as the invocation-level advisor budget after validating that it is an integer `>= 0`; invalid values stop as `NEEDS_CONTEXT` before advisor escalation or report generation. Log any dropped candidates in the report. With `--advisor-budget 0`, do not silently drop advisor candidates: emit them as Phase 1 findings with the note `advisor candidate not escalated: budget disabled` where applicable.
 
    The 4-dimension analysis runs the same way regardless of `--mode`; the mode only changes how findings are presented in step 5.
+
+   **Step 4c — Cross-Artifact Consistency (`--tasks <dir>` only)**: When a generated task directory is supplied, validate that the task set preserves the reviewed spec contract instead of drifting during decomposition.
+
+   Build two report tables:
+
+   **Requirement Coverage**
+
+   | Spec requirement / AC (`file:line`) | Covered task(s) | Status |
+   |---|---|---|
+
+   - Status values: `COVERED`, `DEFERRED_WITH_REASON`, `UNCOVERED`.
+   - Every `UNCOVERED` row becomes its own Completeness Critical finding. Do not collapse multiple uncovered requirements into one generic gap.
+
+   **Task Provenance**
+
+   | Task (`tasks/<name>`) | Source requirement / AC | Status |
+   |---|---|---|
+
+   - Status values: `TRACED`, `ORPHAN`, `DEPENDENCY_ORDER_RISK`.
+   - Every `ORPHAN` row becomes a Consistency finding because the task appears to introduce work not justified by the spec.
+   - Every dependency-order row becomes a Consistency finding when task ordering can cause a generated task to run before the requirement or prerequisite it needs.
+
+   If `--tasks <dir>` is omitted, skip Step 4c and state that Cross-Artifact Consistency was not requested.
 
 5. **Output Report — Branch on `--mode`**
    - `standard` (default): emit the severity-classified finding report in the format below.
@@ -240,11 +264,12 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 
 | Gate band | Completion status | Action |
 |-----------|-------------------|--------|
-| PROCEED (≥ 90) | DONE | Spec is ready for `task-generator`. |
+| PROCEED (≥ 90), no Critical findings | DONE | Spec is ready for `task-generator`. |
+| PROCEED (≥ 90), Critical findings present | DONE_WITH_CONCERNS | Review completed, but Critical issues must be fixed before task decomposition. |
 | REVIEW (70 – 89) | NEEDS_CONTEXT | Present 1-3 open questions; consider council escalation if multiple dimensions are < 80. |
 | STOP (< 70) | BLOCKED | Report which dimensions are weak; do not hand off to `task-generator`. |
 
-The gate score must appear in the report header alongside the Critical/High/Medium/Low finding counts. A required dimension scoring below 50 forces STOP regardless of aggregate.
+The gate score must appear in the report header alongside the Critical/Warning/Suggestion finding counts. A required dimension scoring below 50 forces STOP regardless of aggregate.
 
 ## Validation
 
@@ -254,7 +279,7 @@ Before handing off to `ywc-task-generator`, verify that every Critical/Warning/S
 
 - **Primary upstream** — `ywc-spec-writer`: validates `docs/specification/` section files (`01-overview.md` … `07-glossary.md`). All 4 review dimensions (completeness, consistency, feasibility, code compatibility) apply fully.
 - **Secondary upstream** — `ywc-plan`: can validate feature plan documents in `docs/ywc-plans/`. Completeness and consistency dimensions apply; feasibility and code compatibility apply partially because plan documents are less implementation-specific.
-- **Not applicable** — `ywc-task-generator` output (`tasks/`): task-generator *consumes* a validated spec; it does not produce one. Passing a task directory as `--spec` is a misuse.
+- **Optional cross-check input** — `ywc-task-generator` output (`tasks/`): pass it with `--tasks <dir>` to verify Cross-Artifact Consistency after task generation. Passing a task directory as `--spec` remains a misuse.
 - **Downstream**: `ywc-task-generator` — hand off only when completion status is `DONE`. `DONE_WITH_CONCERNS` requires spec revision first.
 
 ### Programmatic Consumer Policy

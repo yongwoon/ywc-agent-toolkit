@@ -405,7 +405,7 @@ Report:
 
 ```text
 Testsheet generated: <absolute path(s)>
-Source: <pr#N | task:<name> | task-range:<start>..<end> | diff | range>
+Source: <pr#N | task:<name> | task range:<task-start>..<task-end> | diff | git range:<start>..<end>>
 Tier: <S | M | L>
 Layout: <single | split>
 Audiences: <A only | B only | A+B>

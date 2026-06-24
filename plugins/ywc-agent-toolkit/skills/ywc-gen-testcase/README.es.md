@@ -15,7 +15,7 @@ Los ingenieros de backend y los responsables de QA/PM/Product Owner pueden firma
 Generar una hoja de pruebas a partir de una URL de PR:
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 Dentro del mismo repositorio, basta con el número de PR:
@@ -226,7 +226,7 @@ Descendiente de las Skills `ywc` orientadas a la implementación:
 ### Generar desde una URL de PR (predeterminado: archivo único A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### División física en dos archivos

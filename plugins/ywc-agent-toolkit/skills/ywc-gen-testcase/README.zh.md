@@ -15,7 +15,7 @@
 从 PR URL 生成测试表：
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 在同一仓库中，PR 编号即可：
@@ -226,7 +226,7 @@ YAML front matter 携带 `dev_tester` / `dev_status` / `qa_tester` / `qa_status`
 ### 从 PR URL 生成（默认：单文件 A+B）
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 物理拆分为两个文件
