@@ -27,6 +27,7 @@ When tempted to skip a step, check this table first:
 | "CI is green, so the PR is ready to merge" | CI status and merge-readiness are independent gates. A green PR can still be `CONFLICTING` against the base if the base advanced. Check `gh pr view --json mergeable,mergeStateStatus` before declaring the PR done — a `CONFLICTING`/`BEHIND`/`BLOCKED` PR blocks every reviewer just like a CI failure. |
 | "The PR conflicts with base — I'll rebase the feature branch to fix it" | Rebasing rewrites commit SHAs and orphans existing PR review threads. Merge the base *into* the feature branch instead (`git merge --no-ff origin/<base>`); it preserves SHAs and review history. See `../references/pr-conflict-resolution.md`. |
 | "The UL update adds noise before every PR" | The update is a diff-driven incremental review, not a full re-extraction. If no new domain terms appeared in the branch, the skill produces no changes. Skipping it lets the glossary drift from the codebase with every PR that introduces new vocabulary. |
+| "Security scan and CI already checked the branch, so I do not need to read the diff" | Automated checks do not catch scope creep, drive-by edits, debug residue, or convention mismatch. Before PR creation, the author must read `git diff <base-branch>...HEAD`; this does not replace independent reviewer or CI review. |
 
 **Violating the letter of these rules is violating the spirit.** If you find yourself rephrasing a rule to make an exception, stop and ask the user.
 
@@ -177,6 +178,24 @@ If no commands are detected, skip this step and inform the user of the reason.
 - If push fails due to **remote changes** (non-fast-forward):
   - Suggest `git pull --rebase origin <current-branch>` to the user (rebase against the same feature branch, not the base branch)
   - Do not force-push without explicit user approval
+
+### 6.5. Author Self-Review Gate
+
+Before creating or updating the PR, perform an explicit author diff review:
+
+```bash
+git diff <base-branch>...HEAD
+```
+
+Read the full diff and reject the branch for cleanup before PR creation if any of the following appear:
+
+- Scope creep outside the stated task or PR purpose
+- Debug residue, temporary logging, commented-out experiments, or local-only notes
+- Drive-by edits unrelated to the branch goal
+- Secrets, credentials, tokens, internal URLs, or sensitive local paths
+- Convention mismatch against `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, existing file style, or the PR template
+
+Record the result in the PR description as `Author Self-Review Gate: passed`. This gate does not replace independent reviewer, CI, secret-scan, or bot-review checks; it only ensures the author has read the complete branch diff before asking others to review it.
 
 ### 7. Create PR
 

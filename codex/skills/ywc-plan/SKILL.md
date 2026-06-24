@@ -288,12 +288,14 @@ Next: implement directly, or run $ywc-code-gen, or $ywc-sequential-executor
 ```text
 ✅ Spec drafted: <path>
 Next:
-  1. $ywc-spec-validate --spec <path>
-  2. (after review passes) $ywc-task-generator <path>
-  3. (after tasks generated) $ywc-sequential-executor or $ywc-parallel-executor
+  1. To auto-converge validation to DONE, approve and run: $ywc-spec-ready <path>
+  2. If skipping automation, run manually:
+     a. $ywc-spec-validate --spec <path>
+     b. (after review passes) $ywc-task-generator <path>
+     c. (after tasks generated) $ywc-sequential-executor or $ywc-parallel-executor
 ```
 
-Never proceed past the handoff. The user decides which downstream skill runs next — this skill is the planner, not the executor.
+Never proceed past the handoff unless the user explicitly approves the `ywc-spec-ready <path>` shortcut. If the user says no, skips, or the run is non-interactive, print `Did not auto-execute downstream skills` and leave the manual `ywc-spec-validate` -> `ywc-task-generator` -> executor path for the user. The user decides which downstream skill runs next — this skill is the planner, not the executor.
 
 ## Output Format
 
@@ -327,7 +329,8 @@ Before declaring the skill's task complete, verify:
 - [ ] Output file written at a concrete path (no `<placeholder>` slugs)
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
-- [ ] Did not execute the next downstream skill — handoff stops at instruction
+- [ ] Did not execute the next downstream skill unless the user explicitly approved `ywc-spec-ready <path>`
+- [ ] If downstream automation was not approved, printed `Did not auto-execute downstream skills`
 
 ## Common Mistakes
 
@@ -341,5 +344,5 @@ Before declaring the skill's task complete, verify:
 
 - **Upstream**: `ywc-tech-research` (when technology choice is unsettled before planning)
 - **Downstream (Small path)**: `ywc-code-gen`, `ywc-sequential-executor`
-- **Downstream (Medium/Large path)**: `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
+- **Downstream (Medium/Large path)**: `ywc-spec-ready` (opt-in shortcut) or manual `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
 - **Pairs with**: `ywc-product-review` (run before `ywc-plan` when business framing is unclear), `ywc-project-docs` (run after if `docs/` set is missing)
