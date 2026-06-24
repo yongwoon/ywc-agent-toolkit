@@ -11,7 +11,7 @@ GitHub PR, 구현 완료된 Task directory, Task directory range, Git range, 또
 PR URL 로 Testsheet 를 생성합니다:
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 같은 Repository 내라면 PR 번호만으로도 지정 가능합니다:
@@ -219,7 +219,7 @@ YAML Front Matter, Section 번호, Template 골격은 `--lang` 과 무관하게 
 ### PR URL 로 생성 (Default: 단일 파일 A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 물리적 Split (dev / qa 2 파일)

@@ -45,9 +45,10 @@ waves pass the Wave Audit:
      --title "<title summarising all completed tasks>" \
      --body "<bullet list of completed tasks with their one-line descriptions>"
    ```
-4. Poll for bot reviews using [pr-bot-polling.md](../../references/pr-bot-polling.md). If
-   `BOT_COUNT > 0`, invoke `$ywc-handle-pr-reviews` for this PR. After review fixes are
-   pushed, re-verify CI:
+4. Poll for bot reviews using [pr-bot-polling.md](../../references/pr-bot-polling.md), then
+   invoke `$ywc-handle-pr-reviews` for this PR as a health sweep regardless of
+   `BOT_COUNT == 0`. The handler checks review artifacts, CI status, and merge-readiness.
+   After handler-applied fixes are pushed, re-verify CI:
    ```bash
    gh pr checks "$DRAFT_BRANCH_PR_NUMBER"
    ```
@@ -119,10 +120,12 @@ do not merge a red PR.
 
 ### B4. Bot review
 
-Run the polling loop in [pr-bot-polling.md](../../references/pr-bot-polling.md). If
-`BOT_COUNT > 0`, invoke `$ywc-handle-pr-reviews` for this PR, then **re-run B3** (bot fixes
-push new commits that trigger a fresh CI run). Repeat until CI is green and no new comments
-arrive within the polling window.
+Run the polling loop in [pr-bot-polling.md](../../references/pr-bot-polling.md), then invoke
+`$ywc-handle-pr-reviews` for this PR as a health sweep regardless of `BOT_COUNT == 0`.
+The handler checks review artifacts, CI status, and merge-readiness; a zero bot-comment
+count is not terminal success. If the handler applies fixes, **re-run B3** because new
+commits trigger a fresh CI run. Repeat until CI is green, merge-readiness is clean, and no
+new review artifacts arrive within the polling window.
 
 ### B5. Merge-readiness gate
 

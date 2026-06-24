@@ -34,7 +34,7 @@ Dependiendo de la escala, uno de:
 | Escala | Salida |
 |---|---|
 | Small | `./plan.md` — un plan de un solo PR directamente ejecutable |
-| Medium / Large | `docs/ywc-plans/<slug>.md` — un documento Spec que consumirán `ywc-spec-validate` y `ywc-task-generator` |
+| Medium / Large | `docs/ywc-plans/<slug>.md` — un documento Spec que consumirá `ywc-spec-ready` o el flujo manual `ywc-spec-validate` -> `ywc-task-generator` |
 
 Cada ruta emite un mensaje de traspaso explícito nombrando el siguiente Skill.
 
@@ -44,7 +44,7 @@ Cada ruta emite un mensaje de traspaso explícito nombrando el siguiente Skill.
 2. **Investigar** — Leer solo los archivos esenciales: `CLAUDE.md`, `package.json`, `docs/architecture/`, etc.
 3. **Evaluar Escala** — Elegir exactamente uno de Small / Medium / Large (por defecto Medium cuando es ambiguo)
 4. **Ramificar** — Small escribe `plan.md`; Medium/Large escribe un documento Spec
-5. **Traspaso** — Imprimir el siguiente Skill explícitamente (la ejecución es decisión del usuario, no de este Skill)
+5. **Traspaso** — Imprimir el atajo de convergencia automática `ywc-spec-ready` o los siguientes Skills manuales (la ejecución es decisión del usuario, no de este Skill)
 
 ## Invariantes de seguridad
 
@@ -60,6 +60,7 @@ Cualquiera de los siguientes escala automáticamente a Medium o superior:
 
 - `ywc-tech-research` — Ejecutar antes de `ywc-plan` cuando la elección de tecnología no está establecida
 - `ywc-product-review` — Ejecutar antes de `ywc-plan` cuando el marco de producto/negocio no está claro
+- `ywc-spec-ready` — Atajo aprobado por el usuario para converger validate -> DONE en la ruta Medium/Large
 - `ywc-spec-validate` — Siguiente paso en la ruta Medium/Large
 - `ywc-task-generator` — Descompone la Spec en tareas después de que pase la revisión
 - `ywc-code-gen` — Opción de ejecución directa para la ruta Small

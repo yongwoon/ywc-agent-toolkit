@@ -34,7 +34,7 @@
 | 规模 | 输出 |
 |---|---|
 | Small | `./plan.md` — 可直接执行的单 PR 计划 |
-| Medium / Large | `docs/ywc-plans/<slug>.md` — `ywc-spec-validate` 和 `ywc-task-generator` 将消费的 Spec 文档 |
+| Medium / Large | `docs/ywc-plans/<slug>.md` — 由 `ywc-spec-ready` 或手动 `ywc-spec-validate` -> `ywc-task-generator` 流程消费的 Spec 文档 |
 
 每条路径都会发出明确的交接消息，指名下一个 Skill。
 
@@ -44,7 +44,7 @@
 2. **调查** — 只读取必要文件：`CLAUDE.md`、`package.json`、`docs/architecture/` 等
 3. **评估规模** — 从 Small / Medium / Large 中选择一个（模糊时默认为 Medium）
 4. **分支** — Small 写 `plan.md`；Medium/Large 写 Spec 文档
-5. **交接** — 明确打印下一个 Skill（执行是用户的决定，不是此 Skill 的）
+5. **交接** — 明确打印 `ywc-spec-ready` 自动收敛捷径或手动后续 Skill（执行是用户的决定，不是此 Skill 的）
 
 ## 安全不变量
 
@@ -60,6 +60,7 @@
 
 - `ywc-tech-research` — 技术选型未定时，在 `ywc-plan` 之前运行
 - `ywc-product-review` — 产品/业务框架不清晰时，在 `ywc-plan` 之前运行
+- `ywc-spec-ready` — Medium/Large 路径中经用户批准的 validate -> DONE 自动收敛捷径
 - `ywc-spec-validate` — Medium/Large 路径的下一步
 - `ywc-task-generator` — 审查通过后将 Spec 分解为任务
 - `ywc-code-gen` — Small 路径的直接执行选项

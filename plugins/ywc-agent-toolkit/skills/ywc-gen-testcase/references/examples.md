@@ -3,7 +3,7 @@
 ## PR URL, default single file
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ## Force physical split

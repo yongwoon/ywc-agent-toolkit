@@ -13,11 +13,11 @@ description: >-
   outside an open PR context.
 ---
 
-# Handle PR Review Comments
+# Handle PR Review Health
 
-**Announce at start:** "I'm using the ywc-handle-pr-reviews skill to address review comments and reply to each thread."
+**Announce at start:** "I'm using the ywc-handle-pr-reviews skill to run a PR health sweep across review artifacts, CI status, and merge-readiness."
 
-Review PR review artifacts, fix issues where needed, and reply with an addressed marker for each artifact.
+Review PR review artifacts, CI status, and merge-readiness blockers; fix issues where needed; and reply with an addressed marker for each comment-like artifact.
 
 ## Rationalization Defense
 
@@ -61,32 +61,35 @@ Resolve `{owner}/{repo}` dynamically at this stage — it's used throughout the 
 gh repo view --json nameWithOwner --jq .nameWithOwner
 ```
 
-### 2. Retrieve and Filter Comments
+### 2. Retrieve PR Health Artifacts
 
-Retrieve all unresolved PR review comments and filter out those that do not need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
+Retrieve review artifacts, CI status, and merge-readiness in one normalized artifact list. Review artifacts may be empty; that is not terminal success. Continue through CI status and merge-readiness gates because a PR with no comments can still be blocked by failed checks or conflicts.
 
 ```bash
-FETCH_UNRESOLVED_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh"
-[ -f "$FETCH_UNRESOLVED_SCRIPT" ] || FETCH_UNRESOLVED_SCRIPT="codex/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh"
-bash "$FETCH_UNRESOLVED_SCRIPT" \
+FETCH_ARTIFACTS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-handle-pr-reviews/scripts/fetch-pr-review-artifacts.sh"
+[ -f "$FETCH_ARTIFACTS_SCRIPT" ] || FETCH_ARTIFACTS_SCRIPT="codex/skills/ywc-handle-pr-reviews/scripts/fetch-pr-review-artifacts.sh"
+bash "$FETCH_ARTIFACTS_SCRIPT" \
   {owner}/{repo} {pr_number}
-# exit 0 -> JSON array of unresolved threads on stdout (may be [])
-# exit 1 -> gh CLI error (not authenticated or PR not found)
+# exit 0 -> normalized JSON artifact array on stdout (may have empty review artifacts)
 # exit 2 -> usage error
+# exit 3 -> gh CLI or GitHub API failure
 ```
 
-The script fetches paginated comments, groups them into threads, and applies skip conditions automatically: threads containing `<!-- <review_comment_addressed> -->` are dropped, and threads where your reply is newer than the latest reviewer comment are dropped. The output JSON array contains only actionable threads; each element has `id`, `body`, `path`, `line`, `user`, `created_at`, and `thread_comment_count`. If the array is `[]`, skip to Step 7 and report "no unresolved comments".
+The script fetches unresolved review threads, PR comments, review submissions, `statusCheckRollup`, `mergeable`, `mergeStateStatus`, and PR `url`. It emits a normalized JSON array. Each artifact includes `artifact_type`, `fingerprint`, `reply_api`, `body`, `path`, `line`, `user`, and `state` where applicable. Comment-like artifacts use `artifact_type` values such as `review_thread`, `pr_comment`, and `review_submission`; CI artifacts use `status_check`; merge blockers use `merge_readiness`.
 
-### 3. Group and Analyze Comments
+If no comment-like review artifacts are present, continue to Step 6.5 and Step 6.6 rather than reporting success early.
 
-Before fixing anything, group all remaining comments by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth.
+### 3. Group and Analyze Review Artifacts
+
+Before fixing anything, group all remaining comment-like review artifacts by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth.
 
 **Processing strategy:**
 
-1. Collect all unresolved comments and group by target file path
+1. Collect all unresolved comment-like artifacts and group by target file path
 2. For each file, read the file once and analyze all related comments together
 3. Apply fixes for that file and commit as a unit
 4. Move to the next file
+5. Keep `status_check` and `merge_readiness` artifacts out of marker replies; resolve them by making the check pass or clearing the merge blocker.
 
 ### 4. Classify and Fix Comments
 
@@ -218,9 +221,11 @@ gh pr view $PR_NUMBER --json mergeable,mergeStateStatus --jq '{mergeable, mergeS
 
 Report the results so the user has a clear picture of what happened:
 
-- Total comments processed vs skipped
+- Total review artifacts processed vs skipped
+- CI status outcome and any status_check artifacts handled
+- Merge-readiness outcome and any merge_readiness artifacts handled
 - List of applied fixes with file paths and commit hashes
-- Any comments deferred to the user (with links)
+- Any artifacts deferred to the user (with links)
 - Any errors encountered during the process
 
 ## Notes
@@ -237,13 +242,13 @@ Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
 PR: <number or URL>
 Processed: <count and source of comments handled>
 Skipped: <comments deferred with reason>
-Validation: <tests or CI checks rerun>
+Validation: <tests or CI checks rerun; CI status; merge-readiness>
 Next action: <remaining review/CI action or "none">
 ```
 
 ## Validation
 
-Before finalizing, verify that every actionable comment is either addressed or explicitly deferred, reviewer intent was not guessed when ambiguous, fixes stay within PR scope, and CI or local verification was rerun after code changes.
+Before finalizing, verify that every actionable comment-like artifact is either addressed or explicitly deferred, reviewer intent was not guessed when ambiguous, fixes stay within PR scope, CI status is green or explicitly reported, and merge-readiness is clean or explicitly reported.
 
 ## Integration
 

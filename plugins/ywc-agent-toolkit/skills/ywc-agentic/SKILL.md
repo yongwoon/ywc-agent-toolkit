@@ -193,6 +193,8 @@ Concrete example:
 
 `Tasks completed` is the integer `<completed>/<total>` pair (for the Small Path, use `1/1` when `ywc-code-gen` succeeds, `0/1` when it fails). If the loop stopped on an exception, append the exception cause as a final line before reporting.
 
+**Long-run compaction**: from iteration 6, or whenever 5+ iterations accumulate in context, keep only a one-line iteration digest per prior iteration in working context. Treat `<tasks-dir>/agentic-log.md` as the durable source of truth for prior details; re-read it before evaluating historical decisions instead of relying on transcript memory.
+
 ### Step 9: Completion Report (FR-9)
 
 Emit one final report to the user:

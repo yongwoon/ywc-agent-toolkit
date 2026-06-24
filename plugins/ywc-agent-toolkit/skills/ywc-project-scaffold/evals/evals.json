@@ -18,6 +18,12 @@
       "prompt": "Suggest a monorepo layout including Kubernetes manifests and GitHub Actions.",
       "expected_output": "Explains application-source layout while refusing deployment and CI/CD directories as out of scope for this skill.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Scaffold a Rust Axum REST API using Layered Architecture.",
+      "expected_output": "Returns a Rust + Axum scaffold for a REST API with Layered Architecture language, separates handlers/application/domain/infrastructure boundaries, and includes validation and next-action notes.",
+      "files": []
     }
   ]
 }

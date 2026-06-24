@@ -1,4 +1,4 @@
 interface:
-  display_name: "Handle PR Reviews"
-  short_description: "Address GitHub PR review comments"
-  default_prompt: "Use $ywc-handle-pr-reviews to fetch unresolved PR comments, implement justified fixes, and reply to each review thread."
+  display_name: "PR Health Sweep"
+  short_description: "Handle GitHub PR review artifacts, CI failures, and merge blockers"
+  default_prompt: "Use $ywc-handle-pr-reviews as a PR health sweep: fetch review artifacts, CI status, and merge-readiness; implement justified fixes; reply to comment-like artifacts; and report any remaining blockers."
