@@ -454,3 +454,90 @@ graph LR
   C --> E
   D --> E
 ```
+
+---
+
+## Batch 12 — develop-with-llm PR 132/133/134/140 Codex Port
+
+- Spec: `docs/ywc-plans/develop-with-llm-pr132-133-134-140-codex-port.md`
+- Spec ready log: `docs/ywc-plans/develop-with-llm-pr132-133-134-140-codex-port.spec-ready-log.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000027`
+- Scope: Codex source skills, Codex eval fixtures, and generated plugin sync only. No `claude-code/**` or `tools/codex-skill/**` edits.
+- Advisor pass: skipped because phase boundaries are resolved by repository constraints: `codex/skills/` source changes first, generated plugin sync last.
+
+### Phase 000027 — Codex Source Contracts, Guidance, Fixtures
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000027-010-refactor-plan-pr-spec-contracts` | refactor | (root) |
+| `000027-020-refactor-pr-health-handler` | refactor | (root) |
+| `000027-030-refactor-executor-health-sweeps` | refactor | `000027-020` |
+| `000027-040-refactor-agent-context-compaction` | refactor | (root) |
+| `000027-050-refactor-parity-doc-hygiene` | refactor | (root) |
+| `000027-060-test-codex-parity-evals` | test | (root) |
+
+### Phase 000028 — Generated Package and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000028-010-infra-plugin-sync-validation` | infra | `000027-010`, `000027-020`, `000027-030`, `000027-040`, `000027-050`, `000027-060` |
+
+### Parallel Execution Notes (Batch 12)
+
+- Initial ready set: `000027-010`, `000027-020`, `000027-040`, `000027-050`, and `000027-060` are parallel-safe because they own disjoint skill directories or eval files.
+- After `000027-020` merges: `000027-030` becomes runnable because executor call sites depend on the final handler contract and helper name.
+- `000028-010` is the final hard gate. It waits for all Phase `000027` tasks, then runs source checks, plugin sync, full validation, and Codex-only boundary verification.
+- `000027-030` must not run in parallel with `000027-020`; the handler contract is its prerequisite.
+- `000028-010` must not run in parallel with any Phase `000027` task because it owns generated plugin output for all source edits.
+
+```mermaid
+graph LR
+  A[000027-010-refactor-plan-pr-spec-contracts] --> G[000028-010-infra-plugin-sync-validation]
+  B[000027-020-refactor-pr-health-handler] --> C[000027-030-refactor-executor-health-sweeps]
+  B --> G
+  C --> G
+  D[000027-040-refactor-agent-context-compaction] --> G
+  E[000027-050-refactor-parity-doc-hygiene] --> G
+  F[000027-060-test-codex-parity-evals] --> G
+```
+
+---
+
+## Batch 13 — develop-with-llm PR 132/133/134/140 Claude Code Port
+
+- Spec: `docs/ywc-plans/develop-with-llm-pr132-133-134-140-claude-code-port.md`
+- Spec ready log: `docs/ywc-plans/develop-with-llm-pr132-133-134-140-claude-code-port.spec-ready-log.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000029`
+- Scope: `claude-code/skills/**` only. The Codex twin is Batch 12 (phases `000027`–`000028`); no `codex/**` or `plugins/ywc-agent-toolkit/**` edits in this batch.
+- Advisor pass: skipped — single dependency-free phase, mechanical per-skill grouping, no competing DB/library boundaries.
+- No-AC requirements: none — every item traces to a backing PR change; eval/plugin-sync items are Codex-only and out of scope.
+
+### Phase 000029 — Claude Code skill drift port (single phase, no inter-task deps)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000029-010-refactor-plan-spec-contracts` | refactor | (root) |
+| `000029-020-refactor-pr-health-handler` | refactor | (root) |
+| `000029-030-refactor-executor-health-sweeps` | refactor | (root) |
+| `000029-040-refactor-agent-context-compaction` | refactor | (root) |
+| `000029-050-refactor-parity-doc-hygiene` | refactor | (root) |
+
+- Task ↔ PR ↔ skill: 010 = #132 ywc-plan + #134 ywc-create-pr + #134/#140 ywc-spec-validate + #140 ywc-spec-writer; 020 = #133 ywc-handle-pr-reviews; 030 = #133 ywc-parallel-executor + #133/#134 ywc-sequential-executor; 040 = #134 ywc-agentic + ywc-onboard-repo; 050 = #140 ywc-gen-testcase + ywc-project-docs + ywc-project-scaffold + references/project-docs-structure.md.
+
+### Parallel Execution Notes (Batch 13)
+
+- Initial ready set: all five tasks — no dependencies (independent instruction/doc edits).
+- Conflicts With: none. Each skill directory is owned by exactly one task. The two PR-double-touched skills are contained: `ywc-spec-validate` (#134+#140) wholly in `000029-010`; `ywc-sequential-executor` (#133+#134) wholly in `000029-030`.
+- Shared Surfaces: none across tasks. All tasks share the `bash scripts/validate.sh` + markdownlint CI gates, so each must self-verify before merge.
+- Hard boundary: no `codex/**` / `plugins/ywc-agent-toolkit/**` edits → pre-push hook stays green.
+- Recommended execution: per the spec's single-branch intent, run `ywc-sequential-executor --local-merge` over 010→050 on one branch. Parallel worktree execution is also conflict-free.
+- Adaptations from upstream (verified): 6 README locales here vs 4 upstream (add es/zh); `ywc-onboard-repo` es/zh do **not** exist → create; `ywc-agentic` README untouched (SKILL.md only); no `evals/` here (omit #140 eval additions); `ywc-gen-testcase` reference file has no `legalforce` URL (SKILL.md + READMEs only); `ywc-project-scaffold/SKILL.md` already has Rust/Axum (README-only).
+
+```mermaid
+graph LR
+  A[000029-010-refactor-plan-spec-contracts]
+  B[000029-020-refactor-pr-health-handler]
+  C[000029-030-refactor-executor-health-sweeps]
+  D[000029-040-refactor-agent-context-compaction]
+  E[000029-050-refactor-parity-doc-hygiene]
+```
