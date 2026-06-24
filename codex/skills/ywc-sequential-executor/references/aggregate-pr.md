@@ -103,7 +103,7 @@ After the last task has been delivered into `$WORK_BRANCH`, the working tree sho
    gh pr checks <pr-number> --watch
    ```
 
-4. Poll automated reviews using [../../references/pr-bot-polling.md](../../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews`, push fixes, and re-verify CI before polling again.
+4. Poll automated reviews using [../../references/pr-bot-polling.md](../../references/pr-bot-polling.md), then invoke `ywc-handle-pr-reviews` as a PR health sweep regardless of `BOT_COUNT == 0`. The handler checks review artifacts, CI status, and merge-readiness; a zero bot-comment count is not terminal success. If the handler applies fixes, push fixes and re-verify CI before polling again.
 
 5. Apply the merge-readiness gate from [../../references/pr-conflict-resolution.md](../../references/pr-conflict-resolution.md):
 
