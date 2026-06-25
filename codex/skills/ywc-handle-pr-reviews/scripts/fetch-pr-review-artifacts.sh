@@ -153,7 +153,7 @@ jq -n \
 
   def status_checks:
     ($pr.statusCheckRollup // [])
-    | map(select((.conclusion // .status // "") | IN("SUCCESS", "COMPLETED", "SKIPPED", "NEUTRAL") | not))
+    | map(select((.conclusion // .status // .state // "") | IN("SUCCESS", "COMPLETED", "SKIPPED", "NEUTRAL") | not))
     | map({
         artifact_type: "status_check",
         fingerprint: fingerprint("status_check"; (.name // .workflowName // .context // "unknown")),
@@ -163,7 +163,7 @@ jq -n \
         path: null,
         line: null,
         user: "github",
-        state: (.conclusion // .status // "UNKNOWN"),
+        state: (.conclusion // .status // .state // "UNKNOWN"),
         details_url: (.detailsUrl // .targetUrl // null)
       });
 
