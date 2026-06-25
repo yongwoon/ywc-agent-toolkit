@@ -82,19 +82,23 @@ jq -n \
         | {
             comments: .,
             root: .[0],
-            addressed: (map(.body // "") | any(test(marker_re))),
-            my_replies: (map(select(.user.login == $me)) | sort_by(.created_at)),
-            reviewer_comments: (map(select(.user.login != $me)) | sort_by(.created_at))
+            latest_reviewer_comment: (
+              map(select(.user.login != $me and (((.body // "") | test(marker_re)) | not)))
+              | sort_by(.created_at)
+              | last
+            ),
+            latest_self_response: (
+              map(select(.user.login == $me or ((.body // "") | test(marker_re))))
+              | sort_by(.created_at)
+              | last
+            )
           }
       )
     | map(select(
-        .addressed == false
+        .latest_reviewer_comment != null
         and (
-          (.my_replies | length) == 0
-          or (
-            (.reviewer_comments | length) > 0
-            and (.my_replies | last | .created_at) < (.reviewer_comments | last | .created_at)
-          )
+          .latest_self_response == null
+          or .latest_self_response.created_at < .latest_reviewer_comment.created_at
         )
       ))
     | map({
@@ -103,12 +107,12 @@ jq -n \
         reply_api: "review_comment_reply",
         id: .root.id,
         in_reply_to_id: .root.id,
-        body: .root.body,
-        path: .root.path,
-        line: (.root.line // .root.original_line),
-        user: .root.user.login,
+        body: .latest_reviewer_comment.body,
+        path: .latest_reviewer_comment.path,
+        line: (.latest_reviewer_comment.line // .latest_reviewer_comment.original_line),
+        user: .latest_reviewer_comment.user.login,
         state: "unresolved",
-        created_at: .root.created_at,
+        created_at: .latest_reviewer_comment.created_at,
         thread_comment_count: (.comments | length)
       });
 
