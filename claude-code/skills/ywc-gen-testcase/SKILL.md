@@ -257,7 +257,7 @@ Report:
 
 ```text
 Testsheet generated: <absolute path(s)>
-Source: <pr#N | task:<name> | diff>
+Source: <pr#N | task:<name> | range:<start>..<end> | diff>
 Tier: <S | M | L>
 Layout: <single | split>
 Audiences: <A only | B only | A+B>
@@ -331,7 +331,7 @@ Invoke this skill after those finish, when a human tester is ready to validate.
 ### Example 1: PR URL, default (single file, A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### Example 2: Force physical split (two files)

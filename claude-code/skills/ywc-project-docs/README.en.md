@@ -3,9 +3,9 @@
 A Claude Code Skill for generating Korean or Japanese documentation that follows
 the project's `docs/` directory structure and conventions.
 
-The target language is selected automatically from conversation context. Defaults
-to **Korean**; switches to Japanese when the conversation is in Japanese or when
-Japanese is explicitly requested.
+The target language is never auto-detected. If `--lang kr|ja` is provided it is
+used directly; otherwise the skill asks which language (Korean / Japanese) before
+writing anything.
 
 ## Usage
 
@@ -26,12 +26,14 @@ The skill activates on natural-language phrases such as:
 ### Manual invocation
 
 ```
-/project-docs
+/ywc-project-docs              # shows the language-selection prompt
+/ywc-project-docs --lang kr    # write in Korean directly
+/ywc-project-docs --lang ja    # write in Japanese directly
 ```
 
 ## What This Skill Does
 
-1. **Language selection** — detects conversation language and generates in Korean or Japanese
+1. **Language selection** — uses `--lang` if present, otherwise asks Korean / Japanese (never auto-detects)
 2. **Directory routing** — places documents in the correct `docs/` subdirectory based on intent
 3. **Naming conventions** — applies lowercase kebab-case, minimal suffixes
 4. **Document structure** — generates related-doc blocks, table of contents, and numbered sections

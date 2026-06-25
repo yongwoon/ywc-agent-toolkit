@@ -17,8 +17,8 @@
 
 | 분류 | 지원 항목 |
 | --- | --- |
-| **Language** | Python, Ruby, Go, JavaScript, TypeScript |
-| **Framework** | FastAPI, Flask, Rails, Hanami, Gin, Echo, Next.js, NestJS, Astro, Express.js |
+| **Language** | Python, Ruby, Go, Rust, JavaScript, TypeScript |
+| **Framework** | FastAPI, Flask, Rails, Hanami, Gin, Echo, Next.js, NestJS, Astro, Express.js, Actix Web, Axum |
 | **Architecture** | MVC, Layered, Clean Architecture, Hexagonal, DDD |
 | **Protocol** | REST API, GraphQL, gRPC, WebSocket, Message Queue (Kafka, RabbitMQ) |
 | **Scale** | Small (1-3명, MVP), Medium (3-8명, 프로덕션), Large (8명+, 엔터프라이즈) |
@@ -30,7 +30,7 @@
 Claude Code에서 다음과 같이 입력합니다:
 
 ```
-/project-scaffold FastAPI + Clean Architecture, medium scale
+/ywc-project-scaffold FastAPI + Clean Architecture, medium scale
 ```
 
 ### 복합 조건 사용
@@ -38,10 +38,10 @@ Claude Code에서 다음과 같이 입력합니다:
 여러 조건을 조합하여 입력할 수 있습니다:
 
 ```
-/project-scaffold FastAPI + GraphQL + Clean Architecture, medium scale, SaaS 프로젝트
-/project-scaffold Go + gRPC + DDD, large scale, e-commerce
-/project-scaffold NestJS + WebSocket + REST API, small scale, chat app
-/project-scaffold Rails API + GraphQL, medium scale
+/ywc-project-scaffold FastAPI + GraphQL + Clean Architecture, medium scale, SaaS 프로젝트
+/ywc-project-scaffold Go + gRPC + DDD, large scale, e-commerce
+/ywc-project-scaffold NestJS + WebSocket + REST API, small scale, chat app
+/ywc-project-scaffold Rails API + GraphQL, medium scale
 ```
 
 ### 입력 요소
@@ -103,14 +103,18 @@ project-root/
 ## Skill 파일 구조
 
 ```
-project-scaffold/
+ywc-project-scaffold/
 ├── SKILL.md                    # Skill 정의 (Workflow, Input 분석 로직)
-├── README.md                   # 이 파일
+├── README.md                   # 이 파일 (한국어)
+├── README.en.md                # English
+├── README.ja.md                # 日本語
+├── README.ko.md                # 한국어 (사본)
 └── references/                 # 언어/Protocol별 Reference
     ├── python.md               # Python (FastAPI, Flask)
     ├── ruby.md                 # Ruby (Rails, Hanami, Pure Ruby)
     ├── javascript.md           # JS/TS (Next.js, NestJS, Astro, Express)
-    ├── go.md                   # Go (Standard, Gin/Echo, Go Kit)
+    ├── go.md                   # Go (Standard, Gin/Echo)
+    ├── rust.md                 # Rust (Actix Web, Axum, standard)
     └── protocols.md            # GraphQL, gRPC, WebSocket, Message Queue
 ```
 
@@ -127,7 +131,7 @@ project-scaffold/
 
 ### 새로운 언어/Framework 추가
 
-1. `references/` 디렉토리에 새 Reference 파일 생성 (예: `rust.md`)
+1. `references/` 디렉토리에 새 Reference 파일 생성 (예: `kotlin.md`)
 2. Scale별(Small / Medium / Large) Directory 구조 작성
 3. `SKILL.md`의 Reference 로드 섹션에 매핑 추가
 

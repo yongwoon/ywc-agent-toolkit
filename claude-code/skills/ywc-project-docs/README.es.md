@@ -7,9 +7,9 @@
 Una Skill de Claude Code para generar documentación en coreano o japonés que sigue
 la estructura de directorios y las convenciones del directorio `docs/` del proyecto.
 
-El idioma objetivo se selecciona automáticamente a partir del contexto de la conversación. El valor predeterminado
-es **coreano**; cambia a japonés cuando la conversación está en japonés o cuando
-se solicita explícitamente.
+El idioma objetivo nunca se detecta automáticamente. Si se proporciona `--lang kr|ja` se
+usa directamente; de lo contrario, la Skill pregunta qué idioma (coreano / japonés) antes
+de escribir nada.
 
 ## Uso
 
@@ -30,12 +30,14 @@ La Skill se activa con frases en lenguaje natural como:
 ### Invocación manual
 
 ```
-/project-docs
+/ywc-project-docs              # muestra el prompt de selección de idioma
+/ywc-project-docs --lang kr    # escribe en coreano directamente
+/ywc-project-docs --lang ja    # escribe en japonés directamente
 ```
 
 ## Qué Hace Esta Skill
 
-1. **Selección de idioma** — detecta el idioma de la conversación y genera en coreano o japonés
+1. **Selección de idioma** — usa `--lang` si está presente, de lo contrario pregunta coreano / japonés (nunca auto-detecta)
 2. **Enrutamiento de directorios** — coloca los documentos en el subdirectorio correcto de `docs/` según la intención
 3. **Convenciones de nomenclatura** — aplica kebab-case en minúsculas con sufijos mínimos
 4. **Estructura del documento** — genera bloques de documentos relacionados, tabla de contenidos y secciones numeradas

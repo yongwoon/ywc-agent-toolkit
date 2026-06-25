@@ -20,8 +20,8 @@ Esta Skill es útil al iniciar un nuevo proyecto y decidir cómo estructurar los
 ## Uso
 
 ```text
-/project-scaffold FastAPI + Clean Architecture, escala media
-/project-scaffold Go + gRPC + DDD, escala grande, e-commerce
+/ywc-project-scaffold FastAPI + Clean Architecture, escala media
+/ywc-project-scaffold Go + gRPC + DDD, escala grande, e-commerce
 ```
 
 Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
