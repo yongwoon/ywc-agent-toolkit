@@ -41,7 +41,7 @@ Or in natural language:
 ## Outputs
 
 - **Output A**: Onboarding Guide (printed Markdown) — Tech Stack, Architecture, Key Entry Points, Directory Map, Request Lifecycle, Conventions, Common Tasks, Where to Look, Detection Confidence
-- **Output B**: Starter CLAUDE.md (written to repo root) — if a CLAUDE.md exists, only the `## Detected Conventions (<YYYY-MM-DD>)` section is appended
+- **Output B**: Starter CLAUDE.md (written to repo root) — if a CLAUDE.md exists, only the `## Detected Conventions (<YYYY-MM-DD>)` section is appended. If an existing `AGENTS.md` (the vendor-neutral standard) / `.cursorrules` is present, it is Read and reconciled so the generated CLAUDE.md does not contradict it (emitting AGENTS.md is the Codex variant's job — intentional divergence)
 
 ## Related Skills
 

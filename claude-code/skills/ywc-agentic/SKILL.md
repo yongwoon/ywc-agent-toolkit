@@ -201,6 +201,8 @@ Concrete example:
 
 `Tasks completed` is the integer `<completed>/<total>` pair (for the Small Path, use `1/1` when `ywc-code-gen` succeeds, `0/1` when it fails). If the loop stopped on an exception, append the exception cause as a final line before reporting.
 
+**Compaction on long runs (context engineering).** `agentic-log.md` is the durable record — it exists so the loop does **not** have to carry every prior iteration's full narrative in working context. From iteration 6 onward (or whenever ≥5 iterations have accumulated), treat the on-disk log as the source of truth: keep only the one-line-per-iteration digest in working context and re-read the log file when a specific prior detail is needed, rather than retaining full Plan/Evaluate transcripts inline. This is the same "smallest set of high-signal tokens" discipline the subagent return-payload contract enforces ([../references/subagent-status-actions.md](../references/subagent-status-actions.md) §3.5).
+
 ### Step 9: Completion Report (FR-9)
 
 Emit one final report to the user:
