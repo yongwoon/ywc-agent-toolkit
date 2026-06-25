@@ -11,7 +11,7 @@ Backend engineers and QA/PM/Product Owner can each sign off on their own section
 Generate a testsheet from a PR URL:
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 Within the same repository, a PR number is sufficient:
@@ -207,7 +207,7 @@ Downstream of the implementation-oriented `ywc` skills:
 ### Generate from a PR URL (default: single file A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### Physical split into two files

@@ -16,8 +16,8 @@
 ## 使用方法
 
 ```text
-/project-scaffold FastAPI + Clean Architecture, medium scale
-/project-scaffold Go + gRPC + DDD, large scale, e-commerce
+/ywc-project-scaffold FastAPI + Clean Architecture, medium scale
+/ywc-project-scaffold Go + gRPC + DDD, large scale, e-commerce
 ```
 
 自然言語 Trigger は [SKILL.md](./SKILL.md) に定義されています。

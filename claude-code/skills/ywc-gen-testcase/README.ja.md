@@ -11,7 +11,7 @@ Backend engineer と QA/PM/Product Owner がそれぞれ自分の section で独
 PR URL から生成:
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 同一 repository 内なら PR 番号のみで可能:
@@ -205,7 +205,7 @@ YAML front matter の key、section 番号、template 骨格は `--lang` に関�
 ### PR URL から生成 (default: 単一 file A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/legalforce/cas-marketing-on/pull/250
+/ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 物理 split (dev/qa 2 file)

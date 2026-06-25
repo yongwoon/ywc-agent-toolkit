@@ -16,8 +16,8 @@
 ## 사용 방법
 
 ```text
-/project-scaffold FastAPI + Clean Architecture, medium scale
-/project-scaffold Go + gRPC + DDD, large scale, e-commerce
+/ywc-project-scaffold FastAPI + Clean Architecture, medium scale
+/ywc-project-scaffold Go + gRPC + DDD, large scale, e-commerce
 ```
 
 자연어 Trigger는 [SKILL.md](./SKILL.md)에 정의되어 있습니다.

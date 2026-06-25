@@ -20,8 +20,8 @@
 ## 使用方法
 
 ```text
-/project-scaffold FastAPI + Clean Architecture, medium scale
-/project-scaffold Go + gRPC + DDD, large scale, e-commerce
+/ywc-project-scaffold FastAPI + Clean Architecture, medium scale
+/ywc-project-scaffold Go + gRPC + DDD, large scale, e-commerce
 ```
 
 自然语言触发条件在 [SKILL.md](./SKILL.md) 中定义。

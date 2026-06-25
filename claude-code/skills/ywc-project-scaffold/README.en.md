@@ -16,8 +16,8 @@ This Skill helps when starting a new project and deciding how to structure direc
 ## Usage
 
 ```text
-/project-scaffold FastAPI + Clean Architecture, medium scale
-/project-scaffold Go + gRPC + DDD, large scale, e-commerce
+/ywc-project-scaffold FastAPI + Clean Architecture, medium scale
+/ywc-project-scaffold Go + gRPC + DDD, large scale, e-commerce
 ```
 
 Natural-language triggers are defined in [SKILL.md](./SKILL.md).
