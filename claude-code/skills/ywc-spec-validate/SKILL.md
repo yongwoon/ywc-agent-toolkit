@@ -28,6 +28,7 @@ When tempted to skip a step, check this table first:
 | "Spec follows best practices, so complexity is fine" | The 4 base dimensions catch what is *missing* or *conflicting*, never what is *excessive*. Abstraction, configurability, or generality the stated scope does not yet require is over-engineering — surface it as a Simplicity Warning. Would a senior engineer call this spec overbuilt? |
 | "The spec contradicts CLAUDE.md, follow the spec" | Surface the conflict. Do not silently let the spec override project rules. |
 | "4-dimension review is fast enough sequentially" | Phase 1 fan-out cuts latency on large specs; each Sonnet subagent handles one dimension, reducing per-call context and preventing cross-dimension finding contamination. |
+| "Spec passed and tasks were generated from it, so they must agree" | task-generator can silently drop or reinterpret a requirement. When `--tasks` is set, build the Requirement Coverage table (Step 4c) — an UNCOVERED FR ships an incomplete feature while every spec-internal claim still validates cleanly. Drift between artifacts is invisible to spec-only review. |
 | "Every spec deserves the full 2 advisor calls" | Right-size the *advisor/council* spend (not the cheap Sonnet fan-out): a single-section follow-up does not need the same Opus budget as a 15-AC multi-module spec. Spending advisor calls on a trivial spec wastes tokens; under-spending on a cross-cutting one misses real trade-offs. Apply the Complexity-Aware Budget Defaults before Phase 1. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
@@ -41,6 +42,7 @@ When tempted to skip a step, check this table first:
 | `--focus` | `--focus <area>` | `--focus architecture` | Optional focus hint. When Council Escalation triggers, the generic 4 voices are replaced with domain expert profiles for the chosen area. Valid: `requirements`, `architecture`, `testing`, `compliance`. See [references/expert-profiles.md](references/expert-profiles.md). |
 | `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md). Orthogonal to `--mode` |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 0` | Opus advisor escalation budget for this invocation. Default: current behavior (≤2). `0` disables Phase 2 escalation entirely — ambiguous advisor candidates are reported as normal Suggestions (with a "would have escalated but budget=0" note) instead of being escalated. Used by orchestrators (e.g. `ywc-spec-ready`) to cap cumulative advisor cost across iterations. |
+| `--tasks` | `--tasks <dir>` | `--tasks tasks/` | Optional. When set, runs the **Cross-Artifact Consistency (Analyze)** pass (Step 4c) after Phase 1: verifies the spec and the generated task directory have not drifted apart — every requirement covered by a task, no orphan task, dependency order respects spec phases. Omit for the default pre-decomposition review (tasks do not exist yet). |
 
 ## Execution Steps
 
@@ -87,6 +89,22 @@ When tempted to skip a step, check this table first:
    **Step 4b — Aggregate**: Combine and deduplicate findings by `{file}:{line}`. Cap advisor candidates at `advisor_budget` (default: 2), prioritizing Critical over Warning. Log any dropped candidates in the report.
 
    The 4-dimension analysis runs the same way regardless of `--mode`; the mode only changes how findings are presented in step 5.
+
+4c. **Cross-Artifact Consistency (Analyze) — only when `--tasks <dir>` is set.** Steps 1–4 validate the spec in isolation. When a task directory already exists (re-validation after `ywc-task-generator`, or inside a convergence loop), verify the spec and tasks have not drifted apart — a defect class that spec-internal review structurally cannot see (an uncovered requirement makes no claim, so nothing conflicts, yet the feature ships incomplete). Build two tables before writing the report:
+
+   **Requirement Coverage** — one row per spec Functional Requirement / Acceptance Criterion. Grep the task directory for each FR/AC:
+
+   | Spec FR/AC (`file:line`) | Covering task(s) (`tasks/<id>`) | Replicated / Deferred-with-reason / **UNCOVERED** |
+
+   Every **UNCOVERED** row is its own Completeness Critical (a requirement no task implements).
+
+   **Task Provenance** — one row per task. Trace each task back to the spec:
+
+   | Task (`tasks/<id>`) | Spec basis (`file:line` FR/AC or named precedent) / **ORPHAN** |
+
+   Every **ORPHAN** row (a task with no spec basis) is a Consistency Warning (unspecified scope). Then confirm the task dependency graph respects the spec's declared phase/sequence ordering — a task depending on a later-phase task is a Consistency finding.
+
+   Feed UNCOVERED rows into the Completeness dimension and ORPHAN / dependency-order rows into the Consistency dimension as separate findings (do not fold multiple into one). Include both tables in the report.
 
 5. **Output Report — Branch on `--mode`**
    - `standard` (default): emit the severity-classified finding report in the format below.
@@ -242,21 +260,22 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 - **Scope clarity** — A spec with undefined scope cannot be decomposed into tasks. If scope is fuzzy, the gate forces STOP.
 - **Root cause identified** — The user need behind the spec must be named. Surface-level requirements without a stated user need produce tasks that solve the wrong problem.
 
-**Band-to-status mapping** for this skill:
+**Band-to-status mapping** for this skill (conforms to [confidence-gate.md §5](../references/confidence-gate.md) — PROCEED splits on Critical findings so `DONE_WITH_CONCERNS` stays reachable):
 
 | Gate band | Completion status | Action |
 |-----------|-------------------|--------|
-| PROCEED (≥ 90) | DONE | Spec is ready for `task-generator`. |
+| PROCEED (≥ 90), no Critical findings | DONE | Spec is ready for `task-generator`. |
+| PROCEED (≥ 90), Critical findings present | DONE_WITH_CONCERNS | Resolve the Critical findings via the Re-plan handoff before `task-generator`. |
 | REVIEW (70 – 89) | NEEDS_CONTEXT | Present 1-3 open questions; consider council escalation if multiple dimensions are < 80. |
 | STOP (< 70) | BLOCKED | Report which dimensions are weak; do not hand off to `task-generator`. |
 
-The gate score must appear in the report header alongside the Critical/High/Medium/Low finding counts. A required dimension scoring below 50 forces STOP regardless of aggregate.
+The gate score must appear in the report header alongside the Critical/Warning/Suggestion finding counts. A required dimension scoring below 50 forces STOP regardless of aggregate.
 
 ## Integration
 
 - **Primary upstream** — `ywc-spec-writer`: validates `docs/specification/` section files (`01-overview.md` … `07-glossary.md`). All 4 review dimensions (completeness, consistency, feasibility, code compatibility) apply fully.
 - **Secondary upstream** — `ywc-plan`: can validate feature plan documents in `docs/ywc-plans/`. Completeness and consistency dimensions apply; feasibility and code compatibility apply partially because plan documents are less implementation-specific.
-- **Not applicable** — `ywc-task-generator` output (`tasks/`): task-generator *consumes* a validated spec; it does not produce one. Passing a task directory as `--spec` is a misuse.
+- **Cross-artifact (Analyze)** — `ywc-task-generator` output (`tasks/`): once tasks exist, pass the directory via `--tasks <dir>` (alongside `--spec`) to run the Cross-Artifact Consistency pass (Step 4c) — confirms every spec requirement is covered by a task and no task is orphaned. Passing a task directory as `--spec` is still a misuse; `--tasks` is the correct channel.
 - **Downstream**: `ywc-task-generator` — hand off only when completion status is `DONE`. `DONE_WITH_CONCERNS` requires spec revision first.
 
 ### Programmatic Consumer Policy

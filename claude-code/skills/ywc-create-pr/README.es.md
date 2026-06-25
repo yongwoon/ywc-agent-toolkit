@@ -15,6 +15,7 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 - Detecta automáticamente la rama base en el orden `develop` → `main` → `master`
 - Ejecuta una verificación de seguridad para archivos sensibles como `.env`, `*.key` y `*.pem`
 - Admite verificaciones de CI previas al push como lint, format, typecheck y test
+- Ejecuta una auto-revisión obligatoria del diff completo antes de presentar el PR (detecta scope creep, restos de debug y secrets)
 - Aplica `.github/pull_request_template.md` cuando está disponible
 - Crea cada PR como borrador
 

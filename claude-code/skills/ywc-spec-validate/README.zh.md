@@ -10,7 +10,10 @@
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/specification/ --tasks tasks/
 ```
+
+> 同时传入 `--tasks <dir>` 会在任务生成后增加一次 Cross-Artifact（Analyze）校验 — 验证每个 spec 需求都被某个任务覆盖，且没有孤立任务。
 
 ## 审查维度
 

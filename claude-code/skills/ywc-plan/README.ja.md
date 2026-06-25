@@ -56,7 +56,8 @@ Scale に応じて以下のいずれか:
 
 - `ywc-tech-research` — Technology 選択が未定の場合、ywc-plan より先に
 - `ywc-product-review` — Product / business の framing が不明確な場合、ywc-plan より先に
-- `ywc-spec-validate` — Medium/Large path の次の step
+- `ywc-spec-ready` — Medium/Large path の自動収束 shortcut (spec 作成後に opt-in prompt で提案)
+- `ywc-spec-validate` — Medium/Large path の手動進行時の次の step
 - `ywc-task-generator` — Spec review 通過後の task 分解
 - `ywc-code-gen` — Small path の直接実行 option
 - `ywc-sequential-executor` / `ywc-parallel-executor` — Task 分解後の実行

@@ -6,7 +6,10 @@
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/specification/ --tasks tasks/
 ```
+
+> `--tasks <dir>` を併せて渡すと、task 生成後の spec ↔ tasks 整合（Cross-Artifact Analyze）まで検証します — すべての requirement が task で covered されているか、orphan task が無いかを確認します。
 
 ## 検討観点
 

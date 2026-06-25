@@ -33,6 +33,7 @@ When tempted to skip a step, check this table first:
 | "CI is green, so the PR is ready to merge" | CI status and merge-readiness are independent gates. A green PR can still be `CONFLICTING` against the base if the base advanced. Check `gh pr view --json mergeable,mergeStateStatus` before declaring the PR done — a `CONFLICTING`/`BEHIND`/`BLOCKED` PR blocks every reviewer just like a CI failure. |
 | "The PR conflicts with base — I'll rebase the feature branch to fix it" | Rebasing rewrites commit SHAs and orphans existing PR review threads. Merge the base *into* the feature branch instead (`git merge --no-ff origin/<base>`); it preserves SHAs and review history. See `references/pr-conflict-resolution.md`. |
 | "The UL update adds noise before every PR" | The update is a diff-driven incremental review, not a full re-extraction. If no new domain terms appeared in the branch, the skill produces no changes. Skipping it lets the glossary drift from the codebase with every PR that introduces new vocabulary. |
+| "I generated this code, I know it is fine — just file the PR" | Filing code whose diff you have not read yourself inflicts unreviewed code on every reviewer. Read each changed line first (Step 6.5); it catches scope creep, leftover debug output, and secrets the generation step introduced — the cheapest review pass there is. |
 
 **Violating the letter of these rules is violating the spirit.** If you find yourself rephrasing a rule to make an exception, stop and ask the user.
 
@@ -179,6 +180,26 @@ If no commands are detected, skip this step and inform the user of the reason.
 - If push fails due to **remote changes** (non-fast-forward):
   - Suggest `git pull --rebase origin <current-branch>` to the user (rebase against the same feature branch, not the base branch)
   - Do not force-push without explicit user approval
+
+### 6.5. Author Self-Review Gate (mandatory)
+
+Before filing the PR, read your own diff end to end. **Do not file code you have not reviewed yourself** — unreviewed code shifts the cost of your mistakes onto every reviewer. This gate has no skip flag.
+
+```bash
+git diff <base-branch>...HEAD
+```
+
+Read the full output and confirm each row. If any fails, fix it before Step 7:
+
+| Check | Reject if |
+|---|---|
+| Intent traceability | A changed line does not trace to this session's request (scope creep) |
+| No debug residue | Leftover `console.log` / `print` / `dbg!`, commented-out blocks, or `FIXME`/`TODO` introduced by generation |
+| No drive-by edits | Unrelated reformatting, renames, or "improvements" outside the task |
+| No secrets | Hardcoded keys, tokens, or credentials (Step 3 scans patterns; this is the human-readable cross-check) |
+| Convention fit | Naming and structure match the surrounding code |
+
+This is the **author's own pass**, not an approval — it does not replace independent review. For a thorough multi-aspect review before filing, run `ywc-impl-review` (architecture / design / devex / security / QA); that pass stays opt-in, this self-review does not.
 
 ### 7. Create PR
 
