@@ -20,5 +20,5 @@ if [ -z "$REPO" ] || [ -z "$PR_NUMBER" ]; then
 fi
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-"${SCRIPT_DIR}/fetch-pr-review-artifacts.sh" "$REPO" "$PR_NUMBER" \
+bash "${SCRIPT_DIR}/fetch-pr-review-artifacts.sh" "$REPO" "$PR_NUMBER" \
   | jq '[.[] | select(.artifact_type == "review_thread")]'
