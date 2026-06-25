@@ -6,12 +6,15 @@ A Claude Code Skill that checks PR review comments, applies fixes where appropri
 
 This Skill automates the repetitive work after a PR review arrives. Clear change requests are fixed directly, while ambiguous or debatable comments are surfaced for user judgment.
 
+"Handling" a PR means leaving it **mergeable**, not merely replying to comments. The Skill clears **three independent gates** — (1) review comments, (2) CI status, (3) merge-readiness (conflict) — on **every** invocation. CI can be red and the base can have advanced into a conflict even when there are zero comments, so the CI and conflict gates are never skipped.
+
 ### Key Features
 
 - Classifies comments into fix requests, debatable feedback, questions, and already-handled items
 - Groups comments by file and handles related fixes together
 - Matches the reply language to the reviewer's language
 - Skips comments that were already handled or already answered
+- Clears CI failures and base-branch conflicts after comments, leaving the PR mergeable (both gates always run, even with zero comments)
 
 ## Usage
 
