@@ -102,7 +102,7 @@ jq -n \
         fingerprint: fingerprint("review_thread"; .root.id),
         reply_api: "review_comment_reply",
         id: .root.id,
-        in_reply_to_id: .root.in_reply_to_id,
+        in_reply_to_id: .root.id,
         body: .root.body,
         path: .root.path,
         line: (.root.line // .root.original_line),
