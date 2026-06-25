@@ -114,6 +114,7 @@ jq -n \
 
   def pr_comments:
     ($issue_comments // [])
+    | map(select(.user.login != $me))
     | map(select((.body // "" | test(marker_re)) | not))
     | map({
         artifact_type: "pr_comment",
@@ -131,6 +132,7 @@ jq -n \
   def review_submissions:
     ($reviews // [])
     | map(select((.body // "") != "" and (.state | IN("COMMENTED", "CHANGES_REQUESTED"))))
+    | map(select(.user.login != $me))
     | map(select((.body // "" | test(marker_re)) | not))
     | map({
         artifact_type: "review_submission",
