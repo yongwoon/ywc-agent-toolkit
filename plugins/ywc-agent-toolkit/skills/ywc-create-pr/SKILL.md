@@ -281,7 +281,7 @@ bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" "$PR_NUMBER
 # exit 1 → BOT_COUNT == 0 (no bot reviews within polling window)
 ```
 
-Invoke `ywc-handle-pr-reviews` as a PR health sweep regardless of `BOT_COUNT == 0`. A zero bot-comment count is not terminal success; the handler still checks review artifacts, CI status, and merge-readiness. If the handler applies fixes, re-run `gh pr checks $PR_NUMBER --watch`, then re-run the polling script to catch any follow-up comments (one additional fix attempt allowed).
+Invoke `ywc-handle-pr-reviews` as a PR health sweep regardless of `BOT_COUNT == 0`. A zero bot-comment count is not terminal success; the handler still checks review artifacts, CI status, and merge-readiness. If the handler applies fixes, re-run `gh pr checks $PR_NUMBER --watch`, then re-run the polling script and repeat the health sweep until no new review artifacts, CI failures, or merge-readiness blockers remain, or until the handler reports a non-recoverable blocker.
 
 #### 8-4. Merge-Readiness (Conflict) Check
 
