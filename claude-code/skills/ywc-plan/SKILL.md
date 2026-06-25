@@ -309,12 +309,12 @@ On acceptance, invoke `ywc-project-mission --mode update --source plan` (its CHA
 
 Then ask the user (skip when `--non-interactive` is set):
 
-> spec 초안이 완성됐습니다. `ywc-spec-ready`를 실행해서 자동으로 검증·수렴 루프(validate → DONE)를 돌릴까요?
-> - **y** → `/ywc-spec-ready <path>` 를 지금 실행합니다.
-> - **n** → 아래 단계를 수동으로 진행해 주세요:
+> The spec draft is complete. Run `ywc-spec-ready` to drive the validate → converge loop (validate → DONE) automatically?
+> - **y** → run `/ywc-spec-ready <path>` now.
+> - **n** → proceed manually with the steps below:
 >   1. `/ywc-spec-validate --spec <path>`
->   2. (검토 통과 후) `/ywc-task-generator <path>`
->   3. (task 생성 후) `/ywc-sequential-executor` 또는 `/ywc-parallel-executor`
+>   2. (after review passes) `/ywc-task-generator <path>`
+>   3. (after tasks are generated) `/ywc-sequential-executor` or `/ywc-parallel-executor`
 
 If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <path>` immediately.
 If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
@@ -353,7 +353,7 @@ Before declaring the skill's task complete, verify:
 - [ ] Output file written at a concrete path (no `<placeholder>` slugs)
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
-- [ ] Did not auto-execute downstream — only invoked `ywc-spec-ready` if the user explicitly answered **y** to the opt-in prompt (or skipped the prompt when `--non-interactive` is set)
+- [ ] Did not auto-execute downstream — invoked `ywc-spec-ready` **only** on an explicit **y**; for an **n** answer, a skipped prompt, or `--non-interactive`, ran no downstream skill at all
 
 ## Common Mistakes
 
