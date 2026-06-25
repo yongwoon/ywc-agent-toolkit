@@ -84,7 +84,7 @@ Map every completion claim to one of these classes and use the matching verifica
 | Requirements met | Line-by-line checklist against the spec / plan, each line marked with the evidence command | "All tasks done" / "Tests pass, so requirements pass" |
 | Subagent finished | VCS diff (`git status`, `git diff --stat`) confirms expected files changed + structured return payload (§3.5) read | Agent's `Status: DONE` line alone |
 | CI green | Remote CI status reported by `gh pr checks <pr>` showing all required checks passing | Local CI passing / "CI ran yesterday" |
-| PR ready to merge | CI green **and** bot-review polling window closed with `BOT_COUNT == 0` (per `references/pr-bot-polling.md`) | "I created the PR" |
+| PR ready to merge | CI green, bot-review polling window completed, and `ywc-handle-pr-reviews` reported no remaining review artifacts, CI blockers, or merge-readiness blockers (per `references/pr-bot-polling.md`) | "I created the PR" |
 
 When the claim does not match any row, ask: "What command would I run to prove this?" and add the missing row to the local plan before claiming.
 

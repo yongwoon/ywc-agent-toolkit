@@ -1,10 +1,10 @@
 # PR Bot Review Polling — Shared Reference
 
-Used by `ywc-sequential-executor`, `ywc-parallel-executor`, and `ywc-finish-branch` to detect automated review bot comments (CodeRabbit, Codex Review, Claude Review, etc.) before merging a PR. The polling shape, jq query, and detection patterns are identical across executors. Only the **post-bot action** differs: sequential re-runs CI then re-polls, while parallel re-polls and proceeds to wave-local merge.
+Used by `ywc-create-pr`, `ywc-sequential-executor`, `ywc-parallel-executor`, and `ywc-finish-branch` to wait for automated review bot comments (CodeRabbit, Codex Review, Claude Review, etc.) before the mandatory PR health sweep. The polling shape, jq query, and detection patterns are identical across executors.
 
 ## When This Applies
 
-This is a **conditional** sub-step. Not all repositories use automated review bots. If no bot comments arrive after the full polling window, skip the sub-step and proceed to merge.
+This is a **required wait gate** for PR lifecycle flows that may merge, hand off, or claim a PR is ready. Not all repositories use automated review bots, so `BOT_COUNT == 0` is a valid polling result. It is not permission to skip the PR health sweep. After the polling window closes, always invoke `ywc-handle-pr-reviews`; the handler checks review artifacts, CI status, and merge-readiness even when no bot comments were detected.
 
 ## Why Polling Is Required
 
@@ -20,7 +20,7 @@ bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" <pr-number>
 # exit 0 -> BOT_COUNT > 0 (bots posted); exit 1 -> BOT_COUNT == 0 (no bots after full window)
 ```
 
-Use the exit code to choose the action in [Action When Bot Comments Exist](#action-when-bot-comments-exist-bot_count--0) or [Action When No Bot Comments](#action-when-no-bot-comments) below. The script handles the 60-second initial wait, up to 10 x 30-second polls, and the jq query — no need to inline the loop.
+Use the exit code as telemetry only. `BOT_COUNT > 0` tells you review bots posted during the window; `BOT_COUNT == 0` tells you none were detected after the full wait. In both cases, continue to [Action After Polling](#action-after-polling). The script handles the 60-second initial wait, up to 10 x 30-second polls, and the jq query — no need to inline the loop.
 
 **Reference implementation (if customization is needed):**
 
@@ -53,8 +53,9 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   POLL_COUNT=$((POLL_COUNT + 1))
 done
 # Total window: 60s (initial) + up to 10 x 30s = 360s max
-# BOT_COUNT > 0 -> bots posted -> invoke ywc-handle-pr-reviews
-# BOT_COUNT == 0 -> no bots after full window -> proceed to merge
+# BOT_COUNT > 0 -> bots posted during the window
+# BOT_COUNT == 0 -> no bots detected after the full window
+# Both results -> invoke ywc-handle-pr-reviews as the PR health sweep
 ```
 
 ## Why `reviewThreads` Is Included
@@ -78,19 +79,20 @@ Match case-insensitively against `author.login`:
 
 Update the regex in the polling loop if the project uses a bot not listed above.
 
-## Action When Bot Comments Exist (`BOT_COUNT > 0`)
+## Action After Polling
 
-1. Invoke the `ywc-handle-pr-reviews` skill to process and address all comments on the current PR.
-2. After the skill completes (all comments addressed and pushed), the executor's **post-bot action** kicks in. This is executor-specific:
-   - **Sequential**: re-run CI verification (the push triggered a new CI run; wait for it to pass), then re-run this polling loop because the new push may have triggered new bot comments. Repeat until no new comments appear within the polling window.
-   - **Parallel**: re-run this polling loop (the wave does not gate on CI between bot fixes). Repeat until no new comments appear within the polling window.
+Always invoke the `ywc-handle-pr-reviews` skill as a PR health sweep for the current PR, regardless of whether `BOT_COUNT` is greater than zero. A zero bot-comment count is not terminal success; it only means the polling window did not observe a known automated reviewer.
 
-## Action When No Bot Comments
+The handler owns the three gates:
 
-If `BOT_COUNT == 0` after the full 300-second polling window (plus the 60-second initial wait), skip this sub-step entirely and proceed to merge.
+- **Review artifacts**: line threads, PR comments, top-level review submissions, and review-like failed checks.
+- **CI status**: failed or pending status checks that block readiness.
+- **Merge-readiness**: conflicts, behind branches, blocked merge states, and hook-required states.
+
+If `ywc-handle-pr-reviews` applies fixes, re-verify CI because the push triggered a fresh run, then re-run this polling loop because the new push may trigger new bot comments. Repeat until CI is green, merge-readiness is clean, and no new review artifacts arrive within the polling window.
 
 ## Non-Stop Principle
 
 The 60-second initial wait and the up-to-300-second polling window are a **required wait gate, not a pause**. "Non-stop" means the executor does not stop for user confirmation between tasks — it does not mean polling windows are optional or skippable. Never shorten or skip the polling loop in range mode. `BOT_COUNT == 0` immediately after CI is not evidence that no bots are active; it means they have not posted yet.
 
-When `BOT_COUNT > 0`, `ywc-handle-pr-reviews` handles the comments autonomously. That skill escalates only controversial or ambiguous comments to the user — routine automated feedback does not interrupt range execution. The escalation point is inside `ywc-handle-pr-reviews`, not here.
+`ywc-handle-pr-reviews` handles routine artifacts autonomously. That skill escalates only controversial or ambiguous comments to the user — routine automated feedback does not interrupt range execution. The escalation point is inside `ywc-handle-pr-reviews`, not here.
