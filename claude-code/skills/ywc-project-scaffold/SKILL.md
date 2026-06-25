@@ -40,15 +40,15 @@ When tempted to skip a step, check this table first:
 ## Usage
 
 ```
-/project-scaffold [description]
+/ywc-project-scaffold [description]
 ```
 
 **Examples:**
 ```
-/project-scaffold FastAPI + GraphQL + Clean Architecture, medium scale
-/project-scaffold Rails API with gRPC, large scale e-commerce
-/project-scaffold NestJS + WebSocket + DDD, small scale chat app
-/project-scaffold Go microservice with gRPC and event-driven
+/ywc-project-scaffold FastAPI + GraphQL + Clean Architecture, medium scale
+/ywc-project-scaffold Rails API with gRPC, large scale e-commerce
+/ywc-project-scaffold NestJS + WebSocket + DDD, small scale chat app
+/ywc-project-scaffold Go microservice with gRPC and event-driven
 ```
 
 ## Input Analysis
