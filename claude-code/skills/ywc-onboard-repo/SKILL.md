@@ -51,6 +51,7 @@ When tempted to bypass a rule, check this table first:
 | "The repo is empty — I'll produce a generic CLAUDE.md skeleton" | An empty (or just-cloned-shallow) repo cannot support convention detection. Phases 2-3 must report "insufficient signal" honestly rather than emit framework boilerplate. A generic skeleton invites the next reader to treat it as ground truth. |
 | "I detected 3 frameworks (Next.js, NestJS, Remix) — listing all three" | Frameworks in a monorepo belong to specific workspaces. Locate each in the directory tree, scope the detection per workspace, and document accordingly. A flat "this repo uses Next.js + NestJS" claim is wrong; it uses Next.js in `apps/web/` and NestJS in `services/api/`. |
 | "Git history is shallow — I'll skip convention detection" | Shallow history (e.g., `git clone --depth 1`) means commit-message and branch-naming conventions cannot be detected. Report the gap explicitly ("Git history unavailable or too shallow"); do not invent conventions from file content. |
+| "There's an AGENTS.md but I only Read the CLAUDE.md" | `AGENTS.md` (and `.cursorrules`, copilot-instructions) encodes agent conventions the team already wrote for other tools. Skipping it means the generated CLAUDE.md may contradict rules the repo already enforces. Read every existing agent-context file; reconcile, never contradict. This variant still *writes* CLAUDE.md (the Codex variant owns AGENTS.md output) — but it must not author a CLAUDE.md that conflicts with an existing AGENTS.md. |
 
 **Violating the letter of this discipline is violating the spirit.** A wrong CLAUDE.md is worse than no CLAUDE.md — it teaches future agents the wrong conventions, and the error compounds across every subsequent skill invocation.
 
@@ -83,6 +84,8 @@ Full per-pass tool invocations (for when you need to run or extend a single pass
 | 4. Directory structure | Top-level shape (2 levels) | Bash: `find . -maxdepth 2 -type d -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*'` |
 | 5. Tooling | Linter, formatter, CI, container | Glob: `.eslintrc*`, `biome.json`, `.prettierrc*`, `ruff.toml`, `Makefile`, `Dockerfile`, `docker-compose*`, `.github/workflows/`, `.env.example` |
 | 6. Test structure | Test framework, file convention | Glob: `**/*test*`, `**/*spec*`, `pytest.ini`, `jest.config.*`, `vitest.config.*`, `playwright.config.*` |
+
+**Agent-context pre-check (not a 7th pass).** Alongside the six passes, Glob for existing agent-instruction files: `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.cursor/rules/`, `.github/copilot-instructions.md`. `AGENTS.md` is the 2026 vendor-neutral standard read by Codex / Cursor / Copilot and many other tools; a repo worked on by mixed tooling often carries one. Any file found here is a **high-signal existing-context source** the team already authored for agents — it is Read and reconciled in Phase 4 (Output B), never silently ignored, overwritten, or contradicted.
 
 At the end of Phase 1, write a 10-line **Reconnaissance Summary** internally (not yet shown to the user): one line per pass, e.g. `Pass 1: package.json present, runtime = Node 20.x, scripts = dev/build/test/lint`.
 
@@ -184,6 +187,8 @@ Emit two outputs. Both are required unless `--guide-only` or `--claude-md-only` 
 
 If a `CLAUDE.md` already exists, **Read it first** and merge — preserve existing project-specific instructions, append a clearly-labeled `## Detected Conventions (<YYYY-MM-DD>)` section at the bottom with the new findings. Never overwrite.
 
+If an `AGENTS.md` (or `.cursorrules` / `.github/copilot-instructions.md`) surfaced in the Phase 1 agent-context pre-check, **Read it too before writing**. Reconcile: the generated CLAUDE.md must not contradict rules the team already wrote there. When both files will coexist, keep CLAUDE.md focused on Claude-specific guidance and add a one-line pointer to the shared `AGENTS.md` rather than duplicating its content. This variant writes CLAUDE.md only — emitting AGENTS.md is the Codex variant's job (intentional divergence); do not switch the output here.
+
 When no CLAUDE.md exists, the canonical starter template lives in [`references/claude-md-starter.md`](references/claude-md-starter.md). Copy it and fill in the placeholders from Phases 1-3.
 
 Keep the generated CLAUDE.md **under 100 lines** — if it grows beyond that, the new content belongs in a project doc that CLAUDE.md links to, not in CLAUDE.md itself.
@@ -215,6 +220,7 @@ Before declaring the onboarding pass complete, verify:
 - [ ] Architecture facets have a verification source — not just a config-file claim
 - [ ] Every documented convention is supported by ≥3 source examples
 - [ ] Existing CLAUDE.md (if any) was **Read before write** — diff captured in the claim line
+- [ ] Existing `AGENTS.md` / `.cursorrules` / copilot-instructions (if any) was Read and reconciled — generated CLAUDE.md does not contradict it
 - [ ] Generated CLAUDE.md is ≤100 lines
 - [ ] Confidence section lists at least the count of Unknown facts (zero is allowed; missing the section is not)
 - [ ] If git history is shallow (<10 commits), conventions section reports the shallow-history caveat

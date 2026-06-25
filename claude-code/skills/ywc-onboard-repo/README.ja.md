@@ -41,7 +41,7 @@
 ## 出力
 
 - **Output A**: Onboarding Guide (Conversation に Markdown で出力) — Tech Stack, Architecture, Key Entry Points, Directory Map, Request Lifecycle, Conventions, Common Tasks, Where to Look, Detection Confidence
-- **Output B**: Starter CLAUDE.md (repo root に write) — 既存 file があれば `## Detected Conventions (<YYYY-MM-DD>)` section のみ追記
+- **Output B**: Starter CLAUDE.md (repo root に write) — 既存 file があれば `## Detected Conventions (<YYYY-MM-DD>)` section のみ追記。既存の `AGENTS.md` (vendor-neutral 標準) / `.cursorrules` があれば一緒に Read して reconcile — 生成した CLAUDE.md がそれと矛盾しないようにする (AGENTS.md の emit は Codex variant の担当、意図的な divergence)
 
 ## 関連 Skill
 
