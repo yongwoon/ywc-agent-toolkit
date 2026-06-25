@@ -60,7 +60,8 @@ Cualquiera de los siguientes escala automáticamente a Medium o superior:
 
 - `ywc-tech-research` — Ejecutar antes de `ywc-plan` cuando la elección de tecnología no está establecida
 - `ywc-product-review` — Ejecutar antes de `ywc-plan` cuando el marco de producto/negocio no está claro
-- `ywc-spec-validate` — Siguiente paso en la ruta Medium/Large
+- `ywc-spec-ready` — Atajo de auto-convergencia para la ruta Medium/Large (ofrecido mediante prompt opt-in tras el borrador del spec)
+- `ywc-spec-validate` — Paso manual siguiente en la ruta Medium/Large
 - `ywc-task-generator` — Descompone la Spec en tareas después de que pase la revisión
 - `ywc-code-gen` — Opción de ejecución directa para la ruta Small
 - `ywc-sequential-executor` / `ywc-parallel-executor` — Ejecutan las tareas generadas

@@ -11,6 +11,7 @@ Feature Branch での作業完了後、Commit 作成から Draft PR 作成まで
 - `develop` → `main` → `master` の順で Base Branch を自動判定
 - `.env`、`*.key`、`*.pem` などの機密ファイルを Security Check
 - push 前に lint、format、typecheck、test などの CI Check を実行
+- PR 作成前に自分の diff 全体を必須 Self-Review（scope creep、debug の残骸、secret を検出）
 - `.github/pull_request_template.md` があれば自動適用
 - すべての PR を Draft で作成
 

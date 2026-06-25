@@ -60,7 +60,8 @@
 
 - `ywc-tech-research` — 技术选型未定时，在 `ywc-plan` 之前运行
 - `ywc-product-review` — 产品/业务框架不清晰时，在 `ywc-plan` 之前运行
-- `ywc-spec-validate` — Medium/Large 路径的下一步
+- `ywc-spec-ready` — Medium/Large 路径的自动收敛快捷方式（spec 起草后通过 opt-in 提示提供）
+- `ywc-spec-validate` — Medium/Large 路径的手动下一步
 - `ywc-task-generator` — 审查通过后将 Spec 分解为任务
 - `ywc-code-gen` — Small 路径的直接执行选项
 - `ywc-sequential-executor` / `ywc-parallel-executor` — 执行生成的任务

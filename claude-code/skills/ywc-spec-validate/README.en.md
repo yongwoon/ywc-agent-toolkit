@@ -6,7 +6,10 @@ A Spec Reviewer Agent Skill that validates specification quality after writing s
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
+/ywc-spec-validate --spec docs/specification/ --tasks tasks/
 ```
+
+> Passing `--tasks <dir>` adds a Cross-Artifact (Analyze) pass once tasks exist — it verifies every spec requirement is covered by a task and no task is orphaned.
 
 ## Review Dimensions
 

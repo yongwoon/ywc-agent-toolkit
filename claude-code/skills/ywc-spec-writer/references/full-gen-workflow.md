@@ -12,8 +12,8 @@ Before any LLM call, verify:
 ## Model Selection
 
 Use the most capable available model. Priority order:
-1. `claude-opus-4-7` (preferred)
-2. `claude-opus-4-5` (fallback if 4-7 unavailable)
+1. `claude-opus-4-8` (preferred)
+2. `claude-opus-4-7` (fallback if 4-8 unavailable)
 
 Do not use Sonnet or Haiku for full spec generation — full codebase analysis requires frontier reasoning.
 

@@ -182,7 +182,7 @@ Use the PR's `title` + `body` to inform spec wording (the "why") and record `hea
 
 For per-section writing templates, see [references/spec-structure.md](references/spec-structure.md).
 
-For **Full Generation**, follow the detailed analysis steps in [references/full-gen-workflow.md](references/full-gen-workflow.md). Use **claude-opus-4-7** or the best available model.
+For **Full Generation**, follow the detailed analysis steps in [references/full-gen-workflow.md](references/full-gen-workflow.md). Use **claude-opus-4-8** or the best available model.
 
 ### Step 7: Update README Index
 
@@ -242,7 +242,7 @@ For Full Generation / Full Refresh:
 ✅ Spec generated: docs/specification/
   Created: README.md, 01-overview.md, 02-features.md, 03-data.md,
            04-interfaces.md, 05-user-flows.md, 06-requirements.md, 07-glossary.md
-  Model: claude-opus-4-7
+  Model: claude-opus-4-8
   Language: Korean (ko)
 ```
 

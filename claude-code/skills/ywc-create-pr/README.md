@@ -11,6 +11,7 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 - **Base Branch 자동 감지**: `develop` → `main` → `master` 순으로 자동 결정
 - **Security Check**: `.env`, `*.key`, `*.pem` 등 민감 파일 감지 및 경고
 - **CI Check (Pre-push Validation)**: Push 전에 lint, format, typecheck, test 등을 로컬에서 실행하여 CI 실패를 사전에 방지
+- **Author Self-Review Gate**: PR 생성 전 자기 diff 전체를 검토하여 scope creep, debug 잔여물, secret을 차단 (필수, skip 불가)
 - **PR Template 지원**: `.github/pull_request_template.md`가 있으면 자동 적용
 - **Draft PR 생성**: 모든 PR은 Draft 상태로 생성
 
@@ -52,7 +53,8 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 4. **Commit** - 변경 사항을 목적별로 분리하여 Commit
 5. **CI Check** - lint, format, typecheck, test 실행 (CI 실패 사전 방지)
 6. **Push** - Remote에 Push
-7. **PR 생성** - Draft PR 생성 및 URL 출력
+7. **Self-Review Gate** - PR 생성 전 자기 diff 전체 검토 (필수)
+8. **PR 생성** - Draft PR 생성 및 URL 출력
 
 ## 전제 조건
 

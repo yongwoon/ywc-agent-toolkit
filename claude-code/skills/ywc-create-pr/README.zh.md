@@ -15,6 +15,7 @@
 - 按 `develop` → `main` → `master` 顺序自动检测基础分支
 - 对 `.env`、`*.key`、`*.pem` 等敏感文件执行安全检查
 - 支持推送前的 CI 检查，如 lint、format、typecheck 和 test
+- 在提交 PR 前对完整 diff 进行强制的作者自我审查（检测 scope creep、调试残留和 secret）
 - 在可用时应用 `.github/pull_request_template.md`
 - 将每个 PR 创建为草稿
 
