@@ -72,7 +72,11 @@ jq -n \
   --argjson reviews "$REVIEWS_JSON" \
   --argjson pr "$PR_JSON" '
   def marker_re: "<!--\\s*<review_comment_addressed:[^>]+>\\s*-->";
+  def marker_fingerprint_re: "<!--\\s*<review_comment_addressed:(?<fingerprint>[^>]+)>\\s*-->";
   def fingerprint($prefix; $id): "\($prefix)-\($id)";
+  def addressed_fingerprints:
+    [($issue_comments // [])[] | (.body // "" | capture(marker_fingerprint_re)? | .fingerprint)];
+  def is_addressed($fingerprint): (addressed_fingerprints | index($fingerprint)) != null;
 
   def review_threads:
     ($comments // [])
@@ -131,7 +135,8 @@ jq -n \
         user: .user.login,
         state: "open",
         created_at: .created_at
-      });
+      })
+    | map(select((is_addressed(.fingerprint)) | not));
 
   def review_submissions:
     ($reviews // [])
@@ -149,7 +154,8 @@ jq -n \
         user: .user.login,
         state: .state,
         created_at: .submitted_at
-      });
+      })
+    | map(select((is_addressed(.fingerprint)) | not));
 
   def status_checks:
     ($pr.statusCheckRollup // [])
