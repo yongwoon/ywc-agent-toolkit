@@ -10,7 +10,7 @@ Una habilidad de Agente Revisor de Especificaciones que valida la calidad de las
 
 ```text
 /ywc-spec-validate --spec docs/outline/02-backend-api-design.md
-/ywc-spec-validate --spec docs/specification/ --tasks tasks/
+/ywc-spec-validate --spec docs/outline/02-backend-api-design.md --tasks tasks/
 ```
 
 > Pasar `--tasks <dir>` añade una pasada Cross-Artifact (Analyze) una vez que existen las tareas — verifica que cada requisito del spec esté cubierto por una tarea y que ninguna tarea quede huérfana.
