@@ -27,6 +27,12 @@ fi
 mkdir -p "$(dirname "$MANIFEST_DEST")"
 cp "$MANIFEST_SRC" "$MANIFEST_DEST"
 
+for metadata_file in README.md LICENSE SECURITY.md .codexignore; do
+  if [[ -f "$ROOT_DIR/$metadata_file" ]]; then
+    cp "$ROOT_DIR/$metadata_file" "$PLUGIN_ROOT/$metadata_file"
+  fi
+done
+
 rm -rf "$DEST_DIR"
 mkdir -p "$DEST_DIR"
 

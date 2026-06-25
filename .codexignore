@@ -1,0 +1,7 @@
+.git/
+.serena/
+.claude/
+claude-code/
+docs/
+tasks/
+tools/
