@@ -71,11 +71,16 @@ jq -n \
   --argjson issue_comments "$ISSUE_COMMENTS_JSON" \
   --argjson reviews "$REVIEWS_JSON" \
   --argjson pr "$PR_JSON" '
-  def marker_re: "<!--\\s*<review_comment_addressed:[^>]+>\\s*-->";
+  def marker_re: "<!--\\s*<review_comment_addressed(:[^>]+)?>\\s*-->";
   def marker_fingerprint_re: "<!--\\s*<review_comment_addressed:(?<fingerprint>[^>]+)>\\s*-->";
   def fingerprint($prefix; $id): "\($prefix)-\($id)";
   def addressed_fingerprints:
-    [($issue_comments // [])[] | (.body // "" | capture(marker_fingerprint_re)? | .fingerprint)];
+    [
+      ($issue_comments // [])[]
+      | (.body // "" | match(marker_fingerprint_re; "g").captures[])
+      | select(.name == "fingerprint")
+      | .string
+    ];
   def is_addressed($fingerprint): (addressed_fingerprints | index($fingerprint)) != null;
 
   def review_threads:
