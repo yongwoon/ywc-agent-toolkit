@@ -17,9 +17,9 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-codex-toolkit-eval skill to evaluate this repository's Codex skills and agents."
 
-This internal skill runs a Codex-only evaluate -> improve cycle over
+This local Codex skill runs a Codex-only evaluate -> improve cycle over
 `codex/skills/*` and `codex/agents/*.toml`. It must stay under
-`tools/codex-internal/skills/` and must not be copied into `codex/skills/` or
+`.codex/skills/` and must not be copied into `codex/skills/` or
 `.codex-plugin/skills/`.
 
 ## Boundary
@@ -39,7 +39,7 @@ When tempted to bypass a rule, check this table first:
 |---|---|
 | "scripts/validate.sh is green, so the Codex bundle is healthy" | Validation proves structure and packaging only. Trigger precision, workflow actionability, runtime fit, and behavioral evidence still need graded evaluation. |
 | "The Claude evaluator already scores Codex paths, so keep using it" | Claude Code and Codex have different frontmatter schemas, agent formats, install paths, and runtime assumptions. Shared concepts are acceptable; shared target roots are not. |
-| "Internal tools can live under codex/skills if we remember not to publish them" | `codex/skills` and `.codex-plugin/skills` are distribution surfaces. Internal evaluators there will leak into installs or plugin packaging. |
+| "Local evaluator skills can live under codex/skills if we remember not to publish them" | `codex/skills` and `.codex-plugin/skills` are distribution surfaces. Evaluators there will leak into installs or plugin packaging. |
 | "Mechanical score is enough" | Mechanical axes are partial evidence. Judgment axes such as trigger precision, workflow actionability, scope discipline, mission boundaries, and behavioral evidence still decide the grade. |
 | "No eval fixtures means no score" | Score from available evidence and mark uncertainty. Missing fixtures are themselves a quality signal. |
 | "Fix every issue while evaluating" | Evaluation produces an evidence-ranked backlog. Implement fixes through `ywc-skill-author`, Codex agent authoring, or bundle docs work, then re-score. |
@@ -87,7 +87,7 @@ Agent judgment axes: A1 routing description, A3 mission and boundaries, and A8 b
 Run from the repository root:
 
 ```bash
-python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py --json
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py --json
 ```
 
 Use the JSON as evidence. Do not re-derive body line counts, missing README
@@ -98,19 +98,19 @@ locale files, missing `agents/openai.yaml`, or TOML key presence by memory.
 Run the deterministic scorecard:
 
 ```bash
-python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --mode mechanical --format markdown
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --mode mechanical --format markdown
 ```
 
 For CI or pre-PR regression checks:
 
 ```bash
-python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
 ```
 
 If the current mechanical scores are intentionally the new baseline:
 
 ```bash
-python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --update-baseline
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --update-baseline
 ```
 
 Do not let CI rewrite `evals/history.mechanical.json`; CI compares only.
@@ -161,7 +161,7 @@ failures outrank qualitative issues.
 | Codex skill structure or content | `ywc-skill-author` |
 | Codex TOML agent definition | Codex custom-agent authoring conventions |
 | Bundle install/docs/plugin drift | `codex/AGENTS.md`, bundle README set, and packaging scripts |
-| Gate or scorer defect | This internal skill's `scripts/` and rubric references |
+| Gate or scorer defect | This local skill's `scripts/` and rubric references |
 
 After each improvement batch, rerun Step 1 and Step 2 for the affected scope.
 
@@ -210,11 +210,11 @@ Before claiming the evaluation is complete, verify:
 
 - **Evaluating Claude Code artifacts with this skill** — use `.claude/skills/ywc-toolkit-eval` for Claude Code.
 - **Treating mechanical points as a final grade** — judgment axes must be scored before claiming a composite grade.
-- **Letting internal files leak into packaging** — keep the skill under `tools/codex-internal/skills/`.
+- **Letting local evaluator files leak into packaging** — keep the skill under `.codex/skills/`.
 - **Skipping the backlog** — the prioritized fix list is the deliverable that makes the cycle actionable.
 
 ## Integration
 
 - **Upstream**: `ywc-skill-author` for Codex skill rule interpretation.
 - **Downstream**: use the prioritized backlog to make targeted Codex skill/agent edits, then re-run this skill.
-- **Pairs with**: `scripts/validate.sh`, which enforces the internal-only packaging boundary and runs the mechanical regression gate.
+- **Pairs with**: `scripts/validate.sh`, which enforces the local-only packaging boundary and runs the mechanical regression gate.

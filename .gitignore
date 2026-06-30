@@ -17,6 +17,5 @@ __pycache__/
 
 docs/ywc-plans
 tasks/
-tools/codex-internal/skills/ywc-codex-toolkit-eval/evals/
 .ywc-run-state.json
 .ywc-learnings.jsonl

@@ -563,37 +563,31 @@ check_codex_agents() {
   done
 }
 
-check_internal_toolkit_eval() {
-  local internal_dir="tools/codex-internal/skills/ywc-codex-toolkit-eval"
+check_local_codex_toolkit_eval() {
+  local skill_dir=".codex/skills/ywc-codex-toolkit-eval"
   local leaked_dir
 
-  check_skill_dir "$internal_dir/"
-  check_readme_set "$internal_dir/"
+  check_codex_skill_dir "$skill_dir/"
 
-  for leaked_dir in codex/skills/ywc-codex-toolkit-eval plugins/ywc-agent-toolkit/skills/ywc-codex-toolkit-eval; do
+  for leaked_dir in codex/skills/ywc-codex-toolkit-eval .codex-plugin/skills/ywc-codex-toolkit-eval plugins/ywc-agent-toolkit/skills/ywc-codex-toolkit-eval; do
     if [ -e "$leaked_dir" ]; then
-      echo "ERROR: internal-only ywc-codex-toolkit-eval must not be packaged at $leaked_dir"
+      echo "ERROR: local-only ywc-codex-toolkit-eval must not be packaged at $leaked_dir"
       ERRORS=$((ERRORS + 1))
     fi
   done
 
-  if [ ! -f "$internal_dir/agents/openai.yaml" ]; then
-    echo "ERROR: internal toolkit eval skill is missing: $internal_dir/agents/openai.yaml"
+  if [ ! -f "$skill_dir/scripts/score.py" ]; then
+    echo "ERROR: local toolkit eval scorer is missing: $skill_dir/scripts/score.py"
     ERRORS=$((ERRORS + 1))
   fi
 
-  if [ ! -f "$internal_dir/scripts/score.py" ]; then
-    echo "ERROR: internal toolkit eval scorer is missing: $internal_dir/scripts/score.py"
+  if [ ! -f "$skill_dir/scripts/inventory_gate.py" ]; then
+    echo "ERROR: local toolkit eval inventory gate is missing: $skill_dir/scripts/inventory_gate.py"
     ERRORS=$((ERRORS + 1))
   fi
 
-  if [ ! -f "$internal_dir/scripts/inventory_gate.py" ]; then
-    echo "ERROR: internal toolkit eval inventory gate is missing: $internal_dir/scripts/inventory_gate.py"
-    ERRORS=$((ERRORS + 1))
-  fi
-
-  if [ ! -f "$internal_dir/scripts/test_score.py" ]; then
-    echo "ERROR: internal toolkit eval scorer tests are missing: $internal_dir/scripts/test_score.py"
+  if [ ! -f "$skill_dir/scripts/test_score.py" ]; then
+    echo "ERROR: local toolkit eval scorer tests are missing: $skill_dir/scripts/test_score.py"
     ERRORS=$((ERRORS + 1))
   fi
 }
@@ -686,17 +680,17 @@ check_release_versions
 echo "==> Validating codex agents..."
 check_codex_agents
 
-echo "==> Validating internal Codex tools..."
-check_internal_toolkit_eval
+echo "==> Validating local Codex evaluator skill..."
+check_local_codex_toolkit_eval
 
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null
 
 # Mirror the CI mechanical-regression gate locally so a score drop is caught
 # before push, not only in CI (.github/workflows/validate.yml runs the same gate).
-if [ -f tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py ]; then
+if [ -f .codex/skills/ywc-codex-toolkit-eval/scripts/score.py ]; then
   echo "==> Running ywc-codex-toolkit-eval mechanical regression gate..."
-  python3 tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py --ci || ERRORS=$((ERRORS + 1))
+  python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --ci || ERRORS=$((ERRORS + 1))
 fi
 
 if [ "$ERRORS" -gt 0 ]; then

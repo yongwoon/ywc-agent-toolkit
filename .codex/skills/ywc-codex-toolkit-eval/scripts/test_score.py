@@ -103,7 +103,7 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         forbidden_signals: list[str] | None = None,
         output_text: str | None = None,
     ) -> tuple[Path, Path]:
-        evaluator = self.repo / "tools" / "codex-internal" / "skills" / "ywc-codex-toolkit-eval"
+        evaluator = self.repo / ".codex" / "skills" / "ywc-codex-toolkit-eval"
         fixtures = evaluator / "evals" / "agent-smoke-fixtures.json"
         outputs = evaluator / "evals" / "agent-smoke-output"
         fixtures.parent.mkdir(parents=True)
@@ -280,7 +280,7 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         self.assertIn("codex/agents/ywc-reviewer.toml", payload["items"])
 
     def test_repo_root_can_be_discovered_from_nested_path(self) -> None:
-        nested = self.repo / "tools" / "codex-internal" / "skills" / "eval" / "scripts"
+        nested = self.repo / ".codex" / "skills" / "eval" / "scripts"
         nested.mkdir(parents=True)
 
         proc = subprocess.run(

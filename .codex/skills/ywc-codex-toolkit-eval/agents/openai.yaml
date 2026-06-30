@@ -1,4 +1,4 @@
 interface:
   display_name: "YWC Codex Toolkit Eval"
-  short_description: "Evaluates internal Codex skills and agents with gate, mechanical, and judgment passes."
+  short_description: "Scores Codex skills and agents with gated evals."
   default_prompt: "Use $ywc-codex-toolkit-eval to evaluate this toolkit's Codex skills and agents, then produce a graded scorecard and prioritized improvement backlog."

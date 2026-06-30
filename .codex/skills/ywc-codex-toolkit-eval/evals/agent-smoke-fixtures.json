@@ -5,19 +5,19 @@
       "id": "architect-happy-module-boundary",
       "agent": "ywc-architect",
       "output_path": "evals/agent-smoke-output/ywc-architect/architect-happy-module-boundary.md",
-      "intent": "Decide whether the agent smoke validator belongs in the internal evaluator scripts directory.",
+      "intent": "Decide whether the agent smoke validator belongs in the local Codex skill scripts directory.",
       "evidence_packet": {
-        "summary": "Internal evaluator owns local Codex skill/agent evaluation; score.py, test_score.py, and inventory_gate.py already live in the same scripts directory.",
+        "summary": "The local Codex evaluator owns this repository's Codex skill/agent evaluation; score.py, test_score.py, and inventory_gate.py already live in the same scripts directory.",
         "files": [
-          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/score.py",
-          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/test_score.py",
-          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py"
+          ".codex/skills/ywc-codex-toolkit-eval/scripts/score.py",
+          ".codex/skills/ywc-codex-toolkit-eval/scripts/test_score.py",
+          ".codex/skills/ywc-codex-toolkit-eval/scripts/inventory_gate.py"
         ]
       },
       "expected_status": "DONE",
       "expected_signals": [
-        "Internal evaluator boundary",
-        "Keep `tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/agent_smoke.py` in the internal evaluator scripts directory",
+        "Local Codex evaluator boundary",
+        "Keep `.codex/skills/ywc-codex-toolkit-eval/scripts/agent_smoke.py` in the local Codex skill scripts directory",
         "Project evidence"
       ],
       "forbidden_signals": [
@@ -59,7 +59,7 @@
       "evidence_packet": {
         "summary": "A stale output file exists at the fixture output_path before the missing-output test runs.",
         "files": [
-          "tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/test_score.py"
+          ".codex/skills/ywc-codex-toolkit-eval/scripts/test_score.py"
         ]
       },
       "expected_status": "DONE",
