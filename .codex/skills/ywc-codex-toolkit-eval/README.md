@@ -21,7 +21,7 @@ python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
 
 ## 출력
 
-- `docs/skill-agent-eval/codex/reports/` — Codex Skill/Agent 평가 report
+- `docs/skill-agent-eval/codex/` — Codex Skill/Agent 평가 report
 - `docs/skill-agent-eval/codex/scoreboard.md` — rolling scoreboard
 - `evals/history.mechanical.json` — reviewed mechanical baseline
 

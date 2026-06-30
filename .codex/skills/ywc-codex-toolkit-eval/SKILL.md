@@ -1,16 +1,17 @@
 ---
 name: ywc-codex-toolkit-eval
 description: >-
-  (ywc) Use when evaluating, scoring, auditing, or improving this repository's
-  Codex ywc-* skills and Codex custom agents as a repeatable maintenance cycle.
+  (ywc) Use when evaluating, scoring, auditing, or producing a prioritized
+  improvement backlog for this repository's Codex ywc-* skills and Codex custom
+  agents as a repeatable maintenance cycle.
   Triggers: "Codex skill 평가", "Codex agent 평가", "Codex 평가 기준",
   "codex toolkit 평가해줘", "skill/agent 개선 cycle", "evaluate Codex skills",
   "score Codex agents", "Codex skill maturity", "Codex scoreboard",
   "Codex スキル評価", "Codex エージェント評価". Do not use for Claude Code
   skill/agent evaluation (use .claude/skills/ywc-toolkit-eval), for authoring
-  a distributable ywc-* skill directly (use ywc-skill-author), for binary
-  validation only (use scripts/validate.sh), or for application code review
-  (use ywc-impl-review).
+  or directly editing a distributable ywc-* skill (use ywc-skill-author), for
+  binary validation only (use scripts/validate.sh), or for application code
+  review (use ywc-impl-review).
 ---
 
 # ywc-codex-toolkit-eval
@@ -57,6 +58,23 @@ When tempted to bypass a rule, check this table first:
 | `--ci` | flag | `--ci` | Compare deterministic axes against `evals/history.mechanical.json` without rewriting it. |
 | `--update-baseline` | flag | `--update-baseline` | Write the reviewed current mechanical baseline after checking the markdown output. |
 | `--only` | `--only <scope>` | `--only agents` | Inventory gate scope: `skills`, `agents`, or all. |
+
+## Argument Mapping
+
+Map user arguments to concrete commands before running the workflow:
+
+| User request | Inventory command | Mechanical command |
+|---|---|---|
+| `--target all` or no target | `inventory_gate.py --json` | `score.py --mode mechanical --target all --format markdown` |
+| `--target codex/skills` | `inventory_gate.py --json --only skills` | `score.py --mode mechanical --target codex/skills --format markdown` |
+| `--target codex/agents` | `inventory_gate.py --json --only agents` | `score.py --mode mechanical --target codex/agents --format markdown` |
+| `--item <name>` | run the matching inventory scope for context | add `--item <name>` to `score.py` and score only that asset in the judgment pass |
+| `--ci` | optional unless a full report is requested | `score.py --ci` |
+| `--update-baseline` | optional unless reviewing current structure | `score.py --update-baseline` after reviewing markdown output |
+
+Direct `score.py` runs support mechanical mode only. For `--mode judge` or
+`--mode full`, use the mechanical output plus the rubric references to complete
+the judgment pass.
 
 ## Scoring Model
 
@@ -198,7 +216,10 @@ Before claiming the evaluation is complete, verify:
 
 - [ ] `inventory_gate.py` was run for the stated scope.
 - [ ] `score.py --mode mechanical --format markdown` was run for mechanical evidence unless skill-level `--mode judge` was explicit.
-- [ ] Expected negative checks, such as missing `--item` and stale wording searches, were run as assertion-shaped commands (`! <command>` or equivalent).
+- [ ] Expected negative checks were run as assertion-shaped commands:
+  - `! test -e codex/skills/ywc-codex-toolkit-eval`
+  - `! test -e .codex-plugin/skills/ywc-codex-toolkit-eval`
+  - `! rg 'tools/codex-internal/skills/ywc-codex-toolkit-[e]val' .codex/skills/ywc-codex-toolkit-eval scripts/validate.sh`
 - [ ] Every scored skill used [references/skill-rubric.md](references/skill-rubric.md).
 - [ ] Every scored agent used [references/agent-rubric.md](references/agent-rubric.md).
 - [ ] Mechanical-only mode is reported as partial, not final quality.
