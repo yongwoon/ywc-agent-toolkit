@@ -241,5 +241,5 @@ Before submitting any reply to review feedback, verify:
 |---|---|
 | [references/forbidden-acknowledgments.md](references/forbidden-acknowledgments.md) | Auditing a draft reply for performative-agreement language; full vocabulary list with replacements |
 | [references/pushback-templates.md](references/pushback-templates.md) | Composing technical pushback for the five common conditions (broken functionality, missing context, YAGNI, stack incompatibility, prior decision) |
-| [../ywc-handle-pr-reviews/SKILL.md](../ywc-handle-pr-reviews/SKILL.md) | Automation for fetching unresolved comments, threading replies, and managing the PR-review loop — this skill governs the response *content*, that skill governs the response *plumbing* |
-| [../ywc-verify-done/SKILL.md](../ywc-verify-done/SKILL.md) | Per-fix verification block (command + exit code + claim) attached to every "fixed" acknowledgment |
+| `ywc-handle-pr-reviews` | Automation for fetching unresolved comments, threading replies, and managing the PR-review loop — this skill governs the response *content*, that skill governs the response *plumbing* |
+| `ywc-verify-done` | Per-fix verification block (command + exit code + claim) attached to every "fixed" acknowledgment |

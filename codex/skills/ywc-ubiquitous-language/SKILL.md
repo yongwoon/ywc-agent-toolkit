@@ -73,10 +73,14 @@ If `--ddd` flag is set, also collect: DDD Type (Entity / Value Object / Aggregat
 **Step 4: Write File**
 Write to `--output` path using the format in [references/document-format.md](references/document-format.md).
 
-**Step 5: CLAUDE.md Integration Prompt**
+**Step 5: Agent Instruction Integration Prompt**
 After writing, print:
 ```
-★ To give LLMs automatic access to this vocabulary, add the following line to your CLAUDE.md:
+To give future agents automatic access to this vocabulary, add the reference to the repo's active agent instruction file:
+- Codex-first repos: `AGENTS.md` or `CODEX.md`
+- Claude Code-first repos: `CLAUDE.md`
+
+Reference line:
   @docs/ubiquitous-language.md
 ```
 
@@ -139,6 +143,8 @@ The full format specification is in [references/document-format.md](references/d
 Summary:
 
 ```markdown
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+
 # Ubiquitous Language — [Project Name]
 
 <!-- updated: YYYY-MM-DD -->
@@ -168,7 +174,7 @@ Before declaring complete:
 - [ ] No two terms share the same Korean equivalent within the same context
 - [ ] `docs/ubiquitous-language.md` is parseable Markdown with no broken table rows
 - [ ] `<!-- updated: DATE -->` header reflects today's date
-- [ ] CLAUDE.md integration prompt was printed to the user
+- [ ] Agent instruction integration prompt was printed to the user, prioritizing `AGENTS.md` / `CODEX.md` for Codex-first repositories and `CLAUDE.md` for Claude Code-first repositories
 
 ## Common Mistakes
 

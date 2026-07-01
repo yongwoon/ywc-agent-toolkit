@@ -209,6 +209,19 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 | `BLOCKED` | Generation cannot proceed — spec file missing, project context unreadable, or a critical ambiguity with no resolvable default |
 | `NEEDS_CONTEXT` | `--spec` or `--feature` argument is too vague to generate useful code without clarification |
 
+## Validation
+
+Before returning `DONE`, verify:
+
+- [ ] `--spec` and `--feature` were provided and the spec was read.
+- [ ] Reuse Gate ran or `--skip-reuse-check` was explicitly set.
+- [ ] Contract Snapshot lists Changed Public Contracts, Critical Internals, and Cross-Module Impact.
+- [ ] Every generated file is listed with `[P1]` or `[P2]` provenance.
+- [ ] Phase 2 advisor usage is reported, including dropped candidates when over budget.
+- [ ] Stub scan ran against generated files, or the report states why there were no generated files to scan.
+- [ ] Verification blocks appear before the Completion Status line and support the exact completion claim.
+- [ ] Completion Status is exactly one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`.
+
 ## Banned Output Patterns (Hard Failures)
 
 Any subagent output containing the following patterns is treated as a failed generation — retry or escalate, never deliver as-is. Downstream tools (ywc-sequential-executor, CI) will compile and test whatever is generated; a stub is a runtime error, not deferred work.
@@ -279,6 +292,7 @@ The gate score must appear in the completion summary together with the Backend /
 
 ## Integration
 
-- **upstream**: After specification is finalized
-- **downstream**: Implementation review (ywc-impl-review), PR creation
-- **relationship**: Complementary to sequential-executor (independent layer parallel generation)
+- **upstream**: `ywc-plan` / `ywc-spec-writer` / `ywc-spec-validate` after the implementation specification is finalized.
+- **downstream**: `ywc-impl-review` for implementation review and `ywc-create-pr` for PR creation after generated changes pass verification.
+- **relationship**: Complementary to `ywc-sequential-executor` and `ywc-parallel-executor`; this skill generates a bounded feature slice, while executors own task queues, worktrees, merges, and completion bookkeeping.
+- **out of scope**: Task decomposition, PR creation, merge/cleanup, and post-review comment handling. Use `ywc-task-generator`, `ywc-create-pr`, `ywc-finish-branch`, and `ywc-handle-pr-reviews` for those phases.

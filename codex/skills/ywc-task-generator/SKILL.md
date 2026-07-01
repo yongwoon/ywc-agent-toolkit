@@ -399,6 +399,20 @@ When parallel execution is expected, verify that each task is safe for isolated 
 
 ---
 
+## Validation
+
+Before returning `DONE`, verify:
+
+- [ ] The spec or plan source was read and each task traces to a source requirement.
+- [ ] Each generated task has a `README.md` and `task.md`.
+- [ ] UI or behavior-changing tasks have a `test.md` or an explicit test exception.
+- [ ] `dependency-graph.md` exists and matches the generated task directories.
+- [ ] Parallel Execution Notes are present when tasks are intended for parallel execution.
+- [ ] The selected output language matches `--lang` or the inferred project language policy.
+- [ ] The final response reports the generated directory, task count, graph path, and `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
+
+---
+
 ## Example
 
 User input: "Break down the user authentication spec into tasks. In Korean." (Granularity Mode: `human`)

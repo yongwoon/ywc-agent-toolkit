@@ -116,7 +116,7 @@ Before opening any tool, list every claim you are about to make and the command 
 
 ### Step 2: Run verifications fresh
 
-Execute each command in the current message. For long-running commands (full test suite, full build), run with `run_in_background: true` and resume when the harness notifies. Do not move to Step 3 until each command has terminated and the exit code is known.
+Execute each command in the current message. For long-running commands (full test suite, full build), use the current Codex runtime's background or session mechanism when available, then resume only after the process terminates. Do not move to Step 3 until each command has terminated and the exit code is known.
 
 ### Step 3: Read the full output
 

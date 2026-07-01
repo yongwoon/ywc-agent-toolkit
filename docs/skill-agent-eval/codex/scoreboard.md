@@ -1,54 +1,54 @@
 # Codex Skill/Agent Evaluation Scoreboard
 
-Source note: 2026-06-23 rows cite `docs/skill-agent-eval/codex/2026-06-23-full-sweep.md`; skill scores remain carried forward unless a report explicitly supports composite movement.
+Source note: 2026-07-01 rows cite `docs/skill-agent-eval/codex/2026-07-01-post-improvement.md`. This pass resolved the S5 output-contract gaps, S7 Codex runtime-fit gaps, and named manual S7 exceptions from the full sweep.
 
 | Asset | Kind | Current | Previous | Trend | Last evaluated | Weakest dimension | Next action |
 |---|---|---:|---:|---|---|---|---|
-| `codex/skills/ywc-agentic` | skill | A / 3.77 | A / 3.77 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-brainstorm` | skill | A / 3.77 | A / 3.77 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-changelog-release-notes` | skill | A / 3.83 | B / 3.44 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-code-gen` | skill | A / 3.51 | A / 3.51 | same | 2026-06-18 | S5=3, S7=3 | S7 wording polish; keep score unchanged until judgment re-score |
-| `codex/skills/ywc-commit` | skill | A / 3.90 | A / 3.64 | up | 2026-06-16 | S7=3 | Maintain; resolved S5=4 |
-| `codex/skills/ywc-confidence-gate` | skill | A / 3.77 | A / 3.77 | same | 2026-06-23 | S7=3 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-create-pr` | skill | B / 3.47 | B / 3.08 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-debug-rootcause` | skill | A / 3.87 | A / 3.87 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-design-renew` | skill | A / 4.00 | A / 4.00 | same | 2026-06-13 | No score below 4 | Maintain |
-| `codex/skills/ywc-docker-isolate` | skill | A / 4.00 | new | new | 2026-06-16 | No score below 4 | Maintain |
-| `codex/skills/ywc-e2e-test-strategy` | skill | A / 3.87 | A / 3.87 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-finish-branch` | skill | A / 3.77 | A / 3.77 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-gen-testcase` | skill | A / 4.00 | A / 3.61 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-handle-pr-reviews` | skill | A / 3.73 | B / 3.34 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-impl-review` | skill | A / 4.00 | A / 3.74 | up | 2026-06-16 | No score below 4 | Maintain; resolved S5=4 |
-| `codex/skills/ywc-incident-postmortem` | skill | A / 4.00 | A / 3.61 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-merge-dependabot` | skill | A / 3.90 | A / 3.51 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-onboard-repo` | skill | A / 3.90 | A / 3.90 | same | 2026-06-13 | S7=3 | Maintain |
-| `codex/skills/ywc-parallel-executor` | skill | A / 3.90 | A / 3.64 | up | 2026-06-16 | S7=3 | Maintain; resolved S5=4 |
-| `codex/skills/ywc-plan` | skill | A / 3.67 | A / 3.67 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-product-review` | skill | A / 3.57 | B / 3.05 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-project-docs` | skill | A / 3.57 | B / 3.05 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-project-scaffold` | skill | A / 3.57 | B / 3.05 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-receive-review` | skill | A / 3.90 | A / 3.64 | up | 2026-06-16 | S7=3 | Maintain; resolved S5=4 |
-| `codex/skills/ywc-refactor-clean` | skill | A / 3.77 | A / 3.77 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-release-pr-list` | skill | A / 3.73 | B / 3.34 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-review-learnings` | skill | A / 4.00 | A / 4.00 | same | 2026-06-13 | No score below 4 | Maintain |
-| `codex/skills/ywc-security-audit` | skill | A / 4.00 | A / 3.74 | up | 2026-06-16 | No score below 4 | Maintain; resolved S5=4 |
-| `codex/skills/ywc-sequential-executor` | skill | A / 3.64 | A / 3.64 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-skill-author` | skill | A / 3.90 | A / 3.90 | same | 2026-06-13 | S7=3 | Maintain |
-| `codex/skills/ywc-spec-ready` | skill | A / 3.87 | new | new | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-spec-validate` | skill | A / 3.90 | A / 3.64 | up | 2026-06-16 | No mechanical score below 4 | Maintain; resolved S5=4 |
-| `codex/skills/ywc-spec-writer` | skill | A / 3.90 | A / 3.90 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-task-generator` | skill | A / 3.87 | A / 3.87 | same | 2026-06-18 | S5=3 | Maintain; no 2026-06-18 score movement claimed |
-| `codex/skills/ywc-tdd-ritual` | skill | A / 3.77 | A / 3.77 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-team-assemble` | skill | A / 3.57 | B / 3.05 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-tech-research` | skill | A / 3.57 | B / 3.31 | up | 2026-06-16 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-ubiquitous-language` | skill | A / 3.87 | A / 3.87 | same | 2026-06-13 | S5=3 | Maintain |
-| `codex/skills/ywc-ui-ux-review` | skill | A / 4.00 | A / 3.61 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/skills/ywc-verify-done` | skill | A / 3.87 | A / 3.87 | same | 2026-06-23 | No mechanical score below 4 | Keep score unchanged until judgment re-score |
-| `codex/skills/ywc-worktrees` | skill | A / 3.75 | B / 3.36 | up | 2026-06-13 | Resolved S5=4 | Maintain; fixed target gap |
-| `codex/agents/ywc-architect.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
-| `codex/agents/ywc-go-reviewer.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
-| `codex/agents/ywc-performance-engineer.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
-| `codex/agents/ywc-python-reviewer.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
-| `codex/agents/ywc-root-cause-analyst.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
-| `codex/agents/ywc-security-engineer.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
-| `codex/agents/ywc-typescript-reviewer.toml` | agent | A / 4.00 | A / 3.92 | up | 2026-06-23 | No score below 4 | Maintain; A8 smoke evidence passing |
+| `codex/skills/ywc-agentic` | skill | A / 3.92 | A / 3.92 | same | 2026-07-01 | S8=3 | Raise S8 to 4 |
+| `codex/skills/ywc-brainstorm` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-changelog-release-notes` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-code-gen` | skill | A / 4.00 | A / 3.79 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-commit` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-confidence-gate` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-create-pr` | skill | A / 4.00 | A / 3.82 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-debug-rootcause` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-design-renew` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-docker-isolate` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-e2e-test-strategy` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-finish-branch` | skill | A / 3.92 | A / 3.92 | same | 2026-07-01 | S8=3 | Raise S8 to 4 |
+| `codex/skills/ywc-gen-testcase` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-handle-pr-reviews` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-impl-review` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-incident-postmortem` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-merge-dependabot` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-onboard-repo` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-parallel-executor` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-plan` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-product-review` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-project-docs` | skill | A / 3.92 | A / 3.92 | same | 2026-07-01 | S8=3 | Raise S8 to 4 |
+| `codex/skills/ywc-project-scaffold` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-receive-review` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-refactor-clean` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-release-pr-list` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-review-learnings` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-security-audit` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-sequential-executor` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-skill-author` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-spec-ready` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-spec-validate` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-spec-writer` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-task-generator` | skill | A / 4.00 | A / 3.87 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-tdd-ritual` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-team-assemble` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-tech-research` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-ubiquitous-language` | skill | A / 4.00 | A / 3.69 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-ui-ux-review` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-verify-done` | skill | A / 4.00 | A / 3.90 | up | 2026-07-01 | No score below 4 | Maintain |
+| `codex/skills/ywc-worktrees` | skill | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain |
+| `codex/agents/ywc-architect.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
+| `codex/agents/ywc-go-reviewer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
+| `codex/agents/ywc-performance-engineer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
+| `codex/agents/ywc-python-reviewer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
+| `codex/agents/ywc-root-cause-analyst.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
+| `codex/agents/ywc-security-engineer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
+| `codex/agents/ywc-typescript-reviewer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |

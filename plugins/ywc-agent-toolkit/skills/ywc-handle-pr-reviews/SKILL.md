@@ -123,7 +123,7 @@ For each comment, classify it into one of these categories:
 
 ### 5. Reply to Comments
 
-**Attitude layer (mandatory)**: every reply must go through the discipline defined in [`ywc-receive-review`](../ywc-receive-review/SKILL.md) — verify each artifact against the codebase before agreeing; replies state the fix or a technical pushback ending in a question; the forbidden vocabulary list ("You're absolutely right!", "Great point!", "Thanks!") applies to all `body` content surfaced via the reply API below.
+**Attitude layer (mandatory)**: every reply must go through the discipline defined in `ywc-receive-review` — verify each artifact against the codebase before agreeing; replies state the fix or a technical pushback ending in a question; the forbidden vocabulary list ("You're absolutely right!", "Great point!", "Thanks!") applies to all `body` content surfaced via the reply API below.
 
 Reply to every processed artifact that has `reply_api != "none"` so the reviewer knows the feedback was addressed. Every reply must include the exact marker for that artifact:
 

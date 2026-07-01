@@ -232,6 +232,6 @@ Before declaring the onboarding pass complete, verify:
 | [references/reconnaissance-checklist.md](references/reconnaissance-checklist.md) | Running Phase 1's six passes — full Glob / Grep / Bash invocations per ecosystem |
 | [references/directory-conventions.md](references/directory-conventions.md) | Mapping `src/api/`, `src/pages/`, `cmd/`, etc. to canonical purpose during Phase 2 |
 | [references/agents-md-starter.md](references/agents-md-starter.md) | Phase 4 Output B — starter AGENTS.md template with placeholders |
-| [../ywc-project-scaffold/SKILL.md](../ywc-project-scaffold/SKILL.md) | When the user actually wants to *create* a new repo, not survey an existing one — route there |
-| [../ywc-refactor-clean/SKILL.md](../ywc-refactor-clean/SKILL.md) | When reconnaissance reveals significant dead-code accumulation — schedule a follow-up cleanup PR |
-| [../ywc-verify-done/SKILL.md](../ywc-verify-done/SKILL.md) | Vocabulary rules for the final "Wrote AGENTS.md" claim |
+| `ywc-project-scaffold` | When the user actually wants to *create* a new repo, not survey an existing one — route there |
+| `ywc-refactor-clean` | When reconnaissance reveals significant dead-code accumulation — schedule a follow-up cleanup PR |
+| `ywc-verify-done` | Vocabulary rules for the final "Wrote AGENTS.md" claim |

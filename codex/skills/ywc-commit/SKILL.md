@@ -62,7 +62,7 @@ Inspect `$ARGUMENTS` for the flags listed in the [Arguments](#arguments) table. 
 
 - `--skip-ubiquitous-update` → if present, skip Step 0.5 entirely.
 
-The skill remains fully usable without any flag — direct invocations (`/ywc-commit`, "커밋 해줘") proceed with all defaults.
+The skill remains fully usable without any flag — direct invocations (`ywc-commit`, "커밋 해줘") proceed with all defaults.
 
 ### Step 0.5 — Ubiquitous Language Update (optional)
 
@@ -235,12 +235,12 @@ Excluded files: <list if any, omit if none>
 
 ## Example Invocations
 
-- `/ywc-commit`
+- `ywc-commit`
 - `커밋 해줘`
 - `commit and push`
 - `지금까지 한 작업 커밋푸쉬 ㄱㄱ`
 - `authentication 관련 파일만 commit해줘`
-- `/ywc-commit --skip-ubiquitous-update` (delegated invocation from another skill that already ran the UL update)
+- `ywc-commit --skip-ubiquitous-update` (delegated invocation from another skill that already ran the UL update)
 
 ## Validation Scenarios
 

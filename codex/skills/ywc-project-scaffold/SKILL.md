@@ -42,16 +42,16 @@ When tempted to skip a step, check this table first:
 
 ## Usage
 
-```
-/project-scaffold [description]
+```text
+ywc-project-scaffold [description]
 ```
 
 **Examples:**
-```
-/project-scaffold FastAPI + GraphQL + Clean Architecture, medium scale
-/project-scaffold Rails API with gRPC, large scale e-commerce
-/project-scaffold NestJS + WebSocket + DDD, small scale chat app
-/project-scaffold Go microservice with gRPC and event-driven
+```text
+ywc-project-scaffold FastAPI + GraphQL + Clean Architecture, medium scale
+ywc-project-scaffold Rails API with gRPC, large scale e-commerce
+ywc-project-scaffold NestJS + WebSocket + DDD, small scale chat app
+ywc-project-scaffold Go microservice with gRPC and event-driven
 ```
 
 ## Input Analysis
@@ -166,7 +166,7 @@ Provide useful additional information based on the project domain or scale:
 
 **Will Not:**
 - Generate actual Code file contents (only provides structure)
-- Generate Boilerplate Code (use `/sc:implement` for implementation)
+- Generate Boilerplate Code (use `ywc-code-gen` for implementation)
 - Configure Docker, CI/CD, or Monorepo setup (provide guidance upon separate request)
 
 ## Output Format

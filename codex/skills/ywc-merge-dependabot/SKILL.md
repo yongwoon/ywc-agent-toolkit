@@ -271,7 +271,7 @@ Include:
 ## Integration
 
 - **upstream**: None — this skill is triggered directly by the user or a scheduled workflow when Dependabot PRs accumulate
-- **downstream**: /ywc-gen-testcase (optional — run after merging dependency updates to verify the updated packages do not break existing test coverage)
+- **downstream**: `ywc-gen-testcase` (optional — run after merging dependency updates to verify the updated packages do not break existing test coverage)
 
 ## Output Format
 

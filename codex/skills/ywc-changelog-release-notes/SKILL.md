@@ -56,7 +56,7 @@ gh pr list --state merged --limit 30 --json number,title,mergedAt,labels 2>/dev/
 ## Workflow
 
 **Step 1 — Detect version range**
-Determine `from` (last tag or `--from`) and `to` (HEAD or `--to`). If `--version` is not provided, use AskUserQuestion to ask for it, then **immediately continue to Step 2 in the same turn** — do not end the turn or wait for further input after receiving the answer.
+Determine `from` (last tag or `--from`) and `to` (HEAD or `--to`). If `--version` is not provided, ask the user for the release version in the current conversation, then **immediately continue to Step 2 in the same turn after receiving the answer** — do not end the turn or wait for further input after receiving it.
 
 **Step 2 — Parse commits**
 Group by conventional commit type: `feat` → Added, `fix` → Fixed, `refactor`/`chore` → internal (omit from user notes), `security` → Security, `BREAKING CHANGE` → Changed.
