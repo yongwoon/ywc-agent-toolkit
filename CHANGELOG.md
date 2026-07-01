@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** sync planning, PR health, spec validation, onboarding, and parity workflow updates into the Codex plugin package.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.22.4](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.22.3...v1.22.4) (2026-07-01)
+
+
+### ### Fixed
+
+* **skills:** strengthen dependency graph validation in task numbering ([#114](https://github.com/yongwoon/ywc-agent-toolkit/issues/114)) ([#116](https://github.com/yongwoon/ywc-agent-toolkit/issues/116)) ([d817cf6](https://github.com/yongwoon/ywc-agent-toolkit/commit/d817cf60464d5c58eb5475b709a01ff0827872dc))
+
 ## [1.22.3](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.22.2...v1.22.3) (2026-07-01)
 
 
