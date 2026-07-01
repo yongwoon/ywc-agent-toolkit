@@ -6,7 +6,18 @@ cd "$ROOT_DIR"
 
 staged_files="$(git diff --cached --name-only --diff-filter=ACMR || true)"
 
-if ! printf '%s\n' "$staged_files" | grep -qE '^(codex/skills/|\.codex-plugin/plugin\.json|scripts/sync-codex-plugin\.sh)$'; then
+package_files_changed=0
+validation_files_changed=0
+
+if printf '%s\n' "$staged_files" | grep -qE '^(codex/skills/|\.codex-plugin/plugin\.json|scripts/sync-codex-plugin\.sh)$'; then
+  package_files_changed=1
+fi
+
+if printf '%s\n' "$staged_files" | grep -qE '^(\.codex/skills/|scripts/validate\.sh)$'; then
+  validation_files_changed=1
+fi
+
+if [ "$package_files_changed" -eq 0 ] && [ "$validation_files_changed" -eq 0 ]; then
   exit 0
 fi
 
@@ -17,10 +28,12 @@ if printf '%s\n' "$staged_files" | grep -qE '^plugins/ywc-agent-toolkit/skills/'
   exit 1
 fi
 
-echo "Codex skills changed; syncing marketplace package..."
-bash scripts/sync-codex-plugin.sh
+if [ "$package_files_changed" -eq 1 ]; then
+  echo "Codex package files changed; syncing marketplace package..."
+  bash scripts/sync-codex-plugin.sh
 
-git add -A plugins/ywc-agent-toolkit
+  git add -A plugins/ywc-agent-toolkit
+fi
 
-echo "Validating repository after Codex package sync..."
+echo "Validating repository after Codex skill changes..."
 bash scripts/validate.sh

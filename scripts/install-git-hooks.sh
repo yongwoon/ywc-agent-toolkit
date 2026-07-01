@@ -19,5 +19,5 @@ echo "Installed repo git hooks:"
 echo "  core.hooksPath=$HOOKS_DIR"
 echo
 echo "Hooks enabled:"
-echo "  pre-commit: syncs Codex marketplace package when codex/skills changes, then runs validation"
+echo "  pre-commit: syncs Codex marketplace package when codex/skills changes, then runs validation for codex/.codex skill changes"
 echo "  pre-push: blocks stale Codex marketplace package and runs validation for Codex skill/package changes"
