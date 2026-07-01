@@ -1,0 +1,50 @@
+name: PR Title Lint
+
+# Guards the PR title against Conventional Commits violations.
+#
+# WHY this exists: this repo squash-merges PRs, so GitHub uses the PR *title*
+# (not the individual commit messages) as the single commit landed on main.
+# Release Please parses that commit to decide version bumps. A non-conventional
+# title (e.g. a plain Korean sentence) parses to zero commits and silently
+# skips the release — exactly what happened to #114.
+#
+# Keep the allowed types in sync with:
+#   - .release-please-config.json  (changelog-sections)
+#   - CLAUDE.md                    (Commit Conventions)
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint-pr-title:
+    name: Validate PR title (Conventional Commits)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            i18n
+            ci
+            chore
+            refactor
+            test
+            perf
+          requireScope: false
+          subjectPattern: ^.+$
+          subjectPatternError: |
+            The PR title subject "{subject}" is empty or invalid.
+            Use the form: <type>(optional scope): <description>
+            e.g. fix(skills): Task 番号算定 で dependency graph 検証を強化
