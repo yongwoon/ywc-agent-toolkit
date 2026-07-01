@@ -20,7 +20,10 @@ description: >-
   (route to ywc-security-engineer), running the TypeScript compiler / type
   checker (the caller forwards tsc / eslint output as part of the bounded
   payload), or full-bundle dependency audits (use ywc-refactor-clean +
-  knip / depcheck instead).
+  knip / depcheck instead), or quantifying bundle-size / render
+  performance against a budget (route to ywc-performance-engineer; this
+  reviewer flags the TS / bundling idiom, the performance-engineer
+  measures it against the budget).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk

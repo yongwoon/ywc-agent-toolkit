@@ -42,7 +42,10 @@ description: >-
   `golangci-lint` (the caller forwards `go vet` / `staticcheck` /
   `go test -race` output as part of the bounded payload), or full
   dependency-graph audits (use ywc-refactor-clean + `go mod why` /
-  `govulncheck` instead).
+  `govulncheck` instead), or quantifying the runtime cost of a
+  concurrency pattern — lock-contention throughput or goroutine-count
+  memory (route to ywc-performance-engineer; this reviewer flags the Go
+  idiom, the performance-engineer profiles and quantifies it).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk

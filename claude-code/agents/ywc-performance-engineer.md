@@ -41,7 +41,12 @@ description: >-
   of the bounded payload), full dependency audits (use
   ywc-refactor-clean + bundle-analyzer / depcheck instead), test
   authoring (use ywc-qa-engineer for performance regression tests),
-  or accessibility / SEO analysis (separate Devex / specialist axes).
+  language-local idiom correctness — goroutine / channel lifecycle,
+  asyncio blocking semantics, or TS type-system depth (route to the
+  matching ywc-go-reviewer / ywc-python-reviewer / ywc-typescript-reviewer;
+  this agent quantifies the performance magnitude and names the profiler,
+  the reviewers flag the idiom), or accessibility / SEO analysis (separate
+  Devex / specialist axes).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk

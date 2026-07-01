@@ -36,7 +36,10 @@ description: >-
   analysis (route to ywc-security-engineer), running mypy / pyright /
   pytest / ruff / black (the caller forwards mypy / ruff / pytest
   output as part of the bounded payload), or full-dependency audits
-  (use ywc-refactor-clean + pip-audit / safety instead).
+  (use ywc-refactor-clean + pip-audit / safety instead), or quantifying
+  async / runtime performance — event-loop blocking latency or allocation
+  under load (route to ywc-performance-engineer; this reviewer flags the
+  Python idiom, the performance-engineer profiles and quantifies it).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk
