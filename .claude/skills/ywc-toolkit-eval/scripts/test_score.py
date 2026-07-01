@@ -51,6 +51,37 @@ class A3ToolBandTest(unittest.TestCase):
             score.a3_tool_band("Read, Write, Edit, Bash, Grep, Glob", False), 5)
 
 
+class S5LocaleTest(unittest.TestCase):
+    """S5 — es/zh are optional; their absence must not deduct."""
+
+    def _mk_skill(self, tmp: str, locales: tuple) -> Path:
+        d = Path(tmp) / "ywc-sample"
+        d.mkdir()
+        (d / "SKILL.md").write_text(
+            "---\nname: ywc-sample\n"
+            "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+            "---\n\n**Announce at start:** x\n\nbody\n", encoding="utf-8")
+        for loc in locales:
+            (d / loc).write_text("content", encoding="utf-8")
+        return d
+
+    def test_missing_es_zh_is_still_five(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = self._mk_skill(tmp, tuple(score.REQUIRED_LOCALES))
+            r = score.score_skill(d, {}, {})
+            self.assertEqual(r["axes"]["S5"], 5)
+            self.assertEqual(r["signals"]["missing_optional_locales"],
+                             ["README.es.md", "README.zh.md"])
+
+    def test_missing_required_locale_is_zero(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = self._mk_skill(tmp, ("README.md", "README.en.md", "README.ja.md"))
+            r = score.score_skill(d, {}, {})
+            self.assertEqual(r["axes"]["S5"], 0)
+
+
 class A5HeuristicTest(unittest.TestCase):
     """FR3 — A5 model-tier band derives from role keywords in the NAME."""
 

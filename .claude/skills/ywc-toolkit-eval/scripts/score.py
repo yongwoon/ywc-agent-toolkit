@@ -312,14 +312,16 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     signals["body_lines"] = body_lines
     signals["over_extracted_refs"] = over_extracted
 
-    # S5 consistency & integrity
+    # S5 consistency & integrity. Only the required locale set (md/en/ja/ko) is
+    # scored; es/zh are officially optional (they match neither validate.sh nor
+    # the project locale policy) and their absence no longer deducts — the
+    # missing-es/zh list stays as an informational signal only.
     missing_required = [loc for loc in REQUIRED_LOCALES if not (d / loc).exists()]
-    missing_full = [loc for loc in FULL_LOCALES if not (d / loc).exists()]
+    missing_optional = [loc for loc in FULL_LOCALES
+                        if loc not in REQUIRED_LOCALES and not (d / loc).exists()]
     dangling = _dangling_ref_links(d, body)
     bad_pointers = _unresolved_sibling_pointers(desc)
     s5 = 5
-    if missing_full and not missing_required:
-        s5 -= 1
     if dangling:
         s5 -= 2
     if bad_pointers:
@@ -327,7 +329,7 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     if missing_required:
         s5 = 0
     s5 = max(0, min(5, s5))
-    signals["missing_locales"] = missing_full
+    signals["missing_optional_locales"] = missing_optional
     signals["dangling_ref_links"] = dangling
     signals["unresolved_anti_trigger_pointers"] = bad_pointers
 

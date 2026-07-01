@@ -42,7 +42,7 @@ Mechanical. Scores the **10-rule mechanical structural subset** of `ywc-skill-au
 | `## Rationalization Defense` with ≥5 data rows (excluding the header and separator rows) | A7 |
 | body ≤ 500 lines | A8 |
 | no `@`-prefixed skill cross-reference | A9 |
-| required README locale set (md/en/ja/ko) present; full-set (es/zh) completeness scored under S5 | A11 |
+| required README locale set (md/en/ja/ko) present; es/zh optional, not scored | A11 |
 | every `references/*.md` has ≥1 inbound pointer | A14 |
 
 ## S3 — Behavioral Efficacy (weight 20)
@@ -75,14 +75,16 @@ Mechanical. Progressive-disclosure discipline.
 
 Mechanical. Cross-file coherence.
 
+Only the required locale set (`md`/`en`/`ja`/`ko`) is scored. `es`/`zh` are officially optional — they match neither `validate.sh` nor the project locale policy — so their absence does not deduct (an informational `missing_optional_locales` signal is still emitted).
+
 | Score | Band |
 |---|---|
-| 5 | All 6 README locales present and non-empty; every `Do not use for (use ywc-X)` pointer resolves to a real sibling; every `references/` pointer resolves; no dangling file links. |
-| 4 | All resolve, but one locale README is materially shorter than the others (likely stale). |
-| 3 | One README locale missing from the 6-set (still passes validate.sh's 4-set), or one stale locale. |
+| 5 | All required locales (md/en/ja/ko) present and non-empty; every `Do not use for (use ywc-X)` pointer resolves to a real sibling; every `references/` pointer resolves; no dangling file links. |
+| 4 | All resolve, but one required locale README is materially shorter than the others (likely stale). |
+| 3 | One stale/short required locale, or a single minor pointer inconsistency. |
 | 2 | A `Do not use for` pointer names a non-existent skill, or one `references/` link is dangling. |
 | 1 | Multiple dangling pointers/links. |
-| 0 | Required validate.sh locale (md/en/ja/ko) missing — would fail CI. |
+| 0 | Required locale (md/en/ja/ko) missing — would fail validate.sh CI. |
 
 ## S6 — Catalog Fit (weight 10)
 
