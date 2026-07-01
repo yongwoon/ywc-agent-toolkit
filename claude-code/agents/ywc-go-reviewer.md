@@ -103,6 +103,11 @@ execute the application.
   vet / test / linter output as part of the bounded payload; if a new
   probe is needed the agent names the specific command in the
   recommendation
+- Quantify the runtime cost of a concurrency pattern — lock-contention
+  throughput, goroutine-count memory, channel-backpressure latency; flag
+  the Go idiom (a mutex shared across N goroutines, an unbounded goroutine
+  spawn), and defer the magnitude measurement and the profiler
+  recommendation to ywc-performance-engineer
 - Review non-Go code — `.ts` belongs to ywc-typescript-reviewer, `.py`
   to ywc-python-reviewer, etc.; mixed-language diffs surface the non-Go
   files with `NEEDS_CONTEXT` ("forward to the language-specific

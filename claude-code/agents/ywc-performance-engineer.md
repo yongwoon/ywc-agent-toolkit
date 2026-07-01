@@ -2,7 +2,7 @@
 name: ywc-performance-engineer
 description: >-
   Use when analyzing performance characteristics across backend (N+1
-  query detection, missing-index identification, hot-loop algorithmic
+  query cost, missing-index cost, hot-loop algorithmic
   cost, synchronous IO inside an async path, allocation churn under GC
   pressure, lock contention, connection-pool exhaustion), frontend
   (bundle-size budget violations, render-blocking resources, unused-JS
