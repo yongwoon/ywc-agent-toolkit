@@ -100,6 +100,11 @@ linter / tests, or execute the application.
   application — the caller forwards type-checker / linter / test output
   as part of the bounded payload; if a new probe is needed the agent
   names the specific command in the recommendation
+- Quantify the throughput / latency cost of a flagged N+1 or blocking
+  call — flag the Django / async idiom (a missing `select_related` /
+  `prefetch_related`, a blocking call inside a coroutine); defer the
+  magnitude measurement and the profiler recommendation to
+  ywc-performance-engineer
 - Review non-Python code — `.ts` belongs to ywc-typescript-reviewer,
   `.go` to ywc-go-reviewer, etc.; mixed-language diffs
   surface the non-Python files with `NEEDS_CONTEXT` ("forward to the

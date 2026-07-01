@@ -78,6 +78,10 @@ compiler, or execute the application.
   forwards compiler / linter output as part of the bounded payload; if a
   new probe is needed the agent names the specific command in the
   recommendation
+- Measure bundle-size or render performance against a budget — flag the
+  tree-shaking / re-export side-effect / ESM-vs-CJS idiom that harms
+  bundling; defer the bundle-magnitude-vs-budget measurement to
+  ywc-performance-engineer
 - Review non-TypeScript code — `.py` belongs to a Python reviewer (future
   Tier 2), `.go` to Go, etc.; mixed-language diffs surface the non-TS files
   with `NEEDS_CONTEXT` ("forward to the language-specific reviewer")
