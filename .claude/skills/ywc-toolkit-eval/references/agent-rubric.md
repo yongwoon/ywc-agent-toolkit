@@ -1,6 +1,6 @@
 # Agent Rubric — 0–5 Banding per Axis
 
-Claude Code custom agents (`claude-code/agents/ywc-*.md`) are evaluated on a **different** axis set than skills: an agent has no README locale set, but it has a tool grant, a model assignment, and a return contract that skills lack. Codex TOML agents are evaluated separately by `tools/codex-internal/skills/ywc-codex-toolkit-eval`.
+Claude Code custom agents (`claude-code/agents/ywc-*.md`) are evaluated on a **different** axis set than skills: an agent has no README locale set, but it has a tool grant, a model assignment, and a return contract that skills lack. Codex TOML agents are evaluated separately by `.codex/skills/ywc-codex-toolkit-eval`.
 
 | Axis | Weight | Tier |
 |---|---|---|
