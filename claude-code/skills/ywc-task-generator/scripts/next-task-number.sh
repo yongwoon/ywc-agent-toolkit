@@ -23,7 +23,9 @@ scan() {
     name="$(basename "$entry")"
     if [[ "$name" =~ ^([0-9]{6})-[0-9]{3}- ]]; then
       phase=$((10#${BASH_REMATCH[1]}))
-      (( phase > max )) && max=$phase
+      # Use `if` (not `(( )) && ...`): under `set -e` a false `(( ))` returns 1
+      # as the loop's last command, which would exit before the final printf.
+      if (( phase > max )); then max=$phase; fi
     fi
   done
 }
