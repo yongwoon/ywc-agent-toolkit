@@ -156,21 +156,25 @@ bundle analyzer, or execute the application.
       import split point (e.g., `const Chart = dynamic(() =>
       import('./Chart'))`), the `width` / `height` attributes to add,
       the LCP element preload directive
-- [ ] Backend findings name the specific anti-pattern: N+1 without
-      `select_related` / `prefetch_related` (ORM), missing index for
-      a `WHERE column = ?` lookup over a million-row table,
-      synchronous `requests.get` inside an `async def`, blocking JDBC
-      inside `Mono` / `Flux`, `time.sleep` inside an `asyncio`
-      coroutine, allocation in a hot loop that survives past Gen-0
-      GC, unbounded connection-pool growth, lock contention on a
-      single mutex shared across N goroutines
-- [ ] Frontend findings name the specific anti-pattern: bundle over
-      the budget (with the exact bytes and the top 3 contributors
-      identified from the analyzer output), render-blocking
-      `<script>` above the fold, image without `width`/`height`
-      causing CLS, source image far larger than rendered size, font
-      without `font-display: swap`, CSS selector chain over 3 levels,
-      unused-export shipped because tree-shaking did not eliminate it
+- [ ] Backend findings quantify the **cost** of the pathology, not just
+      its name — the added query count and latency of an N+1, the
+      row-scan cost of a missing index over the table size, the
+      event-loop stall from a synchronous `requests.get` inside an
+      `async def` or a blocking JDBC call inside `Mono` / `Flux`, the
+      Gen-0-surviving allocation rate in a hot loop, the connection-pool
+      exhaustion threshold, the throughput lost to mutex contention
+      across N goroutines. The language reviewer (ywc-python-reviewer /
+      ywc-go-reviewer) adjudicates whether the idiom is present; this
+      agent's finding is defined by the magnitude it adds
+- [ ] Frontend findings quantify the **cost** against the budget — the
+      exact bytes a bundle is over budget and its top 3 contributors from
+      the analyzer output, the render-blocking `<script>` above the fold
+      and the FCP delay it adds, an image without `width`/`height` and the
+      CLS it causes, a source image far larger than rendered size and the
+      wasted bytes, a font without `font-display: swap`, a CSS selector
+      chain over 3 levels. Whether an unused export ships because
+      tree-shaking failed is the ywc-typescript-reviewer's idiom call;
+      this agent measures the bytes it costs against the budget
 - [ ] Web Vitals findings name the metric, the observed value, the
       target, and the cause-fix path: "LCP 4.2s vs 2.5s target —
       `<img src='hero.jpg'>` blocks first paint; preload + AVIF
