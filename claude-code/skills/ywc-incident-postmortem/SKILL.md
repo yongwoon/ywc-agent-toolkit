@@ -58,7 +58,7 @@ git describe --tags --abbrev=0 2>/dev/null || echo "(no tags)"
 ## Workflow (--draft mode)
 
 **Step 1 — Gather basics**
-Ask: service name, incident start time, end time, how detected (alert / user report / developer discovery), who responded.
+Ask: service name, incident start time, end time, how detected (alert / user report / developer discovery), who responded. If running non-interactively or a field is unavailable, populate it from the incident context already provided (alert payload, logs, PR, chat) and mark any still-unknown field as `Unknown (to confirm)` — proceed with the postmortem rather than blocking on a missing basic.
 
 **Step 2 — Reconstruct timeline**
 Build a chronological event log with timestamps (detection → investigation → root cause identified → fix deployed → resolved).

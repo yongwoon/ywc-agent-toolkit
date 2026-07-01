@@ -151,8 +151,8 @@ follow the shared reference.
 
 Before creating any document, confirm:
 
-1. **Check for existing documents** — If a document on the same topic already exists, **update it** (do not create a new one).
+1. **Check for existing documents** — A document is "the same topic" when it shares the H1 title OR the routing rules map it to the same target file path. If one exists, **update it** (do not create a new one).
 2. **Select directory** — Confirm the appropriate directory from the routing rules in the shared reference.
 3. **Cross-references** — If related documents exist, add bidirectional links (new → existing, existing → new).
-4. **Official vs draft** — Place pre-finalized content in `todo/`; place finalized content in the official folder.
+4. **Official vs draft** — Content is "finalized" only when the user has approved it OR another committed document already cites it as authoritative; place that in the official folder. Anything still under review or drafted in this session goes to `todo/`.
 5. **CLAUDE.md rule** — Create documentation only when the user explicitly requests it.
