@@ -209,6 +209,29 @@ def a5_model_band(name: str, model: str) -> int:
     return 3 if A5_TIER_RANK[declared] > A5_TIER_RANK[expected] else 2
 
 
+def a3_tool_band(tools_raw: str, readonly_role: bool) -> int:
+    """Band an agent's tool grant for least privilege (A3).
+
+    `*` (all tools) for any role -> 1. A read-only-by-role agent (reviewer /
+    auditor / analyst) holding any mutating tool -> 3 (a real least-privilege
+    violation). Every other bounded, explicit grant -> 5: an implementer agent
+    (coder / worker) legitimately needs Write / Edit / Bash, so a bounded
+    mutating grant on a non-read-only role is minimal-for-role, NOT an
+    over-grant. The mechanical tier cannot tell "exactly needed" (band 5) from
+    "one tool broader than needed" (band 4) without role knowledge, so it
+    defaults to 5 and the judgment tier demotes to 4 when it spots a specific
+    unused/extraneous tool. (Previously any mutating non-reviewer was capped at
+    4, which under-scored every legitimately-mutating coder — see
+    references/agent-rubric.md §A3.)
+    """
+    if "*" in tools_raw:
+        return 1
+    mutating = set(re.findall(r"[A-Z]\w+", tools_raw)) & MUTATING_TOOLS
+    if readonly_role and mutating:
+        return 3
+    return 5
+
+
 def load_coverage() -> dict:
     """Per-item trigger-case coverage from trigger-cases.json (FR1b).
 
@@ -402,17 +425,11 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(role_text))
     signals: dict = {}
 
-    # A3 tool minimality
+    # A3 tool minimality (band logic in a3_tool_band — implementer agents that
+    # legitimately mutate are minimal-for-role, not over-granted)
     tools = set(re.findall(r"[A-Z]\w+", tools_raw))
     mutating = tools & MUTATING_TOOLS
-    if "*" in tools_raw:
-        a3 = 1
-    elif readonly_role and mutating:
-        a3 = 3
-    elif mutating and not readonly_role:
-        a3 = 4
-    else:
-        a3 = 5
+    a3 = a3_tool_band(tools_raw, readonly_role)
     signals["tools"] = sorted(tools)
     signals["mutating_tools"] = sorted(mutating)
     signals["sandbox_mode"] = sandbox

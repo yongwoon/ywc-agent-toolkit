@@ -31,6 +31,26 @@ SHARED = (
 )
 
 
+class A3ToolBandTest(unittest.TestCase):
+    """A3 — a bounded mutating grant on an implementer role is minimal-for-role."""
+
+    def test_star_grant_is_one_any_role(self) -> None:
+        self.assertEqual(score.a3_tool_band("*", False), 1)
+        self.assertEqual(score.a3_tool_band("*", True), 1)
+
+    def test_readonly_role_holding_mutating_is_three(self) -> None:
+        self.assertEqual(score.a3_tool_band("Read, Grep, Edit", True), 3)
+
+    def test_readonly_role_without_mutating_is_five(self) -> None:
+        self.assertEqual(score.a3_tool_band("Read, Grep, Glob, WebFetch", True), 5)
+
+    def test_implementer_bounded_mutating_is_five(self) -> None:
+        # a coder legitimately needs Write/Edit/Bash — minimal-for-role, not an
+        # over-grant, so it must not be capped at 4 the way it once was.
+        self.assertEqual(
+            score.a3_tool_band("Read, Write, Edit, Bash, Grep, Glob", False), 5)
+
+
 class A5HeuristicTest(unittest.TestCase):
     """FR3 — A5 model-tier band derives from role keywords in the NAME."""
 

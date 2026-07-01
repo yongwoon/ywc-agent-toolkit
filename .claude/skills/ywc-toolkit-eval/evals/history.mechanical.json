@@ -87,7 +87,7 @@
   "claude-code/skills/ywc-onboard-repo": {
     "S2": 5,
     "S4": 4,
-    "S5": 4
+    "S5": 5
   },
   "claude-code/skills/ywc-parallel-executor": {
     "S2": 5,
@@ -210,17 +210,17 @@
     "A5": 5
   },
   "claude-code/agents/ywc-backend-coder": {
-    "A3": 4,
+    "A3": 5,
     "A4": 5,
     "A5": 5
   },
   "claude-code/agents/ywc-doc-writer": {
-    "A3": 4,
+    "A3": 5,
     "A4": 5,
     "A5": 5
   },
   "claude-code/agents/ywc-frontend-coder": {
-    "A3": 4,
+    "A3": 5,
     "A4": 5,
     "A5": 5
   },
@@ -240,12 +240,12 @@
     "A5": 5
   },
   "claude-code/agents/ywc-qa-engineer": {
-    "A3": 4,
+    "A3": 5,
     "A4": 5,
     "A5": 5
   },
   "claude-code/agents/ywc-refactor-cleaner": {
-    "A3": 4,
+    "A3": 5,
     "A4": 5,
     "A5": 5
   },

@@ -56,6 +56,8 @@ Mechanical. Least privilege. Parse the agent's tool grant.
 
 Heuristic: if the agent name or description contains `review`, `audit`, `analyst`, or "read-only", the presence of `Write`/`Edit`/`NotebookEdit` in the grant drops A3 to ≤3.
 
+Mechanical default (`score.py`, `a3_tool_band`): `*` → 1; a read-only-by-role agent holding any mutating tool → 3; **every other bounded, explicit grant → 5**. An implementer agent (coder / worker) legitimately needs `Write`/`Edit`/`Bash`, so a bounded mutating grant on a non-read-only role is minimal-for-role and scores 5 — it is NOT capped at 4. The mechanical tier cannot distinguish "exactly needed" (5) from "one tool broader than needed" (4) without role knowledge; it defaults to 5 and the judgment tier demotes to 4 only when it identifies a specific unused/extraneous tool.
+
 ## A4 — Output-Contract Compliance (weight 15)
 
 Mechanical (presence) + judgment (adherence). Claude Code agents should define a clear, parseable output shape or explicitly reference the canonical return contract.
