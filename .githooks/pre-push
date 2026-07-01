@@ -26,11 +26,11 @@ $(git diff --cached --name-only || true)"
 package_files_changed=0
 validation_files_changed=0
 
-if printf '%s\n' "$changed_files" | grep -qE '^(codex/skills/|plugins/ywc-agent-toolkit/|\.codex-plugin/plugin\.json|scripts/sync-codex-plugin\.sh)$'; then
+if printf '%s\n' "$changed_files" | grep -qE '^(codex/skills/|plugins/ywc-agent-toolkit/|\.codex-plugin/plugin\.json$|scripts/sync-codex-plugin\.sh$)'; then
   package_files_changed=1
 fi
 
-if printf '%s\n' "$changed_files" | grep -qE '^(\.codex/skills/|scripts/validate\.sh)$'; then
+if printf '%s\n' "$changed_files" | grep -qE '^(\.codex/skills/|scripts/validate\.sh$)'; then
   validation_files_changed=1
 fi
 
