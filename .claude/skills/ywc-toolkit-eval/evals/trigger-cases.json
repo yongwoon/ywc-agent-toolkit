@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Activation trigger-case dataset for ywc-toolkit-eval. Covers all 50 evaluated items (38 skills + 12 agents) with >= 3 positives and >= 2 collision appearances each. Mix of Korean, English, and Japanese prompts. Task 000009-040.",
+  "description": "Activation trigger-case dataset for ywc-toolkit-eval. Covers all 53 evaluated items (41 skills + 12 agents) with >= 3 positives and >= 2 collision appearances each. Mix of Korean, English, and Japanese prompts.",
   "cases": [
     {
       "id": "agentic-pos-1",
@@ -1973,6 +1973,54 @@
       "kind": "collision",
       "impostor": "ywc-parallel-executor",
       "note": "specific host-port collision fix — parallel-executor orchestrates tasks, docker-isolate owns the port block"
+    },
+    {
+      "id": "project-mission-pos-1",
+      "prompt": "이 프로젝트의 미션이랑 north star 정리해줘",
+      "expected": "ywc-project-mission",
+      "kind": "positive"
+    },
+    {
+      "id": "project-mission-pos-2",
+      "prompt": "프로젝트 성공 기준이랑 out-of-scope 정해서 문서로 남겨줘",
+      "expected": "ywc-project-mission",
+      "kind": "positive"
+    },
+    {
+      "id": "project-mission-pos-3",
+      "prompt": "capture the project mission and measurable success criteria",
+      "expected": "ywc-project-mission",
+      "kind": "positive"
+    },
+    {
+      "id": "project-mission-pos-4",
+      "prompt": "プロジェクトのミッションと成功基準を整理して残して",
+      "expected": "ywc-project-mission",
+      "kind": "positive"
+    },
+    {
+      "id": "project-mission-vs-brainstorm-1",
+      "prompt": "이 프로젝트가 왜 존재하는지 미션이랑 성공 기준을 확정해서 저장해줘",
+      "expected": "ywc-project-mission",
+      "kind": "collision",
+      "impostor": "ywc-brainstorm",
+      "note": "brainstorm explores pre-intent ideas; project-mission persists the durable Mission / Success-Criteria file"
+    },
+    {
+      "id": "project-mission-vs-project-docs-1",
+      "prompt": "프로젝트 미션 문서 업데이트해줘",
+      "expected": "ywc-project-mission",
+      "kind": "collision",
+      "impostor": "ywc-project-docs",
+      "note": "project-docs owns general documentation structure; project-mission owns docs/project-mission.md mission memory"
+    },
+    {
+      "id": "project-mission-vs-review-learnings-1",
+      "prompt": "이 프로젝트 durable 메모리에 미션이랑 성공 기준 저장해줘",
+      "expected": "ywc-project-mission",
+      "kind": "collision",
+      "impostor": "ywc-review-learnings",
+      "note": "both are stateful-file skills; review-learnings owns durable code-review preferences, project-mission owns Mission / Success-Criteria"
     }
   ]
 }
