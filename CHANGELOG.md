@@ -11,6 +11,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** sync planning, PR health, spec validation, onboarding, and parity workflow updates into the Codex plugin package.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.22.3](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.22.2...v1.22.3) (2026-07-01)
+
+
+### ### Fixed
+
+* **agents:** clarify performance-engineer &lt;-&gt; language-reviewer boundary ([#112](https://github.com/yongwoon/ywc-agent-toolkit/issues/112)) ([e5f737f](https://github.com/yongwoon/ywc-agent-toolkit/commit/e5f737f318740c5c4f5028c719f17d6e83fb0003))
+* **agents:** resolve A1 body-level idiom/magnitude ownership overlap ([#113](https://github.com/yongwoon/ywc-agent-toolkit/issues/113)) ([7c3a251](https://github.com/yongwoon/ywc-agent-toolkit/commit/7c3a25144d76d885636ad046c8e331b710cf2cdc))
+* **skills:** make three S3 workflow steps decidable ([#110](https://github.com/yongwoon/ywc-agent-toolkit/issues/110)) ([d26f11e](https://github.com/yongwoon/ywc-agent-toolkit/commit/d26f11e6778e0a9c954c0ae61099ec8779d2320d))
+* **toolkit-eval:** correct Codex path, A3 heuristic, and project-mission trigger coverage ([#109](https://github.com/yongwoon/ywc-agent-toolkit/issues/109)) ([c75cdda](https://github.com/yongwoon/ywc-agent-toolkit/commit/c75cdda35e59f639025c41547424165028975ccc))
+
 ## [1.22.2](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.22.1...v1.22.2) (2026-06-25)
 
 
