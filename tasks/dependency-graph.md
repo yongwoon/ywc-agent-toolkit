@@ -624,3 +624,91 @@ graph LR
   E[000031-050-docs-executor-pr-lang-zh-es] --> G
   F[000031-060-docs-pr-review-reply-zh-es] --> G
 ```
+
+---
+
+## Batch 16 — Codex Data Integrity Skill Hardening
+
+- Spec: `docs/ywc-plans/codex-data-integrity-skill-hardening.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000033`
+- Scope: Codex skills only. Generated plugin package updates happen only through `bash scripts/sync-codex-plugin.sh`.
+- Existing phase note: phases `000030` through `000032` are already occupied by the zh/es rollout batches, so this batch starts at `000033`.
+- Advisor pass: skipped. Phase boundaries are straightforward source guidance slices plus one validation hard gate.
+
+### Phase 000033 — Source Guidance Updates
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000033-010-docs-impl-review-integrity-catalog` | docs | (root) |
+| `000033-020-docs-spec-task-integrity-guidance` | docs | `000033-010` |
+| `000033-030-docs-executor-integrity-gates` | docs | `000033-010` |
+
+### Phase 000034 — Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000034-010-infra-codex-integrity-validation` | infra | `000033-010`, `000033-020`, `000033-030` |
+
+### Parallel Execution Notes (Batch 16)
+
+- Initial ready set: `000033-010-docs-impl-review-integrity-catalog`.
+- After `000033-010` merges: `000033-020` and `000033-030` are parallel-safe because they own disjoint skill directories.
+- `000034-010` waits for all Phase `000033` tasks, then runs targeted evidence search, optional generated plugin sync, install list scan, and full repository validation.
+- Conflict notes: no task may edit `plugins/ywc-agent-toolkit/skills/**` directly before `000034-010`; generated package sync belongs only to the validation hard gate.
+- Hard boundary: no `claude-code/**` edits in Batch 16.
+- FR mapping: FR-1+FR-2 -> `000033-010`; FR-3+FR-4 -> `000033-020`; FR-5 -> `000033-030`; FR-6 + AC5 + AC6 -> `000034-010`.
+
+```mermaid
+graph LR
+  H[000033-010-docs-impl-review-integrity-catalog] --> I[000033-020-docs-spec-task-integrity-guidance]
+  H --> J[000033-030-docs-executor-integrity-gates]
+  H --> K[000034-010-infra-codex-integrity-validation]
+  I --> K
+  J --> K
+```
+
+---
+
+## Batch 17 — Claude Code Data Integrity Skill Hardening
+
+- Spec: `docs/ywc-plans/claude-code-data-integrity-skill-hardening.md` (spec-ready DONE, 1 iteration; W1–W6 pre-applied from the Batch 16 review)
+- Spec ready log: `docs/ywc-plans/claude-code-data-integrity-skill-hardening.spec-ready-log.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000035`
+- Scope: `claude-code/skills/**` only. The **claude-code twin of Batch 16** (Codex, phases `000033`–`000034`). No `codex/**` or `plugins/ywc-agent-toolkit/**` edits.
+- Existing phase note: phases `000033`–`000034` are occupied by the Codex data-integrity batch (Batch 16), so this batch starts at `000035`.
+- Advisor pass: skipped — phase structure mirrors Batch 16 (source guidance slices → one validation hard gate); local Pattern C review applied.
+- No-AC requirements: none — every FR (FR-1…FR-6) has a backing Acceptance Criterion (AC1…AC8).
+- Divergence from Batch 16: FR-5 (executor) is reduced to a **single Rationalization-Defense row per executor** (not full prose), because both executors already run Task Verify as an unconditional Layer-1 gate — full prose would restate existing behavior (spec W2).
+
+### Phase 000035 — Source Guidance Updates
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000035-010-docs-impl-review-integrity-catalog` | docs | (root) |
+| `000035-020-docs-spec-task-integrity-guidance` | docs | `000035-010` |
+| `000035-030-docs-executor-integrity-gates` | docs | `000035-010` |
+
+### Phase 000036 — Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000036-010-infra-claude-integrity-validation` | infra | `000035-010`, `000035-020`, `000035-030` |
+
+### Parallel Execution Notes (Batch 17)
+
+- Initial ready set: `000035-010-docs-impl-review-integrity-catalog` (establishes canonical write-consistency terminology + severity mapping in `recurring-defects.md`).
+- After `000035-010` merges: `000035-020` and `000035-030` are parallel-safe — disjoint Ownership (`ywc-spec-validate` + `ywc-task-generator` vs the two executors). Both depend on `000035-010` only for terminology consistency, so per the phase-gate rule they live in Phase 000035 (ordered via Depends On), not a separate phase.
+- `000036-010` is a hard gate: waits for all Phase 000035 tasks, then runs the targeted `rg` evidence sweep, `scripts/validate.sh`, markdownlint on changed READMEs, and the `git diff --name-only` claude-code-only boundary check. Unlike the Codex twin, there is **no generated-plugin sync** (claude-code has no plugin package).
+- Conflict notes: each of the three Phase 000035 tasks owns a disjoint skill-directory set; none edits another's directory. All share the `bash scripts/validate.sh` + markdownlint CI gates, so each self-verifies before merge.
+- Hard boundary: no `codex/**` / `plugins/ywc-agent-toolkit/**` edits → pre-push hook stays green.
+- Recommended execution: `ywc-sequential-executor --local-merge` over 010→020→030→(036-010) on one branch, or conflict-free parallel worktrees for 020/030 after 010 merges.
+- FR mapping: FR-1+FR-2 → `000035-010`; FR-3+FR-4 → `000035-020`; FR-5 → `000035-030`; FR-6 + AC7 + AC8 → `000036-010`.
+
+```mermaid
+graph LR
+  A[000035-010-docs-impl-review-integrity-catalog] --> B[000035-020-docs-spec-task-integrity-guidance]
+  A --> C[000035-030-docs-executor-integrity-gates]
+  A --> D[000036-010-infra-claude-integrity-validation]
+  B --> D
+  C --> D
+```
