@@ -35,7 +35,7 @@ Dentro del mismo repositorio, basta con el número de PR:
 Cuando ambos extremos parecen prefijos de tarea (por ejemplo, `000012-010..000019-010`), la Skill resuelve la entrada como un rango de tareas inclusivo antes de intentar interpretarla como rango de Git. Ordena lexicográficamente los basenames de los directorios de tarea en `<tasks-dir>` (los prefijos numerados están pensados para ordenarse por ejecución) y lee `task.md` / `README.md` de cada tarea desde el inicio hasta el final como fuentes de escenarios.
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+/ywc-gen-testcase 000012-010..000019-010 --lang es
 ```
 
 > Si falta algún extremo o es ambiguo, la Skill se detiene y pregunta. No hace fallback a `git rev-parse` para extremos con aspecto de tarea.
@@ -68,7 +68,7 @@ Generar a partir de un rango de commits arbitrario. SHA, tag, nombre de rama y `
 | Opción | Descripción | Ejemplo |
 | --- | --- | --- |
 | `--output-dir <path>` | Sobreescribir directorio de salida (predeterminado: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`). Predeterminado: detección automática | `--lang ja` |
+| `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`, `zh`, `es`). Predeterminado: detección automática | `--lang es` |
 | `--filename <name>` | Sobreescribir nombre de archivo (sin `.md`) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Directorio de tareas usado por entradas de Tarea y Rango de tareas (predeterminado: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--format <fmt>` | Formato de salida (`markdown` \| `html`). Predeterminado: `markdown` | `--format html` |
@@ -191,12 +191,14 @@ Aplicado de forma consistente, la mayoría de las hojas de pruebas de nivel M se
 
 Prioridad cuando no se especifica `--lang`:
 
-1. **CLAUDE.md / AGENTS.md** — directivas como `PR言語: 日本語`, `Documentation: Korean`
+1. **CLAUDE.md / AGENTS.md** — directivas como `PR言語: 日本語`, `Documentation: Korean`, `中文 task docs`, `PR Spanish로 작성`
 2. **Hojas de pruebas recientes** en `docs/test-case/`
 3. Idioma del **`README.md` del proyecto**
 4. **Fallback** — inglés
 
-Las claves del front matter YAML, los números de sección y el andamiaje de la plantilla permanecen en inglés independientemente de `--lang`.
+Los language codes admitidos son `ja`, `ko`, `en`, `zh` y `es`. Alias como `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol` y `español` se asignan a `zh` o `es`.
+
+Las claves del front matter YAML, los números de sección, filenames, code snippets y template skeleton permanecen en inglés independientemente de `--lang`. Solo el human prose como Summary, Goal, Steps, Expected, Notes y Edge Cases sigue el idioma seleccionado; Technical terms como Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status y Sign-off permanecen en English en prose `zh` y `es`.
 
 ## Manejo de errores
 
@@ -232,13 +234,13 @@ Descendiente de las Skills `ywc` orientadas a la implementación:
 ### División física en dos archivos
 
 ```text
-/ywc-gen-testcase 250 --split --lang ja
+/ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### Hoja de pruebas solo para QA (para entregar al equipo de QA)
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang ja
+/ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### Forzar archivo único incluso para un PR grande
@@ -256,13 +258,13 @@ Descendiente de las Skills `ywc` orientadas a la implementación:
 ### Rango de tareas (inclusivo, desde la tarea inicial hasta la final)
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+/ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Rango de Git (entre dos tags)
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang ja
+/ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### Rango local pre-PR

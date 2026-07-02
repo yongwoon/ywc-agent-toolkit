@@ -31,7 +31,7 @@ Within the same repository, a PR number is sufficient:
 When both endpoints look like task prefixes (e.g. `000012-010..000019-010`), the Skill resolves the input as an inclusive Task Range before trying Git Range. It sorts task directory basenames in `<tasks-dir>` lexicographically (numbered prefixes are designed to sort in execution order) and reads `task.md` / `README.md` for every task from the start through the end as scenario sources.
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+/ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 > If either endpoint is missing or ambiguous, the Skill stops and asks. It does **not** fall back to `git rev-parse` for task-like endpoints.
@@ -64,7 +64,7 @@ Generate from an arbitrary commit range. SHA, tag, branch name, and `HEAD~N` all
 | Option | Description | Example |
 | --- | --- | --- |
 | `--output-dir <path>` | Override output directory (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet language (`ja`, `ko`, `en`). Default: auto-detect | `--lang ja` |
+| `--lang <code>` | Testsheet language (`ja`, `ko`, `en`, `zh`, `es`). Default: auto-detect | `--lang zh` |
 | `--filename <name>` | Filename override (without `.md`) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Tasks directory used by Task and Task Range inputs (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--format <fmt>` | Output format (`markdown` \| `html`). Default: `markdown` | `--format html` |
@@ -186,12 +186,14 @@ Applied consistently, most M-tier testsheets stay under ~800 lines.
 
 Priority when `--lang` is not specified:
 
-1. **CLAUDE.md / AGENTS.md** — directives such as `PR言語: 日本語`, `Documentation: Korean`
+1. **CLAUDE.md / AGENTS.md** — directives such as `PR言語: 日本語`, `Documentation: Korean`, `中文 task docs`, `PR Spanish로 작성`
 2. **Recent testsheets** in `docs/test-case/`
 3. **Project `README.md`** language
 4. **Fallback** — English
 
-YAML front matter keys, section numbers, and template scaffolding stay in English regardless of `--lang`.
+Supported language codes are `ja`, `ko`, `en`, `zh`, and `es`. Aliases such as `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol`, and `español` map to `zh` or `es`.
+
+YAML front matter keys, section numbers, filenames, code snippets, and template scaffolding stay in English regardless of `--lang`. Only human prose follows the selected language; technical terms such as Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status, and Sign-off stay English in `zh` and `es` prose.
 
 ## Error Handling
 
@@ -227,13 +229,13 @@ Downstream of the implementation-oriented `ywc` skills:
 ### Physical split into two files
 
 ```text
-/ywc-gen-testcase 250 --split --lang ja
+/ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### QA-only testsheet (to hand to the QA team)
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang ja
+/ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### Force single file even for a large PR
@@ -251,13 +253,13 @@ Downstream of the implementation-oriented `ywc` skills:
 ### Task Range (inclusive, from start task to end task)
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+/ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Git Range (between two tags)
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang ja
+/ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### Pre-PR local range

@@ -9,13 +9,13 @@
 ## Force physical split
 
 ```text
-/ywc-gen-testcase 250 --split --lang ja
+/ywc-gen-testcase 250 --split --lang zh
 ```
 
 ## QA-only testsheet
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang ja
+/ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ## Force single file even at L tier
@@ -33,7 +33,7 @@
 ## Task range
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+/ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 Generates an inclusive testsheet from every ordered task directory between the two task prefixes. Positional task ranges are resolved before Git ranges; use `--range` to force Git range mode.
@@ -55,7 +55,7 @@ Generates `range-v1.2-v1.3-<slug>.md`. Auto-suggest proposes PR mode if the rang
 ## Pre-PR local range
 
 ```text
-/ywc-gen-testcase HEAD~5..HEAD --lang ja
+/ywc-gen-testcase HEAD~5..HEAD --lang es
 ```
 
 Use this when local commits are not yet pushed or PR'd and need a testsheet for review.
