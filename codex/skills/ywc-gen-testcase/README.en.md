@@ -11,19 +11,19 @@ Backend engineers and QA/PM/Product Owner can each sign off on their own section
 Generate a testsheet from a PR URL:
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 Within the same repository, a PR number is sufficient:
 
 ```text
-/ywc-gen-testcase 250
+$ywc-gen-testcase 250
 ```
 
 ### Task-based generation
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+$ywc-gen-testcase 000001-010-db-create-users-table
 ```
 
 ### Task Range generation
@@ -31,7 +31,7 @@ Within the same repository, a PR number is sufficient:
 When both endpoints look like task prefixes (e.g. `000012-010..000019-010`), the Skill resolves the input as an inclusive Task Range before trying Git Range. It sorts task directory basenames in `<tasks-dir>` lexicographically (numbered prefixes are designed to sort in execution order) and reads `task.md` / `README.md` for every task from the start through the end as scenario sources.
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang zh
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 > If either endpoint is missing or ambiguous, the Skill stops and asks. It does **not** fall back to `git rev-parse` for task-like endpoints.
@@ -43,10 +43,10 @@ When both endpoints look like task prefixes (e.g. `000012-010..000019-010`), the
 Generate from an arbitrary commit range. SHA, tag, branch name, and `HEAD~N` all work.
 
 ```text
-/ywc-gen-testcase v1.2..v1.3
-/ywc-gen-testcase HEAD~5..HEAD
-/ywc-gen-testcase main..feature-x
-/ywc-gen-testcase --range abc1234..def5678
+$ywc-gen-testcase v1.2..v1.3
+$ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase main..feature-x
+$ywc-gen-testcase --range abc1234..def5678
 ```
 
 > Range supports only the **two-dot `A..B`** form. Three-dot `A...B` is rejected because its merge-base semantics silently change scope.
@@ -56,7 +56,7 @@ Generate from an arbitrary commit range. SHA, tag, branch name, and `HEAD~N` all
 ### Diff-based generation
 
 ```text
-/ywc-gen-testcase --from-diff
+$ywc-gen-testcase --from-diff
 ```
 
 ### Options
@@ -223,55 +223,55 @@ Downstream of the implementation-oriented `ywc` skills:
 ### Generate from a PR URL (default: single file A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### Physical split into two files
 
 ```text
-/ywc-gen-testcase 250 --split --lang zh
+$ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### QA-only testsheet (to hand to the QA team)
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang es
+$ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### Force single file even for a large PR
 
 ```text
-/ywc-gen-testcase 250 --force-single
+$ywc-gen-testcase 250 --force-single
 ```
 
 ### Task-based with regression section
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+$ywc-gen-testcase 000001-010-db-create-users-table --include-regression
 ```
 
 ### Task Range (inclusive, from start task to end task)
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang zh
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Git Range (between two tags)
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang es
+$ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### Pre-PR local range
 
 ```text
-/ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase HEAD~5..HEAD
 ```
 
 ### Dry-run
 
 ```text
-/ywc-gen-testcase 250 --dry-run
+$ywc-gen-testcase 250 --dry-run
 ```
 
 ## Triggering

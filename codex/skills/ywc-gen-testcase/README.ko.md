@@ -11,19 +11,19 @@ Backend 엔지니어와 QA/PM/Product Owner 가 각자 자신의 Section 에서 
 PR URL 로 Testsheet 를 생성합니다:
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 같은 Repository 내라면 PR 번호만으로도 지정 가능합니다:
 
 ```text
-/ywc-gen-testcase 250
+$ywc-gen-testcase 250
 ```
 
 ### Task 기반 생성
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+$ywc-gen-testcase 000001-010-db-create-users-table
 ```
 
 ### Task Range 기반 생성
@@ -31,7 +31,7 @@ PR URL 로 Testsheet 를 생성합니다:
 `000012-010..000019-010`처럼 두 endpoint 가 task prefix 형태이면, Skill 은 Git Range 보다 먼저 inclusive Task Range 로 해석합니다. `<tasks-dir>` 의 task directory basename 을 사전 순(번호 prefix → 실행 순서)으로 정렬하고, 시작 task 부터 끝 task 까지의 task.md / README.md 를 모두 읽어 Scenario 의 source 로 사용합니다.
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang zh
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 > Endpoint 가 누락되거나 모호하면 stop 하고 사용자에게 묻습니다. `git rev-parse` 로 fallback 하지 않습니다.
@@ -43,10 +43,10 @@ PR URL 로 Testsheet 를 생성합니다:
 Commit 범위를 직접 지정합니다. SHA, Tag, Branch, `HEAD~N` 모두 accept 됩니다.
 
 ```text
-/ywc-gen-testcase v1.2..v1.3
-/ywc-gen-testcase HEAD~5..HEAD
-/ywc-gen-testcase main..feature-x
-/ywc-gen-testcase --range abc1234..def5678
+$ywc-gen-testcase v1.2..v1.3
+$ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase main..feature-x
+$ywc-gen-testcase --range abc1234..def5678
 ```
 
 > Range 는 **two-dot `A..B` 형식만 지원**합니다. Three-dot `A...B` 는 merge-base semantics 로 scope 이 silently 바뀌기 때문에 거부됩니다.
@@ -56,7 +56,7 @@ Commit 범위를 직접 지정합니다. SHA, Tag, Branch, `HEAD~N` 모두 accep
 ### 현재 Diff 기반 생성
 
 ```text
-/ywc-gen-testcase --from-diff
+$ywc-gen-testcase --from-diff
 ```
 
 ### Option
@@ -221,55 +221,55 @@ YAML Front Matter, Section 번호, Filename, Code snippet, Template 골격은 `-
 ### PR URL 로 생성 (Default: 단일 파일 A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 물리적 Split (dev / qa 2 파일)
 
 ```text
-/ywc-gen-testcase 250 --split --lang zh
+$ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### QA-only Testsheet (QA 팀 전달용)
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang es
+$ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### 초대형 PR 이지만 단일 파일 고정
 
 ```text
-/ywc-gen-testcase 250 --force-single
+$ywc-gen-testcase 250 --force-single
 ```
 
 ### Task 기반 + Regression 포함
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+$ywc-gen-testcase 000001-010-db-create-users-table --include-regression
 ```
 
 ### Task Range (시작 task 부터 끝 task 까지 inclusive)
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang zh
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Git Range (Tag 사이)
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang es
+$ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### Pre-PR local range
 
 ```text
-/ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase HEAD~5..HEAD
 ```
 
 ### Dry-run
 
 ```text
-/ywc-gen-testcase 250 --dry-run
+$ywc-gen-testcase 250 --dry-run
 ```
 
 ## Triggering

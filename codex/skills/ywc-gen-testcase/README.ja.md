@@ -11,19 +11,19 @@ Backend engineer と QA/PM/Product Owner がそれぞれ自分の section で独
 PR URL から生成:
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 同一 repository 内なら PR 番号のみで可能:
 
 ```text
-/ywc-gen-testcase 250
+$ywc-gen-testcase 250
 ```
 
 ### Task ベース生成
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+$ywc-gen-testcase 000001-010-db-create-users-table
 ```
 
 ### Task Range ベース生成
@@ -31,7 +31,7 @@ PR URL から生成:
 `000012-010..000019-010` のように両端点が task prefix のように見える場合、Skill は Git Range よりも先に inclusive Task Range として解釈します。`<tasks-dir>` 配下の task directory basename を辞書順 (番号 prefix → 実行順序) で並べ、開始 task から終了 task までの `task.md` / `README.md` を scenario の source として全て読み込みます。
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang zh
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 > 端点が欠落または曖昧な場合、Skill は停止して利用者に確認します。task-like な端点に対して `git rev-parse` に fallback **しません**。
@@ -43,10 +43,10 @@ PR URL から生成:
 任意の commit 範囲を指定できます。SHA / Tag / Branch / `HEAD~N` いずれも受け付けます。
 
 ```text
-/ywc-gen-testcase v1.2..v1.3
-/ywc-gen-testcase HEAD~5..HEAD
-/ywc-gen-testcase main..feature-x
-/ywc-gen-testcase --range abc1234..def5678
+$ywc-gen-testcase v1.2..v1.3
+$ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase main..feature-x
+$ywc-gen-testcase --range abc1234..def5678
 ```
 
 > Range は **two-dot `A..B`** のみサポート。Three-dot `A...B` は merge-base semantics で scope が暗黙に変わるため reject されます。
@@ -56,7 +56,7 @@ PR URL から生成:
 ### Diff ベース生成
 
 ```text
-/ywc-gen-testcase --from-diff
+$ywc-gen-testcase --from-diff
 ```
 
 ### Option
@@ -221,55 +221,55 @@ YAML front matter の key、section 番号、filename、code snippet、template 
 ### PR URL から生成 (default: 単一 file A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 物理 split (dev/qa 2 file)
 
 ```text
-/ywc-gen-testcase 250 --split --lang zh
+$ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### QA 専用 testsheet (QA チーム引き渡し用)
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang es
+$ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### 大型 PR でも単一 file を強制
 
 ```text
-/ywc-gen-testcase 250 --force-single
+$ywc-gen-testcase 250 --force-single
 ```
 
 ### Task ベース + regression 付き
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+$ywc-gen-testcase 000001-010-db-create-users-table --include-regression
 ```
 
 ### Task Range (開始 task から終了 task まで inclusive)
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang zh
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Git Range (tag 間)
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang es
+$ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### Pre-PR local range
 
 ```text
-/ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase HEAD~5..HEAD
 ```
 
 ### Dry-run
 
 ```text
-/ywc-gen-testcase 250 --dry-run
+$ywc-gen-testcase 250 --dry-run
 ```
 
 ## Triggering
