@@ -1,7 +1,7 @@
 {
   "skill_name": "ywc-spec-writer",
   "description": "Regression scenarios for explicit full generation, bounded spec updates, and hook setup side effects.",
-  "last_updated": "2026-06-23",
+  "last_updated": "2026-07-02",
   "evals": [
     {
       "id": 1,
@@ -53,6 +53,47 @@
         "Generating a full spec because the request sounds broad.",
         "Using the highest-cost model path without confirmation.",
         "Skipping the explicit full-generation gate."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "from-task-simplified-chinese-output",
+      "prompt": "Use ywc-spec-writer --from-task tasks/000124-010-billing-rules --lang zh.",
+      "context": {
+        "task_category": "business-logic",
+        "existing_spec": "docs/specification/README.md"
+      },
+      "expected_behavior": [
+        "Resolves the single task path and updates only the mapped spec sections.",
+        "Writes body prose in Simplified Chinese.",
+        "Keeps command names, file paths, code blocks, JSON/YAML keys, and technical terms such as API Endpoint and Database in English."
+      ],
+      "anti_behavior": [
+        "Defaulting to Korean despite --lang zh.",
+        "Using Traditional Chinese when the user did not request it.",
+        "Translating technical terms, command names, or file paths into Chinese."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "from-pr-spanish-output",
+      "prompt": "Use ywc-spec-writer --from-pr 42 --lang es.",
+      "context": {
+        "pr_title": "Add OAuth setup flow",
+        "changed_files": [
+          "src/auth/oauth.ts",
+          "docs/manuals/oauth-setup.md"
+        ]
+      },
+      "expected_behavior": [
+        "Fetches PR diff plus narrative context before updating affected spec sections.",
+        "Writes body prose in Spanish.",
+        "Keeps command names, file paths, code blocks, JSON/YAML keys, and technical terms such as OAuth, API Endpoint, and Backend Service in English."
+      ],
+      "anti_behavior": [
+        "Defaulting to Korean despite --lang es.",
+        "Translating technical terms, command names, or file paths into Spanish.",
+        "Regenerating the full spec without --update or --full."
       ]
     }
   ]

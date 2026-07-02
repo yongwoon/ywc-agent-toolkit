@@ -43,8 +43,13 @@ Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文�
 | `--local-merge` | 将每个 task 本地 merge 到 base branch 并立即 push。不创建 PR。 |
 | `--draft` | 通过本地 merge 累积 task 更改，并在最后创建一个 aggregate draft PR。 |
 | `--per-task-pr` | 对每个 task 创建 PR、等待 CI、处理 bot review、刷新到最新 base、merge PR、同步 base，并 Mark Complete。 |
+| `--aggregate-pr` | 将整个 invocation 合并为一个 aggregate branch 和 PR，并完成 ready → CI → bot review → merge。 |
 
 在 `--per-task-pr` 中，同一 wave 里的前一个 task 可能会推进 base branch。因此 merge 前 executor 会检查 PR branch 是否包含最新 base；如果没有，就把 base merge 到 worktree branch，push 后重新验证 CI。Base refresh conflict 会报告为 `BLOCKED`，不会只凭旧 head SHA 的 CI 结果 merge PR。
+
+## PR 语言
+
+`--pr-lang en|ja|ko|zh|es` 固定所有 PR mode 的标题/正文语言。Executor 会原样保留该值，并传给 `$ywc-create-pr --lang <pr-lang>`。
 
 ## 输出
 

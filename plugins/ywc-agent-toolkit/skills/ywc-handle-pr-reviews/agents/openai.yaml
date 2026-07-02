@@ -1,4 +1,4 @@
 interface:
   display_name: "PR Health Sweep"
   short_description: "Handle GitHub PR review artifacts, CI failures, and merge blockers"
-  default_prompt: "Use $ywc-handle-pr-reviews as a PR health sweep: fetch review artifacts, CI status, and merge-readiness; implement justified fixes; reply to comment-like artifacts; and report any remaining blockers."
+  default_prompt: "Use $ywc-handle-pr-reviews as a PR health sweep: fetch review artifacts, CI status, and merge-readiness; implement justified fixes; reply to comment-like artifacts in the original reviewer comment language (for example Korean, English, Japanese, Chinese, or Spanish) while preserving code and machine text; and report any remaining blockers."

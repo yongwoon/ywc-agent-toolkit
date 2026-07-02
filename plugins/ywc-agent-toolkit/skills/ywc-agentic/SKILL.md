@@ -49,7 +49,7 @@ When tempted to bypass a rule, check this table first:
 | `--resume` | flag | — | Skip the Plan Phase and resume from existing `tasks/` (Resume Mode). |
 | `--dry-run` | flag | — | Print the planned phase sequence only; invoke no skills and make no changes. |
 | `--terse` | flag | — | Minimal output — phase headers and the final report only, no per-phase prose. |
-| `--pr-lang` | `--pr-lang <lang>` | `auto` | PR title/description language, forwarded to the executor. `auto` infers from `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or recent PRs. |
+| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `auto` | PR title/description language, forwarded unchanged to the executor. `auto` infers from `AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or recent PRs. |
 
 ## Workflow
 
@@ -112,7 +112,7 @@ Medium/Large goals only. Skipped on the Small Path.
    ```text
    ywc-task-generator --tasks-dir <tasks-dir>
    ```
-   `ywc-task-generator` infers the output language from project guidance files; no `--lang` is passed unless the user requested one.
+   `ywc-task-generator` infers the output language from project guidance files; no `--lang` is passed unless the user requested one or project guidance explicitly requires one. Explicit task/spec language requests may forward `--lang en|ja|ko|zh|es`; otherwise preserve the existing no-`--lang` behavior.
 2. Read `<tasks-dir>/dependency-graph.md` and select the executor:
    - `--executor` is explicit → use that executor.
    - `--executor auto` and the graph yields **multiple waves with independent tasks** → `ywc-parallel-executor`.
@@ -132,6 +132,8 @@ This SHA is the lower bound of the `--git-range` passed to the Evaluate Phase. R
 ywc-<sequential|parallel>-executor --all --tasks-dir <tasks-dir> --local-merge --pr-lang <pr-lang>
 ```
 `--local-merge` keeps iterations fast — no PR round-trip; completed tasks merge to the base branch directly. After the executor returns, collect each task's success/failure status from its return payload.
+
+Forward `--pr-lang` unchanged when it is one of `en|ja|ko|zh|es`; do not normalize `zh` or `es` before the selected executor receives it.
 
 **Small Path:** invoke `ywc-code-gen` directly against the `plan.md` from Step 3. No executor, no `tasks/` directory. `ywc-code-gen` commits its output to the base branch so the Evaluate Phase can range over it.
 

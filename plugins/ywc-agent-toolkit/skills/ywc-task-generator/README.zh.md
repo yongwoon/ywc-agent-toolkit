@@ -15,28 +15,30 @@
 提供规范并要求 Skill 生成任务：
 
 ```text
-/task-generator [规范内容]
+$ywc-task-generator [规范内容]
 ```
 
 也可以要求精炼现有任务集：
 
 ```text
-/task-generator refine docs/spec.md for parallel worktree execution.
+$ywc-task-generator refine docs/spec.md for parallel worktree execution.
 ```
 
 ### 语言选项
 
-Skill 支持韩语、日语和英语输出。
+Skill 支持韩语、日语、英语、简体中文和西班牙语输出。`--lang` 接受 `korean`、`japanese`、`english`、`chinese`、`spanish`，以及别名 `ko`、`ja`、`en`、`zh`、`es`。
 
 | 语言 | 示例 |
 |----------|---------|
 | 韩语 | `Output in Korean.` |
 | 日语 | `日本語でタスクを生成してください。` |
 | 英语 | `Generate tasks in English.` |
+| 中文 | `Generate task docs in Chinese.` |
+| 西班牙语 | `Generate tasks in Spanish.` |
 
-如果用户未指定语言，Skill 会询问。
+如果用户未指定语言，Skill 会先从项目指令文件推断，只有推断失败时才询问。
 
-韩语和日语输出中，技术术语保留英文。
+韩语、日语、中文和西班牙语输出中，Technical terms 保留英文。
 
 ### 粒度模式选项
 
@@ -140,7 +142,7 @@ mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-us
 ## 示例提示
 
 ```text
-/task-generator break down this specification into implementation tasks.
+$ywc-task-generator break down this specification into implementation tasks.
 
 Requirements:
 - Output in Korean.

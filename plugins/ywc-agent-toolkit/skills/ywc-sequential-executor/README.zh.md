@@ -44,7 +44,7 @@
 
 | 选项 | 描述 | 示例 |
 |--------|-------------|---------|
-| `--pr-lang <lang>` | PR 标题/描述语言 | `--pr-lang ja` |
+| `--pr-lang <en\|ja\|ko\|zh\|es>` | PR 标题/描述语言。原样传递给下游 PR 创建 | `--pr-lang zh` |
 | `--tasks-dir <path>` | 任务目录路径（默认：`tasks/`） | `--tasks-dir ./docs/tasks` |
 | `--skip-ci-wait` | 跳过 CI 等待和自动合并（仅创建 PR） | |
 | `--draft` | 创建草稿 PR，跳过合并 | |
@@ -125,9 +125,11 @@
 
 未指定 `--pr-lang` 时，语言按以下优先级检测：
 
-1. **CLAUDE.md** — 检查语言指令（如 `Git commits: Japanese`）
-2. **AGENTS.md** — 检查语言偏好
-3. **最近 PR 历史** — 检测主要语言
+支持值为 `en|ja|ko|zh|es`。指定值会原样传递给 `ywc-finish-branch` 或最终 aggregate `$ywc-create-pr --lang <pr-lang>`。
+
+1. **AGENTS.md / CODEX.md / CLAUDE.md** — 检查语言指令（如 `Git commits: Japanese`、`PRs: Chinese`、`PR language: Spanish`）
+2. **最近 PR title/body 历史** — 检测主要语言
+3. **Project dominant language** — 检测代码库和文档的主要语言
 4. **回退** — 英语
 
 ## 错误处理

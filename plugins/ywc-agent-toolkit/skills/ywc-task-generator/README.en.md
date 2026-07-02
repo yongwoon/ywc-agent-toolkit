@@ -11,28 +11,30 @@ It is designed not only for ordinary task decomposition, but also for task sets 
 Provide a specification and ask the Skill to generate tasks:
 
 ```text
-/task-generator [Specification content]
+$ywc-task-generator [Specification content]
 ```
 
 You can also ask it to refine an existing task set:
 
 ```text
-/task-generator refine docs/spec.md for parallel worktree execution.
+$ywc-task-generator refine docs/spec.md for parallel worktree execution.
 ```
 
 ### Language Options
 
-The Skill supports Korean, Japanese, and English output.
+The Skill supports Korean, Japanese, English, Simplified Chinese, and Spanish output. Accepted `--lang` values are `korean`, `japanese`, `english`, `chinese`, `spanish`, plus aliases `ko`, `ja`, `en`, `zh`, and `es`.
 
 | Language | Example |
 |----------|---------|
 | Korean | `Output in Korean.` |
 | Japanese | `日本語でタスクを生成してください。` |
 | English | `Generate tasks in English.` |
+| Chinese | `Generate task docs in Chinese.` |
+| Spanish | `Generate tasks in Spanish.` |
 
-If the user does not specify a language, the Skill asks.
+If the user does not specify a language, the Skill infers it from project instruction files first and asks only when inference fails.
 
-For Korean and Japanese outputs, technical terms stay in English.
+For Korean, Japanese, Chinese, and Spanish outputs, technical terms stay in English.
 
 ### Granularity Mode Options
 
@@ -136,7 +138,7 @@ For parallel-friendly output, explicitly request:
 ## Example Prompt
 
 ```text
-/task-generator break down this specification into implementation tasks.
+$ywc-task-generator break down this specification into implementation tasks.
 
 Requirements:
 - Output in Korean.

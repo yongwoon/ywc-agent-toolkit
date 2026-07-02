@@ -43,8 +43,13 @@ La planificacion de waves trata los contratos publicos compartidos como Shared S
 | `--local-merge` | Hace merge local de cada tarea en la rama base y hace push inmediato. No crea PR. |
 | `--draft` | Acumula los cambios de tareas mediante merges locales y crea un PR draft agregado al final. |
 | `--per-task-pr` | Para cada tarea, crea un PR, espera CI, gestiona revisiones de bots, refresca contra la base mas reciente, mergea el PR, sincroniza la base y marca la tarea como completa. |
+| `--aggregate-pr` | Agrupa toda la invocacion en una rama y PR agregados, y completa ready → CI → bot review → merge. |
 
 En `--per-task-pr`, una tarea anterior de la misma wave puede avanzar la rama base. Antes de mergear, el executor comprueba si la rama del PR contiene la base mas reciente; si no, mergea la base en la rama del worktree, hace push y vuelve a verificar CI. Un conflicto al refrescar base se reporta como `BLOCKED`, y el PR no se mergea usando resultados de CI de un head SHA antiguo.
+
+## Idioma del PR
+
+`--pr-lang en|ja|ko|zh|es` fija el idioma de titulo/cuerpo para todos los modos de PR. El executor conserva el valor sin cambios y lo pasa a `$ywc-create-pr --lang <pr-lang>`.
 
 ## Salida
 

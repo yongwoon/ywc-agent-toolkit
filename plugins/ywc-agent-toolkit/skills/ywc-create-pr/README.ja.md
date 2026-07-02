@@ -13,14 +13,17 @@ Feature Branch での作業完了後、Commit 作成から Draft PR 作成まで
 - push 前に lint、format、typecheck、test などの CI Check を実行
 - `.github/pull_request_template.md` があれば自動適用
 - すべての PR を Draft で作成
+- `--lang` / `--language` で PR title/body prose を `en`、`ja`、`ko`、`zh`、`es` のいずれかにし、task ID、branch name、file path、command、label、明示的な `--title` 値はそのまま保持
 
 ## 使用方法
 
 ```text
-/create-pr
-/create-pr main
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
+$ywc-create-pr
+$ywc-create-pr main
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 自然言語 Trigger は [SKILL.md](./SKILL.md) に定義されています。
@@ -35,3 +38,5 @@ Feature Branch での作業完了後、Commit 作成から Draft PR 作成まで
 - [Korean (Primary)](./README.md)
 - [English](./README.en.md)
 - [Korean](./README.ko.md)
+- [Chinese (Simplified)](./README.zh.md)
+- [Spanish](./README.es.md)
