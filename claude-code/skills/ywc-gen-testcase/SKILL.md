@@ -1,7 +1,7 @@
 ---
 name: ywc-gen-testcase
-version: 1.0.0
-description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, git range, or diff. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
+version: 1.1.0
+description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, git range, or diff, with prose in Korean, Japanese, English, Chinese, or Spanish. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증", "生成测试用例", "测试表", "generar caso de prueba", "hoja de pruebas". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
 category: review
 phase: quality
 requires: []
@@ -54,7 +54,7 @@ Parse `$ARGUMENTS`.
 | `--from-diff` | flag | | Use `git diff HEAD` |
 | `--range <spec>` | `<start>..<end>` | `--range v1.2..v1.3` | Explicit range form (equivalent to positional `A..B`). Two-dot only — three-dot `A...B` is rejected |
 | `--output-dir <path>` | path | `--output-dir ./docs/qa` | Override `docs/test-case/` |
-| `--lang <code>` | `ja`,`ko`,`en` | `--lang ja` | Prose language. Default: auto-detect |
+| `--lang <code>` | `ja`,`ko`,`en`,`zh`,`es` | `--lang ja` | Prose language. Default: auto-detect |
 | `--filename <name>` | string | `--filename release-smoke` | Override derived filename (no `.md`) |
 | `--tasks-dir <path>` | path | `--tasks-dir ./docs/tasks` | Tasks directory (Task input only) |
 | `--include-regression` | flag | | Add Regression section (B side) |
@@ -275,12 +275,14 @@ Next steps:
 
 When `--lang` is not specified, choose in this order. A testsheet is read by humans, so match the language humans speak on this project — not the language the code is written in.
 
-1. **CLAUDE.md / AGENTS.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `PR言語` → the strongest signal.
+1. **CLAUDE.md / AGENTS.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `Documentation: Chinese`, `Documentation: Spanish`, `PR言語` → the strongest signal. Resolve to the matching `--lang` code (`ja`, `ko`, `en`, `zh`, `es`).
 2. **Recent testsheets in the output directory** — match dominant prose language.
 3. **Project `README.md`** — language of the root README.
 4. **Fallback** — English.
 
-YAML front matter keys, section numbers, and the template skeleton stay in English regardless of `--lang`. Only prose (Summary, Goal, Steps, Expected, Notes, Edge Cases) follows the chosen language.
+Supported `--lang` codes: `ja`, `ko`, `en`, `zh` (Simplified Chinese), `es` (Spanish).
+
+YAML front matter keys, section numbers, and the template skeleton stay in English regardless of `--lang`. Only prose (Summary, Goal, Steps, Expected, Notes, Edge Cases) follows the chosen language. For `zh` and `es` prose, keep technical terms (API, Backend, Database) in English — do not over-translate.
 
 ## Dry Run Mode
 

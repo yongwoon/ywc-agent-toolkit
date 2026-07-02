@@ -52,7 +52,7 @@ Generate from an arbitrary commit range. SHA, tag, branch name, and `HEAD~N` all
 | Option | Description | Example |
 | --- | --- | --- |
 | `--output-dir <path>` | Override output directory (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet language (`ja`, `ko`, `en`). Default: auto-detect | `--lang ja` |
+| `--lang <code>` | Testsheet language (`ja`, `ko`, `en`, `zh`, `es`). Default: auto-detect | `--lang ja` |
 | `--filename <name>` | Filename override (without `.md`) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Tasks directory (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--include-regression` | Add a Regression section (B.3) | |
