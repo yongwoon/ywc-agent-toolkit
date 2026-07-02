@@ -14,19 +14,19 @@ Project specification writer. `docs/specification/` 디렉토리를 생성하고
 ## 사용 방법
 
 ```bash
-/ywc-spec-writer                          # 자동 모드 (최근 commit 기반 업데이트)
-/ywc-spec-writer --full                   # 전체 사양서 생성 (확인 필요)
-/ywc-spec-writer --update                 # 전체 사양서 재생성
-/ywc-spec-writer --from-task tasks/000002-010-api-user/
-/ywc-spec-writer --from-tasks 000002-010..000003-020   # Task range (phase 경계 가능)
-/ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 단일 ID 혼합
-/ywc-spec-writer --from-commit HEAD
-/ywc-spec-writer --from-pr 42                          # 단일 PR
-/ywc-spec-writer --from-prs 42 43 51                   # 여러 PR (union diff)
-/ywc-spec-writer --setup-hook             # Git hook 설치
-/ywc-spec-writer --lang ja                # 일본어로 작성
-/ywc-spec-writer --lang zh                # 중국어(간체)로 작성
-/ywc-spec-writer --lang es                # 스페인어로 작성
+$ywc-spec-writer                          # 자동 모드 (최근 commit 기반 업데이트)
+$ywc-spec-writer --full                   # 전체 사양서 생성 (확인 필요)
+$ywc-spec-writer --update                 # 전체 사양서 재생성
+$ywc-spec-writer --from-task tasks/000002-010-api-user/
+$ywc-spec-writer --from-tasks 000002-010..000003-020   # Task range (phase 경계 가능)
+$ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 단일 ID 혼합
+$ywc-spec-writer --from-commit HEAD
+$ywc-spec-writer --from-pr 42                          # 단일 PR
+$ywc-spec-writer --from-prs 42 43 51                   # 여러 PR (union diff)
+$ywc-spec-writer --setup-hook             # Git hook 설치
+$ywc-spec-writer --lang ja                # 일본어로 작성
+$ywc-spec-writer --lang zh                # 중국어(간체)로 작성
+$ywc-spec-writer --lang es                # 스페인어로 작성
 ```
 
 ## 입력

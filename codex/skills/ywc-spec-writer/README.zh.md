@@ -18,19 +18,19 @@
 ## 使用方法
 
 ```bash
-/ywc-spec-writer                          # 自动模式（基于提交的更新）
-/ywc-spec-writer --full                   # 完整规范生成（需要确认）
-/ywc-spec-writer --update                 # 重新生成所有章节
-/ywc-spec-writer --from-task tasks/000002-010-api-user/
-/ywc-spec-writer --from-tasks 000002-010..000003-020   # 任务范围（可跨阶段）
-/ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 单个 ID 混合
-/ywc-spec-writer --from-commit HEAD
-/ywc-spec-writer --from-pr 42                          # 单个 PR
-/ywc-spec-writer --from-prs 42 43 51                   # 多个 PR（union diff）
-/ywc-spec-writer --setup-hook             # 安装 git hook
-/ywc-spec-writer --lang ja                # 以日语输出
-/ywc-spec-writer --lang zh                # 以简体中文输出
-/ywc-spec-writer --lang es                # 以西班牙语输出
+$ywc-spec-writer                          # 自动模式（基于提交的更新）
+$ywc-spec-writer --full                   # 完整规范生成（需要确认）
+$ywc-spec-writer --update                 # 重新生成所有章节
+$ywc-spec-writer --from-task tasks/000002-010-api-user/
+$ywc-spec-writer --from-tasks 000002-010..000003-020   # 任务范围（可跨阶段）
+$ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 单个 ID 混合
+$ywc-spec-writer --from-commit HEAD
+$ywc-spec-writer --from-pr 42                          # 单个 PR
+$ywc-spec-writer --from-prs 42 43 51                   # 多个 PR（union diff）
+$ywc-spec-writer --setup-hook             # 安装 git hook
+$ywc-spec-writer --lang ja                # 以日语输出
+$ywc-spec-writer --lang zh                # 以简体中文输出
+$ywc-spec-writer --lang es                # 以西班牙语输出
 ```
 
 ## 输入参数

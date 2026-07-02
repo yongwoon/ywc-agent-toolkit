@@ -14,19 +14,19 @@ Project specification writer。`docs/specification/` directory を作成・維�
 ## 使用方法
 
 ```bash
-/ywc-spec-writer                          # 自動モード（最近の commit ベース更新）
-/ywc-spec-writer --full                   # 全体仕様書生成（確認が必要）
-/ywc-spec-writer --update                 # 全体仕様書再生成
-/ywc-spec-writer --from-task tasks/000002-010-api-user/
-/ywc-spec-writer --from-tasks 000002-010..000003-020   # Task range（phase 跨ぎ可）
-/ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 単一 ID 混在
-/ywc-spec-writer --from-commit HEAD
-/ywc-spec-writer --from-pr 42                          # 単一 PR
-/ywc-spec-writer --from-prs 42 43 51                   # 複数 PR（union diff）
-/ywc-spec-writer --setup-hook             # Git hook インストール
-/ywc-spec-writer --lang en                # 英語で作成
-/ywc-spec-writer --lang zh                # 中国語（簡体字）で作成
-/ywc-spec-writer --lang es                # スペイン語で作成
+$ywc-spec-writer                          # 自動モード（最近の commit ベース更新）
+$ywc-spec-writer --full                   # 全体仕様書生成（確認が必要）
+$ywc-spec-writer --update                 # 全体仕様書再生成
+$ywc-spec-writer --from-task tasks/000002-010-api-user/
+$ywc-spec-writer --from-tasks 000002-010..000003-020   # Task range（phase 跨ぎ可）
+$ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + 単一 ID 混在
+$ywc-spec-writer --from-commit HEAD
+$ywc-spec-writer --from-pr 42                          # 単一 PR
+$ywc-spec-writer --from-prs 42 43 51                   # 複数 PR（union diff）
+$ywc-spec-writer --setup-hook             # Git hook インストール
+$ywc-spec-writer --lang en                # 英語で作成
+$ywc-spec-writer --lang zh                # 中国語（簡体字）で作成
+$ywc-spec-writer --lang es                # スペイン語で作成
 ```
 
 ## 入力

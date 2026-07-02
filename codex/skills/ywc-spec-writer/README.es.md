@@ -18,19 +18,19 @@ Redactor de especificaciones de proyecto. Crea y mantiene el directorio `docs/sp
 ## Uso
 
 ```bash
-/ywc-spec-writer                          # Modo automático (actualización basada en commit)
-/ywc-spec-writer --full                   # Generación completa de especificación (requiere confirmación)
-/ywc-spec-writer --update                 # Regenerar todas las secciones
-/ywc-spec-writer --from-task tasks/000002-010-api-user/
-/ywc-spec-writer --from-tasks 000002-010..000003-020   # Rango de tareas (puede cruzar fases)
-/ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + ID individual mixto
-/ywc-spec-writer --from-commit HEAD
-/ywc-spec-writer --from-pr 42                          # PR individual
-/ywc-spec-writer --from-prs 42 43 51                   # Múltiples PRs (union diff)
-/ywc-spec-writer --setup-hook             # Instalar git hook
-/ywc-spec-writer --lang ja                # Escribir en japonés
-/ywc-spec-writer --lang zh                # Escribir en chino simplificado
-/ywc-spec-writer --lang es                # Escribir en español
+$ywc-spec-writer                          # Modo automático (actualización basada en commit)
+$ywc-spec-writer --full                   # Generación completa de especificación (requiere confirmación)
+$ywc-spec-writer --update                 # Regenerar todas las secciones
+$ywc-spec-writer --from-task tasks/000002-010-api-user/
+$ywc-spec-writer --from-tasks 000002-010..000003-020   # Rango de tareas (puede cruzar fases)
+$ywc-spec-writer --from-tasks '000002-*' 000003-010    # Glob + ID individual mixto
+$ywc-spec-writer --from-commit HEAD
+$ywc-spec-writer --from-pr 42                          # PR individual
+$ywc-spec-writer --from-prs 42 43 51                   # Múltiples PRs (union diff)
+$ywc-spec-writer --setup-hook             # Instalar git hook
+$ywc-spec-writer --lang ja                # Escribir en japonés
+$ywc-spec-writer --lang zh                # Escribir en chino simplificado
+$ywc-spec-writer --lang es                # Escribir en español
 ```
 
 ## Entradas
