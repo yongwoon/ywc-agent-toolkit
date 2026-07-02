@@ -2,7 +2,7 @@
 
 This skill allows the user to choose the output language for task documents. If the user does not specify a language, ask for confirmation.
 
-**Supported languages:** `korean` | `japanese` | `english` (default: `english`)
+**Supported languages:** `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`)
 
 ## How the User Specifies a Language
 
@@ -11,6 +11,8 @@ This skill allows the user to choose the output language for task documents. If 
 | "한국어로 task 생성해줘" | korean |
 | "日本語でタスクを生成して" | japanese |
 | "Generate tasks in English" | english |
+| "用中文生成 task" | chinese |
+| "Genera las tareas en español" | spanish |
 | (not specified) | ask the user |
 
 ## Language-Specific Writing Rules
@@ -39,6 +41,38 @@ This skill allows the user to choose the output language for task documents. If 
 | Database connection 設定 | データベースコネクション設定 |
 | API Endpoint 実装 | API エンドポイント実装 |
 | Backend Service Logic | バックエンドサービスロジック |
+
+### Chinese (Simplified) (`zh`)
+
+**Register**: 书面语 (formal written register) — appropriate for technical documentation.
+
+**Technical terms**: Keep in English. Do not translate core terms into Chinese.
+
+| Correct | Incorrect |
+|---------|-----------|
+| Database 连接配置 | 数据库连接配置 |
+| API Endpoint 说明 | 接口端点说明 |
+| User Flow | 用户流程 |
+| Backend Service | 后端服务 |
+
+**User story format**:
+> "作为[用户类型]，我希望[操作]，以便[目的]。"
+
+### Spanish (`es`)
+
+**Register**: Plain business Spanish, formal *usted* register.
+
+**Technical terms**: Keep in English. Do not translate core terms into Spanish.
+
+| Correct | Incorrect |
+|---------|-----------|
+| Configuración de Database | Configuración de base de datos |
+| Descripción de API Endpoint | Descripción de punto final |
+| User Flow | Flujo de usuario |
+| Backend Service | Servicio de backend |
+
+**User story format**:
+> "Como [tipo de usuario], quiero [acción] para [beneficio]."
 
 ## Technical Terms to Keep in English (Shared Across Locales)
 

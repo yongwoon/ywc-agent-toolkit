@@ -22,17 +22,19 @@ Specification を渡して Task 生成を依頼します。
 
 ### 言語オプション
 
-この Skill は Korean、Japanese、English の出力に対応します。
+この Skill は Korean、Japanese、English、Chinese、Spanish の出力に対応します。
 
 | 言語 | 例 |
 |------|----|
 | Korean | `Output in Korean.` |
 | Japanese | `日本語でタスクを生成してください。` |
 | English | `Generate tasks in English.` |
+| Chinese | `用中文生成 task。` |
+| Spanish | `Genera las tareas en español.` |
 
 言語指定がない場合は確認します。
 
-Korean / Japanese で書く場合も、Technical terms は English のまま維持します。
+Korean / Japanese / Chinese / Spanish で書く場合も、Technical terms は English のまま維持します。
 
 ### Granularity Mode オプション
 
