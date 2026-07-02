@@ -50,6 +50,42 @@ Korean (`ko`) unless overridden by `--lang` or the project's CLAUDE.md.
 
 ---
 
+## Chinese (Simplified) (`zh`)
+
+**Register**: 书面语 (formal written register) — appropriate for technical documentation.
+
+**Technical terms**: Keep in English. Do not translate core terms into Chinese.
+
+| Correct | Incorrect |
+|---------|-----------|
+| Database 连接配置 | 数据库连接配置 |
+| API Endpoint 说明 | 接口端点说明 |
+| User Flow | 用户流程 |
+| Backend Service | 后端服务 |
+
+**User story format**:
+> "作为[用户类型]，我希望[操作]，以便[目的]。"
+
+---
+
+## Spanish (`es`)
+
+**Register**: Plain business Spanish, formal *usted* register.
+
+**Technical terms**: Keep in English. Do not translate core terms into Spanish.
+
+| Correct | Incorrect |
+|---------|-----------|
+| Configuración de Database | Configuración de base de datos |
+| Descripción de API Endpoint | Descripción de punto final |
+| User Flow | Flujo de usuario |
+| Backend Service | Servicio de backend |
+
+**User story format**:
+> "Como [tipo de usuario], quiero [acción] para [beneficio]."
+
+---
+
 ## Shared Rules (All Languages)
 
 - Zero program code in spec output

@@ -39,7 +39,7 @@
 - （可选）`--from-commit <ref>` — 提交引用（默认：`HEAD`）
 - （可选）`--from-pr <num>` — 单个 PR（需要 gh CLI）
 - （可选）`--from-prs <num> ...` — 多个 PR union diff（重复文件自动去重）
-- （可选）`--lang ko|ja|en` — 输出语言（默认：`ko`）
+- （可选）`--lang ko|ja|en|zh|es` — 输出语言（默认：`ko`）
 - （可选）`--setup-hook` — 安装 git pre-commit hook
 
 > 使用 `--from-pr` / `--from-prs` 时需要安装并认证 `gh` CLI。PR title / body / `headRefOid` 将作为 narrative context 和 audit trail 记录到规范中。
