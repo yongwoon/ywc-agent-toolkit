@@ -38,8 +38,12 @@ $ywc-sequential-executor 001010..003020 --aggregate-pr --group-name billing-roll
 ```
 
 ```bash
-$ywc-sequential-executor 001010..003020 --worktree --pr-lang ko
+$ywc-sequential-executor 001010..003020 --worktree --pr-lang zh
 ```
+
+## PR Language
+
+`--pr-lang en|ja|ko|zh|es` fixes the PR title/body language and is passed unchanged to downstream PR creation. If omitted, the executor infers English, Japanese, Korean, Simplified Chinese, or Spanish from AGENTS.md, CODEX.md, CLAUDE.md, recent PR title/body history, or dominant project language.
 
 ## Output
 

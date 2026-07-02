@@ -54,6 +54,18 @@
       "prompt": "Use $ywc-sequential-executor 000002-020-docs-update-readme --tasks-dir tasks/ --local-merge.",
       "expected_output": "Docs-only task에 가짜 failing test를 만들지 않는다. Step 3에서 `TDD Exception: docs-only, no executable behavior`를 기록하고 task.md의 Task Verify와 repository validation을 실행한다. Completion Report에 Changed Public Contracts N/A, Contract Tests N/A, Critical Internals N/A, TDD Exceptions의 reason을 포함한다.",
       "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Use $ywc-sequential-executor 000004-010..000004-020 --aggregate-pr --group-name profile-polish --pr-lang zh.",
+      "expected_output": "`--pr-lang zh`를 supported PR language로 인정하고 값을 변환하지 않는다. 각 per-task `ywc-finish-branch` delegation에는 `--pr-lang zh`를 그대로 포함하고, final aggregate `$ywc-create-pr` 호출에는 `--lang zh`를 전달한다. Auto-detection이나 fallback이 zh를 English/Japanese/Korean으로 바꾸지 않는다.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "Use $ywc-sequential-executor 000004-030 --tasks-dir tasks/ --pr-lang es.",
+      "expected_output": "`--pr-lang es`를 supported PR language로 인정하고 Step 5 `ywc-finish-branch` delegation에 `--pr-lang es`를 그대로 전달한다. Downstream PR creation은 같은 값을 `--lang es`로 사용해야 하며, executor는 Spanish를 다른 언어로 변환하지 않는다.",
+      "files": []
     }
   ]
 }

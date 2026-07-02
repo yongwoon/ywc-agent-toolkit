@@ -24,6 +24,18 @@
       "prompt": "Run agentic mode for a medium feature. The implementation review returns DONE_WITH_CONCERNS with one correctness concern and one observation.",
       "expected_output": "Treats the correctness concern as blocking the iteration handoff and routes it back into the implementation loop before marking the iteration complete. Carries only observation-level concerns into the final report. Does not proceed to the next iteration or claim DONE until the correctness concern is fixed and re-reviewed.",
       "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Use $ywc-agentic --goal \"Implement account export\" --pr-lang zh --executor sequential.",
+      "expected_output": "Accepts `--pr-lang zh` as a supported PR language and forwards it unchanged to the selected executor as `--pr-lang zh`. It does not pass task-generation `--lang` unless the user or project guidance explicitly requested task/spec language.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Use $ywc-agentic --goal \"Generate Spanish task docs for billing retries\" --pr-lang es.",
+      "expected_output": "Preserves `--pr-lang es` unchanged when invoking the executor. Because the user explicitly requested Spanish task docs, the Task Phase may pass `--lang es` to `ywc-task-generator`; absent that explicit task/spec language request, it would not pass `--lang`.",
+      "files": []
     }
   ]
 }

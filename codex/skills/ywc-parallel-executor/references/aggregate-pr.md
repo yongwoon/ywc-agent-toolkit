@@ -31,19 +31,19 @@ waves pass the Wave Audit:
    git checkout -b "$DRAFT_BRANCH"
    git push origin "$DRAFT_BRANCH"
    ```
-2. Reset the local base-branch to match the remote (the aggregate branch now holds all
+2. Create the draft PR from `$DRAFT_BRANCH` through `$ywc-create-pr`, preserving `--pr-lang` as `--lang <pr-lang>`:
+   ```bash
+   $ywc-create-pr \
+     --title "<title summarising all completed tasks>" \
+     --lang <pr-lang> \
+     --base-branch <base-branch> \
+     --skip-post-ci-check
+   ```
+3. Reset the local base-branch to match the remote (the aggregate branch now holds all
    the changes):
    ```bash
    git checkout <base-branch>
    git reset --hard origin/<base-branch>
-   ```
-3. Create the draft PR targeting base-branch:
-   ```bash
-   gh pr create --draft \
-     --base <base-branch> \
-     --head "$DRAFT_BRANCH" \
-     --title "<title summarising all completed tasks>" \
-     --body "<bullet list of completed tasks with their one-line descriptions>"
    ```
 4. Poll for bot reviews using [pr-bot-polling.md](../../references/pr-bot-polling.md), then
    invoke `$ywc-handle-pr-reviews` for this PR as a health sweep regardless of
@@ -106,6 +106,8 @@ $ywc-create-pr \
 ```bash
 gh pr ready <pr-number>
 ```
+
+`<pr-lang>` is the unchanged value from `--pr-lang en|ja|ko|zh|es`; `zh` and `es` are not translated, aliased, or converted before reaching `$ywc-create-pr`.
 
 ### B3. CI verification (up to 2 fix cycles)
 
@@ -217,11 +219,11 @@ Therefore the safe concurrency unit is **one clone (independent `.git`) per grou
 # One clone per group. Each runs its own --aggregate-pr concurrently and safely.
 git clone <repo-url> ../grp-payments && \
   ( cd ../grp-payments && $ywc-parallel-executor 000026-010..000026-030 \
-      --aggregate-pr --group-name payments --review --pr-lang ko ) &
+      --aggregate-pr --group-name payments --review --pr-lang zh ) &
 
 git clone <repo-url> ../grp-search && \
   ( cd ../grp-search && $ywc-parallel-executor 000027-010..000027-040 \
-      --aggregate-pr --group-name search --review --pr-lang ko ) &
+      --aggregate-pr --group-name search --review --pr-lang es ) &
 
 wait
 ```
@@ -240,8 +242,8 @@ Each group is still internally parallel (waves), and the groups simply do not ov
 time. This is the simplest correct option when extra clones are undesirable:
 
 ```bash
-$ywc-parallel-executor 000026-010..000026-030 --aggregate-pr --group-name payments --pr-lang ko
-$ywc-parallel-executor 000027-010..000027-040 --aggregate-pr --group-name search   --pr-lang ko
+$ywc-parallel-executor 000026-010..000026-030 --aggregate-pr --group-name payments --pr-lang zh
+$ywc-parallel-executor 000027-010..000027-040 --aggregate-pr --group-name search   --pr-lang es
 ```
 
 ---
@@ -262,4 +264,4 @@ sequence:
 
 Preview the plan first with `--dry-run` (task order, waves, mode) before committing to the
 run. Combine with `--review` to gate each task's worktree branch through `$ywc-impl-review`
-before it joins the aggregate, and `--pr-lang` to fix the PR language.
+before it joins the aggregate, and `--pr-lang en|ja|ko|zh|es` to fix the PR language.

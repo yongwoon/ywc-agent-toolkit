@@ -28,7 +28,9 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | `--resume`             | Skip the Plan Phase and resume from existing tasks/                            |
 | `--dry-run`            | Print the phase plan only; invoke no skills                                    |
 | `--terse`              | Minimal output (phase headers and final report only)                           |
-| `--pr-lang <lang>`     | PR title/description language (default: auto, inferred from CLAUDE.md)         |
+| `--pr-lang <en\|ja\|ko\|zh\|es>` | PR title/description language, forwarded unchanged to the executor (default: auto) |
+
+`ywc-agentic` only forwards `--lang en|ja|ko|zh|es` to `ywc-task-generator` when the user or project guidance explicitly requests a task/spec language. Otherwise it preserves the existing no-`--lang` behavior.
 
 ## Execution Flow
 
