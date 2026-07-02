@@ -15,19 +15,19 @@
 从 PR URL 生成测试表：
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 在同一仓库中，PR 编号即可：
 
 ```text
-/ywc-gen-testcase 250
+$ywc-gen-testcase 250
 ```
 
 ### 基于任务的生成
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+$ywc-gen-testcase 000001-010-db-create-users-table
 ```
 
 ### 任务范围生成
@@ -35,7 +35,7 @@
 当两个端点都像任务前缀时（例如 `000012-010..000019-010`），Skill 会先将输入解析为包含端点的任务范围，再尝试 Git 范围。它会按字典序排序 `<tasks-dir>` 中的任务目录 basename（编号前缀设计为按执行顺序排序），并读取从起始任务到结束任务的每个 `task.md` / `README.md` 作为场景来源。
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 > 如果任一端点缺失或不明确，Skill 会停止并询问。对于类似任务的端点，它不会回退到 `git rev-parse`。
@@ -47,10 +47,10 @@
 从任意提交范围生成。支持 SHA、标签、分支名和 `HEAD~N`。
 
 ```text
-/ywc-gen-testcase v1.2..v1.3
-/ywc-gen-testcase HEAD~5..HEAD
-/ywc-gen-testcase main..feature-x
-/ywc-gen-testcase --range abc1234..def5678
+$ywc-gen-testcase v1.2..v1.3
+$ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase main..feature-x
+$ywc-gen-testcase --range abc1234..def5678
 ```
 
 > 范围仅支持**双点 `A..B`** 形式。三点 `A...B` 被拒绝，因为其 merge-base 语义会静默地改变范围。
@@ -60,7 +60,7 @@
 ### 基于 Diff 的生成
 
 ```text
-/ywc-gen-testcase --from-diff
+$ywc-gen-testcase --from-diff
 ```
 
 ### 选项
@@ -68,7 +68,7 @@
 | 选项 | 描述 | 示例 |
 | --- | --- | --- |
 | `--output-dir <path>` | 覆盖输出目录（默认：`docs/test-case/`） | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | 测试表语言（`ja`、`ko`、`en`）。默认：自动检测 | `--lang ja` |
+| `--lang <code>` | 测试表语言（`ja`、`ko`、`en`、`zh`、`es`）。默认：自动检测 | `--lang zh` |
 | `--filename <name>` | 文件名覆盖（不含 `.md`） | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | 任务和任务范围输入使用的任务目录（默认：`tasks/`） | `--tasks-dir ./docs/tasks` |
 | `--format <fmt>` | 输出格式（`markdown` \| `html`）。默认：`markdown` | `--format html` |
@@ -191,12 +191,14 @@ YAML front matter 携带 `dev_tester` / `dev_status` / `qa_tester` / `qa_status`
 
 未指定 `--lang` 时的优先级：
 
-1. **CLAUDE.md / AGENTS.md** — 如 `PR言語: 日本語`、`Documentation: Korean` 等指令
+1. **CLAUDE.md / AGENTS.md** — 如 `PR言語: 日本語`、`Documentation: Korean`、`中文 task docs`、`PR Spanish로 작성` 等指令
 2. `docs/test-case/` 中**最近的测试表**
 3. **项目 `README.md`** 语言
 4. **回退** — 英语
 
-无论 `--lang` 如何，YAML front matter 键、节编号和模板脚手架始终使用英语。
+支持的 language code 为 `ja`、`ko`、`en`、`zh`、`es`。`chinese`、`Chinese (Simplified)`、`中文` 映射到 Simplified Chinese；`spanish`、`espanol`、`español` 映射到 Spanish。
+
+无论 `--lang` 如何，YAML front matter 键、节编号、filename、code snippet 和 template skeleton 始终使用英语。只有 Summary、Goal、Steps、Expected、Notes、Edge Cases 等 human prose 使用所选语言；Developer Verification、QA / Browser、PR、Task、Git Range、Expected、front matter、Status、Sign-off 等 Technical terms 在 `zh` 和 `es` prose 中也保持 English。
 
 ## 错误处理
 
@@ -226,55 +228,55 @@ YAML front matter 携带 `dev_tester` / `dev_status` / `qa_tester` / `qa_status`
 ### 从 PR URL 生成（默认：单文件 A+B）
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 物理拆分为两个文件
 
 ```text
-/ywc-gen-testcase 250 --split --lang ja
+$ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### 仅 QA 测试表（交给 QA 团队）
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang ja
+$ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### 即使是大型 PR 也强制单文件
 
 ```text
-/ywc-gen-testcase 250 --force-single
+$ywc-gen-testcase 250 --force-single
 ```
 
 ### 带回归节的任务测试表
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+$ywc-gen-testcase 000001-010-db-create-users-table --include-regression
 ```
 
 ### 任务范围（包含端点，从起始任务到结束任务）
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Git 范围（两个标签之间）
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang ja
+$ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### 合并前本地范围
 
 ```text
-/ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase HEAD~5..HEAD
 ```
 
 ### 预演
 
 ```text
-/ywc-gen-testcase 250 --dry-run
+$ywc-gen-testcase 250 --dry-run
 ```
 
 ## 触发条件

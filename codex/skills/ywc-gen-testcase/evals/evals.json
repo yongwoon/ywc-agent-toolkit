@@ -18,6 +18,18 @@
       "prompt": "Dry-run the testcase generation for 000004-010..000004-030.",
       "expected_output": "Prints preview output only, includes Status and detected language, and writes no files during dry-run.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Use $ywc-gen-testcase 000004-010 --lang zh.",
+      "expected_output": "Generates testsheet prose in Simplified Chinese while keeping YAML front matter keys, section numbers, filenames, code snippets, and template skeleton in English. Technical terms such as Developer Verification, QA / Browser, PR, Task, Expected, Status, and Sign-off remain English.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Use $ywc-gen-testcase --range HEAD~3..HEAD --lang es.",
+      "expected_output": "Generates testsheet prose in Spanish while keeping YAML front matter keys, section numbers, filenames, code snippets, and template skeleton in English. Technical terms such as Developer Verification, QA / Browser, PR, Task, Expected, Status, and Sign-off remain English.",
+      "files": []
     }
   ]
 }
