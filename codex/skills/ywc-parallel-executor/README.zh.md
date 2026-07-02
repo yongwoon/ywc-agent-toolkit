@@ -49,7 +49,7 @@ Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文�
 
 ## PR 语言
 
-`--pr-lang en|ja|ko|zh|es` 固定 `--draft` 和 `--aggregate-pr` 的 aggregate PR 标题/正文语言。Executor 会原样保留该值，并传给 `$ywc-create-pr --lang <pr-lang>`。
+`--pr-lang en|ja|ko|zh|es` 固定所有 PR mode 的标题/正文语言。Executor 会原样保留该值，并传给 `$ywc-create-pr --lang <pr-lang>`。
 
 ## 输出
 

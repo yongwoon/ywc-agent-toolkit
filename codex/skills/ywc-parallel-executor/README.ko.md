@@ -45,7 +45,7 @@ Wave planning은 shared public contract를 단순 file path가 아닌 Shared Sur
 
 ## PR Language
 
-`--pr-lang en|ja|ko|zh|es`는 `--draft`와 `--aggregate-pr`의 aggregate PR title/body 언어를 고정합니다. Executor는 값을 변경하지 않고 `$ywc-create-pr --lang <pr-lang>`으로 전달합니다.
+`--pr-lang en|ja|ko|zh|es`는 모든 PR mode의 title/body 언어를 고정합니다. Executor는 값을 변경하지 않고 `$ywc-create-pr --lang <pr-lang>`으로 전달합니다.
 
 ## Group 실행
 

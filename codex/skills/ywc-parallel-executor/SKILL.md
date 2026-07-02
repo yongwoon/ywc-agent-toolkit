@@ -53,7 +53,7 @@ When tempted to skip a step, check this table first:
 | `--per-task-pr` | flag | | Per task: create the PR, wait for CI, handle bot reviews, then **merge the PR** (`gh pr merge --delete-branch`), sync base, and mark complete — the full lifecycle, mirroring `ywc-sequential-executor`'s default `normal-pr` mode |
 | `--aggregate-pr` | flag | | Whole invocation → **one** branch + **one** PR. Tasks still run in parallel and accumulate onto a single aggregate branch, then the end-of-run PR is marked ready, CI-verified, bot-reviewed, and **merged**. The full-lifecycle twin of `--draft`. See [references/aggregate-pr.md](references/aggregate-pr.md) |
 | `--group-name` | `--group-name <name>` | `--group-name payments` | Names the aggregate branch (`aggregate/<name>`) and disambiguates concurrent groups. `--aggregate-pr` only; defaults to `aggregate/<base-branch>-<timestamp>` when omitted |
-| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for `--draft` and `--aggregate-pr`; pass unchanged to `$ywc-create-pr --lang <pr-lang>` |
+| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for every PR mode; pass unchanged to `$ywc-create-pr --lang <pr-lang>` |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no worktree audit lines, no mode explanations |
 
 `--review` can be combined with other flags.
@@ -279,12 +279,12 @@ If setup exits 1, mark that task `BLOCKED`, preserve its branch/worktree for rec
 
 For each task in the wave **sequentially** (topological order within the wave) — every task in every wave, **including the last task in the last wave**, must complete steps (a) and (b); no task is exempt because there is no downstream task waiting on it:
 
-**(a) Per-task PR lifecycle** — applies only to `--per-task-pr` (runs unconditionally for every task in every wave, **including the last task in the last wave**). Skip entirely for `--local-merge`, `--draft`, and `--aggregate-pr`. All commands are branch-explicit so they are safe to run from the main checkout while the feature branch lives in its worktree:
+**(a) Per-task PR lifecycle** — applies only to `--per-task-pr` (runs unconditionally for every task in every wave, **including the last task in the last wave**). Skip entirely for `--local-merge`, `--draft`, and `--aggregate-pr`. Run branch-local commands from the resolved task worktree when a delegated skill depends on the current branch:
 
-1. Push the feature branch and create the PR:
+1. Push the feature branch and create the PR in the selected language:
    ```bash
    git push origin feature/<task-name>
-   gh pr create --base <base-branch> --head feature/<task-name> --title "<task-name>" --body "..."
+   $ywc-create-pr <base-branch> --lang <pr-lang> --skip-post-ci-check --skip-ubiquitous-update
    ```
 2. **Wait for CI to pass** (up to 2 fix attempts per failing cycle). Poll the PR's checks; on failure, fix on the worktree branch, push, and re-poll:
    ```bash

@@ -45,7 +45,7 @@ In `--per-task-pr`, an earlier task in the same wave may advance the base branch
 
 ## PR Language
 
-`--pr-lang en|ja|ko|zh|es` fixes the aggregate PR title/body language for `--draft` and `--aggregate-pr`. The executor preserves the value unchanged and passes it to `$ywc-create-pr` as `--lang <pr-lang>`.
+`--pr-lang en|ja|ko|zh|es` fixes the PR title/body language for every PR mode. The executor preserves the value unchanged and passes it to `$ywc-create-pr` as `--lang <pr-lang>`.
 
 ## Group Execution
 

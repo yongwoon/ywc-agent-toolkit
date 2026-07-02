@@ -49,7 +49,7 @@ En `--per-task-pr`, una tarea anterior de la misma wave puede avanzar la rama ba
 
 ## Idioma del PR
 
-`--pr-lang en|ja|ko|zh|es` fija el idioma de titulo/cuerpo del PR agregado para `--draft` y `--aggregate-pr`. El executor conserva el valor sin cambios y lo pasa a `$ywc-create-pr --lang <pr-lang>`.
+`--pr-lang en|ja|ko|zh|es` fija el idioma de titulo/cuerpo para todos los modos de PR. El executor conserva el valor sin cambios y lo pasa a `$ywc-create-pr --lang <pr-lang>`.
 
 ## Salida
 
