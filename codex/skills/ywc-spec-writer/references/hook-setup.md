@@ -7,7 +7,7 @@ The hook itself is intentionally lightweight — no LLM calls inside git hooks.
 
 1. Pre-commit hook runs `detect-affected-sections.sh` on staged files
 2. If spec-relevant changes are detected, creates `.spec-update-pending` with the affected sections list
-3. After the commit completes, user runs `/ywc-spec-writer` which reads the marker and updates the spec
+3. After the commit completes, user runs `$ywc-spec-writer` which reads the marker and updates the spec
 
 This design keeps commits fast while ensuring spec updates are never forgotten.
 
@@ -25,7 +25,7 @@ Line 1: commit hash. Remaining lines: spec sections that need updating.
 
 ## Installation
 
-Run `/ywc-spec-writer --setup-hook` or manually:
+Run `$ywc-spec-writer --setup-hook` or manually:
 
 ```bash
 cp codex/skills/ywc-spec-writer/scripts/spec-update-hook.sh tools/scripts/
@@ -39,12 +39,12 @@ echo ".spec-update-pending" >> .gitignore
 1. Check if `docs/specification/` exists — if not, skip (no spec yet)
 2. Run staged files through `detect-affected-sections.sh`
 3. If sections detected: write `.spec-update-pending` with commit hash + section list
-4. Print: `[spec-writer] Spec update pending — run /ywc-spec-writer after this commit`
+4. Print: `[spec-writer] Spec update pending — run $ywc-spec-writer after this commit`
 5. Always exit 0 — never block the commit
 
 ## Processing a Pending Update
 
-When `/ywc-spec-writer` is invoked without flags and `.spec-update-pending` exists:
+When `$ywc-spec-writer` is invoked without flags and `.spec-update-pending` exists:
 
 1. Read the marker to get commit hash and affected sections
 2. Run `git diff <hash>^..<hash>` for the relevant changed files

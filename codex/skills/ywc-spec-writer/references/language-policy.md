@@ -50,6 +50,42 @@ Korean (`ko`) unless overridden by `--lang` or project guidance files (`AGENTS.m
 
 ---
 
+## Chinese (Simplified) (`zh`)
+
+**Body**: Simplified Chinese prose.
+
+**Technical terms**: Keep in English. Do not translate core technical terms into Chinese.
+
+| Correct | Incorrect |
+|---------|-----------|
+| Database 连接设置 | 数据库连接设置 |
+| API Endpoint 说明 | 接口端点说明 |
+| User Flow | 用户流程 |
+| Backend Service | 后端服务 |
+
+**User story format**:
+> "作为[用户类型]，我希望[执行动作]，以便[达成目标]。"
+
+---
+
+## Spanish (`es`)
+
+**Body**: Spanish prose.
+
+**Technical terms**: Keep in English. Do not translate core technical terms into Spanish.
+
+| Correct | Incorrect |
+|---------|-----------|
+| Configuración de Database | Configuración de base de datos |
+| Descripción de API Endpoint | Descripción de punto final de API |
+| User Flow | Flujo de usuario |
+| Backend Service | Servicio de backend |
+
+**User story format**:
+> "Como [tipo de usuario], quiero [acción] para poder [beneficio]."
+
+---
+
 ## Shared Rules (All Languages)
 
 - Zero program code in spec output
