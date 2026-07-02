@@ -13,6 +13,7 @@ Feature Branch を Base Branch に deliver する Codex Skill です。Mark-PR-r
 - **Mark Task Complete の Definition of Done を強制**: `<tasks-dir>/completed/` への移動を verification 含めて実施
 - **Bot Review Polling 互換**: `--bot-action sequential|parallel` で caller の CI 戦略に合わせて挙動を切替
 - **Worktree-path mode**: `--worktree-path <path>` で sequential run-level worktree 内の delivery を `git -C <path>` 기준にし、作成/削除は caller が保持
+- **PR language pass-through**: `--pr-lang en|ja|ko|zh|es` で `[<TASK_NUMBER>] <translated-slug>` title を作り、同じ値を `ywc-create-pr --lang <pr-lang>` に渡し、machine identifier はそのまま保持
 
 ## 使い方
 
@@ -36,6 +37,15 @@ Feature Branch を Base Branch に deliver する Codex Skill です。Mark-PR-r
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
+
+### PR language
+
+```
+/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+  --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
+```
+
+対応値: `en`, `ja`, `ko`, `zh`, `es`.
 
 ### Worktree path mode
 

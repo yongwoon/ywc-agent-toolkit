@@ -17,6 +17,7 @@ Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequ
 - **Definición de Hecho aplicada**: mueve el directorio de tarea a `<tasks-dir>/completed/` con una puerta de verificación
 - **Compatible con polling de revisión de bot**: `--bot-action sequential|parallel` coincide con la estrategia CI del llamador
 - **Modo worktree-path**: `--worktree-path <path>` ejecuta la entrega con `git -C <path>` para worktrees secuenciales de ejecución, mientras la creación/eliminación queda en el llamador
+- **Pass-through de idioma de PR**: `--pr-lang en|ja|ko|zh|es` crea títulos `[<TASK_NUMBER>] <translated-slug>` y pasa el mismo valor a `ywc-create-pr --lang <pr-lang>`, manteniendo sin cambios los machine identifiers
 
 ## Uso
 
@@ -40,6 +41,15 @@ Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequ
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
+
+### Idioma del PR
+
+```
+/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+  --task-name 000001-010-db-create-users --base-branch develop --pr-lang es
+```
+
+Valores admitidos: `en`, `ja`, `ko`, `zh`, `es`.
 
 ### Modo worktree path
 

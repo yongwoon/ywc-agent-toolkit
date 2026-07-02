@@ -13,6 +13,7 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 - **CI Check (Pre-push Validation)**: Push 전에 lint, format, typecheck, test 등을 로컬에서 실행하여 CI 실패를 사전에 방지
 - **PR Template 지원**: `.github/pull_request_template.md`가 있으면 자동 적용
 - **Draft PR 생성**: 모든 PR은 Draft 상태로 생성
+- **PR 언어 지원**: `--lang` / `--language`로 PR title/body prose를 `en`, `ja`, `ko`, `zh`, `es` 중 하나로 작성하며, task ID, branch name, file path, command, label, 명시적 `--title` 값은 그대로 유지
 
 ## 사용 방법
 
@@ -33,6 +34,8 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 ```
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --lang zh
+/create-pr --language spanish
 ```
 
 ### 자연어 호출

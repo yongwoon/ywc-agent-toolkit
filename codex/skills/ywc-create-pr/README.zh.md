@@ -17,6 +17,7 @@
 - 支持推送前的 CI 检查，如 lint、format、typecheck 和 test
 - 在可用时应用 `.github/pull_request_template.md`
 - 将每个 PR 创建为草稿
+- 通过 `--lang` / `--language` 支持用 `en`、`ja`、`ko`、`zh` 或 `es` 编写 PR title/body prose，同时保持 task ID、branch name、file path、command、label 和显式 `--title` 值不变
 
 ## 使用方法
 
@@ -25,6 +26,8 @@
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --lang zh
+/create-pr --language spanish
 ```
 
 自然语言触发词在 [SKILL.md](./SKILL.md) 中定义。
@@ -37,5 +40,7 @@
 ## 本地化版本
 
 - [韩语（主要）](./README.md)
+- [英语](./README.en.md)
 - [日语](./README.ja.md)
 - [韩语](./README.ko.md)
+- [西班牙语](./README.es.md)

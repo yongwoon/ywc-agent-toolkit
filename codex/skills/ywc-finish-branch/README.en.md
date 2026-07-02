@@ -13,6 +13,7 @@ A single-responsibility extraction of the delivery logic that `ywc-sequential-ex
 - **Definition of Done enforced**: moves the task directory to `<tasks-dir>/completed/` with a verification gate
 - **Bot review polling compatible**: `--bot-action sequential|parallel` matches the caller's CI strategy
 - **Worktree-path mode**: `--worktree-path <path>` scopes delivery commands with `git -C <path>` for sequential run-level worktrees, while creation/removal stays with the caller
+- **PR language pass-through**: `--pr-lang en|ja|ko|zh|es` builds `[<TASK_NUMBER>] <translated-slug>` titles and passes the same value to `ywc-create-pr` as `--lang <pr-lang>`, keeping machine identifiers unchanged
 
 ## Usage
 
@@ -36,6 +37,15 @@ A single-responsibility extraction of the delivery logic that `ywc-sequential-ex
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
+
+### PR language
+
+```
+/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+  --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
+```
+
+Supported values: `en`, `ja`, `ko`, `zh`, `es`.
 
 ### Worktree path mode
 

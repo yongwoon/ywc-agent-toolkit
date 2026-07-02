@@ -13,6 +13,7 @@ After work on a feature branch is complete, this Skill automates the flow from c
 - Supports pre-push CI checks such as lint, format, typecheck, and test
 - Applies `.github/pull_request_template.md` when available
 - Creates every PR as a draft
+- Supports PR title/body prose in `en`, `ja`, `ko`, `zh`, or `es` via `--lang` / `--language`, while keeping task IDs, branch names, file paths, commands, labels, and explicit `--title` values unchanged
 
 ## Usage
 
@@ -21,6 +22,8 @@ After work on a feature branch is complete, this Skill automates the flow from c
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --lang zh
+/create-pr --language spanish
 ```
 
 Natural-language triggers are defined in [SKILL.md](./SKILL.md).
@@ -35,3 +38,5 @@ Natural-language triggers are defined in [SKILL.md](./SKILL.md).
 - [Korean (Primary)](./README.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Chinese (Simplified)](./README.zh.md)
+- [Spanish](./README.es.md)

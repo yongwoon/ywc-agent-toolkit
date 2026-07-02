@@ -13,6 +13,7 @@ Feature Branch를 Base Branch에 전달(deliver)하는 Codex Skill입니다. Mar
 - **Mark Task Complete의 Definition of Done 강제**: `<tasks-dir>/completed/`로의 이동을 verification까지 수행
 - **Bot Review Polling 호환**: `--bot-action sequential|parallel`로 caller 환경에 맞는 polling 동작 선택
 - **Worktree-path mode**: `--worktree-path <path>` 로 sequential run-level worktree 안에서 `git -C <path>` 기준 delivery를 수행하고, 생성/삭제는 caller가 유지
+- **PR 언어 pass-through**: `--pr-lang en|ja|ko|zh|es`로 `[<TASK_NUMBER>] <translated-slug>` title을 만들고 같은 값을 `ywc-create-pr --lang <pr-lang>`으로 전달하며 machine identifier는 그대로 유지
 
 ## 사용 방법
 
@@ -36,6 +37,15 @@ Feature Branch를 Base Branch에 전달(deliver)하는 Codex Skill입니다. Mar
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
+
+### PR 언어 지정
+
+```
+/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+  --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
+```
+
+지원 값: `en`, `ja`, `ko`, `zh`, `es`.
 
 ### Worktree path mode
 

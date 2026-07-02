@@ -17,6 +17,7 @@
 - **强制执行完成定义**：将任务目录移动到 `<tasks-dir>/completed/` 并设有验证关卡
 - **兼容 Bot 审查轮询**：`--bot-action sequential|parallel` 与调用者的 CI 策略匹配
 - **Worktree-path 模式**：`--worktree-path <path>` 使用 `git -C <path>` 在顺序运行级 worktree 中执行交付，创建/删除仍由调用方负责
+- **PR 语言透传**：`--pr-lang en|ja|ko|zh|es` 构造 `[<TASK_NUMBER>] <translated-slug>` title，并把相同值作为 `ywc-create-pr --lang <pr-lang>` 传递，同时保持 machine identifier 不变
 
 ## 使用方法
 
@@ -40,6 +41,15 @@
 /ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
+
+### PR 语言
+
+```
+/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+  --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
+```
+
+支持值：`en`、`ja`、`ko`、`zh`、`es`。
 
 ### Worktree path 模式
 

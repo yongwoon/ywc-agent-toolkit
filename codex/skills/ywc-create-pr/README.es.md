@@ -17,6 +17,7 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 - Admite verificaciones de CI previas al push como lint, format, typecheck y test
 - Aplica `.github/pull_request_template.md` cuando está disponible
 - Crea cada PR como borrador
+- Admite prose de title/body del PR en `en`, `ja`, `ko`, `zh` o `es` mediante `--lang` / `--language`, manteniendo sin cambios task IDs, branch names, file paths, commands, labels y valores explícitos de `--title`
 
 ## Uso
 
@@ -25,6 +26,8 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --lang zh
+/create-pr --language spanish
 ```
 
 Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
@@ -37,5 +40,7 @@ Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
 ## Versiones localizadas
 
 - [Coreano (Principal)](./README.md)
+- [Inglés](./README.en.md)
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
+- [Chino simplificado](./README.zh.md)
