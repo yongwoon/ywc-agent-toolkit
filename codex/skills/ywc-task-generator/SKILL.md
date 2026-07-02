@@ -32,16 +32,16 @@ When tempted to bend a rule, check this table first:
 
 | Argument | Default | Description |
 |---|---|---|
-| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english`. |
+| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english` \| `chinese` \| `spanish`; aliases: `ko` \| `ja` \| `en` \| `zh` \| `es`. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 
 ## Language Option
 
 When `--lang` is not specified, this skill first attempts to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails does it ask the user.
 
-This skill supports `korean` | `japanese` | `english` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from the project instruction files fails.
+This skill supports `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`) for task document output. It also accepts code aliases `ko` | `ja` | `en` | `zh` | `es`; treat `zh` / `chinese` as Simplified Chinese unless the user explicitly asks for another Chinese locale. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from the project instruction files fails.
 
-For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean or Japanese output. English output does not require reading this reference.
+For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
 
 ---
 
@@ -124,7 +124,7 @@ Review the specification for completeness and verify that sufficient information
 
 If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails or is ambiguous, ask:
 
-> "Which language should the task documents be written in? (korean / japanese / english)"
+> "Which language should the task documents be written in? (korean, japanese, english, chinese, or spanish)"
 
 ### Step 5: Confirm Granularity Mode
 
