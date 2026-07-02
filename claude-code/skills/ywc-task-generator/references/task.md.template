@@ -25,6 +25,10 @@ Verify these before starting:
 - [ ] [Run task-specific verification command 1]
 - [ ] [Run task-specific verification command 2]
 
+<!-- NOTE: For a duplicate-sensitive write flow (stock/balance/order/payment/provisioning/quota writes),
+     also include concurrent-request, partial-failure rollback, and idempotency-retry verification,
+     naming the spec-required mechanism (atomic conditional update / row lock / optimistic lock / idempotency key). -->
+
 ## Verification
 - [ ] lint passes (`[PROJECT_LINT_CMD]`)
 - [ ] typecheck passes (`[PROJECT_TYPECHECK_CMD]`)
