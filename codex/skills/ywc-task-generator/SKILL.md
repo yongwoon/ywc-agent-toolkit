@@ -324,6 +324,8 @@ Each task.md must include the following:
 - **Task Verify**: Task-specific verification command checklist
 - **Verification**: Confirm lint, typecheck, test, and build pass (use the project's actual commands)
 
+**Duplicate-sensitive write Task Verify rule**: When a task touches payment, order creation, provisioning, credit / balance / stock / quota mutation, or another duplicate-sensitive write flow, its `task.md` must include concrete Task Verify commands or test scenarios for concurrent request behavior, transaction rollback or equivalent consistency rollback on partial failure, and idempotency retry / double-click behavior. The task must name the selected mechanism where applicable: atomic conditional update, row lock, optimistic lock, idempotency key, unique constraint, or persisted request/result record. Expected results must be observable: lock/version conflict response, exhausted stock/balance/quota response, rollback state after a forced mid-flow failure, and duplicate retry returning the prior result without repeating the side effect. If the project has no practical local concurrency harness, the task may record a named exception only with replacement verification such as a code-level lock/transaction proof or an integration-test plan.
+
 #### test.md (optional)
 
 Write structured scenario-based tests (Steps + Expected Result).
@@ -378,6 +380,7 @@ After generating all tasks, verify the following:
 - [ ] Prerequisites section included
 - [ ] Allowed Edit Scope and Stop Conditions included
 - [ ] Verification commands match the project's actual commands (based on context collected in Step 2)
+- [ ] Duplicate-sensitive write tasks include concrete concurrent request, rollback, and idempotency retry verification or a named no-harness exception with replacement evidence
 
 **Consistency:**
 - [ ] Dependency Graph Summary matches individual README.md files
