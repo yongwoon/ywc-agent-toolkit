@@ -52,7 +52,7 @@ PR URL から生成:
 | Option | 説明 | 例 |
 | --- | --- | --- |
 | `--output-dir <path>` | 出力 directory を上書き (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet の言語 (`ja`, `ko`, `en`)。default: auto-detect | `--lang ja` |
+| `--lang <code>` | Testsheet の言語 (`ja`, `ko`, `en`, `zh`, `es`)。default: auto-detect | `--lang ja` |
 | `--filename <name>` | Filename override (`.md` 不要) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Tasks directory パス (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--include-regression` | Regression section (B.3) を追加 | |
