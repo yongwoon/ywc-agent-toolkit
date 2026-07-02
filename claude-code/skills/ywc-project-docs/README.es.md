@@ -4,12 +4,13 @@
 
 # project-docs
 
-Una Skill de Claude Code para generar documentación en coreano o japonés que sigue
-la estructura de directorios y las convenciones del directorio `docs/` del proyecto.
+Una Skill de Claude Code para generar documentación en coreano, japonés, inglés,
+chino o español que sigue la estructura de directorios y las convenciones del
+directorio `docs/` del proyecto.
 
-El idioma objetivo nunca se detecta automáticamente. Si se proporciona `--lang kr|ja` se
-usa directamente; de lo contrario, la Skill pregunta qué idioma (coreano / japonés) antes
-de escribir nada.
+El idioma objetivo nunca se detecta automáticamente. Si se proporciona
+`--lang kr|ja|en|zh|es`, se usa directamente; de lo contrario, la Skill pregunta
+qué idioma compatible usar antes de escribir nada.
 
 ## Uso
 
@@ -23,6 +24,11 @@ La Skill se activa con frases en lenguaje natural como:
 "document this"
 "write a doc"
 "add to docs/"
+"English docs"
+"Chinese docs"
+"Spanish docs"
+"中文文档"                (Chino: documentación en chino)
+"documentación del proyecto"
 "ドキュメント作成して" (Japonés: crea un documento)
 "ドキュメントを書いて" (Japonés: escribe un documento)
 ```
@@ -33,16 +39,19 @@ La Skill se activa con frases en lenguaje natural como:
 /ywc-project-docs              # muestra el prompt de selección de idioma
 /ywc-project-docs --lang kr    # escribe en coreano directamente
 /ywc-project-docs --lang ja    # escribe en japonés directamente
+/ywc-project-docs --lang en    # escribe en inglés directamente
+/ywc-project-docs --lang zh    # escribe en chino simplificado directamente
+/ywc-project-docs --lang es    # escribe en español directamente
 ```
 
 ## Qué Hace Esta Skill
 
-1. **Selección de idioma** — usa `--lang` si está presente, de lo contrario pregunta coreano / japonés (nunca auto-detecta)
+1. **Selección de idioma** — usa `--lang` si está presente, de lo contrario pregunta coreano / japonés / inglés / chino / español (nunca auto-detecta)
 2. **Enrutamiento de directorios** — coloca los documentos en el subdirectorio correcto de `docs/` según la intención
 3. **Convenciones de nomenclatura** — aplica kebab-case en minúsculas con sufijos mínimos
 4. **Estructura del documento** — genera bloques de documentos relacionados, tabla de contenidos y secciones numeradas
 5. **Referencias cruzadas** — agrega enlaces bidireccionales entre documentos relacionados
-6. **Política de idioma** — el cuerpo del texto en el idioma seleccionado; los términos técnicos se mantienen en inglés (sin transliteración)
+6. **Política de idioma** — el cuerpo del texto en el idioma seleccionado; los términos técnicos se mantienen en inglés (sin transliteración ni traducción excesiva)
 7. **Orden de lectura** — preserva `product → architecture → specification → plans` para el consumo de LLM
 8. **Antipatrones** — previene la mezcla de límites de carpetas, el almacenamiento duplicado y la confusión entre borradores y documentos oficiales
 
@@ -78,6 +87,15 @@ La Skill se activa con frases en lenguaje natural como:
 
 "認証システムのアーキテクチャドキュメントを書いて"
 → docs/architecture/authentication.md (Japonés)
+
+"Write English documentation for the billing workflow"
+→ docs/specification/billing.md (Inglés)
+
+"创建中文项目文档"
+→ docs/product/product-overview.md (Chino)
+
+"Escribe documentación del proyecto para OAuth"
+→ docs/manuals/oauth-setup.md (Español)
 ```
 
 ## Versiones Localizadas
@@ -85,3 +103,5 @@ La Skill se activa con frases en lenguaje natural como:
 - [Coreano (Principal)](./README.md)
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
+- [Inglés](./README.en.md)
+- [Chino](./README.zh.md)

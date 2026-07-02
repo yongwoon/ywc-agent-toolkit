@@ -1,6 +1,6 @@
 # Project docs/ Structure — Shared Reference
 
-Canonical directory layout, routing rules, naming, anti-patterns, and per-folder conventions for `docs/`. Used by `ywc-project-docs` (single skill). The skill inherits this structure verbatim; only the in-document **Language Policy** (Korean / Japanese) is resolved per invocation.
+Canonical directory layout, routing rules, naming, anti-patterns, and per-folder conventions for `docs/`. Used by `ywc-project-docs` (single skill). The skill inherits this structure verbatim; only the in-document **Language Policy** (Korean / Japanese / English / Chinese / Spanish) is resolved per invocation.
 
 ## Recommended Directory Structure
 

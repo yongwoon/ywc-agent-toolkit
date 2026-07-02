@@ -1,11 +1,12 @@
 # project-docs
 
-A Claude Code Skill for generating Korean or Japanese documentation that follows
-the project's `docs/` directory structure and conventions.
+A Claude Code Skill for generating Korean, Japanese, English, Chinese, or Spanish
+documentation that follows the project's `docs/` directory structure and
+conventions.
 
-The target language is never auto-detected. If `--lang kr|ja` is provided it is
-used directly; otherwise the skill asks which language (Korean / Japanese) before
-writing anything.
+The target language is never auto-detected. If `--lang kr|ja|en|zh|es` is
+provided it is used directly; otherwise the skill asks which supported language
+to use before writing anything.
 
 ## Usage
 
@@ -19,6 +20,11 @@ The skill activates on natural-language phrases such as:
 "document this"
 "write a doc"
 "add to docs/"
+"English docs"
+"Chinese docs"
+"Spanish docs"
+"中文文档"                (Chinese: Chinese documentation)
+"documentación del proyecto" (Spanish: project documentation)
 "ドキュメント作成して" (Japanese: create a document)
 "ドキュメントを書いて" (Japanese: write a document)
 ```
@@ -29,16 +35,19 @@ The skill activates on natural-language phrases such as:
 /ywc-project-docs              # shows the language-selection prompt
 /ywc-project-docs --lang kr    # write in Korean directly
 /ywc-project-docs --lang ja    # write in Japanese directly
+/ywc-project-docs --lang en    # write in English directly
+/ywc-project-docs --lang zh    # write in Simplified Chinese directly
+/ywc-project-docs --lang es    # write in Spanish directly
 ```
 
 ## What This Skill Does
 
-1. **Language selection** — uses `--lang` if present, otherwise asks Korean / Japanese (never auto-detects)
+1. **Language selection** — uses `--lang` if present, otherwise asks for Korean / Japanese / English / Chinese / Spanish (never auto-detects)
 2. **Directory routing** — places documents in the correct `docs/` subdirectory based on intent
 3. **Naming conventions** — applies lowercase kebab-case, minimal suffixes
 4. **Document structure** — generates related-doc blocks, table of contents, and numbered sections
 5. **Cross-references** — adds bidirectional links between related documents
-6. **Language policy** — body text in the selected language; technical terms kept in English (no transliteration)
+6. **Language policy** — body text in the selected language; technical terms kept in English (no transliteration or over-translation)
 7. **Reading order** — preserves `product → architecture → specification → plans` for LLM consumption
 8. **Anti-patterns** — prevents folder boundary mixing, duplicate storage, and draft/official confusion
 
@@ -74,6 +83,15 @@ The skill activates on natural-language phrases such as:
 
 "認証システムのアーキテクチャドキュメントを書いて"
 → docs/architecture/authentication.md (Japanese)
+
+"Write English documentation for the billing workflow"
+→ docs/specification/billing.md (English)
+
+"创建中文项目文档"
+→ docs/product/product-overview.md (Chinese)
+
+"Escribe documentación del proyecto para OAuth"
+→ docs/manuals/oauth-setup.md (Spanish)
 ```
 
 ## Localized Versions
@@ -81,3 +99,5 @@ The skill activates on natural-language phrases such as:
 - [Korean (Primary)](./README.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Chinese](./README.zh.md)
+- [Spanish](./README.es.md)
