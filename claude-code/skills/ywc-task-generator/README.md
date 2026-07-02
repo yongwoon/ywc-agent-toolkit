@@ -22,20 +22,24 @@ You can also point it at an existing spec or task set:
 
 ### Language Options
 
-The Skill supports 3 output languages:
+The Skill supports 5 output languages (Korean, Japanese, English, Chinese, Spanish):
 
 | Language | Example |
 |----------|---------|
 | Korean | `Output in Korean.` |
 | Japanese | `日本語でタスクを生成してください。` |
 | English | `Generate tasks in English.` |
+| Chinese | `用中文生成 task。` |
+| Spanish | `Genera las tareas en español.` |
 
 If the user does not specify a language, the Skill asks.
 
-For Korean and Japanese outputs, technical terms remain in English:
+For Korean, Japanese, Chinese, and Spanish outputs, technical terms remain in English:
 
 - Korean: `Database 연결 설정`
 - Japanese: `Database connection 設定`
+- Chinese: `Database 连接配置`
+- Spanish: `Configuración de Database`
 
 Technical terms kept in English:
 > API, Backend, Frontend, Database, Cache, Service, Repository, Application, Component, Module, Framework, Library, Request, Response, Schema, Model, Controller, Test, Debug, Deploy, Build, Configuration, Docker, Container, Server, Client, Router, Middleware
@@ -194,3 +198,5 @@ pre-commit install        # 한 번만 실행 — repo 별 git hook 설치
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Chinese](./README.zh.md)
+- [Spanish](./README.es.md)

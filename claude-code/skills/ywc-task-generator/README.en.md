@@ -22,17 +22,19 @@ You can also ask it to refine an existing task set:
 
 ### Language Options
 
-The Skill supports Korean, Japanese, and English output.
+The Skill supports Korean, Japanese, English, Chinese, and Spanish output.
 
 | Language | Example |
 |----------|---------|
 | Korean | `Output in Korean.` |
 | Japanese | `日本語でタスクを生成してください。` |
 | English | `Generate tasks in English.` |
+| Chinese | `用中文生成 task。` |
+| Spanish | `Genera las tareas en español.` |
 
 If the user does not specify a language, the Skill asks.
 
-For Korean and Japanese outputs, technical terms stay in English.
+For Korean, Japanese, Chinese, and Spanish outputs, technical terms stay in English.
 
 ### Granularity Mode Options
 

@@ -1,7 +1,7 @@
 ---
 name: ywc-task-generator
 description: >-
-  (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
+  (ywc) Use when converting a specification into implementation tasks. Task documents can be written in Korean, Japanese, English, Chinese, or Spanish. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", "从规范生成任务", "中文任务", "generar tareas", "tareas en español", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
 ---
 
 # Task Generator
@@ -33,16 +33,16 @@ When tempted to bend a rule, check this table first:
 
 | Argument | Default | Description |
 |---|---|---|
-| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english`. |
+| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english` \| `chinese` \| `spanish`. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 
 ## Language Option
 
 When `--lang` is not specified, this skill first attempts to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails does it ask the user.
 
-This skill supports `korean` | `japanese` | `english` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
+This skill supports `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
 
-For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean or Japanese output. English output does not require reading this reference.
+For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
 
 ---
 
@@ -126,7 +126,7 @@ Review the specification for completeness and verify that sufficient information
 
 If the user has not specified an output language, ask:
 
-> "Which language should the task documents be written in? (korean / japanese / english)"
+> "Which language should the task documents be written in? (korean / japanese / english / chinese / spanish)"
 
 ### Step 5: Confirm Granularity Mode
 

@@ -26,17 +26,19 @@ También puede solicitar que refine un conjunto de tareas existente:
 
 ### Opciones de Idioma
 
-La Habilidad admite salida en coreano, japonés e inglés.
+La Habilidad admite salida en coreano, japonés, inglés, chino y español.
 
 | Idioma | Ejemplo |
 |--------|---------|
 | Coreano | `Output in Korean.` |
 | Japonés | `日本語でタスクを生成してください。` |
 | Inglés | `Generate tasks in English.` |
+| Chino | `用中文生成 task。` |
+| Español | `Genera las tareas en español.` |
 
 Si el usuario no especifica un idioma, la Habilidad lo pregunta.
 
-Para salidas en coreano y japonés, los términos técnicos permanecen en inglés.
+Para salidas en coreano, japonés, chino y español, los términos técnicos permanecen en inglés.
 
 ### Opciones de Modo de Granularidad
 
