@@ -60,6 +60,18 @@
       "prompt": "다음 spec 을 한국어로 task 분해해줘. Granularity mode 는 human. 각 task 의 성공 기준이 검증 가능해야 해.\n\n## 장바구니 수량 제한\n- 한 상품당 최대 99개까지만 담을 수 있도록 제한\n- 초과 시 400 에러 반환\n- 기술스택: Hono + Kysely + PostgreSQL",
       "expected_output": "생성된 각 task.md 는 (1) `When <trigger>, system does <behavior>, observable as <concrete check>` 형태의 Acceptance Criteria 를 Implementation Steps 와 별도로 포함하고, (2) Task Verify 가 맨 build/lint 같은 project-wide gate 가 아니라 이 task 의 동작을 단언하는 명령(예: 99개 초과 시 400 을 검증하는 test) 을 ≥1개 포함하며, (3) spec 모호성을 분해 중 해소했다면 README Notes 의 Assumptions 에 선택한 해석을 기록한다. Goal-driven 검증: 동작이 없으면 Task Verify 가 실패해야 한다.",
       "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "请用中文把下面的 spec 拆分成 task。Granularity mode 使用 llm。后续 task 会在 git worktree 和独立 Claude Code 或 Codex session 中并行执行。\n\n## Billing Dashboard\n- Subscription status 页面\n- Stripe webhook 处理\n- Invoice download API\n- 技术栈: Next.js + Stripe + PostgreSQL",
+      "expected_output": "中文编写的 tasks/ directory 结构，Technical terms 保持 English。`zh` / `chinese` 被解析为 Simplified Chinese。DB migration、Library introduction、API、UI task 按 dependency 顺序拆分；README.md 包含 Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify；task.md 包含 Allowed Edit Scope, Stop Conditions, Task Verify；dependency-graph.md 包含 Parallel Execution Notes。命令、file paths、YAML/JSON keys、task IDs 保持 English 或机器可读格式。",
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "Genera tasks en español para este spec. Usa --lang es y Granularity mode human. Los tasks podrán ejecutarse después en worktrees aislados.\n\n## Reporting Export\n- CSV export para informes mensuales\n- Job asíncrono para exports grandes\n- Notificación por Email cuando el export termina\n- Stack: Rails + Sidekiq + PostgreSQL",
+      "expected_output": "Estructura tasks/ escrita en español, con Technical terms en English. `es`, `spanish`, `espanol` y `español` se aceptan como Spanish. Las tasks se organizan por Phase y dependency order, separando DB migration y Library introduction si aplican. Cada README.md incluye Ownership, Shared Surfaces, Conflicts With, Parallelizable After y Task Verify; cada task.md incluye Allowed Edit Scope, Stop Conditions y Task Verify; dependency-graph.md incluye Parallel Execution Notes. Command names, file paths, YAML/JSON keys, task IDs y code blocks permanecen en English o formato machine-readable.",
+      "files": []
     }
   ]
 }

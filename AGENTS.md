@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository distributes `ywc-*` skills for Claude Code and Codex. Claude Code skills live in `claude-code/skills/<skill-name>/`; Codex skills live in `codex/skills/<skill-name>/`. Each skill requires `SKILL.md` plus localized README files: `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md`. Codex skills also require `agents/openai.yaml`. Claude Code custom agents live in `claude-code/agents/<agent-name>.md` (one Markdown file per agent). Codex custom agents live in `codex/agents/<agent-name>.toml` (one TOML per agent). Shared Codex material belongs in `codex/skills/references/` or `codex/skills/scripts/`. Root files such as `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `VERSION`, `plugin.json`, and `translations.json` describe distribution metadata and release state.
+This repository distributes `ywc-*` skills for Claude Code and Codex. Claude Code skills live in `claude-code/skills/<skill-name>/`; Codex skills live in `codex/skills/<skill-name>/`. Each skill requires `SKILL.md` plus Tier 1 localized README files: `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md`. Generated Tier 2 READMEs, `README.zh.md` and `README.es.md`, are maintained for skills that ship Chinese and Spanish documentation. Codex skills also require `agents/openai.yaml`. Claude Code custom agents live in `claude-code/agents/<agent-name>.md` (one Markdown file per agent). Codex custom agents live in `codex/agents/<agent-name>.toml` (one TOML per agent). Shared Codex material belongs in `codex/skills/references/` or `codex/skills/scripts/`. Root files such as `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `VERSION`, `plugin.json`, and `translations.json` describe distribution metadata and release state.
 
 ## Build, Test, and Development Commands
 
@@ -21,7 +21,7 @@ Use portable Bash for scripts with `set -euo pipefail`. Keep skill names and dir
 
 ## Testing Guidelines
 
-There is no package test runner. Treat `bash scripts/validate.sh` as the required pre-PR test. For install changes, also run targeted install/list commands. New or changed skills should be checked for required README locale files, matching `name:` frontmatter, and Codex `agents/openai.yaml` metadata.
+There is no package test runner. Treat `bash scripts/validate.sh` as the required pre-PR test. For install changes, also run targeted install/list commands. New or changed skills should be checked for required Tier 1 README locale files, maintained Tier 2 `README.zh.md` / `README.es.md` files when present, matching `name:` frontmatter, and Codex `agents/openai.yaml` metadata.
 
 ## Commit & Pull Request Guidelines
 
