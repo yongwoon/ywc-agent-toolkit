@@ -10,7 +10,7 @@ PR Review 後の反復作業を自動化します。明確な修正依頼はそ�
 
 - Comment を修正依頼、論点あり、質問、処理済みに分類
 - 同じファイルの Comment をまとめて処理
-- Reviewer の言語に合わせて返信文を作成
+- Reviewer の元 Comment の言語に合わせて、韓国語、英語、日本語、中国語、スペイン語などで返信し、コード、コマンド出力、ファイルパス、API 名、引用文は翻訳しません
 - 既に処理済みまたは返信済みの Comment は Skip
 
 ## 使用方法
@@ -32,3 +32,5 @@ PR Review 後の反復作業を自動化します。明確な修正依頼はそ�
 - [Korean (Primary)](./README.md)
 - [English](./README.en.md)
 - [Korean](./README.ko.md)
+- [Chinese (Simplified)](./README.zh.md)
+- [Spanish](./README.es.md)

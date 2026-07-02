@@ -11,28 +11,30 @@
 Specification 을 제공하고 Task 생성을 요청합니다.
 
 ```text
-/task-generator [Specification content]
+$ywc-task-generator [Specification content]
 ```
 
 기존 Task set 을 재정비하는 데도 사용할 수 있습니다.
 
 ```text
-/task-generator refine docs/spec.md for parallel worktree execution.
+$ywc-task-generator refine docs/spec.md for parallel worktree execution.
 ```
 
 ### 언어 옵션
 
-이 Skill 은 Korean, Japanese, English 출력을 지원합니다.
+이 Skill 은 Korean, Japanese, English, Chinese (Simplified), Spanish 출력을 지원합니다. `--lang` 값은 `korean`, `japanese`, `english`, `chinese`, `spanish` 와 alias `ko`, `ja`, `en`, `zh`, `es` 를 사용할 수 있습니다.
 
 | 언어     | 예시                                 |
 | -------- | ------------------------------------ |
 | Korean   | `Output in Korean.`                  |
 | Japanese | `日本語でタスクを生成してください。` |
 | English  | `Generate tasks in English.`         |
+| Chinese  | `Generate task docs in Chinese.`     |
+| Spanish  | `Generate tasks in Spanish.`         |
 
-언어를 지정하지 않으면 확인합니다.
+언어를 지정하지 않으면 project instruction file 에서 먼저 추론하고, 실패할 때만 확인합니다.
 
-Korean, Japanese 출력에서는 Technical 용어를 English 로 유지합니다.
+Korean, Japanese, Chinese, Spanish 출력에서는 Technical 용어를 English 로 유지합니다.
 
 ### Granularity Mode 옵션
 
@@ -136,7 +138,7 @@ Task 를 병렬로 실행할 가능성이 있다면, 생성된 Task set 에 운�
 ## Example Prompt
 
 ```text
-/task-generator break down this specification into implementation tasks.
+$ywc-task-generator break down this specification into implementation tasks.
 
 Requirements:
 - Output in Korean.

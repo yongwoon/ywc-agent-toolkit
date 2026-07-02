@@ -50,7 +50,7 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 
 | Option | 설명 | 예시 |
 |--------|------|------|
-| `--pr-lang <lang>` | PR title/description 언어 지정 | `--pr-lang ja` |
+| `--pr-lang <en\|ja\|ko\|zh\|es>` | PR title/description 언어 지정. Downstream PR 생성에 그대로 전달 | `--pr-lang zh` |
 | `--tasks-dir <path>` | Tasks directory 경로 (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--skip-ci-wait` | CI 대기 및 auto-merge skip (PR 생성만) | |
 | `--draft` | Draft PR 생성, merge skip | |
@@ -126,9 +126,12 @@ Stale `.ywc-run-state.json` guard도 이 mode에 적용됩니다. 저장된 run-
 
 `--pr-lang` 을 지정하지 않으면 다음 순서로 언어를 감지합니다:
 
-1. **AGENTS.md / CODEX.md / CLAUDE.md** — 언어 지시 확인 (예: `Git commits: Japanese`)
-2. **최근 PR 이력** — 주로 사용된 언어 감지
-3. **Fallback** — English
+Supported values는 `en|ja|ko|zh|es`입니다. 지정한 값은 `ywc-finish-branch` 또는 final aggregate `$ywc-create-pr --lang <pr-lang>`으로 변경 없이 전달됩니다.
+
+1. **AGENTS.md / CODEX.md / CLAUDE.md** — 언어 지시 확인 (예: `Git commits: Japanese`, `PRs: Chinese`, `PR language: Spanish`)
+2. **최근 PR title/body 이력** — 주로 사용된 언어 감지
+3. **Project dominant language** — codebase와 docs의 주요 언어 감지
+4. **Fallback** — English
 
 ## Error Handling
 

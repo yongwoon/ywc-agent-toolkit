@@ -43,6 +43,32 @@
         "Creates a new PR if none exists",
         "Includes the PR URL in the completion report"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Create a PR with --lang zh for this branch.",
+      "expected_output": "Creates a draft PR whose generated title and body prose are written in Simplified Chinese when no explicit --title is provided, while preserving branch names, task IDs, file paths, commands, labels, and code blocks.",
+      "files": [],
+      "expectations": [
+        "Accepts --lang zh as a first-class language hint",
+        "Writes generated PR title and body prose in Simplified Chinese",
+        "Keeps branch names, task IDs, file paths, commands, labels, YAML keys, JSON keys, and code blocks unchanged",
+        "Still applies the repository PR template when present",
+        "Creates the PR with gh pr create --draft"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Create a PR using --language spanish and --title \"[000001-010] Crear tabla de usuarios\".",
+      "expected_output": "Uses the explicit PR title verbatim, writes the PR body prose in Spanish, and preserves machine-readable identifiers unchanged.",
+      "files": [],
+      "expectations": [
+        "Accepts --language spanish as a first-class language hint",
+        "Uses the provided --title value verbatim without translating or regenerating it",
+        "Writes generated PR body prose in Spanish",
+        "Keeps branch names, task IDs, file paths, commands, labels, YAML keys, JSON keys, and code blocks unchanged",
+        "Does not prompt for title/body language because an explicit language hint was provided"
+      ]
     }
   ]
 }
