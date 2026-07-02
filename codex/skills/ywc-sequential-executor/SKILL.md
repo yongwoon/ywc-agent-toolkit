@@ -41,7 +41,7 @@ Parse `$ARGUMENTS` for the following parameters:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | Task specifier | `<task-name>` or `<start>..<end>` | `000001-010-db-create-users` or `000001-010..000002-030` | Single task or range (phase+sequence prefix match). Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; prefix matching works with either. |
-| `--pr-lang` | `--pr-lang <lang>` | `--pr-lang ja` | PR title/description language. Default: auto-detect from CLAUDE.md or AGENTS.md, fallback to project's dominant language |
+| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang zh` | PR title/description language; pass unchanged to `ywc-finish-branch` or final `$ywc-create-pr --lang <pr-lang>`. Default: auto-detect from AGENTS.md, CODEX.md, CLAUDE.md, recent PR title/body history, or the project's dominant language |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir ./docs/tasks` | Tasks directory path. Default: `tasks/` |
 | `--skip-ci-wait` | flag | | Skip CI wait and auto-merge (create PR only) |
 | `--draft` | flag | | Create PR as draft, skip merge |

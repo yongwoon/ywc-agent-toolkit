@@ -36,6 +36,18 @@
       "prompt": "A behavior-changing worker in $ywc-parallel-executor returns DONE but lists no authored/touched tests and no TDD exception.",
       "expected_output": "Does not merge the task as clean DONE. It requires task-local contract or behavior test evidence, re-dispatches the worker, marks the task DONE_WITH_CONCERNS with an explicit TDD exception, or blocks the task. The final report includes tests authored/executed, Changed Public Contracts, Critical Internals, and TDD Exceptions per task.",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Use $ywc-parallel-executor 000005-010..000005-040 --aggregate-pr --group-name reporting --pr-lang zh.",
+      "expected_output": "Treats `--pr-lang zh` as a supported aggregate PR language. The final aggregate PR path preserves the exact value and passes `$ywc-create-pr --lang zh`; it does not convert Chinese to English/Japanese/Korean or drop the flag during wave accumulation.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Use $ywc-parallel-executor 000006-010..000006-020 --draft --pr-lang es.",
+      "expected_output": "Treats `--pr-lang es` as a supported draft PR language. The draft aggregate PR path preserves the exact value and passes `$ywc-create-pr --lang es`; it does not infer a different language or omit the language flag when creating the draft PR.",
+      "files": []
     }
   ]
 }

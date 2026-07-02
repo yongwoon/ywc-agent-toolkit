@@ -25,6 +25,8 @@ Each task starts from a **fresh, up-to-date base branch**. The PR merge updates 
 
 The polling wait is bot-dependent, but the PR health sweep is not conditional. Invoke `ywc-handle-pr-reviews` after polling even when `BOT_COUNT == 0` so it can check review artifacts, CI status, and merge-readiness before merge. When unresolved review artifacts exist (line threads, PR comments, top-level reviews, or review-like failed checks), the handler processes them and pushes any fixes; CI is then re-verified before the merge proceeds.
 
+PR language is orthogonal to branch lifecycle. When `--pr-lang en|ja|ko|zh|es` is present, every PR-producing path preserves that value unchanged until `ywc-finish-branch` or `$ywc-create-pr` receives it.
+
 ## `--local-merge` mode
 
 ```
