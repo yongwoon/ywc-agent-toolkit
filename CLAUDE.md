@@ -47,11 +47,13 @@ claude-code/skills/<skill-name>/   # one directory per skill
   README.md                        # required — Korean default usage guide
   README.en.md                     # required — English source for generated translations
   README.ja.md / README.ko.md      # required Tier 1 translations
+  README.zh.md / README.es.md      # generated Tier 2 translations (Chinese, Spanish; where present)
   references/                      # optional — long reference docs extracted from SKILL.md
 codex/skills/<skill-name>/         # one directory per Codex skill
   SKILL.md                         # required — Codex-compatible frontmatter + skill body
   README.md / README.en.md         # required Korean default + English source
   README.ja.md / README.ko.md      # required Tier 1 translations
+  README.zh.md / README.es.md      # generated Tier 2 translations (Chinese, Spanish; where present)
   agents/openai.yaml               # required — Codex UI metadata
   references/                      # optional — long reference docs extracted from SKILL.md
 claude-code/agents/                # Claude Code custom agents, one ywc-*.md per agent
@@ -80,7 +82,7 @@ Codex custom agents are read-only TOML definitions. Their output contract uses `
 
 Every skill directory must contain:
 1. `SKILL.md` with `name:` and `description:` YAML frontmatter
-2. `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md`
+2. `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md` (Tier 1, CI-enforced); generated `README.zh.md` / `README.es.md` (Tier 2) are additionally maintained on skills that ship them
 3. Codex skills must also contain `agents/openai.yaml`
 
 The `description:` field drives activation — it must include trigger phrases users will type AND explicit "Do not use for..." anti-triggers to prevent false matches against sibling skills.
