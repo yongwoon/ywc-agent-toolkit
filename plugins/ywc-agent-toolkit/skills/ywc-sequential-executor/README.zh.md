@@ -53,7 +53,7 @@
 | `--dry-run` | 显示执行计划（任务顺序、依赖、模式）但不实际执行 | |
 
 > `--local-merge`、`--draft` 和 `--skip-ci-wait` 互斥。如果传入多个，Skill 会停止并询问您的意图。
-> `--local-merge` **不运行远程 CI**，因此合并的唯一安全网是步骤 4 中的本地验证（lint/typecheck/test）。敏感变更请避免使用。
+> `--local-merge` **不运行远程 CI**，因此合并的唯一安全网是步骤 4 中的本地验证（Task Verify、DB/API 写入任务的 concurrency/rollback/idempotency gate、lint/typecheck/test）。敏感变更请避免使用。
 
 ## Contract 和 TDD baseline
 
@@ -99,7 +99,7 @@
   └─ 按照 task.md 实现步骤进行，在逻辑边界处提交
 
 步骤 4：任务验证
-  └─ 运行任务验证命令和 lint/typecheck/test
+  └─ 运行任务验证命令和 lint/typecheck/test（包括 DB/API 写入任务的 concurrency/rollback/idempotency gate）
 
 步骤 5：创建 PR
   └─ 调用 create-pr Skill（包含安全检查、CI 推送前验证）
@@ -175,7 +175,7 @@
 /ywc-sequential-executor 000001-010-db-create-users-table --local-merge
 ```
 
-步骤 4 lint/typecheck/test 仍会运行。成功后，功能分支通过 `git merge --no-ff` 合并到基础分支并推送。
+步骤 4 的 Task Verify、DB/API 写入任务的 concurrency/rollback/idempotency gate、lint/typecheck/test 仍会运行。成功后，功能分支通过 `git merge --no-ff` 合并到基础分支并推送。
 
 ## 触发条件
 

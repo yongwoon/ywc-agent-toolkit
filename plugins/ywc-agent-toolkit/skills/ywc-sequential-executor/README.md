@@ -64,7 +64,7 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 > `--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` 는 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
 > `--group-name`은 `--aggregate-pr` 없이 사용할 수 없습니다.
 > `--worktree` 는 delivery mode 가 아니라 execution-location flag 입니다.
-> `--local-merge` 는 **원격 CI 를 거치지 않으므로** 로컬 verification (lint/typecheck/test) 만이 merge 의 안전장치입니다. 민감한 변경에는 권장하지 않습니다.
+> `--local-merge` 는 **원격 CI 를 거치지 않으므로** 로컬 verification (Task Verify, DB/API write task의 concurrency/rollback/idempotency gate, lint/typecheck/test) 만이 merge 의 안전장치입니다. 민감한 변경에는 권장하지 않습니다.
 
 ## Contract / TDD baseline
 
@@ -89,7 +89,7 @@ Step 3: Implementation
   └─ task.md 의 Implementation Steps 에 따라 구현, 적절한 단위로 Commit
 
 Step 4: Task Verification
-  └─ Task Verify command 및 lint/typecheck/test 실행
+  └─ Task Verify command 및 lint/typecheck/test 실행 (DB/API write task의 concurrency/rollback/idempotency gate 포함)
 
 Step 5: Delivery
   └─ ywc-finish-branch Skill 호출
@@ -197,7 +197,7 @@ Use $ywc-sequential-executor to execute task 001010 with --local-merge --draft.
 Use $ywc-sequential-executor to execute task 001010-db-create-users-table with --local-merge.
 ```
 
-Step 4 의 lint/typecheck/test 는 동일하게 실행되며, 통과하면 `git merge --no-ff` 로 base branch 에 병합되고 push 됩니다.
+Step 4 의 Task Verify, DB/API write task의 concurrency/rollback/idempotency gate, lint/typecheck/test 는 동일하게 실행되며, 통과하면 `git merge --no-ff` 로 base branch 에 병합되고 push 됩니다.
 
 ## Triggering
 
