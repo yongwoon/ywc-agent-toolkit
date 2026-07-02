@@ -14,7 +14,7 @@ Este Skill automatiza el trabajo repetitivo después de que llega una revisión 
 
 - Clasifica los comentarios en solicitudes de corrección, comentarios debatibles, preguntas y elementos ya gestionados
 - Agrupa los comentarios por archivo y gestiona las correcciones relacionadas juntas
-- Hace coincidir el idioma de respuesta con el idioma del revisor
+- Hace coincidir el idioma de respuesta con el idioma del comentario original del revisor, incluidos ejemplos en coreano, inglés, japonés, chino y español, y mantiene sin traducir el código, la salida de comandos, las rutas de archivo, los nombres de API y el texto citado
 - Omite comentarios que ya fueron gestionados o ya respondidos
 
 ## Uso
@@ -34,5 +34,7 @@ Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
 ## Versiones localizadas
 
 - [Coreano (Principal)](./README.md)
+- [Inglés](./README.en.md)
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
+- [Chino simplificado](./README.zh.md)
