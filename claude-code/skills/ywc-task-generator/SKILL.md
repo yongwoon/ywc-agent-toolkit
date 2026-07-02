@@ -26,6 +26,7 @@ When tempted to bend a rule, check this table first:
 | "Library introduction is part of the feature task, no need to split" | Library introduction is its own task — in every mode. Safety invariant. |
 | "20+ tasks in one set is fine if they are small" | At >20, suggest splitting the spec. A task set that does not fit in human review will not be reviewed. |
 | "Task Verify = run the build, that's enough" | A green build proves the code compiles, not that THIS task's behavior exists. Each task's Task Verify must assert the task's specific outcome — a test that exercises the new behavior, or a command whose output changes when the task is done. A bare project-wide `build`/`lint` gate passes even when the task did nothing. |
+| "duplicate-sensitive write but the project-wide build verifies it" | A green build does not prove THIS task's concurrency invariant — state the atomicity/idempotency assertion explicitly. |
 
 **Violating the letter of these rules is violating the spirit.** Safety invariants (DB migration separation, library introduction separation, phase hard gates) have no exceptions.
 
@@ -325,6 +326,7 @@ Each task.md must include the following:
   - Do not use generic placeholders like "implement core logic" or "handle edge cases"
   - Example: `Create src/models/user.ts with User entity definition`
 - **Task Verify**: Task-specific verification command checklist — each command must assert this task's specific outcome (a test exercising the new behavior, or a command whose output changes), never only a project-wide `build`/`lint` gate
+  - **Duplicate-sensitive write flows** (stock/balance/order/payment/provisioning/quota writes): Task Verify must additionally cover concurrent-write behavior, partial-failure rollback, and idempotent retry. When the spec requires a specific mechanism (atomic conditional update / row lock / optimistic lock / idempotency key), the task must name the chosen mechanism and its expected observable outcome. If the project has no practical concurrency harness, state an alternative verification (e.g., a targeted unit assertion on the atomic update or a documented manual concurrent-request check) rather than omitting it.
 - **Verification**: Confirm lint, typecheck, test, and build pass (use the project's actual commands)
 
 #### test.md (optional)
@@ -381,6 +383,7 @@ After generating all tasks, verify the following:
 - [ ] Allowed Edit Scope and Stop Conditions included
 - [ ] Acceptance Criteria included in `When <trigger>, does <behavior>, observable as <check>` form (distinct from Implementation Steps)
 - [ ] Each task's Task Verify includes ≥1 task-specific assertion that fails if the task's behavior is absent (not only a project-wide gate like bare `build`/`lint`)
+- [ ] For a duplicate-sensitive write flow, Task Verify covers concurrent-write behavior, partial-failure rollback, and idempotent retry — naming the spec-required mechanism (atomic conditional update / row lock / optimistic lock / idempotency key) and its expected observable outcome
 - [ ] Verification commands match the project's actual commands (based on context collected in Step 2)
 
 **Consistency:**
