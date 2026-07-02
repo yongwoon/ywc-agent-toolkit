@@ -29,6 +29,8 @@ Redactor de especificaciones de proyecto. Crea y mantiene el directorio `docs/sp
 /ywc-spec-writer --from-prs 42 43 51                   # Múltiples PRs (union diff)
 /ywc-spec-writer --setup-hook             # Instalar git hook
 /ywc-spec-writer --lang ja                # Escribir en japonés
+/ywc-spec-writer --lang zh                # Escribir en chino simplificado
+/ywc-spec-writer --lang es                # Escribir en español
 ```
 
 ## Entradas
@@ -39,7 +41,7 @@ Redactor de especificaciones de proyecto. Crea y mantiene el directorio `docs/sp
 - (opcional) `--from-commit <ref>` — referencia de commit (por defecto: `HEAD`)
 - (opcional) `--from-pr <num>` — PR individual (requiere gh CLI)
 - (opcional) `--from-prs <num> ...` — union diff de múltiples PRs (archivos duplicados auto-deduplicados)
-- (opcional) `--lang ko|ja|en` — idioma de salida (por defecto: `ko`)
+- (opcional) `--lang ko|ja|en|zh|es` — idioma de salida (por defecto: `ko`)
 - (opcional) `--setup-hook` — instalar git pre-commit hook
 
 > `--from-pr` / `--from-prs` requieren que la CLI `gh` esté instalada y autenticada. El título / cuerpo / `headRefOid` del PR se registran como contexto narrativo y audit trail al actualizar la especificación.
