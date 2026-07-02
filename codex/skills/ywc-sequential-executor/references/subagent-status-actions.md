@@ -23,3 +23,9 @@ Do not retry the same input unchanged. Change the context, model class, scope, o
 ## Aggregating Status
 
 All `DONE` -> `DONE`. Observation-level concerns -> `DONE_WITH_CONCERNS`. Resolved correctness concerns -> `DONE`. Unresolved `BLOCKED` -> `BLOCKED`. Unresolved `NEEDS_CONTEXT` -> `NEEDS_CONTEXT`.
+
+## Evidence Handling
+
+When carrying a non-`DONE` status into the completion report, include the delegated task name, the returned status, and the shortest blocker or concern excerpt that explains the decision.
+
+Do not collapse multiple task statuses into one generic failure. The next resume or re-dispatch depends on knowing which task is preserved, which task can proceed, and which task needs more context.
