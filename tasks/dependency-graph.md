@@ -541,3 +541,86 @@ graph LR
   D[000029-040-refactor-agent-context-compaction]
   E[000029-050-refactor-parity-doc-hygiene]
 ```
+
+---
+
+## Batch 14 — zh/es rollout to sibling content-output skills (claude-code)
+
+- Spec: `docs/ywc-plans/multilang-zh-es-rollout.md`
+- Granularity mode: `llm` · Language: english · Starting phase: `000030`
+- Scope: `claude-code/skills/**` only. No `codex/**` or `plugins/ywc-agent-toolkit/**` edits (Codex mirror is a deliberate future follow-up).
+- Prior art: `ywc-project-docs` (PR #118) — same 5-language edit shape.
+- Advisor pass: skipped — single dependency-free phase, one task per skill, no competing DB/library boundaries.
+- No-AC requirements: none — every task traces to spec FR1–FR4 / AC1–AC6.
+
+### Phase 000030 — sibling skill zh/es support (single phase, no inter-task deps)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000030-010-docs-spec-writer-zh-es` | docs | (root) |
+| `000030-020-docs-task-generator-zh-es` | docs | (root) |
+| `000030-030-docs-gen-testcase-zh-es` | docs | (root) |
+
+- Task ↔ skill: 010 = ywc-spec-writer (SKILL.md + language-policy.md + README×6); 020 = ywc-task-generator (SKILL.md + language-policy.md + README×6, word-style flags `chinese`/`spanish`); 030 = ywc-gen-testcase (SKILL.md inline + README×6, no policy file, + W1 technical-term-in-English rule).
+
+### Parallel Execution Notes (Batch 14)
+
+- Initial ready set: all three tasks — no dependencies (independent per-skill doc edits).
+- Conflicts With: none. Each skill directory is owned by exactly one task; disjoint file ownership.
+- Shared Surfaces: none across tasks. All share the `bash scripts/validate.sh` + markdownlint CI gates, so each must self-verify before merge.
+- Hard boundary: no `codex/**` / `plugins/ywc-agent-toolkit/**` edits → pre-push hook stays green.
+- Recommended execution: `ywc-sequential-executor --local-merge` over 010→030 on one branch, or conflict-free parallel worktrees.
+- Adaptations: keep each skill's own `--lang` code convention (spec-writer/gen-testcase `zh`/`es`; task-generator word-style `chinese`/`spanish`). gen-testcase has no policy file — inline rules only. No `evals/` in claude-code (omit eval additions).
+
+```mermaid
+graph LR
+  A[000030-010-docs-spec-writer-zh-es]
+  B[000030-020-docs-task-generator-zh-es]
+  C[000030-030-docs-gen-testcase-zh-es]
+```
+
+---
+
+## Batch 15 — Codex language-aware skills zh/es support
+
+- Spec: `docs/ywc-plans/ywc-skills-zh-es-language-support.md`
+- Spec ready log: `docs/ywc-plans/ywc-skills-zh-es-language-support.spec-ready-log.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000031`
+- Scope: `codex/skills/**` source edits and generated `plugins/ywc-agent-toolkit/skills/**` sync only. No `claude-code/**` edits.
+- Existing phase note: Phase `000030` is occupied by the separate Claude Code zh/es batch, so this Codex-only batch starts at `000031`.
+- Advisor pass: skipped. Phase boundaries are mechanically determined by source-edit tasks first and generated plugin sync/validation last.
+
+### Phase 000031 — Codex source language contracts
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000031-010-docs-spec-writer-codex-zh-es` | docs | (root) |
+| `000031-020-docs-task-generator-codex-zh-es` | docs | (root) |
+| `000031-030-docs-gen-testcase-codex-zh-es` | docs | (root) |
+| `000031-040-docs-pr-creation-language-zh-es` | docs | (root) |
+| `000031-050-docs-executor-pr-lang-zh-es` | docs | (root) |
+| `000031-060-docs-pr-review-reply-zh-es` | docs | (root) |
+
+### Phase 000032 — Generated package sync and validation hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000032-010-infra-codex-plugin-sync-validation` | infra | `000031-010`, `000031-020`, `000031-030`, `000031-040`, `000031-050`, `000031-060` |
+
+### Parallel Execution Notes (Batch 15)
+
+- Initial ready set: all Phase `000031` tasks. They own disjoint Codex skill directories and can run in parallel.
+- `000031-040` and `000031-050` share the conceptual PR language contract but do not share file Ownership; they are parallel-safe.
+- `000032-010` is a hard gate. It waits for all Phase `000031` tasks, runs `bash scripts/sync-codex-plugin.sh`, validates eval JSON, runs targeted skill validation, then runs `bash scripts/validate.sh`.
+- `000032-010` must not run in parallel with any Phase `000031` task because it owns generated plugin output for all source edits.
+- Hard boundary: no `claude-code/**` edits in this batch. If Claude parity is needed later, create a separate plan/task set.
+
+```mermaid
+graph LR
+  A[000031-010-docs-spec-writer-codex-zh-es] --> G[000032-010-infra-codex-plugin-sync-validation]
+  B[000031-020-docs-task-generator-codex-zh-es] --> G
+  C[000031-030-docs-gen-testcase-codex-zh-es] --> G
+  D[000031-040-docs-pr-creation-language-zh-es] --> G
+  E[000031-050-docs-executor-pr-lang-zh-es] --> G
+  F[000031-060-docs-pr-review-reply-zh-es] --> G
+```
