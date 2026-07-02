@@ -10,7 +10,7 @@ This Skill automates the repetitive work after a PR review arrives. Clear change
 
 - Classifies comments into fix requests, debatable feedback, questions, and already-handled items
 - Groups comments by file and handles related fixes together
-- Matches the reply language to the reviewer's language
+- Matches the reply language to the reviewer's original comment language, including Korean, English, Japanese, Chinese, and Spanish examples, while leaving code, command output, file paths, API names, and quoted text unchanged
 - Skips comments that were already handled or already answered
 
 ## Usage
@@ -32,3 +32,5 @@ Natural-language triggers are defined in [SKILL.md](./SKILL.md).
 - [Korean (Primary)](./README.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Chinese (Simplified)](./README.zh.md)
+- [Spanish](./README.es.md)

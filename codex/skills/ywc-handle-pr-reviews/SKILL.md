@@ -147,7 +147,7 @@ gh pr comment {pull_number} --body-file -
 
 For `status_check`, do not add a marker-only reply unless no code change is needed and the check is known to be a false positive. A failed review-like status check normally remains unresolved until the check passes.
 
-**Reply language:** Match the language of the original comment. If the reviewer wrote in Korean, reply in Korean. If in English, reply in English.
+**Reply language:** Match the language of the original comment. If the reviewer wrote in Korean, reply in Korean. If in English, reply in English. If in Japanese, reply in Japanese. If in Chinese, reply in Simplified Chinese unless the reviewer used another Chinese locale. If in Spanish, reply in Spanish. Do not translate code suggestions, command output, file paths, API names, or quoted reviewer text.
 
 **Reply format by category:**
 
