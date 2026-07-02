@@ -13,14 +13,17 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 - push 전에 lint, format, typecheck, test 등 CI Check 수행
 - `.github/pull_request_template.md`가 있으면 자동 적용
 - 모든 PR을 Draft 상태로 생성
+- `--lang` / `--language`로 PR title/body prose를 `en`, `ja`, `ko`, `zh`, `es` 중 하나로 작성하며, task ID, branch name, file path, command, label, 명시적 `--title` 값은 그대로 유지
 
 ## 사용 방법
 
 ```text
-/create-pr
-/create-pr main
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
+$ywc-create-pr
+$ywc-create-pr main
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 자연어 Trigger는 [SKILL.md](./SKILL.md)에 정의되어 있습니다.
@@ -35,3 +38,5 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 - [Korean (Primary)](./README.md)
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
+- [Chinese (Simplified)](./README.zh.md)
+- [Spanish](./README.es.md)

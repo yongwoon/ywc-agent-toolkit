@@ -18,6 +18,32 @@
       "prompt": "The task is merged locally but the task directory is still under tasks/. Finish branch can skip Mark Task Complete, right?",
       "expected_output": "Refuses to declare DONE. Mark Task Complete is mandatory for normal-pr and local-merge modes. It moves the task directory to tasks/completed or creates the empty marker commit when tasks/ is gitignored, verifies the completed directory and marker commit subject, and only then reports DONE.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Finish branch feature/000001-010-db-create-users in normal-pr mode for task 000001-010-db-create-users with --pr-lang zh.",
+      "expected_output": "Builds a PR title in the format `[000001-010] <Chinese translated slug>`, preserves the task number and other machine identifiers unchanged, and delegates to `ywc-create-pr` with `--lang zh`.",
+      "files": [],
+      "expectations": [
+        "Accepts --pr-lang zh as a valid PR language",
+        "Uses build-pr-title.py to extract TASK_NUMBER and SLUG_EN",
+        "Translates only SLUG_EN to Chinese and composes `[<TASK_NUMBER>] <translated-slug>`",
+        "Passes --lang zh unchanged to ywc-create-pr",
+        "Does not translate branch names, task IDs, file paths, commands, labels, or code blocks"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Finish branch feature/000001-020-api-add-health-check in draft mode for task 000001-020-api-add-health-check with --pr-lang es.",
+      "expected_output": "Builds a PR title in the format `[000001-020] <Spanish translated slug>`, preserves the task number and other machine identifiers unchanged, and delegates to `ywc-create-pr` with `--lang es`.",
+      "files": [],
+      "expectations": [
+        "Accepts --pr-lang es as a valid PR language",
+        "Uses build-pr-title.py to extract TASK_NUMBER and SLUG_EN",
+        "Translates only SLUG_EN to Spanish and composes `[<TASK_NUMBER>] <translated-slug>`",
+        "Passes --lang es unchanged to ywc-create-pr",
+        "Does not translate branch names, task IDs, file paths, commands, labels, or code blocks"
+      ]
     }
   ]
 }
