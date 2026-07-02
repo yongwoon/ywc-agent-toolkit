@@ -24,6 +24,12 @@
       "prompt": "Create product-facing docs for billing plan limits and link them to the architecture and specification docs.",
       "expected_output": "Routes product material into docs/product/, preserves cross-reference links to architecture and specification documents, and reports the docs/product path plus cross-reference decisions.",
       "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Write the architecture documentation in Spanish.",
+      "expected_output": "Resolves the target language to Spanish (honoring the explicit request or --lang es), writes body prose in Spanish while keeping technical terms such as API, Backend, and Database in English, and reports the document path with Status and validation details.",
+      "files": []
     }
   ]
 }

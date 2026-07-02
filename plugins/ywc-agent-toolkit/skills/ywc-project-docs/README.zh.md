@@ -4,9 +4,9 @@
 
 # project-docs
 
-一个 Codex Skill，用于生成遵循项目 `docs/` 目录结构和规范的韩语或日语文档。
+一个 Codex Skill，用于生成遵循项目 `docs/` 目录结构和规范的韩语、日语、英语、中文或西班牙语文档。
 
-目标语言根据对话上下文自动选择。默认为**韩语**；当对话使用日语或明确要求日语时切换为日语。
+目标语言绝不自动推断。如果提供了 `--lang kr|ja|en|zh|es` 则直接使用；否则该 Skill 会先询问使用哪种受支持语言再开始写入。
 
 ## 使用方法
 
@@ -14,30 +14,40 @@
 
 以下自然语言短语可激活此 Skill：
 
-```
+```text
 "문서 작성해줘"       （韩语：写一个文档）
 "문서 만들어줘"       （韩语：创建一个文档）
 "document this"
 "write a doc"
 "add to docs/"
+"English docs"
+"Chinese docs"
+"Spanish docs"
+"中文文档"
+"documentación del proyecto"（西班牙语：项目文档）
 "ドキュメント作成して" （日语：创建文档）
 "ドキュメントを書いて" （日语：写文档）
 ```
 
 ### 手动调用
 
-```
-/project-docs
+```text
+$ywc-project-docs              # 显示语言选择提示
+$ywc-project-docs --lang kr    # 直接以韩语撰写
+$ywc-project-docs --lang ja    # 直接以日语撰写
+$ywc-project-docs --lang en    # 直接以英语撰写
+$ywc-project-docs --lang zh    # 直接以简体中文撰写
+$ywc-project-docs --lang es    # 直接以西班牙语撰写
 ```
 
 ## 此 Skill 的功能
 
-1. **语言选择** — 检测对话语言并以韩语或日语生成内容
+1. **语言选择** — 优先使用 `--lang`，否则询问韩语 / 日语 / 英语 / 中文 / 西班牙语来决定（不自动推断）
 2. **目录路由** — 根据意图将文档放置在正确的 `docs/` 子目录中
 3. **命名规范** — 应用小写 kebab-case，最少后缀
 4. **文档结构** — 生成相关文档块、目录和编号章节
 5. **交叉引用** — 在相关文档之间添加双向链接
-6. **语言策略** — 正文使用所选语言；技术术语保留英文（不音译）
+6. **语言策略** — 正文使用所选语言；技术术语保留英文（不音译、不过度翻译）
 7. **阅读顺序** — 保留 `产品 → 架构 → 规范 → 计划` 的 LLM 消费顺序
 8. **反模式** — 防止文件夹边界混合、重复存储和草稿/正式文档混淆
 
@@ -64,7 +74,7 @@
 
 ## 示例
 
-```
+```text
 "제품 개요 문서 작성해줘"
 → docs/product/product-overview.md（韩语）
 
@@ -73,6 +83,15 @@
 
 "認証システムのアーキテクチャドキュメントを書いて"
 → docs/architecture/authentication.md（日语）
+
+"Write English documentation for the billing workflow"
+→ docs/specification/billing.md（英语）
+
+"创建中文项目文档"
+→ docs/product/product-overview.md（中文）
+
+"Escribe documentación del proyecto para OAuth"
+→ docs/manuals/oauth-setup.md（西班牙语）
 ```
 
 ## 本地化版本
@@ -80,3 +99,5 @@
 - [韩语（主要）](./README.md)
 - [日语](./README.ja.md)
 - [韩语](./README.ko.md)
+- [英语](./README.en.md)
+- [西班牙语](./README.es.md)

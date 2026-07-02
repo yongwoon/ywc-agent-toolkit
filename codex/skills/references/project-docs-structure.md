@@ -191,4 +191,4 @@ Before creating any document, verify:
 2. **Directory selection** — confirm the appropriate directory using the routing rules above.
 3. **Cross-references** — when related documents exist, link from the newer/lower-level document to the higher-order baseline document.
 4. **Official vs. draft** — pre-confirmation content goes in `todo/`; confirmed content moves to the official folder.
-5. **CLAUDE.md rule** — generate documents only when the user explicitly requests them.
+5. **AGENTS.md rule** — generate documents only when the user explicitly requests them.

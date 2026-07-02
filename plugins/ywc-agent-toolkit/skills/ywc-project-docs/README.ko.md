@@ -1,8 +1,8 @@
 # project-docs
 
-프로젝트의 `docs/` 디렉터리 구조와 규칙에 맞춰 한국어 또는 일본어 문서를 생성하는 Codex Skill.
+프로젝트의 `docs/` 디렉터리 구조와 규칙에 맞춰 한국어, 일본어, 영어, 중국어, 스페인어 문서를 생성하는 Codex Skill.
 
-대화 언어에 따라 자동으로 언어를 선택합니다. 기본값은 **한국어**이며, 일본어로 대화하거나 명시적으로 요청하면 일본어 문서를 생성합니다.
+언어는 자동 추정하지 않습니다. `--lang kr|ja|en|zh|es` 옵션이 있으면 그대로 사용하고, 없으면 지원 언어 중 어느 언어로 작성할지 먼저 질문합니다.
 
 ## 사용 방법
 
@@ -10,12 +10,17 @@
 
 아래 표현을 사용하면 Skill이 자동으로 활성화됩니다:
 
-```
+```text
 "문서 작성해줘"
 "문서 만들어줘"
 "문서 추가해줘"
 "document this"
 "write a doc"
+"English docs"
+"Chinese docs"
+"Spanish docs"
+"中文文档"
+"documentación del proyecto"
 "task 문서 만들어줘"
 "아키텍처 문서 추가해줘"
 "제품 문서 작성해줘"
@@ -25,18 +30,23 @@
 
 ### 수동 호출
 
-```
-/project-docs
+```text
+$ywc-project-docs              # 언어 선택 prompt 표시
+$ywc-project-docs --lang kr    # 한국어로 바로 작성
+$ywc-project-docs --lang ja    # 일본어로 바로 작성
+$ywc-project-docs --lang en    # 영어로 바로 작성
+$ywc-project-docs --lang zh    # 중국어(간체)로 바로 작성
+$ywc-project-docs --lang es    # 스페인어로 바로 작성
 ```
 
 ## Skill이 하는 일
 
-1. **언어 선택** — 대화 언어를 감지하여 한국어 또는 일본어로 문서 생성
-2. **디렉터리 라우팅** — 문서의 목적에 따라 올바른 디렉터리에 배치
-3. **네이밍 규칙 적용** — 영문 소문자 + 하이픈, 접미사 최소화
-4. **문서 구조 Template** — 관련 문서 블록, 목차, 섹션 넘버링 자동 적용
+1. **언어 선택** — `--lang` 옵션 우선, 없으면 한국어/일본어/영어/중국어/스페인어를 질문하여 결정 (자동 추정 안 함)
+2. **Directory Routing** — 문서의 목적에 따라 올바른 Directory 에 배치
+3. **Naming 규칙 적용** — 영문 소문자 + 하이픈, 접미사 최소화
+4. **문서 구조 Template** — 관련 문서 블록, 목차, 섹션 Numbering 자동 적용
 5. **교차 참조** — 관련 문서 간 양방향 링크 추가
-6. **언어 정책** — 본문은 선택 언어, 기술 용어는 영문 유지 (음차 금지)
+6. **언어 정책** — 본문은 선택 언어, 기술 용어는 영문 유지 (음차/과번역 금지)
 7. **LLM 읽기 순서** — `product → architecture → specification → plans` 순서 보장
 8. **안티패턴 방지** — 폴더 경계 혼합, 중복 저장, 초안/공식 혼동 방지
 
@@ -63,7 +73,7 @@
 
 ## 사용 예시
 
-```
+```text
 "제품 개요 문서 작성해줘"
 → docs/product/product-overview.md 생성 (한국어)
 
@@ -72,6 +82,15 @@
 
 "認証システムのアーキテクチャドキュメントを書いて"
 → docs/architecture/authentication.md 생성 (일본어)
+
+"Write English documentation for the billing workflow"
+→ docs/specification/billing.md 생성 (영어)
+
+"创建中文项目文档"
+→ docs/product/product-overview.md 생성 (중국어)
+
+"Escribe documentación del proyecto para OAuth"
+→ docs/manuals/oauth-setup.md 생성 (스페인어)
 ```
 
 ## Localized Versions
@@ -79,3 +98,5 @@
 - [Korean (Primary)](./README.md)
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
+- [Chinese](./README.zh.md)
+- [Spanish](./README.es.md)
