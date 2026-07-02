@@ -40,7 +40,7 @@ When tempted to skip a step, check this table first:
 | `--base-branch` | `<branch-name>` | `--base-branch develop` | Target branch. Default: auto-detect (`develop` > `main` > `master`). |
 | `--task-name` | `<task-name>` | `--task-name 000001-010-db-create-users` | Task directory name under `<tasks-dir>/`, used for the Mark Complete commit. |
 | `--tasks-dir` | `<path>` | `--tasks-dir tasks/` | Tasks directory root. Default: `tasks/`. |
-| `--pr-lang` | `<lang>` | `--pr-lang ja` | PR title/description language. Default: auto-detect from CLAUDE.md / AGENTS.md / recent PRs. |
+| `--pr-lang` | `en` \| `ja` \| `ko` \| `zh` \| `es` | `--pr-lang ja` | PR title/description language. Default: auto-detect from CLAUDE.md / AGENTS.md / recent PRs. |
 | `--bot-action` | `sequential` \| `parallel` | `--bot-action sequential` | Post-bot polling behavior. Default: `sequential` (re-run CI after bot fixes). Use `parallel` when called from a wave loop where CI does not re-gate between bot iterations. |
 | `--defer-push` | flag | | Skip the push of the Mark Complete commit. Used by range-mode callers that batch pushes at the end of the range. |
 | `--keep-branch` | flag | | Skip the local feature branch deletion (`git branch -d`). Used by `ywc-parallel-executor`, where the branch is checked out in a worktree at the time of merge — `git branch -d` would fail until the worktree is removed. Caller takes responsibility for the eventual `git worktree remove` + `git branch -d`. |
@@ -133,6 +133,8 @@ For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construc
 
 **PR title format**: `[<task-number>] <human-readable description in --pr-lang>`
 
+`--pr-lang` supports `en`, `ja`, `ko`, `zh`, and `es`. Pass the selected value unchanged to `ywc-create-pr` as `--lang <pr-lang>`. The PR title/body prose follows that language, while branch names, task IDs, file paths, commands, labels, code blocks, and other machine identifiers stay unchanged. If the caller provided an explicit `--title`, `ywc-create-pr` uses it verbatim.
+
 Run the bundled script to extract the task number and English slug without regex parsing:
 
 ```bash
@@ -154,9 +156,9 @@ python "$TITLE_SCRIPT" <task-name> --format title
 # [000001-010] Db Create Users Table
 ```
 
-For other languages, translate only `SLUG_EN` to `--pr-lang`, then compose: `[<TASK_NUMBER>] <translated-slug>`.
+For other languages (`ja`, `ko`, `zh`, `es`), translate only `SLUG_EN` to `--pr-lang`, then compose: `[<TASK_NUMBER>] <translated-slug>`.
 
-The script supports both task-name formats (new `000001-010-slug` and legacy `001010-slug`). Examples of final titles: `[000001-010] Create users table` (en) · `[000001-010] ユーザーテーブル作成` (ja) · `[001010] DB 사용자 테이블 생성` (ko).
+The script supports both task-name formats (new `000001-010-slug` and legacy `001010-slug`). Examples of final titles: `[000001-010] Create users table` (en) · `[000001-010] ユーザーテーブル作成` (ja) · `[001010] DB 사용자 테이블 생성` (ko) · `[000001-010] 创建用户表` (zh) · `[000001-010] Crear tabla de usuarios` (es).
 
 **Before calling `ywc-create-pr`**: verify the constructed title string starts with `[`. If it does not, stop — the `[TASK_NUMBER]` prefix was lost somewhere in the construction. Do not call `ywc-create-pr` without a valid title.
 

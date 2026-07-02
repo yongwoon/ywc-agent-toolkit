@@ -41,7 +41,7 @@ Parse `$ARGUMENTS` for the following parameters:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | Task specifier | `<task-name>` or `<start>..<end>` | `000001-010-db-create-users` or `000001-010..000002-030` | Single task or range (phase+sequence prefix match). Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; prefix matching works with either. |
-| `--pr-lang` | `--pr-lang <lang>` | `--pr-lang ja` | PR title/description language. Default: auto-detect from CLAUDE.md or AGENTS.md, fallback to project's dominant language |
+| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang zh` | PR title/description language; pass unchanged to `ywc-finish-branch` or final `$ywc-create-pr --lang <pr-lang>`. Default: auto-detect from AGENTS.md, CODEX.md, CLAUDE.md, recent PR title/body history, or the project's dominant language |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir ./docs/tasks` | Tasks directory path. Default: `tasks/` |
 | `--skip-ci-wait` | flag | | Skip CI wait and auto-merge (create PR only) |
 | `--draft` | flag | | Create PR as draft, skip merge |
@@ -430,9 +430,7 @@ The working tree state at this point differs by mode (`normal-pr` / `local-merge
 
 **`--aggregate-pr` final group delivery (execute before the report below)**:
 After the last task has been local-merged into `$WORK_BRANCH` and marked complete, run the full work -> base PR lifecycle from [references/aggregate-pr.md](./references/aggregate-pr.md). It owns PR creation, ready, CI, bot review, merge-readiness, merge, and base sync. Completion-marker commits already live on `$WORK_BRANCH`; do **not** re-Mark-Complete after the final PR merges.
-
 After all tasks are executed, display:
-
 - Total tasks executed: N
 - Each task: name, PR URL, PR status (draft / open / merged) — or `local-merge` with the merge commit SHA when `--local-merge` is used
 - Contract report per task: Changed Public Contracts, contract/behavior tests that first failed and then passed, Critical Internals reviewed, and TDD Exceptions (or `N/A`)
@@ -446,7 +444,6 @@ After all tasks are executed, display:
 **When `--terse` is set**, omit all prose reminders and mode-specific explanations. Emit only:
 1. The task table (name | status | PR URL or merge SHA)
 2. The `Completion Status` line
-
 **Reporting Symbols**: Use the shared vocabulary in [symbols.md](../references/symbols.md) for the per-task status column and inline step traces. The symbol is a scan aid, not a replacement for the status text — keep both. For multi-step traces inside a single task report, use the flow operator `»` (e.g. `branch ✅ » impl ✅ » verify ✅ » PR ✅ » merge ✅`). Do not use symbols inside commit messages, PR titles, or generated source code — they belong to the report layer only.
 
 **Completion Status**: End every report with one of these four declarations on its own line. This is the final line of the report — nothing follows it.
@@ -470,10 +467,7 @@ test ! -f .ywc-run-state.json && echo "OK: state cleaned" || echo "WARNING: stat
 If the verification line prints `WARNING`, the run is `DONE_WITH_CONCERNS`, not `DONE` — surface the leftover file path in the Completion Report.
 
 ## Output Format
-
-The final output is the Completion Report. In normal verbosity it includes the
-full task table and mode-specific caveats; under `--terse`, emit only the table
-and status line:
+The final output is the Completion Report. In normal verbosity it includes the full task table and mode-specific caveats; under `--terse`, emit only the table and status line:
 
 ```text
 | Task | Status | PR URL or merge SHA |

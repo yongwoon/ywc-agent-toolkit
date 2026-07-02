@@ -44,7 +44,7 @@ Cuando no se especifica ninguna tarea, la Skill analiza el grafo de dependencias
 
 | Opción | Descripción | Ejemplo |
 |--------|-------------|---------|
-| `--pr-lang <lang>` | Idioma del título/descripción del PR | `--pr-lang ja` |
+| `--pr-lang <en\|ja\|ko\|zh\|es>` | Idioma del título/descripción del PR. Se pasa sin cambios al flujo downstream de PR | `--pr-lang es` |
 | `--tasks-dir <path>` | Ruta del directorio de tareas (predeterminado: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--skip-ci-wait` | Omitir espera de CI y auto-merge (solo creación de PR) | |
 | `--draft` | Crear PR borrador, omitir merge | |
@@ -122,9 +122,11 @@ Paso 9: Siguiente Tarea (Modo de rango)
 
 Cuando `--pr-lang` no se especifica, el idioma se detecta con esta prioridad:
 
-1. **CLAUDE.md** — Verificar directivas de idioma (por ejemplo, `Git commits: Japanese`)
-2. **AGENTS.md** — Verificar preferencias de idioma
-3. **Historial reciente de PRs** — Detectar el idioma dominante
+Los valores soportados son `en|ja|ko|zh|es`. El valor indicado se pasa sin cambios a `ywc-finish-branch` o al `$ywc-create-pr --lang <pr-lang>` agregado final.
+
+1. **AGENTS.md / CODEX.md / CLAUDE.md** — Verificar directivas de idioma (por ejemplo, `Git commits: Japanese`, `PRs: Chinese`, `PR language: Spanish`)
+2. **Historial reciente de title/body de PRs** — Detectar el idioma dominante
+3. **Project dominant language** — Detectar el idioma dominante del codebase y docs
 4. **Fallback** — Inglés
 
 ## Manejo de Errores

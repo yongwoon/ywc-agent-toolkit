@@ -10,7 +10,7 @@ PR Review 이후 반복되는 대응 작업을 자동화합니다. 명확한 수
 
 - Comment를 수정 요청, 논의 필요, 질문, 처리 완료로 분류
 - 같은 파일의 Comment를 묶어서 처리
-- Reviewer가 사용한 언어에 맞춰 답변 작성
+- Reviewer의 원 Comment 언어에 맞춰 한국어, 영어, 일본어, 중국어, 스페인어 등으로 답변하고, 코드/명령 출력/파일 경로/API 이름/인용문은 번역하지 않음
 - 이미 처리되었거나 답변된 Comment는 Skip
 
 ## 사용 방법
@@ -32,3 +32,5 @@ PR Review 이후 반복되는 대응 작업을 자동화합니다. 명확한 수
 - [Korean (Primary)](./README.md)
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
+- [Chinese (Simplified)](./README.zh.md)
+- [Spanish](./README.es.md)

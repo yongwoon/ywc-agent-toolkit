@@ -15,28 +15,30 @@ Está diseñada no solo para la descomposición ordinaria de tareas, sino tambi�
 Proporciona una especificación y solicita a la Habilidad que genere tareas:
 
 ```text
-/task-generator [Specification content]
+$ywc-task-generator [Specification content]
 ```
 
 También puede solicitar que refine un conjunto de tareas existente:
 
 ```text
-/task-generator refine docs/spec.md for parallel worktree execution.
+$ywc-task-generator refine docs/spec.md for parallel worktree execution.
 ```
 
 ### Opciones de Idioma
 
-La Habilidad admite salida en coreano, japonés e inglés.
+La Habilidad admite salida en coreano, japonés, inglés, chino simplificado y español. `--lang` acepta `korean`, `japanese`, `english`, `chinese`, `spanish` y los alias `ko`, `ja`, `en`, `zh`, `es`.
 
 | Idioma | Ejemplo |
 |--------|---------|
 | Coreano | `Output in Korean.` |
 | Japonés | `日本語でタスクを生成してください。` |
 | Inglés | `Generate tasks in English.` |
+| Chino | `Generate task docs in Chinese.` |
+| Español | `Generate tasks in Spanish.` |
 
-Si el usuario no especifica un idioma, la Habilidad lo pregunta.
+Si el usuario no especifica un idioma, la Habilidad primero lo infiere desde los archivos de instrucciones del proyecto y solo pregunta si la inferencia falla.
 
-Para salidas en coreano y japonés, los términos técnicos permanecen en inglés.
+Para salidas en coreano, japonés, chino y español, los Technical terms permanecen en inglés.
 
 ### Opciones de Modo de Granularidad
 
@@ -140,7 +142,7 @@ Para salida compatible con ejecución paralela, solicitar explícitamente:
 ## Ejemplo de Prompt
 
 ```text
-/task-generator break down this specification into implementation tasks.
+$ywc-task-generator break down this specification into implementation tasks.
 
 Requirements:
 - Output in Korean.

@@ -56,7 +56,7 @@ Generar a partir de un rango de commits arbitrario. SHA, tag, nombre de rama y `
 | Opción | Descripción | Ejemplo |
 | --- | --- | --- |
 | `--output-dir <path>` | Sobreescribir directorio de salida (predeterminado: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`). Predeterminado: detección automática | `--lang ja` |
+| `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`, `zh`, `es`). Predeterminado: detección automática | `--lang ja` |
 | `--filename <name>` | Sobreescribir nombre de archivo (sin `.md`) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Directorio de tareas (predeterminado: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--include-regression` | Añadir una sección de Regresión (B.3) | |

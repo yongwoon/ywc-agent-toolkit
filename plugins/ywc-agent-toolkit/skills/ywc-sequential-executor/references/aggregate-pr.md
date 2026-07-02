@@ -64,6 +64,8 @@ For every task in the range, run the normal execution cycle with these substitut
      --bot-action sequential
    ```
 
+   Preserve `--pr-lang <pr-lang>` unchanged. Valid values are `en|ja|ko|zh|es`; the executor does not translate or alias the value.
+
 Each task must pass verification, local-merge into `$WORK_BRANCH`, move its task directory to `<tasks-dir>/completed/<task-name>`, commit `chore: mark <task-name> as completed`, push `$WORK_BRANCH`, and delete its feature branch before the next task starts.
 
 Before transitioning to the next task, run the same pre-transition gate the other modes use, passing the **work branch** as the integration argument:
@@ -90,6 +92,8 @@ After the last task has been delivered into `$WORK_BRANCH`, the working tree sho
      --base-branch <base-branch> \
      --skip-post-ci-check
    ```
+
+   Pass `--lang <pr-lang>` exactly as received from `--pr-lang`, including `zh` and `es`.
 
 2. Mark the PR ready:
 

@@ -18,6 +18,18 @@
       "prompt": "Handle PR review feedback but ignore failing CI afterward.",
       "expected_output": "Reruns or checks CI after fixes and reports BLOCKED or DONE_WITH_CONCERNS if verification remains failing.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "A reviewer comments in Chinese: \"这里应该处理 null，`user.profile.name` 可能会崩溃。\" Reply after fixing it.",
+      "expected_output": "Replies in Chinese to match the original reviewer comment, keeps `user.profile.name` unchanged, and does not translate code or machine text.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "A reviewer comments in Spanish: \"Este comando falla en CI: `npm test -- --runInBand`. Por favor revisa.\" Reply after addressing it.",
+      "expected_output": "Replies in Spanish to match the original reviewer comment, keeps `npm test -- --runInBand` unchanged, and does not translate command output or other machine text.",
+      "files": []
     }
   ]
 }

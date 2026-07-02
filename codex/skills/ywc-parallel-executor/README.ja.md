@@ -43,6 +43,10 @@ Wave planning は shared public contract を単なる file path ではなく Sha
 
 `--per-task-pr` では、同じ wave の先行 task が base branch を進める場合があります。そのため merge 直前に PR branch が最新 base を含むか確認し、遅れている場合は worktree branch に base を merge して push し、CI を再確認します。Base refresh conflict は `BLOCKED` として報告し、古い head SHA の CI 結果だけで PR を merge しません。
 
+## PR Language
+
+`--pr-lang en|ja|ko|zh|es` はすべての PR mode の title/body 言語を固定します。Executor は値を変更せず、`$ywc-create-pr --lang <pr-lang>` へ渡します。
+
 ## Group 実行
 
 `--aggregate-pr --group-name <name>` は、多数の task を group 単位の単一 PR として delivery する場合に使います。複数 group を同時実行する場合は、worktree ではなく group ごとに独立した clone を使うのが安全です。詳細な手順と並行性ルールは [references/aggregate-pr.md](./references/aggregate-pr.md) を基準にします。

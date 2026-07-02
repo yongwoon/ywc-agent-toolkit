@@ -38,8 +38,12 @@ $ywc-sequential-executor 001010..003020 --aggregate-pr --group-name billing-roll
 ```
 
 ```bash
-$ywc-sequential-executor 001010..003020 --worktree --pr-lang ko
+$ywc-sequential-executor 001010..003020 --worktree --pr-lang zh
 ```
+
+## PR Language
+
+`--pr-lang en|ja|ko|zh|es`는 PR title/body 언어를 고정하며 downstream PR 생성으로 값을 변경하지 않고 전달합니다. 생략하면 AGENTS.md, CODEX.md, CLAUDE.md, 최근 PR title/body 이력, 또는 project dominant language에서 English / Japanese / Korean / Simplified Chinese / Spanish를 추론합니다.
 
 ## 출력
 

@@ -23,7 +23,7 @@ docs/specification/
 ```markdown
 # [Project Name] Specification
 **Last updated**: YYYY-MM-DD
-**Language**: Korean / Japanese / English
+**Language**: Korean / Japanese / English / Chinese / Spanish
 
 ## Sections
 - [Overview](01-overview.md)

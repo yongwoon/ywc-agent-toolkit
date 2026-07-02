@@ -23,3 +23,9 @@ Do not retry the same input unchanged. Change the context, model class, scope, o
 ## Aggregating Status
 
 All `DONE` -> `DONE`. Observation-level concerns -> `DONE_WITH_CONCERNS`. Resolved correctness concerns -> `DONE`. Unresolved `BLOCKED` -> `BLOCKED`. Unresolved `NEEDS_CONTEXT` -> `NEEDS_CONTEXT`.
+
+## PR Language Context
+
+Language preferences are task context, not a completion status. Preserve any caller-supplied `--pr-lang` value when re-dispatching a task or delegating to downstream PR creation.
+
+Do not translate branch names, task names, file paths, command output, or status tokens while carrying that context. Only human-facing PR title/body prose follows the selected language.

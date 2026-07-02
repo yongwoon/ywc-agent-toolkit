@@ -52,7 +52,7 @@ Commit 범위를 직접 지정합니다. SHA, Tag, Branch, `HEAD~N` 모두 accep
 | Option | 설명 | 예시 |
 | --- | --- | --- |
 | `--output-dir <path>` | 출력 Directory (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet 언어 (`ja`, `ko`, `en`). default: auto-detect | `--lang ja` |
+| `--lang <code>` | Testsheet 언어 (`ja`, `ko`, `en`, `zh`, `es`). default: auto-detect | `--lang ja` |
 | `--filename <name>` | Filename override (`.md` 제외) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Tasks directory 경로 (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--include-regression` | Regression Section (B.3) 추가 | |

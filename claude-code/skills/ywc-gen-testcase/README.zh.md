@@ -56,7 +56,7 @@
 | 选项 | 描述 | 示例 |
 | --- | --- | --- |
 | `--output-dir <path>` | 覆盖输出目录（默认：`docs/test-case/`） | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | 测试表语言（`ja`、`ko`、`en`）。默认：自动检测 | `--lang ja` |
+| `--lang <code>` | 测试表语言（`ja`、`ko`、`en`、`zh`、`es`）。默认：自动检测 | `--lang ja` |
 | `--filename <name>` | 文件名覆盖（不含 `.md`） | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | 任务目录（默认：`tasks/`） | `--tasks-dir ./docs/tasks` |
 | `--include-regression` | 添加回归测试节（B.3） | |

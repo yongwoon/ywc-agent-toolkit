@@ -11,19 +11,19 @@ Backend engineer と QA/PM/Product Owner がそれぞれ自分の section で独
 PR URL から生成:
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 同一 repository 内なら PR 番号のみで可能:
 
 ```text
-/ywc-gen-testcase 250
+$ywc-gen-testcase 250
 ```
 
 ### Task ベース生成
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+$ywc-gen-testcase 000001-010-db-create-users-table
 ```
 
 ### Task Range ベース生成
@@ -31,7 +31,7 @@ PR URL から生成:
 `000012-010..000019-010` のように両端点が task prefix のように見える場合、Skill は Git Range よりも先に inclusive Task Range として解釈します。`<tasks-dir>` 配下の task directory basename を辞書順 (番号 prefix → 実行順序) で並べ、開始 task から終了 task までの `task.md` / `README.md` を scenario の source として全て読み込みます。
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 > 端点が欠落または曖昧な場合、Skill は停止して利用者に確認します。task-like な端点に対して `git rev-parse` に fallback **しません**。
@@ -43,10 +43,10 @@ PR URL から生成:
 任意の commit 範囲を指定できます。SHA / Tag / Branch / `HEAD~N` いずれも受け付けます。
 
 ```text
-/ywc-gen-testcase v1.2..v1.3
-/ywc-gen-testcase HEAD~5..HEAD
-/ywc-gen-testcase main..feature-x
-/ywc-gen-testcase --range abc1234..def5678
+$ywc-gen-testcase v1.2..v1.3
+$ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase main..feature-x
+$ywc-gen-testcase --range abc1234..def5678
 ```
 
 > Range は **two-dot `A..B`** のみサポート。Three-dot `A...B` は merge-base semantics で scope が暗黙に変わるため reject されます。
@@ -56,7 +56,7 @@ PR URL から生成:
 ### Diff ベース生成
 
 ```text
-/ywc-gen-testcase --from-diff
+$ywc-gen-testcase --from-diff
 ```
 
 ### Option
@@ -64,7 +64,7 @@ PR URL から生成:
 | Option | 説明 | 例 |
 | --- | --- | --- |
 | `--output-dir <path>` | 出力 directory を上書き (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet の言語 (`ja`, `ko`, `en`)。default: auto-detect | `--lang ja` |
+| `--lang <code>` | Testsheet の言語 (`ja`, `ko`, `en`, `zh`, `es`)。default: auto-detect | `--lang zh` |
 | `--filename <name>` | Filename override (`.md` 不要) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Task および Task Range 入力で使用する tasks directory パス (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--format <fmt>` | 出力 format (`markdown` \| `html`)。default: `markdown` | `--format html` |
@@ -186,12 +186,14 @@ Bloat 防止の内蔵原則:
 
 `--lang` 未指定時の優先順位:
 
-1. **CLAUDE.md / AGENTS.md** の言語 directive (`PR言語: 日本語`, `Documentation: Korean` 等)
+1. **CLAUDE.md / AGENTS.md** の言語 directive (`PR言語: 日本語`, `Documentation: Korean`, `中文 task docs`, `PR Spanish로 작성` 等)
 2. **Recent testsheets** の主要言語
 3. **Project `README.md`** の言語
 4. **Fallback** — English
 
-YAML front matter の key、section 番号、template 骨格は `--lang` に関わらず英語固定です (Tooling reference)。
+対応する language code は `ja`, `ko`, `en`, `zh`, `es` です。`chinese`, `Chinese (Simplified)`, `中文` は Simplified Chinese、`spanish`, `espanol`, `español` は Spanish として扱います。
+
+YAML front matter の key、section 番号、filename、code snippet、template 骨格は `--lang` に関わらず英語固定です (Tooling reference)。Summary, Goal, Steps, Expected, Notes, Edge Cases などの human prose のみ選択言語に従い、Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status, Sign-off などの Technical terms は zh/es prose でも English のままにします。
 
 ## Error Handling
 
@@ -219,55 +221,55 @@ YAML front matter の key、section 番号、template 骨格は `--lang` に関�
 ### PR URL から生成 (default: 単一 file A+B)
 
 ```text
-/ywc-gen-testcase https://github.com/acme/web-app/pull/250
+$ywc-gen-testcase https://github.com/acme/web-app/pull/250
 ```
 
 ### 物理 split (dev/qa 2 file)
 
 ```text
-/ywc-gen-testcase 250 --split --lang ja
+$ywc-gen-testcase 250 --split --lang zh
 ```
 
 ### QA 専用 testsheet (QA チーム引き渡し用)
 
 ```text
-/ywc-gen-testcase 250 --audience qa --lang ja
+$ywc-gen-testcase 250 --audience qa --lang es
 ```
 
 ### 大型 PR でも単一 file を強制
 
 ```text
-/ywc-gen-testcase 250 --force-single
+$ywc-gen-testcase 250 --force-single
 ```
 
 ### Task ベース + regression 付き
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table --include-regression
+$ywc-gen-testcase 000001-010-db-create-users-table --include-regression
 ```
 
 ### Task Range (開始 task から終了 task まで inclusive)
 
 ```text
-/ywc-gen-testcase 000012-010..000019-010 --lang ja
+$ywc-gen-testcase 000012-010..000019-010 --lang zh
 ```
 
 ### Git Range (tag 間)
 
 ```text
-/ywc-gen-testcase v1.2..v1.3 --lang ja
+$ywc-gen-testcase v1.2..v1.3 --lang es
 ```
 
 ### Pre-PR local range
 
 ```text
-/ywc-gen-testcase HEAD~5..HEAD
+$ywc-gen-testcase HEAD~5..HEAD
 ```
 
 ### Dry-run
 
 ```text
-/ywc-gen-testcase 250 --dry-run
+$ywc-gen-testcase 250 --dry-run
 ```
 
 ## Triggering

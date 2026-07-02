@@ -28,7 +28,9 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | `--resume`             | Plan Phase をスキップし既存の tasks/ から再開                     |
 | `--dry-run`            | 段階計画のみ出力し skill は実行しない                             |
 | `--terse`              | 最小出力 (phase header と最終 report のみ)                        |
-| `--pr-lang <lang>`     | PR タイトル・説明の言語 (default: auto、CLAUDE.md から推論)       |
+| `--pr-lang <en\|ja\|ko\|zh\|es>` | PR タイトル・説明の言語。Executor へ値を変更せず転送 (default: auto) |
+
+`ywc-agentic` は、user または project guidance が task/spec language を明示した場合だけ `ywc-task-generator` へ `--lang en|ja|ko|zh|es` を渡します。それ以外では既存どおり `--lang` を渡しません。
 
 ## 実行フロー
 

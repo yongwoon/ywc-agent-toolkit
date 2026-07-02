@@ -11,31 +11,35 @@ Specification 을 분석하여 dependency-safe 하고 reviewable 한 구현 Task
 Give the Skill a specification and ask it to generate tasks:
 
 ```text
-/task-generator [Specification content]
+$ywc-task-generator [Specification content]
 ```
 
 You can also point it at an existing spec or task set:
 
 ```text
-/task-generator refine docs/spec.md for parallel worktree execution.
+$ywc-task-generator refine docs/spec.md for parallel worktree execution.
 ```
 
 ### Language Options
 
-The Skill supports 3 output languages:
+The Skill supports 5 output languages. Accepted `--lang` values are `korean`, `japanese`, `english`, `chinese`, `spanish`, plus aliases `ko`, `ja`, `en`, `zh`, and `es`:
 
 | Language | Example |
 |----------|---------|
 | Korean | `Output in Korean.` |
 | Japanese | `日本語でタスクを生成してください。` |
 | English | `Generate tasks in English.` |
+| Chinese | `Generate task docs in Chinese.` |
+| Spanish | `Generate tasks in Spanish.` |
 
-If the user does not specify a language, the Skill asks.
+If the user does not specify a language, the Skill first infers it from project instruction files and asks only when inference fails.
 
-For Korean and Japanese outputs, technical terms remain in English:
+For Korean, Japanese, Chinese, and Spanish outputs, technical terms remain in English:
 
 - Korean: `Database 연결 설정`
 - Japanese: `Database connection 設定`
+- Chinese: `Database 连接设置`
+- Spanish: `Configuración de Database connection`
 
 Technical terms kept in English:
 > API, Backend, Frontend, Database, Cache, Service, Repository, Application, Component, Module, Framework, Library, Request, Response, Schema, Model, Controller, Test, Debug, Deploy, Build, Configuration, Docker, Container, Server, Client, Router, Middleware
@@ -142,7 +146,7 @@ For parallel-friendly output, explicitly ask for:
 ## Example Prompt
 
 ```text
-/task-generator break down this specification into implementation tasks.
+$ywc-task-generator break down this specification into implementation tasks.
 
 Requirements:
 - Output in Korean.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Finish Branch"
-  short_description: "Deliver a completed branch to base"
-  default_prompt: "Use $ywc-finish-branch to take this verified feature branch through PR readiness, CI or local merge, task completion, and cleanup."
+  short_description: "Deliver a completed branch to base with en/ja/ko/zh/es PR language"
+  default_prompt: "Use $ywc-finish-branch to take this verified feature branch through PR readiness, CI or local merge, task completion, and cleanup, passing --pr-lang en|ja|ko|zh|es through to PR creation when requested."

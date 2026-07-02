@@ -52,7 +52,7 @@ Parse `$ARGUMENTS`.
 | `--from-diff` | flag | | Use `git diff HEAD` |
 | `--range <spec>` | `<start>..<end>` | `--range v1.2..v1.3` | Explicit git range form. Two-dot only — three-dot `A...B` is rejected |
 | `--output-dir <path>` | path | `--output-dir ./docs/qa` | Override `docs/test-case/` |
-| `--lang <code>` | `ja`,`ko`,`en` | `--lang ja` | Prose language. Default: auto-detect |
+| `--lang <code>` | `ja`,`ko`,`en`,`zh`,`es` | `--lang zh` | Prose language. Default: auto-detect |
 | `--filename <name>` | string | `--filename release-smoke` | Override derived filename (no `.md`) |
 | `--tasks-dir <path>` | path | `--tasks-dir ./docs/tasks` | Tasks directory (Task and Task Range input only) |
 | `--include-regression` | flag | | Add Regression section (B side) |
@@ -261,7 +261,7 @@ If the target file already exists, append `-v<N>` (never overwrite). Existing fi
 
 ### Single-file template (default, A+B)
 
-Write `<output-dir>/<filename>.md` using this skeleton. Keep front matter keys in English regardless of `--lang`; they are a machine surface. M/L tier inserts a TOC block and wraps Prerequisites/Edge Cases in `<details>`; S tier skips both.
+Write `<output-dir>/<filename>.md` using this skeleton. Keep front matter keys, section numbers, file names, code snippets, and template structure in English regardless of `--lang`; they are machine surfaces. M/L tier inserts a TOC block and wraps Prerequisites/Edge Cases in `<details>`; S tier skips both.
 
 ````markdown
 ---
@@ -423,12 +423,14 @@ Next steps:
 
 When `--lang` is not specified, choose in this order. A testsheet is read by humans, so match the language humans speak on this project — not the language the code is written in.
 
-1. **AGENTS.md / CODEX.md / CLAUDE.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `PR言語` → the strongest signal.
+1. **AGENTS.md / CODEX.md / CLAUDE.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `PR言語`, `中文 task docs`, or `PR Spanish로 작성` → the strongest signal.
 2. **Recent testsheets in the output directory** — match dominant prose language.
 3. **Project `README.md`** — language of the root README.
 4. **Fallback** — English.
 
-YAML front matter keys, section numbers, and the template skeleton stay in English regardless of `--lang`. Only prose (Summary, Goal, Steps, Expected, Notes, Edge Cases) follows the chosen language.
+Supported language codes are `ja`, `ko`, `en`, `zh`, and `es`. Treat aliases such as `japanese`, `korean`, `english`, `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol`, and `español` as requests for the matching code; `zh` / `chinese` means Simplified Chinese unless the user explicitly asks for a different Chinese locale.
+
+YAML front matter keys, section numbers, file names, code snippets, command names, and the template skeleton stay in English regardless of `--lang`. Only prose (Summary, Goal, Steps, Expected, Notes, Edge Cases, and audience-facing test descriptions) follows the chosen language. Technical terms that are part of the testsheet contract or tooling surface, such as Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status, and Sign-off, stay English in `zh` and `es` prose.
 
 ## Dry Run Mode
 

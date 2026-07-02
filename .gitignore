@@ -19,3 +19,4 @@ docs/ywc-plans
 tasks/
 .ywc-run-state.json
 .ywc-learnings.jsonl
+.worktrees/

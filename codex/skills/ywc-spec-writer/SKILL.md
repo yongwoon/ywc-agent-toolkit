@@ -1,14 +1,14 @@
 ---
 name: ywc-spec-writer
 description: >-
-  (ywc) Use when creating or updating a project specification (사양서) in docs/specification/, including task-range and PR-based incremental updates. Triggers: "spec 작성", "사양서 작성", "사양서 업데이트", "task 로 사양서 갱신", "PR 로 사양서 갱신", "여러 PR 로 사양서 갱신", "specification 작성", "프로젝트 사양", "전체 사양서", "write spec", "generate specification", "update spec from task range", "update spec from PRs", "project spec", "仕様書作成", "仕様書更新", "タスク範囲から仕様書更新", "PRから仕様書更新", "スペック作成", "ywc-spec-writer". Do not use for spec quality review (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), or pre-implementation planning without a spec intent (use ywc-plan).
+  (ywc) Use when creating or updating a project specification (사양서) in docs/specification/, including task-range and PR-based incremental updates. Triggers: "spec 작성", "사양서 작성", "사양서 업데이트", "task 로 사양서 갱신", "PR 로 사양서 갱신", "여러 PR 로 사양서 갱신", "specification 작성", "프로젝트 사양", "전체 사양서", "write spec", "generate specification", "update spec from task range", "update spec from PRs", "project spec", "Chinese spec", "Spanish specification", "中文规格", "中文 spec", "escribir especificación", "仕様書作成", "仕様書更新", "タスク範囲から仕様書更新", "PRから仕様書更新", "スペック作成", "ywc-spec-writer". Do not use for spec quality review (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), or pre-implementation planning without a spec intent (use ywc-plan).
 ---
 
 # ywc-spec-writer
 
 **Announce at start:** "I'm using the ywc-spec-writer skill to create or update the project specification in docs/specification/."
 
-Writes and maintains the `docs/specification/` directory. Produces human-readable markdown describing the project's goals, features, data model, user flows, and non-functional requirements — with **no program code**. Intended audience: developers and non-developers alike. Supports Korean, Japanese, and English output.
+Writes and maintains the `docs/specification/` directory. Produces human-readable markdown describing the project's goals, features, data model, user flows, and non-functional requirements — with **no program code**. Intended audience: developers and non-developers alike. Supports Korean, Japanese, English, Chinese (Simplified), and Spanish output.
 
 ## Rationalization Defense
 
@@ -46,7 +46,7 @@ When tempted to bypass a rule, check this table first:
 | `--from-pr` | `--from-pr <num>` | `--from-pr 42` | Update spec from a single pull request's diff. Requires `gh` CLI auth. |
 | `--from-prs` | `--from-prs <num> [<num> ...]` | `--from-prs 42 43 51` | Update spec from the union diff of multiple PRs. Each PR fetched via `gh pr diff`; duplicate files are coalesced. |
 | `--setup-hook` | flag | `--setup-hook` | Install git hook for automatic spec-update tracking. |
-| `--lang` | `--lang ko\|ja\|en` | `--lang ja` | Output language. Default: `ko`. |
+| `--lang` | `--lang ko\|ja\|en\|zh\|es` | `--lang ja` | Output language. Default: `ko`. |
 
 ## Workflow
 
@@ -82,8 +82,12 @@ If `--lang` is not specified, check project guidance files (`AGENTS.md`, `CODEX.
 > 1. 한국어 (ko) — 기본값
 > 2. English (en)
 > 3. 日本語 (ja)
+> 4. 中文 (zh, Simplified Chinese)
+> 5. Español (es)
 
 When asking, wait for the user's answer before proceeding.
+
+Accept explicit language requests using codes or names: `ko` / `korean` / `한국어`, `ja` / `japanese` / `日本語`, `en` / `english`, `zh` / `chinese` / `中文` / `Chinese (Simplified)`, and `es` / `spanish` / `espanol` / `español`. Treat `zh` and `chinese` as Simplified Chinese unless the user explicitly requests a different Chinese locale.
 
 For locale-specific writing rules (formality level, term policy), see [references/language-policy.md](references/language-policy.md).
 
@@ -253,7 +257,7 @@ For Full Generation / Full Refresh:
 Before declaring the skill's task complete:
 
 - [ ] Zero program code in any generated spec file
-- [ ] Language matches `--lang` option or default `ko`
+- [ ] Language matches `--lang ko|ja|en|zh|es` option or default `ko`
 - [ ] For incremental modes: only affected sections updated
 - [ ] `docs/specification/README.md` change log updated with today's date
 - [ ] Change log row includes the `<source>` column (mode + identifier per Step 7 table)

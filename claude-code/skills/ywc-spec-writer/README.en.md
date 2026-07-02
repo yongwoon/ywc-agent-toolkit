@@ -35,7 +35,7 @@ Project specification writer. Creates and maintains the `docs/specification/` di
 - (optional) `--from-commit <ref>` — commit reference (default: `HEAD`)
 - (optional) `--from-pr <num>` — single PR (requires gh CLI)
 - (optional) `--from-prs <num> ...` — multiple PRs, union diff (duplicate files auto-deduplicated)
-- (optional) `--lang ko|ja|en` — output language (default: `ko`)
+- (optional) `--lang ko|ja|en|zh|es` — output language (default: `ko`)
 - (optional) `--setup-hook` — install git pre-commit hook
 
 > `--from-pr` / `--from-prs` require the `gh` CLI to be installed and authenticated. PR title / body / `headRefOid` are recorded as narrative context and audit trail when the spec is updated.

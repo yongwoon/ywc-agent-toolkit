@@ -8,7 +8,7 @@
 
 ## Language Policy for Localized Documentation
 
-When writing or updating localized documentation (README files), follow the language policy for the target locale below. All non-README file bodies must be written entirely in English regardless of locale. Skill frontmatter `description` trigger phrases are the narrow exception: keep Korean/Japanese trigger examples when they are required for activation quality.
+When writing or updating localized documentation (README files), follow the language policy for the target locale below. All non-README file bodies must be written entirely in English regardless of locale. Skill frontmatter `description` trigger phrases are the narrow exception: keep Korean/Japanese/Chinese/Spanish trigger examples when they are required for activation quality.
 
 ### Korean (`README.md`)
 
@@ -34,6 +34,32 @@ When writing or updating localized documentation (README files), follow the lang
 | Cache Directory 管理 | キャッシュディレクトリ管理 |
 | Backend Service Logic | バックエンドサービスロジック |
 
+### Chinese (`README.zh.md`)
+
+- Write prose in Simplified Chinese
+- Preserve English for all technical terms — do not translate into Chinese
+- Generated Tier 2: carries an `AUTO-GENERATED` header and is translated from `README.en.md`
+
+| Correct | Incorrect |
+|---|---|
+| Database 连接配置 | 数据库连接配置 |
+| API Endpoint 实现 | 接口端点实现 |
+| Cache Directory 管理 | 缓存目录管理 |
+| Backend Service Logic | 后端服务逻辑 |
+
+### Spanish (`README.es.md`)
+
+- Write prose in Spanish
+- Preserve English for all technical terms — do not translate into Spanish
+- Generated Tier 2: carries an `AUTO-GENERATED` header and is translated from `README.en.md`
+
+| Correct | Incorrect |
+|---|---|
+| Configuración de Database | Configuración de base de datos |
+| Implementación de API Endpoint | Implementación de punto final |
+| Gestión de Cache Directory | Gestión de directorio de caché |
+| Backend Service Logic | Lógica de servicio backend |
+
 ## Technical Terms (Keep in English)
 
 The following terms must remain in English across all locales:
@@ -57,7 +83,7 @@ When creating a new `ywc-*` skill or modifying an existing skill's structure
   with `Do not use for ...` anti-triggers; multilingual triggers required)
 - Body structure (`**Announce at start:**` line, `## Rationalization Defense`
   table with ≥5 domain-specific Excuse / Reality pairs)
-- Filesystem (full README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`;
+- Filesystem (Tier 1 README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`; generated Tier 2 `.zh.md` / `.es.md` where present;
   long sections >30 lines extracted to `references/`)
 - Anti-patterns (workflow-summary descriptions, stub code, `@` cross-references,
   vague language without thresholds)

@@ -22,17 +22,19 @@ Specification 을 제공하고 Task 생성을 요청합니다.
 
 ### 언어 옵션
 
-이 Skill 은 Korean, Japanese, English 출력을 지원합니다.
+이 Skill 은 Korean, Japanese, English, Chinese, Spanish 출력을 지원합니다.
 
 | 언어     | 예시                                 |
 | -------- | ------------------------------------ |
 | Korean   | `Output in Korean.`                  |
 | Japanese | `日本語でタスクを生成してください。` |
 | English  | `Generate tasks in English.`         |
+| Chinese  | `用中文生成 task。`                  |
+| Spanish  | `Genera las tareas en español.`      |
 
 언어를 지정하지 않으면 확인합니다.
 
-Korean, Japanese 출력에서는 Technical 용어를 English 로 유지합니다.
+Korean, Japanese, Chinese, Spanish 출력에서는 Technical 용어를 English 로 유지합니다.
 
 ### Granularity Mode 옵션
 
