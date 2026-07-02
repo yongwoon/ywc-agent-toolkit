@@ -57,7 +57,7 @@
     },
     {
       "id": 4,
-      "name": "from-task-simplified-chinese-output",
+      "name": "from-task-chinese-output",
       "prompt": "Use ywc-spec-writer --from-task tasks/000124-010-billing-rules --lang zh.",
       "context": {
         "task_category": "business-logic",
