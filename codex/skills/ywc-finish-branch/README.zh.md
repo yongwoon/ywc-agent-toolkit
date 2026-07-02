@@ -24,28 +24,28 @@
 ### 默认（基于 PR）
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop
 ```
 
 ### 本地合并
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch main
 ```
 
 ### 延迟推送的范围模式
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
+$ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
 
 ### PR 语言
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
 ```
 
@@ -54,7 +54,7 @@
 ### Worktree path 模式
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+$ywc-finish-branch --mode local-merge --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 

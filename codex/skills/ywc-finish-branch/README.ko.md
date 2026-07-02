@@ -20,28 +20,28 @@ Feature Branch를 Base Branch에 전달(deliver)하는 Codex Skill입니다. Mar
 ### 기본 사용 (PR-based)
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop
 ```
 
 ### Local Merge
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch main
 ```
 
 ### Range 모드에서 push 지연
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
+$ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
 
 ### PR 언어 지정
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
 ```
 
@@ -50,7 +50,7 @@ Feature Branch를 Base Branch에 전달(deliver)하는 Codex Skill입니다. Mar
 ### Worktree path mode
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+$ywc-finish-branch --mode local-merge --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 

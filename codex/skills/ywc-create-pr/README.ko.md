@@ -18,12 +18,12 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 ## 사용 방법
 
 ```text
-/create-pr
-/create-pr main
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
-/create-pr --lang zh
-/create-pr --language spanish
+$ywc-create-pr
+$ywc-create-pr main
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 자연어 Trigger는 [SKILL.md](./SKILL.md)에 정의되어 있습니다.

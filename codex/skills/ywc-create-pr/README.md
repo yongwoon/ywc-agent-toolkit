@@ -20,22 +20,22 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 ### 기본 사용
 
 ```
-/create-pr
+$ywc-create-pr
 ```
 
 ### Base Branch 지정
 
 ```
-/create-pr main
+$ywc-create-pr main
 ```
 
 ### CI Check Skip
 
 ```
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
-/create-pr --lang zh
-/create-pr --language spanish
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 ### 자연어 호출

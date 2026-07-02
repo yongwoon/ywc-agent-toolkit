@@ -20,28 +20,28 @@ A single-responsibility extraction of the delivery logic that `ywc-sequential-ex
 ### Default (PR-based)
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop
 ```
 
 ### Local Merge
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch main
 ```
 
 ### Range mode with deferred push
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
+$ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
 
 ### PR language
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
 ```
 
@@ -50,7 +50,7 @@ Supported values: `en`, `ja`, `ko`, `zh`, `es`.
 ### Worktree path mode
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+$ywc-finish-branch --mode local-merge --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 

@@ -22,12 +22,12 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 ## Uso
 
 ```text
-/create-pr
-/create-pr main
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
-/create-pr --lang zh
-/create-pr --language spanish
+$ywc-create-pr
+$ywc-create-pr main
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).

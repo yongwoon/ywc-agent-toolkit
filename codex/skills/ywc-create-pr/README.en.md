@@ -18,12 +18,12 @@ After work on a feature branch is complete, this Skill automates the flow from c
 ## Usage
 
 ```text
-/create-pr
-/create-pr main
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
-/create-pr --lang zh
-/create-pr --language spanish
+$ywc-create-pr
+$ywc-create-pr main
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 Natural-language triggers are defined in [SKILL.md](./SKILL.md).

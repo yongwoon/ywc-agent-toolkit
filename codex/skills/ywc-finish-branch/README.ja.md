@@ -20,28 +20,28 @@ Feature Branch を Base Branch に deliver する Codex Skill です。Mark-PR-r
 ### 基本 (PR-based)
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop
 ```
 
 ### Local Merge
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch main
 ```
 
 ### Range mode で push を遅延
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
+$ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
 
 ### PR language
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
+$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
 ```
 
@@ -50,7 +50,7 @@ Feature Branch を Base Branch に deliver する Codex Skill です。Mark-PR-r
 ### Worktree path mode
 
 ```
-/ywc-finish-branch --mode local-merge --branch feature/<task-name> \
+$ywc-finish-branch --mode local-merge --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 

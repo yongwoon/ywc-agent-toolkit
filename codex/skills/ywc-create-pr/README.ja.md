@@ -18,12 +18,12 @@ Feature Branch での作業完了後、Commit 作成から Draft PR 作成まで
 ## 使用方法
 
 ```text
-/create-pr
-/create-pr main
-/create-pr --skip-ci-check
-/create-pr main --skip-ci-check
-/create-pr --lang zh
-/create-pr --language spanish
+$ywc-create-pr
+$ywc-create-pr main
+$ywc-create-pr --skip-ci-check
+$ywc-create-pr main --skip-ci-check
+$ywc-create-pr --lang zh
+$ywc-create-pr --language spanish
 ```
 
 自然言語 Trigger は [SKILL.md](./SKILL.md) に定義されています。
