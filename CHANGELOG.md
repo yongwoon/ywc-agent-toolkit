@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** sync planning, PR health, spec validation, onboarding, and parity workflow updates into the Codex plugin package.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.23.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.22.4...v1.23.0) (2026-07-02)
+
+
+### ### Added
+
+* **skills:** add English/Chinese/Spanish support to ywc-project-docs ([#118](https://github.com/yongwoon/ywc-agent-toolkit/issues/118)) ([1ed4e52](https://github.com/yongwoon/ywc-agent-toolkit/commit/1ed4e5254b57ff5681f6ae52adbc915621a12fa8))
+* ywc 스킬 zh/es 언어 지원 추가 ([#120](https://github.com/yongwoon/ywc-agent-toolkit/issues/120)) ([e2e3cf5](https://github.com/yongwoon/ywc-agent-toolkit/commit/e2e3cf5e9b22c21fed72adb4e881979cc46a7e8e))
+
 ## [1.22.4](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.22.3...v1.22.4) (2026-07-01)
 
 
