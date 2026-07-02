@@ -315,7 +315,7 @@ If any stub patterns appear in implementation files, complete the implementation
 
 Run verification in three layers, from narrowest to broadest. Each layer must pass before moving on.
 
-1. **Task Verify commands** — Run each command listed in the `task.md` Task Verify section. These are the task-author's definition of "this specific change works."
+1. **Task Verify commands** — Run each command listed in the `task.md` Task Verify section. These are the task-author's definition of "this specific change works." For DB/API write tasks, generated Task Verify entries covering concurrent write behavior, transaction rollback / partial-write prevention, or durable idempotency are mandatory task-specific gates: adapt the command to the project's harness when necessary, but do not replace them with only lint, typecheck, build, or broad test commands.
 
 2. **Task-local test run** — Explicitly run the tests you authored or touched in Step 3, even if they overlap with (1). This catches the case where a task's Verify section is stale or missing the new tests.
 

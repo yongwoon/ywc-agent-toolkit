@@ -53,7 +53,7 @@ Cuando no se especifica ninguna tarea, la Skill analiza el grafo de dependencias
 | `--dry-run` | Mostrar el plan de ejecución (orden de tareas, dependencias, modo) sin ejecutar | |
 
 > `--local-merge`, `--draft` y `--skip-ci-wait` son mutuamente excluyentes. La Skill se detiene y pregunta qué modo se pretendía si se pasa más de uno.
-> `--local-merge` **no ejecuta CI remoto**, por lo que la única red de seguridad para el merge es la verificación local del Paso 4 (lint/typecheck/test). Evítalo para cambios sensibles.
+> `--local-merge` **no ejecuta CI remoto**, por lo que la única red de seguridad para el merge es la verificación local del Paso 4 (Task Verify, gates de concurrency/rollback/idempotency para tareas DB/API write, lint/typecheck/test). Evítalo para cambios sensibles.
 
 ## Contrato y baseline TDD
 
@@ -96,7 +96,7 @@ Paso 3: Implementación
   └─ Implementar siguiendo los Pasos de Implementación de task.md, hacer commit en límites lógicos
 
 Paso 4: Verificación de Tarea
-  └─ Ejecutar comandos de Verificación de Tarea y lint/typecheck/test
+  └─ Ejecutar comandos de Verificación de Tarea y lint/typecheck/test (incluidos gates de concurrency/rollback/idempotency para tareas DB/API write)
 
 Paso 5: Creación de PR
   └─ Invocar Skill create-pr (incluye verificación de seguridad, validación pre-push de CI)
@@ -183,7 +183,7 @@ Usar cuando el flujo de trabajo con PR es innecesario — por ejemplo, proyectos
 /ywc-sequential-executor 000001-010-db-create-users-table --local-merge
 ```
 
-El lint/typecheck/test del Paso 4 sigue ejecutándose. En caso de éxito, la rama de función se mergea en la rama base con `git merge --no-ff` y se hace push.
+El Task Verify, los gates de concurrency/rollback/idempotency para tareas DB/API write y lint/typecheck/test del Paso 4 siguen ejecutándose. En caso de éxito, la rama de función se mergea en la rama base con `git merge --no-ff` y se hace push.
 
 ## Activación
 
