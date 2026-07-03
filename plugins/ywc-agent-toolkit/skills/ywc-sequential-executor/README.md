@@ -124,7 +124,7 @@ Stale `.ywc-run-state.json` guard도 이 mode에 적용됩니다. 저장된 run-
 
 ## PR Language
 
-Explicit `--pr-lang en|ja|ko|zh|es` fixes PR title/body language and is passed unchanged to downstream PR creation. If omitted or `auto`, the executor resolves language through shared YWC language policy (`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user) before recent PR title/body history or project dominant-language heuristics.
+Explicit `--pr-lang en|ja|ko|zh|es` fixes PR title/body language and is passed unchanged to downstream PR creation. If omitted or `auto`, the executor resolves language through shared YWC language policy (`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user) and asks the user if no tier resolves a language.
 
 ## Error Handling
 

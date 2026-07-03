@@ -45,7 +45,7 @@ Resolve the target language before doing anything else using
 [`../references/language-resolution.md`](../references/language-resolution.md):
 
 1. **`--lang` option present** — use it directly, no question needed.
-   - `--lang kr` → Korean
+   - `--lang ko` → Korean (`kr` remains accepted as a legacy alias)
    - `--lang ja` → Japanese
    - `--lang en` → English
    - `--lang zh` → Chinese (Simplified)

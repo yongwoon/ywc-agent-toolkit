@@ -98,7 +98,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | Codex output language 기본값 설정 | `ywc-setup` | `ywc-setup --scope project --lang ko` / `ywc-setup --scope user --lang ja` |
 | 도메인 용어집 / Ubiquitous Language 작성·관리 | `ywc-ubiquitous-language` | new (신규) / extract (코드 추출) / update (갱신) 자동 감지 |
 | 신규 프로젝트 구조 생성 | `ywc-project-scaffold` | Directory 구조 Markdown 생성 |
-| 한국어/일본어 문서 생성 | `ywc-project-docs` | docs/ 규약 준수 (`--lang kr` / `--lang ja`) |
+| 한국어/일본어 문서 생성 | `ywc-project-docs` | docs/ 규약 준수 (`--lang ko` / `--lang ja`) |
 | 새 ywc-* skill 작성 / 기존 skill 구조 개선 | `ywc-skill-author` | (메타 skill) 표준 규칙 강제 |
 | Rough idea / "이런 거 만들고 싶은데" → 승인된 design | `ywc-brainstorm` | ywc-plan 의 Step 1.0 에서도 자동 위임. 6단계 Socratic dialogue (terminal = ywc-plan handoff) |
 | 완료 선언 전 fresh 검증 (commit / PR / executor handoff 직전) | `ywc-verify-done` | "should/probably/seems" 금지. 5단계 Gate Function (IDENTIFY→RUN→READ→VERIFY→CLAIM) |
@@ -119,15 +119,15 @@ ywc-setup --scope project --lang ko
 ywc-setup --scope user --lang ja
 ```
 
-Language resolution order:
+언어 결정 순서:
 
-1. explicit `--lang`
-2. project `.codex/ywc.json`
-3. project guidance `AGENTS.md` / `CODEX.md` / `CLAUDE.md`
-4. user `~/.codex/ywc.json`
-5. ask user
+1. 명시적 `--lang`
+2. 프로젝트 `.codex/ywc.json`
+3. 프로젝트 가이드 `AGENTS.md` / `CODEX.md` / `CLAUDE.md`
+4. 사용자 `~/.codex/ywc.json`
+5. 사용자에게 질문
 
-Session defaults are unsupported; no session config file is used. Conversation language follows the user naturally. See [`references/language-resolution.md`](./references/language-resolution.md).
+세션 기본값은 지원하지 않으며, 별도의 세션 설정 파일도 사용하지 않습니다. 대화 언어는 사용자의 언어를 자연스럽게 따릅니다. 자세한 내용은 [`references/language-resolution.md`](./references/language-resolution.md)를 참고하세요.
 
 ### 표준 개발 Pipeline
 

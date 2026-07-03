@@ -2,7 +2,7 @@
 
 프로젝트의 `docs/` 디렉터리 구조와 규칙에 맞춰 한국어, 일본어, 영어, 중국어, 스페인어 문서를 생성하는 Codex Skill.
 
-`--lang kr|ja|en|zh|es` 옵션이 있으면 그대로 사용합니다. 없으면 shared YWC language policy (`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > 질문) 로 resolve 합니다.
+`--lang ko|ja|en|zh|es` 옵션이 있으면 그대로 사용합니다. 없으면 shared YWC language policy (`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > 질문) 로 resolve 합니다.
 
 ## 사용 방법
 
@@ -32,7 +32,7 @@
 
 ```text
 $ywc-project-docs              # shared language policy 로 언어 resolve
-$ywc-project-docs --lang kr    # 한국어로 바로 작성
+$ywc-project-docs --lang ko    # 한국어로 바로 작성
 $ywc-project-docs --lang ja    # 일본어로 바로 작성
 $ywc-project-docs --lang en    # 영어로 바로 작성
 $ywc-project-docs --lang zh    # 중국어(간체)로 바로 작성

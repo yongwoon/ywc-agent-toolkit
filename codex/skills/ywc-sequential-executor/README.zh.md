@@ -124,10 +124,9 @@
 ## PR 语言
 
 Explicit `--pr-lang en|ja|ko|zh|es` 会固定 PR title/body 语言，并原样传递给
-downstream PR 创建。省略或为 `auto` 时，executor 先按 shared YWC language policy
+downstream PR 创建。省略或为 `auto` 时，executor 只按 shared YWC language policy
 resolve（`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` >
-`~/.codex/ywc.json` > 询问用户），再考虑最近 PR history 或 project
-dominant-language heuristic。
+`~/.codex/ywc.json` > 询问用户）；如果没有任何层级解析出语言，则询问用户。
 
 ## 错误处理
 

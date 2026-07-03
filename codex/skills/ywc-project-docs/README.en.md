@@ -4,7 +4,7 @@ A Codex Skill for generating Korean, Japanese, English, Chinese, or Spanish
 documentation that follows the project's `docs/` directory structure and
 conventions.
 
-If `--lang kr|ja|en|zh|es` is provided, it is used directly. Otherwise the skill resolves language through shared YWC language policy: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user.
+If `--lang ko|ja|en|zh|es` is provided, it is used directly. Otherwise the skill resolves language through shared YWC language policy: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user.
 
 ## Usage
 
@@ -31,7 +31,7 @@ The skill activates on natural-language phrases such as:
 
 ```text
 $ywc-project-docs              # resolves language through shared policy
-$ywc-project-docs --lang kr    # write in Korean directly
+$ywc-project-docs --lang ko    # write in Korean directly
 $ywc-project-docs --lang ja    # write in Japanese directly
 $ywc-project-docs --lang en    # write in English directly
 $ywc-project-docs --lang zh    # write in Simplified Chinese directly
