@@ -81,10 +81,34 @@ entirely for genuinely single-owner or non-relational code (note the skip).
   silently becomes "measured zero", and any preview / diagnostic / billing logic
   downstream misreads a missing value as a real one. Keep `null` / `undefined`
   and let the consumer decide.
+- **Concurrent write / race condition safety for duplicate-sensitive flows.**
+  Stock, balance, credits, quota, seats, counters, and similar shared mutable
+  values must not be updated with application-level `read-modify-write` logic.
+  Prefer an atomic conditional update with an affected-row check for simple
+  counters, a row lock inside a transaction for complex decision logic, or an
+  optimistic version check when conflicts are expected to be rare. If the system
+  spans multiple stores or services, also check whether the architecture needs a
+  durable idempotency guard or distributed coordination rather than relying on a
+  single row lock.
+- **Transaction boundary / partial write prevention.** Multi-step logical writes
+  such as stock decrement + order creation, balance debit + ledger entry, or
+  provisioning + entitlement write must be all-or-nothing. Flag code that writes
+  one step before another without a transaction boundary, rollback-capable unit
+  of work, or equivalent consistency mechanism.
+- **Durable idempotency for retryable side effects.** Payment, order, and
+  provisioning APIs must tolerate duplicate requests, client retries, and
+  double-clicks with a durable idempotency key, unique constraint, or persisted
+  request/result record. In-memory `Set` values, process-local booleans, and
+  best-effort flags are insufficient for production retry paths.
 
 Severity guide: cross-boundary reference or cascade reaching another owner →
 Critical. Missing ownership predicate on a read path → High. `NULL`→`0` collapse
-→ High when it feeds billing/diagnostics, Medium otherwise.
+→ High when it feeds billing/diagnostics, Medium otherwise. Oversell,
+double-charge, cross-ledger inconsistency, or duplicate provisioning → Critical.
+Missing transaction on a money/order/provisioning path → High or Critical by
+blast radius. In-memory idempotency on a duplicate-sensitive production retry
+path → High. Missing concurrency / idempotency coverage for affected code → QA
+High unless another integration test proves the same behavior.
 
 ## 2. Error handling & external-call resilience
 

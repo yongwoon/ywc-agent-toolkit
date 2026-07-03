@@ -30,6 +30,7 @@ When tempted to skip a step, check this table first:
 | "4-dimension review is fast enough sequentially" | Phase 1 fan-out cuts latency on large specs; each Sonnet subagent handles one dimension, reducing per-call context and preventing cross-dimension finding contamination. |
 | "Spec passed and tasks were generated from it, so they must agree" | task-generator can silently drop or reinterpret a requirement. When `--tasks` is set, build the Requirement Coverage table (Step 4c) — an UNCOVERED FR ships an incomplete feature while every spec-internal claim still validates cleanly. Drift between artifacts is invisible to spec-only review. |
 | "Every spec deserves the full 2 advisor calls" | Right-size the *advisor/council* spend (not the cheap Sonnet fan-out): a single-section follow-up does not need the same Opus budget as a 15-AC multi-module spec. Spending advisor calls on a trivial spec wastes tokens; under-spending on a cross-cutting one misses real trade-offs. Apply the Complexity-Aware Budget Defaults before Phase 1. |
+| "spec has no code yet, so concurrency is an implementation-phase problem" | Missing concurrency/transaction/idempotency requirements for a duplicate-sensitive write are a Completeness Critical — caught at the spec stage. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
 
@@ -77,7 +78,7 @@ When tempted to skip a step, check this table first:
 
    | Subagent | Model | Dimension | Focus |
    |---|---|---|---|
-   | Completeness | sonnet | Completeness | Missing required items, edge cases, pagination |
+   | Completeness | sonnet | Completeness | Missing required items, edge cases, pagination. For a **duplicate-sensitive write flow** (stock/balance/order/payment/provisioning/quota) also check whether the spec specifies: (a) concurrent-request behavior, (b) the transaction/consistency boundary spanning multiple DB writes, (c) handling of duplicate client retry / double-click, (d) the failure response/status when stock/balance/quota is exhausted or a lock/version mismatch occurs. Missing any → a Completeness finding: **Critical** when the gap can cause double charge / oversell / lost ledger / duplicate provisioning, otherwise **Warning** |
    | Consistency | sonnet | Consistency | Terminology mismatches; Synonyms-to-Avoid violations |
    | Feasibility | sonnet | Feasibility + Simplicity | Implementable with current stack and dependencies; also flag over-engineering — abstraction, configurability, or generality the stated scope does not yet require (surface as Warning) |
    | Code Compatibility | sonnet | Code Compatibility | Conflicts with existing schema, API routes, type definitions |

@@ -4,6 +4,8 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
 
+> 📖 **[Documentation & Guidebook](https://yongwoon.github.io/ywc-agent-toolkit-lp/en/guidebook/)** — step-by-step guides for getting started, choosing the right skill, and running the full workflow.
+
 ## Supported Tools
 
 | Tool        | Skills | Custom Agents | Install path                             |
@@ -29,6 +31,24 @@ At **skill runtime** (not required for installation):
 | ---- | ------- | ------- |
 | `python3 ≥ 3.9` | Skill runtime helpers: `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot`; Claude Code hooks require Python ≥ 3.11 | Pre-installed on macOS 12.3+; `brew install python3` |
 | `gh` CLI | PR-based and GitHub release skills/modes: `ywc-handle-pr-reviews`, `ywc-spec-writer --from-pr/--from-prs`, `ywc-release-pr-list`, `ywc-create-pr`, `ywc-finish-branch` PR mode, `ywc-merge-dependabot`, `ywc-sequential-executor`/`ywc-parallel-executor`, `ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
+
+For PR-based skills, authenticate GitHub CLI before use:
+
+```bash
+gh auth login
+gh auth setup-git
+gh auth status
+```
+
+Recommended for contributors and local CI parity:
+
+| Tool | Used by | Install |
+| ---- | ------- | ------- |
+| `uv` | Claude Code Python hooks | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| `ripgrep` (`rg`) | Fast repository scans in onboarding, validation, and reviews | `brew install ripgrep` / `apt-get install ripgrep` |
+| `node` / `npm` / `npx` | Markdown lint, Playwright setup, JS/TS cleanup helpers | [nodejs.org](https://nodejs.org/) or a Node version manager |
+| `shellcheck` | Mirrors the GitHub Actions shell script lint gate | `brew install shellcheck` / `apt-get install shellcheck` |
+| `markdownlint-cli2` | Mirrors the GitHub Actions Markdown lint gate | `npm install -g markdownlint-cli2` |
 
 ---
 
@@ -96,6 +116,13 @@ bash scripts/install-git-hooks.sh
 With the hooks installed, commits that stage `codex/skills` changes run `bash scripts/sync-codex-plugin.sh`, stage the generated `plugins/ywc-agent-toolkit` package, and then run `bash scripts/validate.sh`. Pushes that include Codex skill or package changes also run the stale-package check and validation.
 
 If hooks are not installed, run the same commands manually before committing:
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+If `bash scripts/validate.sh` reports that `plugins/ywc-agent-toolkit/skills` is stale, rebuild the generated package first:
 
 ```bash
 bash scripts/sync-codex-plugin.sh

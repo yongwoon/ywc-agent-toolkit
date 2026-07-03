@@ -6,6 +6,10 @@
 
 ---
 
+> 📖 **[ドキュメント & ガイドブック](https://yongwoon.github.io/ywc-agent-toolkit-lp/ja/guidebook/)** — 導入・スキル選択・ワークフロー全体の実行を段階的に案内します。
+
+---
+
 Claude Code および Codex 向けの開発ワークフロー自動化スキル集です。
 計画立案・仕様書作成・タスク分解・コード生成・レビュー・リリースまでをカバーします。
 
@@ -29,6 +33,24 @@ Claude Code および Codex 向けの開発ワークフロー自動化スキル�
 | ------ | ---------- | ------------ |
 | `python3 ≥ 3.9` | スキルランタイムの補助処理: `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot`; Claude Code hooks は Python ≥ 3.11 が必要 | macOS 12.3+ にプリインストール済み; `brew install python3` |
 | `gh` CLI | PR ベースおよび GitHub release のスキル/モード: `ywc-handle-pr-reviews`, `ywc-spec-writer --from-pr/--from-prs`, `ywc-release-pr-list`, `ywc-create-pr`, `ywc-finish-branch` の PR モード, `ywc-merge-dependabot`, `ywc-sequential-executor`/`ywc-parallel-executor`, `ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
+
+PR ベースのスキルを使う前に GitHub CLI の認証を完了してください:
+
+```bash
+gh auth login
+gh auth setup-git
+gh auth status
+```
+
+contributor と local CI parity 向けの推奨ツール:
+
+| ツール | 使用箇所 | インストール |
+| ------ | -------- | ------------ |
+| `uv` | Claude Code Python hooks の実行 | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| `ripgrep` (`rg`) | onboarding, validation, review での高速 repository scan | `brew install ripgrep` / `apt-get install ripgrep` |
+| `node` / `npm` / `npx` | Markdown lint, Playwright setup, JS/TS cleanup helper | [nodejs.org](https://nodejs.org/) または Node version manager |
+| `shellcheck` | GitHub Actions shell script lint gate と同等の local check | `brew install shellcheck` / `apt-get install shellcheck` |
+| `markdownlint-cli2` | GitHub Actions Markdown lint gate と同等の local check | `npm install -g markdownlint-cli2` |
 
 ---
 
@@ -96,6 +118,13 @@ bash scripts/install-git-hooks.sh
 Hook がインストールされている場合、`codex/skills` の変更が staged された commit で `bash scripts/sync-codex-plugin.sh` が実行され、generated package `plugins/ywc-agent-toolkit` が自動的に stage され、その後 `bash scripts/validate.sh` が実行されます。Codex skill/package の変更を含む push でも stale package check と validation が実行されます。
 
 Hook をインストールしていない環境では、commit 前に同じコマンドを手動で実行してください:
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+`bash scripts/validate.sh` が `plugins/ywc-agent-toolkit/skills` の stale 状態を報告した場合は、先に generated package を再生成してください:
 
 ```bash
 bash scripts/sync-codex-plugin.sh

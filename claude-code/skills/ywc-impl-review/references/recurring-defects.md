@@ -86,6 +86,36 @@ Severity guide: cross-boundary reference or cascade reaching another owner →
 Critical. Missing ownership predicate on a read path → High. `NULL`→`0` collapse
 → High when it feeds billing/diagnostics, Medium otherwise.
 
+### Write consistency under concurrency
+
+Integrity is not only about *who* may touch a row (ownership) but *whether
+concurrent writers corrupt it*. Shared mutable values and multi-step writes are
+the recurring gap here.
+
+- **Concurrent write safety.** Shared mutable values (stock / balance / credits
+  / quota / seats / counter) must not be updated with an application-level
+  `read → modify → write` — two concurrent requests both read the old value and
+  the second overwrites the first's change (lost update / oversell). Depending on
+  logic complexity, use one of: an atomic conditional update (`UPDATE ... SET
+  stock = stock - 1 WHERE id = ? AND stock >= 1`, then check the affected-row
+  count), a row lock (`SELECT ... FOR UPDATE`), or an optimistic version check
+  (`WHERE version = ?` + version bump).
+- **Transaction boundary.** Multi-step logical writes (stock decrement + order
+  create, balance decrement + ledger record) must be all-or-nothing — wrap them
+  in one transaction so a mid-flow failure rolls back every step, never leaving a
+  decremented balance with no ledger row.
+- **Durable idempotency (cross-reference).** For retryable side effects, see §4
+  [Idempotency must be durable](#4-security-specifics).
+- **Scan cue:** Local/sequential green tests are not evidence of concurrency
+  safety — surface a finding when shared mutable-value writes lack an atomicity
+  mechanism.
+
+Severity guide: oversell / double-charge / cross-ledger corruption → Critical;
+money / order / provisioning transaction-boundary gap → High or Critical by blast
+radius; duplicate-sensitive idempotency kept only in in-memory state → High;
+absence of a concurrency test for code with these hazards → QA axis, High (unless
+another integration test already proves the safe behavior).
+
 ## 2. Error handling & external-call resilience
 
 - **No swallowing catch.** An empty `catch {}`, `catch(() => undefined)`, or

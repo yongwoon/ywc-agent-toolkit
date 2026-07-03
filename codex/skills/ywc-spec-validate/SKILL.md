@@ -75,10 +75,18 @@ When tempted to skip a step, check this table first:
 
    | Worker | Dimension | Focus |
    |---|---|---|
-   | Completeness | Completeness | Missing required items, edge cases, pagination, Step 3.5 OMITTED rows |
+   | Completeness | Completeness | Missing required items, edge cases, pagination, duplicate-sensitive write consistency, Step 3.5 OMITTED rows |
    | Consistency | Consistency | Terminology mismatches; Synonyms-to-Avoid violations |
    | Feasibility | Feasibility | Implementable with current stack and dependencies |
    | Code Compatibility | Code Compatibility | Conflicts with existing schema, API routes, type definitions |
+
+   **Completeness — duplicate-sensitive write consistency.** When the spec defines payment, order creation, provisioning, credit / balance / stock / quota mutation, or any similar duplicate-sensitive write flow, the Completeness worker must check whether the spec states:
+   - What happens under concurrent requests for the same resource.
+   - Whether multiple DB writes are inside one transaction or equivalent consistency boundary.
+   - How duplicate client retries, network retries, or double-clicks are handled, including idempotency behavior.
+   - Which observable failure response / status is returned when stock, balance, or quota is exhausted, or when a lock / version / atomic conditional update check fails.
+
+   Missing requirements in these flows are Completeness findings. Use Critical when the omission can produce a double charge, oversell, lost ledger entry, or duplicate provisioning; otherwise use Warning.
 
    Each worker returns:
    - **Confirmed findings** — dimension label, severity (Critical / Warning / Suggestion), file:line, description, improvement
@@ -119,7 +127,7 @@ When tempted to skip a step, check this table first:
 
 | Dimension | Review Focus |
 |-----------|-------------|
-| Completeness | Missing required items (error handling, edge cases, pagination, etc.) |
+| Completeness | Missing required items (error handling, edge cases, pagination, duplicate-sensitive write consistency, etc.) |
 | Consistency | Terminology, format, or data structure mismatches across documents; spec terms appearing in the "Synonyms to Avoid" column of `docs/ubiquitous-language.md` |
 | Feasibility | Whether the spec can be implemented with the current stack |
 | Code Compatibility | Conflicts with existing DB schema, API route patterns |

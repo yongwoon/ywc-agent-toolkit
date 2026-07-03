@@ -6,6 +6,10 @@
 
 ---
 
+> 📖 **[文档 & 指南手册](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/)** — 分步引导你完成入门、技能选择和运行完整工作流。
+
+---
+
 面向 Claude Code 和 Codex 的开发工作流自动化技能集合。
 涵盖计划制定、规格书撰写、任务分解、代码生成、审查和发布的完整开发流程。
 
@@ -29,6 +33,24 @@
 | ---- | ------------ | -------- |
 | `python3 ≥ 3.9` | Skill 运行时辅助功能：`ywc-parallel-executor`、`ywc-finish-branch`、`ywc-merge-dependabot`；Claude Code hooks 需要 Python ≥ 3.11 | macOS 12.3+ 已预装；`brew install python3` |
 | `gh` CLI | 基于 PR 和 GitHub release 的 Skill/模式：`ywc-handle-pr-reviews`、`ywc-spec-writer --from-pr/--from-prs`、`ywc-release-pr-list`、`ywc-create-pr`、`ywc-finish-branch` PR 模式、`ywc-merge-dependabot`、`ywc-sequential-executor`/`ywc-parallel-executor`、`ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
+
+使用基于 PR 的 Skill 前，请先完成 GitHub CLI 认证：
+
+```bash
+gh auth login
+gh auth setup-git
+gh auth status
+```
+
+推荐贡献者安装以下工具，以便与本地 CI parity 保持一致：
+
+| 工具 | 用途 | 安装方式 |
+| ---- | ---- | -------- |
+| `uv` | 运行 Claude Code Python hooks | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| `ripgrep` (`rg`) | onboarding、validation、review 中的快速 repository scan | `brew install ripgrep` / `apt-get install ripgrep` |
+| `node` / `npm` / `npx` | Markdown lint、Playwright setup、JS/TS cleanup helper | [nodejs.org](https://nodejs.org/) 或 Node version manager |
+| `shellcheck` | 与 GitHub Actions shell script lint gate 对齐的本地检查 | `brew install shellcheck` / `apt-get install shellcheck` |
+| `markdownlint-cli2` | 与 GitHub Actions Markdown lint gate 对齐的本地检查 | `npm install -g markdownlint-cli2` |
 
 ---
 
@@ -96,6 +118,13 @@ bash scripts/install-git-hooks.sh
 安装 hooks 后，当 commit 中 staged 了 `codex/skills` 变更时，会运行 `bash scripts/sync-codex-plugin.sh`，自动 stage generated package `plugins/ywc-agent-toolkit`，然后运行 `bash scripts/validate.sh`。包含 Codex skill/package 变更的 push 也会运行 stale package check 和 validation。
 
 如果当前环境没有安装 hooks，请在 commit 前手动运行同样的命令：
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+如果 `bash scripts/validate.sh` 报告 `plugins/ywc-agent-toolkit/skills` 已 stale，请先重新生成 generated package：
 
 ```bash
 bash scripts/sync-codex-plugin.sh

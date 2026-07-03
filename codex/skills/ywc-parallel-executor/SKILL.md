@@ -269,7 +269,7 @@ If setup exits 1, mark that task `BLOCKED`, preserve its branch/worktree for rec
 | `NEEDS_CONTEXT` | Provide missing context and re-dispatch the same subagent at the same model class. |
 | Status absent or unparseable | Treat as `BLOCKED`; preserve the worktree and surface the raw payload. |
 
-**4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`. If behavior changed, also run authored/touched contract or behavior tests before broad verification; a worker with no test evidence must be re-dispatched, marked `DONE_WITH_CONCERNS`, or blocked with a TDD exception.
+**4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`. For DB/API write tasks, generated Task Verify entries covering concurrent write behavior, transaction rollback / partial-write prevention, and durable idempotency are mandatory task-specific gates: adapt the command to the project's harness when necessary, but do not replace them with only lint, typecheck, build, CI, or broad test commands. If behavior changed, also run authored/touched contract or behavior tests before broad verification; a worker with no test evidence must be re-dispatched, marked `DONE_WITH_CONCERNS`, or blocked with a TDD exception.
 
 **4d. Review (optional)** — If `--review` is set, auto-invoke `ywc-impl-review` on the task's worktree branch after Task Verify (4c) and before the Wave Delivery (4e). For `--local-merge`, `--draft`, and `--aggregate-pr`, this is the last quality gate before the change reaches base with no remote bot review yet. For `--per-task-pr`, a remote bot review also runs after PR creation (Step 4e (a)), so here `--review` acts as a pre-PR gate that reduces bot round-trips rather than being the only gate.
 
