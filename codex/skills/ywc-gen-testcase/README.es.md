@@ -68,7 +68,7 @@ $ywc-gen-testcase --from-diff
 | Opción | Descripción | Ejemplo |
 | --- | --- | --- |
 | `--output-dir <path>` | Sobreescribir directorio de salida (predeterminado: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`, `zh`, `es`). Predeterminado: detección automática | `--lang es` |
+| `--lang <code>` | Idioma de la hoja de pruebas (`ja`, `ko`, `en`, `zh`, `es`). Resuelto por la política YWC compartida | `--lang es` |
 | `--filename <name>` | Sobreescribir nombre de archivo (sin `.md`) | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | Directorio de tareas usado por entradas de Tarea y Rango de tareas (predeterminado: `tasks/`) | `--tasks-dir ./docs/tasks` |
 | `--format <fmt>` | Formato de salida (`markdown` \| `html`). Predeterminado: `markdown` | `--format html` |
@@ -189,12 +189,11 @@ Aplicado de forma consistente, la mayoría de las hojas de pruebas de nivel M se
 
 ## Detección de idioma
 
-Prioridad cuando no se especifica `--lang`:
-
-1. **CLAUDE.md / AGENTS.md** — directivas como `PR言語: 日本語`, `Documentation: Korean`, `中文 task docs`, `PR Spanish로 작성`
-2. **Hojas de pruebas recientes** en `docs/test-case/`
-3. Idioma del **`README.md` del proyecto**
-4. **Fallback** — inglés
+Si no se especifica `--lang`, la Skill resuelve el idioma con la shared YWC
+language policy: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` /
+`CLAUDE.md` > `~/.codex/ywc.json` > preguntar al usuario. Las hojas de prueba
+recientes y el `README.md` del proyecto solo pueden usarse como contexto al
+preguntar; no crean un default final.
 
 Los language codes admitidos son `ja`, `ko`, `en`, `zh` y `es`. Alias como `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol` y `español` se asignan a `zh` o `es`.
 

@@ -36,7 +36,7 @@ La Habilidad admite salida en coreano, japonés, inglés, español y chino simpl
 | Chino | `Generate task docs in Chinese.` |
 | Español | `Generate tasks in Spanish.` |
 
-Si el usuario no especifica un idioma, la Habilidad primero lo infiere desde los archivos de instrucciones del proyecto y solo pregunta si la inferencia falla.
+Si el usuario no especifica idioma, la Skill lo resuelve con la política YWC compartida: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > preguntar al usuario.
 
 Para salidas en coreano, japonés, chino y español, los Technical terms permanecen en inglés.
 

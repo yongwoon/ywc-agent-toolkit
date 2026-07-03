@@ -32,7 +32,7 @@ The Skill supports 5 output languages. Accepted `--lang` values are `ko`, `ja`, 
 | Chinese | `Generate task docs in Chinese.` |
 | Spanish | `Generate tasks in Spanish.` |
 
-If the user does not specify a language, the Skill first infers it from project instruction files and asks only when inference fails.
+If the user does not specify a language, the Skill resolves it through shared YWC language policy: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user.
 
 For Korean, Japanese, Chinese, and Spanish outputs, technical terms remain in English:
 

@@ -29,7 +29,7 @@ When tempted to skip a step, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "Language not specified, default to Korean" | Always ask. Default-language assumption produces wrong-language docs that get rewritten. |
+| "Language not specified, default to Korean" | There is no skill-level output-language default. Resolve through shared YWC language policy, then ask if unresolved. |
 | "Existing docs/ uses different naming, follow my own pattern" | Match the project's existing naming and structure exactly. Drift creates inconsistent docs over time. |
 | "Translate Technical terms into local-language equivalents for readability" | Keep API, Backend, Database, etc. in English per the language policy. Over-translation breaks searchability. |
 | "Doc target unclear, write a generic README" | If target type (Task, Architecture, Spec, Product, Operations) is ambiguous, ask. Generic docs are noise. |
@@ -41,7 +41,8 @@ When tempted to skip a step, check this table first:
 
 ## Language Selection
 
-Resolve the target language before doing anything else:
+Resolve the target language before doing anything else using
+[`../references/language-resolution.md`](../references/language-resolution.md):
 
 1. **`--lang` option present** — use it directly, no question needed.
    - `--lang kr` → Korean
@@ -49,7 +50,9 @@ Resolve the target language before doing anything else:
    - `--lang en` → English
    - `--lang zh` → Chinese (Simplified)
    - `--lang es` → Spanish
-2. **No option** — ask:
+2. **No option** — check project `.codex/ywc.json`, then project guidance
+   (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`), then user `~/.codex/ywc.json`.
+3. **Still unresolved** — ask:
    ```
    어떤 언어로 작성할까요? / Which language would you like?
 
@@ -61,7 +64,8 @@ Resolve the target language before doing anything else:
    ```
    Accept any of: `1` / `2` / `3` / `4` / `5`, `Korean` / `Japanese` /
    `English` / `Chinese` / `Spanish`, `한국어` / `日本語` / `中文` / `Español`,
-   `kr` / `ja` / `en` / `zh` / `es`, or a sentence containing a language name.
+   `ko` / `kr` / `ja` / `en` / `zh` / `es`, or a sentence containing a language
+   name.
 
 Then apply the corresponding policy from the Language Policy section below.
 

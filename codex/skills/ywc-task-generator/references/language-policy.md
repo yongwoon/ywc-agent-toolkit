@@ -1,8 +1,12 @@
 # Language Policy for Task Documents
 
-This skill allows the user to choose the output language for task documents. If the user does not specify a language, first infer it from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), then ask for confirmation only when no clear language policy is present.
+This skill allows the user to choose the output language for task documents.
+Language resolution is defined by the shared Codex YWC policy:
+[`../../references/language-resolution.md`](../../references/language-resolution.md).
+The order is explicit `--lang` > project `.codex/ywc.json` > project guidance
+(`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
 
-**Supported languages:** `ko` | `ja` | `en` | `es` | `zh` (default: `en`)
+**Supported languages:** `ko` | `ja` | `en` | `es` | `zh`
 
 **Aliases:** `korean` / `한국어` → `ko`, `japanese` / `日本語` → `ja`, `english` → `en`, `spanish` / `espanol` / `español` → `es`, `chinese` / `中文` / `Chinese (Simplified)` → `zh`
 
@@ -17,7 +21,7 @@ This skill allows the user to choose the output language for task documents. If 
 | "PR Spanish로 작성" | `es` |
 | "--lang zh" | `zh` |
 | "--lang es" | `es` |
-| (not specified) | infer from project instruction files; ask the user if inference fails |
+| (not specified) | resolve through the shared policy; ask the user if all tiers are unresolved |
 
 ## Language-Specific Writing Rules
 
