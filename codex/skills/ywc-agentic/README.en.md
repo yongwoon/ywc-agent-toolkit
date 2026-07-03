@@ -30,7 +30,7 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | `--terse`              | Minimal output (phase headers and final report only)                           |
 | `--pr-lang <en\|ja\|ko\|zh\|es>` | PR title/description language, forwarded unchanged to the executor (default: auto) |
 
-`ywc-agentic` only forwards `--lang en|ja|ko|zh|es` to `ywc-task-generator` when the user or project guidance explicitly requests a task/spec language. Otherwise it preserves the existing no-`--lang` behavior.
+`ywc-agentic` forwards `--lang en|ja|ko|zh|es` to `ywc-task-generator` when the user explicitly requests task/spec language or shared YWC language policy resolves one. Otherwise it preserves no-`--lang` behavior and lets the downstream skill ask if needed.
 
 ## Execution Flow
 
