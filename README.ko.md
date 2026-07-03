@@ -30,6 +30,24 @@ Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니�
 | `python3 ≥ 3.9` | 스킬 런타임 보조 기능: `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot`; Claude Code hooks는 Python ≥ 3.11 필요 | macOS 12.3+에 기본 설치; `brew install python3` |
 | `gh` CLI | PR 기반 및 GitHub release 스킬/모드: `ywc-handle-pr-reviews`, `ywc-spec-writer --from-pr/--from-prs`, `ywc-release-pr-list`, `ywc-create-pr`, `ywc-finish-branch` PR 모드, `ywc-merge-dependabot`, `ywc-sequential-executor`/`ywc-parallel-executor`, `ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
 
+PR 기반 스킬을 사용하기 전에 GitHub CLI 인증을 완료하세요:
+
+```bash
+gh auth login
+gh auth setup-git
+gh auth status
+```
+
+기여자 및 로컬 CI parity 용 권장 도구:
+
+| 도구 | 사용처 | 설치 방법 |
+| ---- | ------ | --------- |
+| `uv` | Claude Code Python hook 실행 | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| `ripgrep` (`rg`) | onboarding, validation, review 중 빠른 repository scan | `brew install ripgrep` / `apt-get install ripgrep` |
+| `node` / `npm` / `npx` | Markdown lint, Playwright setup, JS/TS cleanup helper | [nodejs.org](https://nodejs.org/) 또는 Node version manager |
+| `shellcheck` | GitHub Actions shell script lint gate와 동일한 로컬 검사 | `brew install shellcheck` / `apt-get install shellcheck` |
+| `markdownlint-cli2` | GitHub Actions Markdown lint gate와 동일한 로컬 검사 | `npm install -g markdownlint-cli2` |
+
 ---
 
 ## 설치
@@ -96,6 +114,13 @@ bash scripts/install-git-hooks.sh
 Hook이 설치되어 있으면 `codex/skills` 변경이 staged된 commit에서 `bash scripts/sync-codex-plugin.sh`를 실행하고, generated package인 `plugins/ywc-agent-toolkit`을 자동 stage한 뒤 `bash scripts/validate.sh`를 실행합니다. Codex skill/package 변경이 포함된 push에서도 stale package 검사와 validation을 실행합니다.
 
 Hook을 설치하지 않은 환경에서는 commit 전에 같은 명령을 수동으로 실행하세요:
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+`bash scripts/validate.sh` 가 `plugins/ywc-agent-toolkit/skills` stale 상태를 보고하면 generated package를 먼저 다시 빌드하세요:
 
 ```bash
 bash scripts/sync-codex-plugin.sh
