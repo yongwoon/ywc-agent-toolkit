@@ -36,7 +36,9 @@ Skill 支持韩语、日语、英语、西班牙语和简体中文输出。`--la
 | 中文 | `Generate task docs in Chinese.` |
 | 西班牙语 | `Generate tasks in Spanish.` |
 
-如果用户未指定语言，Skill 会先从项目指令文件推断，只有推断失败时才询问。
+如果用户未指定语言，Skill 按 shared YWC language policy resolve：`--lang` >
+`.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` >
+`~/.codex/ywc.json` > 询问用户。
 
 韩语、日语、中文和西班牙语输出中，Technical terms 保留英文。
 

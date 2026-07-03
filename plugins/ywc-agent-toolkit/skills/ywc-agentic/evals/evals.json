@@ -28,13 +28,13 @@
     {
       "id": 5,
       "prompt": "Use $ywc-agentic --goal \"Implement account export\" --pr-lang zh --executor sequential.",
-      "expected_output": "Accepts `--pr-lang zh` as a supported PR language and forwards it unchanged to the selected executor as `--pr-lang zh`. It does not pass task-generation `--lang` unless the user or project guidance explicitly requested task/spec language.",
+      "expected_output": "Accepts `--pr-lang zh` as a supported PR language and forwards it unchanged to the selected executor as `--pr-lang zh`. It does not pass task-generation `--lang` unless the user explicitly requested task/spec language or shared YWC language policy resolves one.",
       "files": []
     },
     {
       "id": 6,
       "prompt": "Use $ywc-agentic --goal \"Generate Spanish task docs for billing retries\" --pr-lang es.",
-      "expected_output": "Preserves `--pr-lang es` unchanged when invoking the executor. Because the user explicitly requested Spanish task docs, the Task Phase may pass `--lang es` to `ywc-task-generator`; absent that explicit task/spec language request, it would not pass `--lang`.",
+      "expected_output": "Preserves `--pr-lang es` unchanged when invoking the executor. Because the user explicitly requested Spanish task docs, the Task Phase may pass `--lang es` to `ywc-task-generator`; absent that explicit task/spec language request or a shared YWC language policy resolution, it would not pass `--lang`.",
       "files": []
     }
   ]

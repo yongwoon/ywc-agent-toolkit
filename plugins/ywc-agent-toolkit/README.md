@@ -11,7 +11,21 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 41     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 41     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 42     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
+
+### Codex Output Language Defaults
+
+Codex-only `ywc-setup` configures durable artifact language for Codex `ywc-*`
+skills:
+
+```bash
+ywc-setup --scope project --lang ko
+ywc-setup --scope user --lang ja
+```
+
+Resolution order is explicit `--lang` > project `.codex/ywc.json` > project
+guidance (`AGENTS.md` / `CODEX.md` / `CLAUDE.md`) > user `~/.codex/ywc.json` >
+ask user. Session defaults are unsupported.
 
 ## Prerequisites
 

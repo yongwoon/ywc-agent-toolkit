@@ -20,7 +20,7 @@ When tempted to bypass a rule, check this table first:
 | "A code snippet would make this feature clearer" | Zero program code in any spec output. Non-developer audience cannot parse code. Use user stories and flow descriptions instead. |
 | "User seems to want a full spec — I'll generate it without `--full` to save time" | Full generation requires the explicit `--full` flag AND user confirmation. Never auto-generate the full spec from an incremental run. |
 | "The commit changed several files — I'll update the entire spec to be safe" | Update only sections mapped to the changed domain. Use `scripts/detect-affected-sections.sh` to determine scope precisely. |
-| "Language not specified — I'll default to English" | Default is Korean (`ko`) unless project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) or `--lang` say otherwise. |
+| "Language not specified — I'll default to English or Korean" | There is no skill-level output-language default. Resolve through shared YWC language policy, then ask if unresolved. |
 | "`--setup-hook` is optional — I'll just describe the hook approach" | `--setup-hook` must produce a working script at `tools/scripts/spec-update-hook.sh` and install it. Documentation alone does not fulfill the step. |
 | "Multiple PRs share files — I'll skip deduplication" | Always dedupe the union file list before invoking section detection. Without dedup, the same diff is fed to the LLM multiple times and bloats context. |
 | "Open PR diff will change soon — recording the HEAD SHA in README index is unnecessary" | Always record `headRefOid` (and PR numbers) in the README index entry. Without it, a future reader cannot reproduce or audit which PR snapshot drove the update. |
@@ -46,7 +46,7 @@ When tempted to bypass a rule, check this table first:
 | `--from-pr` | `--from-pr <num>` | `--from-pr 42` | Update spec from a single pull request's diff. Requires `gh` CLI auth. |
 | `--from-prs` | `--from-prs <num> [<num> ...]` | `--from-prs 42 43 51` | Update spec from the union diff of multiple PRs. Each PR fetched via `gh pr diff`; duplicate files are coalesced. |
 | `--setup-hook` | flag | `--setup-hook` | Install git hook for automatic spec-update tracking. |
-| `--lang` | `--lang ko\|ja\|en\|zh\|es` | `--lang ja` | Output language. Default: `ko`. |
+| `--lang` | `--lang ko\|ja\|en\|zh\|es` | `--lang ja` | Output language. If omitted, resolve through shared YWC language policy. |
 
 ## Workflow
 
@@ -76,10 +76,14 @@ When tempted to bypass a rule, check this table first:
 
 ### Step 3: Language Setup
 
-If `--lang` is not specified, check project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) for a declared primary documentation language. If not found there either, use Korean (`ko`) as the default. Ask the user only when they explicitly ask to choose a language or the project guidance conflicts.
+If `--lang` is not specified, resolve spec language using the shared Codex YWC
+policy:
+[`../references/language-resolution.md`](../references/language-resolution.md).
+The order is explicit `--lang` > project `.codex/ywc.json` > project guidance
+(`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
 
 > "사양서를 어떤 언어로 작성할까요? / Which language should the spec be written in? / 仕様書をどの言語で作成しますか？"
-> 1. 한국어 (ko) — 기본값
+> 1. 한국어 (ko)
 > 2. English (en)
 > 3. 日本語 (ja)
 > 4. 中文 (zh, Simplified Chinese)
@@ -164,7 +168,7 @@ Use the PR's `title` + `body` to inform spec wording (the "why") and record `hea
 - Features use the user story format: "As a [user], I want [action] so that [benefit]"
 - Data and flows use plain-language descriptions
 - Section file size cap, scaled to project size:
-  - Default: ≤ 400 lines per section file
+  - Default - ≤ 400 lines per section file
   - When project has **>50 entities** (Prisma models / equivalent ORM models) OR **>20 features** (top-level feature directories): cap raises to ≤ 800 lines per section file
   - `03-data.md` may exceed the section cap by up to 30 lines per entity beyond 50 entities (e.g., 82 entities → cap = 400 + 30×32 = 1,360 lines), so enumeration is not artificially blocked by the cap
 

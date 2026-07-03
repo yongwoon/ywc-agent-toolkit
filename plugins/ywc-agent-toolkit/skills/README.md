@@ -26,6 +26,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-release-pr-list` | `ywc-release-pr-list` | "release PR list 정리해줘" | Release PR의 포함 PR/Author 목록을 정리하고 PR description 갱신 |
 | `ywc-changelog-release-notes` | `ywc-changelog-release-notes` | "CHANGELOG와 release notes 작성해줘" | git log / PR 목록 기반 CHANGELOG.md 항목 및 User 대상 Release Notes 생성 |
 | `ywc-merge-dependabot` | `ywc-merge-dependabot` | "Dependabot PR merge 해줘" | Dependabot PR 자동 Merge (CI 검증 + sequential / parallel-auto 처리) |
+| `ywc-setup` | `ywc-setup` | "ywc-setup --scope project --lang ko" | Codex `ywc-*` output language 기본값 설정 (project/user scope) |
 | `ywc-project-scaffold` | `ywc-project-scaffold` | "ywc-project-scaffold로 directory 구조 제안해줘" | 언어/Framework/Protocol/Architecture 조합별 Directory 구조 Markdown 생성 |
 | `ywc-project-docs` | `ywc-project-docs` | "project docs를 한국어로 작성해줘" | 한국어/日本語 Project 문서 생성 (docs/ Directory 구조 준수) |
 | `ywc-ubiquitous-language` | `ywc-ubiquitous-language` | "ubiquitous language 정리해줘" | 도메인 공유 어휘 문서 생성·추출·업데이트 |
@@ -94,6 +95,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | CHANGELOG / Release Notes 생성 | `ywc-changelog-release-notes` | Tag 생성 전 또는 ywc-release-pr-list 결과 기반 |
 | 장애 발생 후 Postmortem 작성 | `ywc-incident-postmortem` | 프로덕션 장애 / 보안 사고 / 데이터 손실 후 |
 | Dependabot PR 머지 | `ywc-merge-dependabot` | CI 확인 후 sequential 또는 ecosystem-grouped parallel-auto 자동 머지 |
+| Codex output language 기본값 설정 | `ywc-setup` | `ywc-setup --scope project --lang ko` / `ywc-setup --scope user --lang ja` |
 | 도메인 용어집 / Ubiquitous Language 작성·관리 | `ywc-ubiquitous-language` | new (신규) / extract (코드 추출) / update (갱신) 자동 감지 |
 | 신규 프로젝트 구조 생성 | `ywc-project-scaffold` | Directory 구조 Markdown 생성 |
 | 한국어/일본어 문서 생성 | `ywc-project-docs` | docs/ 규약 준수 (`--lang kr` / `--lang ja`) |
@@ -107,6 +109,25 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | 기존 / 처음 보는 repo 진입 → Onboarding Guide + Starter AGENTS.md | `ywc-onboard-repo` | 4-phase reconnaissance (Glob+Grep). ywc-project-scaffold (신규 repo 생성) 의 inverse |
 | Dead code / unused import / unused deps 제거 | `ywc-refactor-clean` | knip / depcheck / ts-prune / vulture / deadcode / cargo-udeps + SAFE/CAUTION/DANGER tier |
 | 자연어 목표 → 코드 구현까지 자동화 | `ywc-agentic` | 기존 ywc-* skill 을 자율 오케스트레이션 |
+
+## Codex Output Language Defaults
+
+`ywc-setup`은 Codex 전용 설정 skill 입니다. Claude Code 설정은 변경하지 않습니다.
+
+```bash
+ywc-setup --scope project --lang ko
+ywc-setup --scope user --lang ja
+```
+
+Language resolution order:
+
+1. explicit `--lang`
+2. project `.codex/ywc.json`
+3. project guidance `AGENTS.md` / `CODEX.md` / `CLAUDE.md`
+4. user `~/.codex/ywc.json`
+5. ask user
+
+Session defaults are unsupported; no session config file is used. Conversation language follows the user naturally. See [`references/language-resolution.md`](./references/language-resolution.md).
 
 ### 표준 개발 Pipeline
 

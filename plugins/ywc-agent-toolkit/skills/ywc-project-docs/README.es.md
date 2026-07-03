@@ -36,7 +36,7 @@ La Skill se activa con frases en lenguaje natural como:
 ### Invocación manual
 
 ```text
-$ywc-project-docs              # muestra el prompt de selección de idioma
+$ywc-project-docs              # resuelve el idioma con la política compartida
 $ywc-project-docs --lang kr    # escribe en coreano directamente
 $ywc-project-docs --lang ja    # escribe en japonés directamente
 $ywc-project-docs --lang en    # escribe en inglés directamente
@@ -46,7 +46,7 @@ $ywc-project-docs --lang es    # escribe en español directamente
 
 ## Qué Hace Esta Skill
 
-1. **Selección de idioma** — usa `--lang` si está presente, de lo contrario pregunta coreano / japonés / inglés / chino / español (nunca auto-detecta)
+1. **Selección de idioma** — usa `--lang` si está presente; de lo contrario resuelve con la política YWC compartida
 2. **Enrutamiento de directorios** — coloca los documentos en el subdirectorio correcto de `docs/` según la intención
 3. **Convenciones de nomenclatura** — aplica kebab-case en minúsculas con sufijos mínimos
 4. **Estructura del documento** — genera bloques de documentos relacionados, tabla de contenidos y secciones numeradas
