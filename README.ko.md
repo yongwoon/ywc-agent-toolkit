@@ -6,6 +6,10 @@
 
 ---
 
+> 📖 **[문서 & 가이드북](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/)** — 시작하기, 스킬 선택, 전체 워크플로우 실행을 단계별로 안내합니다.
+
+---
+
 Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니다.
 계획 수립, 사양서 작성, 태스크 분해, 코드 생성, 리뷰, 릴리스까지 전 과정을 지원합니다.
 

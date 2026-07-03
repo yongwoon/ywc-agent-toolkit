@@ -6,6 +6,10 @@
 
 ---
 
+> 📖 **[文档 & 指南手册](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/)** — 分步引导你完成入门、技能选择和运行完整工作流。
+
+---
+
 面向 Claude Code 和 Codex 的开发工作流自动化技能集合。
 涵盖计划制定、规格书撰写、任务分解、代码生成、审查和发布的完整开发流程。
 

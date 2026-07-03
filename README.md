@@ -4,6 +4,8 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
 
+> 📖 **[Documentation & Guidebook](https://yongwoon.github.io/ywc-agent-toolkit-lp/en/guidebook/)** — step-by-step guides for getting started, choosing the right skill, and running the full workflow.
+
 ## Supported Tools
 
 | Tool        | Skills | Custom Agents | Install path                             |

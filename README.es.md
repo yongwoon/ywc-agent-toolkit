@@ -6,6 +6,10 @@
 
 ---
 
+> 📖 **[Documentación y guía](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/)** — guías paso a paso para empezar, elegir la skill adecuada y ejecutar el flujo de trabajo completo.
+
+---
+
 Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de trabajo de desarrollo completo — desde la planificación y escritura de especificaciones hasta la generación de código, revisión y lanzamiento.
 
 Actualmente incluye 41 skills para Claude Code, 41 skills para Codex, 12 agentes de Claude Code y 7 custom agents de Codex.
