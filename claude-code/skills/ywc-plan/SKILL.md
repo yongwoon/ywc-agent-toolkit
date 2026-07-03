@@ -95,7 +95,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 
 #### Always read
 
-- `CLAUDE.md` and `AGENTS.md` (or `CODEX.md`) at repo root — language policy, conventions, CI commands
+- `CLAUDE.md` and `AGENTS.md` (or `CODEX.md`) at repo root — the canonical `## Language Policy` section (resolve plan output language via [../references/language-resolution.md](../references/language-resolution.md) so it matches the resolved language), conventions, CI commands
 - `package.json`, `pyproject.toml`, `Makefile`, `go.mod` etc. — actual lint/test/build commands
 - Project tree (top 2 levels of `src/`, `apps/`, or equivalent) — module placement and existing patterns
 - Existing `tasks/` directory if present — phase numbering and dependency context

@@ -63,13 +63,13 @@ $ywc-gen-testcase --from-diff
 
 | Option | Description | Example |
 | --- | --- | --- |
-| `--output-dir <path>` | Override output directory (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet language (`ja`, `ko`, `en`, `zh`, `es`). Default: auto-detect | `--lang zh` |
+| `--output-dir <path>` | Override output directory (default - `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
+| `--lang <code>` | Testsheet language (`ja`, `ko`, `en`, `zh`, `es`). Resolved by shared YWC language policy | `--lang zh` |
 | `--filename <name>` | Filename override (without `.md`) | `--filename release-v2-smoke` |
-| `--tasks-dir <path>` | Tasks directory used by Task and Task Range inputs (default: `tasks/`) | `--tasks-dir ./docs/tasks` |
-| `--format <fmt>` | Output format (`markdown` \| `html`). Default: `markdown` | `--format html` |
+| `--tasks-dir <path>` | Tasks directory used by Task and Task Range inputs (default - `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--format <fmt>` | Output format (`markdown` \| `html`). Default - `markdown` | `--format html` |
 | `--include-regression` | Add a Regression section (B.3) | |
-| `--audience <who>` | `dev` \| `qa` \| `both`. Default: `both` (single file, A+B) | `--audience qa` |
+| `--audience <who>` | `dev` \| `qa` \| `both`. Default - `both` (single file, A+B) | `--audience qa` |
 | `--split` | Physically split into `<slug>-dev.md` + `<slug>-qa.md` | |
 | `--force-single` | Bypass the L-tier split suggestion; always single file | |
 | `--no-toc` | Suppress auto-TOC for M/L tier | |
@@ -184,14 +184,9 @@ Applied consistently, most M-tier testsheets stay under ~800 lines.
 
 ## Language Detection
 
-Priority when `--lang` is not specified:
+When `--lang` is not specified, resolve testsheet prose language through shared YWC language policy: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user. Recent testsheets and the project `README.md` may be used only as context when asking; they do not create a final fallback default.
 
-1. **CLAUDE.md / AGENTS.md** — directives such as `PR言語: 日本語`, `Documentation: Korean`, `中文 task docs`, `PR Spanish로 작성`
-2. **Recent testsheets** in `docs/test-case/`
-3. **Project `README.md`** language
-4. **Fallback** — English
-
-Supported language codes are `ja`, `ko`, `en`, `zh`, and `es`. Aliases such as `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol`, and `español` map to `zh` or `es`.
+Supported language codes are `ja`, `ko`, `en`, `zh`, and `es`. Aliases such as `japanese`, `korean`, `english`, `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol`, and `español` map to the matching code.
 
 YAML front matter keys, section numbers, filenames, code snippets, and template scaffolding stay in English regardless of `--lang`. Only human prose follows the selected language; technical terms such as Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status, and Sign-off stay English in `zh` and `es` prose.
 
@@ -220,7 +215,7 @@ Downstream of the implementation-oriented `ywc` skills:
 
 ## Example Prompts
 
-### Generate from a PR URL (default: single file A+B)
+### Generate from a PR URL (default - single file A+B)
 
 ```text
 $ywc-gen-testcase https://github.com/acme/web-app/pull/250

@@ -34,10 +34,10 @@ $ywc-spec-writer --lang es                # Write in Spanish
 - (optional) `--full` / `--update` — full generation or refresh
 - (optional) `--from-task <path>` — single task directory path
 - (optional) `--from-tasks <id-or-pattern> ...` — task range / glob / multi-id (resolves active + completed)
-- (optional) `--from-commit <ref>` — commit reference (default: `HEAD`)
+- (optional) `--from-commit <ref>` — commit reference (default - `HEAD`)
 - (optional) `--from-pr <num>` — single PR (requires gh CLI)
 - (optional) `--from-prs <num> ...` — multiple PRs, union diff (duplicate files auto-deduplicated)
-- (optional) `--lang ko|ja|en|zh|es` — output language (default: `ko`)
+- (optional) `--lang ko|ja|en|zh|es` — output language (resolved by shared YWC language policy)
 - (optional) `--setup-hook` — install git pre-commit hook
 
 > `--from-pr` / `--from-prs` require the `gh` CLI to be installed and authenticated. PR title / body / `headRefOid` are recorded as narrative context and audit trail when the spec is updated.

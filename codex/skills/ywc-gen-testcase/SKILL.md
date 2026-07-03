@@ -52,11 +52,11 @@ Parse `$ARGUMENTS`.
 | `--from-diff` | flag | | Use `git diff HEAD` |
 | `--range <spec>` | `<start>..<end>` | `--range v1.2..v1.3` | Explicit git range form. Two-dot only — three-dot `A...B` is rejected |
 | `--output-dir <path>` | path | `--output-dir ./docs/qa` | Override `docs/test-case/` |
-| `--lang <code>` | `ja`,`ko`,`en`,`zh`,`es` | `--lang zh` | Prose language. Default: auto-detect |
+| `--lang <code>` | `ja`,`ko`,`en`,`zh`,`es` | `--lang zh` | Prose language. If omitted, resolve through shared YWC language policy. |
 | `--filename <name>` | string | `--filename release-smoke` | Override derived filename (no `.md`) |
 | `--tasks-dir <path>` | path | `--tasks-dir ./docs/tasks` | Tasks directory (Task and Task Range input only) |
 | `--include-regression` | flag | | Add Regression section (B side) |
-| `--audience <who>` | `dev`\|`qa`\|`both` | `--audience qa` | Generate only one audience. Default: `both` (single file, A+B sections) |
+| `--audience <who>` | `dev`\|`qa`\|`both` | `--audience qa` | Generate only one audience. Default - `both` (single file, A+B sections) |
 | `--split` | flag | | Force physical split into `<slug>-dev.md` + `<slug>-qa.md`. Mutually exclusive with `--force-single` |
 | `--force-single` | flag | | Bypass the L-tier split suggestion and always produce one file |
 | `--no-toc` | flag | | Suppress TOC auto-insertion for M/L tier |
@@ -224,7 +224,7 @@ Count scenarios after Step 3. Use the count to choose layout. This protects test
 | **M** | 21–40 | Single file, A+B sections, **auto-TOC** at top, **`<details>` collapsible** for Prerequisites + Edge Cases |
 | **L** | > 40 scenarios **OR** range > 50 commits | **Ask user** before writing:<br>1. Single file with TOC + collapsible (as M)<br>2. `--split` into `<slug>-dev.md` + `<slug>-qa.md`<br>3. Split by Phase / feature (user names each file)<br>Proceed only after the user chooses. `--force-single` bypasses the prompt. |
 
-Explicit flags override the tier default:
+Explicit flags override the tier default -
 
 - `--split` → physical split, regardless of tier
 - `--audience dev|qa` → single-audience file, skip the other section entirely
@@ -421,12 +421,15 @@ Next steps:
 
 ## Language Detection
 
-When `--lang` is not specified, choose in this order. A testsheet is read by humans, so match the language humans speak on this project — not the language the code is written in.
+When `--lang` is not specified, resolve testsheet prose language using the
+shared Codex YWC policy:
+[`../references/language-resolution.md`](../references/language-resolution.md).
+The order is explicit `--lang` > project `.codex/ywc.json` > project guidance
+(`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
 
-1. **AGENTS.md / CODEX.md / CLAUDE.md** — directives such as `UI/User-facing text: Japanese`, `Documentation: Korean`, `PR言語`, `中文 task docs`, or `PR Spanish로 작성` → the strongest signal.
-2. **Recent testsheets in the output directory** — match dominant prose language.
-3. **Project `README.md`** — language of the root README.
-4. **Fallback** — English.
+Recent testsheets in the output directory and the project `README.md` may be
+used only as non-authoritative context when asking the user. They do not create
+a final fallback default.
 
 Supported language codes are `ja`, `ko`, `en`, `zh`, and `es`. Treat aliases such as `japanese`, `korean`, `english`, `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol`, and `español` as requests for the matching code; `zh` / `chinese` means Simplified Chinese unless the user explicitly asks for a different Chinese locale.
 

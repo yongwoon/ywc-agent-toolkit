@@ -30,7 +30,7 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | `--terse`              | 최소 출력 (phase header 와 최종 report 만)                       |
 | `--pr-lang <en\|ja\|ko\|zh\|es>` | PR 제목·설명 언어. Executor로 값을 변경 없이 전달 (default: auto) |
 
-`ywc-agentic`은 user 또는 project guidance가 task/spec language를 명시한 경우에만 `ywc-task-generator`에 `--lang en|ja|ko|zh|es`를 전달합니다. 그 외에는 기존 동작대로 `--lang`을 전달하지 않습니다.
+`ywc-agentic`은 user가 task/spec language를 명시했거나 shared YWC language policy가 resolve한 경우 `ywc-task-generator`에 `--lang en|ja|ko|zh|es`를 전달합니다. 그 외에는 `--lang`을 전달하지 않고 downstream skill이 필요 시 질문하게 합니다.
 
 ## 실행 흐름
 

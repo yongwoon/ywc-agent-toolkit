@@ -43,7 +43,7 @@ $ywc-sequential-executor 001010..003020 --worktree --pr-lang zh
 
 ## PR Language
 
-`--pr-lang en|ja|ko|zh|es` は PR title/body の言語を固定し、downstream の PR 作成へ値を変更せず渡します。省略時は AGENTS.md、CODEX.md、CLAUDE.md、最近の PR title/body 履歴、または project の主要言語から English / Japanese / Korean / Simplified Chinese / Spanish を推論します。
+Explicit `--pr-lang en|ja|ko|zh|es` fixes PR title/body language and is passed unchanged to downstream PR creation. If omitted or `auto`, the executor resolves language through shared YWC language policy (`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user) and asks the user if no tier resolves a language.
 
 ## 出力
 

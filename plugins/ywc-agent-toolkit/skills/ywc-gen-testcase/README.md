@@ -63,13 +63,13 @@ $ywc-gen-testcase --from-diff
 
 | Option | 설명 | 예시 |
 | --- | --- | --- |
-| `--output-dir <path>` | 출력 Directory (default: `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | Testsheet 언어 (`ja`, `ko`, `en`, `zh`, `es`). default: auto-detect | `--lang zh` |
+| `--output-dir <path>` | 출력 Directory (default - `docs/test-case/`) | `--output-dir ./qa/manual-tests` |
+| `--lang <code>` | Testsheet 언어 (`ja`, `ko`, `en`, `zh`, `es`). shared YWC language policy 로 resolve | `--lang zh` |
 | `--filename <name>` | Filename override (`.md` 제외) | `--filename release-v2-smoke` |
-| `--tasks-dir <path>` | Tasks directory 경로 (Task / Task Range 입력에 사용; default: `tasks/`) | `--tasks-dir ./docs/tasks` |
-| `--format <fmt>` | 출력 형식 (`markdown` \| `html`). default: `markdown` | `--format html` |
+| `--tasks-dir <path>` | Tasks directory 경로 (Task / Task Range 입력에 사용; default - `tasks/`) | `--tasks-dir ./docs/tasks` |
+| `--format <fmt>` | 출력 형식 (`markdown` \| `html`). default - `markdown` | `--format html` |
 | `--include-regression` | Regression Section (B.3) 추가 | |
-| `--audience <who>` | `dev` \| `qa` \| `both`. default: `both` (A+B 통합) | `--audience qa` |
+| `--audience <who>` | `dev` \| `qa` \| `both`. default - `both` (A+B 통합) | `--audience qa` |
 | `--split` | 물리적으로 `<slug>-dev.md` + `<slug>-qa.md` 2 파일로 분할 | |
 | `--force-single` | L tier 에서도 split 제안 없이 단일 파일 강제 | |
 | `--no-toc` | M/L tier 의 TOC 자동 삽입 생략 | |
@@ -184,16 +184,11 @@ Testsheet 가 과도하게 길어지는 것을 막기 위한 Skill 내장 원칙
 
 ## Language Detection
 
-`--lang` 미지정 시 다음 순서:
+When `--lang` is not specified, resolve testsheet prose language through shared YWC language policy: `--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > ask user. Recent testsheets and the project `README.md` may be used only as context when asking; they do not create a final fallback default.
 
-1. **CLAUDE.md / AGENTS.md** 의 언어 directive (`PR言語: 日本語`, `Documentation: Korean`, `中文 task docs`, `PR Spanish로 작성` 등)
-2. **Recent testsheets** 의 주요 언어
-3. **Project README.md** 의 언어
-4. **Fallback** — English
+Supported language codes are `ja`, `ko`, `en`, `zh`, and `es`. Aliases such as `japanese`, `korean`, `english`, `chinese`, `Chinese (Simplified)`, `中文`, `spanish`, `espanol`, and `español` map to the matching code.
 
-지원 언어 code 는 `ja`, `ko`, `en`, `zh`, `es` 입니다. `chinese`, `Chinese (Simplified)`, `中文` 은 Simplified Chinese 로, `spanish`, `espanol`, `español` 은 Spanish 로 처리합니다.
-
-YAML Front Matter, Section 번호, Filename, Code snippet, Template 골격은 `--lang` 과 무관하게 영어 고정 (Tooling reference point)입니다. Summary, Goal, Steps, Expected, Notes, Edge Cases 같은 human prose 만 선택 언어를 따르며, Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status, Sign-off 같은 Technical terms 는 zh/es prose 에서도 English 로 유지합니다.
+YAML front matter keys, section numbers, filenames, code snippets, and template scaffolding stay in English regardless of `--lang`. Only human prose follows the selected language; technical terms such as Developer Verification, QA / Browser, PR, Task, Git Range, Expected, front matter, Status, and Sign-off stay English in `zh` and `es` prose.
 
 ## Error Handling
 
@@ -218,7 +213,7 @@ YAML Front Matter, Section 번호, Filename, Code snippet, Template 골격은 `-
 
 ## Example Prompt
 
-### PR URL 로 생성 (Default: 단일 파일 A+B)
+### PR URL 로 생성 (Default - 단일 파일 A+B)
 
 ```text
 $ywc-gen-testcase https://github.com/acme/web-app/pull/250

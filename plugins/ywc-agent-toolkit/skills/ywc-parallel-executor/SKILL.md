@@ -53,7 +53,7 @@ When tempted to skip a step, check this table first:
 | `--per-task-pr` | flag | | Per task: create the PR, wait for CI, handle bot reviews, then **merge the PR** (`gh pr merge --delete-branch`), sync base, and mark complete — the full lifecycle, mirroring `ywc-sequential-executor`'s default `normal-pr` mode |
 | `--aggregate-pr` | flag | | Whole invocation → **one** branch + **one** PR. Tasks still run in parallel and accumulate onto a single aggregate branch, then the end-of-run PR is marked ready, CI-verified, bot-reviewed, and **merged**. The full-lifecycle twin of `--draft`. See [references/aggregate-pr.md](references/aggregate-pr.md) |
 | `--group-name` | `--group-name <name>` | `--group-name payments` | Names the aggregate branch (`aggregate/<name>`) and disambiguates concurrent groups. `--aggregate-pr` only; defaults to `aggregate/<base-branch>-<timestamp>` when omitted |
-| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for every PR mode; pass unchanged to `$ywc-create-pr --lang <pr-lang>` |
+| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for every PR mode; pass explicit values unchanged to `$ywc-create-pr --lang <pr-lang>`. If omitted or `auto`, resolve through [language-resolution.md](../references/language-resolution.md); if no tier resolves a language, ask the user before invoking the selected executor. |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no worktree audit lines, no mode explanations |
 
 `--review` can be combined with other flags.

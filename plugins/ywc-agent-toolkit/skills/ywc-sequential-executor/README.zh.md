@@ -123,14 +123,10 @@
 
 ## PR 语言
 
-未指定 `--pr-lang` 时，语言按以下优先级检测：
-
-支持值为 `en|ja|ko|zh|es`。指定值会原样传递给 `ywc-finish-branch` 或最终 aggregate `$ywc-create-pr --lang <pr-lang>`。
-
-1. **AGENTS.md / CODEX.md / CLAUDE.md** — 检查语言指令（如 `Git commits: Japanese`、`PRs: Chinese`、`PR language: Spanish`）
-2. **最近 PR title/body 历史** — 检测主要语言
-3. **Project dominant language** — 检测代码库和文档的主要语言
-4. **回退** — 英语
+Explicit `--pr-lang en|ja|ko|zh|es` 会固定 PR title/body 语言，并原样传递给
+downstream PR 创建。省略或为 `auto` 时，executor 只按 shared YWC language policy
+resolve（`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` >
+`~/.codex/ywc.json` > 询问用户）；如果没有任何层级解析出语言，则询问用户。
 
 ## 错误处理
 

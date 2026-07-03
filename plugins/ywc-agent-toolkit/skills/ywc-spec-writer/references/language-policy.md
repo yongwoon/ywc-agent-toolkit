@@ -1,8 +1,12 @@
 # Language Policy
 
-## Default
+## Resolution
 
-Korean (`ko`) unless overridden by `--lang` or project guidance files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`).
+Spec output language is resolved by
+[`../../references/language-resolution.md`](../../references/language-resolution.md):
+explicit `--lang` > project `.codex/ywc.json` > project guidance (`AGENTS.md`,
+`CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user. There is no
+skill-level default.
 
 ---
 

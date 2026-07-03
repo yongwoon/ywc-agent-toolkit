@@ -369,6 +369,34 @@ As with the other top-level shared references, the skill roots are maintained
 independently — the codex bundle keeps its own schema guidance and is not
 auto-synced; port deliberately if a shared change is wanted there.
 
+## Language Resolution
+
+Language-aware skills that emit user-facing output (`ywc-task-generator`,
+`ywc-spec-writer`, `ywc-plan`, `ywc-create-pr`, `ywc-commit`) resolve the **output
+language** of the documents, PR text, and commit messages they produce through the single
+canonical procedure defined in `references/language-resolution.md`. Do not inline or
+approximate the precedence chain, code list, or `## Language Policy` section format in a
+SKILL.md body — reference the file with an explicit
+`> **Action required**: Read [references/language-resolution.md]` directive, the same way
+`pr-bot-polling.md` is referenced.
+
+The reference is the canonical source of three things (do not restate them here or in any
+SKILL.md body):
+
+- The precedence chain (`--lang` flag → project `CLAUDE.md ## Language Policy` → user
+  `~/.claude/CLAUDE.md ## Language Policy` → each skill's existing fallback — the terminal
+  rung is each consumer's own fallback, never a forced `en`).
+- The canonical `## Language Policy` section format that `ywc-setup-language` writes.
+- The supported output-language code list and its full-name normalization.
+
+**No-block invariant**: absence of any `## Language Policy` never blocks, delays, or errors a
+consuming skill — resolution falls through to each skill's existing fallback, so a project
+with no policy behaves exactly as it does today. This mirrors the referenced-not-inlined
+discipline the four sections above (Bot Polling / PR Conflict / HTML Output / Schema Guide)
+use. Resolution is performed in the main skill context where both `CLAUDE.md` files are
+auto-loaded; a subagent that must resolve independently reads them explicitly (see the
+reference).
+
 ## Codex-skill: Maintained Independently
 
 `tools/codex-skill/skills/` and `tools/claude-code/skills/` are **no longer
