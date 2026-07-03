@@ -87,7 +87,11 @@ Before collecting context and writing, right-size the run and confirm intent. Th
 
 ### Step 3: Language Setup
 
-If `--lang` is not specified, check the project's CLAUDE.md for a declared primary documentation language. If not found there either, use Korean (`ko`) as the default. Ask the user only when they explicitly ask to choose a language or the project guidance conflicts.
+If `--lang` is not specified, resolve the output language via the shared resolution reference.
+
+> **Action required**: Read [../references/language-resolution.md] — it defines the precedence chain (`--lang` flag → project `CLAUDE.md ## Language Policy` → user `~/.claude/CLAUDE.md ## Language Policy` → this skill's existing fallback), so the user-global CLAUDE.md is checked and project-over-user precedence is honored.
+
+This skill's terminal fallback is unchanged (AC10): when no canonical `## Language Policy` is configured, honor a project CLAUDE.md's declared primary documentation language if present, otherwise default to Korean (`ko`). Ask the user only when they explicitly ask to choose a language or the project guidance conflicts.
 
 > "사양서를 어떤 언어로 작성할까요? / Which language should the spec be written in? / 仕様書をどの言語で作成しますか？"
 > 1. 한국어 (ko) — 기본값
@@ -108,7 +112,7 @@ If `docs/specification/` does not exist, run:
 bash claude-code/skills/ywc-spec-writer/scripts/init-spec-structure.sh <lang> "<ProjectName>"
 ```
 
-This creates the 7-section skeleton without any LLM calls. For the full section layout and writing templates, see [references/spec-structure.md](references/spec-structure.md).
+Pass the language code **resolved in Step 3** as the `<lang>` first positional argument so the scaffolded skeleton is created in the resolved language, not just the document bodies (Amendment A4). This creates the 7-section skeleton without any LLM calls. For the full section layout and writing templates, see [references/spec-structure.md](references/spec-structure.md).
 
 ### Step 5: Determine Affected Sections
 

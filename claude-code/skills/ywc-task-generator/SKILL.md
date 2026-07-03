@@ -40,7 +40,11 @@ When tempted to bend a rule, check this table first:
 
 ## Language Option
 
-When `--lang` is not specified, this skill first attempts to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails does it ask the user.
+When `--lang` is not specified, resolve the output language via the shared resolution reference.
+
+> **Action required**: Read [../references/language-resolution.md] — it defines the precedence chain (`--lang` flag → project `CLAUDE.md ## Language Policy` → user `~/.claude/CLAUDE.md ## Language Policy` → this skill's existing fallback), so the user-global CLAUDE.md is checked and project-over-user precedence is honored.
+
+This skill's terminal fallback is unchanged (AC10, no regression): when no canonical `## Language Policy` is configured, infer from the project CLAUDE.md's older cue (Language Policy section or Documentation Writing Guidelines) and, only if that fails, ask the user — defaulting to `en`. Resolution runs in the **main skill context**; because this skill fans out subagents, resolve the language once in the main context and pass the resolved code in each subagent payload — subagents must not rely on an auto-loaded user-global CLAUDE.md (EC8).
 
 This skill supports `ko` | `ja` | `en` | `es` | `zh` (default: `en`) for task document output; full language names are also accepted and map to these codes. Treat `zh` as Simplified Chinese unless the user explicitly asks for another Chinese locale. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
 
@@ -126,7 +130,7 @@ Review the specification for completeness and verify that sufficient information
 
 ### Step 4: Confirm Language
 
-If `--lang` is provided, skip this step. Otherwise attempt to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails or is ambiguous, ask:
+If `--lang` is provided, skip this step. Otherwise resolve via [../references/language-resolution.md](../references/language-resolution.md) (project `## Language Policy` → user `## Language Policy` → the older CLAUDE.md cue). Only if resolution yields nothing, ask:
 
 > "Which language should the task documents be written in? (ko / ja / en / es / zh)"
 
