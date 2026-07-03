@@ -120,14 +120,12 @@ Paso 9: Siguiente Tarea (Modo de rango)
 
 ## Idioma del PR
 
-Cuando `--pr-lang` no se especifica, el idioma se detecta con esta prioridad:
-
-Los valores soportados son `en|ja|ko|zh|es`. El valor indicado se pasa sin cambios a `ywc-finish-branch` o al `$ywc-create-pr --lang <pr-lang>` agregado final.
-
-1. **AGENTS.md / CODEX.md / CLAUDE.md** — Verificar directivas de idioma (por ejemplo, `Git commits: Japanese`, `PRs: Chinese`, `PR language: Spanish`)
-2. **Historial reciente de title/body de PRs** — Detectar el idioma dominante
-3. **Project dominant language** — Detectar el idioma dominante del codebase y docs
-4. **Fallback** — Inglés
+Explicit `--pr-lang en|ja|ko|zh|es` fija el idioma de title/body del PR y se
+pasa sin cambios al flujo downstream. Si se omite o es `auto`, el executor
+resuelve con la shared YWC language policy (`--lang` > `.codex/ywc.json` >
+`AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > preguntar al
+usuario) antes de usar historial reciente de PR o heurísticas de project
+dominant language.
 
 ## Manejo de Errores
 

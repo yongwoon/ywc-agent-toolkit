@@ -32,7 +32,7 @@ $ywc-task-generator refine docs/spec.md for parallel worktree execution.
 | Chinese | `Generate task docs in Chinese.` |
 | Spanish | `Generate tasks in Spanish.` |
 
-言語指定がない場合は project instruction files から先に推論し、失敗した場合のみ確認します。
+言語指定がない場合は shared YWC language policy に従い、`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > user に質問、の順に resolve します。
 
 Korean / Japanese / Chinese / Spanish で書く場合も、Technical terms は English のまま維持します。
 

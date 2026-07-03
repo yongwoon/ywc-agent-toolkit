@@ -43,7 +43,7 @@ Follow the steps below to commit and create a PR.
 ### 0. Language and Title Initialization
 
 1. **Title**: Check `$ARGUMENTS` for `--title "<value>"`. If present, store it as the PR title — it will be used verbatim in Step 7 (skip self-generated title).
-2. **Language**: Check `$ARGUMENTS` for a language hint. First-class PR languages are `en` (English), `ja` (Japanese), `ko` (Korean), `zh` (Simplified Chinese), and `es` (Spanish). Accept code and name hints such as `--lang ja`, `--lang en`, `--lang zh`, `--lang es`, `--language korean`, `--language chinese`, and `--language spanish`. If not specified and no `--title` was provided, ask the user in the current conversation: "What language should the PR title and description be written in? English, Japanese, Korean, Chinese, or Spanish?" — then **immediately continue to Step 0.5 in the same turn after receiving the answer**; do not end the turn or wait for further input after receiving it. If `--title` was provided, infer the language from its content or default to English — do not prompt.
+2. **Language**: Check `$ARGUMENTS` for a language hint. First-class PR languages are `en` (English), `ja` (Japanese), `ko` (Korean), `zh` (Simplified Chinese), and `es` (Spanish). Accept code and name hints such as `--lang ja`, `--lang en`, `--lang zh`, `--lang es`, `--language korean`, `--language chinese`, and `--language spanish`. If not specified, resolve PR prose language using [`../references/language-resolution.md`](../references/language-resolution.md): project `.codex/ywc.json`, project guidance (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`), user `~/.codex/ywc.json`, then ask. If `--title` was provided, keep that title verbatim; the resolved language controls generated PR body prose and any generated title only.
 3. Apply the chosen language consistently when writing the PR description in Step 7. Localize only PR title/body prose; keep branch names, task IDs, file paths, commands, labels, code blocks, YAML keys, JSON keys, and other machine identifiers unchanged.
 4. **Post-CI check**: Check `$ARGUMENTS` for `--skip-post-ci-check`. If present, skip Step 8 (Remote CI & Bot Review). This flag is passed by `ywc-finish-branch`, which handles CI verification independently in its own Step 4.
 5. **Ubiquitous Language update**: Check `$ARGUMENTS` for `--skip-ubiquitous-update`. Store the flag — it controls Step 0.5.
@@ -219,7 +219,7 @@ Record the result in the PR description as `Author Self-Review Gate: passed`. Th
 
 - Write each section based on all commits from the base branch (`git log <base-branch>..HEAD`)
 - Review the full diff (`git diff <base-branch>...HEAD`) to ensure the description accurately reflects the changes
-- **PR title**: if `--title` was provided in Step 0, use it verbatim. Otherwise, generate a title from the commit history in the language chosen in Step 0 (`en`, `ja`, `ko`, `zh`, or `es`).
+- **PR title**: if `--title` was provided in Step 0, use it verbatim. Otherwise, generate a title from the commit history in the language resolved in Step 0 (`en`, `ja`, `ko`, `zh`, or `es`).
 - Write all description prose in the language chosen in Step 0. Do not translate branch names, task IDs, file paths, commands, labels, code blocks, YAML keys, JSON keys, or other machine identifiers.
 - If there are no UI changes, write "N/A" in the screenshot section (if the template has one)
 - Create a **draft** PR with `gh pr create --draft --base <base-branch> --title "<title>" --body-file - <<'EOF'`

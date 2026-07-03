@@ -2,7 +2,7 @@
 
 プロジェクトの `docs/` ディレクトリ構造と規約に従って、韓国語、日本語、英語、中国語、スペイン語ドキュメントを生成する Codex Skill です。
 
-対象言語は自動推測しません。`--lang kr|ja|en|zh|es` オプションがあればそれを使用し、なければ対応言語のどれで作成するかを先に質問します。
+`--lang kr|ja|en|zh|es` があれば直接使用します。なければ shared YWC language policy（`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > user に質問）で resolve します。
 
 ## 使用方法
 
@@ -29,7 +29,7 @@
 ### 手動呼び出し
 
 ```text
-$ywc-project-docs              # 言語選択 prompt を表示
+$ywc-project-docs              # shared language policy で言語 resolve
 $ywc-project-docs --lang kr    # 韓国語で直接作成
 $ywc-project-docs --lang ja    # 日本語で直接作成
 $ywc-project-docs --lang en    # 英語で直接作成
@@ -39,7 +39,7 @@ $ywc-project-docs --lang es    # スペイン語で直接作成
 
 ## Skill の役割
 
-1. **言語選択** — `--lang` を優先し、なければ韓国語/日本語/英語/中国語/スペイン語を質問して決定（自動推測しない）
+1. **言語選択** — `--lang` を優先し、なければ shared YWC language policy で resolve
 2. **ディレクトリルーティング** — 目的に応じて適切な `docs/` 配下へ配置
 3. **命名規則の適用** — 英小文字 + ハイフン、接尾辞を最小化
 4. **文書構造の生成** — 関連文書ブロック、目次、セクション番号を自動付与
