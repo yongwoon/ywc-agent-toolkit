@@ -40,7 +40,7 @@ When tempted to skip a step, check this table first:
 | `--base-branch` | `<branch-name>` | `--base-branch develop` | Target branch. Default: auto-detect (`develop` > `main` > `master`). |
 | `--task-name` | `<task-name>` | `--task-name 000001-010-db-create-users` | Task directory name under `<tasks-dir>/`, used for the Mark Complete commit. |
 | `--tasks-dir` | `<path>` | `--tasks-dir tasks/` | Tasks directory root. Default: `tasks/`. |
-| `--pr-lang` | `en` \| `ja` \| `ko` \| `zh` \| `es` | `--pr-lang ja` | PR title/description language. Default: auto-detect from CLAUDE.md / AGENTS.md / recent PRs. |
+| `--pr-lang` | `en` \| `ja` \| `ko` \| `zh` \| `es` | `--pr-lang ja` | PR title/description language. If omitted or `auto`, resolve through shared YWC language policy before any recent-PR heuristic. |
 | `--bot-action` | `sequential` \| `parallel` | `--bot-action sequential` | Post-bot polling behavior. Default: `sequential` (re-run CI after bot fixes). Use `parallel` when called from a wave loop where CI does not re-gate between bot iterations. |
 | `--defer-push` | flag | | Skip the push of the Mark Complete commit. Used by range-mode callers that batch pushes at the end of the range. |
 | `--keep-branch` | flag | | Skip the local feature branch deletion (`git branch -d`). Used by `ywc-parallel-executor`, where the branch is checked out in a worktree at the time of merge — `git branch -d` would fail until the worktree is removed. Caller takes responsibility for the eventual `git worktree remove` + `git branch -d`. |
@@ -122,7 +122,9 @@ test -f docs/ubiquitous-language.md
 
 ### Step 2: PR Creation (PR-based modes only)
 
-For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construct the PR title per the format below, then invoke `ywc-create-pr` passing:
+For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: resolve `--pr-lang` first. Explicit `en|ja|ko|zh|es` wins. Omitted or `auto` language uses [`../references/language-resolution.md`](../references/language-resolution.md), then any documented recent-PR heuristic only if the shared policy cannot resolve without asking.
+
+Construct the PR title per the format below, then invoke `ywc-create-pr` passing:
 - `--title "<constructed-title>"` — the `[task-number] description` string built from `--task-name` and `--pr-lang`
 - `--lang <pr-lang>` — so the description is written in the correct language
 - `--base-branch <base-branch>` — the resolved target branch
