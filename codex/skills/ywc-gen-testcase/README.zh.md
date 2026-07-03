@@ -68,7 +68,7 @@ $ywc-gen-testcase --from-diff
 | 选项 | 描述 | 示例 |
 | --- | --- | --- |
 | `--output-dir <path>` | 覆盖输出目录（默认：`docs/test-case/`） | `--output-dir ./qa/manual-tests` |
-| `--lang <code>` | 测试表语言（`ja`、`ko`、`en`、`zh`、`es`）。默认：自动检测 | `--lang zh` |
+| `--lang <code>` | 测试表语言（`ja`、`ko`、`en`、`zh`、`es`）。由 shared YWC language policy resolve | `--lang zh` |
 | `--filename <name>` | 文件名覆盖（不含 `.md`） | `--filename release-v2-smoke` |
 | `--tasks-dir <path>` | 任务和任务范围输入使用的任务目录（默认：`tasks/`） | `--tasks-dir ./docs/tasks` |
 | `--format <fmt>` | 输出格式（`markdown` \| `html`）。默认：`markdown` | `--format html` |
@@ -189,12 +189,10 @@ YAML front matter 携带 `dev_tester` / `dev_status` / `qa_tester` / `qa_status`
 
 ## 语言检测
 
-未指定 `--lang` 时的优先级：
-
-1. **CLAUDE.md / AGENTS.md** — 如 `PR言語: 日本語`、`Documentation: Korean`、`中文 task docs`、`PR Spanish로 작성` 等指令
-2. `docs/test-case/` 中**最近的测试表**
-3. **项目 `README.md`** 语言
-4. **回退** — 英语
+未指定 `--lang` 时，Skill 按 shared YWC language policy resolve：`--lang` >
+`.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` >
+`~/.codex/ywc.json` > 询问用户。最近的测试表和项目 `README.md` 只可作为询问用户时
+的上下文，不形成最终 default。
 
 支持的 language code 为 `ja`、`ko`、`en`、`zh`、`es`。`chinese`、`Chinese (Simplified)`、`中文` 映射到 Simplified Chinese；`spanish`、`espanol`、`español` 映射到 Spanish。
 

@@ -32,16 +32,24 @@ When tempted to bend a rule, check this table first:
 
 | Argument | Default | Description |
 |---|---|---|
-| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `ko` \| `ja` \| `en` \| `es` \| `zh`. Backward-compatible aliases: `korean` \| `japanese` \| `english` \| `spanish` \| `chinese`. |
+| `--lang <language>` | _(resolved or asked)_ | Output language for task documents: `ko` \| `ja` \| `en` \| `es` \| `zh`. Backward-compatible aliases: `korean` \| `japanese` \| `english` \| `spanish` \| `chinese`. |
 | `--mode <mode>` | _(asked)_ | Canonical task granularity option: `human` \| `llm`. |
 | `--granularity <mode>` | _(alias)_ | Backward-compatible alias for `--mode`; accept `human` \| `llm`. If both flags are present and conflict, stop and ask the user to resolve the conflict. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 
 ## Language Option
 
-When `--lang` is not specified, this skill first attempts to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails does it ask the user.
+When `--lang` is not specified, resolve task document language using the shared
+Codex YWC policy:
+[`../references/language-resolution.md`](../references/language-resolution.md).
+The order is explicit `--lang` > project `.codex/ywc.json` > project guidance
+(`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
 
-This skill supports canonical language codes `ko` | `ja` | `en` | `es` | `zh` (default: `en`) for task document output. It also accepts backward-compatible long aliases `korean` | `japanese` | `english` | `spanish` | `chinese`; treat `zh` / `chinese` as Simplified Chinese unless the user explicitly asks for another Chinese locale. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from the project instruction files fails.
+This skill supports canonical language codes `ko` | `ja` | `en` | `es` | `zh`
+for task document output. It also accepts backward-compatible long aliases
+`korean` | `japanese` | `english` | `spanish` | `chinese`; treat `zh` /
+`chinese` as Simplified Chinese unless the user explicitly asks for another
+Chinese locale. There is no skill-level output-language default.
 
 For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
 
@@ -124,7 +132,10 @@ Review the specification for completeness and verify that sufficient information
 
 ### Step 4: Confirm Language
 
-If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails or is ambiguous, ask:
+If `--lang` is provided, skip this step. Otherwise, resolve language using
+[`../references/language-resolution.md`](../references/language-resolution.md):
+project `.codex/ywc.json`, then project guidance (`AGENTS.md`, `CODEX.md`,
+`CLAUDE.md`), then user `~/.codex/ywc.json`, then ask if unresolved.
 
 > "Which language should the task documents be written in? (`ko`, `ja`, `en`, `es`, or `zh`)"
 
@@ -399,7 +410,7 @@ After generating all tasks, verify the following:
 The final output includes:
 
 1. **Task list summary**: A table organizing all tasks by phase
-2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default: `tasks/`)
+2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default - `tasks/`)
 3. **Dependency Graph**: `<tasks-dir>/dependency-graph.md` generated — single source of truth for execution order
 4. **Parallel Execution Notes**: Included in `<tasks-dir>/dependency-graph.md` when parallel worktree execution is expected
 
@@ -416,7 +427,7 @@ Before returning `DONE`, verify:
 - [ ] UI or behavior-changing tasks have a `test.md` or an explicit test exception.
 - [ ] `dependency-graph.md` exists and matches the generated task directories.
 - [ ] Parallel Execution Notes are present when tasks are intended for parallel execution.
-- [ ] The selected output language matches `--lang` or the inferred project language policy.
+- [ ] The selected output language matches `--lang` or the shared YWC language resolution result.
 - [ ] The selected Granularity Mode matches `--mode`, `--granularity`, or the user's explicit confirmation.
 - [ ] The final response reports the generated directory, task count, graph path, and `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
 

@@ -10,7 +10,7 @@ Since LLMs do not retain full project context when executing tasks, explicitly l
 
 List of links to source-of-truth documents. Each entry should include the specific section/anchor.
 
-- **Default: project-relative paths only** (e.g., `docs/prd/auth.md#token-rotation`). This works in offline environments and allows drift tracking via version control.
+- **Default - project-relative paths only** (e.g., `docs/prd/auth.md#token-rotation`). This works in offline environments and allows drift tracking via version control.
 - **External URLs** (Notion, Confluence, Figma, etc.) should only be used when the project explicitly allows it. See the sequential-executor policy for the project-level rule.
 - **For tasks with no spec** (e.g., pure lint setup, housekeeping), mark as `N/A — no external spec (housekeeping / refactor / config only)`.
 

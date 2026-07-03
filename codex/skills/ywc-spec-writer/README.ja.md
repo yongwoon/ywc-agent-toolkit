@@ -37,7 +37,7 @@ $ywc-spec-writer --lang es                # スペイン語で作成
 - (任意) `--from-commit <ref>` — commit 参照（デフォルト: `HEAD`）
 - (任意) `--from-pr <num>` — 単一 PR（gh CLI 必須）
 - (任意) `--from-prs <num> ...` — 複数 PR の union diff（重複 file は自動 dedup）
-- (任意) `--lang ko|ja|en|zh|es` — 出力言語（デフォルト: `ko`）
+- (任意) `--lang ko|ja|en|zh|es` — 出力言語（shared YWC language policy で resolve）
 - (任意) `--setup-hook` — Git pre-commit hook インストール
 
 > `--from-pr` / `--from-prs` を使う場合は `gh` CLI が install・authenticate 済みである必要があります。PR title / body / `headRefOid` は spec 作成時の narrative context と audit trail として記録されます。

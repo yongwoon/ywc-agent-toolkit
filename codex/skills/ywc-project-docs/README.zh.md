@@ -6,7 +6,7 @@
 
 一个 Codex Skill，用于生成遵循项目 `docs/` 目录结构和规范的韩语、日语、英语、中文或西班牙语文档。
 
-目标语言绝不自动推断。如果提供了 `--lang kr|ja|en|zh|es` 则直接使用；否则该 Skill 会先询问使用哪种受支持语言再开始写入。
+如果提供 `--lang kr|ja|en|zh|es`，则直接使用。否则按 shared YWC language policy resolve：`--lang` > `.codex/ywc.json` > `AGENTS.md` / `CODEX.md` / `CLAUDE.md` > `~/.codex/ywc.json` > 询问用户。
 
 ## 使用方法
 
@@ -32,7 +32,7 @@
 ### 手动调用
 
 ```text
-$ywc-project-docs              # 显示语言选择提示
+$ywc-project-docs              # 按 shared language policy resolve 语言
 $ywc-project-docs --lang kr    # 直接以韩语撰写
 $ywc-project-docs --lang ja    # 直接以日语撰写
 $ywc-project-docs --lang en    # 直接以英语撰写
@@ -42,7 +42,7 @@ $ywc-project-docs --lang es    # 直接以西班牙语撰写
 
 ## 此 Skill 的功能
 
-1. **语言选择** — 优先使用 `--lang`，否则询问韩语 / 日语 / 英语 / 中文 / 西班牙语来决定（不自动推断）
+1. **语言选择** — 优先使用 `--lang`，否则按 shared YWC language policy resolve
 2. **目录路由** — 根据意图将文档放置在正确的 `docs/` 子目录中
 3. **命名规范** — 应用小写 kebab-case，最少后缀
 4. **文档结构** — 生成相关文档块、目录和编号章节
