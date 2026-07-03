@@ -712,3 +712,112 @@ graph LR
   B --> D
   C --> D
 ```
+
+---
+
+## Batch 18 — ywc Language Setup (claude-code)
+
+- Spec: `docs/ywc-plans/ywc-language-setup.md` (ywc-spec-validate → DONE after 2 iterations)
+- Spec ready log: `docs/ywc-plans/ywc-language-setup.spec-ready-log.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000037`
+- Scope: `claude-code/skills/**` only. Codex 런타임 제외(spec Out of Scope).
+- Existing phase note: 최고 기존 phase 는 `000036`(Batch 17), 따라서 이 batch 는 `000037` 에서 시작.
+- Advisor pass: skipped — phase 경계가 명확(foundation reference → build → validation hard gate); Medium 규모, local Pattern C 판단.
+- No-AC requirements: 없음 — 모든 task 가 FR/AC 로 추적됨.
+- Safety invariants: DB migration / library introduction 없음 → 강제 split 없음.
+
+### Phase 000037 — Foundation (canonical resolution reference)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000037-010-docs-language-resolution-reference` | docs | (root) |
+
+### Phase 000038 — Build on foundation (parallel-safe)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000038-010-docs-ywc-setup-language-skill` | docs | `000037-010` |
+| `000038-020-docs-wire-doc-generator-consumers` | docs | `000037-010` |
+| `000038-030-docs-wire-git-artifact-consumers` | docs | `000037-010` |
+
+### Phase 000039 — Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000039-010-infra-validate-language-setup` | infra | `000038-010`, `000038-020`, `000038-030` |
+
+### Parallel Execution Notes (Batch 18)
+
+- Initial ready set: `000037-010-docs-language-resolution-reference` (canonical `references/language-resolution.md` + `CLAUDE.md` 문서화 섹션 — 이후 모든 task 의 참조 대상).
+- After `000037-010` merges: `000038-010` / `000038-020` / `000038-030` 은 병렬 안전 — Ownership 이 disjoint(신규 skill 디렉토리 vs task-generator/spec-writer/plan SKILL.md vs create-pr/commit SKILL.md). 셋 다 `000037-010` 에만 의존하므로 phase-gate 규칙상 같은 Phase 000038 에 두고 Depends On 으로만 정렬.
+- `000039-010` 은 hard gate: Phase 000038 전부 완료 후 `scripts/validate.sh` + `install.sh --list --cc` + consumer wiring 확인을 실행. 파일 편집 없음(검증 전용).
+- Conflict notes: `000037-010` 만 `CLAUDE.md` 를 편집(단독). `000038-020` 과 `000038-030` 은 disjoint SKILL.md set. 병렬 편집 충돌 없음.
+- Hard boundary: `codex/**` 편집 없음 → pre-push hook green.
+- Recommended execution: `000037-010` merge 후 `000038-010/020/030` 을 conflict-free 병렬 worktree(`ywc-parallel-executor`), 이후 `000039-010`.
+- FR mapping: FR2+FR9(A1/A2/A5)+AC12 → `000037-010`; FR1+FR8+AC1–4+AC11 → `000038-010`; FR3+FR4(A4)+FR5+AC5/AC8–10+EC8 → `000038-020`; FR6+FR7+AC6/AC7 → `000038-030`; AC11 최종+FR8 → `000039-010`.
+- Open Questions (spec OQ, non-blocking): OQ1 skill 이름(`ywc-setup-language` 로 확정, `000038-010` 에서 재확인), OQ2 user-global `~/.claude/CLAUDE.md` 생성 시 확인 방식(`000038-010` author 시 결정).
+
+```mermaid
+graph LR
+  A[000037-010-docs-language-resolution-reference] --> B[000038-010-docs-ywc-setup-language-skill]
+  A --> C[000038-020-docs-wire-doc-generator-consumers]
+  A --> D[000038-030-docs-wire-git-artifact-consumers]
+  B --> E[000039-010-infra-validate-language-setup]
+  C --> E
+  D --> E
+```
+
+---
+
+## Batch 19 — Codex YWC Language Setup
+
+- Spec: `docs/ywc-plans/codex-ywc-language-setup.md` (spec-ready DONE, 1 iteration)
+- Spec ready log: `docs/ywc-plans/codex-ywc-language-setup.spec-ready-log.md`
+- Granularity mode: `llm` · Language: korean · Starting phase: `000040`
+- Scope: Codex skills, Codex shared references, Codex/root catalog documentation, and generated plugin sync only. No `claude-code/**` edits.
+- Existing phase note: highest active phase is `000039` (Batch 18), so this Codex batch starts at `000040`.
+- Advisor pass: skipped due current tool policy requiring explicit subagent authorization; local Pattern C phase review applied. Phase boundaries are straightforward: foundation reference → parallel source/doc wiring → sync/validation hard gate.
+- Safety invariants: DB migration / library introduction 없음.
+
+### Phase 000040 — Foundation
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000040-010-docs-codex-language-resolution-reference` | docs | (root) |
+
+### Phase 000041 — Codex Source and Catalog Updates
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000041-010-docs-codex-ywc-setup-skill` | docs | `000040-010` |
+| `000041-020-docs-wire-artifact-language-consumers` | docs | `000040-010` |
+| `000041-030-docs-wire-pr-orchestration-consumers` | docs | `000040-010` |
+| `000041-040-docs-catalog-language-setup` | docs | `000040-010` |
+
+### Phase 000042 — Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000042-010-infra-codex-language-setup-validation` | infra | `000041-010`, `000041-020`, `000041-030`, `000041-040` |
+
+### Parallel Execution Notes (Batch 19)
+
+- Initial ready set: `000040-010-docs-codex-language-resolution-reference`.
+- After `000040-010` merges: `000041-010`, `000041-020`, `000041-030`, and `000041-040` are parallel-safe. They own disjoint areas: new `ywc-setup` skill directory, artifact consumer skill directories, PR/orchestration skill directories, and catalog/root docs.
+- `000042-010` is a hard gate. It waits for all Phase `000041` tasks, then runs generated plugin sync if needed, full repository validation, Codex install list verification, and targeted language wiring checks.
+- Conflict notes: no task before `000042-010` may manually edit `plugins/ywc-agent-toolkit/skills/**`; generated package sync belongs only to the validation hard gate. Phase `000041` tasks only read `codex/skills/references/language-resolution.md`.
+- Hard boundary: no `claude-code/**` edits in Batch 19.
+- Recommended execution: run `000040-010`, then execute the four Phase `000041` tasks in parallel worktrees, then run `000042-010`.
+- FR mapping: FR-4 → `000040-010`; FR-1/FR-2/FR-3 → `000041-010`; FR-5 artifact consumers + FR-6 explicit flag preservation → `000041-020`; FR-5 PR/orchestration consumers + FR-6 → `000041-030`; FR-7 → `000041-040`; AC10 + sync/validation → `000042-010`.
+
+```mermaid
+graph LR
+  AF[000040-010-docs-codex-language-resolution-reference] --> AG[000041-010-docs-codex-ywc-setup-skill]
+  AF --> AH[000041-020-docs-wire-artifact-language-consumers]
+  AF --> AI[000041-030-docs-wire-pr-orchestration-consumers]
+  AF --> AJ[000041-040-docs-catalog-language-setup]
+  AG --> AK[000042-010-infra-codex-language-setup-validation]
+  AH --> AK
+  AI --> AK
+  AJ --> AK
+```
