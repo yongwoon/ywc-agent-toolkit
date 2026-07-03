@@ -22,7 +22,7 @@ $ywc-task-generator refine docs/spec.md for parallel worktree execution.
 
 ### 언어 옵션
 
-이 Skill 은 Korean, Japanese, English, Chinese (Simplified), Spanish 출력을 지원합니다. `--lang` 값은 `korean`, `japanese`, `english`, `chinese`, `spanish` 와 alias `ko`, `ja`, `en`, `zh`, `es` 를 사용할 수 있습니다.
+이 Skill 은 Korean, Japanese, English, Spanish, Chinese (Simplified) 출력을 지원합니다. `--lang` 값은 `ko`, `ja`, `en`, `es`, `zh` 를 표준으로 사용하며, `korean`, `japanese`, `english`, `spanish`, `chinese` 는 backward-compatible alias 로 인식합니다.
 
 | 언어     | 예시                                 |
 | -------- | ------------------------------------ |
@@ -38,7 +38,7 @@ Korean, Japanese, Chinese, Spanish 출력에서는 Technical 용어를 English �
 
 ### Granularity Mode 옵션
 
-이 Skill 은 2 가지 task granularity mode 를 지원하며, **항상 어떤 mode 로 생성할지 사용자에게 확인합니다** (silent default 없음).
+이 Skill 은 2 가지 task granularity mode 를 지원합니다. 표준 option 은 `--mode human|llm` 이며, `--granularity human|llm` 도 backward-compatible alias 로 인식합니다. 두 option 이 모두 없을 때만 어떤 mode 로 생성할지 사용자에게 확인합니다 (silent default 없음).
 
 | Mode   | Size guideline         | 최적화 대상                                          |
 |--------|------------------------|------------------------------------------------------|

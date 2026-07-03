@@ -2,21 +2,21 @@
 
 This skill allows the user to choose the output language for task documents. If the user does not specify a language, first infer it from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), then ask for confirmation only when no clear language policy is present.
 
-**Supported languages:** `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`)
+**Supported languages:** `ko` | `ja` | `en` | `es` | `zh` (default: `en`)
 
-**Aliases:** `ko` → `korean`, `ja` → `japanese`, `en` → `english`, `zh` / `中文` / `chinese` / `Chinese (Simplified)` → `chinese`, `es` / `spanish` / `espanol` / `español` → `spanish`
+**Aliases:** `korean` / `한국어` → `ko`, `japanese` / `日本語` → `ja`, `english` → `en`, `spanish` / `espanol` / `español` → `es`, `chinese` / `中文` / `Chinese (Simplified)` → `zh`
 
 ## How the User Specifies a Language
 
 | User input example | Resolved to |
 |---|---|
-| "한국어로 task 생성해줘" | korean |
-| "日本語でタスクを生成して" | japanese |
-| "Generate tasks in English" | english |
-| "中文 task docs" | chinese |
-| "PR Spanish로 작성" | spanish |
-| "--lang zh" | chinese |
-| "--lang es" | spanish |
+| "한국어로 task 생성해줘" | `ko` |
+| "日本語でタスクを生成して" | `ja` |
+| "Generate tasks in English" | `en` |
+| "中文 task docs" | `zh` |
+| "PR Spanish로 작성" | `es` |
+| "--lang zh" | `zh` |
+| "--lang es" | `es` |
 | (not specified) | infer from project instruction files; ask the user if inference fails |
 
 ## Language-Specific Writing Rules
@@ -30,7 +30,7 @@ This skill allows the user to choose the output language for task documents. If 
 - Write in the base language but **keep technical terms in English** (avoid transliterating foreign terms).
 - Use consistent terminology throughout the document.
 - Keep machine-facing surfaces in English: command names, file paths, YAML keys, JSON keys, task IDs, code blocks, and frontmatter keys.
-- For `chinese` / `zh`, use Simplified Chinese unless the user explicitly asks for another Chinese locale.
+- For `zh` / `chinese`, use Simplified Chinese unless the user explicitly asks for another Chinese locale.
 
 #### Korean examples
 

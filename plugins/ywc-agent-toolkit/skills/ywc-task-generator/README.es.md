@@ -26,7 +26,7 @@ $ywc-task-generator refine docs/spec.md for parallel worktree execution.
 
 ### Opciones de Idioma
 
-La Habilidad admite salida en coreano, japonés, inglés, chino simplificado y español. `--lang` acepta `korean`, `japanese`, `english`, `chinese`, `spanish` y los alias `ko`, `ja`, `en`, `zh`, `es`.
+La Habilidad admite salida en coreano, japonés, inglés, español y chino simplificado. `--lang` acepta `ko`, `ja`, `en`, `es` y `zh` como valores canónicos; `korean`, `japanese`, `english`, `spanish` y `chinese` siguen funcionando como alias backward-compatible.
 
 | Idioma | Ejemplo |
 |--------|---------|
@@ -42,7 +42,7 @@ Para salidas en coreano, japonés, chino y español, los Technical terms permane
 
 ### Opciones de Modo de Granularidad
 
-La Habilidad admite dos modos de granularidad de tareas y **siempre pregunta qué modo aplicar** — no existe un valor predeterminado silencioso.
+La Habilidad admite dos modos de granularidad de tareas. La opción canónica es `--mode human|llm`; `--granularity human|llm` también se reconoce como alias backward-compatible. Si no se proporciona ninguna de las dos opciones, la Habilidad pregunta qué modo aplicar — no existe un valor predeterminado silencioso.
 
 | Modo   | Guía de tamaño          | Optimizado para                                                  |
 |--------|-------------------------|------------------------------------------------------------------|

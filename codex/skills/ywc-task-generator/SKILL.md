@@ -1,7 +1,7 @@
 ---
 name: ywc-task-generator
 description: >-
-  (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
+  (ywc) Use when converting a specification into implementation tasks. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "任务拆分", "从 spec 生成 task", "generar tareas", "desglosar spec", "implementation tasks", "스펙 분해", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
 ---
 
 # Task Generator
@@ -19,7 +19,7 @@ When tempted to bend a rule, check this table first:
 | Excuse | Reality |
 |---|---|
 | "DB migration is small, I'll bundle it with the API task" | DB migration must be its own task — in **every** mode. Safety invariant. |
-| "User did not specify granularity, `human` is the safe default" | Always ask. Wrong mode cascades into every task's size and bundling. |
+| "User did not specify `--mode` / `--granularity`, `human` is the safe default" | Always ask. Wrong mode cascades into every task's size and bundling. |
 | "Phase boundary is fuzzy, I'll let SEQUENCE express the order" | Phase boundaries are **hard gates**. If only some Phase N tasks must finish before a Phase N+1 task starts, that task belongs in Phase N. |
 | "Ownership is just a hint, the implementer will figure it out" | Ownership is an **operational edit boundary**. Vague Ownership = parallel-execution conflicts later. |
 | "Spec Reference is empty for this task, I'll skip the section" | Never omit. Use `N/A — housekeeping/refactor only` when there is no spec. Empty section = ambiguity. |
@@ -32,14 +32,16 @@ When tempted to bend a rule, check this table first:
 
 | Argument | Default | Description |
 |---|---|---|
-| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english` \| `chinese` \| `spanish`; aliases: `ko` \| `ja` \| `en` \| `zh` \| `es`. |
+| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `ko` \| `ja` \| `en` \| `es` \| `zh`. Backward-compatible aliases: `korean` \| `japanese` \| `english` \| `spanish` \| `chinese`. |
+| `--mode <mode>` | _(asked)_ | Canonical task granularity option: `human` \| `llm`. |
+| `--granularity <mode>` | _(alias)_ | Backward-compatible alias for `--mode`; accept `human` \| `llm`. If both flags are present and conflict, stop and ask the user to resolve the conflict. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 
 ## Language Option
 
 When `--lang` is not specified, this skill first attempts to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails does it ask the user.
 
-This skill supports `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`) for task document output. It also accepts code aliases `ko` | `ja` | `en` | `zh` | `es`; treat `zh` / `chinese` as Simplified Chinese unless the user explicitly asks for another Chinese locale. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from the project instruction files fails.
+This skill supports canonical language codes `ko` | `ja` | `en` | `es` | `zh` (default: `en`) for task document output. It also accepts backward-compatible long aliases `korean` | `japanese` | `english` | `spanish` | `chinese`; treat `zh` / `chinese` as Simplified Chinese unless the user explicitly asks for another Chinese locale. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from the project instruction files fails.
 
 For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
 
@@ -124,13 +126,15 @@ Review the specification for completeness and verify that sufficient information
 
 If `--lang` is provided, skip this step. Otherwise, attempt to infer the language from the project's instruction files (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`, or equivalent), especially a Language Policy section or Documentation Writing Guidelines. Only if inference fails or is ambiguous, ask:
 
-> "Which language should the task documents be written in? (korean, japanese, english, chinese, or spanish)"
+> "Which language should the task documents be written in? (`ko`, `ja`, `en`, `es`, or `zh`)"
 
 ### Step 5: Confirm Granularity Mode
 
-**Always ask** the user which granularity mode to apply. Do not silently default — the correct mode depends on who will execute the tasks.
+If `--mode` is provided, use it and skip this confirmation. If `--granularity` is provided instead, treat it as a backward-compatible alias for `--mode` and skip this confirmation. If both are provided with different values, stop and ask the user to choose one mode before decomposing tasks.
 
-> "Which granularity mode should the tasks be generated in?
+If neither flag is provided, **always ask** the user which granularity mode to apply. Do not silently default — the correct mode depends on who will execute the tasks.
+
+> "Which mode should the tasks be generated in?
 > - `human` — small, single-PR reviewable units (~10 files / ~300 LOC)
 > - `llm` — larger vertical slices optimized for a single LLM agent run (~25 files / ~800 LOC)"
 
@@ -142,7 +146,7 @@ Safety invariants — DB migration separation, Library introduction separation, 
 
 See [references/granularity-modes.md](references/granularity-modes.md) for the full mode specification.
 
-**Persist the decision.** After confirmation, record the selected mode in a re-checkable location (e.g., a top-line scratchpad note, or `write_memory("granularity_mode", <value>)` when Serena MCP is available) and apply it consistently through Steps 6–9 (size, bundling, Ownership scope, Implementation Steps depth, test.md inclusion). Mode drift mid-generation produces inconsistent task directories.
+**Persist the decision.** After parsing `--mode` / `--granularity` or receiving confirmation, record the selected mode in a re-checkable location (e.g., a top-line scratchpad note, or `write_memory("granularity_mode", <value>)` when Serena MCP is available) and apply it consistently through Steps 6–9 (size, bundling, Ownership scope, Implementation Steps depth, test.md inclusion). Mode drift mid-generation produces inconsistent task directories.
 
 ### Step 6: Task Decomposition
 
@@ -413,13 +417,14 @@ Before returning `DONE`, verify:
 - [ ] `dependency-graph.md` exists and matches the generated task directories.
 - [ ] Parallel Execution Notes are present when tasks are intended for parallel execution.
 - [ ] The selected output language matches `--lang` or the inferred project language policy.
+- [ ] The selected Granularity Mode matches `--mode`, `--granularity`, or the user's explicit confirmation.
 - [ ] The final response reports the generated directory, task count, graph path, and `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
 
 ---
 
 ## Example
 
-User input: "Break down the user authentication spec into tasks. In Korean." (Granularity Mode: `human`)
+User input: "Break down the user authentication spec into tasks. `--lang ko --mode human`"
 
 Output task list:
 

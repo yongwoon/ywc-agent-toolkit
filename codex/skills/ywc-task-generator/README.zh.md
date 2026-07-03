@@ -26,7 +26,7 @@ $ywc-task-generator refine docs/spec.md for parallel worktree execution.
 
 ### 语言选项
 
-Skill 支持韩语、日语、英语、简体中文和西班牙语输出。`--lang` 接受 `korean`、`japanese`、`english`、`chinese`、`spanish`，以及别名 `ko`、`ja`、`en`、`zh`、`es`。
+Skill 支持韩语、日语、英语、西班牙语和简体中文输出。`--lang` 接受 `ko`、`ja`、`en`、`es`、`zh` 作为 canonical values；`korean`、`japanese`、`english`、`spanish`、`chinese` 继续作为 backward-compatible aliases。
 
 | 语言 | 示例 |
 |----------|---------|
@@ -42,7 +42,7 @@ Skill 支持韩语、日语、英语、简体中文和西班牙语输出。`--la
 
 ### 粒度模式选项
 
-Skill 支持两种任务粒度模式，并**始终询问应用哪种模式** — 没有默认静默选择。
+Skill 支持两种任务粒度模式。标准 option 是 `--mode human|llm`；`--granularity human|llm` 也会作为 backward-compatible alias 被识别。如果两个 option 都未提供，Skill 才会询问应用哪种模式 — 没有默认静默选择。
 
 | 模式   | 大小指南               | 优化目标                                            |
 |--------|------------------------|-----------------------------------------------------|
