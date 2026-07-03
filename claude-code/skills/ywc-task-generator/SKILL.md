@@ -326,7 +326,7 @@ Each task.md must include the following:
   - Do not use generic placeholders like "implement core logic" or "handle edge cases"
   - Example: `Create src/models/user.ts with User entity definition`
 - **Task Verify**: Task-specific verification command checklist — each command must assert this task's specific outcome (a test exercising the new behavior, or a command whose output changes), never only a project-wide `build`/`lint` gate
-  - **Duplicate-sensitive write flows** (stock/balance/order/payment/provisioning/quota writes): Task Verify must additionally cover concurrent-write behavior, partial-failure rollback, and idempotent retry. When the spec requires a specific mechanism (atomic conditional update / row lock / optimistic lock / idempotency key), the task must name the chosen mechanism and its expected observable outcome. If the project has no practical concurrency harness, state an alternative verification (e.g., a targeted unit assertion on the atomic update or a documented manual concurrent-request check) rather than omitting it.
+  - **Duplicate-sensitive write flows** (stock/balance/order/payment/provisioning/quota writes): Task Verify must additionally cover concurrent-write behavior, partial-failure rollback, and idempotent retry. When the spec requires a specific mechanism (atomic conditional update / row lock / optimistic lock / idempotency key / unique constraint / persisted request/result record), the task must name the chosen mechanism and its expected observable outcome. If the project has no practical concurrency harness, state an alternative verification (e.g., a targeted unit assertion on the atomic update or a documented manual concurrent-request check) rather than omitting it.
 - **Verification**: Confirm lint, typecheck, test, and build pass (use the project's actual commands)
 
 #### test.md (optional)
@@ -383,7 +383,7 @@ After generating all tasks, verify the following:
 - [ ] Allowed Edit Scope and Stop Conditions included
 - [ ] Acceptance Criteria included in `When <trigger>, does <behavior>, observable as <check>` form (distinct from Implementation Steps)
 - [ ] Each task's Task Verify includes ≥1 task-specific assertion that fails if the task's behavior is absent (not only a project-wide gate like bare `build`/`lint`)
-- [ ] For a duplicate-sensitive write flow, Task Verify covers concurrent-write behavior, partial-failure rollback, and idempotent retry — naming the spec-required mechanism (atomic conditional update / row lock / optimistic lock / idempotency key) and its expected observable outcome
+- [ ] For a duplicate-sensitive write flow, Task Verify covers concurrent-write behavior, partial-failure rollback, and idempotent retry — naming the spec-required mechanism (atomic conditional update / row lock / optimistic lock / idempotency key / unique constraint / persisted request/result record) and its expected observable outcome
 - [ ] Verification commands match the project's actual commands (based on context collected in Step 2)
 
 **Consistency:**
