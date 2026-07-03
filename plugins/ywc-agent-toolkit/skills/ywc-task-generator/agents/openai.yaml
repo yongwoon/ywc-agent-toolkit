@@ -1,4 +1,4 @@
 interface:
   display_name: "Task Generator"
   short_description: "Decompose specs into executable tasks in ko/ja/en/zh/es"
-  default_prompt: "Use $ywc-task-generator to convert this approved specification into dependency-safe implementation task folders. Output task document prose in the requested language: korean, japanese, english, chinese, or spanish."
+  default_prompt: "Use $ywc-task-generator to convert this approved specification into dependency-safe implementation task folders. Output task document prose in the requested language: ko, ja, en, es, or zh, and use the requested --mode human or --mode llm."

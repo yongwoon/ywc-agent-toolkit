@@ -22,7 +22,7 @@ $ywc-task-generator refine docs/spec.md for parallel worktree execution.
 
 ### Language Options
 
-The Skill supports Korean, Japanese, English, Simplified Chinese, and Spanish output. Accepted `--lang` values are `korean`, `japanese`, `english`, `chinese`, `spanish`, plus aliases `ko`, `ja`, `en`, `zh`, and `es`.
+The Skill supports Korean, Japanese, English, Spanish, and Simplified Chinese output. Accepted `--lang` values are `ko`, `ja`, `en`, `es`, and `zh`; long names (`korean`, `japanese`, `english`, `spanish`, `chinese`) remain backward-compatible aliases.
 
 | Language | Example |
 |----------|---------|
@@ -38,7 +38,7 @@ For Korean, Japanese, Chinese, and Spanish outputs, technical terms stay in Engl
 
 ### Granularity Mode Options
 
-The Skill supports two task granularity modes and **always asks which mode to apply** — there is no silent default.
+The Skill supports two task granularity modes. The canonical option is `--mode human|llm`; `--granularity human|llm` is also recognized as a backward-compatible alias. If neither option is provided, the Skill asks which mode to apply — there is no silent default.
 
 | Mode   | Size guideline         | Optimized for                                       |
 |--------|------------------------|-----------------------------------------------------|

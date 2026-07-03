@@ -19,7 +19,7 @@ When tempted to bend a rule, check this table first:
 | Excuse | Reality |
 |---|---|
 | "DB migration is small, I'll bundle it with the API task" | DB migration must be its own task — in **every** mode. Safety invariant. |
-| "User did not specify granularity, `human` is the safe default" | Always ask. Wrong mode cascades into every task's size and bundling. |
+| "User did not specify granularity, `human` is the safe default" | Use `--mode` when it is passed; otherwise always ask. Never silently default — wrong mode cascades into every task's size and bundling. |
 | "Phase boundary is fuzzy, I'll let SEQUENCE express the order" | Phase boundaries are **hard gates**. If only some Phase N tasks must finish before a Phase N+1 task starts, that task belongs in Phase N. |
 | "Ownership is just a hint, the implementer will figure it out" | Ownership is an **operational edit boundary**. Vague Ownership = parallel-execution conflicts later. |
 | "Spec Reference is empty for this task, I'll skip the section" | Never omit. Use `N/A — housekeeping/refactor only` when there is no spec. Empty section = ambiguity. |
@@ -34,14 +34,15 @@ When tempted to bend a rule, check this table first:
 
 | Argument | Default | Description |
 |---|---|---|
-| `--lang <language>` | _(inferred or asked)_ | Output language for task documents: `korean` \| `japanese` \| `english` \| `chinese` \| `spanish`. |
+| `--lang <code>` | _(inferred or asked)_ | Output language for task documents: `ko` \| `ja` \| `en` \| `es` \| `zh` (default: `en`). Full language names (`korean`, `japanese`, `english`, `spanish`, `chinese`) are also accepted and map to these codes. |
+| `--mode <human\|llm>` | _(asked)_ | Canonical Granularity Mode for task decomposition (see Step 5). Alias: `--granularity`. When omitted, the skill always asks. If `--mode` and `--granularity` conflict, stop and ask the user to resolve it. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 
 ## Language Option
 
 When `--lang` is not specified, this skill first attempts to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails does it ask the user.
 
-This skill supports `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`) for task document output. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
+This skill supports `ko` | `ja` | `en` | `es` | `zh` (default: `en`) for task document output; full language names are also accepted and map to these codes. Treat `zh` as Simplified Chinese unless the user explicitly asks for another Chinese locale. When `--lang` is omitted, follow the inference-first behavior above — only ask the user for confirmation if inference from CLAUDE.md fails.
 
 For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
 
@@ -125,13 +126,13 @@ Review the specification for completeness and verify that sufficient information
 
 ### Step 4: Confirm Language
 
-If the user has not specified an output language, ask:
+If `--lang` is provided, skip this step. Otherwise attempt to infer the language from the project's CLAUDE.md (Language Policy section or Documentation Writing Guidelines). Only if inference fails or is ambiguous, ask:
 
-> "Which language should the task documents be written in? (korean / japanese / english / chinese / spanish)"
+> "Which language should the task documents be written in? (ko / ja / en / es / zh)"
 
 ### Step 5: Confirm Granularity Mode
 
-**Always ask** the user which granularity mode to apply. Do not silently default — the correct mode depends on who will execute the tasks.
+If `--mode` (or its alias `--granularity`) is provided, use it directly and skip the prompt. If both `--mode` and `--granularity` are provided with different values, stop and ask the user to resolve the conflict. Otherwise **always ask** the user which granularity mode to apply — do not silently default. The correct mode depends on who will execute the tasks.
 
 > "Which granularity mode should the tasks be generated in?
 > - `human` — small, single-PR reviewable units (~10 files / ~300 LOC)
@@ -409,7 +410,7 @@ When parallel execution is expected, verify that each task is safe for isolated 
 
 ## Example
 
-User input: "Break down the user authentication spec into tasks. In Korean." (Granularity Mode: `human`)
+User input: "Break down the user authentication spec into tasks. `--lang ko --mode human`"
 
 ---
 

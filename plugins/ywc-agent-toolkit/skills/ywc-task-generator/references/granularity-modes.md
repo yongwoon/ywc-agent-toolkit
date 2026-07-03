@@ -1,6 +1,6 @@
 # Granularity Modes
 
-This document specifies the two Granularity Modes supported by `ywc-task-generator` and the rules that differ between them. The executor **must** ask the user which mode to use before Step 6 (Task Decomposition) — there is no silent default.
+This document specifies the two Granularity Modes supported by `ywc-task-generator` and the rules that differ between them. `--mode <human|llm>` is the canonical option. `--granularity <human|llm>` is a backward-compatible alias. If neither option is provided, the executor **must** ask the user which mode to use before Step 6 (Task Decomposition) — there is no silent default.
 
 ## Contents
 
@@ -78,7 +78,7 @@ If the user is unsure, ask:
 1. "Will a person review each task in a separate PR, or will an agent execute them autonomously and be reviewed in aggregate?"
 2. "Is throughput of completed work per session more valuable than per-task reviewability?"
 
-Never silently default — require the user to confirm one of the two modes.
+Never silently default — require the user to confirm one of the two modes unless `--mode` or `--granularity` already supplied it. If both options are present and conflict, stop and ask the user to choose one.
 
 ## Interaction with Other Skills
 

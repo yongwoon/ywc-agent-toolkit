@@ -2,17 +2,17 @@
 
 This skill allows the user to choose the output language for task documents. If the user does not specify a language, ask for confirmation.
 
-**Supported languages:** `korean` | `japanese` | `english` | `chinese` | `spanish` (default: `english`)
+**Supported languages:** `ko` | `ja` | `en` | `es` | `zh` (default: `en`). Full language names (`korean`, `japanese`, `english`, `spanish`, `chinese`) are also accepted and map to these codes.
 
 ## How the User Specifies a Language
 
 | User input example | Resolved to |
 |---|---|
-| "한국어로 task 생성해줘" | korean |
-| "日本語でタスクを生成して" | japanese |
-| "Generate tasks in English" | english |
-| "用中文生成 task" | chinese |
-| "Genera las tareas en español" | spanish |
+| "한국어로 task 생성해줘" | `ko` |
+| "日本語でタスクを生成して" | `ja` |
+| "Generate tasks in English" | `en` |
+| "用中文生成 task" | `zh` |
+| "Genera las tareas en español" | `es` |
 | (not specified) | ask the user |
 
 ## Language-Specific Writing Rules
