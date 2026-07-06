@@ -821,3 +821,37 @@ graph LR
   AI --> AK
   AJ --> AK
 ```
+
+### Phase 000043 — Toolkit-Eval 2026-07-06 개선 백로그 (Batch 20)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000043-010-test-setup-language-trigger-cases` | test | (root) |
+| `000043-020-docs-skill-body-anti-trigger-fixes` | docs | (root) |
+| `000043-030-docs-agent-test-ownership-boundaries` | docs | (root) |
+
+### Parallel Execution Notes (Batch 20)
+
+- Source spec: `docs/ywc-plans/toolkit-eval-backlog-2026-07-06.md` (DONE, Iteration 1 Amendments 권위본). Mode: `llm`. Lang: `ko`.
+- 단일 Phase. Ownership이 완전 분리됨. `000043-020` / `000043-030`는 상호 무의존이라 **즉시 병렬 실행 가능**하나, `000043-010`은 OQ1(collision 형제 확정) 해소 후에만 착수 가능:
+  - `000043-010` → `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json`
+  - `000043-020` → `claude-code/skills/{project-docs,project-scaffold,merge-dependabot,product-review,tdd-ritual}/SKILL.md` + `codex/skills/{동일}` 미러
+  - `000043-030` → `claude-code/agents/{backend-coder,frontend-coder,qa-engineer,doc-writer}.md`
+- Conflict notes: 세 태스크의 파일 집합은 교집합이 없음. `000043-020`만 Codex 미러 sync 게이트(`.githooks/pre-commit`, `scripts/validate.sh`)를 공유하나 다른 태스크와 충돌하지 않음. `plugins/ywc-agent-toolkit/**` 수기 편집 금지(sync/훅 위임).
+- FR mapping: FR1 → `000043-010`; FR2~FR6 + FR11 → `000043-020`; FR7~FR10 → `000043-030`.
+- 재평가는 세 태스크 병합 후 별도 `ywc-toolkit-eval` 실행으로 확인(본 배치의 완료 조건 아님; Out of Scope).
+
+### Open Questions (from ywc-plan / spec, 착수 전 해소 권장)
+
+- **OQ1 (BLOCKING for `000043-010`)**: `ywc-setup-language`의 collision 형제 미확정. 권장 `ywc-project-mission`;
+  진짜 경합 형제가 없으면 eval 소유자가 커버리지 규칙(collision≥2) 예외를 승인해야 함. **미해소 시 `000043-010`
+  착수 불가** (해당 task.md Prerequisites/Stop Condition에 반영됨).
+- **OQ2 (non-blocking, `000043-020` 내부)**: FR5(product-review :26)는 실편집 대신 "비결함 기록"이 근거상 타당.
+  미결이면 "비결함 기록"으로 진행.
+
+```mermaid
+graph LR
+  BA[000043-010-test-setup-language-trigger-cases]
+  BB[000043-020-docs-skill-body-anti-trigger-fixes]
+  BC[000043-030-docs-agent-test-ownership-boundaries]
+```

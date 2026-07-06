@@ -70,6 +70,21 @@ Accept these aliases in user input and normalize before writing:
 
 Do not add extra config keys. Do not create `.codex/tmp/ywc-session.json`.
 
+## Output Format
+
+After a successful write, report the result in this shape:
+
+```text
+Status: DONE
+Scope: <project|user>
+Path: <target-path>
+Language: <canonical-code>
+```
+
+If the skill needs more information or rejects the request, use the same
+`Status:` line with `NEEDS_CONTEXT` or `BLOCKED`, then state the reason and the
+next required input.
+
 ## Session Scope Rejection
 
 If the user requests `--scope session`, explain:
@@ -82,7 +97,7 @@ If the user requests `--scope session`, explain:
 
 Then stop without writing files.
 
-## Verification
+## Validation
 
 After writing a config file:
 

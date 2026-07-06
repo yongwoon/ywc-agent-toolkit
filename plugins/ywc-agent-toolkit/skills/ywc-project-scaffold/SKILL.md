@@ -91,6 +91,8 @@ If the Protocol is not REST, also refer to `references/protocols.md`.
 - Rust (Actix Web, Axum, standard) → `references/rust.md`
 - Protocol related → `references/protocols.md`
 
+**Fallback (no matching reference)**: if the requested language or framework has no matching reference file above, proceed using general project-structure principles and confirm the stack assumptions with the user before generating.
+
 **Compound condition handling**: Combine multiple References. For example, for "FastAPI + GraphQL", refer to both `python.md` and `protocols.md` to generate an integrated structure.
 
 ### 3. Generate - Create Directory Structure

@@ -142,7 +142,7 @@ gh pr checks {number} --required
 gh pr merge {number} --merge
 ```
 
-**If a merge conflict occurs:**
+**If a merge conflict occurs**, resolve it in this order. First, comment `@dependabot rebase` on the PR and wait for Dependabot to rebase (consistent with the Rationalization Defense above). Only if the rebase does **not** clear the conflict, fall back to the manual path below:
 
 1. Check out the PR branch and attempt to resolve the conflict
 2. Push the resolved branch
