@@ -69,7 +69,11 @@ Write one minimal test that captures **one** behavior the production code is req
 ### Step 2: Verify RED — Watch it fail
 
 ```bash
-<run the test, scoped to just the new test>
+# Run ONLY the new test, using the project's configured test runner:
+#   npm/pnpm/yarn → the "test" script in package.json, e.g. `npm test -- <path-or-name>`
+#   pytest        → `pytest <path>::<test>` (from pyproject.toml / pytest.ini)
+#   go            → `go test -run <TestName> ./<pkg>`
+# If the runner cannot be inferred from the project config, ask the user before running.
 ```
 
 Confirm three things from the output:
