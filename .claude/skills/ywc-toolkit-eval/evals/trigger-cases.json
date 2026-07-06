@@ -2021,6 +2021,40 @@
       "kind": "collision",
       "impostor": "ywc-review-learnings",
       "note": "both are stateful-file skills; review-learnings owns durable code-review preferences, project-mission owns Mission / Success-Criteria"
+    },
+    {
+      "id": "setup-language-pos-1",
+      "prompt": "출력 언어를 한국어로 기본 설정해줘",
+      "expected": "ywc-setup-language",
+      "kind": "positive"
+    },
+    {
+      "id": "setup-language-pos-2",
+      "prompt": "stop making me pass --lang on every call — default all ywc output to English from now on",
+      "expected": "ywc-setup-language",
+      "kind": "positive"
+    },
+    {
+      "id": "setup-language-pos-3",
+      "prompt": "生成物の出力言語を日本語に既定設定して",
+      "expected": "ywc-setup-language",
+      "kind": "positive"
+    },
+    {
+      "id": "setup-language-vs-project-mission-1",
+      "prompt": "이 프로젝트 산출물 기본 언어를 정해서 설정으로 영속화해줘",
+      "expected": "ywc-setup-language",
+      "kind": "collision",
+      "impostor": "ywc-project-mission",
+      "note": "both persist project-level config as committed memory; project-mission owns the durable why/mission / success-criteria, but this asks to fix the default output language — owned by setup-language"
+    },
+    {
+      "id": "setup-language-vs-project-mission-2",
+      "prompt": "persist this project's setup so all future ywc output is written in English",
+      "expected": "ywc-setup-language",
+      "kind": "collision",
+      "impostor": "ywc-project-mission",
+      "note": "'persist project setup' overlaps project-mission's durable-memory surface, but the concrete ask fixes the output-language default, so setup-language wins"
     }
   ]
 }
