@@ -24,7 +24,7 @@ scripts/validate.sh: All checks passed.
 mechanical regression gate: [ci] 49 items, no mechanical regression. PASS
 ```
 
-Interpreter note: the default `python3` command resolved through pyenv 3.14.0 and completed, but was slow because `scripts/validate.sh` runs the full package validation suite. A separate `/Users/yongwoon.kim/.local/bin/python3.11 ... --skip-gate` run was used only to confirm agent TOML parsing without rerunning the structural validator.
+Interpreter note: the default `python3` command resolved through pyenv 3.14.0 and completed, but was slow because `scripts/validate.sh` runs the full package validation suite. A separate Python 3.11 run with `--skip-gate` was used only to confirm agent TOML parsing without rerunning the structural validator.
 
 ## Mechanical Scorecard
 

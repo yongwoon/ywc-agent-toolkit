@@ -833,7 +833,7 @@ graph LR
 ### Parallel Execution Notes (Batch 20)
 
 - Source spec: `docs/ywc-plans/toolkit-eval-backlog-2026-07-06.md` (DONE, Iteration 1 Amendments 권위본). Mode: `llm`. Lang: `ko`.
-- 단일 Phase. 세 태스크는 상호 무의존이며 Ownership이 완전 분리되어 **전부 병렬 실행 가능**:
+- 단일 Phase. Ownership이 완전 분리됨. `000043-020` / `000043-030`는 상호 무의존이라 **즉시 병렬 실행 가능**하나, `000043-010`은 OQ1(collision 형제 확정) 해소 후에만 착수 가능:
   - `000043-010` → `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json`
   - `000043-020` → `claude-code/skills/{project-docs,project-scaffold,merge-dependabot,product-review,tdd-ritual}/SKILL.md` + `codex/skills/{동일}` 미러
   - `000043-030` → `claude-code/agents/{backend-coder,frontend-coder,qa-engineer,doc-writer}.md`
