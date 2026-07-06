@@ -64,12 +64,16 @@ Recomendado para contribuidores y paridad con CI local:
 ### Marketplace de plugins de Claude Code (recomendado)
 
 ```bash
-# Añadir como fuente de marketplace (una sola vez)
+# 1. Añadir como fuente de marketplace (una sola vez)
 /plugin marketplace add yongwoon/ywc-agent-toolkit
+
+# 2. Instalar el plugin desde ese marketplace
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit
 ```
 
-Después de ejecutar el comando, abra la pestaña **Marketplaces** en el Plugin UI e instale **ywc-agent-toolkit** desde allí.
-Las skills se instalan automáticamente en `~/.claude/skills/` sin necesidad de clonar ni ejecutar bash.
+`marketplace add` solo registra la fuente — por sí solo no instala nada.
+Debe ejecutar además `/plugin install` (o abrir la pestaña **Marketplaces** en el Plugin UI e instalar **ywc-agent-toolkit** allí) para activarlo.
+Las skills se instalan automáticamente en `~/.claude/skills/` sin necesidad de clonar ni ejecutar bash; reinicie Claude Code después para que aparezcan.
 
 ### Directorio de plugins de Codex CLI
 

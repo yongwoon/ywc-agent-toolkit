@@ -65,12 +65,16 @@ gh auth status
 ### Claude Code 플러그인 마켓플레이스 (권장)
 
 ```bash
-# 마켓플레이스 소스 추가 (최초 1회)
+# 1. 마켓플레이스 소스 추가 (최초 1회)
 /plugin marketplace add yongwoon/ywc-agent-toolkit
+
+# 2. 해당 마켓플레이스에서 플러그인 설치
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit
 ```
 
-명령 실행 후 Plugin UI의 **Marketplaces** 탭에서 **ywc-agent-toolkit**을 설치하세요.
-클론이나 bash 없이 `~/.claude/skills/`에 자동 설치됩니다.
+`marketplace add`는 소스를 등록만 할 뿐, 그 자체로는 아무것도 설치되지 않습니다.
+반드시 `/plugin install`을 실행하거나 Plugin UI의 **Marketplaces** 탭에서 **ywc-agent-toolkit**을 설치해야 활성화됩니다.
+클론이나 bash 없이 `~/.claude/skills/`에 자동 설치되며, 설치 후 Claude Code를 재시작하면 스킬이 나타납니다.
 
 ### Codex CLI 플러그인 디렉터리
 
