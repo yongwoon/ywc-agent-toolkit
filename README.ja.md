@@ -65,12 +65,16 @@ contributor と local CI parity 向けの推奨ツール:
 ### Claude Code プラグインマーケットプレイス（推奨）
 
 ```bash
-# マーケットプレイスソースを追加（初回のみ）
+# 1. マーケットプレイスソースを追加（初回のみ）
 /plugin marketplace add yongwoon/ywc-agent-toolkit
+
+# 2. そのマーケットプレイスからプラグインをインストール
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit
 ```
 
-コマンド実行後、Plugin UI の **Marketplaces** タブから **ywc-agent-toolkit** をインストールしてください。
-クローンや bash 不要で `~/.claude/skills/` に自動インストールされます。
+`marketplace add` はソースを登録するだけで、それ単体では何もインストールされません。
+必ず `/plugin install` を実行するか、Plugin UI の **Marketplaces** タブから **ywc-agent-toolkit** をインストールして有効化してください。
+クローンや bash 不要で `~/.claude/skills/` に自動インストールされ、インストール後に Claude Code を再起動するとスキルが表示されます。
 
 ### Codex CLI プラグインディレクトリ
 

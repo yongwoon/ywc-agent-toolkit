@@ -65,12 +65,16 @@ gh auth status
 ### Claude Code 插件市场（推荐）
 
 ```bash
-# 添加市场源（仅需一次）
+# 1. 添加市场源（仅需一次）
 /plugin marketplace add yongwoon/ywc-agent-toolkit
+
+# 2. 从该市场安装插件
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit
 ```
 
-运行命令后，在 Plugin UI 的 **Marketplaces** 标签页中安装 **ywc-agent-toolkit**。
-无需克隆或运行 bash，自动安装到 `~/.claude/skills/`。
+`marketplace add` 只是注册市场源，本身不会安装任何内容。
+必须再运行 `/plugin install`，或在 Plugin UI 的 **Marketplaces** 标签页中安装 **ywc-agent-toolkit** 才能启用。
+无需克隆或运行 bash，自动安装到 `~/.claude/skills/`；安装后重启 Claude Code 即可看到相关 skill。
 
 ### Codex CLI 插件目录
 

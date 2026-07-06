@@ -71,12 +71,17 @@ Recommended for contributors and local CI parity:
 ### Via Claude Code plugin marketplace (recommended)
 
 ```bash
-# Add as a marketplace source (one-time setup)
+# 1. Add as a marketplace source (one-time setup)
 /plugin marketplace add yongwoon/ywc-agent-toolkit
+
+# 2. Install the plugin from that marketplace
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit
 ```
 
-After running the command, open the Plugin UI (**Marketplaces** tab) and install **ywc-agent-toolkit** from there.
+`marketplace add` only registers the source — it does **not** install anything on its own.
+You must then run `/plugin install` (or open the Plugin UI **Marketplaces** tab and install **ywc-agent-toolkit** there) to actually enable it.
 Skills and Claude Code agents are installed automatically — no cloning or bash required.
+Restart Claude Code afterward for the skills to appear.
 
 ### Via Codex CLI plugin directory
 
@@ -216,7 +221,8 @@ Restart Claude Code or Codex after installation for skills to take effect.
 Install via the Claude Code plugin marketplace — no cloning or bash required:
 
 ```bash
-/plugin marketplace add yongwoon/ywc-agent-toolkit
+/plugin marketplace add yongwoon/ywc-agent-toolkit    # 1. register the source
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit   # 2. install the plugin
 ```
 
 Then invoke any skill immediately inside Claude Code:
