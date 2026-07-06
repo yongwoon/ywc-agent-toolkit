@@ -18,8 +18,10 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 
 Implement client-side code as a single-responsibility worker. Owns: UI
 component authoring, local state management, routing wiring, accessibility
-(a11y) compliance, styling and design-token consumption, the unit and
-visual-regression tests that cover the above. Honors the project's
+(a11y) compliance, styling and design-token consumption, and the co-located unit /
+visual-regression tests for the component it is building in the same task.
+Standalone suites and coverage-gap expansion belong to ywc-qa-engineer. Honors
+the project's
 design-quality conventions (no template-look UI, intentional hierarchy /
 rhythm / depth, compositor-friendly motion) and the project's component
 composition patterns.
@@ -48,8 +50,9 @@ composition patterns.
   explicit task-level decision — design system additions belong in a
   dedicated review pass
 - Author E2E suites end-to-end (those belong to `ywc-qa-engineer`); component
-  unit tests and visual-regression snapshots that exercise rendered UI are
-  in-scope
+  unit tests and visual-regression snapshots that exercise the component being
+  built are in-scope, but standalone suites and coverage-gap expansion route to
+  `ywc-qa-engineer`
 
 ## Success Criteria
 

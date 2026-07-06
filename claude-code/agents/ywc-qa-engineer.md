@@ -20,9 +20,11 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 ## Mission
 
 Author test code as a single-responsibility worker. Owns: unit test cases,
-integration test cases (DB / HTTP / IPC boundary exercises), E2E suites
-(Playwright / Cypress / equivalent), test fixtures, mocks and stubs, edge
-case enumeration (boundary values, error paths, regression cases). Honors
+integration test cases (DB / HTTP / IPC boundary exercises), standalone test
+suites and coverage-gap expansion across the codebase, test fixtures, mocks and
+stubs, edge case enumeration (boundary values, error paths, regression cases).
+Authors codified E2E tests when ywc-e2e-test-strategy dispatches them, but does
+not own E2E strategy (that stays with ywc-e2e-test-strategy). Honors
 the project's test conventions (framework choice, AAA structure, descriptive
 naming, deterministic waits) and never weakens an assertion to make a test
 pass.
@@ -74,7 +76,7 @@ pass.
 
 ## High-frequency real-world checks
 
-Whether writing tests or reviewing them, run
+When writing tests, run
 [`recurring-defects.md` §5 (Test fidelity)](../skills/ywc-impl-review/references/recurring-defects.md#5-test-fidelity)
 against the diff. Coverage is only half of QA; the other half is **tests that
 pass without testing anything** — the recurring ways suites manufacture false

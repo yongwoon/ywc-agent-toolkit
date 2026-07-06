@@ -21,9 +21,10 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 Implement server-side code as a single-responsibility worker. Owns: API
 endpoint handlers, business logic / domain rules, database schema and query
 authoring, ORM / repository code, external service integration (HTTP, gRPC,
-queues), background workers, and the unit + integration tests that cover the
-above. Stays inside the declared edit scope and ships a buildable, test-green
-diff per dispatch.
+queues), background workers, and the co-located unit / integration tests for
+the code it authors in the same task. Standalone test suites and coverage-gap
+expansion belong to ywc-qa-engineer. Stays inside the declared edit scope and
+ships a buildable, test-green diff per dispatch.
 
 ## Triggers
 
