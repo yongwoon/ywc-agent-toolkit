@@ -1,0 +1,75 @@
+{
+  "skill_name": "ywc-setup",
+  "description": "Regression scenarios for Codex YWC language configuration scope handling, language normalization, and session-scope rejection.",
+  "last_updated": "2026-07-06",
+  "evals": [
+    {
+      "id": 1,
+      "name": "project-scope-normalizes-language-alias",
+      "prompt": "Use ywc-setup --scope project --lang korean.",
+      "expected_behavior": [
+        "Announces that it is configuring the Codex YWC output-language default.",
+        "Normalizes the language alias `korean` to the canonical code `ko`.",
+        "States the target path `.codex/ywc.json` and writes exactly `{ \"lang\": \"ko\" }`.",
+        "Verifies the file exists, is valid JSON, and has an allowed `.lang` value."
+      ],
+      "anti_behavior": [
+        "Writing any extra config keys.",
+        "Writing to `~/.codex/ywc.json` for project scope.",
+        "Leaving the language value as the alias `korean` instead of `ko`.",
+        "Committing `.codex/ywc.json` automatically."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "user-scope-normalizes-non-english-alias",
+      "prompt": "Use ywc-setup --scope user --lang 日本語.",
+      "expected_behavior": [
+        "Normalizes the language alias `日本語` to the canonical code `ja`.",
+        "States the target path `~/.codex/ywc.json` before writing.",
+        "Creates the parent directory when needed and writes exactly `{ \"lang\": \"ja\" }`.",
+        "Reports the completed scope, path, and canonical language code."
+      ],
+      "anti_behavior": [
+        "Writing to `.codex/ywc.json` for user scope.",
+        "Using `jp` or `japanese` as the persisted language code.",
+        "Adding session-specific or temporary config files.",
+        "Skipping post-write JSON and language-code verification."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "session-scope-is-rejected-without-writing",
+      "prompt": "Use ywc-setup --scope session --lang en.",
+      "expected_behavior": [
+        "Rejects session scope and stops without writing any file.",
+        "Explains that session defaults are intentionally out of scope.",
+        "Explains that conversation language follows the user's current language naturally.",
+        "Points to the durable artifact language resolution policy."
+      ],
+      "anti_behavior": [
+        "Creating `.codex/tmp/ywc-session.json`.",
+        "Writing `.codex/ywc.json` or `~/.codex/ywc.json` despite session scope.",
+        "Treating session scope as project scope.",
+        "Asking for a different scope after already receiving `--scope session`."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "unsupported-language-asks-for-correction",
+      "prompt": "Use ywc-setup --scope project --lang fr.",
+      "expected_behavior": [
+        "Recognizes that `fr` is not one of the supported canonical codes or aliases.",
+        "Asks for a corrected value from `ko`, `ja`, `en`, `zh`, or `es` before writing.",
+        "Does not create or modify the target config file until a supported language is provided.",
+        "Keeps the requested project scope available for the corrected language value."
+      ],
+      "anti_behavior": [
+        "Persisting `fr` to `.codex/ywc.json`.",
+        "Silently defaulting to `en`.",
+        "Inventing a new supported language code.",
+        "Writing a partial or invalid JSON config while waiting for correction."
+      ]
+    }
+  ]
+}
