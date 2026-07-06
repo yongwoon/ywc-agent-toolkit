@@ -12,7 +12,8 @@ description: >-
   Do not use for code comments, root README changes, project folder-layout
   design (use ywc-project-scaffold), implementation tasks (use
   ywc-task-generator), or domain vocabulary docs (use
-  ywc-ubiquitous-language).
+  ywc-ubiquitous-language), or for authoring a standalone formal Specification
+  document (use ywc-spec-writer).
 ---
 
 # Project Documentation Generator (KR / JA / EN / ZH / ES)
@@ -81,6 +82,11 @@ anti-patterns, folder-specific conventions (Architecture/Specification/Product),
 and the pre-creation checklist follow the **shared reference**:
 
 → [`../references/project-docs-structure.md`](../references/project-docs-structure.md)
+
+**Required before generating any file**: read the reference above and apply its
+routing, naming, and pre-creation checklist. Do not create or write a document
+until that structure decision is made — the reference load is a mandatory step,
+not optional background.
 
 This skill's sole responsibility is generating documentation in the correct
 language. Structure decisions are delegated to the reference above.
