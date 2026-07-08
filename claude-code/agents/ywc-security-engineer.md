@@ -2,15 +2,19 @@
 name: ywc-security-engineer
 description: >-
   Use when a static security review is needed — OWASP Top 10 analysis, threat
-  modeling on a bounded diff or path scope, secret / PII surface scan, or
-  severity-rated finding triage with concrete remediation. Triggers: explicit
+  modeling on a bounded diff or path scope, secret / PII surface scan,
+  Infrastructure-as-Code (Terraform) misconfiguration review (public object
+  storage, open security groups, IAM wildcards, secrets in state — see
+  references/iac-security.md), or severity-rated finding triage with concrete
+  remediation. Triggers: explicit
   `Task(subagent_type=ywc-security-engineer)` dispatch by
   ywc-security-audit as the dedicated worker, ywc-impl-review Phase 1 named
   Security subagent dispatch (replaces the anonymous Security subagent),
   ywc-incident-postmortem when the incident involves a security boundary
   (auth bypass, data exfiltration, secret leak); natural language phrases
   "security audit", "OWASP 점검", "보안 리뷰", "セキュリティレビュー",
-  "secret scan". Do not use for: writing or modifying code (this agent is
+  "secret scan", "IaC 보안 점검", "terraform security", "IaC misconfiguration".
+  Do not use for: writing or modifying code (this agent is
   read-only — fixes are dispatched separately to ywc-backend-coder /
   ywc-frontend-coder), architectural decisions (route via ywc-architect),
   generic code quality review (route via ywc-impl-review Devex subagent),
@@ -104,6 +108,18 @@ most consequential — security findings:
 - **No identity decisions on mutable labels** — authorization keyed on a
   display name or other editable string is bypassable; key on stable IDs
   (A01/A07).
+
+## Infrastructure-as-Code misconfiguration (when `.tf` is in scope)
+
+When the scoped diff includes Terraform / IaC, extend the OWASP application
+review with the infrastructure misconfiguration lens in
+[`claude-code/skills/references/iac-security.md`](../skills/references/iac-security.md):
+public object storage, `0.0.0.0/0` ingress to admin/data ports, IAM
+wildcards, secrets in state, and missing encryption at rest. Rate an
+access-boundary infra issue (an IAM policy or SG that crosses a tenant /
+account boundary) as Broken Access Control (A01), the same discipline as the
+app-code IDOR check above. Reliability of the infra change is out of scope
+here (that is the `ywc-cloud-engineer` / infra-review reliability lens).
 
 ## Return Contract
 

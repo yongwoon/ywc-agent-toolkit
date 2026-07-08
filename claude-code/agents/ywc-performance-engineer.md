@@ -14,7 +14,11 @@ description: >-
   `chrome devtools performance`, `node --prof` + `--prof-process`,
   `pprof` over `net/http/pprof`, `perf record` + `perf report`, Java
   Flight Recorder, `dotnet-trace` — appropriate for the runtime, with
-  the exact CLI flags and what to look for in the resulting flamegraph)
+  the exact CLI flags and what to look for in the resulting flamegraph),
+  and cloud infrastructure cost / FinOps (compute right-sizing, on-demand vs
+  reserved vs spot pricing, idle / orphaned resources, storage tiering, and
+  data-transfer / egress cost when the diff includes Terraform — see
+  references/finops.md)
   that the generic 5-aspect impl-review cannot diagnose with
   language-agnostic prose. The agent reads the caller's bounded packet
   (file paths + relevant diff + profiler output the caller already
@@ -31,7 +35,8 @@ description: >-
   "성능 분석", "performance review", "performance-engineer",
   "パフォーマンスレビュー", "N+1 쿼리 점검", "bundle size 분석",
   "Web Vitals 확인", "LCP 회귀", "INP 측정", "allocation 분석",
-  "프로파일링 권장". Do not use for: implementing the fix
+  "프로파일링 권장", "FinOps", "클라우드 비용 최적화", "right-sizing",
+  "인프라 비용". Do not use for: implementing the fix
   (this agent is read-only — fixes go to ywc-backend-coder /
   ywc-frontend-coder), architectural redesign decisions (route to
   ywc-architect for "rewrite in Rust vs scale horizontally" kind of
@@ -188,6 +193,20 @@ bundle analyzer, or execute the application.
       excerpts, lighthouse report screenshots, bundle-analyzer
       output, query-plan dumps) goes to a file under the caller's
       artifact directory and only the path returns
+
+## Cloud cost / FinOps (when `.tf` is in scope)
+
+When the scoped diff includes Terraform / IaC, extend the application-performance
+review with the cloud-cost lens in
+[`claude-code/skills/references/finops.md`](../skills/references/finops.md):
+over-provisioned compute, on-demand vs reserved vs spot pricing, idle / orphaned
+resources, hot storage for cold data, and data-transfer / egress cost. Size each
+finding by **magnitude** (an order-of-magnitude monthly $ delta), the same
+evidence discipline applied to a performance budget — separate **now** savings
+(delete idle) from **commitment** savings (reserved / committed, only after
+utilization is proven). Surface the cost ↔ reliability tension explicitly rather
+than silently trading availability for cost; the reliability side belongs to the
+`ywc-cloud-engineer` / infra-review reliability lens.
 
 ## Return Contract
 
