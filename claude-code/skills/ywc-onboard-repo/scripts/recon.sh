@@ -4,7 +4,7 @@
 # the ~25 separate Glob/find/grep tool calls the LLM otherwise issues by hand.
 #
 # Usage:
-#   bash claude-code/skills/ywc-onboard-repo/scripts/recon.sh [repo-dir]
+#   bash "${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/ywc-onboard-repo/scripts/recon.sh" [repo-dir]
 #
 # Run from (or pass) the target repository root. Reads nothing into the model
 # beyond the summary it prints; the skill consumes that summary directly.
