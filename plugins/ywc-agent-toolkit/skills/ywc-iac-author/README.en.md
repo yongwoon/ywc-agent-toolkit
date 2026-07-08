@@ -1,6 +1,6 @@
 # ywc-iac-author
 
-Infrastructure-as-Code authoring skill. Turns an infrastructure design (or clarified inline intent) into Terraform, dispatches per-module authoring to a Codex worker carrying the `ywc-cloud-engineer` persona, verifies with `terraform validate` / `terraform plan`, and reports a blast-radius summary before anything is applied. **Terraform is the single fixed IaC tool** for this toolkit — Kubernetes/Helm resources are expressed through the Terraform `kubernetes` / `helm` providers, never raw manifests or a second IaC tool.
+Infrastructure-as-Code authoring skill. Turns an infrastructure design (or clarified inline intent) into Terraform in the current Codex session, consults the read-only `ywc-cloud-engineer` persona when feasibility or blast-radius advice is needed, verifies with `terraform validate` / `terraform plan`, and reports a blast-radius summary before anything is applied. **Terraform is the single fixed IaC tool** for this toolkit — Kubernetes/Helm resources are expressed through the Terraform `kubernetes` / `helm` providers, never raw manifests or a second IaC tool.
 
 ## Localized Versions
 
@@ -33,14 +33,14 @@ Or in natural language:
 
 ## Outputs
 
-- Terraform modules authored per dispatch, each with a clean `terraform validate` and a completed `terraform plan`
+- Terraform modules authored in the current Codex session, each with a clean `terraform validate` and a completed `terraform plan`
 - An IaC Authoring Report: blast-radius summary (add/change/destroy, destructive changes on stateful resources called out), state-handling confirmation, and a secrets-externalization check
 - A closing recommendation to run `ywc-infra-review` before `apply` (unless skipped)
 
 ## Related Skills
 
 - `ywc-infra-design` — upstream; produces the `infra-design.md` input contract this skill loads
-- `ywc-cloud-engineer` — the worker persona that authors and verifies each Terraform module
+- `ywc-cloud-engineer` — the read-only specialist persona for feasibility, reliability, and blast-radius advisory
 - `ywc-infra-review` — downstream; recommended pre-apply review of the authored IaC
 - `ywc-infra-optimize` — cost/right-sizing remediation on *existing* infrastructure (not this skill's job)
 - `ywc-backend-coder` — application server / business logic (not infrastructure)

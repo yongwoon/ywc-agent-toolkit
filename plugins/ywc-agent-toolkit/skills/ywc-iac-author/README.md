@@ -1,6 +1,6 @@
 # ywc-iac-author
 
-Infrastructure-as-Code 작성 Skill 입니다. Infrastructure 설계(`ywc-infra-design` 산출물) 또는 명시적으로 정리한 inline intent 를 바탕으로 Terraform 을 작성하고, Module 단위로 `ywc-cloud-engineer` Persona 를 가진 Codex Worker 에게 Dispatch 한 뒤 `terraform validate` / `terraform plan` 으로 검증하고, apply 전에 blast-radius summary 를 보고합니다. 본 toolkit 에서 **Terraform 은 유일하게 고정된 IaC Tool** 이며, Kubernetes/Helm Resource 도 Terraform 의 `kubernetes` / `helm` Provider 로 표현합니다 — raw manifest 나 별도 IaC Tool 은 사용하지 않습니다.
+Infrastructure-as-Code 작성 Skill 입니다. Infrastructure 설계(`ywc-infra-design` 산출물) 또는 명시적으로 정리한 inline intent 를 바탕으로 현재 Codex 세션에서 Terraform 을 작성하고, 필요할 때 read-only `ywc-cloud-engineer` Persona 에 feasibility / blast-radius advisory 를 요청한 뒤 `terraform validate` / `terraform plan` 으로 검증하고, apply 전에 blast-radius summary 를 보고합니다. 본 toolkit 에서 **Terraform 은 유일하게 고정된 IaC Tool** 이며, Kubernetes/Helm Resource 도 Terraform 의 `kubernetes` / `helm` Provider 로 표현합니다 — raw manifest 나 별도 IaC Tool 은 사용하지 않습니다.
 
 ## Localized Versions
 
@@ -33,14 +33,14 @@ $ywc-iac-author --design-doc infra-design.md
 
 ## 출력
 
-- Dispatch 별로 작성된 Terraform Module — 각각 `terraform validate` clean, `terraform plan` 완료
+- 현재 Codex 세션에서 작성된 Terraform Module — 각각 `terraform validate` clean, `terraform plan` 완료
 - IaC Authoring Report — blast-radius summary(add/change/destroy, stateful Resource 의 destructive change 명시), state 취급 확인, Secret 외부화 점검
 - `apply` 이전 `ywc-infra-review` 실행 권고 (skip 하지 않은 경우)
 
 ## 관련 Skill
 
 - `ywc-infra-design` — upstream. 본 Skill 이 로드하는 `infra-design.md` 산출
-- `ywc-cloud-engineer` — 각 Terraform Module 을 작성/검증하는 Worker Persona
+- `ywc-cloud-engineer` — feasibility / reliability / blast-radius advisory 를 제공하는 read-only specialist Persona
 - `ywc-infra-review` — downstream. Apply 전 권장 리뷰
 - `ywc-infra-optimize` — 기존 Infrastructure 의 비용/right-sizing 개선 (본 Skill 범위 아님)
 - `ywc-backend-coder` — Application Server / Business Logic (Infrastructure 아님)

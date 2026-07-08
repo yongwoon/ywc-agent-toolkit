@@ -19,6 +19,7 @@ description: >-
 **Announce at start:** "I'm using the ywc-iac-author skill to author Terraform from a design, verify it with validate/plan, and summarize the blast radius."
 
 This skill is the Infrastructure-as-Code counterpart to `ywc-code-gen`: it turns an infrastructure design into working Terraform, dispatches per-module authoring to a Codex worker carrying the `ywc-cloud-engineer` persona (single-responsibility infra worker — the infra counterpart to `ywc-backend-coder`), verifies with `terraform validate` / `terraform plan`, and reports a blast-radius summary before anything is applied. **Terraform is the single fixed IaC tool for this toolkit** — Kubernetes and Helm resources are expressed through the Terraform `kubernetes` / `helm` providers, never raw manifests, a standalone Helm chart, or a second IaC tool (Pulumi / CDK / CloudFormation / Bicep).
+This skill is the Infrastructure-as-Code counterpart to `ywc-code-gen`: it turns an infrastructure design into working Terraform inside the current Codex session, uses the read-only `ywc-cloud-engineer` persona for feasibility and blast-radius advisory where helpful, verifies with `terraform validate` / `terraform plan`, and reports a blast-radius summary before anything is applied. **Terraform is the single fixed IaC tool for this toolkit** — Kubernetes and Helm resources are expressed through the Terraform `kubernetes` / `helm` providers, never raw manifests, a standalone Helm chart, or a second IaC tool (Pulumi / CDK / CloudFormation / Bicep).
 
 ## Rationalization Defense
 
@@ -54,22 +55,22 @@ If no design input exists, do not infer the topology. Clarify inline with the us
 
 ### Step 2: Load the fixed IaC tool reference
 
-Read `../references/iac-tools/terraform.md` — the canonical `fmt → init → validate → plan → (human approval) → apply` workflow, blast-radius reporting shape, and state-management guards. This is the only IaC-tool reference this skill loads; Terraform is fixed and no other IaC tool reference exists in this toolkit.
+Read `../references/infra/iac/terraform.md` — the canonical `fmt → init → validate → plan → (human approval) → apply` workflow, blast-radius reporting shape, and state-management guards. This is the only IaC-tool reference this skill loads; Terraform is fixed and no other IaC tool reference exists in this toolkit.
 
 Load the provider-specific reference matching the design's target provider — only the one file needed, per Progressive Disclosure:
 
-- `../references/providers/aws.md`
-- `../references/providers/gcp.md`
-- `../references/providers/azure.md`
-- `../references/providers/k8s.md` — Kubernetes/Helm via the Terraform `kubernetes`/`helm` providers
+- `../references/infra/providers/aws.md`
+- `../references/infra/providers/gcp.md`
+- `../references/infra/providers/azure.md`
+- `../references/infra/providers/k8s.md` — Kubernetes/Helm via the Terraform `kubernetes`/`helm` providers
 
-### Step 3: Dispatch per Terraform module
+### Step 3: Author per Terraform module with optional advisory consult
 
-For each Terraform module implied by the design (network, compute, data store, IAM, etc.), or a single dispatch when `--scope` narrows the work to one module, dispatch a Codex worker carrying the `ywc-cloud-engineer` persona (single-responsibility infra worker: authors `.tf` files, runs `terraform validate`/`terraform plan` on its own module, self-reviews against the reliability lens, never runs `terraform apply`). Each dispatch carries: the relevant slice of the design input, the target provider reference from Step 2, and the module's declared edit scope (so concurrent module dispatches do not collide on the same files).
+For each Terraform module implied by the design (network, compute, data store, IAM, etc.), or a single narrowed pass when `--scope` targets one module, author the `.tf` files in the current Codex session. When provider-specific feasibility, reliability, or blast-radius judgment is unclear, consult the read-only `ywc-cloud-engineer` persona with the relevant slice of the design input and the matching provider reference from Step 2. That consult is advisory only: it does not author files, run `terraform apply`, or replace the main session's ownership of the Terraform edits.
 
 ### Step 4: Verify — `terraform validate` / `terraform plan`
 
-Confirm each dispatched module returned a clean `terraform validate` and a completed `terraform plan` (per the terraform.md verification workflow). A module that returns `BLOCKED` or `NEEDS_CONTEXT` (missing design input, unresolvable module dependency, provider credentials unavailable) is not authored — surface it rather than papering over it with a guess.
+Confirm each authored module returned a clean `terraform validate` and a completed `terraform plan` (per the terraform.md verification workflow). If an advisory consult returns `BLOCKED` or `NEEDS_CONTEXT` (missing design input, unresolved provider constraint, blast-radius ambiguity), surface it rather than papering over it with a guess.
 
 ### Step 5: Blast-radius summary
 
@@ -96,8 +97,8 @@ IaC Authoring Report
 Design input:    infra-design.md  (or "inline intent" if none was provided)
 Tool:            Terraform (single fixed tool)
 Modules authored:
-  - infra/modules/network      (ywc-cloud-engineer worker)  validate: PASS  plan: PASS
-  - infra/modules/data         (ywc-cloud-engineer worker)  validate: PASS  plan: PASS
+  - infra/modules/network      (authoring in current session, advisory consult optional)  validate: PASS  plan: PASS
+  - infra/modules/data         (authoring in current session, advisory consult optional)  validate: PASS  plan: PASS
 
 Blast radius (aggregate):
   Plan: 9 to add, 3 to change, 1 to destroy.
@@ -128,26 +129,26 @@ Before declaring the authoring pass complete, verify:
 ## Common Mistakes
 
 - **Re-deriving the topology instead of loading the design input.** When `infra-design.md` exists, use it verbatim — re-deriving from scratch risks drifting from the reviewed trade-offs (network CIDR choices, IAM boundaries) that design phase already settled.
-- **Dispatching all modules in a single worker call.** Dispatch per module so each call carries a narrow, non-overlapping edit scope — a single mega-dispatch loses the module-level `validate`/`plan` isolation and makes a failing module harder to isolate.
-- **Treating a `NEEDS_CONTEXT` return from the worker as a prompt to guess and continue.** The worker returns `NEEDS_CONTEXT` specifically when the design decision it needs is missing — surface it to the user rather than filling the gap with an assumption.
+- **Treating the advisory consult as the authoring worker.** The `ywc-cloud-engineer` persona is read-only; it can clarify feasibility or blast radius, but the current Codex session owns the Terraform edits.
+- **Treating a `NEEDS_CONTEXT` return from the advisory consult as a prompt to guess and continue.** The consult returns `NEEDS_CONTEXT` specifically when the design decision it needs is missing — surface it to the user rather than filling the gap with an assumption.
 - **Skipping Step 6's state/secret guard because `plan` already succeeded.** `terraform plan` succeeding says nothing about whether a secret is hardcoded or whether state got staged — that check is separate and mandatory every pass.
 
 ## Integration
 
 - **Upstream**: `ywc-infra-design` (produces the `infra-design.md` input contract); direct user invocation with inline intent when no design phase is warranted.
 - **Downstream**: `ywc-infra-review` (recommended after every authoring pass, mandatory before `apply` when the blast radius touches security/IAM/public exposure).
-- **Pairs with**: `ywc-cloud-engineer` persona (the worker that authors and verifies each Terraform module).
+- **Pairs with**: `ywc-cloud-engineer` persona (the read-only specialist that advises on feasibility, reliability, and blast radius while this skill authors the Terraform).
 - **Must not be paired with**: authoring a second IaC tool in the same change (Pulumi/CDK/CloudFormation/Bicep/standalone Helm) — Terraform is fixed.
 
 ## References
 
 | Reference | Use when |
 |---|---|
-| `../references/iac-tools/terraform.md` | Every authoring pass — the fixed tool's verification workflow, blast-radius reporting shape, and state guards |
-| `../references/providers/aws.md` | Design's target provider is AWS |
-| `../references/providers/gcp.md` | Design's target provider is GCP |
-| `../references/providers/azure.md` | Design's target provider is Azure |
-| `../references/providers/k8s.md` | Design's target includes Kubernetes/Helm (via Terraform providers) |
-| `../references/lenses/security.md` | Spot-checking for an obvious misconfiguration (public bucket, open security group) while authoring, ahead of the full `ywc-infra-review` pass |
-| `../references/lenses/cost.md` | Flagging an obviously oversized resource while authoring, ahead of `ywc-infra-optimize` |
-| `../references/lenses/reliability.md` | Confirming a new module has basic redundancy/backup coverage before handing off to review |
+| `../references/infra/iac/terraform.md` | Every authoring pass — the fixed tool's verification workflow, blast-radius reporting shape, and state guards |
+| `../references/infra/providers/aws.md` | Design's target provider is AWS |
+| `../references/infra/providers/gcp.md` | Design's target provider is GCP |
+| `../references/infra/providers/azure.md` | Design's target provider is Azure |
+| `../references/infra/providers/k8s.md` | Design's target includes Kubernetes/Helm (via Terraform providers) |
+| `../references/infra/lenses/security.md` | Spot-checking for an obvious misconfiguration (public bucket, open security group) while authoring, ahead of the full `ywc-infra-review` pass |
+| `../references/infra/lenses/cost.md` | Flagging an obviously oversized resource while authoring, ahead of `ywc-infra-optimize` |
+| `../references/infra/lenses/reliability.md` | Confirming a new module has basic redundancy/backup coverage before handing off to review |
