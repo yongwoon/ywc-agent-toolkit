@@ -16,7 +16,7 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-spec-ready skill to drive the spec to ywc-spec-validate DONE by looping ywc-plan and ywc-spec-validate, then stop at the ywc-task-generator handoff."
 
-This skill takes a spec file that `ywc-plan` already produced and recursively converges it to a task-ready state. Each iteration runs `ywc-spec-validate`; on `DONE_WITH_CONCERNS` it calls `ywc-plan --update-spec` with a fix-priority summary and re-validates. The loop ends on `DONE` (handoff printed, **stop** — never auto-invoke `ywc-task-generator`), on the iteration cap, or on a convergence-stall guard.
+This skill takes a spec file that `ywc-plan` already produced and recursively converges it to a task-ready state. Each iteration runs `ywc-spec-validate` and inspects its Critical **and** Warning counts directly — not just its Completion Status, since `ywc-spec-validate`'s own `DONE` only guarantees zero Critical findings and can still carry open Warnings. Whenever either count is non-zero it calls `ywc-plan --update-spec` with a fix-priority summary and re-validates. The loop stops only once both counts reach zero; if Suggestion findings remain at that point, the user is asked whether to run one more suggestion-focused pass before the handoff is printed (**stop** — never auto-invoke `ywc-task-generator`). It also stops on the iteration cap or a convergence-stall guard.
 
 ```text
 spec ──> [ywc-spec-validate ──DONE_WITH_CONCERNS──> ywc-plan --update-spec]* ──DONE──> handoff
@@ -30,13 +30,15 @@ When tempted to bypass a rule, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "spec-validate returned DONE_WITH_CONCERNS but the findings look trivial — just go to task-generator" | Only `DONE` ends the loop with a handoff. `DONE_WITH_CONCERNS` always triggers a re-plan iteration (or a guard stop). There is no "trivial" exception — task-generator consumes DONE specs only. |
+| "spec-validate returned DONE_WITH_CONCERNS but the findings look trivial — just go to task-generator" | Only zero Critical **and** zero Warning findings end the loop with a handoff. `DONE_WITH_CONCERNS` always triggers a re-plan iteration (or a guard stop). There is no "trivial" exception — task-generator consumes fully-clean specs only. |
+| "spec-validate returned literal `DONE` — that's the stop signal, print the handoff" | `ywc-spec-validate`'s own `DONE` only guarantees zero Critical findings; it does **not** guarantee zero Warnings. Parse the Warning count on every iteration — including `DONE` iterations — and re-plan (same as a `DONE_WITH_CONCERNS` iteration) if any Warning finding remains. |
 | "The loop is not converging — bump `--max-iterations`" | `--max-iterations` is a user-defined safety valve, never raised autonomously. At the cap, emit the partial report and stop. Surfacing non-convergence is the correct outcome. |
 | "DONE reached — chain straight into `ywc-task-generator` to finish the job" | **Never invoke `ywc-task-generator`.** This skill is a converger, not an executor. It prints the handoff and stops; the user decides when to decompose. |
 | "User gave a goal, not a spec — I'll run ywc-plan from scratch first" | This skill takes `--spec <path>` only (an existing spec). Goal→spec is `ywc-plan`'s job; goal→code is `ywc-agentic`'s. If `--spec` is absent, return `NEEDS_CONTEXT`. |
-| "Critical count went up after a re-plan — stop immediately, it's diverging" | A re-plan amendment may legitimately open new surface (one transient increase). Stop only after **two consecutive** non-decreasing iterations, or an identical finding signature / amendment scope (see references/convergence.md). |
+| "Blocking-finding count went up after a re-plan — stop immediately, it's diverging" | Blocking count = Critical + Warning. A re-plan amendment may legitimately open new surface (one transient increase). Stop only after **two consecutive** non-decreasing iterations, or an identical finding signature / amendment scope (see references/convergence.md). |
 | "advisor budget is annoying — let spec-validate escalate freely every iteration" | Track `--max-advisor-calls` across iterations and pass only the remaining budget. Unbounded per-iteration escalation is the cost blow-up this skill exists to prevent. |
 | "spec-validate returned SOCRATIC — re-plan from its questions" | `SOCRATIC` is not a gate verdict. Detect it and stop as misuse (`stop-misuse`); never feed it into the convergence loop. |
+| "Suggestion findings should be auto-applied once Critical/Warning clear" | Suggestions are advisory, not mandatory. Once both Critical and Warning counts reach zero, ask the user whether to run one more suggestion-focused amendment pass or defer them — never apply them silently. |
 
 **Violating the letter of these rules is violating the spirit.** The loop is trustworthy only because its termination conditions (DONE, cap, stall) and its no-auto-decompose boundary are non-negotiable.
 
@@ -70,18 +72,34 @@ When tempted to bypass a rule, check this table first:
 Initialize `iteration = 1`, `global_remaining = --max-advisor-calls`, and an empty signature history. Repeat:
 
 1. **Validate** — bind `iter_cap = min(2, global_remaining)` (the per-iteration advisor ceiling), then run `ywc-spec-validate --spec <path> --advisor-budget <iter_cap>` (forward `--focus` / `--format` when set). Parse the report: Critical/Warning/Suggestion counts, finding signatures, and the advisor-usage line (`Phase 2 advisor calls used: X of N`); subtract `X` from `global_remaining` (subtract the full `iter_cap` when the line is unparseable). When `global_remaining == 0`, pass `--advisor-budget 0` (escalation off); if a mandatory ambiguous Critical then remains, stop with `DONE_WITH_CONCERNS` / `stop-advisor-exhausted`.
-2. **Route** on Completion Status (see Status Routing). `DONE` → Step 4. `BLOCKED`/`NEEDS_CONTEXT`/`SOCRATIC`/unparseable → Step 3 (hard stop). `DONE_WITH_CONCERNS` → continue.
-3. **Guard** (see [references/convergence.md](references/convergence.md)) — compute Critical-count trend, finding-signature recurrence, and amendment-scope identity against the previous iteration. If any stall guard fires, stop with `DONE_WITH_CONCERNS` and the matching `action` (`stop-non-converging`). If `iteration >= --max-iterations`, stop with `DONE_WITH_CONCERNS` / `stop-cap`.
-4. **Re-plan** — build a fix-priority summary (Critical first; Warnings only when they block DONE or signal cross-section drift) and run `ywc-plan --update-spec <path> --failure-context "<summary>"`. If this call itself fails (file vanished, non-zero, error), stop with `BLOCKED` / `stop-replan-failed`.
+2. **Route** on Completion Status plus the parsed Warning count (see Status Routing) — never on Completion Status alone. `DONE` **with zero Warning findings** → Step 4. `DONE` **with one or more Warning findings still present** → treat exactly like `DONE_WITH_CONCERNS` and continue to Step 2.3 (do not stop; `ywc-spec-validate`'s `DONE` only certifies zero Critical findings, not zero Warnings). `BLOCKED`/`NEEDS_CONTEXT`/`SOCRATIC`/unparseable → Step 3 (hard stop). `DONE_WITH_CONCERNS` → continue.
+3. **Guard** (see [references/convergence.md](references/convergence.md)) — compute the blocking-finding-count (Critical + Warning) trend, finding-signature recurrence, and amendment-scope identity against the previous iteration. If any stall guard fires, stop with `DONE_WITH_CONCERNS` and the matching `action` (`stop-non-converging`). If `iteration >= --max-iterations`, stop with `DONE_WITH_CONCERNS` / `stop-cap`.
+4. **Re-plan** — build a fix-priority summary covering **every** remaining Critical and Warning finding (Warnings are blocking in this skill, not optional) and run `ywc-plan --update-spec <path> --failure-context "<summary>"`. If this call itself fails (file vanished, non-zero, error), stop with `BLOCKED` / `stop-replan-failed`.
 5. **Log + advance** — append the iteration entry to the log (see [references/loop-log.md](references/loop-log.md)), record signatures, `iteration += 1`, loop.
 
 ### Step 3: Hard Stop
 
 `BLOCKED` / `NEEDS_CONTEXT` from `ywc-spec-validate`, an unparseable report, or `SOCRATIC` (misuse) end the loop immediately without a re-plan. Log the iteration (`stop-blocked` / `stop-context` / `stop-misuse`), surface the reason, and emit the Completion Report.
 
-### Step 4: Handoff (DONE)
+### Step 4: Handoff (DONE, zero Critical, zero Warning)
 
-On `DONE`, print the handoff message **verbatim** and stop. Do not invoke `ywc-task-generator`.
+Reached only when `ywc-spec-validate` returns `DONE` **and** the parsed Warning count is zero. Check the parsed Suggestion count first:
+
+- **Suggestions present** — ask the user in this format before printing the handoff:
+
+  ```text
+  Suggestions remain in the validation report:
+  - <suggestion 1 summary>
+  - <suggestion 2 summary>
+
+  Run one more `ywc-plan --update-spec` pass for these Suggestions?
+  - y = apply one more suggestion-focused amendment pass, then re-validate
+  - n = defer Suggestions and continue to `ywc-task-generator`
+  ```
+
+  On **y**, run `ywc-plan --update-spec <path> --failure-context "<suggestion-summary>"`, log the iteration, and return to Step 2 (re-validate). On **n**, record the deferred Suggestions in the Completion Report and proceed below.
+
+- **No Suggestions, or the user declined the extra pass** — print the handoff message **verbatim** and stop. Do not invoke `ywc-task-generator`.
 
 ```text
 ✅ Spec ready: <path> (DONE after N/<cap> iterations, <X> advisor calls)
@@ -92,14 +110,15 @@ Next:
 
 ### Step 5: Completion Report
 
-Emit one report: spec path, iterations run / cap, final Completion Status, remaining Critical count (if any), cumulative advisor calls used, log path, and (on DONE) the handoff. The final line is one Completion Status — nothing follows it.
+Emit one report: spec path, iterations run / cap, final Completion Status, remaining Critical count (if any), remaining Warning count (if any), deferred-suggestions summary (`none` or a short list), cumulative advisor calls used, log path, and (on DONE) the handoff. The final line is one Completion Status — nothing follows it.
 
 ## Status Routing (ywc-spec-validate response)
 
 | spec-validate Status | ywc-spec-ready action |
 |---|---|
-| `DONE` | End loop → print handoff → stop (Step 4) |
-| `DONE_WITH_CONCERNS` | Guards pass → fix-priority summary → `ywc-plan --update-spec` → next iteration; guard fires → stop (Step 2.3) |
+| `DONE`, zero Warnings | Suggestion check → end loop → print handoff → stop (Step 4) |
+| `DONE`, Warnings remaining | Treated as blocking — same routing as `DONE_WITH_CONCERNS` below |
+| `DONE_WITH_CONCERNS` | Guards pass → fix-priority summary (Critical + Warning) → `ywc-plan --update-spec` → next iteration; guard fires → stop (Step 2.3) |
 | `BLOCKED` | Stop immediately, report blocker (Step 3) |
 | `NEEDS_CONTEXT` | Stop immediately, report missing context (Step 3) |
 | `SOCRATIC` | Misuse — stop, report (`stop-misuse`) |
@@ -109,8 +128,8 @@ Emit one report: spec path, iterations run / cap, final Completion Status, remai
 
 | Status | When |
 |---|---|
-| `DONE` | Loop converged to `ywc-spec-validate` = DONE |
-| `DONE_WITH_CONCERNS` | Cap reached / convergence stall / advisor budget exhausted, Critical remaining |
+| `DONE` | Loop converged: zero Critical and zero Warning findings remain (Suggestions, if any, were accepted for one more pass or explicitly deferred) |
+| `DONE_WITH_CONCERNS` | Cap reached / convergence stall / advisor budget exhausted, Critical or Warning findings remaining |
 | `BLOCKED` | spec-validate BLOCKED, unparseable report, or `ywc-plan --update-spec` failure |
 | `NEEDS_CONTEXT` | `--spec` missing/absent, bad argument, or spec-validate NEEDS_CONTEXT |
 
@@ -119,9 +138,10 @@ Emit one report: spec path, iterations run / cap, final Completion Status, remai
 Before treating a run as complete, verify:
 
 - [ ] A `--spec` path was provided and the file existed (else `NEEDS_CONTEXT`).
-- [ ] Each iteration ran `ywc-spec-validate` exactly once and routed strictly on its Completion Status.
-- [ ] Every `DONE_WITH_CONCERNS` (that passed guards) produced exactly one `ywc-plan --update-spec` call.
-- [ ] The loop terminated on `DONE`, the iteration cap, a stall guard, or a hard stop — never an autonomous `--max-iterations` increase.
+- [ ] Each iteration ran `ywc-spec-validate` exactly once and routed on its Completion Status **plus** its parsed Warning count — a literal `DONE` with one or more open Warnings triggered a re-plan, not a handoff.
+- [ ] Every blocking iteration (`DONE_WITH_CONCERNS`, or `DONE` with Warnings remaining, that passed guards) produced exactly one `ywc-plan --update-spec` call covering all remaining Critical **and** Warning findings.
+- [ ] The loop terminated on true `DONE` (zero Critical, zero Warning), the iteration cap, a stall guard, or a hard stop — never an autonomous `--max-iterations` increase.
+- [ ] If Suggestion findings were present at true `DONE`, the user was asked whether to run one more suggestion-focused pass before the handoff; the answer (or "none remained") is recorded as the deferred-suggestions summary.
 - [ ] `ywc-task-generator` was **not** invoked — the run ended at the handoff.
 - [ ] Each iteration appended one entry to the loop log (unless `--dry-run`).
 - [ ] The Completion Report ends with exactly one Completion Status line.
@@ -129,7 +149,9 @@ Before treating a run as complete, verify:
 ## Common Mistakes
 
 - **Auto-decomposing on DONE** — printing the handoff and then calling `ywc-task-generator` anyway. The handoff IS the stop; the user owns the decompose decision.
-- **Stopping on the first Critical increase** — a single transient rise after a re-plan is allowed; only a two-consecutive non-decrease (or repeated signature / identical scope) is a stall.
+- **Handing off on literal `DONE` with open Warnings** — `ywc-spec-validate`'s `DONE` only certifies zero Critical findings, not zero Warnings. Parse the Warning count every iteration and re-plan while it is non-zero.
+- **Stopping on the first blocking-count increase** — a single transient rise after a re-plan is allowed; only a two-consecutive non-decrease (or repeated signature / identical scope) is a stall.
+- **Auto-applying Suggestions** — Suggestions are advisory; ask the user before spending another amendment pass on them, and accept a decline as a clean, final stop.
 - **Treating SOCRATIC as a verdict** — it is a learning-question mode, not a gate result; detect and stop as misuse.
 - **Rewriting the spec from scratch on re-plan** — always `ywc-plan --update-spec` (append amendments); never regenerate, which loses validated sections.
 
@@ -137,5 +159,5 @@ Before treating a run as complete, verify:
 
 - **Upstream**: `ywc-plan` (produces the initial spec this skill converges).
 - **Consumes**: `ywc-spec-validate` (per-iteration gate), `ywc-plan --update-spec` (per-iteration amendment).
-- **Downstream (handoff only, not invoked)**: `ywc-task-generator`, then `ywc-sequential-executor` / `ywc-parallel-executor`.
+- **Downstream (handoff only, not invoked)**: `ywc-task-generator`, printed only after Critical and Warning findings are both resolved and any remaining Suggestions are either accepted for one more pass or explicitly deferred by the user; then `ywc-sequential-executor` / `ywc-parallel-executor`.
 - **Delegated from**: `ywc-agentic` Step 3 (Medium/Large) replaces its single `ywc-spec-validate` call with a delegation to this skill — the two skills' `--max-iterations` are independent ceilings (outer impl-review loop vs inner spec-convergence loop). Wiring lands in the integration task.

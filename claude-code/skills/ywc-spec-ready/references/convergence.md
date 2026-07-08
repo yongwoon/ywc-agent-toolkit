@@ -2,7 +2,12 @@
 
 This reference defines how `ywc-spec-ready` decides that a loop is no longer
 making progress and must stop before the iteration cap. All three guards are
-evaluated after each `DONE_WITH_CONCERNS` validation, before the next re-plan.
+evaluated after each **blocking** iteration — any iteration whose parsed
+Critical count or Warning count is non-zero, whether `ywc-spec-validate`
+returned literal `DONE_WITH_CONCERNS` or literal `DONE` with open Warnings —
+before the next re-plan. Warnings are not exempt: `ywc-spec-ready` treats
+Critical and Warning findings identically as blocking, so both feed the trend
+and signature guards below.
 
 ## Inputs computed per iteration
 
@@ -10,6 +15,8 @@ From each `ywc-spec-validate` report, compute and retain:
 
 - **Critical count** — integer from the report Summary line.
 - **Warning count** — integer from the report Summary line.
+- **Blocking count** — `Critical count + Warning count`. This is the number the
+  stall guards below track, not Critical count alone.
 - **Finding signatures** — a normalized set, one entry per Critical/Warning
   finding: the tuple `(severity, pointer, first-sentence)` where:
   - `severity` = `Critical` | `Warning`
@@ -29,8 +36,8 @@ Stop the loop with Completion Status `DONE_WITH_CONCERNS` and action
 
 | Guard | Stop condition |
 |---|---|
-| Non-decreasing Criticals | Critical count increases, OR stays unchanged for **two consecutive** iterations whose signature sets overlap. A single transient increase after one re-plan does **not** fire — amendments may legitimately open new surface (e.g. a PERSIST fix exposing a lifecycle cluster). |
-| Repeated signature | The same Critical signature appears in two consecutive validation reports after a re-plan — the re-plan failed to resolve it. Report the repeated signature. |
+| Non-decreasing blocking count | Blocking count (Critical + Warning) increases, OR stays unchanged for **two consecutive** iterations whose signature sets overlap. A single transient increase after one re-plan does **not** fire — amendments may legitimately open new surface (e.g. a PERSIST fix exposing a lifecycle cluster). |
+| Repeated signature | The same Critical **or** Warning signature appears in two consecutive validation reports after a re-plan — the re-plan failed to resolve it. Report the repeated signature. |
 | Identical amendment scope | The new amendment scope equals the previous iteration's amendment scope (same identifiers) — `ywc-plan` is producing the same fix, so the loop cannot converge. This mirrors `ywc-agentic`'s recursion guard (`claude-code/skills/ywc-agentic/SKILL.md:185`). |
 
 ## Why two-consecutive, not one
