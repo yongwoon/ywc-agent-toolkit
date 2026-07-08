@@ -79,7 +79,7 @@ Unless `--skip-cloud-consult` was passed, optionally dispatch a Codex worker car
 
 ### Step 4: Reliability / cost / security 3-lens pre-check
 
-Read `../references/lenses/reliability.md`, `../references/lenses/cost.md`, and `../references/lenses/security.md`, then pre-check the Step 3 topology against each lens's taxonomy. Record every finding — even a "no issue found" pass — so `ywc-iac-author` and `ywc-infra-review` inherit a documented baseline instead of re-deriving it.
+Read `../references/infra/lenses/reliability.md`, `../references/infra/lenses/cost.md`, and `../references/infra/lenses/security.md`, then pre-check the Step 3 topology against each lens's taxonomy. Record every finding — even a "no issue found" pass — so `ywc-iac-author` and `ywc-infra-review` inherit a documented baseline instead of re-deriving it.
 
 ### Step 5: Trade-off records (ADR)
 
@@ -159,10 +159,10 @@ Before declaring the design pass complete, verify:
 
 | Reference | Use when |
 |---|---|
-| `../references/lenses/reliability.md` | Step 4 — pre-checking topology for availability/resilience gaps |
-| `../references/lenses/cost.md` | Step 4 — pre-checking topology for cost drivers and right-sizing |
-| `../references/lenses/security.md` | Step 4 — pre-checking topology for the IaC misconfiguration taxonomy |
-| `../references/providers/aws.md` | Provider decision is AWS — informs realistic topology choices |
-| `../references/providers/gcp.md` | Provider decision is GCP — informs realistic topology choices |
-| `../references/providers/azure.md` | Provider decision is Azure — informs realistic topology choices |
-| `../references/providers/k8s.md` | Provider decision includes Kubernetes/Helm (via Terraform providers) |
+| `../references/infra/lenses/reliability.md` | Step 4 — pre-checking topology for availability/resilience gaps |
+| `../references/infra/lenses/cost.md` | Step 4 — pre-checking topology for cost drivers and right-sizing |
+| `../references/infra/lenses/security.md` | Step 4 — pre-checking topology for the IaC misconfiguration taxonomy |
+| `../references/infra/providers/aws.md` | Provider decision is AWS — informs realistic topology choices |
+| `../references/infra/providers/gcp.md` | Provider decision is GCP — informs realistic topology choices |
+| `../references/infra/providers/azure.md` | Provider decision is Azure — informs realistic topology choices |
+| `../references/infra/providers/k8s.md` | Provider decision includes Kubernetes/Helm (via Terraform providers) |
