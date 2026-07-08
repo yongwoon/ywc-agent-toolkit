@@ -54,15 +54,15 @@ Identify the Terraform files/modules under review: a staged or committed diff, t
 
 ### Step 2: Security lens
 
-Dispatch a Codex worker carrying the `ywc-security-engineer` persona, carrying the scoped Terraform files and an explicit pointer to `../references/lenses/security.md` and `../references/iac-security.md`. This lens covers: security groups / firewall rules, IAM / RBAC over-permission, public exposure (buckets, endpoints, load balancers), and secrets committed to code or state.
+Dispatch a Codex worker carrying the `ywc-security-engineer` persona, carrying the scoped Terraform files and an explicit pointer to `../references/infra/lenses/security.md` and `../references/iac-security.md`. This lens covers: security groups / firewall rules, IAM / RBAC over-permission, public exposure (buckets, endpoints, load balancers), and secrets committed to code or state.
 
 ### Step 3: Cost lens
 
-Dispatch a Codex worker carrying the `ywc-performance-engineer` persona, carrying the scoped Terraform files and an explicit pointer to `../references/lenses/cost.md` and `../references/finops.md`. This lens covers: compute right-sizing against observed/expected utilization, idle or orphaned resources, and pricing model fit (on-demand vs reserved vs spot).
+Dispatch a Codex worker carrying the `ywc-performance-engineer` persona, carrying the scoped Terraform files and an explicit pointer to `../references/infra/lenses/cost.md` and `../references/finops.md`. This lens covers: compute right-sizing against observed/expected utilization, idle or orphaned resources, and pricing model fit (on-demand vs reserved vs spot).
 
 ### Step 4: Reliability lens
 
-Dispatch a Codex worker carrying the `ywc-cloud-engineer` persona in **review mode** — carry the scoped Terraform files and an explicit instruction that this dispatch is read-only diagnosis: it authors nothing, runs no `terraform apply`, and confines itself to the reliability lens at `../references/lenses/reliability.md`. This lens covers: single points of failure, missing backups / point-in-time recovery, missing resource limits or autoscaling floors, and missing health/readiness checks.
+Dispatch a Codex worker carrying the `ywc-cloud-engineer` persona in **review mode** — carry the scoped Terraform files and an explicit instruction that this dispatch is read-only diagnosis: it authors nothing, runs no `terraform apply`, and confines itself to the reliability lens at `../references/infra/lenses/reliability.md`. This lens covers: single points of failure, missing backups / point-in-time recovery, missing resource limits or autoscaling floors, and missing health/readiness checks.
 
 ### Step 5: Aggregate severity-rated findings
 
@@ -122,13 +122,13 @@ Before declaring the review pass complete, verify:
 
 | Reference | Use when |
 |---|---|
-| `../references/lenses/security.md` | Step 2 — security lens dispatch, IaC misconfiguration taxonomy |
+| `../references/infra/lenses/security.md` | Step 2 — security lens dispatch, IaC misconfiguration taxonomy |
 | `../references/iac-security.md` | Step 2 — the detailed IaC misconfiguration taxonomy the `ywc-security-engineer` persona reviews against |
-| `../references/lenses/cost.md` | Step 3 — cost lens dispatch, right-sizing and waste taxonomy |
+| `../references/infra/lenses/cost.md` | Step 3 — cost lens dispatch, right-sizing and waste taxonomy |
 | `../references/finops.md` | Step 3 — the detailed FinOps taxonomy (reserved/spot, data-transfer cost) the `ywc-performance-engineer` persona reviews against |
-| `../references/lenses/reliability.md` | Step 4 — reliability lens dispatch, SPOF/backup/health taxonomy |
-| `../references/providers/aws.md` | Scoped IaC targets AWS — provider-specific misconfiguration/cost/reliability signals |
-| `../references/providers/gcp.md` | Scoped IaC targets GCP — provider-specific misconfiguration/cost/reliability signals |
-| `../references/providers/azure.md` | Scoped IaC targets Azure — provider-specific misconfiguration/cost/reliability signals |
-| `../references/providers/k8s.md` | Scoped IaC includes Kubernetes/Helm (via Terraform providers) |
+| `../references/infra/lenses/reliability.md` | Step 4 — reliability lens dispatch, SPOF/backup/health taxonomy |
+| `../references/infra/providers/aws.md` | Scoped IaC targets AWS — provider-specific misconfiguration/cost/reliability signals |
+| `../references/infra/providers/gcp.md` | Scoped IaC targets GCP — provider-specific misconfiguration/cost/reliability signals |
+| `../references/infra/providers/azure.md` | Scoped IaC targets Azure — provider-specific misconfiguration/cost/reliability signals |
+| `../references/infra/providers/k8s.md` | Scoped IaC includes Kubernetes/Helm (via Terraform providers) |
 | `../references/subagent-status-actions.md` | Steps 2–4 — the §3.5 bounded status-return contract each lens worker must follow so three fan-out returns stay bounded |
