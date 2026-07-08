@@ -855,3 +855,146 @@ graph LR
   BB[000043-020-docs-skill-body-anti-trigger-fixes]
   BC[000043-030-docs-agent-test-ownership-boundaries]
 ```
+
+---
+
+## Batch — infra-skill-suite (000044–000046)
+
+- Spec: `docs/ywc-plans/infra-skill-suite-design.md` (spec-ready DONE, 2/5 iterations)
+- Mode: `llm` · Lang: `ko`
+- Goal: 인프라 스킬 4종(design/iac-author/review/optimize) + 워커 에이전트 `ywc-cloud-engineer` 신규 + security/performance 에이전트 확장. Terraform 단일 고정, 프로바이더 4종(AWS/GCP/Azure/K8s).
+
+### Phase 000044 — Foundation (worker + shared refs)
+- `000044-010-infra-cloud-engineer-agent` — (deps: 없음)
+- `000044-020-docs-infra-shared-references` — (deps: 없음)
+
+### Phase 000045 — Skills + agent extensions (hard gate: Phase 000044 완료)
+- `000045-010-infra-agent-lens-extensions` → `000044-020`
+- `000045-020-docs-iac-author-skill` → `000044-010`, `000044-020`
+- `000045-030-docs-infra-design-skill` → `000044-020`
+- `000045-040-docs-infra-review-skill` → `000044-010`, `000044-020`, `000045-010`
+- `000045-050-docs-infra-optimize-skill` → `000044-010`, `000044-020`
+
+### Phase 000046 — Packaging + validation (hard gate: Phase 000045 완료)
+- `000046-010-infra-codex-plugin-sync-validate` → 모든 `000045-*`
+
+### 실행 순서 (arrow notation)
+```
+000044-010 ─┐
+000044-020 ─┼─▶ 000045-010 ─▶ 000045-040
+            ├─▶ 000045-020
+            ├─▶ 000045-030
+            └─▶ 000045-050
+                 (all 000045-*) ─▶ 000046-010
+```
+
+### Parallel Execution Notes
+- Phase 000044: `010`(에이전트 파일)과 `020`(references)는 파일 집합 무교집합 → 병렬 안전.
+- Phase 000045: `020/030/050`은 각기 다른 스킬 디렉터리 → 병렬 안전. `010`(에이전트 확장)은 `040`(infra-review)의 선행 — SEQUENCE 순서 준수. `040`은 `010` 머지 후 착수.
+- Phase 000046: `plugins/**`·`.codex-plugin/plugin.json` 전역 매니페스트 재생성 → **단독 실행**, 모든 000045 머지 후.
+- `plugins/ywc-agent-toolkit/**`는 `codex/skills`에서 생성되는 미러 → 수기 편집 금지(pre-commit 훅 위임).
+
+### Open Questions (착수 전 확인 권장, non-blocking)
+- **OQ1 (`000044-020` 내부)**: 공유 references 저장 위치 — 각 스킬 `references/` 복제(a) vs `claude-code/skills/references/`+`codex/skills/references/` 공유(b). 기본안 (b). CC 설치 시 공유 refs 배포 여부 확인 필요.
+- **OQ2 (`000045-020` `category`)**: 스펙 §0의 `category: implement`는 신규 값(기존 13종에 없음). enum 검증 대상 아니므로 non-blocking. 저작 시 기존 값 재사용 또는 의도적 신규 채택 확인.
+
+```mermaid
+graph LR
+  A1[000044-010-cloud-engineer-agent]
+  A2[000044-020-shared-references]
+  B1[000045-010-agent-lens-extensions]
+  B2[000045-020-iac-author-skill]
+  B3[000045-030-infra-design-skill]
+  B4[000045-040-infra-review-skill]
+  B5[000045-050-infra-optimize-skill]
+  C1[000046-010-codex-plugin-sync-validate]
+  A2 --> B1 --> B4
+  A1 --> B2
+  A2 --> B2
+  A2 --> B3
+  A1 --> B4
+  A2 --> B4
+  A1 --> B5
+  A2 --> B5
+  B1 --> C1
+  B2 --> C1
+  B3 --> C1
+  B4 --> C1
+  B5 --> C1
+```
+
+---
+
+## Batch — Codex Infra Skill Suite Port (000047–000050)
+
+- Spec: `docs/ywc-plans/codex-infra-skill-suite-port.md`
+- Granularity mode: `llm` · Language: korean
+- Starting phase: `000047` (existing active/completed batches already occupy phases through `000046`)
+- Scope: Codex-only. Targets `codex/skills/**`, `codex/agents/**`, and generated plugin sync only. No `claude-code/**` edits.
+- Advisor pass: used (`ywc-architect`) to tighten phase gates, split shared references, and verify no hidden dependency cycle.
+
+### Phase 000047 — Agent Contract Surfaces
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000047-010-infra-cloud-engineer-specialist` | infra | (root) |
+| `000047-020-infra-agent-lens-extensions` | infra | (root) |
+
+### Phase 000048 — Shared Infra References
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000048-010-docs-infra-reference-core` | docs | `000047-010`, `000047-020` |
+| `000048-020-docs-infra-provider-packs` | docs | `000048-010` |
+
+### Phase 000049 — Codex Skill Authoring
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000049-010-docs-iac-author-skill` | docs | `000047-010`, `000048-010`, `000048-020` |
+| `000049-020-docs-infra-design-skill` | docs | `000048-010`, `000048-020` |
+| `000049-030-docs-infra-review-skill` | docs | `000047-010`, `000047-020`, `000048-010`, `000048-020` |
+| `000049-040-docs-infra-optimize-skill` | docs | `000047-010`, `000048-010`, `000048-020` |
+
+### Phase 000050 — Plugin Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000050-010-infra-codex-plugin-sync-validate` | infra | `000047-010`, `000047-020`, `000048-010`, `000048-020`, `000049-010`, `000049-020`, `000049-030`, `000049-040` |
+
+### Parallel Execution Notes
+
+- Initial ready set: `000047-010-infra-cloud-engineer-specialist`, `000047-020-infra-agent-lens-extensions` are parallel-safe because they edit disjoint agent files.
+- `000048-010-docs-infra-reference-core` waits for both Phase `000047` tasks so shared terminology aligns with final agent-routing language.
+- `000048-020-docs-infra-provider-packs` must not run in parallel with `000048-010` because both own `codex/skills/references/infra/**` and share the same terminology contract.
+- After all Phase `000048` tasks merge: `000049-010`, `000049-020`, `000049-030`, and `000049-040` are parallel-safe because each owns a disjoint `codex/skills/<skill>/**` subtree.
+- `000049-030` also depends on both `000047` tasks because its dispatch names must match the finalized specialist agent contracts.
+- `000050-010` is a hard gate. It waits for every prior source task, then runs plugin sync, repository validation, install/list checks, and Codex-only scope verification.
+- Mid-plan spot-check: `000048-020` runs `bash scripts/validate.sh` once after provider-pack authoring to catch structure drift before skill writing.
+
+```mermaid
+graph LR
+  A1[000047-010-infra-cloud-engineer-specialist] --> B1[000048-010-docs-infra-reference-core]
+  A2[000047-020-infra-agent-lens-extensions] --> B1
+  B1 --> B2[000048-020-docs-infra-provider-packs]
+  A1 --> C1[000049-010-docs-iac-author-skill]
+  B1 --> C1
+  B2 --> C1
+  B1 --> C2[000049-020-docs-infra-design-skill]
+  B2 --> C2
+  A1 --> C3[000049-030-docs-infra-review-skill]
+  A2 --> C3
+  B1 --> C3
+  B2 --> C3
+  A1 --> C4[000049-040-docs-infra-optimize-skill]
+  B1 --> C4
+  B2 --> C4
+  A1 --> D1[000050-010-infra-codex-plugin-sync-validate]
+  A2 --> D1
+  B1 --> D1
+  B2 --> D1
+  C1 --> D1
+  C2 --> D1
+  C3 --> D1
+  C4 --> D1
+```
