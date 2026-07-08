@@ -1,0 +1,4 @@
+interface:
+  display_name: "IaC Author"
+  short_description: "Author Terraform from a design with validate/plan and blast-radius summary"
+  default_prompt: "Use $ywc-iac-author to author Terraform from an infra design, verify it with terraform validate/plan, and report the blast radius before apply."

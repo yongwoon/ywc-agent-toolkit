@@ -1,0 +1,4 @@
+interface:
+  display_name: "Infra Design"
+  short_description: "Design cloud infrastructure architecture and produce infra-design.md before any IaC"
+  default_prompt: "Use $ywc-infra-design to gather requirements, select a provider, design the network/compute/storage/IAM topology, pre-check it against the reliability/cost/security lenses, and produce infra-design.md before any Terraform is written."

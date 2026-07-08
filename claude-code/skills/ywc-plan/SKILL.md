@@ -309,7 +309,7 @@ On acceptance, invoke `ywc-project-mission --mode update --source plan` (its CHA
 
 Then ask the user (skip when `--non-interactive` is set):
 
-> The spec draft is complete. Run `ywc-spec-ready` to drive the validate → converge loop (validate → DONE) automatically?
+> The spec draft is complete. Run `ywc-spec-ready` to drive the validate → converge loop (Critical **and** Warning findings resolved, then DONE) automatically?
 > - **y** → run `/ywc-spec-ready <path>` now.
 > - **n** → proceed manually with the steps below:
 >   1. `/ywc-spec-validate --spec <path>`
@@ -319,7 +319,7 @@ Then ask the user (skip when `--non-interactive` is set):
 If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <path>` immediately.
 If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
 
-The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor.
+The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. When `ywc-spec-ready` reaches zero Critical and zero Warning findings with only Suggestion findings left, it asks the user whether to run one more suggestion-focused amendment pass or defer those Suggestions before handing off to `ywc-task-generator`.
 
 ## Output Format
 
