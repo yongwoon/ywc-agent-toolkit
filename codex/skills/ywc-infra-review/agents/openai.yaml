@@ -1,0 +1,4 @@
+interface:
+  display_name: "Infra Review"
+  short_description: "Review IaC / cloud configuration across security, cost, and reliability lenses before apply"
+  default_prompt: "Use $ywc-infra-review to fan out an already-authored Terraform change to the security, cost, and reliability lenses, aggregate the findings by severity, and recommend blocking apply on any CRITICAL/HIGH finding."

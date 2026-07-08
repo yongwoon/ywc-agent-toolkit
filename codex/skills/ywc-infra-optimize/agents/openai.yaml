@@ -1,0 +1,4 @@
+interface:
+  display_name: "Infra Optimize"
+  short_description: "Improve existing infrastructure via a SAFE/CAUTION/DANGER change loop: cost right-sizing, unused-resource removal, reserved/spot adoption, and drift remediation"
+  default_prompt: "Use $ywc-infra-optimize to gather drift and cost/utilization signals against existing infrastructure, classify candidates into SAFE/CAUTION/DANGER, execute only SAFE items with per-item terraform plan confirmation and one commit per change, and escalate CAUTION/DANGER items without auto-executing them."
