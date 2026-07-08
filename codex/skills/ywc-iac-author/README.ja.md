@@ -1,6 +1,6 @@
 # ywc-iac-author
 
-Infrastructure-as-Code 作成 Skill です。Infrastructure 設計 (`ywc-infra-design` の成果物) または明示的に整理した inline intent を基に Terraform を作成し、Module 単位で `ywc-cloud-engineer` Persona を持つ Codex Worker へ Dispatch した後、`terraform validate` / `terraform plan` で検証し、apply 前に blast-radius summary を報告します。本 toolkit では **Terraform が唯一固定された IaC Tool** であり、Kubernetes/Helm Resource も Terraform の `kubernetes` / `helm` Provider で表現します — raw manifest や別の IaC Tool は使用しません。
+Infrastructure-as-Code 作成 Skill です。Infrastructure 設計 (`ywc-infra-design` の成果物) または明示的に整理した inline intent を基に現在の Codex Session で Terraform を作成し、必要なときだけ read-only `ywc-cloud-engineer` Persona に feasibility / blast-radius advisory を依頼した後、`terraform validate` / `terraform plan` で検証し、apply 前に blast-radius summary を報告します。本 toolkit では **Terraform が唯一固定された IaC Tool** であり、Kubernetes/Helm Resource も Terraform の `kubernetes` / `helm` Provider で表現します — raw manifest や別の IaC Tool は使用しません。
 
 ## Localized Versions
 
@@ -33,14 +33,14 @@ $ywc-iac-author --design-doc infra-design.md
 
 ## 出力
 
-- Dispatch ごとに作成された Terraform Module — それぞれ `terraform validate` clean、`terraform plan` 完了
+- 現在の Codex Session で作成された Terraform Module — それぞれ `terraform validate` clean、`terraform plan` 完了
 - IaC Authoring Report — blast-radius summary (add/change/destroy、stateful Resource への destructive change を明示)、state 取り扱い確認、Secret 外部化チェック
 - `apply` 前の `ywc-infra-review` 実行推奨 (skip していない場合)
 
 ## 関連 Skill
 
 - `ywc-infra-design` — upstream。本 Skill が読み込む `infra-design.md` を産出
-- `ywc-cloud-engineer` — 各 Terraform Module を作成・検証する Worker Persona
+- `ywc-cloud-engineer` — feasibility / reliability / blast-radius advisory を提供する read-only specialist Persona
 - `ywc-infra-review` — downstream。Apply 前の推奨レビュー
 - `ywc-infra-optimize` — 既存 Infrastructure の コスト/right-sizing 改善 (本 Skill の範囲外)
 - `ywc-backend-coder` — Application Server / Business Logic (Infrastructure ではない)
