@@ -1,6 +1,6 @@
 # ywc-infra-optimize
 
-既に Provision された Infrastructure を改善する Skill です — Cost Right-Sizing、未使用 Resource の削除、Reserved/Spot への移行、Drift 検知と Remediation、Reliability Hardening を扱います。`ywc-refactor-clean` の SAFE/CAUTION/DANGER Tier 判定と Iron Law (3重 Witness) の原則を Infrastructure に適用した Safe Change-Loop Skill です。Cost/Utilization Signal は `ywc-performance-engineer` Persona を持つ Codex Worker が収集し、SAFE Item の実行は `ywc-cloud-engineer` Persona を持つ Codex Worker に Dispatch されます。CAUTION/DANGER Item は絶対に自動実行せず、Escalate のみ行います。Terraform が本 toolkit で唯一固定された IaC Tool であり、すべての実行は `terraform plan` までで、`apply` は行いません。
+既に Provision された Infrastructure を改善するための保守的な planning Skill です — Cost Right-Sizing、未使用 Resource の削除、Reserved/Spot への移行、Drift 検知、Reliability Hardening を扱います。`ywc-refactor-clean` の SAFE/CAUTION/DANGER Tier 判定と Iron Law (3重 Witness) の原則を Infrastructure に適用しますが、Codex v1 では直接実行せず、分類と handoff のみを行います。Cost/Utilization Signal は `ywc-performance-engineer` Persona を持つ Codex Worker が収集し、必要に応じて read-only `ywc-cloud-engineer` Persona に feasibility / blast-radius advisory を依頼します。実際の Terraform 修正は `ywc-iac-author` に渡し、すべての分析は `terraform plan` までで、`apply` は行いません。
 
 ## Localized Versions
 
@@ -34,7 +34,7 @@ $ywc-infra-optimize --scope infra/modules/compute
 ## 出力
 
 - Drift/Cost/Utilization Signal に基づく SAFE/CAUTION/DANGER 分類 Report
-- SAFE Item は Item ごとに 1 Commit で実行 (Bisectable)
+- SAFE Item についても実際の修正ではなく狭い次アクションを提案
 - CAUTION/DANGER Item は実行せず Escalate のみ実施
 - `ywc-verify-done` 形式の最終 Verification Block
 
@@ -43,6 +43,6 @@ $ywc-infra-optimize --scope infra/modules/compute
 - `ywc-infra-review` — upstream。本 Skill が Remediation する Cost/Drift/Reliability Finding を診断
 - `ywc-verify-done` — downstream。最終 Verification Claim
 - `ywc-iac-author` — Escalate された CAUTION/DANGER Item の再作成経路
-- `ywc-performance-engineer` / `ywc-cloud-engineer` Persona — それぞれ Cost/Utilization Signal 収集と SAFE Item 実行を担当する Worker
+- `ywc-performance-engineer` / `ywc-cloud-engineer` Persona — それぞれ Cost/Utilization Signal 収集と read-only feasibility/blast-radius advisory を担当する Persona
 - `ywc-infra-design` — Greenfield Infrastructure 設計担当 (既存 Infrastructure の改善ではない)
 - `ywc-refactor-clean` — 本 Skill が援用した SAFE/CAUTION/DANGER Iron Law の元祖 (Application Code 対象)
