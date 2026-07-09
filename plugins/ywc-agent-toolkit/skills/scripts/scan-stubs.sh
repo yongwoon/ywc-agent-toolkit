@@ -4,8 +4,8 @@
 # Patterns) and ywc-sequential-executor (Completeness Gate). Exit 1 if any found.
 #
 # Usage:
-#   bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh" <file> [<file>...]
-#   bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh" --range <git-ref>   # files changed since <ref>
+#   bash ./scan-stubs.sh <file> [<file>...]
+#   bash ./scan-stubs.sh --range <git-ref>   # files changed since <ref>
 #
 # Only high-confidence comment/marker stubs are gated here. Bare `...` / `pass`
 # and prose shortcuts ("for brevity...") are deliberately NOT grepped — they

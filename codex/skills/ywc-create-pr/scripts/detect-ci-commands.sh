@@ -5,7 +5,7 @@
 # still selects and runs; this removes the per-run re-derivation of the same
 # greps and the package-manager guess.
 #
-# Usage: bash codex/skills/ywc-create-pr/scripts/detect-ci-commands.sh [repo-dir]
+# Usage: bash ./detect-ci-commands.sh [repo-dir]
 set -uo pipefail
 
 ROOT="${1:-.}"
