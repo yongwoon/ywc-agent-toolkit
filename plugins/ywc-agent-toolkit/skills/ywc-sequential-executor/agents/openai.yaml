@@ -1,4 +1,4 @@
 interface:
   display_name: "Sequential Executor"
-  short_description: "Execute generated tasks end to end in dependency order"
-  default_prompt: "Use $ywc-sequential-executor to resolve the next ready task or requested task range, execute each task through implementation, verification, PR or local merge flow, preserve --pr-lang en|ja|ko|zh|es through downstream PR creation, and maintain correct dependency and completion state without pausing mid-run."
+  short_description: "Execute generated tasks end to end and preserve implementation notes"
+  default_prompt: "Use $ywc-sequential-executor to resolve the next ready task or requested task range, execute each task through implementation, verification, PR or local merge flow, preserve non-obvious implementation notes in the completion report, preserve --pr-lang en|ja|ko|zh|es through downstream PR creation, and maintain correct dependency and completion state without pausing mid-run."

@@ -110,7 +110,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the Contract Snapshot from Step 2.5, (iii) the project context (AGENTS.md / CODEX.md / package.json / equivalent), (iv) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (v) the layer's role reference (`references/backend-agent.md`, `references/frontend-agent.md`, or `references/qa-agent.md`), and (vi) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
-   **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Do not silently retry on the same input.
+   **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Preserve worker implementation notes only when they explain non-obvious decisions that materially changed code shape. Do not silently retry on the same input.
 
    ## Status Routing
 
@@ -185,6 +185,9 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Contract Tests: {tests authored or executed / N/A}
 - TDD Mode: {baseline | strict --tdd | baseline exception - reason}
 - Critical Internals Reviewed: {critical modules reviewed / N/A}
+
+### Implementation Notes
+(Non-obvious decisions only. Omit routine framework usage, naming, or boilerplate alignment.)
 
 ### Per-Agent Summary
 (Summary of what each agent generated)
