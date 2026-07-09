@@ -437,7 +437,7 @@ Display the following after all waves are complete:
 - In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed
 - In `--per-task-pr` mode: each task's PR was created, CI-verified, bot-reviewed, and **merged** (`gh pr merge`); list each PR URL with its merged status
 - In `--aggregate-pr` mode: the single aggregate PR was created, marked ready, CI-verified, bot-reviewed, merge-readiness checked, and **merged**; list the merged PR URL
-- Contract evidence: Changed Public Contracts, tests authored/executed, Critical Internals, and TDD Exceptions per task (or `N/A`)
+- Contract evidence: Changed Public Contracts, tests authored/executed, Critical Internals, Implementation Notes for non-obvious decisions, and TDD Exceptions per task (or `N/A`)
 - **Worktree cleanup status** — one line per task, in one of these categories (omitted when `--terse` is set):
   - `clean` — worktree removed and branch deleted via Step 4g (the expected outcome for every successful task)
   - `force-cleaned` — `git worktree remove --force` was required; note the reason (lock, disposable artifacts, etc.)

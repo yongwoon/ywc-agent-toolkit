@@ -433,7 +433,7 @@ After the last task has been local-merged into `$WORK_BRANCH` and marked complet
 After all tasks are executed, display:
 - Total tasks executed: N
 - Each task: name, PR URL, PR status (draft / open / merged) — or `local-merge` with the merge commit SHA when `--local-merge` is used
-- Contract report per task: Changed Public Contracts, contract/behavior tests that first failed and then passed, Critical Internals reviewed, and TDD Exceptions (or `N/A`)
+- Contract report per task: Changed Public Contracts, contract/behavior tests that first failed and then passed, Critical Internals reviewed, Implementation Notes for non-obvious decisions, and TDD Exceptions (or `N/A`)
 - Any tasks that were skipped or failed (with reason)
 - Current branch and sync status
 - If in worktree mode: run worktree path, integration branch, state cleanup, and preserved branch/recovery command when applicable
@@ -467,7 +467,7 @@ test ! -f .ywc-run-state.json && echo "OK: state cleaned" || echo "WARNING: stat
 If the verification line prints `WARNING`, the run is `DONE_WITH_CONCERNS`, not `DONE` — surface the leftover file path in the Completion Report.
 
 ## Output Format
-The final output is the Completion Report. In normal verbosity it includes the full task table and mode-specific caveats; under `--terse`, emit only the table and status line:
+The final output is the Completion Report. In normal verbosity it includes the full task table, mode-specific caveats, and preserved Implementation Notes when they explain non-obvious decisions; under `--terse`, emit only the table and status line:
 
 ```text
 | Task | Status | PR URL or merge SHA |

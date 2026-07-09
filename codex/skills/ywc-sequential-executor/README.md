@@ -68,7 +68,7 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 
 ## Contract / TDD baseline
 
-동작 변경 task는 구현 전에 changed public contracts와 critical internals를 기록하고, failing test 또는 contract assertion을 먼저 확인합니다. docs-only, config-only, mechanical, no-harness 경우는 명시적인 TDD exception으로 보고합니다. Completion report에는 changed contracts, contract tests, critical internals, exceptions가 포함됩니다.
+동작 변경 task는 구현 전에 changed public contracts와 critical internals를 기록하고, failing test 또는 contract assertion을 먼저 확인합니다. docs-only, config-only, mechanical, no-harness 경우는 명시적인 TDD exception으로 보고합니다. Completion report에는 changed contracts, contract tests, critical internals, non-obvious `Implementation Notes`, exceptions가 포함됩니다.
 
 ## Execution Cycle
 

@@ -31,7 +31,7 @@ Follow the Arguments or Workflow sections in [SKILL.md](./SKILL.md) for supporte
 
 ## Contract and TDD baseline
 
-For behavior-changing tasks, the executor records changed public contracts and critical internals before implementation, then requires a failing test or contract assertion first. Docs-only, config-only, mechanical, and no-harness cases are reported as explicit TDD exceptions. Completion reports include changed contracts, contract tests, critical internals, and exceptions.
+For behavior-changing tasks, the executor records changed public contracts and critical internals before implementation, then requires a failing test or contract assertion first. Docs-only, config-only, mechanical, and no-harness cases are reported as explicit TDD exceptions. Completion reports include changed contracts, contract tests, critical internals, non-obvious `Implementation Notes`, and exceptions.
 
 ```bash
 $ywc-sequential-executor 001010..003020 --aggregate-pr --group-name billing-rollout
