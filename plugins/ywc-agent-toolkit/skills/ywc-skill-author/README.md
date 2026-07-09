@@ -37,6 +37,7 @@
 
 - **Mandatory Rules**: Frontmatter / Body / Filesystem 영역의 강제 규칙 (A1–A13)
 - **Recommended Rules**: 상황별 권장 규칙 (B1–B7)
+- Exploration-heavy skill은 heavy worked example 대신 context-first / decision frame / selective reference 우선
 - **Format Conventions**: Korean prose + English Technical 용어 정책 등
 - **Anti-patterns**: Description workflow summary, stub code, `@` syntax 등 금지 패턴
 
