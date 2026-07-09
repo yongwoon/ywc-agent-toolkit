@@ -67,6 +67,8 @@ When `ywc-brainstorm` completes, its handoff message includes the four anchors a
 
 After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-writer`, `ywc-task-generator`, `ywc-code-gen`, executor), invoke `ywc-confidence-gate` with the chosen approach as input. The gate's PROCEED / REVIEW / STOP band determines whether the plan is ready for handoff; a REVIEW band surfaces alternatives to the user, a STOP band routes back here for additional investigation before re-attempting handoff. The 5-dimension score becomes part of the plan's completion summary so downstream skills inherit a comparable confidence number.
 
+When the chosen path still depends on unverified assumptions, run [../references/unknown-matrix.md](../references/unknown-matrix.md) before handoff and preserve those assumptions explicitly in the artifact's risk / follow-up language. Do not weaken existing `NEEDS_CONTEXT` rules: if a missing answer blocks a coherent plan, stop and ask instead of parking it as an unknown.
+
 ### Step 1: Clarify the Request
 
 **Prerequisite:** If `docs/ubiquitous-language.md` exists, read it before asking any questions. The vocabulary defined there must frame the clarification dialogue itself — use canonical terms in your questions and note any "Synonyms to Avoid" so the user's answers are captured in the right terms from the start.

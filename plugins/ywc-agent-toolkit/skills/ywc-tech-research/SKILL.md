@@ -78,7 +78,7 @@ Parse `$ARGUMENTS` for:
    - Each official source has a visible last-updated date or release version
    - If only community sources are available, state this explicitly in the report
 
-5. **Analyze and Output Report** — Write a structured report focused on compatibility with the current project stack.
+5. **Analyze and Output Report** — Write a structured report focused on compatibility with the current project stack. If the recommendation still depends on unresolved facts, add them under `### Unknowns Surfaced` and downgrade status accordingly.
 
 ## Source Discipline Rules
 
@@ -133,6 +133,9 @@ Output depth is controlled by `--depth` (default: 50):
 ### Project-Specific Considerations
 (Compatibility with current stack, migration cost, known conflicts)
 
+### Unknowns Surfaced
+(Only unresolved questions or assumptions that materially affect the recommendation. Omit when none.)
+
 ### References
 - [Official] {name} — {url} (last updated: {date})
 - [Community] {name} — {url} (flagged [potentially stale: <date>] if >12 months old)
@@ -147,7 +150,7 @@ Output depth is controlled by `--depth` (default: 50):
 | Status | When to use |
 |--------|------------|
 | `DONE` | All axes covered with official sources, recommendation is clear |
-| `DONE_WITH_CONCERNS` | Research complete but with caveats — stale sources, missing benchmark data, or a recommendation that depends on unstated requirements |
+| `DONE_WITH_CONCERNS` | Research complete but with caveats — stale sources, missing benchmark data, or a recommendation that still depends on unresolved unknowns |
 | `BLOCKED` | Cannot research the topic — context7 returned nothing and no official docs are publicly accessible |
 | `NEEDS_CONTEXT` | Topic is too vague to produce a useful recommendation without clarification from the user |
 

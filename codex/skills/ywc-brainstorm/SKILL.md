@@ -109,6 +109,8 @@ If the initial request already answers one of these, do not re-ask — confirm i
 
 Once intent is clear, present 2 or 3 approaches in conversational prose. For each: one-sentence summary, the trade-offs, and an explicit "fits this case because…" or "less fit because…".
 
+Before presenting the recommendation, run a quick blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md) and surface any assumptions that are still worth validating. Keep the term internal; present them as concrete follow-up questions or caveats, not as "Unknown Matrix" jargon.
+
 Lead with your recommendation. Make the recommendation defensible from the anchors collected in Step 3, not from generic best-practice talk.
 
 If the user has a strong preference already, still present the alternatives — the explicit trade-off is what makes the choice defensible during `ywc-spec-validate` and later review.
@@ -168,6 +170,7 @@ Before handing off, verify:
 - [ ] Step 2 confirmed the request is scoped to one subsystem (or decomposed if not)
 - [ ] All four anchors (What / Why / Out of Scope / Done When) have explicit one-sentence answers
 - [ ] Step 4 presented at least 2 alternative approaches with explicit trade-offs — not just the recommended one
+- [ ] Step 4 surfaced blind-spot assumptions worth validating before handoff
 - [ ] Step 5 surfaced the design in sections and received explicit per-section confirmation
 - [ ] The user said "yes" (or equivalent) to the handoff prompt, not just to the recommendation
 - [ ] The handoff message includes the four anchors verbatim, not summarized
@@ -186,3 +189,4 @@ Before handing off, verify:
 |---|---|
 | [references/question-cookbook.md](references/question-cookbook.md) | Picking the right shape of question (multiple choice / open / scope check / constraint surface) for each anchor |
 | [../references/question-first-gate.md](../references/question-first-gate.md) | Deciding whether the request is concrete enough to skip directly to `ywc-plan` |
+| [../references/unknown-matrix.md](../references/unknown-matrix.md) | Running a blind-spot pass before recommending an approach or handing off to `ywc-plan` |

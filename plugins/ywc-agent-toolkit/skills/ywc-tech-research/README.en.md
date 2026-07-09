@@ -26,6 +26,7 @@ A Research Agent Skill for technical investigation and library comparison.
 - Comparative analysis (table)
 - Recommendation with rationale
 - Project integration considerations
+- Unknowns Surfaced
 - References
 
 ## Triggering
