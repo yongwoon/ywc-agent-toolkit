@@ -13,7 +13,7 @@
 1. **Step 1 — Explore project context** — 영향 area 의 `CLAUDE.md`, `docs/`, 최근 commit 을 미리 읽어 stale assumption 방지
 2. **Step 2 — Detect "too big for one design"** — 여러 subsystem 이 섞여 있으면 STOP 하고 decomposition 협의
 3. **Step 3 — Ask clarifying questions one at a time** — What / Why / Out of Scope / Done When 4개 anchor 를 한 번에 한 질문씩 surface
-4. **Step 4 — Propose 2–3 approaches with trade-offs** — 추천 1안 + 대안 1~2안, 각각의 trade-off 명시
+4. **Step 4 — Propose 2–3 approaches with trade-offs** — 추천 1안 + 대안 1~2안, 각각의 trade-off 명시. 추천 전 blind-spot pass 로 검증이 필요한 가정을 짧게 surface
 5. **Step 5 — Present the design and get approval** — section 별 confirm, 마지막에 명시적 handoff 승인
 6. **Step 6 — Handoff to ywc-plan** — 4개 anchor 와 chosen approach 를 `ywc-plan` 에게 명시적 input 으로 전달
 
@@ -35,7 +35,7 @@
 
 ## 참고
 
-상세 workflow · Rationalization Defense 는 [SKILL.md](./SKILL.md) 를 참조합니다. 원본 process discipline 은 `superpowers:brainstorming` 에서 차용하되 ywc 의 handoff 흐름 (→ ywc-plan) 에 맞게 조정했습니다.
+상세 workflow · Rationalization Defense 는 [SKILL.md](./SKILL.md) 를 참조합니다. 원본 process discipline 은 `superpowers:brainstorming` 에서 차용하되 ywc 의 handoff 흐름 (→ ywc-plan) 에 맞게 조정했습니다. Blind-spot surfacing 은 [../references/unknown-matrix.md](../references/unknown-matrix.md) 를 내부 기준으로 사용합니다.
 
 ## Localized Versions
 

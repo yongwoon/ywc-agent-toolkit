@@ -41,6 +41,7 @@ $ywc-onboard-repo --scope apps/web/
 ## 출력
 
 - **Output A**: Onboarding Guide (Conversation 에 Markdown 으로 print) — Tech Stack, Architecture, Key Entry Points, Directory Map, Request Lifecycle, Conventions, Common Tasks, Where to Look, Detection Confidence
+- Confidence 가 부족하지만 가치 있는 질문은 `Unknown — worth verifying: ...` 형태로 남김
 - **Output B**: Starter AGENTS.md (repo root 에 write) — 기존 file 있으면 `## Detected Conventions (<YYYY-MM-DD>)` section 만 추가
 
 ## 관련 Skill
