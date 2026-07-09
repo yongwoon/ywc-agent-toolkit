@@ -259,6 +259,53 @@ graph LR
 | `000018-040-docs-surgical-simplicity-detection` | docs | `000018-010` |
 | `000018-050-docs-execution-discipline` | docs | `000018-010` |
 
+---
+
+## Batch 8 — Codex Fable-Inspired Exploration Enhancements
+
+- Spec: `docs/ywc-plans/fable-inspired-codex-exploration.md`
+- Granularity mode: `llm` · Language: korean
+- Starting phase: `000051` (highest existing phase across `tasks/dependency-graph.md` / `tasks/` / `tasks/completed/` is `000050`)
+- Scope: Codex skills / references / generated Codex plugin package only. No `claude-code/**` edits in this batch.
+
+### Phase 000051 — Shared References + Skill Surface Updates
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000051-010-docs-shared-exploration-references` | docs | (root) |
+| `000051-020-docs-discovery-skill-exploration-hooks` | docs | `000051-010` |
+| `000051-030-docs-execution-skill-implementation-notes` | docs | `000051-010` |
+| `000051-040-docs-skill-author-exploration-rules` | docs | `000051-010` |
+
+### Phase 000052 — Sync and Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000052-010-infra-fable-exploration-validation` | infra | `000051-010`, `000051-020`, `000051-030`, `000051-040` |
+
+### Parallel Execution Notes (Batch 8)
+
+- Initial ready set: `000051-010-docs-shared-exploration-references`.
+- After `000051-010` merges: `000051-020`, `000051-030`, and `000051-040` are parallel-safe because they own disjoint skill directories and only share the new reference semantics.
+- `000052-010` is a **hard gate**: it waits for all Phase `000051` tasks, then runs plugin sync, repository validation, targeted grep checks, and executor line-count verification.
+- Conflict notes:
+  - `000051-020` must not edit `ywc-code-gen`, executor skills, or `ywc-skill-author`.
+  - `000051-030` must preserve `ywc-sequential-executor/SKILL.md` and `ywc-parallel-executor/SKILL.md` at `<=500` lines.
+  - `000051-040` edits only `codex/skills/ywc-skill-author/**`.
+- Hard boundary: no `claude-code/**` edits, no manual edits to `plugins/ywc-agent-toolkit/skills/**`, and no new mandatory artifact for implementation notes.
+- FR mapping: FR1 + FR6→`000051-010`, FR2–FR5 + FR10–FR11→`000051-020`, FR7–FR8 + FR10–FR12→`000051-030`, FR9 + FR10–FR11→`000051-040`, AC/validation hard gate→`000052-010`.
+
+```mermaid
+graph LR
+  AD[000051-010-docs-shared-exploration-references] --> AE[000051-020-docs-discovery-skill-exploration-hooks]
+  AD --> AF[000051-030-docs-execution-skill-implementation-notes]
+  AD --> AG[000051-040-docs-skill-author-exploration-rules]
+  AD --> AH[000052-010-infra-fable-exploration-validation]
+  AE --> AH
+  AF --> AH
+  AG --> AH
+```
+
 ### Phase 000019 — Validation Hard Gate
 
 | Task | Category | Depends On |
