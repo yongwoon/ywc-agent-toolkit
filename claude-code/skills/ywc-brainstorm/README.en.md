@@ -13,9 +13,10 @@ A 6-step dialogue workflow:
 1. **Step 1 — Explore project context** — Read affected-area `CLAUDE.md`, `docs/`, and recent commits to prevent stale assumptions.
 2. **Step 2 — Detect "too big for one design"** — If the request spans multiple independent subsystems, STOP and decompose first.
 3. **Step 3 — Ask clarifying questions one at a time** — Surface the four anchors (What / Why / Out of Scope / Done When), one question per message.
-4. **Step 4 — Propose 2–3 approaches with trade-offs** — Lead with the recommendation; show the alternatives explicitly.
-5. **Step 5 — Present the design and get approval** — Present in sections; confirm each before the final approval gate.
-6. **Step 6 — Handoff to `ywc-plan`** — Pass the anchors and the chosen approach as explicit input.
+4. **Step 4 — Propose 2–3 approaches with trade-offs** — Lead with the recommendation; show the alternatives explicitly. For design-heavy requests, additionally generate 2–4 divergent HTML mockups to surface the user's visual taste (Unknown Knowns).
+5. **Step 4.5 — Blind-spot pass (Unknown Matrix)** — Before presenting the design, explicitly check the Unknown Knowns / Unknown Unknowns quadrants.
+6. **Step 5 — Present the design and get approval** — Present in sections; confirm each before the final approval gate.
+7. **Step 6 — Handoff to `ywc-plan`** — Pass the anchors and the chosen approach as explicit input.
 
 The skill never branches directly into `ywc-code-gen`, `ywc-spec-writer`, `ywc-task-generator`, or any executor — its terminal state is always invoking `ywc-plan`.
 

@@ -38,6 +38,26 @@ Pick the shape of question that fits the anchor you are trying to surface. Each 
 | **Stakeholder accept** | "Whose acceptance signal closes this? Code review pass, QA sign-off, user pilot, all three?" |
 | **Rollback criterion** | "What would force us to roll this back after shipping? That criterion's inverse is part of 'done'." |
 
+## Anchor: Blind spots (the Unknown Matrix)
+
+Used in Step 4.5, after the four anchors are in hand and before the design is
+presented. The four anchors cover the *Known* quadrant; these question shapes
+target the two quadrants that cause the most "this isn't what I asked for"
+rework — Unknown Knowns (assumptions too obvious to state) and Unknown Unknowns
+(risks nobody considered).
+
+| Quadrant | Question shape | Template |
+|---|---|---|
+| **Unknown Knowns** (implicit taste / convention) | **Convention surface** | "I'm assuming this follows the existing <house style / component / naming> in <area> — is that right, or does this one differ on purpose?" |
+| **Unknown Knowns** | **Default reveal** | "If I picked the most obvious option for <X> without asking, what would you be annoyed to discover I chose?" |
+| **Unknown Unknowns** (unconsidered risk) | **Adversarial pass** | "What is the most likely way this ships and still disappoints you — a case neither of us has named yet?" |
+| **Unknown Unknowns** | **Second-order effect** | "Once this exists, what downstream behavior / load / workflow does it change that we haven't talked about?" |
+| **Unknown Unknowns** | **Blind-spot delegation** | "Given what you know about this codebase that I don't, what am I most likely to get wrong here?" |
+
+Ask at most 1–2 of these — the highest-risk Unknown Knowns become one-line
+confirmation questions; Unknown Unknowns become entries in the design's Failure
+Modes rather than blocking questions.
+
 ## When the user gives a vague answer
 
 | Symptom | Recovery question |

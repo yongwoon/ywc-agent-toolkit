@@ -33,6 +33,8 @@ PRESENTED AND THE USER HAS APPROVED IT.
 
 This applies to **every** request, regardless of perceived simplicity. The design can be short (a few sentences for genuinely small changes), but it must be surfaced and the user must explicitly approve before the workflow proceeds.
 
+**Disposable prototypes are exempt.** For design-heavy requests, generating throwaway HTML mockups (Step 4) to surface the user's visual taste is *exploration*, not implementation — the gate blocks production code, spec drafting, and executor handoff, not disposable artifacts written to the `_brainstorm-<slug>/` scratch directory and discarded once the direction is chosen.
+
 The terminal state of this skill is **invoking `ywc-plan`** with the approved intent in hand. Do not jump to `ywc-code-gen`, `ywc-spec-writer`, `ywc-task-generator`, or any executor.
 
 ## Rationalization Defense
@@ -50,6 +52,9 @@ When tempted to bypass the gate, check this table first:
 | "I'll skip the visible 'design presented' step and just start a `ywc-plan`" | The handoff to `ywc-plan` carries the approved design as input. Without an explicit approval step, `ywc-plan` has nothing concrete to operate on and will re-ask the same anchors — duplicating work, frustrating the user, and breaking the contract that each skill has a single responsibility. |
 | "This design clearly defines the mission — just write `docs/project-mission.md` during handoff" | The Step 6 mission persistence is **opt-in**: persisting durable intent to a committed, `@`-autoloaded file frames *every* future planning session, so it must be the user's choice, not an inferred write. Offer once via `ywc-project-mission update --source brainstorm`; on decline or silence, no-op. Writing it unasked, or blocking the handoff until the user answers, both violate the contract. |
 | "User wants to keep iterating in this session, I'll just keep brainstorming" | Once the design is approved, this skill terminates. Continuing to iterate inside the brainstorm scope reopens settled questions. If the user genuinely needs to change direction, end this skill, return to `ywc-brainstorm` for the *new* idea, and produce a new design doc. |
+| "This is a UI redesign, but I'll just describe the two approaches in prose" | Prose cannot surface *visual taste* — the user's "Unknown Knowns" only appear when they react to something concrete. For design-heavy requests (new screen, visual redesign, landing page, look-and-feel component), Step 4 additionally generates 2–4 deliberately divergent HTML mockups. A prose-only design for a look-and-feel request ships the agent's default taste, not the user's. |
+| "Generating HTML mockups breaks the hard gate (no code before approval)" | Throwaway exploration prototypes are design-surfacing artifacts, not implementation. They live in the `_brainstorm-<slug>/prototypes/` scratch directory and are discarded once the direction is chosen. The gate blocks *production* code, spec drafting, and executor handoff — never disposable exploration that exists only to make taste visible. |
+| "The four anchors are confirmed, the design is complete — I'll present it" | The four anchors are only the *Known* quadrant. The Step 4.5 blind-spot pass exists to surface the two dangerous quadrants: Unknown Knowns (assumptions so obvious the user never stated them) and Unknown Unknowns (risks nobody considered). Skipping it ships a design that silently omits the user's unstated conventions — the single most common "this isn't what I asked for" source. |
 
 **Violating the letter of these rules is violating the spirit.** The hard gate exists because every implementation skill is downstream of "the user said yes to this design."
 
@@ -117,6 +122,25 @@ Lead with your recommendation. Make the recommendation defensible from the ancho
 
 If the user has a strong preference already, still present the alternatives — the explicit trade-off is what makes the choice defensible during `ywc-spec-validate` and later review.
 
+#### Design-heavy requests: divergent visual prototypes
+
+When the request is design-centric — a new user-facing screen, a visual redesign, a landing page, or a component whose *look and feel* is the point — prose approaches cannot surface the user's visual taste (the "Unknown Knowns" they would never write into a spec). In that case, **additionally** generate 2–4 deliberately divergent HTML mockups and let the user react to them before Step 5.
+
+Read [references/divergent-prototypes.md](references/divergent-prototypes.md) for how divergent to make them, the self-contained single-file rules, where to write them, and how to run the reaction. The mockups are throwaway *exploration* artifacts under `docs/ywc-plans/_brainstorm-<slug>/prototypes/` — never carried into production; only the chosen direction feeds the Step 5 design.
+
+### Step 4.5: Blind-spot pass (the Unknown Matrix)
+
+Before presenting the design, run one explicit pass against the four quadrants of the Unknown Matrix. The point is to surface what neither you nor the user has said out loud — the left column is already in hand, so the two right-hand quadrants are the whole reason for this step:
+
+| Quadrant | Question | What to do with it |
+|---|---|---|
+| Known Knowns | "What do I already know I want?" | Already captured in the four anchors — no action. |
+| Known Unknowns | "What do I know I haven't figured out?" | Add to the design's Open Questions. |
+| Unknown Knowns | "What is so obvious to the user they never said it?" (implicit convention, house style, taste) | Surface as a one-line confirmation question before Step 5. |
+| Unknown Unknowns | "What has nobody considered at all?" | Name the risk in the design's Failure Modes. |
+
+Ask at most 1–2 confirmation questions for the highest-risk Unknown Knowns; record Unknown Unknowns as Failure Modes rather than blocking on them. See [references/question-cookbook.md](references/question-cookbook.md) "Blind spots" for question shapes.
+
 ### Step 5: Present the design and get approval
 
 Present the design in sections sized to their complexity. Cover at minimum:
@@ -182,6 +206,8 @@ Before handing off, verify:
 - [ ] Step 2 confirmed the request is scoped to one subsystem (or decomposed if not)
 - [ ] All four anchors (What / Why / Out of Scope / Done When) have explicit one-sentence answers
 - [ ] Step 4 presented at least 2 alternative approaches with explicit trade-offs — not just the recommended one
+- [ ] For a design-heavy request, Step 4 generated ≥2 divergent HTML mockups (in `_brainstorm-<slug>/prototypes/`) and the user reacted before Step 5
+- [ ] Step 4.5 blind-spot pass ran — Unknown Knowns surfaced as confirmation questions, Unknown Unknowns recorded as Failure Modes
 - [ ] Step 5 surfaced the design in sections and received explicit per-section confirmation
 - [ ] The user said "yes" (or equivalent) to the handoff prompt, not just to the recommendation
 - [ ] The handoff message includes the four anchors verbatim, not summarized
@@ -198,5 +224,6 @@ Before handing off, verify:
 
 | Reference | Use when |
 |---|---|
-| [references/question-cookbook.md](references/question-cookbook.md) | Picking the right shape of question (multiple choice / open / scope check / constraint surface) for each anchor |
+| [references/question-cookbook.md](references/question-cookbook.md) | Picking the right shape of question (multiple choice / open / scope check / constraint surface) for each anchor, and the Step 4.5 blind-spot ("Unknown Matrix") question shapes |
+| [references/divergent-prototypes.md](references/divergent-prototypes.md) | Generating 2–4 divergent, disposable HTML mockups for a design-heavy request (Step 4) to surface the user's visual taste |
 | [../references/question-first-gate.md](../references/question-first-gate.md) | Deciding whether the request is concrete enough to skip directly to `ywc-plan` |
