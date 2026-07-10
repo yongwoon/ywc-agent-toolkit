@@ -30,7 +30,7 @@ When tempted to skip a step, check this table first:
 | "I improved the adjacent module's code quality while I was in the file" | Surgical Changes. Remove those improvements. They belong to a different PR and a different review boundary. |
 | "I'll design the module interface as I generate the implementation" | Deep Module: design the public interface before generating the body. Write the API signatures and their contracts first — that is a design decision that belongs to you, not the AI. Generate only the implementation body. Interface decisions made under generation pressure produce shallow modules that are expensive to fix later. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3. |
 | "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. Without test feedback, AI-generated implementations grow unchecked until they crash at runtime. The default path already gates this: the QA lane authors failing (RED) tests **before** Backend/Frontend implementation is finalized (Phase 1). `--tdd` is the stronger opt-in superset (full RED → GREEN → REFACTOR with checkpoint commits). See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2. |
-| "A referenced type didn't match the spec, so I adjusted the code and moved on" | A silent spec↔reality divergence leaves the spec (the map) stale for every other task that reads it. Log it in Step 6.5's `implementation-notes.md`; if it is **material** (contradicts an Acceptance Criterion, changes the data model, or invalidates an assumption other tasks depend on), also recommend `ywc-plan --update-spec`. Patch the terrain *and* correct the map — never just the terrain. |
+| "A referenced type didn't match the spec, so I adjusted the code and moved on" | A silent spec↔reality divergence leaves the spec (the map) stale for every other task that reads it. Log it in Step 6.5's `implementation-notes.md`; if it is **material** (contradicts an Acceptance Criterion, changes the data model, or invalidates an assumption other tasks depend on), also recommend `/ywc-plan --update-spec`. Patch the terrain *and* correct the map — never just the terrain. |
 
 **Violating the letter of these rules is violating the spirit.** A stub committed today is a runtime crash tomorrow.
 
@@ -154,7 +154,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    Classify each divergence:
    - **Cosmetic** (spec wording imprecise but intent clear, resolved locally) → log only.
-   - **Material** (contradicts an Acceptance Criterion, changes the data model, or invalidates a spec assumption other tasks depend on) → log **and** surface a re-plan recommendation in the Completion Report: `ywc-plan --update-spec <spec> --failure-context "<divergence summary>"`. Never silently absorb a material divergence into the code — the spec other tasks read is now stale.
+   - **Material** (contradicts an Acceptance Criterion, changes the data model, or invalidates a spec assumption other tasks depend on) → log **and** surface a re-plan recommendation in the Completion Report: `/ywc-plan --update-spec <spec> --failure-context "<divergence summary>"`. Never silently absorb a material divergence into the code — the spec other tasks read is now stale.
 
    If no divergences occurred, write `N/A — no spec↔reality divergences` so the reader can tell the pass ran.
 
@@ -193,7 +193,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Phase 2 advisor calls (Opus): X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
-- Divergence log: {N entries | N/A — no divergences} — {M material → `ywc-plan --update-spec` recommended}
+- Divergence log: {N entries | N/A — no divergences} — {M material → `/ywc-plan --update-spec` recommended}
 - Diff scope: {clean | N drive-by edits removed} — only spec-named files changed
 - Minimalism (Confidence Gate): {score} — {one-line note if < 90}
 - TDD mode: {default-red-gate | --tdd}
@@ -211,7 +211,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
 ### Divergence Log (spec ↔ reality)
 (Path to implementation-notes.md, then each entry: Assumption → Reality (file:line) → Judgment → Class.
- List material divergences first with the recommended `ywc-plan --update-spec` command. `N/A — no spec↔reality divergences` when none.)
+ List material divergences first with the recommended `/ywc-plan --update-spec` command. `N/A — no spec↔reality divergences` when none.)
 
 ### Per-Agent Summary
 (Summary of what each agent generated)
@@ -301,5 +301,5 @@ The gate score must appear in the completion summary together with the Backend /
 
 - **upstream**: After specification is finalized
 - **downstream**: Implementation review (/ywc-impl-review), PR creation
-- **feedback edge**: When Step 6.5 records a **material** spec↔reality divergence, recommend `ywc-plan --update-spec <spec> --failure-context "<divergence summary>"` so the stale spec is corrected before other tasks read it (mirrors the re-plan loop `ywc-impl-review` triggers).
+- **feedback edge**: When Step 6.5 records a **material** spec↔reality divergence, recommend `/ywc-plan --update-spec <spec> --failure-context "<divergence summary>"` so the stale spec is corrected before other tasks read it (mirrors the re-plan loop `ywc-impl-review` triggers).
 - **relationship**: Complementary to sequential-executor (independent layer parallel generation)

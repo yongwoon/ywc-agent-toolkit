@@ -54,7 +54,7 @@ When tempted to bypass the gate, check this table first:
 | "User wants to keep iterating in this session, I'll just keep brainstorming" | Once the design is approved, this skill terminates. Continuing to iterate inside the brainstorm scope reopens settled questions. If the user genuinely needs to change direction, end this skill, return to `ywc-brainstorm` for the *new* idea, and produce a new design doc. |
 | "This is a UI redesign, but I'll just describe the two approaches in prose" | Prose cannot surface *visual taste* — the user's "Unknown Knowns" only appear when they react to something concrete. For design-heavy requests (new screen, visual redesign, landing page, look-and-feel component), Step 4 additionally generates 2–4 deliberately divergent HTML mockups. A prose-only design for a look-and-feel request ships the agent's default taste, not the user's. |
 | "Generating HTML mockups breaks the hard gate (no code before approval)" | Throwaway exploration prototypes are design-surfacing artifacts, not implementation. They live in the `_brainstorm-<slug>/prototypes/` scratch directory and are discarded once the direction is chosen. The gate blocks *production* code, spec drafting, and executor handoff — never disposable exploration that exists only to make taste visible. |
-| "The four anchors are confirmed, the design is complete — I'll present it" | The four anchors are only the *Known* quadrant. The Step 4.5 blind-spot pass exists to surface the two dangerous quadrants: Unknown Knowns (assumptions so obvious the user never stated them) and Unknown Unknowns (risks nobody considered). Skipping it ships a design that silently omits the user's unstated conventions — the single most common "this isn't what I asked for" source. |
+| "The four anchors are confirmed, the design is complete — I'll present it" | The four anchors capture confirmed *intent* — one part of the Known column (the repo/spec constraints verified in Step 1 are the other). The Step 4.5 blind-spot pass exists to surface the two dangerous quadrants: Unknown Knowns (assumptions so obvious the user never stated them) and Unknown Unknowns (risks nobody considered). Skipping it ships a design that silently omits the user's unstated conventions — the single most common "this isn't what I asked for" source. |
 
 **Violating the letter of these rules is violating the spirit.** The hard gate exists because every implementation skill is downstream of "the user said yes to this design."
 
@@ -134,7 +134,7 @@ Before presenting the design, run one explicit pass against the four quadrants o
 
 | Quadrant | Question | What to do with it |
 |---|---|---|
-| Known Knowns | "What do I already know I want?" | Already captured in the four anchors — no action. |
+| Known Knowns | "What do I already know I want, and what has Step 1 already verified?" | Two sources: the four anchors (confirmed user *intent*) **and** the requirements / constraints verified from the repo or spec in Step 1. Confirm the Step 1 repo/spec constraints are stated explicitly in the design before handoff — do not assume the four anchors alone cover them. |
 | Known Unknowns | "What do I know I haven't figured out?" | Add to the design's Open Questions. |
 | Unknown Knowns | "What is so obvious to the user they never said it?" (implicit convention, house style, taste) | Surface as a one-line confirmation question before Step 5. |
 | Unknown Unknowns | "What has nobody considered at all?" | Name the risk in the design's Failure Modes. |
