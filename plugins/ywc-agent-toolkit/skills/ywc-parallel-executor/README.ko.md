@@ -30,7 +30,7 @@ Docker Compose를 사용하는 task worktree에서는 executor가 `ywc-docker-is
 
 ## Contract Gates
 
-Wave planning은 shared public contract를 단순 file path가 아닌 Shared Surfaces로 취급합니다. Worker payload는 Changed Public Contracts, Critical Internals, Cross-Module Impact, test evidence를 요구하며, 동작 변경 task가 authored/executed tests 없이 끝나려면 명시적인 TDD exception이 필요합니다.
+Wave planning은 shared public contract를 단순 file path가 아닌 Shared Surfaces로 취급합니다. Worker payload는 Changed Public Contracts, Critical Internals, Cross-Module Impact, test evidence, non-obvious `Implementation Notes` 를 요구하며, 동작 변경 task가 authored/executed tests 없이 끝나려면 명시적인 TDD exception이 필요합니다.
 
 ## Delivery Modes
 

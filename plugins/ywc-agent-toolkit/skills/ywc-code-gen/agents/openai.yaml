@@ -1,4 +1,4 @@
 interface:
   display_name: "Code Gen"
   short_description: "Generate backend, frontend, and QA layers with selective implementation notes"
-  default_prompt: "Use $ywc-code-gen to generate backend, frontend, and QA implementation layers from the approved specification, preserving implementation notes only for non-obvious design choices."
+  default_prompt: "Use $ywc-code-gen to generate backend, frontend, and QA implementation layers from the approved specification, preserving implementation notes only for non-obvious design choices that materially affect the generated code shape."

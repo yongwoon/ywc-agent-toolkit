@@ -40,7 +40,7 @@ O mediante lenguaje natural:
 El estándar aplicado por esta habilidad consiste en:
 
 - **Reglas Obligatorias**: Frontmatter / Cuerpo / Sistema de Archivos (A1–A13).
-- **Reglas Recomendadas**: Directrices situacionales (B1–B7).
+- **Reglas Recomendadas**: Directrices situacionales (B1–B9); para skills exploration-heavy, prioriza context-first / decision frame / selective reference.
 - **Convenciones de Formato**: Prosa en coreano con términos técnicos en inglés, disparadores multilingües, etc.
 - **Anti-patrones**: Descripciones tipo resumen de flujo de trabajo, código de esbozo, referencias cruzadas con `@`, y trampas similares.
 

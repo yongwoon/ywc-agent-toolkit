@@ -34,7 +34,7 @@ Para worktrees de tareas que usan Docker Compose, el executor delega el aislamie
 
 ## Contract Gates
 
-La planificacion de waves trata los contratos publicos compartidos como Shared Surfaces, no solo como rutas de archivo. Los payloads de workers requieren Changed Public Contracts, Critical Internals, Cross-Module Impact y evidencia de tests; las tareas que cambian comportamiento sin tests authored/executed necesitan una TDD exception explicita o quedan blocked/with concerns.
+La planificacion de waves trata los contratos publicos compartidos como Shared Surfaces, no solo como rutas de archivo. Los payloads de workers requieren Changed Public Contracts, Critical Internals, Cross-Module Impact, evidencia de tests y `Implementation Notes` no obvias; las tareas que cambian comportamiento sin tests authored/executed necesitan una TDD exception explicita o quedan blocked/with concerns.
 
 ## Modos de entrega
 

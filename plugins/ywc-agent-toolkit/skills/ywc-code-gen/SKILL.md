@@ -187,7 +187,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Critical Internals Reviewed: {critical modules reviewed / N/A}
 
 ### Implementation Notes
-(Non-obvious decisions only. Omit routine framework usage, naming, or boilerplate alignment.)
+(Only non-obvious decisions that materially affect the generated code shape. Omit routine framework usage, naming, or boilerplate alignment.)
 
 ### Per-Agent Summary
 (Summary of what each agent generated)

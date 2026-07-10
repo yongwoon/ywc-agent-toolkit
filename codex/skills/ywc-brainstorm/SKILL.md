@@ -109,7 +109,7 @@ If the initial request already answers one of these, do not re-ask — confirm i
 
 Once intent is clear, present 2 or 3 approaches in conversational prose. For each: one-sentence summary, the trade-offs, and an explicit "fits this case because…" or "less fit because…".
 
-Before presenting the recommendation, run a quick blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md) and surface any assumptions that are still worth validating. Keep the term internal; present them as concrete follow-up questions or caveats, not as "Unknown Matrix" jargon.
+Before presenting the recommendation, run a quick blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md) and surface any assumptions that are still worth validating. Keep the term internal; present them as concrete follow-up questions or caveats, not as "Unknown Matrix" jargon. Carry unresolved assumptions and their validation follow-ups into the Step 6 handoff and preserve them in the downstream plan's risk / follow-up language.
 
 Lead with your recommendation. Make the recommendation defensible from the anchors collected in Step 3, not from generic best-practice talk.
 

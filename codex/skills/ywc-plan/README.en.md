@@ -40,7 +40,7 @@ Each path emits an explicit handoff message naming the next Skill.
 2. **Investigate** — Read only the essential files: `AGENTS.md` / `CODEX.md` / `CLAUDE.md`, `package.json`, `docs/architecture/`, etc.
 3. **Assess Scale** — Pick exactly one of Small / Medium / Large (default to Medium when ambiguous)
 4. **Branch** — Small writes `plan.md`; Medium/Large writes a Spec document
-5. **Handoff** — Print the `ywc-spec-ready` auto-converge shortcut or the manual next-step Skills explicitly (execution is the user's decision, not this Skill's), preserving unresolved assumptions as explicit unknowns when they do not justify `NEEDS_CONTEXT`.
+5. **Handoff** — Run the Unknown Matrix for unresolved assumptions, then print the `ywc-spec-ready` auto-converge shortcut or the manual next-step Skills explicitly (execution is the user's decision, not this Skill's), preserving the results as explicit unknowns or risk/follow-up items when they do not justify `NEEDS_CONTEXT`.
 
 ## Safety Invariants
 
