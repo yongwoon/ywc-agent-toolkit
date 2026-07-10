@@ -36,7 +36,7 @@
 이 skill이 강제하는 표준은 다음과 같이 구성됩니다:
 
 - **Mandatory Rules**: Frontmatter / Body / Filesystem 영역의 강제 규칙 (A1–A13)
-- **Recommended Rules**: 상황별 권장 규칙 (B1–B7)
+- **Recommended Rules**: 상황별 권장 규칙 (B1–B9), exploration-heavy skill 에서는 context-first / decision frame / selective reference 우선
 - **Format Conventions**: Korean prose + English Technical 용어 정책 등
 - **Anti-patterns**: Description workflow summary, stub code, `@` syntax 등 금지 패턴
 

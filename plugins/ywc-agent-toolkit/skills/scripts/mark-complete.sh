@@ -11,7 +11,7 @@
 # relies on.
 #
 # Usage:
-#   bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/mark-complete.sh" <tasks-dir> <task-name> [--push | --defer-push]
+#   bash ./mark-complete.sh <tasks-dir> <task-name> [--push | --defer-push]
 #
 # Push defaults to OFF (deferred). Pass --push to push the current branch after
 # the marker commit (local-merge / normal-pr without --defer-push). The caller

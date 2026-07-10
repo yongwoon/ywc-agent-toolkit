@@ -30,7 +30,7 @@ Docker Compose を使う task worktree では、executor が port isolation を 
 
 ## Contract Gates
 
-Wave planning は shared public contract を単なる file path ではなく Shared Surfaces として扱います。Worker payload は Changed Public Contracts、Critical Internals、Cross-Module Impact、test evidence を要求し、振る舞い変更 task が authored/executed tests なしで終わるには明示的な TDD exception が必要です。
+Wave planning は shared public contract を単なる file path ではなく Shared Surfaces として扱います。Worker payload は Changed Public Contracts、Critical Internals、Cross-Module Impact、test evidence、non-obvious な `Implementation Notes` を要求し、振る舞い変更 task が authored/executed tests なしで終わるには明示的な TDD exception が必要です。
 
 ## Delivery Modes
 

@@ -30,6 +30,7 @@ When tempted to skip a step, check this table first:
 | "I improved the adjacent module's code quality while I was in the file" | Surgical Changes. Remove those improvements. They belong to a different PR and a different review boundary. |
 | "I'll design the module interface as I generate the implementation" | Deep Module: design the public interface before generating the body. Write the API signatures and their contracts first — that is a design decision that belongs to you, not the AI. Generate only the implementation body. Interface decisions made under generation pressure produce shallow modules that are expensive to fix later. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3. |
 | "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. Without test feedback, AI-generated implementations grow unchecked until they crash at runtime. The default path already gates this: the QA lane authors failing (RED) tests **before** Backend/Frontend implementation is finalized (Phase 1). `--tdd` is the stronger opt-in superset (full RED → GREEN → REFACTOR with checkpoint commits). See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2. |
+| "A referenced type didn't match the spec, so I adjusted the code and moved on" | A silent spec↔reality divergence leaves the spec (the map) stale for every other task that reads it. Log it in Step 6.5's `implementation-notes.md`; if it is **material** (contradicts an Acceptance Criterion, changes the data model, or invalidates an assumption other tasks depend on), also recommend `/ywc-plan --update-spec`. Patch the terrain *and* correct the map — never just the terrain. |
 
 **Violating the letter of these rules is violating the spirit.** A stub committed today is a runtime crash tomorrow.
 
@@ -116,7 +117,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    - **Frontend subagent** (`subagent_type: ywc-frontend-coder`, `model: sonnet`) — Generate UI components, query hooks, and state management. Follow the project's UI framework and conventions. Persona at [`tools/claude-code/agents/ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md). Role reference: `references/frontend-agent.md`.
    - **QA subagent** (`subagent_type: ywc-qa-engineer`, `model: sonnet`) — Generate unit tests, integration tests, and E2E scenarios. Follow the project's test runner and existing test patterns. Persona at [`tools/claude-code/agents/ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md). Role reference: `references/qa-agent.md`. QA stays on Sonnet (not Haiku) here because test generation requires more reasoning than coverage-gap detection does.
 
-   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (CLAUDE.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/<role>-agent.md`), and (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
+   **Subagent prompt composition**: each subagent dispatch consists of (i) the `--spec` excerpt for the layer, (ii) the project context (CLAUDE.md / package.json / equivalent), (iii) the canonical term table from `docs/ubiquitous-language.md` if it exists (include the "Synonyms to Avoid" column), (iv) the layer's role reference (`references/<role>-agent.md`), (v) the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) appended verbatim, and (vi) a **divergence-reporting directive**: instruct the subagent to record, in its §3.5 Concerns, every place where the spec's assumption did not match the actual codebase (a referenced type with a different shape, an unanticipated constraint, a judgment call the spec left open) as `spec assumption → reality (file:line) → judgment applied`. These feed the Step 6.5 Divergence Log. The base prompt is the single source of truth for the Question-First gate, Completeness directive, status protocol, return-artifact format, and scope boundaries; updates touch one file rather than three subagent dispatches in this skill plus the analogous sites in `ywc-sequential-executor` / `ywc-parallel-executor`.
 
    **Handling each Phase 1 subagent's status return**: each subagent ends its run with one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md): `NEEDS_CONTEXT` → provide the missing context and re-dispatch at the same model class; `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry into the final report). Do not silently retry on the same input.
 
@@ -143,6 +144,19 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    - Opus calls are sequential, not parallel — each is small and fast, and sequential execution keeps the budget enforcement simple and auditable.
 
 6. **Finalize and Output** — Apply the Phase 2 verdicts to the Phase 1 generated code. Reconcile shared type/interface conflicts. Verify import path consistency and confirm file placement matches the project directory structure. Mark each file in the final report with its provenance: `[P1]` for files Phase 1 generated with confidence, `[P2]` for files whose design was adjusted by a Phase 2 advisor verdict.
+
+6.5. **Divergence Log (spec ↔ reality)** — The spec is a *map*; the codebase is the *terrain*. During Phase 1, each subagent hits places where the map was wrong — a referenced type had a different shape, a constraint the spec never anticipated, a judgment call the spec left open. The §3.5 return payload's Concerns already carry these (Step 3 directive vi); aggregate every spec↔reality divergence across the three lanes into `docs/ywc-plans/<slug>/implementation-notes.md` (or a sibling of `--spec` when no plan directory exists). Each entry records the spec assumption, the reality encountered (`file:line`), and the judgment applied. Compact shape:
+
+   ```markdown
+   ## Divergence Log — {feature}
+   - **Assumption:** spec said <X>. **Reality:** <Y> (`path:line`). **Judgment:** <what was done>. **Class:** Cosmetic | Material
+   ```
+
+   Classify each divergence:
+   - **Cosmetic** (spec wording imprecise but intent clear, resolved locally) → log only.
+   - **Material** (contradicts an Acceptance Criterion, changes the data model, or invalidates a spec assumption other tasks depend on) → log **and** surface a re-plan recommendation in the Completion Report: `/ywc-plan --update-spec <spec> --failure-context "<divergence summary>"`. Never silently absorb a material divergence into the code — the spec other tasks read is now stale.
+
+   If no divergences occurred, write `N/A — no spec↔reality divergences` so the reader can tell the pass ran.
 
 7. **Verification Gate** — After writing all generated files, run these checks in order. If a check fails, attempt one fix and re-run that layer. If it still fails after the fix attempt, stop and report before declaring DONE. Do not stop at first failure without attempting a fix.
 
@@ -179,6 +193,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Phase 2 advisor calls (Opus): X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
+- Divergence log: {N entries | N/A — no divergences} — {M material → `/ywc-plan --update-spec` recommended}
 - Diff scope: {clean | N drive-by edits removed} — only spec-named files changed
 - Minimalism (Confidence Gate): {score} — {one-line note if < 90}
 - TDD mode: {default-red-gate | --tdd}
@@ -193,6 +208,10 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 ### Design Decisions (Phase 2)
 1. [P2] {decision point} → {chosen alternative}
    Rationale: {one-line rationale from advisor}
+
+### Divergence Log (spec ↔ reality)
+(Path to implementation-notes.md, then each entry: Assumption → Reality (file:line) → Judgment → Class.
+ List material divergences first with the recommended `/ywc-plan --update-spec` command. `N/A — no spec↔reality divergences` when none.)
 
 ### Per-Agent Summary
 (Summary of what each agent generated)
@@ -282,4 +301,5 @@ The gate score must appear in the completion summary together with the Backend /
 
 - **upstream**: After specification is finalized
 - **downstream**: Implementation review (/ywc-impl-review), PR creation
+- **feedback edge**: When Step 6.5 records a **material** spec↔reality divergence, recommend `/ywc-plan --update-spec <spec> --failure-context "<divergence summary>"` so the stale spec is corrected before other tasks read it (mirrors the re-plan loop `ywc-impl-review` triggers).
 - **relationship**: Complementary to sequential-executor (independent layer parallel generation)

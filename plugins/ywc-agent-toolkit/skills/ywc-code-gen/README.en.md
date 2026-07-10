@@ -19,6 +19,7 @@ A Skill for generating code across multiple layers simultaneously. Runs Backend 
 ## Contract and TDD baseline
 
 Before workers run, the skill prepares a shared Contract Snapshot so Backend, Frontend, and QA use the same public contracts. Behavior-changing generation is test-first by default; `--tdd` enables stricter RED/GREEN/REFACTOR checkpoint commits.
+Final reports keep `Implementation Notes` only for non-obvious decisions that materially affect the generated code shape.
 
 ## Relationship with sequential-executor
 

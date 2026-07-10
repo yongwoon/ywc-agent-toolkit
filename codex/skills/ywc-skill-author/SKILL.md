@@ -114,6 +114,7 @@ These improve quality but are not strictly required.
 | B6 | Reference an Advisor Pattern (A / B / C) from the bundle-level `references/advisor-pattern.md` | Skill uses an advisor/escalation pass for cost-bounded review |
 | B7 | Add `## Banned Output Patterns` table | Skill generates code or other parseable artifacts |
 | B8 | Define a `--skip-<side-effect>` flag and document propagation in `## Arguments` + `## Integration` + the relevant bundle instruction file | Skill performs a side effect (UL update, CI check, etc.) that an upstream caller may have already performed. See [references/cross-skill-graph.md#flag-propagation-patterns](references/cross-skill-graph.md) for the canonical pattern. |
+| B9 | Prefer context-first decision framing over heavy worked examples | The skill is exploration-heavy and static examples would over-constrain reasoning more than they reduce ambiguity |
 
 ## Format Conventions
 
@@ -133,6 +134,7 @@ These improve quality but are not strictly required.
 | Description summarizing the workflow | The agent may follow the description shortcut and skip SKILL.md body discipline | Trigger conditions only |
 | `// TODO`, `// ...rest`, stub implementations in examples | A stub committed today is a runtime crash tomorrow | Complete examples or marked PAUSE |
 | Tool-specific force-load cross-reference | Causes unnecessary context loading or unintended activation | Plain skill name reference |
+| Heavy few-shot or worked-example cargo-culting in exploration-heavy skills | Freezes the agent into one imagined path and hides real uncertainty | Context-first guidance, decision frames, selective references, and a short example only when it reduces fragility |
 | Long bullet lists for decisions | Hard to scan | Markdown table |
 | Vague language ("appropriate", "as needed") | Cannot be operationalized | Explicit threshold or condition |
 | Empty section | Reader cannot tell if forgotten or absent | `N/A — <reason>` |
@@ -157,6 +159,8 @@ This step ensures the skill addresses real gaps, not hypothetical ones.
 Draft the skill addressing exactly the failures identified in RED. Do not pre-emptively cover hypothetical cases.
 
 Use [references/skill-template.md](references/skill-template.md) as the starting structure.
+
+For exploration-heavy skills, prefer context, decision framing, and selective references over large static worked examples. Add worked examples only when they reduce fragility more than they constrain reasoning; if an example mainly teaches one narrow path, replace it with a rule or decision table instead.
 
 For a new bundle skill in this repository, place it at `codex/skills/<skill-name>/` unless the user explicitly asks for an installed local skill. For an installed local skill outside this bundle, ask for the destination and default to `${CODEX_HOME:-$HOME/.codex}/skills` so Codex can discover it automatically.
 
@@ -223,6 +227,7 @@ Then verify the judgment-based items the script cannot check, before merging a n
 - [ ] `## Rationalization Defense` has ≥5 domain-specific rows
 - [ ] No `@` cross-references
 - [ ] No vague language without threshold
+- [ ] Exploration-heavy skills use context-first guidance; any worked examples demonstrably reduce fragility rather than over-constraining reasoning
 - [ ] Body ≤500 lines (`wc -l SKILL.md`)
 - [ ] Empty sections use `N/A — <reason>` rather than being omitted
 

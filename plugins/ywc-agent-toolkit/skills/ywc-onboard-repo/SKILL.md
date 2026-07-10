@@ -91,7 +91,7 @@ From the reconnaissance summary, identify the four architecture facets below. **
 | Key directories | What does each top-level directory hold? | Sample 1-2 file names per directory; infer purpose from filename pattern. Use [`references/directory-conventions.md`](references/directory-conventions.md) for the canonical per-framework mapping. |
 | Request lifecycle | How does one request travel from entry → response? | Locate one route handler, follow imports outward: handler → service → repository → DB. Document the chain as a 3-5 step trace. |
 
-When a facet cannot be determined with confidence ≥7/10, document it as `Unknown — <one-line reason>` rather than guessing.
+When a facet cannot be determined with confidence ≥7/10, document it as `Unknown — <one-line reason>` rather than guessing. If the gap is high-value for a follow-up investigator, preserve it as `Unknown — worth verifying: <question>` instead of over-claiming a convention.
 
 ### Phase 3: Convention Detection
 

@@ -41,6 +41,7 @@ Or in natural language:
 ## Outputs
 
 - **Output A**: Onboarding Guide (printed Markdown) — Tech Stack, Architecture, Key Entry Points, Directory Map, Request Lifecycle, Conventions, Common Tasks, Where to Look, Detection Confidence
+- High-value gaps stay as `Unknown — worth verifying: ...` instead of being overstated as conventions
 - **Output B**: Starter AGENTS.md (written to repo root) — if an AGENTS.md exists, only the `## Detected Conventions (<YYYY-MM-DD>)` section is appended
 
 ## Related Skills

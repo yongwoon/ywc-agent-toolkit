@@ -34,7 +34,7 @@ $ywc-parallel-executor
 
 ## Contract Gates
 
-Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文件路径。Worker payload 需要 Changed Public Contracts、Critical Internals、Cross-Module Impact 和 test evidence；改变行为的任务如果没有 authored/executed tests，必须提供明确的 TDD exception。
+Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文件路径。Worker payload 需要 Changed Public Contracts、Critical Internals、Cross-Module Impact、test evidence 和 non-obvious `Implementation Notes`；改变行为的任务如果没有 authored/executed tests，必须提供明确的 TDD exception。
 
 ## Delivery Modes
 

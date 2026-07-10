@@ -75,6 +75,8 @@ Return exactly three artifacts:
 
 2. **Contract and design summary** — Changed Public Contracts, Contract Tests, TDD Mode or exception, Critical Internals touched, and Cross-Module Impact for your layer.
 
+   Include **Implementation Notes** only for non-obvious decisions that materially affect the final code, document, or executor behavior. Skip routine framework or naming choices. If none, use `N/A — no implementation-shaping discoveries`.
+
 3. **Design decision candidates** — generation points where more than one valid implementation exists and you are not confident which best fits this project. Each candidate must include:
    - The decision point (file or function being generated)
    - The 2–3 alternatives considered

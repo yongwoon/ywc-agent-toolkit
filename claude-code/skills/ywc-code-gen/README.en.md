@@ -4,7 +4,7 @@ A Skill for generating code across multiple layers simultaneously. Runs Backend 
 
 ## Test-first, Deep Module, Critical Module Review
 
-The default path gates the headlights: the QA lane writes failing (RED) tests before Backend/Frontend implementation is finalized. `--tdd` opts into the stronger full RED → GREEN → REFACTOR ritual and supersedes the default minimal gate. Public interfaces are designed before bodies (deep module). When generated files touch a critical path (auth, payment, crypto, PII, external input), the run requires internal review and flags `/ywc-security-audit` as a required next step. The Verification Gate checks `git diff --stat` so only spec-named files changed (diff scope), and the Confidence Gate's Minimalism dimension fails overcomplicated code (working ≠ minimal). See `references/tdd-deep-module-gray-box.md` for details.
+The default path gates the headlights: the QA lane writes failing (RED) tests before Backend/Frontend implementation is finalized. `--tdd` opts into the stronger full RED → GREEN → REFACTOR ritual and supersedes the default minimal gate. Public interfaces are designed before bodies (deep module). When generated files touch a critical path (auth, payment, crypto, PII, external input), the run requires internal review and flags `/ywc-security-audit` as a required next step. The Verification Gate checks `git diff --stat` so only spec-named files changed (diff scope), and the Confidence Gate's Minimalism dimension fails overcomplicated code (working ≠ minimal). Step 6.5 also logs any spec↔reality divergences encountered during generation to `implementation-notes.md`, recommending `ywc-plan --update-spec` when a divergence is material. See `references/tdd-deep-module-gray-box.md` for details.
 
 ## Usage
 

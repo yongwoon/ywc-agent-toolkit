@@ -30,7 +30,7 @@ For task worktrees that use Docker Compose, the executor delegates port isolatio
 
 ## Contract Gates
 
-Wave planning treats shared public contracts as Shared Surfaces, not just file paths. Worker payloads require Changed Public Contracts, Critical Internals, Cross-Module Impact, and test evidence; behavior-changing tasks without authored/executed tests must provide an explicit TDD exception or remain blocked/with concerns.
+Wave planning treats shared public contracts as Shared Surfaces, not just file paths. Worker payloads require Changed Public Contracts, Critical Internals, Cross-Module Impact, test evidence, and non-obvious `Implementation Notes`; behavior-changing tasks without authored/executed tests must provide an explicit TDD exception or remain blocked/with concerns.
 
 ## Delivery Modes
 

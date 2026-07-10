@@ -36,7 +36,7 @@ Or via natural language:
 The standard enforced by this skill consists of:
 
 - **Mandatory Rules**: Frontmatter / Body / Filesystem (A1–A13).
-- **Recommended Rules**: Situational guidelines (B1–B7).
+- **Recommended Rules**: Situational guidelines (B1–B9), including context-first guidance for exploration-heavy skills.
 - **Format Conventions**: Korean prose with English technical terms, multilingual triggers, etc.
 - **Anti-patterns**: Workflow-summary descriptions, stub code, `@` cross-references, and similar pitfalls.
 

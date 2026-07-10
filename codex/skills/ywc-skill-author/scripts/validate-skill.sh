@@ -5,7 +5,7 @@
 # set across all skills) by enforcing the per-skill authoring rules at edit time.
 # Exit 1 on any failure.
 #
-# Usage: bash codex/skills/ywc-skill-author/scripts/validate-skill.sh <skill-dir>
+# Usage: bash ./validate-skill.sh <skill-dir>
 set -uo pipefail
 
 DIR="${1:-}"
