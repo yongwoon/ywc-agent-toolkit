@@ -11,6 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** sync planning, PR health, spec validation, onboarding, and parity workflow updates into the Codex plugin package.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.26.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.25.0...v1.26.0) (2026-07-10)
+
+
+### ### Added
+
+* apply Fable agent-engineering insights across Claude Code and Codex skills ([#133](https://github.com/yongwoon/ywc-agent-toolkit/issues/133)) ([6fce4b0](https://github.com/yongwoon/ywc-agent-toolkit/commit/6fce4b0a9c8c99a081154daba1e8ff1d5fddf94f))
+
 ## [1.25.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.24.2...v1.25.0) (2026-07-08)
 
 
