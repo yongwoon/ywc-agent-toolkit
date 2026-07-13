@@ -31,7 +31,7 @@ O mediante lenguaje natural:
 
 ## Auditoría solo informativa
 
-El workflow de auditoría es una inspección read-only y acotada. Comienza con el bundled mechanical report, separa la evidencia del juicio de eliminación y exige baseline, una eliminación acotada y comparación con el mismo Prompt antes de conservar, revertir o escalar. Nunca elimina ni edita el objetivo automáticamente.
+El workflow de auditoría es una inspección read-only y acotada. Comienza con el bundled mechanical report, separa la evidencia del juicio de eliminación y exige baseline, una eliminación acotada y comparación con el mismo Prompt antes de conservar, revertir o escalar. Nunca elimina ni edita el objetivo auditado.
 
 ## Salida
 
