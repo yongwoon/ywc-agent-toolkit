@@ -6,6 +6,8 @@
 
 Una Skill que toma un único objetivo en lenguaje natural y orquesta de forma autónoma las skills `ywc-*` existentes hasta la implementación del código. Mediante un bucle **Plan → Execute → Evaluate → Repeat**, replanifica hasta que la evaluación de `ywc-impl-review` pasa o se alcanza un límite máximo de iteraciones definido por el usuario.
 
+Úsalo solo cuando el user solicite explícitamente autonomous end-to-end lifecycle delivery. Routea generic planning a `ywc-plan` y ordinary direct change al implementation workflow.
+
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 ```

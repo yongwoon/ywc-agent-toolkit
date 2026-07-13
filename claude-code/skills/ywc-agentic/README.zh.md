@@ -6,6 +6,8 @@
 
 一个 Skill，接收单一的自然语言目标，并自主编排现有的 `ywc-*` skills 直至完成代码实现。通过 **Plan → Execute → Evaluate → Repeat** 循环，它会不断重新规划，直到 `ywc-impl-review` 评估通过或达到用户定义的迭代上限。
 
+仅当 user 明确要求 autonomous end-to-end lifecycle delivery 时使用。generic planning 应路由到 `ywc-plan`，ordinary direct change 应路由到 implementation workflow。
+
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 ```

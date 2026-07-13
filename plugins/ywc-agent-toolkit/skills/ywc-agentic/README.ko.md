@@ -2,6 +2,8 @@
 
 자연어 목표 하나를 입력받아 기존 `ywc-*` skill 들을 자율적으로 오케스트레이션하여 코드 구현까지 완료하는 Skill 입니다. **Plan → Execute → Evaluate → Repeat** loop 를 통해 `ywc-impl-review` 평가를 통과하거나 사용자가 정한 반복 한도에 도달할 때까지 재계획을 반복합니다.
 
+user가 autonomous end-to-end lifecycle delivery를 명시적으로 요청할 때만 사용합니다. generic planning은 `ywc-plan`으로, ordinary direct change는 implementation workflow로 route합니다.
+
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 ```
