@@ -1045,3 +1045,113 @@ graph LR
   C3 --> D1
   C4 --> D1
 ```
+
+---
+
+## Batch — skill-engineering-hardening (000053–000054)
+
+- Spec: `docs/ywc-plans/skill-engineering-hardening.md` (spec-ready DONE, Iteration 1 Amendments 권위본)
+- Mode: `llm` · Lang: `ko`
+- Goal: `ywc-skill-author`를 단일 read-only audit/deletion-test entry point로 강화하고, `ywc-agentic` activation을 explicit autonomous lifecycle 요청으로 제한한다.
+
+### Phase 000053 — Independent skill-boundary changes
+
+- `000053-010-refactor-skill-author-audit-workflow` — (root)
+- `000053-020-refactor-agentic-autonomy-trigger` — (root)
+
+### Phase 000054 — Validation and pilot selection (hard gate: Phase 000053 complete)
+
+- `000054-010-test-skill-audit-validation` → `000053-010`, `000053-020`
+
+### Parallel Execution Notes
+
+- Initial ready set: `000053-010` and `000053-020`. Ownership은 각각 `ywc-skill-author/**`와 `ywc-agentic/**`이므로 병렬 실행 가능하다.
+- `000054-010`은 두 Phase 000053 task가 merge된 뒤만 실행한다. script parity, output/exit behavior, trigger precision, repository structure를 검증하고 pruning pilot을 추천하지만 실행하지 않는다.
+- `bash scripts/validate.sh`는 두 root task가 integrate된 뒤 실행한다. Generated `plugins/**`는 이 batch scope 밖이며 수동 편집 금지다.
+
+```mermaid
+graph LR
+  A[000053-010 skill-author audit workflow] --> C[000054-010 validation and pilot]
+  B[000053-020 agentic trigger boundary] --> C
+```
+
+---
+
+## Batch — skill-pruning-pilot (000055–000059)
+
+- Spec: `docs/ywc-plans/skill-pruning-pilot.md` (Draft, Iteration 2 이후 consolidated)
+- Parent spec: `docs/ywc-plans/skill-engineering-hardening.md` → tasks `000053-*`, `000054-010` (**이 batch의 전제**)
+- Mode: `llm` · Lang: `ko`
+- Starting phase: `000055` — `dependency-graph.md` ∪ `tasks/` ∪ `tasks/completed/` 전체에서 최고 PHASE가 `000054`이므로 `+1`.
+- Goal: A7의 "≥5 rows" quota가 padding을 만드는지를 **blind deletion test로 경험적으로 판정**하고, 증거가 뒷받침될 때만 quota를 폐지한다. 동시에 `invocation:` tier로 Tier-1 description 비용을 줄인다. **이 batch는 아무것도 삭제하지 않는다** — label과 증거만 만든다.
+
+### Phase 000055 — Foundations (4개 모두 상호 병렬)
+
+- `000055-010-refactor-validate-skill-extractor-repair` → `000053-010`
+- `000055-020-infra-rd-row-scripts` → `000053-010`
+- `000055-030-docs-skill-author-readme-drift-sync` → `000053-010`
+- `000055-040-refactor-parallel-executor-line-cap` → `000054-010`
+
+### Phase 000056 — Deletion Test 판정 규칙 (hard gate: Phase 000055 완료)
+
+- `000056-010-refactor-skill-author-deletion-test` → `000055-020`, `000053-010`
+
+### Phase 000057 — 파일럿 실행 (hard gate: Phase 000056 완료)
+
+- `000057-010-test-pilot-sample-frame` → `000056-010`, `000055-020`, `000054-010`
+- `000057-020-test-pilot-dispatch-report` → `000057-010`
+
+### Phase 000058 — A7 결과 확정 (hard gate: Phase 000057 완료) — **상호 배타적 분기**
+
+- `000058-010-infra-retire-a7-quota` → `000057-020` (**GO 경로만**) · `Criticality: critical`
+- `000058-020-docs-a7-nogo-closure` → `000057-020` (**NO-GO / INCONCLUSIVE 경로만**)
+
+> 정확히 **하나만** 실행된다. `000057-020` report의 증거 게이트(AC9: `p < 0.05` AND Stratum B inert 비율 > Stratum A, 그리고 ceiling 판정이 `VALID`)가 분기를 결정한다.
+
+### Phase 000059 — `invocation:` tier (hard gate: Phase 000058 완료)
+
+- `000059-010-refactor-invocation-backfill-a` → Phase 000058 완료
+- `000059-020-refactor-invocation-backfill-b` → Phase 000058 완료
+- `000059-030-refactor-callee-only-description-trim` → `000059-010`, `000059-020`, `000055-010`
+- `000059-040-infra-invocation-tier-validator` → `000059-030`, `000057-020`
+
+## Parallel Execution Notes
+
+- **Initial ready set**: `000055-010`, `000055-020`, `000055-030`, `000055-040` — 파일 소유가 겹치지 않는다 (각각 `validate-skill.sh` / 신규 script 2개 / `ywc-skill-author` README 6개 / `ywc-parallel-executor`).
+- **Phase 000059 내부 병렬**: `000059-010`과 `000059-020`은 서로 다른 23개 skill을 소유하므로 진짜 병렬 실행 가능. `-030`은 두 task가 모두 merge된 뒤에만 시작한다 (같은 파일의 `description:` 을 편집).
+- **000059의 task 순서가 안전장치다**: backfill(`-010`/`-020`) → trim(`-030`) → validator(`-040`). validator를 먼저 켜면 46개가 아직 예산 밖이라 CI가 즉시 깨진다.
+- **Cross-spec 충돌**: 부모 task `000053-010`이 `ywc-skill-author/SKILL.md`와 `scripts/`를 편집한다. `000055-010`, `000055-020`, `000056-010`은 모두 `000053-010` merge 이후에만 시작한다.
+- **Critical Surface**: `000058-010`만이 `.claude/skills/ywc-toolkit-eval/**`(46개 skill 전체의 CI 게이트)를 건드린다. gray-box 위임 금지. `bash scripts/validate.sh`는 이 scorer를 **실행하지 않으므로**(`:691-694`는 codex용만), `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` 가 필수 증거다.
+- **Global invariants (모든 phase 이후 검증)**: AC1(두 번째 meta-skill 없음), AC2(RD 행 삭제 0건), AC13(`scripts/validate.sh` + `score.py --ci` + 46개 `validate-skill.sh` 전부 통과).
+- **비용**: `000057-020`이 480 dispatch(세션당 60 상한)로 약 8세션에 걸친다. append-only·keyed resume이므로 세션 경계는 restart가 아니라 resume point다.
+
+```mermaid
+graph LR
+  P1[000053-010 parent audit] --> A1[000055-010 extractor repair]
+  P1 --> A2[000055-020 rd-row scripts]
+  P1 --> A3[000055-030 readme drift]
+  P2[000054-010 parent validation] --> A4[000055-040 A8 line cap]
+  A2 --> B1[000056-010 deletion test rule]
+  B1 --> C1[000057-010 sample frame]
+  P2 --> C1
+  C1 --> C2[000057-020 dispatch + report]
+  C2 -->|GO| D1[000058-010 retire A7 quota]
+  C2 -->|NO-GO / INCONCLUSIVE| D2[000058-020 no-go closure]
+  A3 --> D1
+  D1 --> E1[000059-010 invocation backfill A]
+  D2 --> E1
+  D1 --> E2[000059-020 invocation backfill B]
+  D2 --> E2
+  E1 --> E3[000059-030 description trim]
+  E2 --> E3
+  A1 --> E3
+  E3 --> E4[000059-040 tier validator]
+  C2 --> E4
+```
+
+## Open Questions (spec 저자에게 반환 — 비차단)
+
+- [ ] **`callee-only` description이 A3를 통과하는가?** FR-5는 `callee-only` description에서 다국어 trigger와 긴 anti-trigger 목록을 **금지**한다(≤30 단어). 그러나 `validate-skill.sh`의 A3가 `Triggers:` / `Do not use for:` 구조를 요구한다면, `000059-030`의 trim이 A3를 깨뜨린다. 사양에 이 상호작용에 대한 AC가 없다. `000059-040` 구현 전에 A3의 정확한 검사 내용을 확인하고, 필요하면 A3에 `callee-only` 예외를 넣어야 한다.
+- [ ] **후보당 시나리오 1개로 충분한가?** (사양 Open Question) 기본값은 1개이며 후보별로 기록되므로, 이견이 있는 label은 재테스트가 싸다. `000057-020`이 이 기본값으로 실행한다.
+- [ ] **codex 번들도 같은 파일럿을 받는가?** (사양 Open Question) 이 batch는 claude-code 전용이다. `plugins/`는 `codex/skills/`에서만 생성되므로(`scripts/sync-codex-plugin.sh:5`) parity 검사는 깨지지 않는다.
+- [ ] **`cross-skill-graph.md`의 role model이 FR-5 분류보다 먼저 필요한가?** (사양 Open Question) 부모 FR-4가 소유한다. 부모의 분류와 `000059-010`/`-020`의 call-graph 씨앗이 특정 skill에서 불일치하면 **부모가 authoritative**이고, 그 divergence를 기록한다.
