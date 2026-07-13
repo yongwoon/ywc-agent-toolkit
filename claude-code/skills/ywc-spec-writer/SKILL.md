@@ -1,7 +1,7 @@
 ---
 name: ywc-spec-writer
 version: 1.4.0
-description: (ywc) Use when creating or updating a project specification (사양서) in docs/specification/, including task-range and PR-based incremental updates. Triggers: "사양서 작성", "사양서 업데이트", "task 로 사양서 갱신", "PR 로 사양서 갱신", "write spec", "update spec from task range", "update spec from PRs", "仕様書作成", "仕様書更新", "タスク範囲から仕様書更新", "PRから仕様書更新", "编写规范文档", "escribir especificación", "ywc-spec-writer". Do not use for spec quality review (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), or pre-implementation planning without a spec intent (use ywc-plan).
+description: (ywc) Use when creating or updating a project specification (사양서) in docs/specification/, including task-range and PR-based incremental updates. Triggers: "사양서 작성", "spec 작성", "사양서 업데이트", "task 로 사양서 갱신", "PR 로 사양서 갱신", "write spec", "update spec from task range", "update spec from PRs", "仕様書作成", "スペック作成", "仕様書更新", "タスク範囲から仕様書更新", "PRから仕様書更新", "编写规范文档", "中文规范", "escribir especificación", "ywc-spec-writer". Do not use for spec quality review (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), or pre-implementation planning without a spec intent (use ywc-plan).
 category: spec
 phase: planning
 requires: []
