@@ -1138,13 +1138,12 @@ graph LR
   C1 --> C2[000057-020 dispatch + report]
   C2 -->|GO| D1[000058-010 retire A7 quota]
   C2 -->|NO-GO / INCONCLUSIVE| D2[000058-020 no-go closure]
-  A3 --> D1
-  D1 --> E1[000059-010 invocation backfill A]
+  D1 --> E1[000059-010 description-word-cap]
   D2 --> E1
-  D1 --> E2[000059-020 invocation backfill B]
+  D1 --> E2[000059-020 description-cap-validator]
   D2 --> E2
   A1 --> E1
-  E1 --> E2[000059-020 cap validator + A2/A3 통합]
+  E1 --> E2
   C2 --> E2
   A3 --> E2
 ```
