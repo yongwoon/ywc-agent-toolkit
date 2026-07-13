@@ -25,6 +25,13 @@ Or via natural language:
 - New skill: skill purpose and primary trigger scenarios.
 - Audit: path to the target skill directory.
 
+## Report-Only Audit
+
+Use the audit workflow for a bounded, read-only inspection. It starts with the
+bundled mechanical report, separates evidence from deletion judgment, and uses
+a baseline → one removal → same-prompt comparison before retaining, reverting,
+or escalating a proposed deletion. It never auto-deletes or edits the target.
+
 ## Output
 
 - A SKILL.md following the standard structure (Frontmatter + Rationalization Defense + Workflow + Validation Checklist).

@@ -202,6 +202,21 @@ Do not ask them to "review the skill" unless the user explicitly requested a rev
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
 | [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `## Integration` upstream/downstream entries, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
 | [references/progressive-disclosure.md](references/progressive-disclosure.md) | Deciding whether a section stays inline (Tier 2) or extracts to `references/` (Tier 3); auditing existing skills for tier compliance |
+| [references/audit-workflow.md](references/audit-workflow.md) | Running the bounded report-only audit, interpreting mechanical evidence, or conducting a deletion test |
+
+## Report-Only Audit Workflow
+
+Use `--audit` for one skill, a selected group, or a bundle. Run the bundled
+`scripts/audit-skills.sh` before making any model judgment. Its findings are
+mechanical evidence only: classify each as retain, investigate with a deletion
+test, or documented exception; never treat a finding as deletion authority.
+
+For a proposed removal, establish a baseline with the same representative
+prompt and observable criteria, make one bounded removal, rerun the prompt,
+then retain, revert, or escalate from the observed delta. Do not auto-delete,
+edit the audited target during the audit, or invoke an executor. The full
+rubric, role matrix, and examples are in
+[references/audit-workflow.md](references/audit-workflow.md).
 
 ## Validation Checklist
 

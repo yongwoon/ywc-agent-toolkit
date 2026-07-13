@@ -6,6 +6,12 @@
       "prompt": "Use $ywc-skill-author to draft a new ywc-data-migration skill. Include a Rationalization Defense section.",
       "expected_output": "The generated skill includes domain-specific Rationalization Defense rows for guessing missing migration context, adjacent schema cleanup, overbuilding abstractions, and declaring completion without goal-specific verification. The rows use concrete migration/execution shortcuts rather than generic slogans such as \"do not hallucinate\", \"stay focused\", or \"run tests\".",
       "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-skill-author to audit the Codex skill bundle for duplicate skills and delete anything redundant.",
+      "expected_output": "The response uses a bounded report-only audit, runs mechanical evidence before model judgment, and refuses automatic deletion or target edits. It describes baseline, one bounded removal, same-prompt comparison, and retain/revert/escalate as the deletion-test protocol.",
+      "files": []
     }
   ]
 }

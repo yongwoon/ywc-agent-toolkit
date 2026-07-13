@@ -165,6 +165,21 @@ Avoid:
 - Names ending in `-skill` (redundant)
 - Names mentioning models or tools (`ywc-claude-X`, `ywc-gpt-X`)
 
+## Role Classification and Calling Boundaries
+
+| Role | Responsibility | Permitted handoff |
+|---|---|---|
+| Interface | Collect a bounded user intent or artifact | Interface → orchestrator or discipline |
+| Orchestrator | Coordinate multi-step lifecycle work | Orchestrator → discipline |
+| Discipline | Perform one focused analysis or operation | No invented peer orchestration |
+
+Documented exception edges remain valid. Any same-tier call must be named in
+this graph with its reason; an undocumented same-tier call is an audit finding.
+
+For Claude/Codex parity, compare user-visible workflow, safety and verification
+gates, and handoff conditions. Slash versus dollar invocation syntax, Codex
+metadata, and localized README language are intentional differences.
+
 ## Last Updated
 
 Re-audit this graph when new skills are added or when significant restructuring changes pipeline relationships.
