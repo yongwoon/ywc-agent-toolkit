@@ -28,9 +28,18 @@ declared="$(sed -n 's/^name:[[:space:]]*//p' "$SKILL" | head -1)"
 # block scalar (>-, text on wrapped indented lines). Join the whole value into
 # one space-normalized string before matching, so phrases that wrap across lines
 # ("Do not use\n  for") and inline single-line descriptions both match.
+#
+# Bounded to the frontmatter block (stops at the closing `---`) and matches
+# hyphenated top-level keys (e.g. `allowed-tools:`), mirroring
+# score.py::split_frontmatter() + parse_yaml_lite(). Without both, a skill
+# whose `description:` is the last frontmatter key swallows the entire body,
+# and a hyphenated key immediately after `description:` gets swallowed into
+# the value.
 desc_text="$(awk '
+  /^---[[:space:]]*$/ { infm++; if (infm == 2) { exit }; next }
+  infm != 1 { next }
   /^description:/ { sub(/^description:[[:space:]]*[>|]?-?[[:space:]]*/, ""); f=1; print; next }
-  f && /^[A-Za-z_]+:/ { f=0 }
+  f && /^[A-Za-z_][A-Za-z0-9_-]*:/ { f=0 }
   f { print }
 ' "$SKILL" | tr '\n' ' ' | tr -s ' ')"
 # Opener: "(ywc) Use <when|before|after|during ...>". Anti-triggers: "Do not
