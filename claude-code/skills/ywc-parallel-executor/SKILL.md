@@ -166,7 +166,9 @@ Separate tasks into waves based on dependency relationships:
 
 #### Planning Advisor (optional, Pattern C)
 
-For the invoke conditions, payload, advisor questions, budget, and output format of the optional upfront Opus wave-planning advisor pass, see [references/wave-planning-advisor.md](references/wave-planning-advisor.md).
+**When to invoke**: task count is 4 or more, AND at least one of — any candidate wave contains 3+ concurrent tasks; `Conflicts With` declarations exist across the task set; `Shared Surfaces` overlap across candidate waves; or the first-pass topological sort produced a wave with mixed categories. **Skip for ≤3 tasks or purely linear task chains.**
+
+For the payload, the three advisor questions, budget, and output format of this single upfront Opus call, see [references/wave-planning-advisor.md](references/wave-planning-advisor.md).
 
 ### Step 3: Assign Agents by Task Category
 

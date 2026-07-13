@@ -1,4 +1,6 @@
-# Wave Planning Advisor (Pattern C)
+# Wave Planning Advisor (Pattern C) — ywc-parallel-executor
+
+> Tier-3 reference extracted from `SKILL.md` (ywc-skill-author A8/A14). The executor links this file from its `#### Planning Advisor (optional, Pattern C)` pointer in Step 2. The invoke-trigger conditions stay inline in `SKILL.md` — this file holds the payload, questions, budget, and output format only, to avoid the same condition list living (and drifting) in two places.
 
 Full invocation procedure for the optional upfront Opus advisor pass in Step 2
 (Plan Waves). This is Pattern C from
@@ -8,17 +10,6 @@ boundary cascades into unnecessary serialization (waste) or unsafe
 parallelism (merge conflicts and broken dependencies) across every
 subsequent wave — damage that is expensive to undo once worktrees and
 feature branches exist.
-
-## When to Invoke
-
-- Task count is 4 or more, AND
-- At least one of: any candidate wave contains 3+ concurrent tasks;
-  `Conflicts With` declarations exist across the task set; `Shared Surfaces`
-  overlap across candidate waves; or the first-pass topological sort
-  produced a wave with mixed categories (e.g., `db` + `api` + `ui` in the
-  same wave).
-- **Skip for ≤3 tasks or purely linear task chains** — the topological order
-  is obvious and frontier reasoning adds no value.
 
 ## How to Invoke
 
