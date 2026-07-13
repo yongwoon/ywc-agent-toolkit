@@ -69,12 +69,32 @@
     "S4": 5,
     "S5": 5
   },
+  "claude-code/skills/ywc-iac-author": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
   "claude-code/skills/ywc-impl-review": {
     "S2": 5,
     "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-incident-postmortem": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-infra-design": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-infra-optimize": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-infra-review": {
     "S2": 5,
     "S4": 5,
     "S5": 5
@@ -216,6 +236,11 @@
   },
   "claude-code/agents/ywc-backend-coder": {
     "A3": 5,
+    "A4": 5,
+    "A5": 5
+  },
+  "claude-code/agents/ywc-cloud-engineer": {
+    "A3": 3,
     "A4": 5,
     "A5": 5
   },

@@ -2,7 +2,7 @@
 name: ywc-agentic
 version: 1.0.0
 description: >-
-  (ywc) Use only when the user explicitly requests autonomous, end-to-end
+  (ywc) Use when the user explicitly requests autonomous, end-to-end
   lifecycle delivery through Plan → Execute → Evaluate → Repeat. Triggers:
   "agentic", "autonomous end-to-end delivery", "run the full lifecycle",
   "ywc-agentic", "자율 end-to-end 실행", "전체 lifecycle 자율 실행",
