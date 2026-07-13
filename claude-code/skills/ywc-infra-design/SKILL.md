@@ -10,8 +10,8 @@ description: >-
   "ywc-infra-design". Do not use for writing IaC (use ywc-iac-author), folder
   layout (use ywc-project-scaffold), tech comparison alone (use
   ywc-tech-research — it feeds provider selection here), reviewing existing
-  infrastructure (use ywc-infra-review), or docker port collisions (use
-  ywc-docker-isolate).
+  infrastructure (use ywc-infra-review), or local/dev docker port collisions
+  (use ywc-docker-isolate).
 category: spec
 phase: planning
 requires: []
