@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Mechanical authoring gate for a single ywc-* skill directory — the
-# deterministic subset of the ywc-skill-author A1–A14 checklist. Complements the
+# deterministic subset of the ywc-skill-author A1–A15 checklist. Complements the
 # repo-wide scripts/validate.sh (which only checks frontmatter presence + README
 # set across all skills) by enforcing the per-skill authoring rules at edit time.
 # Exit 1 on any failure.
@@ -54,7 +54,8 @@ desc_text="$(printf '%s' "$desc_text" | sed -e 's/^[[:space:]]*//' -e 's/[[:spac
 # canonical CI judge (A2's startswith match fails on a value that is actually
 # well-formed).
 case "$desc_text" in
-  \"*\") desc_text="${desc_text#\"}"; desc_text="${desc_text%\"}"; desc_text="${desc_text//\\\"/\"}" ;;
+  \"*\") desc_text="${desc_text#\"}"; desc_text="${desc_text%\"}"
+         desc_text="${desc_text//\\\"/\"}"; desc_text="${desc_text//\\\\/\\}" ;;
   \'*\') desc_text="${desc_text#\'}"; desc_text="${desc_text%\'}"; desc_text="${desc_text//\'\'/\'}" ;;
 esac
 
@@ -75,11 +76,21 @@ printf '%s' "$desc_text" | grep -qE 'Do not use (for|during|when|in)\b' \
 # concluded INCONCLUSIVE (pooled floor_rate 0.5333 > 0.25 ceiling), so this
 # check is advisory (warn, do not fail the build) until a future pilot run
 # reaches a VALID ceiling and passes AC9's evidence gate.
+# `set -f` disables pathname expansion for the duration of the unquoted
+# `set --` below — without it, a description containing a glob metacharacter
+# (e.g. this very file's own "ywc-*" trigger phrase) undergoes pathname
+# expansion against the caller's $PWD in addition to the intended word
+# splitting, silently inflating word_count by however many files/dirs happen
+# to match in whatever directory the script is invoked from.
 # shellcheck disable=SC2086 # intentional word-splitting for a locale-independent count
+set -f
 set -- $desc_text
+set +f
 word_count="$#"
+warns=0
 if [ "$word_count" -gt 80 ]; then
-  echo "WARN: description is $word_count words (> 80 word cap) [advisory — skill-pruning-pilot run was INCONCLUSIVE, see docs/ywc-plans/prune-report-rationalization-defense.md]"
+  echo "WARN: description is $word_count words (> 80 word cap) (A15) [advisory — skill-pruning-pilot run was INCONCLUSIVE, see docs/ywc-plans/prune-report-rationalization-defense.md]"
+  warns=$((warns + 1))
 fi
 
 # --- Body ---
@@ -111,7 +122,11 @@ if [ -d "$DIR/references" ]; then
 fi
 
 if [ "$errs" -eq 0 ]; then
-  echo "PASS: $name ($lines lines) — all mechanical checks passed"
+  if [ "$warns" -gt 0 ]; then
+    echo "PASS: $name ($lines lines) — all mechanical checks passed, $warns advisory warning(s) above"
+  else
+    echo "PASS: $name ($lines lines) — all mechanical checks passed"
+  fi
 else
   echo ""
   echo "$errs check(s) failed for $name"
