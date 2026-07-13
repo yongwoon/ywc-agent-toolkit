@@ -62,7 +62,10 @@ fi | while IFS= read -r skill; do
   if [ -d "$skill/references" ]; then
     find "$skill/references" -type f -name '*.md' -print | LC_ALL=C sort | while IFS= read -r ref; do
       base="$(basename "$ref")"
-      matches="$(find "$skill" -type f -name '*.md' ! -path "$ref" -exec grep -Fl "$base" {} + 2>/dev/null || true)"
+      matches=""
+      while IFS= read -r md; do
+        grep -Fq "$base" "$md" 2>/dev/null && matches="$md"
+      done < <(find "$skill" -type f -name '*.md' ! -path "$ref")
       if [ -z "$matches" ]; then
         printf '%s/%s\n' "$name" "$base" >> "$unpointed"
       fi
