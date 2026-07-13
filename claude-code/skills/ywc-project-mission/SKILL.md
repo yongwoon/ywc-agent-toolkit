@@ -3,15 +3,13 @@ name: ywc-project-mission
 description: >-
   (ywc) Use when capturing, reading, or curating a project's durable Mission /
   North-Star, measurable Success Criteria, and Out-of-Scope non-goals — the
-  stable "why this project exists" memory that frames every planning session
-  (the stateful-file pattern, runtime-agnostic, committed Markdown). Triggers:
-  "프로젝트 미션 정리", "project mission", "미션 작성", "north star 정의",
-  "success criteria 정리", "프로젝트 목표 영속화", "이 프로젝트 미션 기억해둬",
-  "プロジェクトミッション", "mission persistence", "remember the project mission",
-  "capture project goals". Do not use for domain vocabulary / ubiquitous language
-  (use ywc-ubiquitous-language), for accumulated code-review preferences
-  (use ywc-review-learnings), for a single feature's implementation plan
-  (use ywc-plan), or for spec-level review (use ywc-spec-validate).
+  "why this project exists" memory that frames every planning session.
+  Triggers: "프로젝트 미션 정리", "이 프로젝트 미션 기억해둬", "north star 정의",
+  "success criteria 정리", "プロジェクトミッション", "project mission",
+  "mission persistence". Do not use for domain vocabulary
+  (use ywc-ubiquitous-language), review preferences (use ywc-review-learnings),
+  a single feature's plan (use ywc-plan), or spec-level review
+  (use ywc-spec-validate).
 ---
 
 # ywc-project-mission

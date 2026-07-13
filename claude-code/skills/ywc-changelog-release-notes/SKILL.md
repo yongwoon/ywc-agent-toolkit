@@ -1,17 +1,14 @@
 ---
 name: ywc-changelog-release-notes
 description: >
-  (ywc) Use when you need to generate CHANGELOG.md entries or user-facing release notes
-  from git history, merged PRs, or ywc-release-pr-list output after completing a release or sprint.
-
-  Trigger phrases: "changelog 작성", "릴리즈 노트 생성", "release notes", "변경 이력 업데이트",
-  "CHANGELOG 업데이트", "릴리스 노트", "リリースノート作成", "変更履歴", "changelog",
-  "what changed in this release", "이번 릴리즈 변경 사항",
-  "ywc-changelog-release-notes"
-
-  Do not use for: listing merged PRs as a summary table (use ywc-release-pr-list);
-  committing the changelog file (use ywc-commit); creating the release PR (use ywc-create-pr);
-  writing a postmortem after a patch release (use ywc-incident-postmortem).
+  (ywc) Use when you need to generate CHANGELOG.md entries or user-facing
+  release notes from git history, merged PRs, or ywc-release-pr-list output
+  after completing a release or sprint. Trigger phrases: "changelog 작성",
+  "릴리즈 노트 생성", "release notes", "変更履歴", "リリースノート作成", "changelog",
+  "what changed in this release", "ywc-changelog-release-notes". Do not use for
+  listing merged PRs as a summary table (use ywc-release-pr-list), committing
+  the changelog file (use ywc-commit), creating the release PR (use ywc-create-pr),
+  or writing a postmortem after a patch release (use ywc-incident-postmortem).
 version: 1.0.0
 category: release
 phase: release

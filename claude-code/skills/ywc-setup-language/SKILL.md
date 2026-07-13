@@ -1,7 +1,7 @@
 ---
 name: ywc-setup-language
 version: 1.0.0
-description: (ywc) Use when the user wants to set or inspect the persistent output language for ywc-generated documents, PRs, and commit messages so they stop passing --lang on every call. Triggers: "set output language", "언어 설정", "출력 언어 설정", "언어 기본값", "프로젝트 언어 설정", "ywc-setup-language", "set project language", "언어 정책 설정", "言語設定", "出力言語を設定", "configure ywc language". Do not use for a one-off per-call override (pass --lang to the consuming skill instead), the session/chat language (never config-governed), editing consumer skills, or defining the resolution rules themselves (owned by references/language-resolution.md).
+description: (ywc) Use when the user wants to set or inspect the persistent output language for ywc-generated documents, PRs, and commit messages so they stop passing --lang on every call. Triggers: "set output language", "set project language", "ywc-setup-language", "언어 설정", "언어 정책 설정", "言語設定". Do not use for a one-off per-call override (pass --lang to the consuming skill instead), the session/chat language (never config-governed), editing consumer skills, or defining the resolution rules themselves (owned by references/language-resolution.md).
 category: config
 phase: setup
 requires: []
