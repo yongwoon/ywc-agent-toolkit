@@ -170,8 +170,15 @@ Repeat until the agent cannot find a loophole.
 
 ## Report-Only Audit Workflow
 
-Use `--audit` for one skill, a selected group, or a bundle. Run the bundled
-`scripts/audit-skills.sh` before making any model judgment. Its findings are
+Use `--audit` for one skill, a selected group, or a bundle. `--audit` is this
+skill's own mode flag — it is not a flag the bundled script accepts. Translate
+it into the script's actual CLI before running:
+
+```bash
+bash scripts/audit-skills.sh --root <skill-or-bundle-dir> --counterpart-root <counterpart-dir> [--near-line-cap <1..500>]
+```
+
+Run the mechanical report before making any model judgment. Its findings are
 mechanical evidence only: classify each as retain, investigate with a deletion
 test, or documented exception; never treat a finding as deletion authority.
 
@@ -190,10 +197,14 @@ same way every time, never by the agent grading its own prose.
 
 1. **Enumerate** candidates via `scripts/enumerate-rd-rows.sh`. One candidate
    = one data row, keyed `<file>:<start>-<end>`.
-2. **Draw the stratified sample**: 40 from Stratum A (row positions 1–4), 40
-   from Stratum B (positions 5+), at most one row per skill per stratum.
-   Write the drawn list to the report **before** any dispatch — a resumed
-   run reads it, never re-draws.
+2. **Draw the stratified sample**: `min(40, available)` from Stratum A (row
+   positions 1–4) and `min(40, available)` from Stratum B (positions 5+), at
+   most one row per skill per stratum. If either stratum has fewer than 40
+   eligible rows, draw all of them and record the actual count used — do not
+   pad with a second row from the same skill. A stratum with 0 eligible rows
+   makes the run `INCONCLUSIVE` for that stratum's contrast. Write the drawn
+   list and both stratum counts to the report **before** any dispatch — a
+   resumed run reads it, never re-draws.
 3. **Bind a scenario**: reuse an `evals/evals.json` `prompt` verbatim if one
    exists, else synthesize from the skill's `description` triggers. Record
    it for reproducibility. Never read `expected_output`.
