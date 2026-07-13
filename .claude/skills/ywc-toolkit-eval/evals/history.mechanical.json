@@ -26,7 +26,7 @@
   },
   "claude-code/skills/ywc-confidence-gate": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-create-pr": {
@@ -41,12 +41,12 @@
   },
   "claude-code/skills/ywc-design-renew": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-docker-isolate": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-e2e-test-strategy": {
@@ -106,7 +106,7 @@
   },
   "claude-code/skills/ywc-onboard-repo": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-parallel-executor": {
@@ -226,7 +226,7 @@
   },
   "claude-code/skills/ywc-worktrees": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/agents/ywc-architect": {

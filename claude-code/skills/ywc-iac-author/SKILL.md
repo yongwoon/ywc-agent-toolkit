@@ -2,16 +2,15 @@
 name: ywc-iac-author
 description: >-
   (ywc) Use when authoring or modifying Infrastructure-as-Code from a design —
-  Terraform modules and resources for AWS/GCP/Azure/Kubernetes (K8s/Helm
-  expressed via the Terraform kubernetes/helm providers, never raw manifests
-  or a second IaC tool), including terraform validate/plan verification and a
-  blast-radius summary. Triggers: "IaC 작성", "terraform 작성", "인프라 코드",
-  "k8s 매니페스트", "write terraform", "author IaC", "provision infrastructure",
-  "IaC を書いて", "ywc-iac-author". Do not use for application server /
-  business logic (use ywc-backend-coder), designing the topology first (use
-  ywc-infra-design), reviewing IaC quality (use ywc-infra-review), cost /
-  right-sizing remediation (use ywc-infra-optimize), or local worktree docker
-  port collisions (use ywc-docker-isolate — dev-only, not prod infra).
+  Terraform for AWS/GCP/Azure/Kubernetes (K8s/Helm via Terraform
+  kubernetes/helm providers, never raw manifests or a second IaC tool),
+  including validate/plan verification and a blast-radius summary. Triggers:
+  "IaC 작성", "terraform 작성", "인프라 코드", "k8s 매니페스트", "write terraform",
+  "author IaC", "provision infrastructure", "IaC を書いて", "ywc-iac-author".
+  Do not use for app logic (ywc-backend-coder), topology design
+  (ywc-infra-design), IaC review (ywc-infra-review), cost remediation
+  (ywc-infra-optimize), or local docker port collisions (ywc-docker-isolate —
+  dev-only, not prod infra).
 category: implement
 phase: implementation
 requires: []

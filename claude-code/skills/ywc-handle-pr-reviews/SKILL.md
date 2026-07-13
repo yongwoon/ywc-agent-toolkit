@@ -1,7 +1,7 @@
 ---
 name: ywc-handle-pr-reviews
 description: >-
-  (ywc) Use when handling an open PR's review feedback — addressing code review comments, responding to GitHub PR review threads, and leaving the PR mergeable by also clearing any CI failures and base-branch conflicts on that same PR. Triggers: "handle PR reviews", "address review comments", "respond to PR comments", "fix PR CI", "resolve PR conflict", "PR CI 고쳐줘", "PR conflict 해결", "리뷰 대응", "리뷰 코멘트 처리", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), performing a code review yourself (use ywc-impl-review), for the verify-before-agreeing discipline on reviewer feedback (use ywc-receive-review), for storing or reading durable review preferences as learnings (use ywc-review-learnings), or for changes outside an open PR context.
+  (ywc) Use when handling an open PR's review feedback — addressing comments, replying to review threads, and leaving the PR mergeable by clearing CI failures and base-branch conflicts too. Triggers: "handle PR reviews", "fix PR CI", "resolve PR conflict", "PR CI 고쳐줘", "PR conflict 해결", "리뷰 대응", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), reviewing code yourself (use ywc-impl-review), verify-before-agreeing on feedback (use ywc-receive-review), storing durable review learnings (use ywc-review-learnings), or work outside an open PR.
 allowed-tools: Bash, Read, Edit, Write, Glob, Grep, Agent
 ---
 

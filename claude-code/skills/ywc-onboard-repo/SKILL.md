@@ -1,21 +1,15 @@
 ---
 name: ywc-onboard-repo
 description: >-
-  (ywc) Use when entering an existing / unfamiliar repository for the first
-  time, generating a starter CLAUDE.md from detected conventions, or
-  producing an architecture / convention briefing for a new joiner. The
-  output is a printed Onboarding Guide plus a Starter CLAUDE.md written to
-  the repo root (enhancing the existing one in place if present). Triggers:
-  "onboard me", "이 repo 처음이야", "이 codebase 를 이해하게 해줘",
-  "generate CLAUDE.md", "walk me through this repo", "리포 분석해줘", "コー
-  ドベースを案内して", "onboarding 가이드", "ywc-onboard-repo". Do not use
-  for creating a brand-new repository from scratch (use ywc-project-scaffold
-  — that is the inverse direction), for creating a CodeTour `.tour` JSON
-  walkthrough artifact (out of scope — this skill emits Markdown not
-  .tour), for ad-hoc "explain this one file" requests (answer directly),
-  or for incremental codemap refreshes on a repo you already understand
-  (this skill is the cold-start; refreshes belong to a separate hygiene
-  pass).
+  (ywc) Use when entering an unfamiliar repository for the first time to
+  generate a starter CLAUDE.md from detected conventions or produce an
+  architecture/convention briefing for a new joiner, emitting a printed
+  Onboarding Guide plus Starter CLAUDE.md. Triggers: "onboard me", "walk me
+  through this repo", "generate CLAUDE.md", "이 repo 처음이야", "리포
+  분석해줘", "コードベースを案内して", "ywc-onboard-repo". Do not use for creating a brand-new
+  repo from scratch (use ywc-project-scaffold), CodeTour .tour walkthroughs,
+  ad-hoc single-file explanations (answer directly), or incremental codemap
+  refreshes on an already-understood repo.
 category: onboarding
 phase: discovery
 requires: []

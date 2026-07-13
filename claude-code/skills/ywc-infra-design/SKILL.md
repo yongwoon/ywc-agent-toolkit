@@ -1,19 +1,17 @@
 ---
 name: ywc-infra-design
 description: >-
-  (ywc) Use when designing cloud/infrastructure architecture before any IaC
-  is written — requirements gathering, provider selection, network/compute/
-  storage/IAM topology, and a reliability/cost/security 3-lens pre-check that
-  produces infra-design.md, the input contract ywc-iac-author consumes.
-  Triggers: "인프라 설계", "클라우드 아키텍처", "aws 구성 설계", "네트워크
-  토폴로지", "infra design", "cloud architecture", "design the
-  infrastructure", "インフラ設計", "クラウド構成", "ywc-infra-design". Do not
-  use for writing the actual IaC (use ywc-iac-author), source-code folder
-  layout (use ywc-project-scaffold), library/tech comparison alone (use
-  ywc-tech-research — it feeds this skill's provider-selection step),
-  reviewing already-provisioned infrastructure (use ywc-infra-review), or
-  local worktree docker port collisions (use ywc-docker-isolate — dev-only,
-  not prod infra).
+  (ywc) Use when designing cloud/infrastructure architecture before writing
+  IaC — requirements gathering, provider selection, network/compute/
+  storage/IAM topology, and a reliability/cost/security pre-check producing
+  infra-design.md for ywc-iac-author. Triggers: "인프라 설계", "클라우드
+  아키텍처", "aws 구성 설계", "네트워크 토폴로지", "infra design", "cloud
+  architecture", "design the infrastructure", "インフラ設計", "クラウド構成",
+  "ywc-infra-design". Do not use for writing IaC (use ywc-iac-author), folder
+  layout (use ywc-project-scaffold), tech comparison alone (use
+  ywc-tech-research — it feeds provider selection here), reviewing existing
+  infrastructure (use ywc-infra-review), or docker port collisions (use
+  ywc-docker-isolate).
 category: spec
 phase: planning
 requires: []

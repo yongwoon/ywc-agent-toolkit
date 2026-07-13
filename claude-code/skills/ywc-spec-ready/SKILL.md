@@ -1,15 +1,14 @@
 ---
 name: ywc-spec-ready
 description: >-
-  (ywc) Use when a spec produced by ywc-plan still has Critical/Warning findings
-  and you want it driven to ywc-spec-validate DONE automatically — recursively
-  looping ywc-plan --update-spec and ywc-spec-validate until the spec is ready for
-  ywc-task-generator, then stopping at the handoff. Triggers: "spec 수렴", "spec
-  ready loop", "ywc-spec-ready", "plan validate 반복", "사양 수렴 자동화",
-  "spec を DONE まで". Do not use for the full goal-to-code pipeline (use
-  ywc-agentic), for a one-shot spec review without re-planning (use
-  ywc-spec-validate), for initial spec authoring from a goal (use ywc-plan), or
-  for decomposing an already-DONE spec into tasks (use ywc-task-generator).
+  (ywc) Use when a spec from ywc-plan still has Critical/Warning findings and
+  you want it auto-driven to ywc-spec-validate DONE — looping ywc-plan
+  --update-spec and ywc-spec-validate until ready for ywc-task-generator, then
+  stopping at the handoff. Triggers: "spec 수렴", "spec ready loop",
+  "ywc-spec-ready", "사양 수렴 자동화", "spec を DONE まで". Do not use for the
+  full goal-to-code pipeline (use ywc-agentic), a one-shot spec review without
+  re-planning (use ywc-spec-validate), initial spec authoring (use ywc-plan),
+  or decomposing an already-DONE spec into tasks (use ywc-task-generator).
 ---
 
 # ywc-spec-ready (Spec Readiness Loop)

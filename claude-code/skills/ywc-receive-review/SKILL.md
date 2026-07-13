@@ -2,19 +2,15 @@
 name: ywc-receive-review
 description: >-
   (ywc) Use when receiving code-review feedback (human, CodeRabbit, Codex,
-  Claude, or ChatGPT review) before responding. Enforces technical
-  verification before agreement, blocks performative
-  acknowledgment ("You're absolutely right!"), and requires clarifying
-  unclear items before partial implementation.
-  Triggers: "리뷰 받았어", "리뷰 코멘트", "리뷰 대응", "PR comment 처리",
-  "review feedback", "received review", "respond to review", "address
-  review comments", "レビュー対応", "レビュー受信", "コメント返信",
+  Claude, or ChatGPT review) before responding. Verify before agreeing;
+  block performative agreement ("You're absolutely right!"); clarify
+  unclear items before partial implementation. Triggers: "리뷰 받았어",
+  "리뷰 코멘트", "리뷰 대응", "PR comment 처리", "review feedback", "respond
+  to review comments", "レビュー対応", "レビュー受信", "コメント返信",
   "ywc-receive-review". Do not use for performing a code review yourself
-  (use ywc-impl-review), creating a PR (use ywc-create-pr), or for the
-  automation orchestration of fetching / replying to inline PR comments
-  (use ywc-handle-pr-reviews — this skill is its attitude layer, the two
-  compose), or for capturing a durable review preference to improve future
-  reviews rather than responding now (use ywc-review-learnings).
+  (ywc-impl-review), creating a PR (ywc-create-pr), the automation layer
+  that fetches/replies to PR comments (ywc-handle-pr-reviews), or
+  capturing durable review learnings (ywc-review-learnings).
 ---
 
 # ywc-receive-review

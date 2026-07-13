@@ -1,19 +1,16 @@
 ---
 name: ywc-confidence-gate
 description: >-
-  (ywc) Use when you need to gate an implementation start — before any non-trivial implementation, before invoking
-  ywc-code-gen / ywc-sequential-executor / ywc-parallel-executor, or before
-  committing to a design path with material rework cost. Scores readiness
-  across five dimensions (scope clarity, architecture compliance, evidence
-  quality, reuse verified, root cause identified) and gates the decision
-  with PROCEED (≥90) / REVIEW (70–89) / STOP (<70). Triggers: "confidence
-  check", "confidence gate", "ready to implement", "should I proceed",
-  "is this ready", "준비 됐어", "구현 시작해도 돼", "confidence 점검",
-  "착수 준비", "実装着手", "実装に進んで良いか", "確信度チェック",
-  "ywc-confidence-gate". Do not use for completion verification (use
-  ywc-verify-done — that gates the claim, this gates the start), spec
-  quality review (use ywc-spec-validate), implementation review (use
-  ywc-impl-review — that scores findings, this scores readiness), or
+  (ywc) Use when you need to gate an implementation start — before
+  non-trivial implementation, before invoking ywc-code-gen,
+  ywc-sequential-executor, or ywc-parallel-executor, or before
+  committing to a design path with material rework cost. Scores five
+  readiness dimensions and gates with PROCEED/REVIEW/STOP. Triggers:
+  "ready to implement", "should I proceed", "is this ready",
+  "confidence check", "confidence gate", "준비 됐어", "確信度チェック",
+  "実装着手", "ywc-confidence-gate". Do not use for completion
+  verification (use ywc-verify-done), spec quality review (use
+  ywc-spec-validate), implementation review (use ywc-impl-review), or
   brainstorming intent (use ywc-brainstorm).
 category: discipline
 phase: pre-implementation

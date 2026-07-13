@@ -3,16 +3,15 @@ name: ywc-incident-postmortem
 description: >
   (ywc) Use when a production incident has occurred and you need a structured postmortem:
   timeline reconstruction, root cause analysis (5 Whys), impact assessment,
-  prevention action items, and optionally a sanitized client-facing report.
+  prevention action items, and an optional sanitized client-facing report.
 
-  Trigger phrases: "장애 회고", "포스트모텀 작성", "postmortem", "incident report",
-  "장애 보고서", "장애 원인 분석", "사고 회고록", "ポストモーテム", "インシデントレポート",
-  "障害振り返り", "outage report", "incident postmortem", "ywc-incident-postmortem"
+  Trigger phrases: "장애 회고", "장애 원인 분석", "사고 회고록", "postmortem",
+  "incident report", "outage report", "ポストモーテム", "障害振り返り",
+  "ywc-incident-postmortem"
 
-  Do not use for: proactive security vulnerability scanning before an incident
-  (use ywc-security-audit); general code quality review unrelated to an incident
-  (use ywc-impl-review); generating changelog or release notes after a fix
-  (use ywc-changelog-release-notes).
+  Do not use for security scanning before an incident (ywc-security-audit),
+  code review unrelated to an incident (ywc-impl-review), or changelog/release
+  notes after a fix (ywc-changelog-release-notes).
 version: 1.0.0
 category: incident
 phase: post-release
