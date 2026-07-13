@@ -11,7 +11,8 @@ description: >-
   "実装着手", "ywc-confidence-gate". Do not use for completion
   verification (use ywc-verify-done), spec quality review (use
   ywc-spec-validate), implementation review (use ywc-impl-review), or
-  brainstorming intent (use ywc-brainstorm).
+  rough ideation/design exploration before a path is chosen (use
+  ywc-brainstorm).
 category: discipline
 phase: pre-implementation
 requires: []
