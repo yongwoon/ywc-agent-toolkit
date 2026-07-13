@@ -201,7 +201,10 @@ same way every time, never by the agent grading its own prose.
 5. **Dispatch 3 + 3, blind**: 3 subagents against the original body, 3
    against the deleted body, all on the same scenario. No subagent is told
    which variant it holds, that a deletion test is running, or that the
-   authoring rules exist. Each returns an artifact **path** only.
+   authoring rules exist — this is what keeps the "you MUST include X"
+   authoring bias out of the judge, and is why this test can safely live
+   inside `ywc-skill-author` rather than needing a second meta-skill (AC1).
+   Each returns an artifact **path** only.
 6. **Compare** per [references/deletion-test-rubric.md](references/deletion-test-rubric.md):
    within-variant disagreement (3 original pairs + 3 deleted pairs, 6
    total) vs. cross-variant disagreement (3×3 = 9 original-vs-deleted).

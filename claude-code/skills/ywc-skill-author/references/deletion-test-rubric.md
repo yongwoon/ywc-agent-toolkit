@@ -5,6 +5,13 @@ Canonical judgment rule for the "Compare" step of the Deletion Test
 Rationalization Defense row removal is judged the same way every time — by a
 fixed rule, not by an agent grading its own prose.
 
+Each candidate row is dispatched blind to 6 subagents: 3 against the
+original skill body, 3 against a variant with the row deleted, all on the
+same scenario. **Within-variant** disagreement compares runs that saw the
+*same* body (3 original-vs-original pairs + 3 deleted-vs-deleted pairs = 6
+total) and estimates pure noise. **Cross-variant** disagreement compares
+original-vs-deleted runs (3×3 = 9 total) and is what the label is based on.
+
 ## Equivalence (counts as identical)
 
 Two runs are equivalent when their surface text differs but their observable
@@ -36,13 +43,19 @@ small the surface text difference producing it:
 difference as cosmetic makes every row `inert` regardless of content. Judge
 by the four categories above, not by textual diff size.
 
-## Tail-Bound Table (AC5)
+## Tail-Bound Table
 
 The labeling threshold `T` is the smallest `t` such that `P(X ≤ t) ≥ 0.95`
 for `X ~ Binomial(9, floor_rate)` — an upper-tail quantile of the null
 distribution, not its mean. The naive `T = floor(floor_rate × 9)` sits at
 the mean and misclassifies **37–61% of truly inert rows** as `load-bearing`
-across the plausible noise range; it must never be used.
+across the plausible noise range; it must never be used. The formula holds
+for any `floor_rate` in `[0, 1]`, not only the six rows tabulated below —
+compute it directly for a `floor_rate` the table doesn't cover.
+
+A candidate's cross-variant disagreement count, compared against `T`, gives
+the label: **≤ T is `inert` (boundary inclusive — a count exactly equal to
+`T` labels `inert`, not `load-bearing`)**; **> T is `load-bearing`**.
 
 | `floor_rate` | `T` | P(false `load-bearing` \| truly inert) |
 |---|---|---|
@@ -53,7 +66,7 @@ across the plausible noise range; it must never be used.
 | 0.20 | 4 | 2.0% |
 | 0.25 | 4 | 4.9% |
 
-Above `floor_rate = 0.25` the run is `INCONCLUSIVE` (AC5a) — no candidate is
+Above `floor_rate = 0.25` the run is `INCONCLUSIVE` — no candidate is
 labeled `inert` or `load-bearing`; all become `indeterminate`. This is a
 Type II (power) limit, not a Type I one: past that point the null's spread
 already covers most of the 0–9 range, so no realistic signal is
