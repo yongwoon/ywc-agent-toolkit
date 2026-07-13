@@ -25,6 +25,13 @@
 - 新規 skill の場合: skill の目的、主要な trigger シナリオ
 - audit の場合: 対象 skill directory のパス
 
+## Report-Only Audit
+
+Audit workflow は bounded な read-only inspection です。bundled mechanical report
+から開始し、evidence と deletion judgment を分離します。削除候補は baseline → one
+removal → same-prompt comparison の後に retain、revert、または escalate し、target を
+自動削除または編集しません。
+
 ## 出力
 
 - 標準構造 (Frontmatter + Rationalization Defense + Workflow + Validation Checklist) の SKILL.md
