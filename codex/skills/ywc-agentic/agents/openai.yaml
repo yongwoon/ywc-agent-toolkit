@@ -1,4 +1,4 @@
 interface:
   display_name: "Agentic"
-  short_description: "Orchestrate ywc skills from goal to code"
-  default_prompt: "Use $ywc-agentic to turn this high-level goal into a planned, implemented, verified ywc workflow, forwarding explicit task/spec language only when requested and preserving --pr-lang en|ja|ko|zh|es to executors."
+  short_description: "Autonomously deliver an explicit end-to-end ywc lifecycle"
+  default_prompt: "Use $ywc-agentic only for an explicitly requested autonomous end-to-end lifecycle; otherwise route generic planning to $ywc-plan or an ordinary direct change to the implementation workflow."
