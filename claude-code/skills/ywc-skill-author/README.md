@@ -47,7 +47,7 @@ removal → same-prompt comparison 후 retain, revert, 또는 escalate하며 tar
 - **Format Conventions**: Korean prose + English Technical 용어 정책 등
 - **Anti-patterns**: Description workflow summary, stub code, `@` syntax 등 금지 패턴
 
-상세한 내용은 `SKILL.md` 본문과 `references/` 하위 4개 문서를 참조합니다.
+상세한 내용은 `SKILL.md` 본문과 `references/` 하위 6개 문서를 참조합니다.
 
 ## 관련 Skill
 
@@ -60,3 +60,5 @@ removal → same-prompt comparison 후 retain, revert, 또는 escalate하며 tar
 - `references/rationalization-defense-cookbook.md` — Rationalization Defense table 작성 가이드
 - `references/description-anti-patterns.md` — Description field 작성 시 금지 패턴
 - `references/cross-skill-graph.md` — 46개 ywc-* skill 간 의존성 + cross-reference 그래프
+- `references/progressive-disclosure.md` — Tier 2 vs Tier 3 배치 결정 트리 (A14 규칙)
+- `references/audit-workflow.md` — read-only `--audit` workflow의 계약 및 역할 매트릭스

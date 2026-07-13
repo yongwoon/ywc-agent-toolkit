@@ -48,7 +48,7 @@ El estándar aplicado por esta habilidad consiste en:
 - **Convenciones de Formato**: Prosa en coreano con términos técnicos en inglés, disparadores multilingües, etc.
 - **Anti-patrones**: Descripciones tipo resumen de flujo de trabajo, código de esbozo, referencias cruzadas con `@`, y trampas similares.
 
-Consulte `SKILL.md` y los cuatro documentos de referencia en `references/` para la especificación completa.
+Consulte `SKILL.md` y los seis documentos de referencia en `references/` para la especificación completa.
 
 ## Habilidades Relacionadas
 
@@ -61,3 +61,5 @@ Consulte `SKILL.md` y los cuatro documentos de referencia en `references/` para 
 - `references/rationalization-defense-cookbook.md` — guía para escribir la tabla de Defensa de Racionalización.
 - `references/description-anti-patterns.md` — anti-patrones a evitar en el campo de descripción.
 - `references/cross-skill-graph.md` — gráfico de dependencias y referencias cruzadas para las 46 habilidades ywc-*.
+- `references/progressive-disclosure.md` — árbol de decisión para la ubicación de contenido Tier 2 vs Tier 3 (regla A14).
+- `references/audit-workflow.md` — contrato y matriz de roles para el workflow de `--audit` de solo lectura.

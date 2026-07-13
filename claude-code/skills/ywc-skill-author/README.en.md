@@ -47,7 +47,7 @@ The standard enforced by this skill consists of:
 - **Format Conventions**: Korean prose with English technical terms, multilingual triggers, etc.
 - **Anti-patterns**: Workflow-summary descriptions, stub code, `@` cross-references, and similar pitfalls.
 
-See `SKILL.md` and the four reference documents under `references/` for the full specification.
+See `SKILL.md` and the six reference documents under `references/` for the full specification.
 
 ## Related Skills
 
@@ -60,3 +60,5 @@ See `SKILL.md` and the four reference documents under `references/` for the full
 - `references/rationalization-defense-cookbook.md` — guide for writing the Rationalization Defense table.
 - `references/description-anti-patterns.md` — anti-patterns to avoid in the description field.
 - `references/cross-skill-graph.md` — dependency and cross-reference graph for the 46 ywc-* skills.
+- `references/progressive-disclosure.md` — decision tree for Tier 2 vs Tier 3 content placement (rule A14).
+- `references/audit-workflow.md` — contract and role matrix for the read-only `--audit` workflow.

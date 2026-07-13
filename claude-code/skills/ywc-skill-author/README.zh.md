@@ -48,7 +48,7 @@
 - **格式约定**：韩语散文配英语技术术语、多语言触发器等。
 - **反模式**：工作流摘要式描述、桩代码、`@` 交叉引用及类似陷阱。
 
-完整规范请参阅 `SKILL.md` 及 `references/` 下的四份参考文档。
+完整规范请参阅 `SKILL.md` 及 `references/` 下的六份参考文档。
 
 ## 相关技能
 
@@ -61,3 +61,5 @@
 - `references/rationalization-defense-cookbook.md` — 编写理性化防御表格的指南。
 - `references/description-anti-patterns.md` — 描述字段中应避免的反模式。
 - `references/cross-skill-graph.md` — 46 个 ywc-* 技能的依赖关系和交叉引用图。
+- `references/progressive-disclosure.md` — Tier 2 与 Tier 3 内容放置的决策树（A14 规则）。
+- `references/audit-workflow.md` — 只读 `--audit` workflow 的契约与角色矩阵。
