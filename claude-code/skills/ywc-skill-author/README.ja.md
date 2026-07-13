@@ -42,7 +42,7 @@ removal → same-prompt comparison の後に retain、revert、または escalat
 
 この skill が強制する標準は以下で構成されます:
 
-- **Mandatory Rules**: Frontmatter / Body / Filesystem 領域の強制 rule (A1–A14)
+- **Mandatory Rules**: Frontmatter / Body / Filesystem 領域の強制 rule (A1–A15)
 - **Recommended Rules**: 状況別の推奨 rule (B1–B8)
 - **Format Conventions**: Korean prose + English Technical 用語 policy 等
 - **Anti-patterns**: Description workflow summary、stub code、`@` syntax 等の禁止 pattern

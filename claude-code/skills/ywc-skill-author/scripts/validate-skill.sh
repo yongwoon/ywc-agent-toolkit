@@ -42,13 +42,45 @@ desc_text="$(awk '
   f && /^[A-Za-z_][A-Za-z0-9_-]*:/ { f=0 }
   f { print }
 ' "$SKILL" | tr '\n' ' ' | tr -s ' ')"
-# Opener: "(ywc) Use <when|before|after|during ...>". Anti-triggers: "Do not
-# use|invoke <for|during|to ...>". Match the stable stem, not a fixed preposition.
-case "$desc_text" in *"(ywc) Use "*) ;; *) fail "description missing '(ywc) Use ...' opener" ;; esac
+# Trim leading/trailing whitespace so the awk-joined text matches score.py's
+# str.startswith() exactly (a leading space from folded-scalar joining would
+# otherwise desync this check from the canonical CI judge).
+desc_text="$(printf '%s' "$desc_text" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+# Strip a single pair of matching outer quotes, mirroring score.py's
+# _unquote_scalar. Some skills (e.g. ywc-project-docs, ywc-e2e-test-strategy)
+# use a quoted single-line `description: "..."` scalar; without this, desc_text
+# starts with a literal '"' and every check below silently desyncs from the
+# canonical CI judge (A2's startswith match fails on a value that is actually
+# well-formed).
 case "$desc_text" in
-  *"Do not use "*|*"Do not invoke "*) ;;
-  *) fail "description missing 'Do not use/invoke ...' anti-triggers" ;;
+  \"*\") desc_text="${desc_text#\"}"; desc_text="${desc_text%\"}"; desc_text="${desc_text//\\\"/\"}" ;;
+  \'*\') desc_text="${desc_text#\'}"; desc_text="${desc_text%\'}"; desc_text="${desc_text//\'\'/\'}" ;;
 esac
+
+# A2/A3 (unified with score.py:286-287, the canonical CI judge — 000059-020).
+# Opener must start with the literal stem "(ywc) Use when" (not a substring
+# match, not "Use before/after/during"). Anti-trigger must match
+# "Do not use (for|during|when|in)" — "Do not invoke" is no longer accepted;
+# it passed here previously but always failed score.py's A3.
+case "$desc_text" in "(ywc) Use when"*) ;; *) fail "description does not start with '(ywc) Use when' (A2)" ;; esac
+printf '%s' "$desc_text" | grep -qE 'Do not use (for|during|when|in)\b' \
+  || fail "description missing 'Do not use (for|during|when|in) ...' anti-trigger (A3)"
+
+# A15 (description word cap, FR-5/AC12 — 000059-020). Boundary inclusive:
+# 80 PASS, 81 FAIL. Word count via bash IFS splitting (locale-independent,
+# unlike `wc -w`, which disagrees with itself across locales on CJK-heavy
+# text). Enforcement mode follows the skill-pruning-pilot evidence gate
+# (docs/ywc-plans/prune-report-rationalization-defense.md): the pilot run
+# concluded INCONCLUSIVE (pooled floor_rate 0.5333 > 0.25 ceiling), so this
+# check is advisory (warn, do not fail the build) until a future pilot run
+# reaches a VALID ceiling and passes AC9's evidence gate.
+# shellcheck disable=SC2086 # intentional word-splitting for a locale-independent count
+set -- $desc_text
+word_count="$#"
+if [ "$word_count" -gt 80 ]; then
+  echo "WARN: description is $word_count words (> 80 word cap) [advisory — skill-pruning-pilot run was INCONCLUSIVE, see docs/ywc-plans/prune-report-rationalization-defense.md]"
+fi
 
 # --- Body ---
 grep -qE '^\*\*Announce at start:\*\*' "$SKILL" || fail "missing '**Announce at start:**' line"

@@ -42,7 +42,7 @@ or escalating a proposed deletion. It never auto-deletes or edits the target.
 
 The standard enforced by this skill consists of:
 
-- **Mandatory Rules**: Frontmatter / Body / Filesystem (A1–A14).
+- **Mandatory Rules**: Frontmatter / Body / Filesystem (A1–A15).
 - **Recommended Rules**: Situational guidelines (B1–B8).
 - **Format Conventions**: Korean prose with English technical terms, multilingual triggers, etc.
 - **Anti-patterns**: Workflow-summary descriptions, stub code, `@` cross-references, and similar pitfalls.
