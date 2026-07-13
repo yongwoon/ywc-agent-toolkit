@@ -1,7 +1,7 @@
 ---
 name: ywc-ui-ux-review
 description: >-
-  (ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (Chrome DevTools MCP) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), aesthetic / visual de-slop renewal of a generic / 'AI-made'-looking surface (use ywc-design-renew), or code-only review without a running UI.
+  (ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (Chrome DevTools MCP) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', '사용성 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), aesthetic / visual de-slop renewal of a generic / 'AI-made'-looking surface (use ywc-design-renew), or code-only review without a running UI.
 ---
 
 # UI/UX Review — Hybrid (Code + Live UI)
