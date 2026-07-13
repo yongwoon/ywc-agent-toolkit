@@ -17,9 +17,13 @@
 # Usage: build-variant.sh <skill-dir> <start> <end>
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=enumerate-rd-rows.sh
+source "$SCRIPT_DIR/enumerate-rd-rows.sh"
+
 usage() {
   echo "usage: build-variant.sh <skill-dir> <start> <end>" >&2
-  exit 1
+  exit 2
 }
 
 [ "$#" -eq 3 ] || usage
@@ -44,31 +48,13 @@ if [ "$START" -lt 1 ] || [ "$END" -gt "$TOTAL" ]; then
   exit 1
 fi
 
-# Same section/row classification as enumerate-rd-rows.sh, counting only.
-# Reads candidate content from stdin so no temp file is needed pre-validation.
-count_data_rows() {
-  awk '
-    NR == 1 && /^---[[:space:]]*$/ { infm = 1; next }
-    infm == 1 && /^---[[:space:]]*$/ { infm = 2; next }
-    infm != 2 { next }
-    !insection && /^## Rationalization Defense/ { insection = 1; next }
-    insection && /^## / { insection = 0; next }
-    !insection { next }
-    {
-      trimmed = $0
-      sub(/^[ \t]+/, "", trimmed)
-      sub(/[ \t]+$/, "", trimmed)
-      if (trimmed !~ /^\|/) next
-      is_sep = (trimmed ~ /^[|: -]*$/)
-      if (!header_seen && !is_sep) { header_seen = 1; next }
-      if (is_sep) next
-      n++
-    }
-    END { print n + 0 }
-  '
-}
-
-REMAINING="$(awk -v s="$START" -v e="$END" 'NR < s || NR > e' "$SKILL" | count_data_rows)"
+# Header-orphan check reuses enumerate-rd-rows.sh's enumerate_rows() (sourced
+# above) via process substitution, rather than carrying a second copy of the
+# classification awk that could silently drift from the self-check-pinned
+# original. Diagnostics from enumerate_rows's own empty-output warning are
+# irrelevant here (this script emits its own header-orphan message), so
+# stderr is discarded for this call only.
+REMAINING="$(enumerate_rows <(awk -v s="$START" -v e="$END" 'NR < s || NR > e' "$SKILL") 2>/dev/null | wc -l | tr -d ' ')"
 if [ "$REMAINING" -eq 0 ]; then
   echo "FAIL: deleting lines $START-$END would leave the Rationalization Defense table with 0 data rows (header orphan)" >&2
   exit 1
