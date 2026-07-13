@@ -43,18 +43,27 @@ force_load="$tmpdir/force-load"
 sibling_calls="$tmpdir/sibling-calls"
 counterpart="$tmpdir/counterpart"
 
-find "$root" -mindepth 1 -maxdepth 1 -type d -name 'ywc-*' -print | LC_ALL=C sort | while IFS= read -r skill; do
+if [ -f "$root/SKILL.md" ]; then
+  printf '%s\n' "$root"
+else
+  find "$root" -mindepth 1 -maxdepth 1 -type d -name 'ywc-*' -print | LC_ALL=C sort
+fi | while IFS= read -r skill; do
   name="$(basename "$skill")"
   lines=0
   [ -f "$skill/SKILL.md" ] && lines="$(wc -l < "$skill/SKILL.md" | tr -d ' ')"
   printf '%s: %s lines\n' "$name" "$lines" >> "$inventory"
   [ "$lines" -ge "$near_line_cap" ] && printf '%s: %s lines\n' "$name" "$lines" >> "$near_cap"
-  [ -d "$counterpart_root/$name" ] || printf '%s\n' "$name" >> "$counterpart"
+  if [ -f "$counterpart_root/SKILL.md" ]; then
+    [ "$(basename "$counterpart_root")" = "$name" ] || printf '%s\n' "$name" >> "$counterpart"
+  else
+    [ -d "$counterpart_root/$name" ] || printf '%s\n' "$name" >> "$counterpart"
+  fi
 
   if [ -d "$skill/references" ]; then
     find "$skill/references" -type f -name '*.md' -print | LC_ALL=C sort | while IFS= read -r ref; do
       base="$(basename "$ref")"
-      if ! find "$skill" -type f -name '*.md' ! -path "$ref" -exec grep -Fq "$base" {} +; then
+      matches="$(find "$skill" -type f -name '*.md' ! -path "$ref" -exec grep -Fl "$base" {} + 2>/dev/null || true)"
+      if [ -z "$matches" ]; then
         printf '%s/%s\n' "$name" "$base" >> "$unpointed"
       fi
     done
@@ -62,9 +71,9 @@ find "$root" -mindepth 1 -maxdepth 1 -type d -name 'ywc-*' -print | LC_ALL=C sor
 
   if [ -f "$skill/SKILL.md" ]; then
     grep -nE '@ywc-[a-z0-9-]+' "$skill/SKILL.md" 2>/dev/null | sed "s#^#$name:#" >> "$force_load" || true
-    grep -oE 'ywc-[a-z0-9]+(-[a-z0-9]+)*' "$skill/SKILL.md" | LC_ALL=C sort -u | while IFS= read -r called; do
+    grep -oE '[$/]ywc-[a-z0-9]+(-[a-z0-9]+)*' "$skill/SKILL.md" | sed 's#^[/$]##' | LC_ALL=C sort -u | while IFS= read -r called; do
       [ "$called" = "$name" ] || printf '%s -> %s\n' "$name" "$called" >> "$sibling_calls"
-    done
+    done || true
   fi
 done
 
