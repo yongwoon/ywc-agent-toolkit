@@ -42,7 +42,7 @@ removal → same-prompt comparison 후 retain, revert, 또는 escalate하며 tar
 
 이 skill이 강제하는 표준은 다음과 같이 구성됩니다:
 
-- **Mandatory Rules**: Frontmatter / Body / Filesystem 영역의 강제 규칙 (A1–A14)
+- **Mandatory Rules**: Frontmatter / Body / Filesystem 영역의 강제 규칙 (A1–A15)
 - **Recommended Rules**: 상황별 권장 규칙 (B1–B8)
 - **Format Conventions**: Korean prose + English Technical 용어 정책 등
 - **Anti-patterns**: Description workflow summary, stub code, `@` syntax 등 금지 패턴

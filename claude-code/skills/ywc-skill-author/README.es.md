@@ -43,7 +43,7 @@ El workflow de auditoría es una inspección read-only y acotada. Comienza con e
 
 El estándar aplicado por esta habilidad consiste en:
 
-- **Reglas Obligatorias**: Frontmatter / Cuerpo / Sistema de Archivos (A1–A14).
+- **Reglas Obligatorias**: Frontmatter / Cuerpo / Sistema de Archivos (A1–A15).
 - **Reglas Recomendadas**: Directrices situacionales (B1–B8).
 - **Convenciones de Formato**: Prosa en coreano con términos técnicos en inglés, disparadores multilingües, etc.
 - **Anti-patrones**: Descripciones tipo resumen de flujo de trabajo, código de esbozo, referencias cruzadas con `@`, y trampas similares.

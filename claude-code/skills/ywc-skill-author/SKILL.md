@@ -45,6 +45,7 @@ These rules apply to **every** ywc-* skill without exception.
 | A3 | `description` MUST include explicit `Do not use for...` anti-triggers pointing to the correct sibling skill where applicable |
 | A4 | `description` MUST include multilingual triggers (Korean / English / Japanese) when the skill is user-facing |
 | A5 | Frontmatter required minimum: `name`, `description`. For Claude Code skills, additional fields (`version`, `category`, `requires`, etc.) are optional but recommended where meaningful. For Codex skills, frontmatter MUST contain only `name` and `description` — do not copy Claude-only fields |
+| A15 | `description` SHOULD be ≤80 words (locale-independent whitespace count, boundary inclusive: 80 PASS, 81 FAIL). Trim by removing redundancy — repeated trigger phrasings, negated-restatement anti-trigger items, prose duplicating the body — never by removing a trigger a user actually needs to reach the skill. An unreachable-under-80 skill is a reported finding, not a mutilated description. Enforcement mode (advisory vs hard-fail) is gated on the skill-pruning-pilot deletion-test evidence gate; see `validate-skill.sh`'s inline comment for the current mode and rationale |
 
 ### Body
 
