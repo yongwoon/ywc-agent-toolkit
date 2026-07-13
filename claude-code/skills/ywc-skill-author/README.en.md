@@ -1,12 +1,12 @@
 # ywc-skill-author
 
-A **meta-skill** for authoring new ywc-* skills and restructuring existing ones. Encodes the canonical rules derived from analyzing the 18 production ywc-* skills (Frontmatter format, Rationalization Defense, multilingual triggers, progressive disclosure, etc.) so that LLMs automatically follow the standard.
+A **meta-skill** for authoring new ywc-* skills and restructuring existing ones. Encodes the canonical rules derived from analyzing the 46 production ywc-* skills (Frontmatter format, Rationalization Defense, multilingual triggers, progressive disclosure, etc.) so that LLMs automatically follow the standard.
 
 ## Use Cases
 
 - Authoring a brand-new ywc-* skill from scratch.
 - Restructuring an existing ywc-* skill's frontmatter, body sections, or references.
-- Auditing the 18 ywc-* skills against the canonical rule set.
+- Auditing the 46 ywc-* skills against the canonical rule set.
 
 ## Invocation
 
@@ -25,6 +25,13 @@ Or via natural language:
 - New skill: skill purpose and primary trigger scenarios.
 - Audit: path to the target skill directory.
 
+## Report-Only Audit
+
+Use the audit workflow for a bounded, read-only inspection. It starts with the
+bundled mechanical report, separates evidence from deletion judgment, and uses
+a baseline → one removal → same-prompt comparison before retaining, reverting,
+or escalating a proposed deletion. It never auto-deletes or edits the target.
+
 ## Output
 
 - A SKILL.md following the standard structure (Frontmatter + Rationalization Defense + Workflow + Validation Checklist).
@@ -35,12 +42,12 @@ Or via natural language:
 
 The standard enforced by this skill consists of:
 
-- **Mandatory Rules**: Frontmatter / Body / Filesystem (A1–A13).
-- **Recommended Rules**: Situational guidelines (B1–B7).
+- **Mandatory Rules**: Frontmatter / Body / Filesystem (A1–A15).
+- **Recommended Rules**: Situational guidelines (B1–B8).
 - **Format Conventions**: Korean prose with English technical terms, multilingual triggers, etc.
 - **Anti-patterns**: Workflow-summary descriptions, stub code, `@` cross-references, and similar pitfalls.
 
-See `SKILL.md` and the four reference documents under `references/` for the full specification.
+See `SKILL.md` and the six reference documents under `references/` for the full specification.
 
 ## Related Skills
 
@@ -52,4 +59,6 @@ See `SKILL.md` and the four reference documents under `references/` for the full
 - `references/skill-template.md` — starting template for new skills.
 - `references/rationalization-defense-cookbook.md` — guide for writing the Rationalization Defense table.
 - `references/description-anti-patterns.md` — anti-patterns to avoid in the description field.
-- `references/cross-skill-graph.md` — dependency and cross-reference graph for the 18 ywc-* skills.
+- `references/cross-skill-graph.md` — dependency and cross-reference graph for the 46 ywc-* skills.
+- `references/progressive-disclosure.md` — decision tree for Tier 2 vs Tier 3 content placement (rule A14).
+- `references/audit-workflow.md` — contract and role matrix for the read-only `--audit` workflow.

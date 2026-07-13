@@ -4,13 +4,13 @@
 
 # ywc-skill-author
 
-Una **meta-habilidad** para crear nuevas habilidades ywc-* y reestructurar las existentes. Codifica las reglas canónicas derivadas del análisis de las 18 habilidades ywc-* en producción (formato de Frontmatter, Defensa de Racionalización, disparadores multilingües, divulgación progresiva, etc.) para que los LLMs sigan automáticamente el estándar.
+Una **meta-habilidad** para crear nuevas habilidades ywc-* y reestructurar las existentes. Codifica las reglas canónicas derivadas del análisis de las 46 habilidades ywc-* en producción (formato de Frontmatter, Defensa de Racionalización, disparadores multilingües, divulgación progresiva, etc.) para que los LLMs sigan automáticamente el estándar.
 
 ## Casos de Uso
 
 - Crear una nueva habilidad ywc-* desde cero.
 - Reestructurar el frontmatter, las secciones del cuerpo o las referencias de una habilidad ywc-* existente.
-- Auditar las 18 habilidades ywc-* contra el conjunto de reglas canónicas.
+- Auditar las 46 habilidades ywc-* contra el conjunto de reglas canónicas.
 
 ## Invocación
 
@@ -29,6 +29,10 @@ O mediante lenguaje natural:
 - Nueva habilidad: propósito de la habilidad y escenarios de disparo primarios.
 - Auditoría: ruta al directorio de la habilidad objetivo.
 
+## Auditoría solo informativa
+
+El workflow de auditoría es una inspección read-only y acotada. Comienza con el bundled mechanical report, separa la evidencia del juicio de eliminación y exige baseline, una eliminación acotada y comparación con el mismo Prompt antes de conservar, revertir o escalar. Nunca elimina ni edita el objetivo auditado.
+
 ## Salida
 
 - Un archivo SKILL.md que sigue la estructura estándar (Frontmatter + Defensa de Racionalización + Flujo de Trabajo + Lista de Verificación de Validación).
@@ -39,12 +43,12 @@ O mediante lenguaje natural:
 
 El estándar aplicado por esta habilidad consiste en:
 
-- **Reglas Obligatorias**: Frontmatter / Cuerpo / Sistema de Archivos (A1–A13).
-- **Reglas Recomendadas**: Directrices situacionales (B1–B7).
+- **Reglas Obligatorias**: Frontmatter / Cuerpo / Sistema de Archivos (A1–A15).
+- **Reglas Recomendadas**: Directrices situacionales (B1–B8).
 - **Convenciones de Formato**: Prosa en coreano con términos técnicos en inglés, disparadores multilingües, etc.
 - **Anti-patrones**: Descripciones tipo resumen de flujo de trabajo, código de esbozo, referencias cruzadas con `@`, y trampas similares.
 
-Consulte `SKILL.md` y los cuatro documentos de referencia en `references/` para la especificación completa.
+Consulte `SKILL.md` y los seis documentos de referencia en `references/` para la especificación completa.
 
 ## Habilidades Relacionadas
 
@@ -56,4 +60,6 @@ Consulte `SKILL.md` y los cuatro documentos de referencia en `references/` para 
 - `references/skill-template.md` — plantilla inicial para nuevas habilidades.
 - `references/rationalization-defense-cookbook.md` — guía para escribir la tabla de Defensa de Racionalización.
 - `references/description-anti-patterns.md` — anti-patrones a evitar en el campo de descripción.
-- `references/cross-skill-graph.md` — gráfico de dependencias y referencias cruzadas para las 18 habilidades ywc-*.
+- `references/cross-skill-graph.md` — gráfico de dependencias y referencias cruzadas para las 46 habilidades ywc-*.
+- `references/progressive-disclosure.md` — árbol de decisión para la ubicación de contenido Tier 2 vs Tier 3 (regla A14).
+- `references/audit-workflow.md` — contrato y matriz de roles para el workflow de `--audit` de solo lectura.

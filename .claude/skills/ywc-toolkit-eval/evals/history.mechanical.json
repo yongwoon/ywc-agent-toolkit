@@ -26,7 +26,7 @@
   },
   "claude-code/skills/ywc-confidence-gate": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-create-pr": {
@@ -41,12 +41,12 @@
   },
   "claude-code/skills/ywc-design-renew": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-docker-isolate": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-e2e-test-strategy": {
@@ -69,12 +69,32 @@
     "S4": 5,
     "S5": 5
   },
+  "claude-code/skills/ywc-iac-author": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
   "claude-code/skills/ywc-impl-review": {
     "S2": 5,
     "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-incident-postmortem": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-infra-design": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-infra-optimize": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-infra-review": {
     "S2": 5,
     "S4": 5,
     "S5": 5
@@ -86,7 +106,7 @@
   },
   "claude-code/skills/ywc-onboard-repo": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/skills/ywc-parallel-executor": {
@@ -206,7 +226,7 @@
   },
   "claude-code/skills/ywc-worktrees": {
     "S2": 5,
-    "S4": 4,
+    "S4": 5,
     "S5": 5
   },
   "claude-code/agents/ywc-architect": {
@@ -216,6 +236,11 @@
   },
   "claude-code/agents/ywc-backend-coder": {
     "A3": 5,
+    "A4": 5,
+    "A5": 5
+  },
+  "claude-code/agents/ywc-cloud-engineer": {
+    "A3": 3,
     "A4": 5,
     "A5": 5
   },

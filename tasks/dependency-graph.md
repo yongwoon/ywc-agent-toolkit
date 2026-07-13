@@ -1045,3 +1045,112 @@ graph LR
   C3 --> D1
   C4 --> D1
 ```
+
+---
+
+## Batch — skill-engineering-hardening (000053–000054)
+
+- Spec: `docs/ywc-plans/skill-engineering-hardening.md` (spec-ready DONE, Iteration 1 Amendments 권위본)
+- Mode: `llm` · Lang: `ko`
+- Goal: `ywc-skill-author`를 단일 read-only audit/deletion-test entry point로 강화하고, `ywc-agentic` activation을 explicit autonomous lifecycle 요청으로 제한한다.
+
+### Phase 000053 — Independent skill-boundary changes
+
+- `000053-010-refactor-skill-author-audit-workflow` — (root)
+- `000053-020-refactor-agentic-autonomy-trigger` — (root)
+
+### Phase 000054 — Validation and pilot selection (hard gate: Phase 000053 complete)
+
+- `000054-010-test-skill-audit-validation` → `000053-010`, `000053-020`
+
+### Parallel Execution Notes
+
+- Initial ready set: `000053-010` and `000053-020`. Ownership은 각각 `ywc-skill-author/**`와 `ywc-agentic/**`이므로 병렬 실행 가능하다.
+- `000054-010`은 두 Phase 000053 task가 merge된 뒤만 실행한다. script parity, output/exit behavior, trigger precision, repository structure를 검증하고 pruning pilot을 추천하지만 실행하지 않는다.
+- `bash scripts/validate.sh`는 두 root task가 integrate된 뒤 실행한다. Generated `plugins/**`는 이 batch scope 밖이며 수동 편집 금지다.
+
+```mermaid
+graph LR
+  A[000053-010 skill-author audit workflow] --> C[000054-010 validation and pilot]
+  B[000053-020 agentic trigger boundary] --> C
+```
+
+---
+
+## Batch — skill-pruning-pilot (000055–000059)
+
+- Spec: `docs/ywc-plans/skill-pruning-pilot.md` (Draft, Iteration 2 이후 consolidated)
+- Parent spec: `docs/ywc-plans/skill-engineering-hardening.md` → tasks `000053-*`, `000054-010` (**이 batch의 전제**)
+- Mode: `llm` · Lang: `ko`
+- Starting phase: `000055` — `dependency-graph.md` ∪ `tasks/` ∪ `tasks/completed/` 전체에서 최고 PHASE가 `000054`이므로 `+1`.
+- Goal: A7의 "≥5 rows" quota가 padding을 만드는지를 **blind deletion test로 경험적으로 판정**하고, 증거가 뒷받침될 때만 quota를 폐지한다. 동시에 `invocation:` tier로 Tier-1 description 비용을 줄인다. **이 batch는 아무것도 삭제하지 않는다** — label과 증거만 만든다.
+
+### Phase 000055 — Foundations (4개 모두 상호 병렬)
+
+- `000055-010-refactor-validate-skill-extractor-repair` → `000053-010`
+- `000055-020-infra-rd-row-scripts` → `000053-010`
+- `000055-030-docs-skill-author-readme-drift-sync` → `000053-010`
+- `000055-040-refactor-parallel-executor-line-cap` → `000054-010`
+
+### Phase 000056 — Deletion Test 판정 규칙 (hard gate: Phase 000055 완료)
+
+- `000056-010-refactor-skill-author-deletion-test` → `000055-020`, `000053-010`
+
+### Phase 000057 — 파일럿 실행 (hard gate: Phase 000056 완료)
+
+- `000057-010-test-pilot-sample-frame` → `000056-010`, `000055-020`, `000054-010`
+- `000057-020-test-pilot-dispatch-report` → `000057-010`
+
+### Phase 000058 — A7 결과 확정 (hard gate: Phase 000057 완료) — **상호 배타적 분기**
+
+- `000058-010-infra-retire-a7-quota` → `000057-020` (**GO 경로만**) · `Criticality: critical`
+- `000058-020-docs-a7-nogo-closure` → `000057-020` (**NO-GO / INCONCLUSIVE 경로만**)
+
+> 정확히 **하나만** 실행된다. `000057-020` report의 증거 게이트(AC9: `p < 0.05` AND Stratum B inert 비율 > Stratum A, 그리고 ceiling 판정이 `VALID`)가 분기를 결정한다.
+
+### Phase 000059 — description 80단어 상한 (hard gate: Phase 000058 완료)
+
+- `000059-010-refactor-description-word-cap` → Phase 000058 완료, `000055-010`
+- `000059-020-infra-description-cap-validator` → `000059-010`, `000055-030`, `000057-020`
+
+> **Phase 000059는 재작성되었다.** 초안은 `invocation:` tier(4개 task, 46개 파일에 frontmatter key 추가)였으나, 측정 결과 **`score.py:288`의 `A4_multilingual`과 정면 충돌**한다는 사실이 드러났다 — `callee-only` description에서 비-ASCII trigger를 제거하면 A4가 뒤집혀 `S2`가 5→4로 떨어지고 `score.py --ci`가 regression으로 build를 FAIL시킨다(AC13 위반). 게다가 tier가 평상 80단어 상한 대비 얻는 추가 절감은 **5–10 %p** 뿐이었다(상한만으로 17 %, 4,154 → 3,445 단어). tier는 별도 spec으로 유예되었고 사양도 그에 맞춰 수정되었다.
+
+## Parallel Execution Notes
+
+- **Initial ready set**: `000055-010`, `000055-020`, `000055-030`, `000055-040` — 파일 소유가 겹치지 않는다 (각각 `validate-skill.sh` / 신규 script 2개 / `ywc-skill-author` README 6개 / `ywc-parallel-executor`).
+- **000059의 task 순서가 안전장치다**: 재작성(`-010`) → validator(`-020`). validator를 먼저 켜면 29개 description이 아직 예산 밖이라 CI가 즉시 깨진다.
+- **`000059-010`은 A4를 깨뜨리면 안 된다**: `score.py:288`이 모든 description에 **한글 + 일본어 문자 존재**를 요구하며 46/46이 통과 중이다. 하나라도 뒤집히면 `S2`가 `round(9/10*5)`=4로 떨어져 `--ci`가 regression으로 FAIL한다. A4는 *존재* 검사이지 길이 검사가 아니므로, 다국어 trigger는 **압축하되 없애지 않는다**.
+- **`000059-020`은 두 validator의 A2/A3 불일치를 제거한다**: `validate-skill.sh`가 `score.py`보다 느슨해서(`Do not invoke` 허용, opener를 substring으로 검사) 재작성이 그 사각지대에 착지하면 로컬은 통과하고 CI가 깨진다. **`score.py`는 canonical이자 Critical Surface이므로 건드리지 않고, 로컬 validator를 그쪽으로 조인다.**
+- **Cross-spec 충돌**: 부모 task `000053-010`이 `ywc-skill-author/SKILL.md`와 `scripts/`를 편집한다. `000055-010`, `000055-020`, `000056-010`은 모두 `000053-010` merge 이후에만 시작한다.
+- **Critical Surface**: `000058-010`만이 `.claude/skills/ywc-toolkit-eval/**`(46개 skill 전체의 CI 게이트)를 건드린다. gray-box 위임 금지. `bash scripts/validate.sh`는 이 scorer를 **실행하지 않으므로**(`:691-694`는 codex용만), `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` 가 필수 증거다.
+- **Global invariants (모든 phase 이후 검증)**: AC1(두 번째 meta-skill 없음), AC2(RD 행 삭제 0건), AC13(`scripts/validate.sh` + `score.py --ci` + 46개 `validate-skill.sh` 전부 통과).
+- **비용**: `000057-020`이 480 dispatch(세션당 60 상한)로 약 8세션에 걸친다. append-only·keyed resume이므로 세션 경계는 restart가 아니라 resume point다.
+
+```mermaid
+graph LR
+  P1[000053-010 parent audit] --> A1[000055-010 extractor repair]
+  P1 --> A2[000055-020 rd-row scripts]
+  P1 --> A3[000055-030 readme drift]
+  P2[000054-010 parent validation] --> A4[000055-040 A8 line cap]
+  A2 --> B1[000056-010 deletion test rule]
+  B1 --> C1[000057-010 sample frame]
+  P2 --> C1
+  C1 --> C2[000057-020 dispatch + report]
+  C2 -->|GO| D1[000058-010 retire A7 quota]
+  C2 -->|NO-GO / INCONCLUSIVE| D2[000058-020 no-go closure]
+  D1 --> E1[000059-010 description-word-cap]
+  D2 --> E1
+  D1 --> E2[000059-020 description-cap-validator]
+  D2 --> E2
+  A1 --> E1
+  E1 --> E2
+  C2 --> E2
+  A3 --> E2
+```
+
+## Open Questions (spec 저자에게 반환 — 비차단)
+
+- [ ] **사람이 진짜로 부르지 않는 skill이 몇 개인가?** 유예된 `invocation:` tier의 존재 근거가 이 수에 달려 있다. call-graph 참조 수는 *씨앗*이지 답이 아니다 — 많이 호출되는 `ywc-impl-review` / `ywc-spec-validate` / `ywc-verify-done` 은 사람도 직접 부른다. 이 수가 크면 tier는 영구 복잡도를 살 값어치가 있고, 4개라면 없다. **후속 spec의 첫 번째 일이다.**
+- [ ] **A4의 다국어 강제 자체도 deletion test 대상 아닌가?** `score.py:288`의 `A4_multilingual`은 A7과 구조적으로 동일한 blanket quota이며 증거로 정당화된 적이 없다. 이 spec의 harness(FR-1)로 답할 수 있다. 여기서 시도하지 않는 이유는 pilot 하나당 quota 하나이고, 419행을 등에 업은 쪽은 A7이기 때문이다.
+- [ ] **후보당 시나리오 1개로 충분한가?** (사양 Open Question) 기본값은 1개이며 후보별로 기록되므로, 이견이 있는 label은 재테스트가 싸다. `000057-020`이 이 기본값으로 실행한다.
+- [ ] **codex 번들도 같은 파일럿을 받는가?** (사양 Open Question) 이 batch는 claude-code 전용이다. `plugins/`는 `codex/skills/`에서만 생성되므로(`scripts/sync-codex-plugin.sh:5`) parity 검사는 깨지지 않는다.

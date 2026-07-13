@@ -2,13 +2,15 @@
 name: ywc-agentic
 version: 1.0.0
 description: >-
-  (ywc) Use when the user provides a high-level natural-language goal and wants
-  the existing ywc-* skills orchestrated autonomously through Plan → Execute →
-  Evaluate → Repeat to deliver code implementation. Triggers: "agentic",
-  "autonomous workflow", "goal to code", "ywc-agentic", "자율 실행", "自律実行".
-  Do not use for one-off skill invocations, manual task implementation, executing
-  pre-generated tasks/ directories (use ywc-sequential-executor or
-  ywc-parallel-executor), or when the user wants explicit control over each phase.
+  (ywc) Use when the user explicitly requests autonomous, end-to-end
+  lifecycle delivery through Plan → Execute → Evaluate → Repeat. Triggers:
+  "agentic end-to-end lifecycle", "autonomous end-to-end delivery", "run the
+  full lifecycle", "ywc-agentic", "자율 end-to-end 실행", "전체 lifecycle 자율
+  실행", "自律エンドツーエンド実行". Do not use for generic planning (use
+  ywc-plan), an ordinary direct change (use the implementation workflow),
+  one-off skill invocations or direct task execution without autonomous
+  orchestration (use an executor). Existing tasks/ directories may use
+  `--resume`.
 category: meta
 phase: orchestration
 requires: [ywc-plan, ywc-spec-validate, ywc-task-generator, ywc-impl-review]

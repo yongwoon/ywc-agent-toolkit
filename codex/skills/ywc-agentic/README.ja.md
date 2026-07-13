@@ -2,6 +2,8 @@
 
 自然言語の目標を 1 つ受け取り、既存の `ywc-*` skill を自律的にオーケストレーションしてコード実装まで完了する Skill です。**Plan → Execute → Evaluate → Repeat** loop により、`ywc-impl-review` の評価を通過するか、ユーザー定義の反復上限に達するまで再計画を繰り返します。
 
+user が autonomous end-to-end lifecycle delivery を明示的に求める場合だけ使用します。generic planning は `ywc-plan`、ordinary direct change は implementation workflow へ route します。
+
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 ```

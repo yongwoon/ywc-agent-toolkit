@@ -2,6 +2,8 @@
 
 A Skill that takes a single natural-language goal and autonomously orchestrates the existing `ywc-*` skills through to code implementation. Via a **Plan → Execute → Evaluate → Repeat** loop, it re-plans until the `ywc-impl-review` evaluation passes or a user-defined iteration ceiling is reached.
 
+Use it only when the user explicitly asks for autonomous, end-to-end lifecycle delivery. Route generic planning to `ywc-plan` and an ordinary direct change to the implementation workflow.
+
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 ```

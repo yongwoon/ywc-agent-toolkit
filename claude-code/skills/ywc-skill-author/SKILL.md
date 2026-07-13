@@ -45,6 +45,7 @@ These rules apply to **every** ywc-* skill without exception.
 | A3 | `description` MUST include explicit `Do not use for...` anti-triggers pointing to the correct sibling skill where applicable |
 | A4 | `description` MUST include multilingual triggers (Korean / English / Japanese) when the skill is user-facing |
 | A5 | Frontmatter required minimum: `name`, `description`. For Claude Code skills, additional fields (`version`, `category`, `requires`, etc.) are optional but recommended where meaningful. For Codex skills, frontmatter MUST contain only `name` and `description` — do not copy Claude-only fields |
+| A15 | `description` SHOULD be ≤80 words (locale-independent whitespace count, boundary inclusive: 80 PASS, 81 FAIL). Trim by removing redundancy — repeated trigger phrasings, negated-restatement anti-trigger items, prose duplicating the body — never by removing a trigger a user actually needs to reach the skill. An unreachable-under-80 skill is a reported finding, not a mutilated description. Enforcement mode (advisory vs hard-fail) is gated on the skill-pruning-pilot deletion-test evidence gate; see `validate-skill.sh`'s inline comment for the current mode and rationale |
 
 ### Body
 
@@ -165,6 +166,80 @@ Repeat until the agent cannot find a loophole.
 | [references/description-anti-patterns.md](references/description-anti-patterns.md) | Auditing or rewriting a description field |
 | [references/cross-skill-graph.md](references/cross-skill-graph.md) | Deciding `requires:` declarations, "Do not use for..." cross-pointers, and `--skip-<side-effect>` flag propagation between caller/callee skills |
 | [references/progressive-disclosure.md](references/progressive-disclosure.md) | Deciding whether a section stays inline (Tier 2) or extracts to `references/` (Tier 3); auditing existing skills for tier compliance |
+| [references/audit-workflow.md](references/audit-workflow.md) | Running the bounded report-only audit, interpreting mechanical evidence, or conducting a deletion test |
+
+## Report-Only Audit Workflow
+
+Use `--audit` for one skill, a selected group, or a bundle. `--audit` is this
+skill's own mode flag — it is not a flag the bundled script accepts. Translate
+it into the script's actual CLI before running:
+
+```bash
+bash scripts/audit-skills.sh --root <skill-or-bundle-dir> --counterpart-root <counterpart-dir> [--near-line-cap <1..500>]
+```
+
+Run the mechanical report before making any model judgment. Its findings are
+mechanical evidence only: classify each as retain, investigate with a deletion
+test, or documented exception; never treat a finding as deletion authority.
+
+For a proposed removal, establish a baseline with the same representative
+prompt and observable criteria, make one bounded removal, rerun the prompt,
+then retain, revert, or escalate from the observed delta. Do not auto-delete,
+edit the audited target during the audit, or invoke an executor. The full
+rubric, role matrix, and examples are in
+[references/audit-workflow.md](references/audit-workflow.md).
+
+### Deletion Test (decidable procedure)
+
+The "compare" step above is not free-form judgment — it follows this 8-step
+procedure so a proposed Rationalization Defense row removal is judged the
+same way every time, never by the agent grading its own prose.
+
+1. **Enumerate** candidates via `scripts/enumerate-rd-rows.sh`. One candidate
+   = one data row, keyed `<file>:<start>-<end>`.
+2. **Draw the stratified sample**: `min(40, available)` from Stratum A (row
+   positions 1–4) and `min(40, available)` from Stratum B (positions 5+), at
+   most one row per skill per stratum. If either stratum has fewer than 40
+   eligible rows, draw all of them and record the actual count used — do not
+   pad with a second row from the same skill. A stratum with 0 eligible rows
+   makes the run `INCONCLUSIVE` for that stratum's contrast. Write the drawn
+   list and both stratum counts to the report **before** any dispatch — a
+   resumed run reads it, never re-draws.
+3. **Bind a scenario**: reuse an `evals/evals.json` `prompt` verbatim if one
+   exists, else synthesize from the skill's `description` triggers. Record
+   it for reproducibility. Never read `expected_output`.
+4. **Build the variant** via `scripts/build-variant.sh` only — never
+   hand-edited; an incidental edit invalidates the contrast.
+5. **Dispatch 3 + 3, blind**: 3 subagents against the original body, 3
+   against the deleted body, all on the same scenario. No subagent is told
+   which variant it holds, that a deletion test is running, or that the
+   authoring rules exist — this is what keeps the "you MUST include X"
+   authoring bias out of the judge, and is why this test can safely live
+   inside `ywc-skill-author` rather than needing a second meta-skill (AC1).
+   Each returns an artifact **path** only.
+6. **Compare** per [references/deletion-test-rubric.md](references/deletion-test-rubric.md):
+   within-variant disagreement (3 original pairs + 3 deleted pairs, 6
+   total) vs. cross-variant disagreement (3×3 = 9 original-vs-deleted).
+7. **Pool the noise floor before labeling, and check the validity ceiling.**
+   `floor_rate` = total within-variant disagreements ÷ (6 × sample size).
+   `floor_rate > 0.25` → the run is `INCONCLUSIVE`; every candidate becomes
+   `indeterminate` and no evidence gate can pass on it. Never lower the
+   ceiling to force a "successful" run.
+8. **Label**: `T` = the smallest `t` such that `P(X ≤ t) ≥ 0.95` for
+   `X ~ Binomial(9, floor_rate)` — an upper-tail bound, never the naive mean
+   `T = floor(floor_rate × 9)`. Cross-variant disagreement **≤ T** →
+   `inert` (boundary inclusive); **> T** → `load-bearing`; any of the 6
+   runs returning `BLOCKED`/`NEEDS_CONTEXT` → `indeterminate`. Never retry
+   a disagreeing candidate — that converts the test into one that always
+   passes.
+
+**The bound is one-sided and protects only the cheap error.** `T` controls
+`P(load-bearing | truly inert) ≤ 5%`; it does not bound the reverse. **An
+`inert` label is evidence for an aggregate stratum contrast — never
+authority to delete that row.** See
+[references/deletion-test-rubric.md](references/deletion-test-rubric.md) for
+the full tail-bound table and the equivalence-vs-behavioral-difference
+examples.
 
 ## Validation Checklist
 
@@ -173,6 +248,8 @@ Run the bundled mechanical gate first — it enforces the deterministic subset o
 ```bash
 bash claude-code/skills/ywc-skill-author/scripts/validate-skill.sh <skill-dir>
 ```
+
+For work on the "## Rationalization Defense" table specifically (deletion testing, row sampling), use the row-range enumerator and the variant builder — `scripts/enumerate-rd-rows.sh <skill-dir>` prints one `<start>-<end>` line range per data row (`--self-check` asserts parity against the canonical row counter across all 46 skills), and `scripts/build-variant.sh <skill-dir> <start> <end>` writes a temp-path copy of `SKILL.md` with that inclusive range deleted, refusing to write on an inverted/out-of-bounds range or a header-orphaning deletion.
 
 Then verify the judgment-based items the script cannot check, before merging a new or modified ywc-* skill:
 

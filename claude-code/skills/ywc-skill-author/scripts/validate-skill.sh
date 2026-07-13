@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Mechanical authoring gate for a single ywc-* skill directory — the
-# deterministic subset of the ywc-skill-author A1–A14 checklist. Complements the
+# deterministic subset of the ywc-skill-author A1–A15 checklist. Complements the
 # repo-wide scripts/validate.sh (which only checks frontmatter presence + README
 # set across all skills) by enforcing the per-skill authoring rules at edit time.
 # Exit 1 on any failure.
@@ -28,18 +28,70 @@ declared="$(sed -n 's/^name:[[:space:]]*//p' "$SKILL" | head -1)"
 # block scalar (>-, text on wrapped indented lines). Join the whole value into
 # one space-normalized string before matching, so phrases that wrap across lines
 # ("Do not use\n  for") and inline single-line descriptions both match.
+#
+# Bounded to the frontmatter block (stops at the closing `---`) and matches
+# hyphenated top-level keys (e.g. `allowed-tools:`), mirroring
+# score.py::split_frontmatter() + parse_yaml_lite(). Without both, a skill
+# whose `description:` is the last frontmatter key swallows the entire body,
+# and a hyphenated key immediately after `description:` gets swallowed into
+# the value.
 desc_text="$(awk '
+  /^---[[:space:]]*$/ { infm++; if (infm == 2) { exit }; next }
+  infm != 1 { next }
   /^description:/ { sub(/^description:[[:space:]]*[>|]?-?[[:space:]]*/, ""); f=1; print; next }
-  f && /^[A-Za-z_]+:/ { f=0 }
+  f && /^[A-Za-z_][A-Za-z0-9_-]*:/ { f=0 }
   f { print }
 ' "$SKILL" | tr '\n' ' ' | tr -s ' ')"
-# Opener: "(ywc) Use <when|before|after|during ...>". Anti-triggers: "Do not
-# use|invoke <for|during|to ...>". Match the stable stem, not a fixed preposition.
-case "$desc_text" in *"(ywc) Use "*) ;; *) fail "description missing '(ywc) Use ...' opener" ;; esac
+# Trim leading/trailing whitespace so the awk-joined text matches score.py's
+# str.startswith() exactly (a leading space from folded-scalar joining would
+# otherwise desync this check from the canonical CI judge).
+desc_text="$(printf '%s' "$desc_text" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+# Strip a single pair of matching outer quotes, mirroring score.py's
+# _unquote_scalar. Some skills (e.g. ywc-project-docs, ywc-e2e-test-strategy)
+# use a quoted single-line `description: "..."` scalar; without this, desc_text
+# starts with a literal '"' and every check below silently desyncs from the
+# canonical CI judge (A2's startswith match fails on a value that is actually
+# well-formed).
 case "$desc_text" in
-  *"Do not use "*|*"Do not invoke "*) ;;
-  *) fail "description missing 'Do not use/invoke ...' anti-triggers" ;;
+  \"*\") desc_text="${desc_text#\"}"; desc_text="${desc_text%\"}"
+         desc_text="${desc_text//\\\"/\"}"; desc_text="${desc_text//\\\\/\\}" ;;
+  \'*\') desc_text="${desc_text#\'}"; desc_text="${desc_text%\'}"; desc_text="${desc_text//\'\'/\'}" ;;
 esac
+
+# A2/A3 (unified with score.py:286-287, the canonical CI judge — 000059-020).
+# Opener must start with the literal stem "(ywc) Use when" (not a substring
+# match, not "Use before/after/during"). Anti-trigger must match
+# "Do not use (for|during|when|in)" — "Do not invoke" is no longer accepted;
+# it passed here previously but always failed score.py's A3.
+case "$desc_text" in "(ywc) Use when"*) ;; *) fail "description does not start with '(ywc) Use when' (A2)" ;; esac
+printf '%s' "$desc_text" | grep -qE 'Do not use (for|during|when|in)\b' \
+  || fail "description missing 'Do not use (for|during|when|in) ...' anti-trigger (A3)"
+
+# A15 (description word cap, FR-5/AC12 — 000059-020). Boundary inclusive:
+# 80 PASS, 81 FAIL. Word count via bash IFS splitting (locale-independent,
+# unlike `wc -w`, which disagrees with itself across locales on CJK-heavy
+# text). Enforcement mode follows the skill-pruning-pilot evidence gate
+# (docs/ywc-plans/prune-report-rationalization-defense.md): the pilot run
+# concluded INCONCLUSIVE (pooled floor_rate 0.5333 > 0.25 ceiling), so this
+# check is advisory (warn, do not fail the build) until a future pilot run
+# reaches a VALID ceiling and passes AC9's evidence gate.
+# `set -f` disables pathname expansion for the duration of the unquoted
+# `set --` below — without it, a description containing a glob metacharacter
+# (e.g. this very file's own "ywc-*" trigger phrase) undergoes pathname
+# expansion against the caller's $PWD in addition to the intended word
+# splitting, silently inflating word_count by however many files/dirs happen
+# to match in whatever directory the script is invoked from.
+# shellcheck disable=SC2086 # intentional word-splitting for a locale-independent count
+set -f
+set -- $desc_text
+set +f
+word_count="$#"
+warns=0
+if [ "$word_count" -gt 80 ]; then
+  echo "WARN: description is $word_count words (> 80 word cap) (A15) [advisory — skill-pruning-pilot run was INCONCLUSIVE, see docs/ywc-plans/prune-report-rationalization-defense.md]"
+  warns=$((warns + 1))
+fi
 
 # --- Body ---
 grep -qE '^\*\*Announce at start:\*\*' "$SKILL" || fail "missing '**Announce at start:**' line"
@@ -70,7 +122,11 @@ if [ -d "$DIR/references" ]; then
 fi
 
 if [ "$errs" -eq 0 ]; then
-  echo "PASS: $name ($lines lines) — all mechanical checks passed"
+  if [ "$warns" -gt 0 ]; then
+    echo "PASS: $name ($lines lines) — all mechanical checks passed, $warns advisory warning(s) above"
+  else
+    echo "PASS: $name ($lines lines) — all mechanical checks passed"
+  fi
 else
   echo ""
   echo "$errs check(s) failed for $name"

@@ -25,6 +25,13 @@
 - 새 skill의 경우: skill 목적, 주요 trigger 시나리오
 - 기존 skill audit의 경우: 대상 skill 경로
 
+## Report-Only Audit
+
+Audit workflow는 bounded read-only inspection입니다. bundled mechanical report로
+시작하고 evidence와 deletion judgment를 분리합니다. 삭제 후보는 baseline → one
+removal → same-prompt comparison 후 retain, revert, 또는 escalate하며 target을
+자동 삭제하거나 수정하지 않습니다.
+
 ## 출력
 
 - 표준 구조 (Frontmatter + Rationalization Defense + Workflow + Validation Checklist)를 갖춘 SKILL.md

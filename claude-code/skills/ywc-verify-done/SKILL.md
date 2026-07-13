@@ -2,15 +2,14 @@
 name: ywc-verify-done
 description: >-
   (ywc) Use when about to claim that work is complete, tests pass, the build
-  succeeds, a bug is fixed, requirements are met, or a delegated subagent has
-  finished — and before any commit, PR creation, executor handoff, or task
-  transition. Triggers: "완료", "다 됐어", "끝났어", "끝났습니다", "verify
-  done", "검증해줘", "done", "completed", "finished", "ready to merge",
-  "完了", "終わった", "終わりました", "確認お願いします", "ywc-verify-done".
-  Do not use for ongoing implementation drafting (use ywc-code-gen), root-cause
-  debugging (use ywc-debug-rootcause), pre-implementation confidence assessment
-  (use ywc-confidence-gate), or codebase exploration before planning (use
-  ywc-plan).
+  succeeds, a bug is fixed, requirements are met, or a subagent finishes —
+  and before commit, PR creation, executor handoff, or task transition.
+  Triggers: "완료", "다 됐어", "끝났어", "verify done", "검증해줘", "done",
+  "finished", "ready to merge", "完了", "終わった", "確認お願いします",
+  "ywc-verify-done". Do not use for ongoing implementation drafting (use
+  ywc-code-gen), root-cause debugging (use ywc-debug-rootcause),
+  pre-implementation confidence assessment (use ywc-confidence-gate), or
+  codebase exploration before planning (use ywc-plan).
 category: discipline
 phase: pre-handoff
 requires: []
