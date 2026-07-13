@@ -181,6 +181,51 @@ edit the audited target during the audit, or invoke an executor. The full
 rubric, role matrix, and examples are in
 [references/audit-workflow.md](references/audit-workflow.md).
 
+### Deletion Test (decidable procedure)
+
+The "compare" step above is not free-form judgment — it follows this 8-step
+procedure so a proposed Rationalization Defense row removal is judged the
+same way every time, never by the agent grading its own prose.
+
+1. **Enumerate** candidates via `scripts/enumerate-rd-rows.sh`. One candidate
+   = one data row, keyed `<file>:<start>-<end>`.
+2. **Draw the stratified sample**: 40 from Stratum A (row positions 1–4), 40
+   from Stratum B (positions 5+), at most one row per skill per stratum.
+   Write the drawn list to the report **before** any dispatch — a resumed
+   run reads it, never re-draws.
+3. **Bind a scenario**: reuse an `evals/evals.json` `prompt` verbatim if one
+   exists, else synthesize from the skill's `description` triggers. Record
+   it for reproducibility. Never read `expected_output`.
+4. **Build the variant** via `scripts/build-variant.sh` only — never
+   hand-edited; an incidental edit invalidates the contrast.
+5. **Dispatch 3 + 3, blind**: 3 subagents against the original body, 3
+   against the deleted body, all on the same scenario. No subagent is told
+   which variant it holds, that a deletion test is running, or that the
+   authoring rules exist. Each returns an artifact **path** only.
+6. **Compare** per [references/deletion-test-rubric.md](references/deletion-test-rubric.md):
+   within-variant disagreement (3 original pairs + 3 deleted pairs, 6
+   total) vs. cross-variant disagreement (3×3 = 9 original-vs-deleted).
+7. **Pool the noise floor before labeling, and check the validity ceiling.**
+   `floor_rate` = total within-variant disagreements ÷ (6 × sample size).
+   `floor_rate > 0.25` → the run is `INCONCLUSIVE`; every candidate becomes
+   `indeterminate` and no evidence gate can pass on it. Never lower the
+   ceiling to force a "successful" run.
+8. **Label**: `T` = the smallest `t` such that `P(X ≤ t) ≥ 0.95` for
+   `X ~ Binomial(9, floor_rate)` — an upper-tail bound, never the naive mean
+   `T = floor(floor_rate × 9)`. Cross-variant disagreement **≤ T** →
+   `inert` (boundary inclusive); **> T** → `load-bearing`; any of the 6
+   runs returning `BLOCKED`/`NEEDS_CONTEXT` → `indeterminate`. Never retry
+   a disagreeing candidate — that converts the test into one that always
+   passes.
+
+**The bound is one-sided and protects only the cheap error.** `T` controls
+`P(load-bearing | truly inert) ≤ 5%`; it does not bound the reverse. **An
+`inert` label is evidence for an aggregate stratum contrast — never
+authority to delete that row.** See
+[references/deletion-test-rubric.md](references/deletion-test-rubric.md) for
+the full tail-bound table and the equivalence-vs-behavioral-difference
+examples.
+
 ## Validation Checklist
 
 Run the bundled mechanical gate first — it enforces the deterministic subset of the checklist below (name/description shape, announce line, 500-line cap, README locale set, no `@ywc-` force-loads, reference pointers + min-length) for a single skill and exits non-zero on any failure:
