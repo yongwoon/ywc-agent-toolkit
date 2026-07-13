@@ -1108,18 +1108,19 @@ graph LR
 
 > 정확히 **하나만** 실행된다. `000057-020` report의 증거 게이트(AC9: `p < 0.05` AND Stratum B inert 비율 > Stratum A, 그리고 ceiling 판정이 `VALID`)가 분기를 결정한다.
 
-### Phase 000059 — `invocation:` tier (hard gate: Phase 000058 완료)
+### Phase 000059 — description 80단어 상한 (hard gate: Phase 000058 완료)
 
-- `000059-010-refactor-invocation-backfill-a` → Phase 000058 완료
-- `000059-020-refactor-invocation-backfill-b` → Phase 000058 완료
-- `000059-030-refactor-callee-only-description-trim` → `000059-010`, `000059-020`, `000055-010`
-- `000059-040-infra-invocation-tier-validator` → `000059-030`, `000057-020`
+- `000059-010-refactor-description-word-cap` → Phase 000058 완료, `000055-010`
+- `000059-020-infra-description-cap-validator` → `000059-010`, `000055-030`, `000057-020`
+
+> **Phase 000059는 재작성되었다.** 초안은 `invocation:` tier(4개 task, 46개 파일에 frontmatter key 추가)였으나, 측정 결과 **`score.py:288`의 `A4_multilingual`과 정면 충돌**한다는 사실이 드러났다 — `callee-only` description에서 비-ASCII trigger를 제거하면 A4가 뒤집혀 `S2`가 5→4로 떨어지고 `score.py --ci`가 regression으로 build를 FAIL시킨다(AC13 위반). 게다가 tier가 평상 80단어 상한 대비 얻는 추가 절감은 **5–10 %p** 뿐이었다(상한만으로 17 %, 4,154 → 3,445 단어). tier는 별도 spec으로 유예되었고 사양도 그에 맞춰 수정되었다.
 
 ## Parallel Execution Notes
 
 - **Initial ready set**: `000055-010`, `000055-020`, `000055-030`, `000055-040` — 파일 소유가 겹치지 않는다 (각각 `validate-skill.sh` / 신규 script 2개 / `ywc-skill-author` README 6개 / `ywc-parallel-executor`).
-- **Phase 000059 내부 병렬**: `000059-010`과 `000059-020`은 서로 다른 23개 skill을 소유하므로 진짜 병렬 실행 가능. `-030`은 두 task가 모두 merge된 뒤에만 시작한다 (같은 파일의 `description:` 을 편집).
-- **000059의 task 순서가 안전장치다**: backfill(`-010`/`-020`) → trim(`-030`) → validator(`-040`). validator를 먼저 켜면 46개가 아직 예산 밖이라 CI가 즉시 깨진다.
+- **000059의 task 순서가 안전장치다**: 재작성(`-010`) → validator(`-020`). validator를 먼저 켜면 29개 description이 아직 예산 밖이라 CI가 즉시 깨진다.
+- **`000059-010`은 A4를 깨뜨리면 안 된다**: `score.py:288`이 모든 description에 **한글 + 일본어 문자 존재**를 요구하며 46/46이 통과 중이다. 하나라도 뒤집히면 `S2`가 `round(9/10*5)`=4로 떨어져 `--ci`가 regression으로 FAIL한다. A4는 *존재* 검사이지 길이 검사가 아니므로, 다국어 trigger는 **압축하되 없애지 않는다**.
+- **`000059-020`은 두 validator의 A2/A3 불일치를 제거한다**: `validate-skill.sh`가 `score.py`보다 느슨해서(`Do not invoke` 허용, opener를 substring으로 검사) 재작성이 그 사각지대에 착지하면 로컬은 통과하고 CI가 깨진다. **`score.py`는 canonical이자 Critical Surface이므로 건드리지 않고, 로컬 validator를 그쪽으로 조인다.**
 - **Cross-spec 충돌**: 부모 task `000053-010`이 `ywc-skill-author/SKILL.md`와 `scripts/`를 편집한다. `000055-010`, `000055-020`, `000056-010`은 모두 `000053-010` merge 이후에만 시작한다.
 - **Critical Surface**: `000058-010`만이 `.claude/skills/ywc-toolkit-eval/**`(46개 skill 전체의 CI 게이트)를 건드린다. gray-box 위임 금지. `bash scripts/validate.sh`는 이 scorer를 **실행하지 않으므로**(`:691-694`는 codex용만), `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` 가 필수 증거다.
 - **Global invariants (모든 phase 이후 검증)**: AC1(두 번째 meta-skill 없음), AC2(RD 행 삭제 0건), AC13(`scripts/validate.sh` + `score.py --ci` + 46개 `validate-skill.sh` 전부 통과).
@@ -1142,16 +1143,15 @@ graph LR
   D2 --> E1
   D1 --> E2[000059-020 invocation backfill B]
   D2 --> E2
-  E1 --> E3[000059-030 description trim]
-  E2 --> E3
-  A1 --> E3
-  E3 --> E4[000059-040 tier validator]
-  C2 --> E4
+  A1 --> E1
+  E1 --> E2[000059-020 cap validator + A2/A3 통합]
+  C2 --> E2
+  A3 --> E2
 ```
 
 ## Open Questions (spec 저자에게 반환 — 비차단)
 
-- [ ] **`callee-only` description이 A3를 통과하는가?** FR-5는 `callee-only` description에서 다국어 trigger와 긴 anti-trigger 목록을 **금지**한다(≤30 단어). 그러나 `validate-skill.sh`의 A3가 `Triggers:` / `Do not use for:` 구조를 요구한다면, `000059-030`의 trim이 A3를 깨뜨린다. 사양에 이 상호작용에 대한 AC가 없다. `000059-040` 구현 전에 A3의 정확한 검사 내용을 확인하고, 필요하면 A3에 `callee-only` 예외를 넣어야 한다.
+- [ ] **사람이 진짜로 부르지 않는 skill이 몇 개인가?** 유예된 `invocation:` tier의 존재 근거가 이 수에 달려 있다. call-graph 참조 수는 *씨앗*이지 답이 아니다 — 많이 호출되는 `ywc-impl-review` / `ywc-spec-validate` / `ywc-verify-done` 은 사람도 직접 부른다. 이 수가 크면 tier는 영구 복잡도를 살 값어치가 있고, 4개라면 없다. **후속 spec의 첫 번째 일이다.**
+- [ ] **A4의 다국어 강제 자체도 deletion test 대상 아닌가?** `score.py:288`의 `A4_multilingual`은 A7과 구조적으로 동일한 blanket quota이며 증거로 정당화된 적이 없다. 이 spec의 harness(FR-1)로 답할 수 있다. 여기서 시도하지 않는 이유는 pilot 하나당 quota 하나이고, 419행을 등에 업은 쪽은 A7이기 때문이다.
 - [ ] **후보당 시나리오 1개로 충분한가?** (사양 Open Question) 기본값은 1개이며 후보별로 기록되므로, 이견이 있는 label은 재테스트가 싸다. `000057-020`이 이 기본값으로 실행한다.
 - [ ] **codex 번들도 같은 파일럿을 받는가?** (사양 Open Question) 이 batch는 claude-code 전용이다. `plugins/`는 `codex/skills/`에서만 생성되므로(`scripts/sync-codex-plugin.sh:5`) parity 검사는 깨지지 않는다.
-- [ ] **`cross-skill-graph.md`의 role model이 FR-5 분류보다 먼저 필요한가?** (사양 Open Question) 부모 FR-4가 소유한다. 부모의 분류와 `000059-010`/`-020`의 call-graph 씨앗이 특정 skill에서 불일치하면 **부모가 authoritative**이고, 그 divergence를 기록한다.
