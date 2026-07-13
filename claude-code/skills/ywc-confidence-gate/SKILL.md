@@ -6,8 +6,9 @@ description: >-
   ywc-sequential-executor, or ywc-parallel-executor, or before
   committing to a design path with material rework cost. Scores five
   readiness dimensions and gates with PROCEED/REVIEW/STOP. Triggers:
-  "ready to implement", "should I proceed", "is this ready", "준비
-  됐어", "実装着手", "ywc-confidence-gate". Do not use for completion
+  "ready to implement", "should I proceed", "is this ready",
+  "confidence check", "confidence gate", "준비 됐어", "確信度チェック",
+  "実装着手", "ywc-confidence-gate". Do not use for completion
   verification (use ywc-verify-done), spec quality review (use
   ywc-spec-validate), implementation review (use ywc-impl-review), or
   brainstorming intent (use ywc-brainstorm).

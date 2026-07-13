@@ -5,8 +5,8 @@ description: >-
   generate a starter CLAUDE.md from detected conventions or produce an
   architecture/convention briefing for a new joiner, emitting a printed
   Onboarding Guide plus Starter CLAUDE.md. Triggers: "onboard me", "walk me
-  through this repo", "generate CLAUDE.md", "이 repo 처음이야", "コードベー
-  スを案内して", "ywc-onboard-repo". Do not use for creating a brand-new
+  through this repo", "generate CLAUDE.md", "이 repo 처음이야", "리포
+  분석해줘", "コードベースを案内して", "ywc-onboard-repo". Do not use for creating a brand-new
   repo from scratch (use ywc-project-scaffold), CodeTour .tour walkthroughs,
   ad-hoc single-file explanations (answer directly), or incremental codemap
   refreshes on an already-understood repo.

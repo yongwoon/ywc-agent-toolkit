@@ -8,8 +8,9 @@ description: >-
   check", "디자인 리뉴얼", "디자인이 너무 평범해", "AI 슬롭", "デザインリニューアル",
   "AIっぽいデザインを直して". Do not use for usability/accessibility/UX review (use
   ywc-ui-ux-review), new UI from scratch (use frontend-design/impeccable),
-  backend or product review (use ywc-impl-review/ywc-product-review), or
-  persisting a preference without code changes (use ywc-review-learnings).
+  backend or API review (use ywc-impl-review), product/business strategy
+  review (use ywc-product-review), or persisting a preference without code
+  changes (use ywc-review-learnings).
 ---
 
 # Design Renew — De-Slop & Check
