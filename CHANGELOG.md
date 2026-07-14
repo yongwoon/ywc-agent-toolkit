@@ -11,6 +11,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **codex:** sync planning, PR health, spec validation, onboarding, and parity workflow updates into the Codex plugin package.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
 
+## [1.27.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.26.0...v1.27.0) (2026-07-14)
+
+
+### ### Added
+
+* **code-gen:** add --review flag and force critical-path review ([#137](https://github.com/yongwoon/ywc-agent-toolkit/issues/137)) ([f64dba0](https://github.com/yongwoon/ywc-agent-toolkit/commit/f64dba0eb5928a942f66f2beaa93d74caa13a297))
+* **skill-author:** audit workflow, deletion-test pilot, and 80-word description cap enforcement ([#135](https://github.com/yongwoon/ywc-agent-toolkit/issues/135)) ([940b5d7](https://github.com/yongwoon/ywc-agent-toolkit/commit/940b5d7c53b91c9ec6ecb2844d0c67423c8a2a83))
+
+
+### ### Documentation
+
+* **impl-review:** sync README agent model and locale list ([#139](https://github.com/yongwoon/ywc-agent-toolkit/issues/139)) ([89cc11a](https://github.com/yongwoon/ywc-agent-toolkit/commit/89cc11a99d78fca72c9efa0d658c41bfc315c2d4))
+
 ## [1.26.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.25.0...v1.26.0) (2026-07-10)
 
 
