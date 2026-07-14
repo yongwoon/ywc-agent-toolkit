@@ -40,7 +40,19 @@
     {
       "id": 7,
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/team-invite.md --feature \"team invite flow\" --review.",
-      "expected_output": "After the generated change passes the contract tests and broad verification, invokes ywc-impl-review with the same spec and --working-tree. The review includes staged, unstaged, and untracked generated source files without requiring a review-only commit. A Critical or High correctness finding gets one fix, affected verification re-run, and a re-review; unresolved concerns remain visible and produce DONE_WITH_CONCERNS. The flow does not create a PR or merge a branch.",
+      "expected_output": "After the generated change passes the contract tests and broad verification, invokes ywc-impl-review with the same spec and --working-tree (the default, non---tdd target). The review includes staged, unstaged, untracked, and deleted generated source files without requiring a review-only commit. A Critical or High finding gets one fix, affected verification re-run, and a re-review; unresolved concerns remain visible and produce DONE_WITH_CONCERNS. The flow does not create a PR or merge a branch.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/session-tokens.md --feature \"session token rotation\" --tdd.",
+      "expected_output": "The generated files land on a critical path (session/token), so Step 8 runs even though --review was not passed: it invokes both ywc-impl-review and ywc-security-audit. Because --tdd committed each RED/GREEN/REFACTOR checkpoint and left the working tree clean, the review target is --git-range <pre-generation-sha>..HEAD, not --working-tree. Critical and High findings from BOTH reviews enter the single bounded fix cycle, and the Completion Report carries the security audit status even though no flag requested it.",
+      "expectations": [
+        "Runs Step 8 without --review because a generated file matches a critical path",
+        "Uses --git-range <pre-generation-sha>..HEAD rather than --working-tree under --tdd",
+        "Includes security-audit Critical/High findings in the bounded fix cycle",
+        "Reports the security audit status and never emits DONE with unreported audit findings"
+      ],
       "files": []
     }
   ]

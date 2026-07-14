@@ -23,7 +23,9 @@ Worker 実行前に Contract Snapshot を用意し、Backend、Frontend、QA が
 
 ## 任意の実装レビュー
 
-`--review` を指定すると、生成結果が検証と Confidence Gate を通過した後に `ywc-impl-review` を実行します。review 専用 commit を作成せず、staged・unstaged・untracked の生成変更を確認します。開始前の working tree はクリーンである必要があり、Critical/High の正確性問題は一度修正して再レビューし、残る懸念は結果に保持します。
+`--review` を指定すると、生成結果が検証と Confidence Gate を通過した後に `ywc-impl-review` を実行します。review 専用 commit を作成せず、staged・unstaged・untracked・削除された生成変更を確認します(`--tdd` は checkpoint ごとに commit して working tree を空にするため、その場合の review 対象は `--git-range <pre-generation-sha>..HEAD` に切り替わります)。開始前の working tree はクリーンである必要があり、Critical/High の問題は一度修正して再レビューし、残る懸念は結果に保持します。
+
+**`--review` なしでも**、生成ファイルが critical path(auth, payment, crypto, PII, external input)に該当する場合は `ywc-impl-review` と `ywc-security-audit` を強制実行します(`ywc-sequential-executor` と同じ契約)。**両方の** review の Critical/High finding が 1 回の fix cycle の対象となり、いずれかが `BLOCKED`/`NEEDS_CONTEXT` を返した場合は成功として報告せずそのまま伝播します。この Skill は merge 権限を持たないため、gate は blocking ではなく advisory です — 残った finding は状態を `DONE_WITH_CONCERNS` に下げるだけで、生成コードを破棄しません。
 
 ## sequential-executor との関係
 

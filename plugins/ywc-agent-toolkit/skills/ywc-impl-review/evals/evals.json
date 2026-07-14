@@ -15,11 +15,12 @@
     {
       "id": 2,
       "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --working-tree.",
-      "expected_output": "Builds one review target from staged, unstaged, and untracked source changes without creating a commit. It supplies tracked diffs and untracked file contents to the review workers, and returns NEEDS_CONTEXT rather than an all-clear report when no reviewable source files are present.",
+      "expected_output": "Builds one review target from staged, unstaged, untracked, and deleted source changes without creating a commit. It supplies tracked diffs and untracked file contents to the review workers, and returns NEEDS_CONTEXT rather than an all-clear report when no reviewable source files are present.",
       "expectations": [
         "Does not combine --working-tree with --code or --git-range",
         "Deduplicates paths across staged and unstaged change lists",
-        "Excludes ignored generated directories and files"
+        "Includes deleted (D) paths so removing a critical-path file cannot bypass the gate",
+        "Excludes ignored generated directories and files, for tracked and untracked paths alike"
       ]
     }
   ]

@@ -83,7 +83,9 @@ All other mid-execution pauses are not permitted. Phase transitions (Phase 1 →
 git branch --show-current
 ```
 
-**Clean-tree precondition (Step 8 review targets).** Whenever Step 8 will run — `--review` was passed, *or* the spec names a critical path — also run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first. Step 8 reviews the working tree, so pre-existing changes would be reviewed as if this invocation had generated them.
+**Clean-tree precondition (unconditional).** Always run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first.
+
+This check is **not** conditioned on `--review`, and deliberately so. Step 8's critical-path trigger is evaluated against the **generated file set**, which does not exist until Phase 1 completes — so at Branch Setup time it is unknowable whether Step 8 will fire. Gating the check on "the spec names a critical path" would miss exactly the dangerous case: a spec that never mentions auth, whose generated code lands in `src/auth/` anyway. A dirty tree at that point would be reviewed as if this invocation had generated it. Checking unconditionally costs one `git status` call; getting it wrong silently mixes someone else's uncommitted work into a security review.
 
 If already on a feature branch (e.g. `feature/<something>`), proceed. If on a long-lived branch (`main`, `develop`, `master`), create and check out a feature branch now:
 
@@ -195,19 +197,26 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
    | `--review` passed | `/ywc-impl-review --spec <spec-path> --working-tree` |
    | Any generated file matches a **critical path** — forced, **even without `--review`** | `/ywc-impl-review --spec <spec-path> --working-tree` **and** `/ywc-security-audit` |
 
-   `--working-tree` reviews the staged, unstaged, and untracked generated changes **without creating a review-only commit** — which is why the Branch Setup step requires a clean tree before generation (see Branch Setup). Do not substitute `--code` or `--git-range`: `--code` reviews files rather than the change, and `--git-range` needs a commit that does not exist yet on the default (non-`--tdd`) path.
+   **Review target depends on `--tdd`** — get this wrong and the gate reviews nothing:
+
+   | Mode | Target flag | Why |
+   |---|---|---|
+   | Default (no `--tdd`) | `--working-tree` | Generated files are uncommitted, so the working tree *is* the change. Clean-tree precondition guarantees it holds only this invocation's output. |
+   | `--tdd` | `--git-range <pre-generation-sha>..HEAD` | `--tdd` commits at each RED/GREEN/REFACTOR checkpoint (Step 7), which **empties the working tree**. `--working-tree` would find no reviewable files and return `NEEDS_CONTEXT` — reviewing nothing while appearing to run. |
+
+   Record `<pre-generation-sha>` (`git rev-parse HEAD`) at Branch Setup, before Phase 1, so the `--tdd` range is available in Step 8. Never substitute `--code`: it reviews files rather than the change, losing the diff the reviewer needs to judge scope.
 
    Critical-path detection runs against the **generated file set after Step 7** (the file list does not exist before Phase 1) using the path list in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4 (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries, with the `CLAUDE.md` `critical_paths` override). This forced escalation mirrors `ywc-sequential-executor`'s Step 4 critical-path rule — the two skills apply the same contract to the same paths.
 
    **Bounded fix cycle (exactly one).** The gate runs *after* Step 7 passes, so the code is already build/type/lint/test clean; the review adds a design and security lane on top.
 
-   1. Run the review(s). Act on **Critical** and **High** correctness findings only — observation-level and Medium/Low findings are carried into the Completion Report, never fixed here.
+   1. Run the review(s). Act on every **Critical** and **High** finding from **both** `/ywc-impl-review` **and** `/ywc-security-audit` — a security finding is not a lesser class of finding, and scoping the cycle to "correctness" would drop exactly the findings the forced critical-path escalation exists to surface. Observation-level and Medium/Low findings are carried into the Completion Report, never fixed here.
    2. If none: report `Review gate: PASS` and proceed to the report with status `DONE`.
    3. If any: dispatch **one** fix pass to the owning lane's worker agent (`ywc-backend-coder` / `ywc-frontend-coder` / `ywc-qa-engineer`, `model: sonnet`), passing only the finding and the offending `file:line` — not the full review transcript.
    4. Re-run the affected Step 7 verification layers on the fixed files, then re-run the review **once**.
-   5. If Critical/High findings survive the single cycle, stop fixing. Report `DONE_WITH_CONCERNS` listing each surviving finding with `file:line` and the reviewer's rationale. **Never enter a third cycle** — a finding that survives one targeted fix is a design decision for the human, not a retry candidate.
+   5. If Critical/High findings survive the single cycle, stop fixing. Report `DONE_WITH_CONCERNS` listing each surviving finding with `file:line`, its source (`impl-review` or `security-audit`), and the reviewer's rationale. **Never enter a third cycle** — a finding that survives one targeted fix is a design decision for the human, not a retry candidate.
 
-   If the review returns `BLOCKED` or `NEEDS_CONTEXT`, propagate that status — never claim generation completed successfully.
+   If **either** `/ywc-impl-review` or `/ywc-security-audit` returns `BLOCKED` or `NEEDS_CONTEXT`, propagate that status — never claim generation completed successfully. A forced (flag-less) critical-path audit reports exactly like a requested one: its status and unresolved findings appear in the Completion Report whether or not `--review` was passed. Never emit `DONE` while a security audit's findings go unreported.
 
    `ywc-code-gen` does not merge, so this gate is **advisory, not blocking**: a surviving finding downgrades the status and is surfaced, it does not delete the generated code. The blocking decision belongs to whoever owns the merge boundary (the executor, the PR reviewer, or the user). `--review` does not create a PR, commit the generated files, merge a branch, or handle later PR-review comments.
 
@@ -228,7 +237,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - TDD mode: {default-red-gate | --tdd}
 - Tests RED→GREEN: {confirmed | N/A (exception: <reason>)}
 - Critical modules (internal review required): {none | <file list> — /ywc-security-audit RUN in Step 8}
-- Review gate: {skipped (not requested, no critical path) | PASS | PASS after 1 fix cycle | CONCERNS — N Critical/High surviving} — {trigger: --review | critical-path forced}
+- Review gate: {skipped (not requested, no critical path) | PASS | PASS after 1 fix cycle | CONCERNS — N Critical/High surviving} — {trigger: --review | critical-path forced} — {target: --working-tree | --git-range <sha>..HEAD (--tdd)}
+- Security audit: {N/A — no critical path | PASS | CONCERNS — N Critical/High surviving | BLOCKED | NEEDS_CONTEXT} — required whenever the critical-path trigger fired, with or without `--review`
 
 ### Generated Files
 - Backend: [file list, each marked [P1] or [P2]]
