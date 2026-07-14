@@ -10,7 +10,10 @@
 
 ```text
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
 ```
+
+`--working-tree` 无需创建 commit，即可审查 staged、unstaged 和 untracked 的 source 改动。请勿与 `--code` 或 `--git-range` 结合使用。
 
 ## 执行 Agent
 

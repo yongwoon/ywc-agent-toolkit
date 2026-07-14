@@ -36,6 +36,12 @@
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/simple-profile-badge.md --feature \"profile badge\". The worker can also refactor adjacent profile utilities and add a generic badge framework for future variants.",
       "expected_output": "The Phase 1 worker prompt includes Simplicity + Surgical Changes guidance. Workers must implement the smallest complete change that satisfies the assigned Contract Snapshot and layer spec, reject speculative abstractions or generic frameworks unless required by the contract, avoid adjacent cleanup outside the assigned layer, and return NEEDS_CONTEXT when the contract is missing or ambiguous instead of inventing one.",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/team-invite.md --feature \"team invite flow\" --review.",
+      "expected_output": "After the generated change passes the contract tests and broad verification, invokes ywc-impl-review with the same spec and --working-tree. The review includes staged, unstaged, and untracked generated source files without requiring a review-only commit. A Critical or High correctness finding gets one fix, affected verification re-run, and a re-review; unresolved concerns remain visible and produce DONE_WITH_CONCERNS. The flow does not create a PR or merge a branch.",
+      "files": []
     }
   ]
 }

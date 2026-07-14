@@ -6,6 +6,7 @@ A Skill for generating code across multiple layers simultaneously. Runs Backend 
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## Execution Agents
@@ -20,6 +21,10 @@ A Skill for generating code across multiple layers simultaneously. Runs Backend 
 
 Before workers run, the skill prepares a shared Contract Snapshot so Backend, Frontend, and QA use the same public contracts. Behavior-changing generation is test-first by default; `--tdd` enables stricter RED/GREEN/REFACTOR checkpoint commits.
 Final reports keep `Implementation Notes` only for non-obvious decisions that materially affect the generated code shape.
+
+## Optional implementation review
+
+Use `--review` to run `ywc-impl-review` after generation passes verification and its Confidence Gate. It reviews the staged, unstaged, and untracked generated changes without a review-only commit. Start with a clean working tree; Critical or High correctness findings get one fix-and-re-review pass, while unresolved concerns remain in the result.
 
 ## Relationship with sequential-executor
 

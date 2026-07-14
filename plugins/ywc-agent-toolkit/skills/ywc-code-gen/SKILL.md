@@ -41,6 +41,7 @@ When tempted to skip a step, check this table first:
 | `--feature` | `--feature "desc"` | `--feature "auto-target API"` | Feature description to generate (required) |
 | `--skip-reuse-check` | flag | | Skip the Step 0 reuse gate and proceed directly to generation |
 | `--tdd` | flag | | Enable strict RED/GREEN/REFACTOR checkpoint commits; baseline generation still follows test-first / contract-test-first behavior without this flag |
+| `--review` | flag | | After verification and the Confidence Gate, run `ywc-impl-review` against the current working tree before reporting completion |
 
 ## Advisor Pattern
 
@@ -66,6 +67,8 @@ All other mid-execution pauses are not permitted. Phase transitions (Phase 1 →
 ```bash
 git branch --show-current
 ```
+
+When `--review` is set, also run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first. The later working-tree review must contain only this invocation's generated changes.
 
 If already on a feature branch (e.g. `feature/<something>`), proceed. If on a long-lived branch (`main`, `develop`, `master`), create and check out a feature branch now:
 
@@ -159,6 +162,14 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined by the installed `ywc-tdd-ritual` skill. When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
 
+8. **Implementation Review** (only when `--review` is set) — After Step 7 passes and the Confidence Gate permits emission, invoke `ywc-impl-review --spec <spec-path> --working-tree`. This reviews all generated staged, unstaged, and untracked source changes without creating a review-only commit.
+
+   - `DONE`: record `Implementation review: PASS` and continue.
+   - `DONE_WITH_CONCERNS`: distinguish correctness-level Critical/High findings from observation-level concerns. Fix correctness-level findings once, rerun the affected verification layers, then re-run the review. Preserve any remaining concerns in the final report and return `DONE_WITH_CONCERNS`; do not conceal them.
+   - `BLOCKED` or `NEEDS_CONTEXT`: propagate that status; do not claim generation completed successfully.
+
+   Do not run this step unless requested: it adds a five-axis review pass and advisor work. `--review` does not create a PR, commit generated files, merge a branch, or handle later PR-review comments.
+
 ## Output Format
 
 ```text
@@ -170,6 +181,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Phase 2 advisor calls: X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
+- Implementation review: {NOT_REQUESTED|PASS|CONCERNS|BLOCKED|NEEDS_CONTEXT} — {one-line outcome}
 
 ### Generated Files
 - Backend: [file list, each marked [P1] or [P2]]
@@ -223,6 +235,7 @@ Before returning `DONE`, verify:
 - [ ] Phase 2 advisor usage is reported, including dropped candidates when over budget.
 - [ ] Stub scan ran against generated files, or the report states why there were no generated files to scan.
 - [ ] Verification blocks appear before the Completion Status line and support the exact completion claim.
+- [ ] When `--review` is set, its result and any unresolved findings are included before the Completion Status line.
 - [ ] Completion Status is exactly one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`.
 
 ## Banned Output Patterns (Hard Failures)

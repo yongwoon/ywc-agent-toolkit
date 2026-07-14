@@ -10,6 +10,7 @@ Una Skill para generar código en múltiples capas simultáneamente. Ejecuta los
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## Agentes de ejecución
@@ -23,6 +24,10 @@ Una Skill para generar código en múltiples capas simultáneamente. Ejecuta los
 ## Contrato y baseline TDD
 
 Antes de ejecutar los workers, la Skill prepara un Contract Snapshot compartido para que Backend, Frontend y QA usen los mismos public contracts. La generación que cambia comportamiento es test-first por defecto; `--tdd` habilita checkpoint commits RED/GREEN/REFACTOR más estrictos.
+
+## Revisión de implementación opcional
+
+Usa `--review` para ejecutar `ywc-impl-review` después de que la generación supere la verificación y el Confidence Gate. Revisa cambios generados staged, unstaged y untracked sin crear un commit exclusivo de revisión. El working tree debe estar limpio al empezar; los hallazgos de corrección Critical/High reciben una pasada de corrección y nueva revisión, y las preocupaciones no resueltas quedan en el resultado.
 
 ## Relación con sequential-executor
 

@@ -6,6 +6,7 @@
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## 실행 Agent
@@ -19,6 +20,10 @@
 ## Contract / TDD baseline
 
 Worker 실행 전에 Backend, Frontend, QA 가 같은 public contract 를 보도록 Contract Snapshot 을 준비합니다. 동작 변경이 있는 생성은 기본적으로 test-first 로 진행하며, `--tdd`는 더 엄격한 RED/GREEN/REFACTOR checkpoint commit 모드입니다.
+
+## 선택적 구현 리뷰
+
+`--review`를 사용하면 생성 결과가 검증과 Confidence Gate를 통과한 뒤 `ywc-impl-review`를 실행합니다. review-only commit 없이 staged, unstaged, untracked 생성 변경을 검토합니다. 시작 전 working tree는 깨끗해야 하며, Critical/High 정확성 이슈는 한 번 수정 후 재검토하고 남은 우려는 결과에 그대로 남깁니다.
 
 ## sequential-executor 와의 관계
 

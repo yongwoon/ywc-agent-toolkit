@@ -6,6 +6,7 @@
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## 実行 Agent
@@ -19,6 +20,10 @@
 ## Contract / TDD baseline
 
 Worker 実行前に Contract Snapshot を用意し、Backend、Frontend、QA が同じ public contract を参照するようにします。振る舞いを変更する生成は既定で test-first になり、`--tdd` はより厳密な RED/GREEN/REFACTOR checkpoint commit モードです。
+
+## 任意の実装レビュー
+
+`--review` を指定すると、生成結果が検証と Confidence Gate を通過した後に `ywc-impl-review` を実行します。review 専用 commit を作成せず、staged・unstaged・untracked の生成変更を確認します。開始前の working tree はクリーンである必要があり、Critical/High の正確性問題は一度修正して再レビューし、残る懸念は結果に保持します。
 
 ## sequential-executor との関係
 

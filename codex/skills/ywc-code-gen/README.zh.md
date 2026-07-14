@@ -10,6 +10,7 @@
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## 执行代理
@@ -23,6 +24,10 @@
 ## Contract 和 TDD baseline
 
 在运行 worker 之前，本技能会准备共享的 Contract Snapshot，让后端、前端和 QA 使用同一组公共契约。改变行为的生成默认采用 test-first；`--tdd` 会启用更严格的 RED/GREEN/REFACTOR checkpoint commit。
+
+## 可选实现审查
+
+使用 `--review` 会在生成结果通过验证和 Confidence Gate 后运行 `ywc-impl-review`。它无需创建仅用于审查的 commit，即可审查 staged、unstaged 和 untracked 的生成改动。开始前 working tree 必须干净；Critical/High 正确性问题可修复一次并重新审查，未解决的疑虑会保留在结果中。
 
 ## 与 sequential-executor 的关系
 

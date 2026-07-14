@@ -6,7 +6,10 @@
 
 ```text
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
 ```
+
+`--working-tree` は commit を作成せず、staged・unstaged・untracked の source 変更をレビューします。`--code` や `--git-range` と併用しないでください。
 
 ## 実行 Agent
 
