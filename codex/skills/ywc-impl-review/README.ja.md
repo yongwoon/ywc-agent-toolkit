@@ -1,6 +1,6 @@
 # ywc-impl-review
 
-実装完了後、PR 作成前に仕様適合性を総合検証する Skill です。3つの Agent (Reviewer + Security + QA) を並列で実行します。
+実装完了後、PR 作成前に仕様適合性を総合検証する Skill です。Phase 1 で 5つの Agent (Architecture / Design / Devex / Security / QA — Sonnet 4つ、Haiku 1つ) を並列で実行し、曖昧な finding は Phase 2 Opus Advisor にエスカレーションします。
 
 ## 使用方法
 
@@ -13,15 +13,19 @@
 
 ## 実行 Agent
 
-| Agent                 | 検証内容                                                |
-| --------------------- | ------------------------------------------------------- |
-| Reviewer Agent (opus) | 仕様に対する実装の漏れ/差異、コード品質、パターン一貫性 |
-| Security Agent (opus) | OWASP Top 10、認証/認可の漏れ、Input Validation         |
-| QA Agent (sonnet)     | Test Coverage 分析、漏れている Test Case の提案         |
+| Agent                  | 検証内容                                                          |
+| ----------------------- | -------------------------------------------------------------------- |
+| Architecture (sonnet)  | Module 境界、Layering、Dependency 方向、構造的仕様適合性            |
+| Design (sonnet)        | API/Interface 設計、Naming、Signature、Error Model、Contract 仕様適合性 |
+| Devex (sonnet)         | 可読性、Error Message、Logging、Documentation、Debuggability        |
+| Security (sonnet)      | OWASP Top 10 分析                                                    |
+| QA (haiku)             | Test Coverage の欠落、不足している Test Case                        |
+
+Phase 2 (opus) — 上記 5つの Agent のうち曖昧な finding のみをエスカレーションして再検討します（Budget: 5回、共有）。
 
 ## 出力形式
 
-統合 Report — 3つの Agent の結果を Aggregator が統合し、重大度別の分類および修正優先順位を提供します。
+統合 Report — Aggregator が Phase 1 の finding と Phase 2 Advisor の判定を統合し、重大度別の分類および修正優先順位を提供します。
 
 ## Triggering
 
@@ -32,3 +36,5 @@
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Chinese](./README.zh.md)
+- [Spanish](./README.es.md)

@@ -1,6 +1,6 @@
 # ywc-impl-review
 
-A Skill that performs comprehensive implementation conformance verification before creating a PR after implementation is complete. It runs 3 Agents (Reviewer + Security + QA) in parallel.
+A Skill that performs comprehensive implementation conformance verification before creating a PR after implementation is complete. It runs 5 Phase 1 workers (Architecture / Design / Devex / Security / QA — 4 on Sonnet, 1 on Haiku) in parallel, then escalates ambiguous findings to a Phase 2 Opus advisor.
 
 ## Usage
 
@@ -13,15 +13,19 @@ A Skill that performs comprehensive implementation conformance verification befo
 
 ## Execution Agents
 
-| Agent                 | Verification Scope                                                      |
-| --------------------- | ----------------------------------------------------------------------- |
-| Reviewer Agent (opus) | Implementation gaps vs specification, code quality, pattern consistency |
-| Security Agent (opus) | OWASP Top 10, missing authentication/authorization, Input Validation    |
-| QA Agent (sonnet)     | Test Coverage analysis, missing Test Case suggestions                   |
+| Agent                  | Verification Scope                                                              |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| Architecture (sonnet)  | Module boundaries, layering, dependency direction, structural spec conformance   |
+| Design (sonnet)        | API/interface design, naming, signatures, error models, contract spec conformance |
+| Devex (sonnet)         | Readability, error messages, logging, documentation, debuggability              |
+| Security (sonnet)      | OWASP Top 10 analysis                                                            |
+| QA (haiku)             | Test coverage gaps, missing test cases                                          |
+
+Phase 2 (opus) — escalates only ambiguous findings from the five workers above (budget: 5 calls, shared).
 
 ## Output Format
 
-Integrated Report — Aggregator merges results from 3 Agents, classified by severity with prioritized fix recommendations.
+Integrated Report — Aggregator merges Phase 1 findings with Phase 2 advisor verdicts, classified by severity with prioritized fix recommendations.
 
 ## Triggering
 
@@ -32,3 +36,5 @@ Trigger conditions for this Skill are defined in the `description` field of [SKI
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+- [Chinese](./README.zh.md)
+- [Spanish](./README.es.md)

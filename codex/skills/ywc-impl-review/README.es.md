@@ -4,7 +4,7 @@
 
 # ywc-impl-review
 
-Un Skill que realiza una verificación integral de conformidad de implementación antes de crear un PR una vez que la implementación está completa. Ejecuta 3 Agentes (Reviewer + Security + QA) en paralelo.
+Un Skill que realiza una verificación integral de conformidad de implementación antes de crear un PR una vez que la implementación está completa. Ejecuta 5 workers de Phase 1 (Architecture / Design / Devex / Security / QA — 4 en Sonnet, 1 en Haiku) en paralelo, y escala los findings ambiguos a un Advisor de Phase 2 en Opus.
 
 ## Uso
 
@@ -19,13 +19,17 @@ Un Skill que realiza una verificación integral de conformidad de implementació
 
 | Agente | Ámbito de verificación |
 | --------------------- | ----------------------------------------------------------------------- |
-| Reviewer Agent (opus) | Brechas de implementación vs especificación, calidad del código, consistencia de patrones |
-| Security Agent (opus) | OWASP Top 10, autenticación/autorización faltante, validación de entrada |
-| QA Agent (sonnet) | Análisis de cobertura de pruebas, sugerencias de casos de prueba faltantes |
+| Architecture (sonnet) | Límites de Module, Layering, dirección de Dependency, conformidad estructural con la especificación |
+| Design (sonnet) | Diseño de API/Interface, Naming, Signature, Error Model, conformidad de Contract con la especificación |
+| Devex (sonnet) | Legibilidad, Error Message, Logging, Documentation, Debuggability |
+| Security (sonnet) | Análisis OWASP Top 10 |
+| QA (haiku) | Brechas de Test Coverage, Test Case faltantes |
+
+Phase 2 (opus) — escala únicamente los findings ambiguos de los cinco workers anteriores (Budget: 5 llamadas, compartido).
 
 ## Formato de salida
 
-Informe integrado — El Agregador combina los resultados de 3 Agentes, clasificados por severidad con recomendaciones de corrección priorizadas.
+Informe integrado — El Agregador combina los findings de Phase 1 con los veredictos del Advisor de Phase 2, clasificados por severidad con recomendaciones de corrección priorizadas.
 
 ## Activación
 
@@ -36,3 +40,5 @@ Las condiciones de activación para este Skill están definidas en el campo `des
 - [Inglés](./README.en.md)
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
+- [Chino](./README.zh.md)
+- [Español](./README.es.md)
