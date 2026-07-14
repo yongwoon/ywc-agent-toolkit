@@ -10,6 +10,7 @@
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## 执行代理
@@ -23,6 +24,12 @@
 ## Contract 和 TDD baseline
 
 在运行 worker 之前，本技能会准备共享的 Contract Snapshot，让后端、前端和 QA 使用同一组公共契约。改变行为的生成默认采用 test-first；`--tdd` 会启用更严格的 RED/GREEN/REFACTOR checkpoint commit。
+
+## 可选实现审查
+
+使用 `--review` 会在生成结果通过验证和 Confidence Gate 后运行 `ywc-impl-review`。它无需创建仅用于审查的 commit，即可审查 staged、unstaged、untracked 以及被删除的生成改动（`--tdd` 会在每个 checkpoint 提交 commit 并清空 working tree，此时审查目标改为 `--git-range <pre-generation-sha>..HEAD`）。开始前 working tree 必须干净；Critical/High 问题可修复一次并重新审查，未解决的疑虑会保留在结果中。
+
+**即使不加 `--review`**，只要生成文件命中 critical path（auth、payment、crypto、PII、external input），就会强制运行 `ywc-impl-review` 和 `ywc-security-audit`（与 `ywc-sequential-executor` 相同的契约）。**两个** review 的 Critical/High finding 都会进入这一次 fix cycle；任一方返回 `BLOCKED`/`NEEDS_CONTEXT` 时不会报告成功，而是直接传播该状态。本 Skill 无 merge 权限，因此该 gate 是 advisory 而非 blocking — 残留的 finding 只会将状态降级为 `DONE_WITH_CONCERNS`，不会丢弃生成的代码。
 
 ## 与 sequential-executor 的关系
 

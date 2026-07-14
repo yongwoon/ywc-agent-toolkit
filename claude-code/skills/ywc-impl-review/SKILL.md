@@ -34,8 +34,9 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
 | `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
-| `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review (required). `--code` and `--git-range` are mutually exclusive |
-| `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. `--code` and `--git-range` are mutually exclusive |
+| `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review. **Exactly one** of `--code` / `--git-range` / `--working-tree` is required; they are mutually exclusive |
+| `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. Mutually exclusive with `--code` and `--working-tree` |
+| `--working-tree` | flag | | Review the current repository's staged, unstaged, and untracked source changes without creating a commit. Mutually exclusive with `--code` and `--git-range` |
 | `--no-advisor` | flag | | Skip Phase 2 entirely. Use when running on throwaway or prototype code where frontier judgment on ambiguous findings is not worth the latency |
 | `--profile` | `--profile chill\|assertive` | Verbosity dial (default `chill`). `chill` surfaces only correctness / security / logic / runtime-risk findings and suppresses the Style/Docs/Devex-polish nitpick tail (`Low`/`Info`); `assertive` emits those too. Critical/High/Medium are never suppressed. See [coderabbit-methodology.md §1](./references/coderabbit-methodology.md) |
 | `--skip-learnings` | flag | | Skip Step 0 (loading `docs/review-learnings.md`). Use when no learnings file exists or a clean-room review is wanted |
@@ -54,7 +55,12 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
 1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify conventions, tech stack, and PR gate conditions. If `docs/ubiquitous-language.md` exists, read it — the Reviewer subagent must flag identifiers that match a "Synonyms to Avoid" entry instead of the canonical term. Per [coderabbit-methodology.md §3](./references/coderabbit-methodology.md), treat the spec / PR description as the statement of *intent* and trace each changed symbol to its callers/callees before judging it — a locally-fine change can still break a caller's contract.
 
-2. **Read Spec + Code** — When `--git-range` is provided instead of `--code`: run `git diff --name-only <range>` to obtain the changed-file list and treat those files as the review target. Read the specification file and all target code files. This context stays with the parent; do not forward it wholesale to Phase 2.
+2. **Read Spec + Code** — Select exactly one review target:
+   - `--code`: read the supplied path.
+   - `--git-range`: run `git diff --name-only <range>` to obtain the changed-file list.
+   - `--working-tree`: derive the changed-file list without committing — combine `git diff --name-only --diff-filter=ACMRD`, `git diff --cached --name-only --diff-filter=ACMRD`, and `git ls-files --others --exclude-standard`; deduplicate paths; then apply the repository's ignore / generated-path rules to the **combined** list, so a tracked-but-ignored generated file is excluded exactly like an untracked one (`--exclude-standard` covers only the untracked leg). Capture the staged and unstaged diffs for tracked files, and treat each untracked file's full contents as its patch. **`D` (deletion) is included deliberately**: a deleted file is a reviewable change, and dropping it would let the removal of a critical-path module (auth, payment, crypto) pass the gate unseen. For a deleted path, forward the deletion diff and the pre-deletion contents.
+
+   If the selected target has no reviewable source files, return `NEEDS_CONTEXT` and do not report an all-clear review. Read the specification file and every target code file. For range and working-tree targets, provide the bounded relevant diff plus final file contents to the subagents so they can judge both correctness and scope. This context stays with the parent; do not forward it wholesale to Phase 2.
 
 3. **Phase 1 — Parallel Executor Review** — Use the Task tool to spawn five subagents in parallel. Pass `model` explicitly on each call so the executor layer stays at Sonnet or Haiku cost:
    - **Architecture subagent** (`model: sonnet`) — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status (B2) and multi-tenant scope (B6) gaps as one-line cross-references to the Security subagent rather than duplicating them.

@@ -6,7 +6,10 @@ A Skill that performs comprehensive implementation conformance verification befo
 
 ```text
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
 ```
+
+`--working-tree` reviews staged, unstaged, and untracked source changes without requiring a commit. Do not combine it with `--code` or `--git-range`.
 
 ## Execution Agents
 

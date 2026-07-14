@@ -145,6 +145,8 @@ ywc-<sequential|parallel>-executor --all --tasks-dir <tasks-dir> --local-merge -
 
 **Small Path:** invoke `ywc-code-gen` directly against the `plan.md` from Step 3. No executor, no `tasks/` directory. `ywc-code-gen` commits its output to the base branch so the Evaluate Phase can range over it.
 
+Invoke it **without `--review`**. Step 6 (Evaluate Phase) already runs `ywc-impl-review` on the same branch, so passing `--review` reviews it twice per loop iteration. `ywc-code-gen`'s forced critical-path escalation still runs on its own — that is by design and must not be suppressed.
+
 If the executor or `ywc-code-gen` reports a merge conflict or unrecoverable CI error, stop immediately — record to `agentic-log.md` (Step 8) and report (see Edge Cases). Never auto-resolve.
 
 ### Step 6: Evaluate Phase (FR-6)

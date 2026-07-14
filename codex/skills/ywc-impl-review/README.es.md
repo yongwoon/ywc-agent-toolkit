@@ -10,7 +10,10 @@ Un Skill que realiza una verificación integral de conformidad de implementació
 
 ```text
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
 ```
+
+`--working-tree` revisa cambios source staged, unstaged y untracked sin crear un commit. No lo combines con `--code` ni con `--git-range`.
 
 ## Agentes de ejecución
 

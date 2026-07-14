@@ -41,6 +41,7 @@ When tempted to skip a step, check this table first:
 | `--feature` | `--feature "desc"` | `--feature "auto-target API"` | Feature description to generate (required) |
 | `--skip-reuse-check` | flag | | Skip the Step 0 reuse gate and proceed directly to generation |
 | `--tdd` | flag | | Enable strict RED/GREEN/REFACTOR checkpoint commits; baseline generation still follows test-first / contract-test-first behavior without this flag |
+| `--review` | flag | | After verification and the Confidence Gate, run `ywc-impl-review` against the current working tree before reporting completion |
 
 ## Advisor Pattern
 
@@ -66,6 +67,10 @@ All other mid-execution pauses are not permitted. Phase transitions (Phase 1 →
 ```bash
 git branch --show-current
 ```
+
+**Clean-tree precondition (unconditional).** Always run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first. The later working-tree review must contain only this invocation's generated changes.
+
+This check is **not** conditioned on `--review`, and deliberately so. Step 8's critical-path trigger is evaluated against the **generated file set**, which does not exist until Phase 1 completes — so at this point it is unknowable whether Step 8 will fire. Gating the check on "the spec names a critical path" would miss exactly the dangerous case: a spec that never mentions auth, whose generated code lands in an auth/payment/secret path anyway, leaving unrelated uncommitted work mixed into a security review.
 
 If already on a feature branch (e.g. `feature/<something>`), proceed. If on a long-lived branch (`main`, `develop`, `master`), create and check out a feature branch now:
 
@@ -159,6 +164,32 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined by the installed `ywc-tdd-ritual` skill. When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
 
+8. **Implementation Review** — Runs when **either** condition holds; skip entirely when neither does. It runs after Step 7 passes and the Confidence Gate permits emission.
+
+   | Trigger | What runs |
+   |---------|-----------|
+   | `--review` passed | `ywc-impl-review --spec <spec-path> <target>` |
+   | Any generated file matches a **critical path** — forced, **even without `--review`** | `ywc-impl-review --spec <spec-path> <target>` **and** `ywc-security-audit` |
+
+   **`<target>` depends on `--tdd`** — get this wrong and the gate reviews nothing:
+
+   | Mode | Target flag | Why |
+   |---|---|---|
+   | Default (no `--tdd`) | `--working-tree` | Generated files are uncommitted, so the working tree *is* the change. The clean-tree precondition guarantees it holds only this invocation's output. |
+   | `--tdd` | `--git-range <pre-generation-sha>..HEAD` | `--tdd` commits at each RED/GREEN/REFACTOR checkpoint (Step 7), which **empties the working tree**. `--working-tree` would find no reviewable files and return `NEEDS_CONTEXT` — reviewing nothing while appearing to run. |
+
+   Record `<pre-generation-sha>` (`git rev-parse HEAD`) at Branch Setup, before Phase 1, so the `--tdd` range is available here. Critical-path detection runs against the **generated file set after Step 7** (the file list does not exist before Phase 1) using the path list in `references/tdd-deep-module-gray-box.md` §4 (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries, with the `AGENTS.md` `critical_paths` override). This forced escalation mirrors `ywc-sequential-executor`'s critical-path rule — the two skills apply the same contract to the same paths, and a critical path must never depend on the caller remembering to pass a flag.
+
+   Apply the following to the results of **both** `ywc-impl-review` **and** `ywc-security-audit` — a security finding is not a lesser class of finding, and scoping remediation to "correctness" would drop exactly the findings the forced critical-path escalation exists to surface:
+
+   - `DONE`: record `Implementation review: PASS` (and `Security audit: PASS` when the audit ran) and continue.
+   - `DONE_WITH_CONCERNS`: separate Critical/High findings from observation-level concerns. Fix every Critical/High finding **once** — from either review — rerun the affected verification layers, then re-run the review **once**. If Critical/High findings survive that single cycle, stop fixing, preserve them in the final report with `file:line` and their source (`impl-review` or `security-audit`), and return `DONE_WITH_CONCERNS`; do not conceal them and do not enter a third cycle.
+   - `BLOCKED` or `NEEDS_CONTEXT` from **either** review: propagate that status; do not claim generation completed successfully.
+
+   A forced (flag-less) critical-path audit reports exactly like a requested one: its status and unresolved findings appear in the Completion Report whether or not `--review` was passed. Never emit `DONE` while a security audit's findings go unreported.
+
+   Beyond the two triggers above, do not run this step: it adds a five-axis review pass and advisor work. This skill does not merge, so the gate is **advisory, not blocking** — a surviving finding downgrades the status and is surfaced, it does not delete the generated code. `--review` does not create a PR, commit generated files, merge a branch, or handle later PR-review comments.
+
 ## Output Format
 
 ```text
@@ -170,6 +201,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Phase 2 advisor calls: X of 5 budget used
 - Phase 2 adjustments: N design decisions confirmed, M revised
 - Verification gate: {PASS|FAIL|SKIPPED} — {failing phase if FAIL}
+- Implementation review: {NOT_REQUESTED|PASS|CONCERNS|BLOCKED|NEEDS_CONTEXT} — {one-line outcome} — {trigger: --review | critical-path forced} — {target: --working-tree | --git-range <sha>..HEAD (--tdd)}
+- Security audit: {N/A — no critical path|PASS|CONCERNS|BLOCKED|NEEDS_CONTEXT} — required whenever the critical-path trigger fired, with or without `--review`
 
 ### Generated Files
 - Backend: [file list, each marked [P1] or [P2]]
@@ -223,6 +256,7 @@ Before returning `DONE`, verify:
 - [ ] Phase 2 advisor usage is reported, including dropped candidates when over budget.
 - [ ] Stub scan ran against generated files, or the report states why there were no generated files to scan.
 - [ ] Verification blocks appear before the Completion Status line and support the exact completion claim.
+- [ ] Whenever Step 8 ran — because `--review` was set **or** the critical-path trigger fired — the `ywc-impl-review` result, the `ywc-security-audit` result (when the audit ran), and any unresolved Critical/High findings from either are included before the Completion Status line.
 - [ ] Completion Status is exactly one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`.
 
 ## Banned Output Patterns (Hard Failures)
