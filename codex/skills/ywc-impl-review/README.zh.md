@@ -25,11 +25,11 @@
 | Security (sonnet) | OWASP Top 10 分析 |
 | QA (haiku) | Test Coverage 缺口、缺失的 Test Case |
 
-Phase 2（opus）——仅对上述 5 个 Agent 中存在歧义的 finding 进行升级复审（Budget：5 次，共享）。
+Phase 2（opus）——仅对上述 5 个 Agent 中存在歧义的 finding 进行升级复审（Budget：默认 5 次，可通过 `--advisor-budget` 调整，共享）。
 
 ## 输出格式
 
-集成报告——Aggregator 合并 Phase 1 的 finding 与 Phase 2 Advisor 的判定，按严重程度分类，提供优先级修复建议。
+集成报告——Aggregator 合并 Phase 1 的 finding 与 Phase 2 Advisor 的判定，按严重程度分类，提供优先级修复建议。每条 finding 均带有 `[P1]`/`[P2]` marker，标示其 Phase 1/Phase 2 出处。
 
 ## 触发条件
 

@@ -21,11 +21,11 @@ A Skill that performs comprehensive implementation conformance verification befo
 | Security (sonnet)      | OWASP Top 10 analysis                                                            |
 | QA (haiku)             | Test coverage gaps, missing test cases                                          |
 
-Phase 2 (opus) — escalates only ambiguous findings from the five workers above (budget: 5 calls, shared).
+Phase 2 (opus) — escalates only ambiguous findings from the five workers above (default budget: 5 calls, adjustable via `--advisor-budget`, shared).
 
 ## Output Format
 
-Integrated Report — Aggregator merges Phase 1 findings with Phase 2 advisor verdicts, classified by severity with prioritized fix recommendations.
+Integrated Report — Aggregator merges Phase 1 findings with Phase 2 advisor verdicts, classified by severity with prioritized fix recommendations. Each finding carries a `[P1]`/`[P2]` marker indicating its Phase 1/Phase 2 provenance.
 
 ## Triggering
 

@@ -25,11 +25,11 @@ Un Skill que realiza una verificación integral de conformidad de implementació
 | Security (sonnet) | Análisis OWASP Top 10 |
 | QA (haiku) | Brechas de Test Coverage, Test Case faltantes |
 
-Phase 2 (opus) — escala únicamente los findings ambiguos de los cinco workers anteriores (Budget: 5 llamadas, compartido).
+Phase 2 (opus) — escala únicamente los findings ambiguos de los cinco workers anteriores (Budget: 5 llamadas por defecto, ajustable con `--advisor-budget`, compartido).
 
 ## Formato de salida
 
-Informe integrado — El Agregador combina los findings de Phase 1 con los veredictos del Advisor de Phase 2, clasificados por severidad con recomendaciones de corrección priorizadas.
+Informe integrado — El Agregador combina los findings de Phase 1 con los veredictos del Advisor de Phase 2, clasificados por severidad con recomendaciones de corrección priorizadas. Cada finding lleva un marcador `[P1]`/`[P2]` que indica su procedencia de Phase 1/Phase 2.
 
 ## Activación
 

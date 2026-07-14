@@ -21,11 +21,11 @@
 | Security (sonnet)      | OWASP Top 10 分析                                                    |
 | QA (haiku)             | Test Coverage の欠落、不足している Test Case                        |
 
-Phase 2 (opus) — 上記 5つの Agent のうち曖昧な finding のみをエスカレーションして再検討します（Budget: 5回、共有）。
+Phase 2 (opus) — 上記 5つの Agent のうち曖昧な finding のみをエスカレーションして再検討します（Budget: デフォルト 5回、`--advisor-budget` で調整可能、共有）。
 
 ## 出力形式
 
-統合 Report — Aggregator が Phase 1 の finding と Phase 2 Advisor の判定を統合し、重大度別の分類および修正優先順位を提供します。
+統合 Report — Aggregator が Phase 1 の finding と Phase 2 Advisor の判定を統合し、重大度別の分類および修正優先順位を提供します。各 finding には `[P1]`/`[P2]` marker で Phase 1/Phase 2 の provenance が示されます。
 
 ## Triggering
 
