@@ -30,6 +30,8 @@ When tempted to skip a step, check this table first:
 | "I improved the adjacent module's code quality while I was in the file" | Surgical Changes. Remove those improvements. They belong to a different PR and a different review boundary. |
 | "I'll design the module interface as I generate the implementation" | Deep Module: design the public interface before generating the body. Write the API signatures and their contracts first — that is a design decision that belongs to you, not the AI. Generate only the implementation body. Interface decisions made under generation pressure produce shallow modules that are expensive to fix later. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3. |
 | "I'll write the implementation first, tests are easier to add after the shape is clear" | Outrunning the headlights. Without test feedback, AI-generated implementations grow unchecked until they crash at runtime. The default path already gates this: the QA lane authors failing (RED) tests **before** Backend/Frontend implementation is finalized (Phase 1). `--tdd` is the stronger opt-in superset (full RED → GREEN → REFACTOR with checkpoint commits). See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2. |
+| "The code touches auth/payment, but I'm only the generator — I'll list `/ywc-security-audit` under Next Steps and let the caller run it" | A REQUIRED line in a report is not a review; nobody runs it. Critical-path generation invokes `/ywc-impl-review` **and** `/ywc-security-audit` in Step 8 **regardless of `--review`** — the same forced escalation `ywc-sequential-executor` applies. Not owning the merge boundary is a reason the gate cannot *block*, not a reason it cannot *run*. |
+| "`--review` surfaced findings, so I'll keep fixing until it's clean" | The fix loop is **one cycle**. Re-review once; if Critical/High findings survive, report `DONE_WITH_CONCERNS` with the findings listed. An unbounded generate→review→fix loop burns budget and hides a design problem that belongs to the human. |
 | "A referenced type didn't match the spec, so I adjusted the code and moved on" | A silent spec↔reality divergence leaves the spec (the map) stale for every other task that reads it. Log it in Step 6.5's `implementation-notes.md`; if it is **material** (contradicts an Acceptance Criterion, changes the data model, or invalidates an assumption other tasks depend on), also recommend `/ywc-plan --update-spec`. Patch the terrain *and* correct the map — never just the terrain. |
 
 **Violating the letter of these rules is violating the spirit.** A stub committed today is a runtime crash tomorrow.
@@ -42,6 +44,7 @@ When tempted to skip a step, check this table first:
 | `--feature` | `--feature "desc"` | `--feature "auto-target API"` | Feature description to generate (required) |
 | `--skip-reuse-check` | flag | | Skip the Step 0 reuse gate and proceed directly to generation |
 | `--tdd` | flag | | Enable TDD checkpoint commits after each RED/GREEN/REFACTOR stage |
+| `--review` | flag | | Run `/ywc-impl-review` on the generated code in Step 8, with **one** bounded fix cycle. Combines with `--tdd`. Do **not** pass this from a caller that owns its own review pass — see Integration. |
 
 ## Advisor Pattern
 
@@ -62,9 +65,10 @@ Two modes gate the headlights (don't let AI-generated code outrun test feedback)
 
 ## Continuous Execution Rule
 
-Execute all steps (0 → 7) without pausing for user confirmation between steps. Do not ask "shall I proceed to Phase 2?" after Phase 1 completes — proceed immediately. Permitted stops are:
+Execute all steps (0 → 8) without pausing for user confirmation between steps. Do not ask "shall I proceed to Phase 2?" after Phase 1 completes — proceed immediately. Do not ask "shall I run the review?" — Step 8 either runs (because `--review` was passed or a critical path was touched) or it does not. Permitted stops are:
 
 - `--spec` or `--feature` not provided (NEEDS_CONTEXT)
+- Step 8 will run and the working tree is dirty before generation (NEEDS_CONTEXT — see Branch Setup)
 - Spec file unreadable or project context unreadable (BLOCKED)
 - Reuse Gate: decision is Adopt/Extend/Compose and user has not confirmed full generation (stop only for this confirmation, then proceed after response)
 - Verification Gate failure after 1 retry attempt (BLOCKED)
@@ -78,6 +82,8 @@ All other mid-execution pauses are not permitted. Phase transitions (Phase 1 →
 ```bash
 git branch --show-current
 ```
+
+**Clean-tree precondition (Step 8 review targets).** Whenever Step 8 will run — `--review` was passed, *or* the spec names a critical path — also run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first. Step 8 reviews the working tree, so pre-existing changes would be reviewed as if this invocation had generated them.
 
 If already on a feature branch (e.g. `feature/<something>`), proceed. If on a long-lived branch (`main`, `develop`, `master`), create and check out a feature branch now:
 
@@ -182,6 +188,29 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined in [`ywc-tdd-ritual`](../ywc-tdd-ritual/SKILL.md). When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
 
+8. **Review Gate** — Runs when **either** condition holds; skip entirely when neither does (report `Review gate: skipped (not requested, no critical path)`).
+
+   | Trigger | What runs |
+   |---------|-----------|
+   | `--review` passed | `/ywc-impl-review --spec <spec-path> --working-tree` |
+   | Any generated file matches a **critical path** — forced, **even without `--review`** | `/ywc-impl-review --spec <spec-path> --working-tree` **and** `/ywc-security-audit` |
+
+   `--working-tree` reviews the staged, unstaged, and untracked generated changes **without creating a review-only commit** — which is why the Branch Setup step requires a clean tree before generation (see Branch Setup). Do not substitute `--code` or `--git-range`: `--code` reviews files rather than the change, and `--git-range` needs a commit that does not exist yet on the default (non-`--tdd`) path.
+
+   Critical-path detection runs against the **generated file set after Step 7** (the file list does not exist before Phase 1) using the path list in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4 (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries, with the `CLAUDE.md` `critical_paths` override). This forced escalation mirrors `ywc-sequential-executor`'s Step 4 critical-path rule — the two skills apply the same contract to the same paths.
+
+   **Bounded fix cycle (exactly one).** The gate runs *after* Step 7 passes, so the code is already build/type/lint/test clean; the review adds a design and security lane on top.
+
+   1. Run the review(s). Act on **Critical** and **High** correctness findings only — observation-level and Medium/Low findings are carried into the Completion Report, never fixed here.
+   2. If none: report `Review gate: PASS` and proceed to the report with status `DONE`.
+   3. If any: dispatch **one** fix pass to the owning lane's worker agent (`ywc-backend-coder` / `ywc-frontend-coder` / `ywc-qa-engineer`, `model: sonnet`), passing only the finding and the offending `file:line` — not the full review transcript.
+   4. Re-run the affected Step 7 verification layers on the fixed files, then re-run the review **once**.
+   5. If Critical/High findings survive the single cycle, stop fixing. Report `DONE_WITH_CONCERNS` listing each surviving finding with `file:line` and the reviewer's rationale. **Never enter a third cycle** — a finding that survives one targeted fix is a design decision for the human, not a retry candidate.
+
+   If the review returns `BLOCKED` or `NEEDS_CONTEXT`, propagate that status — never claim generation completed successfully.
+
+   `ywc-code-gen` does not merge, so this gate is **advisory, not blocking**: a surviving finding downgrades the status and is surfaced, it does not delete the generated code. The blocking decision belongs to whoever owns the merge boundary (the executor, the PR reviewer, or the user). `--review` does not create a PR, commit the generated files, merge a branch, or handle later PR-review comments.
+
 ## Output Format
 
 ```text
@@ -198,7 +227,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 - Minimalism (Confidence Gate): {score} — {one-line note if < 90}
 - TDD mode: {default-red-gate | --tdd}
 - Tests RED→GREEN: {confirmed | N/A (exception: <reason>)}
-- Critical modules (internal review required): {none | <file list> — /ywc-security-audit REQUIRED}
+- Critical modules (internal review required): {none | <file list> — /ywc-security-audit RUN in Step 8}
+- Review gate: {skipped (not requested, no critical path) | PASS | PASS after 1 fix cycle | CONCERNS — N Critical/High surviving} — {trigger: --review | critical-path forced}
 
 ### Generated Files
 - Backend: [file list, each marked [P1] or [P2]]
@@ -232,7 +262,7 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 | Status | When to use |
 |--------|------------|
 | `DONE` | All files generated with no banned patterns, advisor budget within limit |
-| `DONE_WITH_CONCERNS` | Generation complete but with issues — banned patterns required retry, advisor budget exceeded, or stubs that need manual follow-up |
+| `DONE_WITH_CONCERNS` | Generation complete but with issues — banned patterns required retry, advisor budget exceeded, stubs that need manual follow-up, or Step 8 Critical/High findings surviving the single fix cycle |
 | `BLOCKED` | Generation cannot proceed — spec file missing, project context unreadable, or a critical ambiguity with no resolvable default |
 | `NEEDS_CONTEXT` | `--spec` or `--feature` argument is too vague to generate useful code without clarification |
 
@@ -293,7 +323,7 @@ This skill applies the [Confidence Gate](../references/confidence-gate.md) befor
 | REVIEW (70 – 89) | DONE_WITH_CONCERNS | Emit code, but flag the weakest dimension and the rationale in the completion summary. The reviewer must see this. |
 | STOP (< 70) | BLOCKED | Do not emit code. Report what evidence (architecture scan, reuse search) is missing. |
 
-**Critical-module exception (gray-box is insufficient).** Default review is gray-box — verify the public contract and delegate internals. But when any generated file matches a critical path (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries — full list and `CLAUDE.md` `critical_paths` override in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4), the gate requires **internal** review of those modules, not just an interface check. `ywc-code-gen` cannot merge, so it escalates by surfacing: list the critical files in the completion report and add `/ywc-security-audit` to **Next Steps as REQUIRED** (not optional). Detection runs against the **generated file set after generation** (the file list does not exist before Phase 1).
+**Critical-module exception (gray-box is insufficient).** Default review is gray-box — verify the public contract and delegate internals. But when any generated file matches a critical path (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries — full list and `CLAUDE.md` `critical_paths` override in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4), the gate requires **internal** review of those modules, not just an interface check. That review is **executed, not recommended**: Step 8 invokes `/ywc-impl-review` and `/ywc-security-audit` on the critical files regardless of whether `--review` was passed. `ywc-code-gen` cannot merge, so the gate is advisory — a surviving Critical/High finding downgrades the status to `DONE_WITH_CONCERNS` and is surfaced with `file:line`, rather than blocking. Detection runs against the **generated file set after generation** (the file list does not exist before Phase 1).
 
 The gate score must appear in the completion summary together with the Backend / Frontend / QA file counts. The Phase 2 advisor budget (5 calls) covers gate evaluation; do not double-count.
 
@@ -301,5 +331,6 @@ The gate score must appear in the completion summary together with the Backend /
 
 - **upstream**: After specification is finalized
 - **downstream**: Implementation review (/ywc-impl-review), PR creation
+- **`--review` propagation (caller contract)**: a caller that owns its own review pass MUST NOT pass `--review`, or the same branch is reviewed twice. Concretely, `ywc-agentic`'s Small Path invokes `ywc-code-gen` directly and then reviews in its own Evaluate Phase — it invokes without `--review`. The forced critical-path escalation in Step 8 is **not** suppressible this way; it runs on any caller, because a critical path must never depend on the caller remembering to review. Same propagation shape as `--skip-ubiquitous-update` (see `claude-code/skills/CLAUDE.md`), inverted: the flag is opt-in rather than opt-out.
 - **feedback edge**: When Step 6.5 records a **material** spec↔reality divergence, recommend `/ywc-plan --update-spec <spec> --failure-context "<divergence summary>"` so the stale spec is corrected before other tasks read it (mirrors the re-plan loop `ywc-impl-review` triggers).
 - **relationship**: Complementary to sequential-executor (independent layer parallel generation)

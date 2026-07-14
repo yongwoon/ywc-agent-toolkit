@@ -4,12 +4,15 @@
 
 ## Test-first・Deep Module・Critical Module Review
 
-default path は headlights を gate します：QA lane が Backend/Frontend 実装確定の前に失敗する(RED) test を先に作成します。`--tdd` はより強い full RED → GREEN → REFACTOR ritual を opt-in し、default minimal gate を置き換えます。Public interface を body より先に設計します(deep module)。生成ファイルが critical path(auth, payment, crypto, PII, external input)に触れる場合は internal review を要求し、`/ywc-security-audit` を required next step として明示します。Verification Gate は `git diff --stat` で spec 明示ファイルのみ変更されたか(diff scope)を確認し、Confidence Gate は Minimalism 次元で過剰に複雑な code(working ≠ minimal)を fail にします。また生成中に spec と実際の codebase が食い違う点(spec↔reality divergence)を Step 6.5 で `implementation-notes.md` に記録し、material な場合は `ywc-plan --update-spec` による再計画を推奨します。詳細は `references/tdd-deep-module-gray-box.md` を参照してください。
+default path は headlights を gate します：QA lane が Backend/Frontend 実装確定の前に失敗する(RED) test を先に作成します。`--tdd` はより強い full RED → GREEN → REFACTOR ritual を opt-in し、default minimal gate を置き換えます。Public interface を body より先に設計します(deep module)。`--review` を指定すると Step 8 で `/ywc-impl-review` を実行し、Critical/High finding は **1 回**の fix cycle でのみ修正します。それでも残る場合は `DONE_WITH_CONCERNS` として報告します。生成ファイルが critical path(auth, payment, crypto, PII, external input)に触れる場合は、`--review` なしでも `/ywc-impl-review` と `/ywc-security-audit` を強制実行します(`ywc-sequential-executor` と同じ契約)。merge 権限を持たないため、この gate は blocking ではなく advisory です。Verification Gate は `git diff --stat` で spec 明示ファイルのみ変更されたか(diff scope)を確認し、Confidence Gate は Minimalism 次元で過剰に複雑な code(working ≠ minimal)を fail にします。また生成中に spec と実際の codebase が食い違う点(spec↔reality divergence)を Step 6.5 で `implementation-notes.md` に記録し、material な場合は `ywc-plan --update-spec` による再計画を推奨します。詳細は `references/tdd-deep-module-gray-box.md` を参照してください。
 
 ## 使用方法
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+
+# 生成直後に Step 8 で /ywc-impl-review も実行(fix cycle は 1 回)
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## 実行 Agent

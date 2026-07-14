@@ -68,7 +68,7 @@ All other mid-execution pauses are not permitted. Phase transitions (Phase 1 →
 git branch --show-current
 ```
 
-When `--review` is set, also run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first. The later working-tree review must contain only this invocation's generated changes.
+Whenever Step 8 will run — `--review` was set, *or* the spec names a critical path — also run `git status --porcelain` before generation. If it reports existing changes, return `NEEDS_CONTEXT` and ask the user to commit, stash, or discard them first. The later working-tree review must contain only this invocation's generated changes.
 
 If already on a feature branch (e.g. `feature/<something>`), proceed. If on a long-lived branch (`main`, `develop`, `master`), create and check out a feature branch now:
 
@@ -162,13 +162,20 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    The canonical RED → GREEN → REFACTOR cycle (including the mandatory "watch it fail" step, anti-patterns, and per-step exit conditions) is defined by the installed `ywc-tdd-ritual` skill. When `--tdd` is set, this step delegates the cycle discipline there; the executor here only wires the three commit boundaries and reports the per-stage verification blocks per `ywc-verify-done`.
 
-8. **Implementation Review** (only when `--review` is set) — After Step 7 passes and the Confidence Gate permits emission, invoke `ywc-impl-review --spec <spec-path> --working-tree`. This reviews all generated staged, unstaged, and untracked source changes without creating a review-only commit.
+8. **Implementation Review** — Runs when **either** condition holds; skip entirely when neither does. It runs after Step 7 passes and the Confidence Gate permits emission.
+
+   | Trigger | What runs |
+   |---------|-----------|
+   | `--review` passed | `ywc-impl-review --spec <spec-path> --working-tree` |
+   | Any generated file matches a **critical path** — forced, **even without `--review`** | `ywc-impl-review --spec <spec-path> --working-tree` **and** `ywc-security-audit` |
+
+   The review targets the generated staged, unstaged, and untracked source changes without creating a review-only commit. Critical-path detection runs against the **generated file set after Step 7** (the file list does not exist before Phase 1) using the path list in `references/tdd-deep-module-gray-box.md` §4 (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries, with the `AGENTS.md` `critical_paths` override). This forced escalation mirrors `ywc-sequential-executor`'s critical-path rule — the two skills apply the same contract to the same paths, and a critical path must never depend on the caller remembering to pass a flag.
 
    - `DONE`: record `Implementation review: PASS` and continue.
-   - `DONE_WITH_CONCERNS`: distinguish correctness-level Critical/High findings from observation-level concerns. Fix correctness-level findings once, rerun the affected verification layers, then re-run the review. Preserve any remaining concerns in the final report and return `DONE_WITH_CONCERNS`; do not conceal them.
+   - `DONE_WITH_CONCERNS`: distinguish correctness-level Critical/High findings from observation-level concerns. Fix correctness-level findings **once**, rerun the affected verification layers, then re-run the review **once**. If Critical/High findings survive that single cycle, stop fixing, preserve them in the final report with `file:line`, and return `DONE_WITH_CONCERNS`; do not conceal them and do not enter a third cycle.
    - `BLOCKED` or `NEEDS_CONTEXT`: propagate that status; do not claim generation completed successfully.
 
-   Do not run this step unless requested: it adds a five-axis review pass and advisor work. `--review` does not create a PR, commit generated files, merge a branch, or handle later PR-review comments.
+   Beyond the two triggers above, do not run this step: it adds a five-axis review pass and advisor work. This skill does not merge, so the gate is **advisory, not blocking** — a surviving finding downgrades the status and is surfaced, it does not delete the generated code. `--review` does not create a PR, commit generated files, merge a branch, or handle later PR-review comments.
 
 ## Output Format
 

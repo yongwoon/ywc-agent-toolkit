@@ -10,6 +10,9 @@ Una Skill para generar código en múltiples capas simultáneamente. Ejecuta los
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+
+# Ejecuta también /ywc-impl-review en el Step 8, con un solo fix cycle
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## Agentes de ejecución

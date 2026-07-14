@@ -10,6 +10,9 @@
 
 ```text
 /ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API"
+
+# 生成后在 Step 8 一并运行 /ywc-impl-review（fix cycle 仅 1 次）
+/ywc-code-gen --spec docs/outline/02-backend-api-design.md --feature "auto-target-registry API" --review
 ```
 
 ## 执行代理

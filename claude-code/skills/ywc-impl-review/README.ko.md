@@ -6,7 +6,10 @@
 
 ```text
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
 ```
+
+`--working-tree`는 commit 없이 staged, unstaged, untracked source 변경을 검토합니다. `--code`, `--git-range`와 함께 사용하지 마세요.
 
 ## 실행 Agent
 
