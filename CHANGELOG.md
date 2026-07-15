@@ -5,11 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
-### Added
+## [1.28.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.27.0...v1.28.0) (2026-07-15)
 
+
+### ### Added
+
+* **codex:** add wayfinder routing, task preview approval, agentic preview flow, and persisted tech-research handoff contracts.
 * **codex:** port PR conflict and merge-readiness handling to Codex PR workflow skills from develop-with-llm PR #101.
 * **codex:** sync planning, PR health, spec validation, onboarding, and parity workflow updates into the Codex plugin package.
 * **eval:** detect removed mechanical baseline keys and document the baseline cleanup.
+
+
+### ### Documentation
+
+* **release:** add Codex validation, smell review, install safety, and plugin parity evidence for the SDLC v1.1 release gate.
 
 ## [1.27.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.26.0...v1.27.0) (2026-07-14)
 
