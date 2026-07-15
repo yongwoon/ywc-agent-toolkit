@@ -7,14 +7,14 @@
       "bump-patch-for-minor-pre-major": false,
       "include-component-in-tag": false,
       "changelog-sections": [
-        { "type": "feat",     "section": "### Added",         "hidden": false },
-        { "type": "fix",      "section": "### Fixed",         "hidden": false },
-        { "type": "chore",    "section": "### Changed",       "hidden": false },
-        { "type": "docs",     "section": "### Documentation", "hidden": false },
-        { "type": "i18n",     "section": "### Translations",  "hidden": false },
-        { "type": "ci",       "section": "### CI",            "hidden": true  },
-        { "type": "refactor", "section": "### Internal",      "hidden": true  },
-        { "type": "test",     "section": "### Tests",         "hidden": true  }
+        { "type": "feat",     "section": "Added",         "hidden": false },
+        { "type": "fix",      "section": "Fixed",         "hidden": false },
+        { "type": "chore",    "section": "Changed",       "hidden": false },
+        { "type": "docs",     "section": "Documentation", "hidden": false },
+        { "type": "i18n",     "section": "Translations",  "hidden": false },
+        { "type": "ci",       "section": "CI",            "hidden": true  },
+        { "type": "refactor", "section": "Internal",      "hidden": true  },
+        { "type": "test",     "section": "Tests",         "hidden": true  }
       ],
       "extra-files": [
         {
