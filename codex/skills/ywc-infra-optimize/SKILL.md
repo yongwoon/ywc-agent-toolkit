@@ -1,16 +1,14 @@
 ---
 name: ywc-infra-optimize
 description: >-
-  (ywc) Use when improving existing infrastructure: cost right-sizing,
-  removing unused resources, reserved/spot adoption, drift detection &
-  remediation, and reliability hardening for AWS/GCP/Azure/K8s — the safe
-  change-loop equivalent of refactor-clean for infra. Triggers: "인프라 개선",
-  "비용 최적화", "right-sizing", "drift 점검", "미사용 리소스 정리", "cost
-  optimization", "optimize infrastructure", "terraform drift", "インフラ最適化",
-  "ywc-infra-optimize". Do not use for greenfield infrastructure design (use
-  ywc-infra-design), first-time IaC authoring (use ywc-iac-author), pre-apply
-  review only (use ywc-infra-review), or app-code performance / code hotspots
-  (use ywc-performance-engineer).
+  (ywc) Use when improving existing infrastructure: cost right-sizing, unused
+  resource cleanup, reserved/spot adoption, drift remediation, and
+  reliability hardening for AWS, GCP, Azure, or K8s. Triggers: "인프라 개선",
+  "비용 최적화", "optimize infrastructure",
+  "インフラ最適化", "ywc-infra-optimize". Do not use for greenfield
+  infrastructure design (use ywc-infra-design), first-time IaC authoring (use
+  ywc-iac-author), pre-apply review (use ywc-infra-review), or app
+  hotspots (use ywc-performance-engineer).
 ---
 
 # ywc-infra-optimize
