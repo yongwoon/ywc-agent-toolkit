@@ -55,12 +55,28 @@ Skill 은 두 가지 task granularity mode 를 지원합니다. 표준 option �
 
 두 mode 모두 Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, 완료 시 buildable) 는 동일하게 유지됩니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
 
+## Preview Approval Workflow
+
+`ywc-task-generator` 는 persisted preview approval flow 도 지원합니다.
+
+- `--spec <path>`: persisted preview 와 auditable task write 의 canonical input
+- `--preview-only`: preview artifact 만 기록
+- `--preview-path <path>`: custom preview artifact path
+- `--approve-preview`: 승인된 preview 를 re-decomposition 없이 consume
+- `--non-interactive`: autonomous caller 가 승인된 preview 를 consume 할 때 필요
+
+Preview identity 는 `spec_path`, `tasks_dir`, `lang`, `mode`, `preview_path`,
+`preview_revision`, `preview_digest` 를 함께 묶어야 합니다. stale digest,
+missing spec, path traversal, symlink escape, non-Markdown preview path 는
+모두 `NEEDS_CONTEXT` 로 중단해야 합니다.
+
 ## Output Structure
 
 ### Task Directory
 
 ```text
 tasks/
+├── docs/ywc-plans/billing.task-preview.md
 ├── 000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
@@ -69,6 +85,21 @@ tasks/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
+```
+
+Persisted preview artifact 는 다음 approval evidence 를 포함하는 것이
+canonical contract 입니다.
+
+```text
+Preview Path: docs/ywc-plans/billing.task-preview.md
+Preview Revision: rev-003
+Preview Digest: sha256:...
+Spec Path: docs/ywc-plans/billing.md
+Tasks Dir: tasks/
+Mode: llm
+Refactor Phase: phase-2
+Batch ID: billing-refactor-a
+Depends On: 000001-020-api-billing-contract
 ```
 
 ### Task Naming
