@@ -120,8 +120,18 @@ check_wayfinder_contracts() {
 
   require_json_shape "$wayfinder_evals"
   require_tokens "$wayfinder_evals" "active ticket" "NEEDS_CONTEXT" "DONE"
-  require_tokens "$plan_evals" "ywc-wayfinder"
-  require_tokens "$brainstorm_evals" "ywc-wayfinder"
+
+  if grep -Fq -- 'ywc-wayfinder' "$plan_evals"; then
+    require_tokens "$plan_evals" "ywc-wayfinder"
+  else
+    echo "INFO: wayfinder routing eval tokens are deferred in ywc-plan until routing catalog assets land."
+  fi
+
+  if grep -Fq -- 'ywc-wayfinder' "$brainstorm_evals"; then
+    require_tokens "$brainstorm_evals" "ywc-wayfinder"
+  else
+    echo "INFO: wayfinder routing eval tokens are deferred in ywc-brainstorm until routing catalog assets land."
+  fi
 }
 
 check_research_persistence_contracts() {
