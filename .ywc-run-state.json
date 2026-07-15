@@ -1,0 +1,89 @@
+{
+  "executor": "parallel",
+  "args": "000061-010..000063-010 --review --base-branch feature/sdlc-v11-base --local-merge --tasks-dir ./tasks-codex-sdlc-v11",
+  "mode": "local-merge",
+  "tasks_dir": "./tasks-codex-sdlc-v11",
+  "current_wave": 3,
+  "waves": [
+    {
+      "wave": 0,
+      "tasks": [
+        "000061-010-infra-codex-description-audit"
+      ],
+      "status": "completed",
+      "merged": [
+        "000061-010-infra-codex-description-audit"
+      ],
+      "pending": []
+    },
+    {
+      "wave": 1,
+      "tasks": [
+        "000061-020-docs-description-migration-a-m",
+        "000061-030-docs-description-migration-n-z"
+      ],
+      "status": "completed",
+      "merged": [
+        "000061-020-docs-description-migration-a-m",
+        "000061-030-docs-description-migration-n-z"
+      ],
+      "pending": []
+    },
+    {
+      "wave": 2,
+      "tasks": [
+        "000061-040-infra-description-enforcement-evals"
+      ],
+      "status": "completed",
+      "merged": [
+        "000061-040-infra-description-enforcement-evals"
+      ],
+      "pending": []
+    },
+    {
+      "wave": 3,
+      "tasks": [
+        "000062-010-docs-wayfinder-core",
+        "000062-030-refactor-task-generator-preview-core"
+      ],
+      "status": "in_progress",
+      "merged": [
+        "000062-010-docs-wayfinder-core"
+      ],
+      "pending": [
+        "000062-030-refactor-task-generator-preview-core"
+      ]
+    },
+    {
+      "wave": 4,
+      "tasks": [
+        "000062-020-docs-wayfinder-routing-catalog",
+        "000062-040-docs-task-generator-preview-assets"
+      ],
+      "status": "planned",
+      "merged": [],
+      "pending": []
+    },
+    {
+      "wave": 5,
+      "tasks": [
+        "000062-050-docs-agentic-preview-flow",
+        "000062-060-docs-tech-research-persistence"
+      ],
+      "status": "planned",
+      "merged": [],
+      "pending": []
+    },
+    {
+      "wave": 6,
+      "tasks": [
+        "000063-010-infra-codex-release-evidence"
+      ],
+      "status": "planned",
+      "merged": [],
+      "pending": []
+    }
+  ],
+  "started_at": "2026-07-15T10:00:33Z",
+  "last_checkpoint": "2026-07-15T11:04:14.136333+00:00"
+}
