@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+## [1.28.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.28.0...v1.28.1) (2026-07-15)
+
+
+### Fixed
+
+* remove duplicate ### markdown heading in changelog-sections ([#142](https://github.com/yongwoon/ywc-agent-toolkit/issues/142)) ([0ba4d03](https://github.com/yongwoon/ywc-agent-toolkit/commit/0ba4d0398d9c355019a15d9dc3f0fcd27d5067ac))
+
 ## [1.28.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.27.0...v1.28.0) (2026-07-15)
 
 
