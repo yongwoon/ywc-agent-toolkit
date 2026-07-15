@@ -11,6 +11,25 @@
         "Labels inferred or single-source claims",
         "Uses DONE_WITH_CONCERNS when benchmark, license, or compatibility evidence is incomplete"
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "Use $ywc-tech-research --output docs/ywc-plans/sse-research.md to compare SSE options for Hono.",
+      "expected_output": "Documents a persisted report at a repository-relative Markdown output path. Includes fetch date, source URLs, version or date hints, [INFERRED] markers, known gaps, and provenance notes alongside the normal research report.",
+      "expectations": [
+        "Treats docs/ywc-plans/ as a safe output root",
+        "Preserves evidence vs inference boundaries in the persisted artifact"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Use $ywc-tech-research --output docs/ywc-plans/sse-research.md --overwrite without confirmation, or use --output /tmp/out.txt. In the safe autonomous case, require --non-interactive together with --confirm-overwrite.",
+      "expected_output": "Returns NEEDS_CONTEXT for missing overwrite confirmation, missing --non-interactive in autonomous overwrite, absolute paths, parent-directory escape, symlink escape, or non-Markdown output paths before describing any write.",
+      "expectations": [
+        "Requires --confirm-overwrite with --overwrite",
+        "Requires --non-interactive for autonomous overwrite",
+        "Rejects unsafe paths before any persistence happens"
+      ]
     }
   ]
 }

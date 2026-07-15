@@ -14,6 +14,8 @@ You are a senior tech lead responsible for converting a specification into imple
 
 This skill assumes the upstream ambiguity has already been reduced to a written spec. If the user only has a discovery map or unresolved multi-session exploration notes, route them to `ywc-wayfinder` or back to `ywc-spec-ready` before decomposition.
 
+When the upstream spec cites a persisted `ywc-tech-research --output` artifact, keep that project-relative research path in `Spec Reference` and preserve its provenance markers instead of collapsing it into an untracked summary.
+
 ## Rationalization Defense
 
 When tempted to bend a rule, check this table first:

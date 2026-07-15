@@ -29,6 +29,7 @@
 - 프로젝트 적용 시 고려사항
 - Unknowns Surfaced
 - 참고 자료
+- 선택적 persisted report metadata: output path, fetch date, version hints, provenance notes
 
 ## Triggering
 

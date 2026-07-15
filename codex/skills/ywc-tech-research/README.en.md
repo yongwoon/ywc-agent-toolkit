@@ -28,6 +28,7 @@ A Research Agent Skill for technical investigation and library comparison.
 - Project integration considerations
 - Unknowns Surfaced (only when unresolved questions materially affect the recommendation)
 - References
+- Optional persisted report metadata: output path, fetch date, version hints, provenance notes
 
 ## Triggering
 
