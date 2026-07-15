@@ -171,7 +171,7 @@ collect_skill_dirs() {
 in_partition() {
   local skill_name="$1"
   local short_name="${skill_name#ywc-}"
-  local first_char="${short_name%%${short_name#?}}"
+  local first_char="${short_name%%"${short_name#?}"}"
 
   case "$PATH_FILTER" in
     a-m) [[ "$first_char" =~ [a-m] ]] ;;
@@ -273,6 +273,7 @@ bash scripts/check-codex-skill-descriptions.sh --report
 EOF
 
   printf '%s\n' "$rows" | while IFS=$'\t' read -r status skill count _path; do
+    # shellcheck disable=SC2016 # backticks are literal markdown formatting, not command substitution
     case "$status" in
       OK) printf '| `%s` | %s | ok |\n' "$skill" "$count" ;;
       OVER_LIMIT) printf '| `%s` | %s | over-limit |\n' "$skill" "$count" ;;

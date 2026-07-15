@@ -12,14 +12,14 @@ fail() {
 require_file() {
   local file="$1"
   [ -f "$file" ] || {
-    fail "missing file: ${file#$ROOT/}"
+    fail "missing file: ${file#"$ROOT"/}"
     return 1
   }
 }
 
 require_json_shape() {
   local file="$1"
-  local rel="${file#$ROOT/}"
+  local rel="${file#"$ROOT"/}"
 
   require_file "$file" || return 0
 
@@ -71,7 +71,7 @@ require_json_shape() {
 require_tokens() {
   local file="$1"
   shift
-  local rel="${file#$ROOT/}"
+  local rel="${file#"$ROOT"/}"
   local raw
 
   require_file "$file" || return 0
