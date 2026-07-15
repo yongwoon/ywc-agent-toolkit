@@ -60,9 +60,10 @@
         "000062-040-docs-task-generator-preview-assets"
       ],
       "status": "in_progress",
-      "merged": [],
+      "merged": [
+        "000062-020-docs-wayfinder-routing-catalog"
+      ],
       "pending": [
-        "000062-020-docs-wayfinder-routing-catalog",
         "000062-040-docs-task-generator-preview-assets"
       ]
     },
@@ -87,5 +88,5 @@
     }
   ],
   "started_at": "2026-07-15T10:00:33Z",
-  "last_checkpoint": "2026-07-15T11:05:50.294676+00:00"
+  "last_checkpoint": "2026-07-15T11:13:36.381741+00:00"
 }
