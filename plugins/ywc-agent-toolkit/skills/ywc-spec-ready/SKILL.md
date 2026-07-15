@@ -1,7 +1,14 @@
 ---
 name: ywc-spec-ready
 description: >-
-  (ywc) Use when a natural-language goal or existing specification needs to be refined until it is ready for task generation. Triggers: "spec ready", "prepare spec", "사양 준비", "스펙 준비", "task-generator 전에 검증", "make this spec ready", "仕様を準備", "タスク生成前に仕様確認". Do not use for direct implementation (use ywc-code-gen or ywc-sequential-executor), one-shot spec review only (use ywc-spec-validate), rough planning without a spec-readiness loop (use ywc-plan), or task decomposition after the spec is ready (use ywc-task-generator).
+  (ywc) Use when a natural-language goal or existing specification needs to be
+  refined until it is ready for task generation. Triggers: "spec ready",
+  "prepare spec", "스펙 준비", "make this spec ready", "仕様を準備",
+  "タスク生成前に仕様確認". Do not use for direct implementation (use
+  ywc-code-gen or ywc-sequential-executor), one-shot spec review only (use
+  ywc-spec-validate), rough planning without a spec-readiness loop (use
+  ywc-plan), or task decomposition after the spec is ready (use
+  ywc-task-generator).
 ---
 
 # ywc-spec-ready

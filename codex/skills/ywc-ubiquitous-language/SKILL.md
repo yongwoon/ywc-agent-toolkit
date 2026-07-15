@@ -2,13 +2,13 @@
 name: ywc-ubiquitous-language
 description: >-
   (ywc) Use when creating, extracting, or updating a project's ubiquitous
-  language document (shared domain vocabulary between developers, domain experts,
-  and LLMs). Triggers: "유비쿼터스 언어 작성", "도메인 용어 정리", "ubiquitous language",
-  "도메인 glossary 만들어줘", "용어집 업데이트", "ubiquitous language 추출",
-  "プロジェクト用語集作成", "domain glossary", "DDD 용어 정리",
-  "ubiquitous language document". Do not use for general project documentation
-  structure (use ywc-project-docs), spec writing (use ywc-plan), or
-  implementation task decomposition (use ywc-task-generator).
+  language document: the shared domain vocabulary between developers, experts,
+  and LLMs. Triggers: "유비쿼터스 언어 작성", "도메인 용어 정리",
+  "ubiquitous language", "도메인 glossary 만들어줘", "용어집 업데이트",
+  "ubiquitous language 추출", "プロジェクト用語集作成", "domain glossary",
+  "DDD 용어 정리", "ubiquitous language document". Do not use for general
+  project docs (use ywc-project-docs), spec writing (use ywc-plan), or task
+  decomposition (use ywc-task-generator).
 ---
 
 # Ubiquitous Language
