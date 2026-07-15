@@ -36,6 +36,12 @@
       "prompt": "Use $ywc-agentic --goal \"Generate Spanish task docs for billing retries\" --pr-lang es.",
       "expected_output": "Preserves `--pr-lang es` unchanged when invoking the executor. Because the user explicitly requested Spanish task docs, the Task Phase may pass `--lang es` to `ywc-task-generator`; absent that explicit task/spec language request or a shared YWC language policy resolution, it would not pass `--lang`.",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Use $ywc-agentic for a medium feature that must go through preview approval before task generation.",
+      "expected_output": "The Medium/Large Task Phase uses exactly two ywc-task-generator calls with the same --spec path: first --preview-only with a persisted preview path, then --approve-preview --non-interactive with matching preview_path, preview_revision, and preview_digest. It logs the preview evidence in UTC before the approved consume call and treats stale, missing, mismatched, or bypassed preview identity as NEEDS_CONTEXT.",
+      "files": []
     }
   ]
 }

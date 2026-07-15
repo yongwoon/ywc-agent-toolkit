@@ -39,11 +39,11 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 1. Receive and validate the goal
 2. Detect project context → decide Resume / Full Mode
 3. Plan Phase — invoke `ywc-plan` (`--update-spec` on Re-plan)
-4. Task Phase — invoke `ywc-task-generator` (Medium/Large only)
+4. Task Phase — invoke `ywc-task-generator` twice for Medium/Large: `--preview-only` first, then `--approve-preview --non-interactive` with the same fixed `--spec`
 5. Execute Phase — run executor with `--local-merge` (Small Path uses `ywc-code-gen`)
 6. Evaluate Phase — `ywc-impl-review --git-range` against the original spec
 7. Loop Control — Pass exits / Fail re-plans / partial-completion report at the ceiling
-8. Iteration Log — append to `tasks/agentic-log.md`
+8. Iteration Log — append to `tasks/agentic-log.md`, including `preview_path`, `preview_revision`, and `preview_digest` for Medium/Large runs
 9. Completion Report
 
 ## Small Path vs. Medium/Large Path

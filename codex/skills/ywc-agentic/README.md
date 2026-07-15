@@ -39,11 +39,11 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 1. Goal 수신·검증
 2. 프로젝트 컨텍스트 탐지 → Resume / Full Mode 결정
 3. Plan Phase — `ywc-plan` 호출 (Re-plan 시 `--update-spec`)
-4. Task Phase — `ywc-task-generator` 호출 (Medium/Large 만)
+4. Task Phase — Medium/Large 는 `ywc-task-generator` 를 두 번 호출 (`--preview-only` 후 동일 `--spec` 기반 `--approve-preview --non-interactive`)
 5. Execute Phase — Executor `--local-merge` 실행 (Small Path 는 `ywc-code-gen`)
 6. Evaluate Phase — `ywc-impl-review --git-range` 로 원본 spec 대비 평가
 7. Loop Control — Pass 종료 / Fail 재계획 / 반복 한도 도달 시 부분 완료 report
-8. Iteration Log — `tasks/agentic-log.md` 에 append
+8. Iteration Log — `tasks/agentic-log.md` 에 append (Medium/Large 는 `preview_path`, `preview_revision`, `preview_digest` 포함)
 9. Completion Report
 
 ## Small Path 와 Medium/Large Path
