@@ -33,7 +33,7 @@ When tempted to skip a step, check this table first:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (required) |
+| `--spec` | `--spec <path>` | `--spec docs/outline/02-api.md` | Specification file path (**optional**). Omitted → all five lanes run and `### Spec Traceability` emits only "No spec available" (valid). Supplied but missing/unreadable → BLOCKED. Exactly one code target (`--code` / `--git-range` / `--working-tree`) is still required |
 | `--code` | `--code <path>` | `--code api/src/routes/` | Code path to review. **Exactly one** of `--code` / `--git-range` / `--working-tree` is required; they are mutually exclusive |
 | `--git-range` | `--git-range <sha>..<sha>` | `--git-range abc1234..HEAD` | Git range to derive the review target. Run `git diff --name-only <range>` to obtain the changed-file list. Mutually exclusive with `--code` and `--working-tree` |
 | `--working-tree` | flag | | Review the current repository's staged, unstaged, and untracked source changes without creating a commit. Mutually exclusive with `--code` and `--git-range` |
@@ -128,6 +128,16 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 1. [severity] [P1|P2] — Description
    (if P2) Advisor verdict: {one-line rationale}
 
+### Spec Traceability
+(Only when `--spec` is supplied and readable. `--spec` omitted → emit only `No spec available — Spec Traceability skipped`, no criterion rows. `--spec` supplied but missing/unreadable → do not emit this section; return BLOCKED per the Completion Status rules.)
+
+| Criterion | Status | Evidence | Scope-creep note |
+|-----------|--------|----------|------------------|
+| AC1 — {text} | Implemented | {file:line / named test / command output} | — |
+| AC2 — {text} | Partial | {file:line} | {behavior beyond spec, if any} |
+| AC3 — {text} | Missing | — | — |
+| AC4 — {text} | Not Verifiable | (no admissible evidence) | — |
+
 ### Fix Priority
 1. (Sorted by Critical first, with [P1|P2] markers preserved)
 
@@ -138,6 +148,14 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 ### Completion Status
 (One of: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT)
 ```
+
+**Spec Traceability rules** (aggregate-only — no sixth subagent): populate the matrix by aggregating the Architecture subagent's "Structural Spec Conformance" and the Design subagent's "Contract Spec Conformance" findings from Phase 1. One row per spec Acceptance Criterion.
+
+- **Status vocabulary**: `Implemented` (fully satisfied) / `Partial` (partially satisfied) / `Missing` (no implementation found) / `Not Verifiable` (the AC exists but no admissible evidence substantiates it).
+- **Evidence rule**: `Implemented` and `Partial` rows MUST cite a `file:line`, a named test/output, or command output. Inferring implementation from a task name or commit message is FORBIDDEN.
+- **`Not Verifiable` vs "No spec available"**: `Not Verifiable` applies only when a specific AC lacks evidence; it is never used when `--spec` is omitted (that case emits only "No spec available", with no rows).
+- **Scope creep** (behavior with no backing AC) is reported per-row in `Scope-creep note`, or as a separate sub-bullet when it maps to no criterion.
+- The Evidence rule is the same bar as the `## Confidence Gate` **Evidence quality** dimension — a row without primary evidence lowers that score.
 
 **Reporting Symbols**: Replace the bracketed `[severity]` placeholder above with the corresponding symbol from [symbols.md](../references/symbols.md). Severity vocabulary is shared across all `ywc-*` review skills — use the same symbol for the same tier.
 
@@ -166,12 +184,12 @@ For the Confidence Gate score in the report header, use the band marker from [sy
 |--------|------------|
 | `DONE` | Review complete, no Critical or High findings |
 | `DONE_WITH_CONCERNS` | Review complete but Critical/High findings were identified — the report details them; human action required before merging |
-| `BLOCKED` | Review cannot proceed — spec file missing, code unreadable, or a Phase 2 escalation returned an inconclusive verdict |
+| `BLOCKED` | Review cannot proceed — a supplied `--spec` path is missing or unreadable (omitting `--spec` is valid, not BLOCKED), code unreadable, or a Phase 2 escalation returned an inconclusive verdict |
 | `NEEDS_CONTEXT` | Spec and code paths are ambiguous; cannot determine what conformance means without clarification |
 
 `[P1]` marks findings confirmed entirely by the Phase 1 executor. `[P2]` marks findings that went through the Phase 2 advisor. This distinction matters when the user calibrates trust in the output — Phase 2 items represent the decisions the executor deemed genuinely ambiguous.
 
-> **HTML mode (`--format html`)** — emits the same findings as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
+> **HTML mode (`--format html`)** — emits the same findings, **including the `### Spec Traceability` matrix**, as a self-contained HTML report: severity color coding, tab navigation, and a `Copy as Markdown` button. Structure and conventions follow [html-output.md](../references/html-output.md). The Markdown surface is preserved inside the file, so downstream integration is unaffected.
 
 ## Agent Prompt References
 
