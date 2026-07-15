@@ -1,4 +1,4 @@
 interface:
   display_name: "Agentic"
   short_description: "Autonomously deliver an explicit end-to-end ywc lifecycle"
-  default_prompt: "Use $ywc-agentic only for an explicitly requested autonomous end-to-end lifecycle; otherwise route generic planning to $ywc-plan or an ordinary direct change to the implementation workflow."
+  default_prompt: "Use $ywc-agentic only for an explicitly requested autonomous end-to-end lifecycle; otherwise route generic planning to $ywc-plan or an ordinary direct change to the implementation workflow. For Medium/Large task generation, use the fixed-spec two-call preview flow: --preview-only first, validate and log preview evidence, then --approve-preview --non-interactive."

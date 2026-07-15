@@ -1,17 +1,13 @@
 ---
 name: ywc-tdd-ritual
 description: >-
-  (ywc) Use when implementing any new feature, bug fix, or behavior change,
-  before any production code is written. Enforces the RED → GREEN → REFACTOR
-  cycle with a mandatory "watch the test fail" step and forbids "I'll write
-  tests after" patterns. Triggers: "TDD", "tdd", "test first", "test-first",
-  "테스트 먼저", "테스트 우선", "RED-GREEN", "regression test", "회귀
-  테스트", "テスト先行", "テストファースト", "ywc-tdd-ritual", "ywc-code-gen
-  --tdd" (delegation). Do not use for throwaway prototypes the user has
-  explicitly opted out of (declared in same turn), debugging an existing
-  test failure (use ywc-debug-rootcause), generated or config files, or
-  for completion-claim verification (use ywc-verify-done — TDD is the
-  writing discipline, ywc-verify-done is the claiming discipline).
+  (ywc) Use when implementing a new feature, bug fix, or behavior change
+  before production code is written; enforce RED → GREEN → REFACTOR and a real
+  failing-test step. Triggers: "TDD", "test first", "테스트 먼저",
+  "regression test", "テスト先行", "ywc-tdd-ritual", "ywc-code-gen --tdd".
+  Do not use for opted-out throwaway prototypes, existing test-failure
+  debugging (use ywc-debug-rootcause), generated/config files, or completion
+  verification (use ywc-verify-done).
 ---
 
 # ywc-tdd-ritual

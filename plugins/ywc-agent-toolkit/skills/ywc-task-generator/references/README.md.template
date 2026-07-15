@@ -50,6 +50,20 @@ Files expected to be created or modified in this task.
 ## Notes
 Important considerations, pitfalls, or design decisions.
 
+## Preview Approval Metadata
+When this task set comes from a persisted preview approval flow, copy the
+canonical preview identity and any wide-refactor invalidation fields here.
+
+- `Preview Path:` `docs/ywc-plans/<slug>.task-preview.md`
+- `Preview Revision:` `rev-001`
+- `Preview Digest:` `sha256:...`
+- `Spec Path:` `docs/ywc-plans/<slug>.md`
+- `Tasks Dir:` `tasks/`
+- `Mode:` `human` or `llm`
+- `Refactor Phase:` `(if applicable)`
+- `Batch ID:` `(if applicable)`
+- `Depends On:` `(preview-level dependency row, if applicable)`
+
 ## Parallel Execution Metadata
 
 ### Ownership

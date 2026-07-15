@@ -51,12 +51,28 @@ La Habilidad admite dos modos de granularidad de tareas. La opción canónica es
 
 Las Invariantes de Seguridad (separación de migración de BD, separación de introducción de librería, puerta de fase, compilabilidad post-tarea) aplican de forma idéntica en ambos modos. Consulte [references/granularity-modes.md](./references/granularity-modes.md) para la especificación completa.
 
+## Preview Approval Workflow
+
+`ywc-task-generator` también soporta un flujo de persisted preview approval.
+
+- `--spec <path>`: canonical input para persisted preview y auditable task write
+- `--preview-only`: escribe solo el preview artifact
+- `--preview-path <path>`: custom preview artifact path
+- `--approve-preview`: consume un preview aprobado sin re-decomposition
+- `--non-interactive`: requerido cuando un autonomous caller consume un preview aprobado
+
+La preview identity debe unir `spec_path`, `tasks_dir`, `lang`, `mode`,
+`preview_path`, `preview_revision` y `preview_digest`. stale digest, missing
+spec, path traversal, symlink escape y non-Markdown preview path deben
+detenerse con `NEEDS_CONTEXT`.
+
 ## Estructura de Salida
 
 ### Directorio de Tareas
 
 ```text
 tasks/
+├── docs/ywc-plans/billing.task-preview.md
 ├── 000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
@@ -65,6 +81,20 @@ tasks/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
+```
+
+El persisted preview artifact debe incluir approval evidence como:
+
+```text
+Preview Path: docs/ywc-plans/billing.task-preview.md
+Preview Revision: rev-003
+Preview Digest: sha256:...
+Spec Path: docs/ywc-plans/billing.md
+Tasks Dir: tasks/
+Mode: llm
+Refactor Phase: phase-2
+Batch ID: billing-refactor-a
+Depends On: 000001-020-api-billing-contract
 ```
 
 ### Nomenclatura de Tareas

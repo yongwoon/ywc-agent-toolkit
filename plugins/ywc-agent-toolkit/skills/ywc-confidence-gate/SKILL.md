@@ -4,8 +4,7 @@ description: >-
   (ywc) Use when checking readiness before non-trivial implementation,
   executor/code-gen delegation, or a design path with material rework cost.
   Triggers: "confidence check", "confidence gate", "ready to implement",
-  "should I proceed", "is this ready", "준비 됐어", "구현 시작해도 돼",
-  "confidence 점검", "착수 준비", "実装着手", "実装に進んで良いか",
+  "should I proceed", "준비 됐어", "구현 시작해도 돼", "実装着手",
   "確信度チェック", "ywc-confidence-gate". Do not use for completion
   verification (use ywc-verify-done), spec quality review (use
   ywc-spec-validate), implementation review (use ywc-impl-review), or

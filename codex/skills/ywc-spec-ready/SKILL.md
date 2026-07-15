@@ -1,7 +1,14 @@
 ---
 name: ywc-spec-ready
 description: >-
-  (ywc) Use when a natural-language goal or existing specification needs to be refined until it is ready for task generation. Triggers: "spec ready", "prepare spec", "사양 준비", "스펙 준비", "task-generator 전에 검증", "make this spec ready", "仕様を準備", "タスク生成前に仕様確認". Do not use for direct implementation (use ywc-code-gen or ywc-sequential-executor), one-shot spec review only (use ywc-spec-validate), rough planning without a spec-readiness loop (use ywc-plan), or task decomposition after the spec is ready (use ywc-task-generator).
+  (ywc) Use when a natural-language goal or existing specification needs to be
+  refined until it is ready for task generation. Triggers: "spec ready",
+  "prepare spec", "스펙 준비", "make this spec ready", "仕様を準備",
+  "タスク生成前に仕様確認". Do not use for direct implementation (use
+  ywc-code-gen or ywc-sequential-executor), one-shot spec review only (use
+  ywc-spec-validate), rough planning without a spec-readiness loop (use
+  ywc-plan), or task decomposition after the spec is ready (use
+  ywc-task-generator).
 ---
 
 # ywc-spec-ready
@@ -9,6 +16,8 @@ description: >-
 **Announce at start:** "I'm using the ywc-spec-ready skill to converge the specification before task generation."
 
 This skill turns a goal or existing spec into a `ywc-task-generator`-ready spec. It loops through `ywc-plan`, `ywc-spec-validate`, and `ywc-plan --update-spec` until validation has no unresolved Critical or Warning findings. If validation reaches `DONE` with Suggestion findings still present, ask the user whether to run one more suggestion-focused amendment pass before printing the `ywc-task-generator <spec-path>` handoff. It never implements code and never invokes `ywc-task-generator` itself.
+
+If the input is not yet a stable spec candidate because the open questions still need deterministic multi-session discovery tracking, route to `ywc-wayfinder` first and resume this loop only after one active ticket resolves into a planning-ready artifact.
 
 ## Rationalization Defense
 
@@ -128,6 +137,7 @@ Run one more `ywc-plan --update-spec` pass for these Suggestions?
 - **Upstream**: `ywc-plan` for goal mode or user-provided specs for `--spec` mode.
 - **Validation**: `ywc-spec-validate` supplies the report status, advisor budget header, and canonical parser contract.
 - **Downstream**: `ywc-task-generator`, printed as a command only after validation is free of Critical and Warning findings, and after any remaining Suggestions are either accepted for one more pass or explicitly deferred by the user.
+- **Persisted research inputs**: When a project-relative `ywc-tech-research --output` artifact is part of the spec evidence, preserve that path and its provenance markers through validation rather than flattening it into unattributed summary text.
 - **Not integrated in v1**: `ywc-agentic` routing remains unchanged.
 
 ## Validation

@@ -1,7 +1,13 @@
 ---
 name: ywc-plan
 description: >-
-  (ywc) Use when the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment and routing to the right downstream skill. Triggers: "plan 세워줘", "계획 세워", "어떻게 진행할지", "plan this", "make a plan", "계획", "プラン作成", "計画立てて", "ywc-plan", "task 만들기 전 plan", "before task generator". Do not use for spec quality validation on an existing spec (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), product/business reasoning (use ywc-product-review), or architecture-only design without implementation intent (use ywc-tech-research).
+  (ywc) Use when a rough feature idea or change request needs a concrete plan,
+  scale assessment, and routing before implementation. Triggers: "plan 세워줘",
+  "계획 세워", "plan this", "make a plan", "プラン作成", "計画立てて",
+  "ywc-plan". Do not use for spec validation (use ywc-spec-validate),
+  finalized-spec task decomposition (use ywc-task-generator), product/business
+  reasoning (use ywc-product-review), or architecture-only exploration (use
+  ywc-tech-research).
 ---
 
 # ywc-plan
@@ -56,6 +62,7 @@ Before extracting anchors, evaluate whether the request is concrete enough for d
 | Request is conversational ("I'm thinking about X", "wouldn't it be nice if…", "let's explore Y", "어떻게 만들지", "アイディアがある") | **Delegate to `ywc-brainstorm`** — it surfaces the four anchors via Socratic dialogue and presents 2–3 approaches; resume `ywc-plan` from Step 1 with the brainstorm handoff as input. |
 | Request describes multiple independent subsystems (e.g., "a platform with auth, chat, billing, analytics") | **Delegate to `ywc-brainstorm`** for decomposition before any anchor extraction. Each subsystem gets its own brainstorm → plan cycle. |
 | Two or more of (What / Why / Out of Scope / Done When) are completely missing from the request | **Delegate to `ywc-brainstorm`** — extracting two missing anchors at once produces shallow answers; ywc-brainstorm collects them one at a time with explicit approach trade-offs. |
+| The destination is known, but the open decisions must be tracked across multiple sessions before a stable plan can be written | **Delegate to `ywc-wayfinder`** — it maintains the local discovery map, enforces exactly one active ticket, and routes back here once a planning-ready ticket resolves. |
 
 When delegating, surface this verbatim before transferring control:
 
@@ -65,9 +72,13 @@ When `ywc-brainstorm` completes, its handoff message includes the four anchors a
 
 `--non-interactive` mode skips the delegation: when the flag is present, treat ambiguity as Medium scale (Step 3) and fill missing anchors with defaults rather than routing to `ywc-brainstorm`.
 
+If `ywc-wayfinder` hands back a resolved ticket, treat that ticket's local map path and acceptance notes as the current request context. If `ywc-wayfinder` returns `NEEDS_CONTEXT`, do not draft a plan yet.
+
 After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-writer`, `ywc-task-generator`, `ywc-code-gen`, executor), invoke `ywc-confidence-gate` with the chosen approach as input. The gate's PROCEED / REVIEW / STOP band determines whether the plan is ready for handoff; a REVIEW band surfaces alternatives to the user, a STOP band routes back here for additional investigation before re-attempting handoff. The 5-dimension score becomes part of the plan's completion summary so downstream skills inherit a comparable confidence number.
 
 When the chosen path still depends on unverified assumptions, run [../references/unknown-matrix.md](../references/unknown-matrix.md) before handoff and preserve those assumptions explicitly in the artifact's risk / follow-up language. Do not weaken existing `NEEDS_CONTEXT` rules: if a missing answer blocks a coherent plan, stop and ask instead of parking it as an unknown.
+
+When a persisted `ywc-tech-research --output <path>` artifact exists, cite that project-relative Markdown path in the resulting plan/spec instead of copying unsourced research prose. Preserve its provenance markers and overwrite expectations.
 
 ### Step 1: Clarify the Request
 

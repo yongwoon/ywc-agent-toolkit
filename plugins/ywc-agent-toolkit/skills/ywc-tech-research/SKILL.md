@@ -4,11 +4,10 @@ description: >-
   (ywc) Use when comparing libraries, investigating implementation approaches,
   evaluating technology options, or gathering sourced best practices before a
   plan/spec decision. Triggers: "기술 조사", "라이브러리 비교", "research",
-  "investigate options", "compare options", "어떤 걸 쓸까",
-  "best way to implement", "技術調査", "ライブラリ比較", "実装方針調査". Do not use
-  for writing the spec itself (use ywc-spec-writer), validating an existing spec
-  (use ywc-spec-validate), code generation (use ywc-code-gen), or simple
-  documentation lookup with no comparison/evaluation decision.
+  "compare options", "best way to implement", "技術調査", "ライブラリ比較".
+  Do not use for spec writing (use ywc-spec-writer), spec validation (use
+  ywc-spec-validate), code generation (use ywc-code-gen), or simple doc lookup
+  with no evaluation decision.
 ---
 
 # ywc-tech-research
@@ -41,6 +40,26 @@ Parse `$ARGUMENTS` for:
 | Topic | free text | `"Hono SSE implementation"` | Research topic (required) |
 | `--compare` | `--compare "A,B"` | `--compare "Redis,Valkey"` | Comma-separated list of options to compare in parallel |
 | `--depth` | `--depth 25\|50\|75\|100` | `--depth 50` | Output depth level (default: 50). 25=summary-only; 50=standard; 75=detailed with evidence; 100=exhaustive with full source excerpts and gap analysis |
+| `--output` | `--output <path>` | _(optional)_ | Persist the report to a repository-relative Markdown path under `docs/ywc-plans/` unless the project defines another safe root explicitly. |
+| `--overwrite` | flag | off | Request overwrite of an existing persisted report. Never effective by itself. |
+| `--confirm-overwrite` | flag | off | Explicitly confirms overwrite of the same approved output path. Required with `--overwrite`. |
+| `--non-interactive` | flag | off | Allows autonomous overwrite only when `--output`, `--overwrite`, and `--confirm-overwrite` are all present and safe. |
+
+## Safe Persistence Contract
+
+When `--output` is supplied, persist only to a repository-relative Markdown path.
+Reject absolute paths, `..` traversal, symlink escape, and non-Markdown
+extensions before any write semantics are described. The default safe root is
+`docs/ywc-plans/` unless the project explicitly defines another root.
+
+Overwrite is gated:
+
+- new path: `--output <path>` is sufficient
+- existing path: require `--output <path> --overwrite --confirm-overwrite`
+- autonomous overwrite: require the same flags plus `--non-interactive`
+
+Missing confirmation, path mismatch, or unsafe destinations return
+`NEEDS_CONTEXT`.
 
 ## Execution Steps
 
@@ -131,7 +150,7 @@ Output depth is controlled by `--depth` (default: 50):
  Any inference prefixed with [INFERRED]. Any single-source claim marked [SINGLE SOURCE — verify before acting].)
 
 ### Project-Specific Considerations
-(Compatibility with current stack, migration cost, known conflicts)
+(Compatibility with current stack, migration cost, known conflicts, and whether the result should be preserved in a local discovery artifact)
 
 ### Unknowns Surfaced
 (Only unresolved questions or assumptions that materially affect the recommendation. Omit when none.)
@@ -140,6 +159,12 @@ Output depth is controlled by `--depth` (default: 50):
 - [Official] {name} — {url} (last updated: {date})
 - [Community] {name} — {url} (flagged [potentially stale: <date>] if >12 months old)
 - [context7] used: yes/no — if no, state the reason
+
+### Persistence Metadata
+- Output Path: {project-relative markdown path}
+- Fetch Date (UTC): {ISO-8601 timestamp}
+- Version / Release Hints: {versions or dates cited}
+- Provenance Notes: {how evidence, [INFERRED], and known gaps were separated}
 
 ### Completion Status
 (One of: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT)
@@ -162,3 +187,5 @@ Before returning the recommendation, verify that official sources were checked f
 
 - **upstream**: None (standalone execution)
 - **downstream**: Used as reference material when writing specifications or as input to `ywc-task-generator`
+- **multi-session discovery**: When the research leaves multiple unresolved follow-up decisions that must survive across sessions, hand the result to `ywc-wayfinder` as a local map/ticket reference instead of keeping the state only in chat.
+- **persisted handoff**: When a report is saved with `--output`, downstream skills should cite the project-relative artifact path and preserve its overwrite / provenance expectations rather than copying unsourced summaries.

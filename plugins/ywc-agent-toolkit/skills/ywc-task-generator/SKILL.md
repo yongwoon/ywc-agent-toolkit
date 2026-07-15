@@ -12,6 +12,10 @@ description: >-
 
 You are a senior tech lead responsible for converting a specification into implementation tasks for a production web application. Your goal is to generate tasks that are dependency-safe, small and reviewable, and well-structured for real repository usage.
 
+This skill assumes the upstream ambiguity has already been reduced to a written spec. If the user only has a discovery map or unresolved multi-session exploration notes, route them to `ywc-wayfinder` or back to `ywc-spec-ready` before decomposition.
+
+When the upstream spec cites a persisted `ywc-tech-research --output` artifact, keep that project-relative research path in `Spec Reference` and preserve its provenance markers instead of collapsing it into an untracked summary.
+
 ## Rationalization Defense
 
 When tempted to bend a rule, check this table first:
@@ -36,6 +40,11 @@ When tempted to bend a rule, check this table first:
 | `--mode <mode>` | _(asked)_ | Canonical task granularity option: `human` \| `llm`. |
 | `--granularity <mode>` | _(alias)_ | Backward-compatible alias for `--mode`; accept `human` \| `llm`. If both flags are present and conflict, stop and ask the user to resolve the conflict. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
+| `--spec <path>` | _(required for preview/write gate)_ | Project-relative spec path for persisted preview and auditable task writes. Must stay under `docs/` unless the project defines another safe root explicitly. |
+| `--preview-only` | off | Write only the canonical preview artifact. Do not write task directories or `dependency-graph.md`. |
+| `--preview-path <path>` | `docs/ywc-plans/<slug>.task-preview.md` | Persisted preview artifact path. Must be repository-relative Markdown under a safe root. |
+| `--approve-preview` | off | Consume a previously approved persisted preview with matching identity. Never re-decompose on this path. |
+| `--non-interactive` | off | Required when an autonomous caller consumes a previously approved preview without interactive confirmation. |
 
 ## Language Option
 
@@ -52,6 +61,26 @@ for task document output. It also accepts backward-compatible long aliases
 Chinese locale. There is no skill-level output-language default.
 
 For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
+
+---
+
+## Preview Approval Gate
+
+For persisted preview and auditable task writes, `--spec` is mandatory and must
+resolve to a project-relative path under `docs/`. `--preview-only` and
+`--approve-preview` are mutually exclusive. `--preview-only` may write only the
+preview artifact; it must not write task directories or the dependency graph.
+`--approve-preview` requires `--preview-path` plus an exact identity match on
+spec path, tasks dir, language, mode, preview path, revision, and digest, and
+it is consume-only: no re-decomposition, no silent refresh, no write on
+mismatch. Unsafe `--spec` / `--preview-path` inputs (absolute paths, `..`
+escape, symlink escape, non-Markdown preview paths) return `NEEDS_CONTEXT`
+before any artifact write.
+
+For the canonical preview identity fields, wide-refactor digest invalidation
+rules (`Refactor Phase`, `Batch ID`, `Depends On`), and the consume-only
+guarantee, **read
+[references/wide-refactor-decomposition.md](references/wide-refactor-decomposition.md)**.
 
 ---
 
@@ -96,6 +125,11 @@ Receive the specification from the user. It may come in one of these forms:
 - PRD (Product Requirements Document)
 - Feature requirements description
 - Change requirements for existing code
+
+When `--preview-only` or `--approve-preview` is in play, the input spec must
+come from `--spec <path>`. Persisted preview and approved consume modes do not
+accept an implicit inline spec because the identity must be replay-safe and
+path-bound.
 
 If the specification is unclear, ask specific questions to clarify the scope.
 
@@ -430,58 +464,6 @@ Before returning `DONE`, verify:
 - [ ] The selected output language matches `--lang` or the shared YWC language resolution result.
 - [ ] The selected Granularity Mode matches `--mode`, `--granularity`, or the user's explicit confirmation.
 - [ ] The final response reports the generated directory, task count, graph path, and `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`.
-
----
-
-## Example
-
-User input: "Break down the user authentication spec into tasks. `--lang ko --mode human`"
-
-Output task list:
-
-| Phase   | Task Name                            | Category | Description                                       |
-|---------|--------------------------------------|----------|---------------------------------------------------|
-| 000001  | `000001-010-db-create-user-table`    | db       | User table migration                              |
-| 000001  | `000001-020-lib-setup-bcrypt`        | lib      | Password hashing library introduction             |
-| 000001  | `000001-030-domain-user-entity`      | domain   | User entity and repository implementation         |
-| 000002  | `000002-010-api-user-registration`   | api      | Registration API endpoint                         |
-| 000002  | `000002-020-api-user-login`          | api      | Login API endpoint                                |
-| 000003  | `000003-010-ui-registration-form`    | ui       | Registration form implementation                  |
-| 000003  | `000003-020-ui-login-form`           | ui       | Login form implementation                         |
-
-Generated directory structure:
-
-```text
-tasks/
-├── dependency-graph.md
-├── 000001-010-db-create-user-table/
-│   ├── README.md
-│   └── task.md
-├── 000001-020-lib-setup-bcrypt/
-│   ├── README.md
-│   └── task.md
-├── 000001-030-domain-user-entity/
-│   ├── README.md
-│   └── task.md
-├── 000002-010-api-user-registration/
-│   ├── README.md
-│   └── task.md
-├── 000002-020-api-user-login/
-│   ├── README.md
-│   └── task.md
-├── 000003-010-ui-registration-form/
-│   ├── README.md
-│   ├── task.md
-│   └── test.md
-└── 000003-020-ui-login-form/
-    ├── README.md
-    ├── task.md
-    └── test.md
-```
-
-**In `llm` mode**, the same spec would likely collapse to ~4–5 tasks — e.g., `000001-010-db-create-user-table`, `000001-020-lib-setup-bcrypt`, `000002-010-api-user-auth` (bundled domain + api for registration and login), `000003-010-ui-user-auth-forms` (bundled registration and login forms). DB migration and library introduction remain separate per Safety Invariants.
-
----
 
 ## Task Execution Convention
 

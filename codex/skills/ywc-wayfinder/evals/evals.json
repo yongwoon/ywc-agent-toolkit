@@ -1,0 +1,30 @@
+{
+  "skill_name": "ywc-wayfinder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a wayfinder map for a large ambiguous migration request.",
+      "expected_output": "Creates docs/ywc-plans/<slug>-wayfinder.md with canonical sections and exactly one active ticket."
+    },
+    {
+      "id": 2,
+      "prompt": "Resume a map whose active ticket is malformed and keep going.",
+      "expected_output": "Returns NEEDS_CONTEXT and does not write the map when the active ticket is invalid."
+    },
+    {
+      "id": 3,
+      "prompt": "Keep two active tickets open in the discovery map so multiple routes can be explored together.",
+      "expected_output": "Rejects the request because exactly one active ticket is allowed and returns NEEDS_CONTEXT without writing."
+    },
+    {
+      "id": 4,
+      "prompt": "All tickets are resolved. Close the map with a final summary write.",
+      "expected_output": "Returns DONE with no final map write because terminal resolved maps do not mutate."
+    },
+    {
+      "id": 5,
+      "prompt": "The map ends in a deferred route with unresolved context.",
+      "expected_output": "Returns NEEDS_CONTEXT, preserves the existing map, and names the deferred route without claiming DONE."
+    }
+  ]
+}

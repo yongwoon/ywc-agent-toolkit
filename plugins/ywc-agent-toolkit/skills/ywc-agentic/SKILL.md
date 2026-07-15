@@ -1,15 +1,13 @@
 ---
 name: ywc-agentic
 description: >-
-  (ywc) Use when the user explicitly requests autonomous, end-to-end
-  lifecycle delivery through Plan → Execute → Evaluate → Repeat. Triggers:
-  "agentic end-to-end lifecycle", "autonomous end-to-end delivery", "run the
-  full lifecycle", "ywc-agentic", "자율 end-to-end 실행", "전체 lifecycle 자율
+  (ywc) Use when the user explicitly wants autonomous end-to-end delivery
+  through Plan -> Execute -> Evaluate -> Repeat; supports resuming an
+  existing `tasks/` run with `--resume`. Triggers: "agentic end-to-end
+  lifecycle", "run the full lifecycle", "ywc-agentic", "자율 end-to-end
   실행", "自律エンドツーエンド実行". Do not use for generic planning (use
-  ywc-plan), an ordinary direct change (use the implementation workflow),
-  one-off skill invocations or direct task execution without autonomous
-  orchestration (use an executor). Existing tasks/ directories may use
-  `--resume`.
+  ywc-plan), an ordinary direct change (use the implementation workflow), or
+  one-off execution without autonomous orchestration (use an executor).
 ---
 
 # ywc-agentic (Agentic Orchestrator)
@@ -17,6 +15,8 @@ description: >-
 **Announce at start:** "I'm using the ywc-agentic skill to orchestrate the ywc-* pipeline autonomously from goal to verified implementation."
 
 This skill turns a single natural-language goal into delivered code by orchestrating the existing `ywc-*` skills through an autonomous **Plan → Execute → Evaluate → Repeat** loop. It does not implement code itself — it sequences `ywc-plan`, `ywc-spec-validate`, `ywc-task-generator`, an executor, `ywc-impl-review`, and (for Small-scale goals) `ywc-code-gen`, then re-plans on evaluation failure until the implementation passes review or a user-defined iteration ceiling is reached.
+
+If the goal is still in a multi-session discovery state with unresolved architectural tickets and no stable plan boundary, stop before the loop and route the user to `ywc-wayfinder`. This skill assumes the goal is ready to enter an implementation-oriented planning pipeline.
 
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
@@ -111,8 +111,13 @@ Medium/Large goals only. Skipped on the Small Path.
 
 1. Invoke `ywc-task-generator` against the (possibly amended) spec, writing into the configured directory:
    ```text
-   ywc-task-generator --tasks-dir <tasks-dir>
+   ywc-task-generator --spec docs/ywc-plans/agentic-<slug>-iter1.md --tasks-dir <tasks-dir> --preview-only --preview-path docs/ywc-plans/agentic-<slug>-iter<N>.task-preview.md
    ```
+   This first call writes only the persisted preview artifact. Validate and capture the returned `preview_path`, `preview_revision`, and `preview_digest`, then append them to the UTC iteration log before making the second call:
+   ```text
+   ywc-task-generator --spec docs/ywc-plans/agentic-<slug>-iter1.md --tasks-dir <tasks-dir> --approve-preview --preview-path <preview-path> --non-interactive
+   ```
+   The second call is consume-only. It must reuse the exact same `--spec`, `--tasks-dir`, output language, and approved preview identity. Missing preview, stale digest, mismatched identity, or a direct bypass of the first call stop the run with `NEEDS_CONTEXT`.
    `ywc-task-generator` resolves output language through
    [`../references/language-resolution.md`](../references/language-resolution.md).
    Pass `--lang en|ja|ko|zh|es` only when the user explicitly requested a
@@ -184,6 +189,7 @@ After every iteration (Pass or Fail), append a structured record to `<tasks-dir>
 ## Iteration <N> — <ISO-8601 UTC timestamp>
 - Phase: <phase combination, e.g. "Full Mode / Plan → Spec → Tasks → Execute → Evaluate">
 - Tasks completed: <completed>/<total>
+- Preview Approval: <preview_path> | <preview_revision> | <preview_digest>
 - ywc-impl-review: <PASS | FAIL (<n> <CRITICAL|HIGH> issues)>
   - <SEVERITY>: <issue description>   ← one line per issue, Fail only
 ```
@@ -194,6 +200,7 @@ Concrete example:
 ## Iteration 1 — 2026-05-15T10:30:00Z
 - Phase: Full Mode / Plan → Spec → Tasks → Execute → Evaluate
 - Tasks completed: 4/4
+- Preview Approval: docs/ywc-plans/agentic-auth-iter1.task-preview.md | rev-003 | sha256:abcd1234
 - ywc-impl-review: FAIL (2 HIGH issues)
   - HIGH: Missing input validation in POST /api/users
   - HIGH: SQL injection risk in search query

@@ -136,6 +136,27 @@ check_codex_plan_handoff() {
   fi
 }
 
+check_codex_skill_contracts() {
+  local desc_helper="scripts/check-codex-skill-descriptions.sh"
+  local contract_runner="scripts/run-codex-skill-contract-evals.sh"
+
+  if [ ! -x "$desc_helper" ]; then
+    echo "ERROR: $desc_helper is missing or not executable"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  if [ ! -x "$contract_runner" ]; then
+    echo "ERROR: $contract_runner is missing or not executable"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+
+  bash "$desc_helper" --paths a-m || ERRORS=$((ERRORS + 1))
+  bash "$desc_helper" --paths n-z || ERRORS=$((ERRORS + 1))
+  bash "$contract_runner" || ERRORS=$((ERRORS + 1))
+}
+
 check_path_under_codex_plugin() {
   local field="$1"
   local path="$2"
@@ -669,6 +690,7 @@ for dir in codex/skills/*/; do
 done
 check_codex_support_dirs
 check_codex_plan_handoff
+check_codex_skill_contracts
 
 echo "==> Validating Codex plugin package..."
 check_codex_plugin_manifest

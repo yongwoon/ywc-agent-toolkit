@@ -1,18 +1,13 @@
 ---
 name: ywc-brainstorm
 description: >-
-  (ywc) Use when the user has a rough idea, a half-formed feature request, or
-  "let's build X" framing and intent has not yet been pinned down. Surfaces
-  purpose, constraints, success criteria, and 2–3 alternative approaches
-  through one-question-at-a-time Socratic dialogue before any implementation
-  begins, then hands off to ywc-plan. Triggers: "아이디어", "구상",
-  "어떻게 만들지", "이런 거 만들고 싶은데", "brainstorm", "let's build",
-  "discuss this idea", "어떻게 시작", "ideate", "explore", "feature 구상",
-  "アイディア", "どう作る", "ブレスト", "ywc-brainstorm". Do not use for an
-  already-clear request (go straight to ywc-plan), validating an existing
-  spec (use ywc-spec-validate), choosing between libraries or frameworks
-  (use ywc-tech-research), or implementation-time questions (use
-  ywc-code-gen).
+  (ywc) Use when the user has a rough idea or "let's build X" framing and
+  intent is not yet pinned down. Clarifies purpose, constraints, success
+  criteria, and 2-3 approaches before handing off to ywc-plan. Triggers:
+  "아이디어", "brainstorm", "let's build", "アイディア", "ブレスト",
+  "ywc-brainstorm". Do not use for an already-clear request (use ywc-plan),
+  spec validation (use ywc-spec-validate), library/framework comparison (use
+  ywc-tech-research), or implementation-time questions (use ywc-code-gen).
 ---
 
 # ywc-brainstorm
@@ -61,6 +56,7 @@ Use when **any** of these apply:
 Do **not** use when:
 
 - The request already specifies behavior, files, and acceptance criteria precisely → go to `ywc-plan` directly
+- The destination is already known and the remaining work is deterministic multi-session discovery tracking → use `ywc-wayfinder`
 - The user is validating an existing spec document → use `ywc-spec-validate`
 - The decision is between specific libraries or frameworks → use `ywc-tech-research` first, return after
 - The user is asking an implementation-time question ("how do I add this prop") → use `ywc-code-gen`

@@ -1,13 +1,13 @@
 ---
 name: ywc-skill-author
 description: >-
-  (ywc) Use when creating a new ywc-* skill, restructuring an existing one's
-  frontmatter/body sections/references/agents metadata, or auditing existing
-  ywc-* skills against the canonical rule set. Triggers: "ywc skill 생성", "create ywc
-  skill", "ywc skill 만들어줘", "ywc skill 개선", "new ywc skill", "ywc skill
-  upgrade", "ywcスキル作成", "ywc skill audit", "ywc skill 룰 점검". Do not use
-  for editing skill content during normal task execution, for non-ywc-* skills,
-  or for renaming/moving skills (use `git mv` directly).
+  (ywc) Use when creating a new ywc-* skill, restructuring an existing skill's
+  frontmatter/body/references/agents metadata, or auditing ywc-* skills against
+  the canonical rule set. Triggers: "ywc skill 생성", "create ywc skill", "ywc
+  skill 만들어줘", "ywc skill 개선", "new ywc skill", "ywc skill upgrade",
+  "ywcスキル作成", "ywc skill audit", "ywc skill 룰 점검". Do not use for
+  editing skill content during normal task execution, non-ywc-* skills, or
+  renaming/moving skills (use `git mv` directly).
 ---
 
 # ywc-skill-author

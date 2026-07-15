@@ -1,13 +1,21 @@
 # Task Dependency Graph
 
+Preview Approval Metadata (when preview flow is used):
+- `Preview Path:` `docs/ywc-plans/<slug>.task-preview.md`
+- `Preview Revision:` `rev-001`
+- `Preview Digest:` `sha256:...`
+- `Spec Path:` `docs/ywc-plans/<slug>.md`
+- `Tasks Dir:` `tasks/`
+- `Mode:` `human` or `llm`
+
 ## Phase 000001 — [Phase Name]
 - `000001-010-db-create-users-table` → (root)
-- `000001-020-domain-user-entity` → depends on `000001-010`
+- `000001-020-domain-user-entity` → depends on `000001-010` | Refactor Phase: `phase-1` | Batch ID: `user-core-a`
 - `000001-030-api-user-registration` → depends on `000001-020`
 
 ## Phase 000002 — [Phase Name]
 - `000002-010-lib-setup-redis` → (root)
-- `000002-020-domain-session-management` → depends on `000001-020`, `000002-010`
+- `000002-020-domain-session-management` → depends on `000001-020`, `000002-010` | Refactor Phase: `phase-2` | Batch ID: `session-core-a`
 
 ## Parallel Execution Notes
 - Initial ready set: `000001-010-db-create-users-table`, `000002-010-lib-setup-redis`

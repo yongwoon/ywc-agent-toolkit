@@ -72,6 +72,24 @@
       "prompt": "Genera tasks en español para este spec. Usa --lang es y --granularity human. Los tasks podrán ejecutarse después en worktrees aislados.\n\n## Reporting Export\n- CSV export para informes mensuales\n- Job asíncrono para exports grandes\n- Notificación por Email cuando el export termina\n- Stack: Rails + Sidekiq + PostgreSQL",
       "expected_output": "Estructura tasks/ escrita en español, con Technical terms en English. `es` es el valor canónico de `--lang`; `spanish`, `espanol` y `español` se aceptan como aliases. `--granularity human` se reconoce como alias backward-compatible de `--mode human` y evita preguntar por el modo. Las tasks se organizan por Phase y dependency order, separando DB migration y Library introduction si aplican. Cada README.md incluye Ownership, Shared Surfaces, Conflicts With, Parallelizable After y Task Verify; cada task.md incluye Allowed Edit Scope, Stop Conditions y Task Verify; dependency-graph.md incluye Parallel Execution Notes. Command names, file paths, YAML/JSON keys, task IDs y code blocks permanecen en English o formato machine-readable.",
       "files": []
+    },
+    {
+      "id": 13,
+      "prompt": "Use --spec docs/ywc-plans/billing.md --preview-only --preview-path docs/ywc-plans/billing.task-preview.md --mode llm to prepare a preview for a wide refactor task set.",
+      "expected_output": "Writes only the preview artifact and does not write task directories or dependency-graph.md. The preview includes spec_path, tasks_dir, lang, mode, preview_path, preview_revision, and preview_digest. Wide-refactor rows preserve Refactor Phase, Batch ID, and Depends On metadata.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "prompt": "Use --spec docs/ywc-plans/billing.md --approve-preview --preview-path docs/ywc-plans/billing.task-preview.md --non-interactive to generate tasks from an approved preview.",
+      "expected_output": "Consumes the approved preview without re-decomposition. Requires an exact identity match on preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, and mode. Writes task artifacts only from the approved preview.",
+      "files": []
+    },
+    {
+      "id": 15,
+      "prompt": "Use --preview-only with an inline spec, or point --spec to ../outside.md, or set --preview-path /tmp/out.txt.",
+      "expected_output": "Returns NEEDS_CONTEXT before any artifact write when the spec is missing, inline-only, path-escaping, symlink-escaping, or the preview path is not safe Markdown under the allowed root.",
+      "files": []
     }
   ]
 }

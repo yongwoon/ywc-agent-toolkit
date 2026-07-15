@@ -1,18 +1,13 @@
 ---
 name: ywc-debug-rootcause
 description: >-
-  (ywc) Use when encountering a bug, test failure, build failure, or any
-  unexpected behavior, before proposing or applying any fix. Forces root-cause
-  identification through a 4-phase investigation, blocks symptom patching, and
-  questions architecture after 3+ failed fixes on the same surface. Triggers:
-  "왜 안돼", "안 돼요", "디버그", "디버깅", "버그", "고장", "이상해",
-  "원인 찾아줘", "debug", "debug this", "find the bug", "root cause",
-  "what's wrong", "デバッグ", "原因不明", "通らない", "落ちる", "おかしい",
-  "ywc-debug-rootcause". Do not use for ongoing implementation drafting
-  (use ywc-code-gen), incident postmortem after the fact (use
-  ywc-incident-postmortem), security vulnerability triage (use
-  ywc-security-audit), or pre-implementation confidence check (use
-  ywc-confidence-gate).
+  (ywc) Use when a bug, test/build failure, or other unexpected behavior
+  appears before any fix is proposed. Forces root-cause investigation and
+  blocks symptom patching. Triggers: "디버그", "버그", "debug", "デバッグ",
+  "ywc-debug-rootcause". Do not use for implementation drafting (use
+  ywc-code-gen), incident postmortems (use ywc-incident-postmortem), security
+  triage (use ywc-security-audit), or pre-implementation confidence checks
+  (use ywc-confidence-gate).
 ---
 
 # ywc-debug-rootcause

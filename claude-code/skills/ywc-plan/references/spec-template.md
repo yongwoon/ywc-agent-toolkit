@@ -49,6 +49,8 @@ Use `N/A — no interaction with existing constrained infrastructure` only after
 
 <Observable, testable conditions that prove the feature is complete. Each AC must be **declarative and verifiable** — written so a tester (human or automated) knows exactly what to send, what to observe, and how to decide pass/fail.>
 
+Before writing the ACs, it is recommended to name — in one sentence — the test seam (public boundary) this AC group will verify; for the detailed procedure follow `ywc-tdd-ritual`'s `### Seams` subsection, which is the canonical source (do not restate it here).
+
 Preferred form for each AC:
 
 ```

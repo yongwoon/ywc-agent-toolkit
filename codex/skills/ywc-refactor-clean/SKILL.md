@@ -1,17 +1,14 @@
 ---
 name: ywc-refactor-clean
 description: >-
-  (ywc) Use when removing dead code (unused functions / exports / files /
-  dependencies / imports), consolidating near-duplicate utilities, or running a
-  scheduled hygiene pass on a codebase. Triggers: "dead code 제거", "unused
-  import 정리", "knip / depcheck / ts-prune 돌려줘", "refactor clean", "dead
-  code cleanup", "remove unused exports", "デッドコード削除", "未使用
-  import 整理", "ywc-refactor-clean". Do not use for active feature
-  implementation in the same branch (the cleanup competes with the feature
-  diff — finish the feature, then clean), for behavior-changing refactors
-  (use ywc-tdd-ritual + ywc-code-gen so behavior is captured by tests first),
-  or for performance / architecture restructuring (out of scope — this skill
-  is byte-for-byte equivalence on the public surface).
+  (ywc) Use when removing dead code, unused dependencies/imports/files,
+  consolidating near-duplicate utilities, or running a hygiene pass. Triggers:
+  "dead code 제거", "unused import 정리", "knip / depcheck / ts-prune
+  돌려줘", "refactor clean", "dead code cleanup", "remove unused exports",
+  "デッドコード削除", "未使用 import 整理", "ywc-refactor-clean". Do not use
+  for feature implementation in the same branch, behavior-changing refactors
+  (use ywc-tdd-ritual + ywc-code-gen), or performance/architecture
+  restructuring.
 ---
 
 # ywc-refactor-clean
