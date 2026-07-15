@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wayfinder"
+  short_description: "Manage one active discovery ticket in a local Markdown map"
+  default_prompt: "Use $ywc-wayfinder to create or resume a deterministic local discovery map, keep exactly one active ticket, and route the next step without implementing code."
