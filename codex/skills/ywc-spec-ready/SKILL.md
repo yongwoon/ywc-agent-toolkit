@@ -17,6 +17,8 @@ description: >-
 
 This skill turns a goal or existing spec into a `ywc-task-generator`-ready spec. It loops through `ywc-plan`, `ywc-spec-validate`, and `ywc-plan --update-spec` until validation has no unresolved Critical or Warning findings. If validation reaches `DONE` with Suggestion findings still present, ask the user whether to run one more suggestion-focused amendment pass before printing the `ywc-task-generator <spec-path>` handoff. It never implements code and never invokes `ywc-task-generator` itself.
 
+If the input is not yet a stable spec candidate because the open questions still need deterministic multi-session discovery tracking, route to `ywc-wayfinder` first and resume this loop only after one active ticket resolves into a planning-ready artifact.
+
 ## Rationalization Defense
 
 | Excuse | Reality |

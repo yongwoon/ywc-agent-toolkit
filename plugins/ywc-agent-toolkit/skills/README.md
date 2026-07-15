@@ -41,6 +41,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-spec-ready` | `ywc-spec-ready` | "spec을 task 생성 가능 상태로 수렴시켜줘" | spec readiness loop, advisor budget 기반 validate/update 반복 후 task-generator handoff |
 | `ywc-spec-writer` | `ywc-spec-writer` | "specification을 갱신해줘" | Specification 작성·갱신 |
 | `ywc-tech-research` | `ywc-tech-research` | "기술 조사해줘" | Library / Implementation 비교 및 기술 조사 |
+| `ywc-wayfinder` | `ywc-wayfinder` | "discovery map 정리해줘" | multi-session discovery map 유지, exactly one active ticket 관리, downstream route 결정 |
 | `ywc-plan` | `ywc-plan` | "이 아이디어를 plan/spec으로 정리해줘" | Rough idea → 구현 직전 artifact |
 | `ywc-security-audit` | `ywc-security-audit` | "security audit 해줘" | OWASP Top 10 + application-specific threat 기반 Security Audit |
 | `ywc-ui-ux-review` | `ywc-ui-ux-review` | "UI/UX review 해줘" | Code 정적 분석 + Live UI 탐색 기반 UI/UX Review |
@@ -72,6 +73,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | 상황 | 사용할 Skill | 비고 |
 |------|-------------|------|
 | 기술/라이브러리 조사 | `ywc-tech-research` | Spec 작성 전 먼저 실행 |
+| 여러 세션에 걸친 discovery 정리 / unresolved ticket 관리 | `ywc-wayfinder` | local map 유지, exactly one active ticket |
 | Rough idea → plan / spec 준비 | `ywc-plan` | Scale 자동 판정 후 Small=plan.md / Medium·Large=spec |
 | 사양서 작성·갱신 | `ywc-spec-writer` | --full (신규 전체) / --from-task(s) / --from-commit / --from-pr(s) / --lang |
 | Spec 품질 점검 | `ywc-spec-validate` | Task 분해 전 반드시 실행 |
@@ -101,6 +103,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | 한국어/일본어 문서 생성 | `ywc-project-docs` | docs/ 규약 준수 (`--lang ko` / `--lang ja`) |
 | 새 ywc-* skill 작성 / 기존 skill 구조 개선 | `ywc-skill-author` | (메타 skill) 표준 규칙 강제 |
 | Rough idea / "이런 거 만들고 싶은데" → 승인된 design | `ywc-brainstorm` | ywc-plan 의 Step 1.0 에서도 자동 위임. 6단계 Socratic dialogue (terminal = ywc-plan handoff) |
+| destination 은 정해졌지만 unresolved decision 을 여러 세션에 걸쳐 추적해야 함 | `ywc-wayfinder` | ordinary plan/brainstorm 대체가 아니라 local discovery map 운영 |
 | 완료 선언 전 fresh 검증 (commit / PR / executor handoff 직전) | `ywc-verify-done` | "should/probably/seems" 금지. 5단계 Gate Function (IDENTIFY→RUN→READ→VERIFY→CLAIM) |
 | Bug / test failure / build failure 의 root cause 조사 | `ywc-debug-rootcause` | 4-phase investigation. 3+ fix 실패 시 architecture 재논의 escape hatch |
 | 새 feature / bug fix 를 TDD (RED-GREEN-REFACTOR) 로 구현 | `ywc-tdd-ritual` | "Watch it fail" 단계 필수. ywc-code-gen --tdd 가 delegate |
