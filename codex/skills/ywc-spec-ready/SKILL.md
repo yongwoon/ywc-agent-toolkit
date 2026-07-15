@@ -137,6 +137,7 @@ Run one more `ywc-plan --update-spec` pass for these Suggestions?
 - **Upstream**: `ywc-plan` for goal mode or user-provided specs for `--spec` mode.
 - **Validation**: `ywc-spec-validate` supplies the report status, advisor budget header, and canonical parser contract.
 - **Downstream**: `ywc-task-generator`, printed as a command only after validation is free of Critical and Warning findings, and after any remaining Suggestions are either accepted for one more pass or explicitly deferred by the user.
+- **Persisted research inputs**: When a project-relative `ywc-tech-research --output` artifact is part of the spec evidence, preserve that path and its provenance markers through validation rather than flattening it into unattributed summary text.
 - **Not integrated in v1**: `ywc-agentic` routing remains unchanged.
 
 ## Validation

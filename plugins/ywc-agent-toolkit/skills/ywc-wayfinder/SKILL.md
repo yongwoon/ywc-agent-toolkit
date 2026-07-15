@@ -58,6 +58,7 @@ at most one active ticket per session before routing the next step.
    - Use `ywc-plan` for a clarified implementation plan.
    - Use `ywc-tech-research` when the ticket is blocked on external technical comparison.
    - Use `ywc-task-generator` only after a downstream planning/spec path produces a finalized spec.
+   - When a persisted `ywc-tech-research --output` artifact informs the route, record its project-relative Markdown path in the map so later skills can reuse the same provenance and overwrite contract.
 
 ## Output Format
 

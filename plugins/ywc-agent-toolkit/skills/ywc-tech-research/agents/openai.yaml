@@ -1,4 +1,4 @@
 interface:
   display_name: "Tech Research"
   short_description: "Compare technical options and surface unresolved unknowns"
-  default_prompt: "Use $ywc-tech-research to compare implementation options, libraries, tradeoffs, and unresolved unknowns that materially affect the recommendation before writing a specification."
+  default_prompt: "Use $ywc-tech-research to compare implementation options, libraries, tradeoffs, and unresolved unknowns that materially affect the recommendation before writing a specification. When --output is supplied, persist only to a safe project-relative Markdown path, gate overwrite with --overwrite plus --confirm-overwrite, and preserve fetch date, source URLs, version hints, [INFERRED], and known gaps."

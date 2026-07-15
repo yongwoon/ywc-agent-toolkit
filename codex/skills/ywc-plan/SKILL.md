@@ -78,6 +78,8 @@ After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-wr
 
 When the chosen path still depends on unverified assumptions, run [../references/unknown-matrix.md](../references/unknown-matrix.md) before handoff and preserve those assumptions explicitly in the artifact's risk / follow-up language. Do not weaken existing `NEEDS_CONTEXT` rules: if a missing answer blocks a coherent plan, stop and ask instead of parking it as an unknown.
 
+When a persisted `ywc-tech-research --output <path>` artifact exists, cite that project-relative Markdown path in the resulting plan/spec instead of copying unsourced research prose. Preserve its provenance markers and overwrite expectations.
+
 ### Step 1: Clarify the Request
 
 **Prerequisite:** If `docs/ubiquitous-language.md` exists, read it before asking any questions. The vocabulary defined there must frame the clarification dialogue itself — use canonical terms in your questions and note any "Synonyms to Avoid" so the user's answers are captured in the right terms from the start.
