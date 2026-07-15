@@ -53,12 +53,28 @@ Skill 支持两种任务粒度模式。标准 option 是 `--mode human|llm`；`-
 
 安全不变量（DB 迁移分离、库引入分离、阶段硬门控、任务后可构建性）在两种模式下均相同适用。完整规范请参见 [references/granularity-modes.md](./references/granularity-modes.md)。
 
+## Preview Approval Workflow
+
+`ywc-task-generator` 也支持 persisted preview approval flow。
+
+- `--spec <path>`: persisted preview 与 auditable task write 的 canonical input
+- `--preview-only`: 只写入 preview artifact
+- `--preview-path <path>`: custom preview artifact path
+- `--approve-preview`: 在不 re-decomposition 的情况下 consume 已批准 preview
+- `--non-interactive`: autonomous caller consume 已批准 preview 时必需
+
+Preview identity 必须绑定 `spec_path`, `tasks_dir`, `lang`, `mode`,
+`preview_path`, `preview_revision`, `preview_digest`。stale digest, missing
+spec, path traversal, symlink escape, non-Markdown preview path 都必须以
+`NEEDS_CONTEXT` 停止。
+
 ## 输出结构
 
 ### 任务目录
 
 ```text
 tasks/
+├── docs/ywc-plans/billing.task-preview.md
 ├── 000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
@@ -67,6 +83,20 @@ tasks/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
+```
+
+Persisted preview artifact 的 canonical approval evidence 示例：
+
+```text
+Preview Path: docs/ywc-plans/billing.task-preview.md
+Preview Revision: rev-003
+Preview Digest: sha256:...
+Spec Path: docs/ywc-plans/billing.md
+Tasks Dir: tasks/
+Mode: llm
+Refactor Phase: phase-2
+Batch ID: billing-refactor-a
+Depends On: 000001-020-api-billing-contract
 ```
 
 ### 任务命名
