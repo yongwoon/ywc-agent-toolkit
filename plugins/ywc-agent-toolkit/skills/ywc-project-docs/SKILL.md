@@ -1,19 +1,14 @@
 ---
 name: ywc-project-docs
 description: >-
-  (ywc) Use when the user wants to create or update human-facing docs/ material
-  in Korean, Japanese, English, Chinese, or Spanish, such as Task, Architecture,
-  Specification, Product, or operational guide documents. Triggers: "문서 작성",
-  "문서 만들어", "문서 추가해", "한국어 문서", "일본어 문서", "영어 문서", "중국어 문서",
-  "스페인어 문서", "document this", "write a doc", "add to docs/",
-  "English docs", "Chinese docs", "Spanish docs", "写文档", "创建文档",
-  "中文文档", "crear documentación", "documentación del proyecto",
-  "escribir un documento", "ドキュメント作成", "ドキュメントを書いて", "文書作成".
-  Do not use for code comments, root README changes, project folder-layout
-  design (use ywc-project-scaffold), implementation tasks (use
-  ywc-task-generator), or domain vocabulary docs (use
-  ywc-ubiquitous-language), or for authoring a standalone formal Specification
-  document (use ywc-spec-writer).
+  (ywc) Use when creating or updating project docs in Korean, Japanese,
+  English, Chinese, or Spanish. Triggers: "문서 작성", "문서",
+  "document this", "write a doc", "English docs", "Chinese docs",
+  "Spanish docs", "写文档", "crear documentación", "ドキュメント作成". Do
+  not use for code comments, root README changes, project structure design (use
+  ywc-project-scaffold), implementation tasks (use ywc-task-generator), domain
+  vocabulary docs (use ywc-ubiquitous-language), or formal specifications (use
+  ywc-spec-writer).
 ---
 
 # Project Documentation Generator (KR / JA / EN / ZH / ES)

@@ -1,18 +1,13 @@
 ---
 name: ywc-review-learnings
 description: >-
-  (ywc) Use when capturing, reading, or curating a project's accumulated
-  code-review learnings — durable natural-language review preferences that raise
-  review quality per repository over time (the CodeRabbit "learnings" pattern,
-  runtime-agnostic, no bot dependency). Triggers: "리뷰 학습 누적", "review learnings",
-  "리뷰 피드백 축적", "이 지적 학습해둬", "이건 false positive 야 학습해줘", "리뷰 규칙 누적",
-  "review 학습 갱신", "레뷰 학습", "レビュー学習", "review memory", "accumulate review feedback",
-  "remember this review preference". Do not use for running an implementation
-  review itself (use ywc-impl-review), for handling open PR review comments
-  (use ywc-handle-pr-reviews), for responding to received review feedback in the
-  moment with verify-before-agree discipline (use ywc-receive-review), for domain
-  vocabulary (use ywc-ubiquitous-language), or for spec-level review (use
-  ywc-spec-validate).
+  (ywc) Use when capturing or curating durable repo-specific code-review
+  preferences. Triggers: "리뷰 학습 누적", "리뷰 피드백 축적", "review
+  learnings", "review memory", "remember this review preference",
+  "レビュー学習". Do not use for implementation review (use ywc-impl-review),
+  PR comment handling (use ywc-handle-pr-reviews), in-the-moment review replies
+  (use ywc-receive-review), domain vocabulary (use
+  ywc-ubiquitous-language), or spec review (use ywc-spec-validate).
 ---
 
 # ywc-review-learnings

@@ -1,7 +1,13 @@
 ---
 name: ywc-plan
 description: >-
-  (ywc) Use when the user has a rough feature idea or change request and needs a concrete plan before implementation, including scale assessment and routing to the right downstream skill. Triggers: "plan 세워줘", "계획 세워", "어떻게 진행할지", "plan this", "make a plan", "계획", "プラン作成", "計画立てて", "ywc-plan", "task 만들기 전 plan", "before task generator". Do not use for spec quality validation on an existing spec (use ywc-spec-validate), task decomposition from a finalized spec (use ywc-task-generator), product/business reasoning (use ywc-product-review), or architecture-only design without implementation intent (use ywc-tech-research).
+  (ywc) Use when a rough feature idea or change request needs a concrete plan,
+  scale assessment, and routing before implementation. Triggers: "plan 세워줘",
+  "계획 세워", "plan this", "make a plan", "プラン作成", "計画立てて",
+  "ywc-plan". Do not use for spec validation (use ywc-spec-validate),
+  finalized-spec task decomposition (use ywc-task-generator), product/business
+  reasoning (use ywc-product-review), or architecture-only exploration (use
+  ywc-tech-research).
 ---
 
 # ywc-plan

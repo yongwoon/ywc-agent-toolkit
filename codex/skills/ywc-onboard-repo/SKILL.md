@@ -1,14 +1,12 @@
 ---
 name: ywc-onboard-repo
 description: >-
-  (ywc) Use when entering an existing / unfamiliar repository for the first
-  time, generating a starter AGENTS.md from detected conventions, or producing
-  an architecture/convention briefing for a new joiner. Triggers: "onboard me",
-  "이 repo 처음이야", "이 codebase 를 이해하게 해줘", "generate AGENTS.md",
-  "walk me through this repo", "리포 분석해줘", "コードベースを案内して",
-  "onboarding 가이드", "ywc-onboard-repo". Do not use for brand-new project
-  structure design (use ywc-project-scaffold), CodeTour `.tour` artifacts,
-  ad-hoc single-file explanation, or codemap refreshes after the repo is already
+  (ywc) Use when first entering an unfamiliar repository to generate a starter
+  AGENTS.md or an onboarding architecture/convention briefing. Triggers:
+  "onboard me", "이 repo 처음이야", "리포 분석해줘", "generate AGENTS.md",
+  "walk me through this repo", "コードベースを案内して", "ywc-onboard-repo".
+  Do not use for brand-new project scaffolding (use ywc-project-scaffold),
+  CodeTour `.tour`, one-file explanation, or codemap refresh after the repo is
   understood.
 ---
 
