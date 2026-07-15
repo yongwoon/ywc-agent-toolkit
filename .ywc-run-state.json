@@ -3,7 +3,7 @@
   "args": "000061-010..000063-010 --review --base-branch feature/sdlc-v11-base --local-merge --tasks-dir ./tasks-codex-sdlc-v11",
   "mode": "local-merge",
   "tasks_dir": "./tasks-codex-sdlc-v11",
-  "current_wave": 4,
+  "current_wave": 5,
   "waves": [
     {
       "wave": 0,
@@ -59,7 +59,7 @@
         "000062-020-docs-wayfinder-routing-catalog",
         "000062-040-docs-task-generator-preview-assets"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "merged": [
         "000062-020-docs-wayfinder-routing-catalog",
         "000062-040-docs-task-generator-preview-assets"
@@ -72,9 +72,12 @@
         "000062-050-docs-agentic-preview-flow",
         "000062-060-docs-tech-research-persistence"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "merged": [],
-      "pending": []
+      "pending": [
+        "000062-050-docs-agentic-preview-flow",
+        "000062-060-docs-tech-research-persistence"
+      ]
     },
     {
       "wave": 6,
@@ -87,5 +90,5 @@
     }
   ],
   "started_at": "2026-07-15T10:00:33Z",
-  "last_checkpoint": "2026-07-15T11:14:15.415536+00:00"
+  "last_checkpoint": "2026-07-15T11:15:05.941373+00:00"
 }
