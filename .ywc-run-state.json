@@ -48,11 +48,10 @@
       ],
       "status": "in_progress",
       "merged": [
-        "000062-010-docs-wayfinder-core"
-      ],
-      "pending": [
+        "000062-010-docs-wayfinder-core",
         "000062-030-refactor-task-generator-preview-core"
-      ]
+      ],
+      "pending": []
     },
     {
       "wave": 4,
@@ -85,5 +84,5 @@
     }
   ],
   "started_at": "2026-07-15T10:00:33Z",
-  "last_checkpoint": "2026-07-15T11:04:14.136333+00:00"
+  "last_checkpoint": "2026-07-15T11:05:04.922347+00:00"
 }
