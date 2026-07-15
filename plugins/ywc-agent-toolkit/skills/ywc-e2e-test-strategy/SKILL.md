@@ -1,15 +1,14 @@
 ---
 name: ywc-e2e-test-strategy
 description: >-
-  (ywc) Use when designing an automated E2E test strategy for a web application,
-  setting up Playwright from scratch, auditing existing E2E coverage gaps, or
-  generating Playwright test code for a specific critical user flow with GitHub
-  Actions CI integration. Triggers: "E2E 테스트 전략", "Playwright 설정",
-  "critical path 자동화", "E2E 테스트 작성", "e2e coverage 점검",
-  "e2e test strategy", "playwright setup", "playwright test", "E2Eテスト戦略",
-  "Playwright設定", "テスト自動化". Do not use for manual verification test
-  sheets (use ywc-gen-testcase), unit/integration test implementation, or
-  security-focused penetration testing (use ywc-security-audit).
+  (ywc) Use when designing an automated E2E strategy for a web app, setting
+  up Playwright, auditing E2E coverage gaps, or generating Playwright tests
+  for a critical user flow with CI integration. Triggers: "E2E 테스트 전략",
+  "Playwright 설정", "e2e test strategy", "playwright setup", "playwright
+  test", "E2Eテスト戦略", "Playwright設定". Do not use for manual
+  verification sheets (use ywc-gen-testcase), unit/integration test
+  implementation, or security-focused penetration testing (use
+  ywc-security-audit).
 ---
 
 # E2E Test Strategy

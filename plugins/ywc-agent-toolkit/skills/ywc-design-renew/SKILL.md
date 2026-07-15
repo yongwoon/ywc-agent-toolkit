@@ -1,20 +1,14 @@
 ---
 name: ywc-design-renew
 description: >-
-  (ywc) Use when an existing frontend surface looks generic, template-like, or
-  "AI-made" and the user wants to renew its visual design to feel distinctive, or
-  to audit a UI specifically for AI-slop design tells (gradient text,
-  cyan-on-dark, Inter, uniform card grids) before shipping.
-  Triggers: "디자인 리뉴얼", "디자인이 너무 평범해", "LLM이 만든 것 같은 디자인", "AI 슬롭",
-  "design renew", "de-slop this UI", "make this design less generic", "make it
-  look less AI-generated", "디자인 개선", "이 화면 AI slop 점검", "AI slop check",
-  "デザインリニューアル", "AIっぽいデザインを直して", "デザイン刷新". Do not use for usability /
-  information-architecture / WCAG accessibility audit or a general design / UX
-  review (use ywc-ui-ux-review), building a brand-new UI or component from scratch
-  rather than renewing an existing one (use the frontend-design or impeccable
-  skill), backend or API review (use ywc-impl-review), product / business strategy
-  review (use ywc-product-review), or only persisting a design preference without
-  changing code (use ywc-review-learnings).
+  (ywc) Use when an existing frontend surface looks generic or AI-made and
+  needs visual renewal, or an AI-slop audit before shipping. Triggers:
+  "디자인 리뉴얼", "AI 슬롭", "design renew", "デザインリニューアル",
+  "デザイン刷新". Do not use for UX/accessibility review (use
+  ywc-ui-ux-review), brand-new UI from scratch (use frontend-design or
+  impeccable), backend/API review (use ywc-impl-review), product/business
+  review (use ywc-product-review), or preference capture without code changes
+  (use ywc-review-learnings).
 ---
 
 # Design Renew — De-Slop & Check

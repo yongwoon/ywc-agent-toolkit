@@ -1,18 +1,14 @@
 ---
 name: ywc-docker-isolate
 description: >-
-  (ywc) Use when parallel Git worktrees each run their own Docker stack and
-  collide on host ports ("port is already allocated") — derives a deterministic
-  per-worktree host-port block + COMPOSE_PROJECT_NAME, tears down only that
-  worktree's stack, and audits stale stacks. Primarily a delegated callable from
-  `ywc-parallel-executor` (Pre-flight audit, Step 4a setup, Step 4g teardown).
-  Triggers: "docker port 격리", "worktree docker 충돌", "port is already
-  allocated", "compose 포트 충돌", "ywc-docker-isolate", "docker isolate",
-  "worktree docker stack", "Docker ポート分離", "コンテナ ポート衝突".
-  Do not use for projects without Docker / docker-compose (no-op), non-Docker
-  workspace isolation (local process ports, devcontainer), `ywc-sequential-executor`
-  (runs one task at a time, no worktrees, no parallel host-port collision), or as
-  a standalone container manager — it only allocates/tears down isolation ports.
+  (ywc) Use when parallel Git worktrees run separate Docker stacks and collide
+  on host ports, for example "port is already allocated". Derives a
+  deterministic per-worktree host-port block and COMPOSE_PROJECT_NAME for
+  setup, teardown, and audit; primarily called by ywc-parallel-executor.
+  Triggers: "docker port 격리", "port is already allocated", "docker
+  isolate", "Docker ポート分離", "ywc-docker-isolate". Do not use for
+  non-Docker isolation, ywc-sequential-executor, or a standalone container
+  manager.
 ---
 
 # ywc-docker-isolate

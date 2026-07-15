@@ -1,19 +1,14 @@
 ---
 name: ywc-infra-review
 description: >-
-  (ywc) Use when reviewing IaC / cloud configuration for misconfiguration,
-  least-privilege, cost, and reliability before applying — security groups,
-  IAM/RBAC, public exposure, secrets in state, cost right-sizing, idle
-  resources, pricing model, SPOF, missing backups, resource limits, and
-  health checks across AWS/GCP/Azure/K8s Terraform. Fans out to
-  security/cost/reliability lenses and aggregates severity-rated findings.
-  Triggers: "인프라 리뷰", "IaC 리뷰", "terraform 검토", "보안 그룹 점검",
-  "iam 과권한", "infra review", "review my terraform", "IaC review",
+  (ywc) Use when reviewing IaC or cloud configuration for misconfiguration,
+  least privilege, cost, and reliability before apply across AWS, GCP, Azure,
+  or K8s Terraform. Fans out to security, cost, and reliability lenses.
+  Triggers: "인프라 리뷰", "IaC 리뷰", "infra review",
   "インフラレビュー", "ywc-infra-review". Do not use for app-code
   auth/injection review (use ywc-security-audit), writing IaC (use
-  ywc-iac-author), executing cost/drift remediation (use
-  ywc-infra-optimize), or general application code review (use
-  ywc-impl-review).
+  ywc-iac-author), drift remediation (use ywc-infra-optimize), or
+  general app code review (use ywc-impl-review).
 ---
 
 # ywc-infra-review

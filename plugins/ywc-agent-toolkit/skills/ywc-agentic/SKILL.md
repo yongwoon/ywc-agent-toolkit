@@ -1,15 +1,13 @@
 ---
 name: ywc-agentic
 description: >-
-  (ywc) Use when the user explicitly requests autonomous, end-to-end
-  lifecycle delivery through Plan → Execute → Evaluate → Repeat. Triggers:
-  "agentic end-to-end lifecycle", "autonomous end-to-end delivery", "run the
-  full lifecycle", "ywc-agentic", "자율 end-to-end 실행", "전체 lifecycle 자율
+  (ywc) Use when the user explicitly wants autonomous end-to-end delivery
+  through Plan -> Execute -> Evaluate -> Repeat; supports resuming an
+  existing `tasks/` run with `--resume`. Triggers: "agentic end-to-end
+  lifecycle", "run the full lifecycle", "ywc-agentic", "자율 end-to-end
   실행", "自律エンドツーエンド実行". Do not use for generic planning (use
-  ywc-plan), an ordinary direct change (use the implementation workflow),
-  one-off skill invocations or direct task execution without autonomous
-  orchestration (use an executor). Existing tasks/ directories may use
-  `--resume`.
+  ywc-plan), an ordinary direct change (use the implementation workflow), or
+  one-off execution without autonomous orchestration (use an executor).
 ---
 
 # ywc-agentic (Agentic Orchestrator)
