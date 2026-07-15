@@ -73,9 +73,10 @@
         "000062-060-docs-tech-research-persistence"
       ],
       "status": "in_progress",
-      "merged": [],
+      "merged": [
+        "000062-050-docs-agentic-preview-flow"
+      ],
       "pending": [
-        "000062-050-docs-agentic-preview-flow",
         "000062-060-docs-tech-research-persistence"
       ]
     },
@@ -90,5 +91,5 @@
     }
   ],
   "started_at": "2026-07-15T10:00:33Z",
-  "last_checkpoint": "2026-07-15T11:15:05.941373+00:00"
+  "last_checkpoint": "2026-07-15T11:23:11.734751+00:00"
 }
