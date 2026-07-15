@@ -27,6 +27,7 @@ When tempted to bend a rule, check this table first:
 | "20+ tasks in one set is fine if they are small" | At >20, suggest splitting the spec. A task set that does not fit in human review will not be reviewed. |
 | "Task Verify = run the build, that's enough" | A green build proves the code compiles, not that THIS task's behavior exists. Each task's Task Verify must assert the task's specific outcome — a test that exercises the new behavior, or a command whose output changes when the task is done. A bare project-wide `build`/`lint` gate passes even when the task did nothing. |
 | "duplicate-sensitive write but the project-wide build verifies it" | A green build does not prove THIS task's concurrency invariant — state the atomicity/idempotency assertion explicitly. |
+| "it's just changing one column so it's a small task" | The whole caller set is the blast radius. A codebase-wide mechanical change is Principle 5's Wide Refactor Exception — sequence it expand → migrate(batch) → contract, not one bundled task. |
 
 **Violating the letter of these rules is violating the spirit.** Safety invariants (DB migration separation, library introduction separation, phase hard gates) have no exceptions.
 
@@ -80,6 +81,14 @@ For the full language detection examples, language-specific writing rules (techn
 ### 4. Library Introduction Separation (Safety Invariant)
 - Create a dedicated task when introducing a new library/framework — in every mode
 - Never mix library introduction and feature implementation
+
+### 5. Wide Refactor Exception (Expand-Contract)
+- A mechanical change whose blast radius spans the whole codebase (column rename, shared-type retype, API-signature change across all callers) is an **exception** to Principle 1's vertical-slice bundling — packing every call site into one task would blow past the mode's size guideline, so sequence it **expand → migrate → contract** instead
+- **expand**: add the new shape alongside the old so both coexist and nothing breaks (one task)
+- **migrate**: split the blast radius into batches, each an independent task that keeps CI green; migrate batches run **serially** — each batch task chains to the previous one via `Depends On` (never parallel migrate batches, so every intermediate state stays buildable)
+- **contract**: remove the old shape — only after every migrate batch is complete (one task)
+- Each expand/migrate/contract task's category follows the **primary nature of the change** rule (Step 7); a migrate batch needs no new category
+- This relaxes only Reviewability bundling — it does **not** relax the DB Migration or Library Introduction Safety Invariants; a schema-touching expand/contract step still lives in its own `db` task
 
 ---
 
