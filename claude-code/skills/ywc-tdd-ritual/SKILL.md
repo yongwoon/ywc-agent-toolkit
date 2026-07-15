@@ -45,6 +45,8 @@ When tempted to skip the cycle, check this table first:
 | "I'll skip the 'watch it fail' step — I know it would fail" | The watch-it-fail step is not for the test, it is for **you**. It catches: (a) the test passing for an unrelated reason (e.g., the assertion is wrong), (b) typos that turn the test into a no-op, (c) the test exercising code that already exists. Without this step, the cycle silently degrades into test-after. |
 | "I have 6 features to add — I'll TDD the hard one and skip the easy ones" | The easy ones are exactly where the bug hides, because attention is elsewhere. The discipline applies per feature, not per session. |
 | "This is a refactor, no behavior change — tests not needed" | Refactor = same behavior, different structure. The existing test suite must pass before and after. If no test covers the surface being refactored, write the test first (RED on the *existing* behavior), then refactor under it. Refactoring without tests is rewriting. |
+| "Naming the seam before writing the test is overhead — the target is obvious" | The seam that feels obvious is usually plural: the same behavior can be asserted through a return value, an emitted event, or a persisted row, and each choice locks a different public surface into the suite. Step 1 → Seams fires *before the first assertion exists* and costs one sentence; skipping it is how a test ends up pinning the wrong contract. If more than one seam fits, that is not obviousness — it is a decision to confirm with the user, not to guess. |
+| "The test passed, so it's fine — a test whose logic mirrors the code is OK" | A test that recomputes the expected value with the production code's own logic is **tautological**: it passes because it agrees with the code, not because the code is correct, so it stays green even when the code is wrong. Passing is not evidence when the assertion structurally cannot fail. This guardrail fires while writing the assertion in Step 1 (RED) and is confirmed at Step 2 (Verify RED) — derive the expected value from an independent source, per Common Mistakes, "Writing a tautological assertion." |
 
 **Violating the letter of this discipline is violating the spirit.** The cycle is the only mechanism in the ywc workflow that catches design defects before they ship.
 
@@ -66,6 +68,16 @@ Write one minimal test that captures **one** behavior the production code is req
 - **Clear, intention-revealing name.** "`rejects offset > total with 400`" beats "`pagination test 3`".
 - **Real code paths.** Mocks are allowed only for boundaries the test cannot cross (network, clock, file system). Mocking the unit under test is forbidden — it tests the mock, not the code.
 - **No production code yet.** If the test references a function that does not exist, that is fine — the import error counts as failure.
+
+### Seams
+
+Before testing new behavior, write the **observable public seam** under test — the smallest public function, method, endpoint, or interface through which the behavior is exercised — in one sentence, and agree on it before the assertion exists.
+
+- **Write the seam first.** State it as a single sentence before writing the assertion (e.g., "the seam is `paginate(query, offset, limit)`'s return value"). If it cannot be named in one sentence, the behavior is not yet understood well enough to test — clarify the behavior first.
+- **Prefer an existing seam; adding a new seam is a last resort.** Route the test through a seam the code already exposes. Introducing a new public seam solely to make the code testable widens the surface the suite locks in — do it only when no existing seam can observe the behavior.
+- **If the seam is unclear or plural, confirm with the user before proceeding.** When two or more seams could carry the behavior, or the seam is ambiguous, ask before writing the test — e.g., "This behavior could be asserted through `OrderService.place()`'s return value or the emitted `OrderPlaced` event; which seam should the test target?" Do not silently pick one.
+
+Once the seam is fixed, see [references/test-shape-cookbook.md](references/test-shape-cookbook.md) for choosing the shape of the assertion (state vs interaction, unit vs integration).
 
 ### Step 2: Verify RED — Watch it fail
 
@@ -177,6 +189,7 @@ Before declaring a behavior complete, verify:
 - **Bundling the GREEN edit with a "while I'm here" fix in adjacent code.** Adjacent fixes mean the GREEN commit is no longer minimal, and you cannot bisect cleanly if the next cycle breaks. Save adjacent fixes for their own RED-GREEN-REFACTOR.
 - **Letting a refactor introduce a "harmless" behavior tweak.** "It was already broken anyway" is not license to fix it in the refactor commit. Either write a RED for the new behavior or revert the tweak.
 - **Skipping `ywc-verify-done` at the end of the cycle because "the cycle already verified it".** The cycle verifies one behavior; `ywc-verify-done` verifies the **claim** (build green, lint green, suite green, claim wording free of forbidden vocabulary). Both are required for completion.
+- **Writing a tautological assertion.** A test that recomputes the expected value with the same logic as the production code structurally cannot fail — it will always agree with the code, including when the code is wrong. Examples: `expect(add(a, b)).toBe(a + b)` (re-derives the sum with the same `+` the code uses); a snapshot hand-derived by running the production formula yourself; a constant assertion comparing a value to itself. The expected value must come from an **independent source** — a hard-coded literal, a worked example computed by hand or taken from the spec, or a known-good fixture — never from re-running the code's own computation.
 
 ## References
 
