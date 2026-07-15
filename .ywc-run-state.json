@@ -3,7 +3,7 @@
   "args": "000061-010..000063-010 --review --base-branch feature/sdlc-v11-base --local-merge --tasks-dir ./tasks-codex-sdlc-v11",
   "mode": "local-merge",
   "tasks_dir": "./tasks-codex-sdlc-v11",
-  "current_wave": 5,
+  "current_wave": 6,
   "waves": [
     {
       "wave": 0,
@@ -72,7 +72,7 @@
         "000062-050-docs-agentic-preview-flow",
         "000062-060-docs-tech-research-persistence"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "merged": [
         "000062-050-docs-agentic-preview-flow",
         "000062-060-docs-tech-research-persistence"
@@ -84,11 +84,13 @@
       "tasks": [
         "000063-010-infra-codex-release-evidence"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "merged": [],
-      "pending": []
+      "pending": [
+        "000063-010-infra-codex-release-evidence"
+      ]
     }
   ],
   "started_at": "2026-07-15T10:00:33Z",
-  "last_checkpoint": "2026-07-15T11:23:41.146124+00:00"
+  "last_checkpoint": "2026-07-15T11:24:04.975288+00:00"
 }
