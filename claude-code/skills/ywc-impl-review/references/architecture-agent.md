@@ -118,3 +118,7 @@ Reason for escalation: (one sentence stating which of the three properties is at
 ```
 
 Do not paste full files, full module trees, or full specs. The smaller the payload, the cheaper and sharper the Phase 2 verdict.
+
+## Maintainability smell baseline
+
+For structural/coupling maintainability smells — Duplicated Code, Divergent Change, Shotgun Surgery, Speculative Generality, Middle Man, Refused Bequest, Message Chains, Repeated Switches — apply the shared Fowler baseline in [`code-smell-baseline.md`](./code-smell-baseline.md); each smell is a judgement-call signal (not a lint rule), and repo documentation standards override it.

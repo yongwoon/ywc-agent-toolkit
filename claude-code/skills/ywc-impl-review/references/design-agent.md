@@ -28,6 +28,8 @@ Verify identifiers communicate intent and align with project conventions.
 - If `docs/ubiquitous-language.md` exists, are domain terms used consistently? Flag any identifier that matches a "Synonyms to Avoid" entry instead of the canonical term.
 - Are abbreviated names justified by frequency (e.g., `req` in middleware is fine, `usr` in business logic is not)?
 
+For the Mysterious Name smell (and Data Clumps / Primitive Obsession at the signature seam), apply the shared Fowler baseline in [`code-smell-baseline.md`](./code-smell-baseline.md) — each is a judgement-call signal, not a lint rule.
+
 ### 3. Signature Design
 
 Verify function and type signatures are well-formed.
