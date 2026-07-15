@@ -53,6 +53,19 @@
         "Treating update-spec as normal plan generation.",
         "Deleting or replacing validated spec sections."
       ]
+    },
+    {
+      "id": 4,
+      "name": "route-multi-session-discovery-to-wayfinder",
+      "prompt": "We know the destination, but the billing migration strategy still needs several unresolved decisions tracked across multiple sessions. Use ywc-plan to pick the next step.",
+      "expected_behavior": [
+        "Routes to ywc-wayfinder instead of drafting a concrete plan immediately.",
+        "Mentions the local discovery map and one active ticket rule before planning resumes."
+      ],
+      "anti_behavior": [
+        "Pretending the discovery state is already plan-ready.",
+        "Treating ywc-wayfinder as ordinary brainstorming."
+      ]
     }
   ]
 }

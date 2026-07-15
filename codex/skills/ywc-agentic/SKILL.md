@@ -16,6 +16,8 @@ description: >-
 
 This skill turns a single natural-language goal into delivered code by orchestrating the existing `ywc-*` skills through an autonomous **Plan → Execute → Evaluate → Repeat** loop. It does not implement code itself — it sequences `ywc-plan`, `ywc-spec-validate`, `ywc-task-generator`, an executor, `ywc-impl-review`, and (for Small-scale goals) `ywc-code-gen`, then re-plans on evaluation failure until the implementation passes review or a user-defined iteration ceiling is reached.
 
+If the goal is still in a multi-session discovery state with unresolved architectural tickets and no stable plan boundary, stop before the loop and route the user to `ywc-wayfinder`. This skill assumes the goal is ready to enter an implementation-oriented planning pipeline.
+
 ```text
 User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 ```

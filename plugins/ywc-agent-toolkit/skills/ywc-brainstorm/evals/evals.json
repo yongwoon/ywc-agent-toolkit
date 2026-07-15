@@ -18,6 +18,12 @@
       "prompt": "Just build the feature; no questions.",
       "expected_output": "Does not treat speed as a waiver. It asks one consolidated question covering What, Why, Out of Scope, and Done When, then still requires design approval before handing off to ywc-plan. It does not jump directly to ywc-code-gen or an executor.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "The destination is known, but we need to track unresolved rollout decisions across multiple sessions. Which skill should handle that discovery state?",
+      "expected_output": "Routes to ywc-wayfinder for the multi-session discovery map instead of keeping the request inside ywc-brainstorm. Distinguishes ordinary idea clarification from one active ticket discovery tracking.",
+      "files": []
     }
   ]
 }

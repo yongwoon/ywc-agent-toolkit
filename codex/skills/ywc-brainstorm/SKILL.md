@@ -56,6 +56,7 @@ Use when **any** of these apply:
 Do **not** use when:
 
 - The request already specifies behavior, files, and acceptance criteria precisely → go to `ywc-plan` directly
+- The destination is already known and the remaining work is deterministic multi-session discovery tracking → use `ywc-wayfinder`
 - The user is validating an existing spec document → use `ywc-spec-validate`
 - The decision is between specific libraries or frameworks → use `ywc-tech-research` first, return after
 - The user is asking an implementation-time question ("how do I add this prop") → use `ywc-code-gen`

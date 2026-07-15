@@ -62,6 +62,7 @@ Before extracting anchors, evaluate whether the request is concrete enough for d
 | Request is conversational ("I'm thinking about X", "wouldn't it be nice if…", "let's explore Y", "어떻게 만들지", "アイディアがある") | **Delegate to `ywc-brainstorm`** — it surfaces the four anchors via Socratic dialogue and presents 2–3 approaches; resume `ywc-plan` from Step 1 with the brainstorm handoff as input. |
 | Request describes multiple independent subsystems (e.g., "a platform with auth, chat, billing, analytics") | **Delegate to `ywc-brainstorm`** for decomposition before any anchor extraction. Each subsystem gets its own brainstorm → plan cycle. |
 | Two or more of (What / Why / Out of Scope / Done When) are completely missing from the request | **Delegate to `ywc-brainstorm`** — extracting two missing anchors at once produces shallow answers; ywc-brainstorm collects them one at a time with explicit approach trade-offs. |
+| The destination is known, but the open decisions must be tracked across multiple sessions before a stable plan can be written | **Delegate to `ywc-wayfinder`** — it maintains the local discovery map, enforces exactly one active ticket, and routes back here once a planning-ready ticket resolves. |
 
 When delegating, surface this verbatim before transferring control:
 
@@ -70,6 +71,8 @@ When delegating, surface this verbatim before transferring control:
 When `ywc-brainstorm` completes, its handoff message includes the four anchors and the chosen approach. Re-enter `ywc-plan` Step 1 with that handoff as the effective user input — the anchors should already be filled, so Step 1 typically reduces to a one-sentence confirmation.
 
 `--non-interactive` mode skips the delegation: when the flag is present, treat ambiguity as Medium scale (Step 3) and fill missing anchors with defaults rather than routing to `ywc-brainstorm`.
+
+If `ywc-wayfinder` hands back a resolved ticket, treat that ticket's local map path and acceptance notes as the current request context. If `ywc-wayfinder` returns `NEEDS_CONTEXT`, do not draft a plan yet.
 
 After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-writer`, `ywc-task-generator`, `ywc-code-gen`, executor), invoke `ywc-confidence-gate` with the chosen approach as input. The gate's PROCEED / REVIEW / STOP band determines whether the plan is ready for handoff; a REVIEW band surfaces alternatives to the user, a STOP band routes back here for additional investigation before re-attempting handoff. The 5-dimension score becomes part of the plan's completion summary so downstream skills inherit a comparable confidence number.
 

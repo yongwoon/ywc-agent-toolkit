@@ -130,7 +130,7 @@ Output depth is controlled by `--depth` (default: 50):
  Any inference prefixed with [INFERRED]. Any single-source claim marked [SINGLE SOURCE — verify before acting].)
 
 ### Project-Specific Considerations
-(Compatibility with current stack, migration cost, known conflicts)
+(Compatibility with current stack, migration cost, known conflicts, and whether the result should be preserved in a local discovery artifact)
 
 ### Unknowns Surfaced
 (Only unresolved questions or assumptions that materially affect the recommendation. Omit when none.)
@@ -161,3 +161,4 @@ Before returning the recommendation, verify that official sources were checked f
 
 - **upstream**: None (standalone execution)
 - **downstream**: Used as reference material when writing specifications or as input to `ywc-task-generator`
+- **multi-session discovery**: When the research leaves multiple unresolved follow-up decisions that must survive across sessions, hand the result to `ywc-wayfinder` as a local map/ticket reference instead of keeping the state only in chat.
