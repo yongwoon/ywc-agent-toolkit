@@ -85,12 +85,12 @@
         "000063-010-infra-codex-release-evidence"
       ],
       "status": "in_progress",
-      "merged": [],
-      "pending": [
+      "merged": [
         "000063-010-infra-codex-release-evidence"
-      ]
+      ],
+      "pending": []
     }
   ],
   "started_at": "2026-07-15T10:00:33Z",
-  "last_checkpoint": "2026-07-15T11:24:04.975288+00:00"
+  "last_checkpoint": "2026-07-15T11:29:39.549426+00:00"
 }
