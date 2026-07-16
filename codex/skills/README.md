@@ -61,6 +61,11 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-refactor-clean` | `ywc-refactor-clean` | "dead code 정리해줘" | dead code 제거 및 SAFE/CAUTION/DANGER tier 분류 |
 | `ywc-agentic` | `ywc-agentic` | "이 goal을 agentic하게 구현해줘" | Goal → Plan → Execute → Evaluate → Repeat 자율 루프 |
 | `ywc-auth-implement` | `ywc-auth-implement` | "인증 구현 도와줘" | 인증 의도를 정책 기반 보안 gate를 거친 구현 경로로 전환 |
+| `ywc-infra-design` | `ywc-infra-design` | "infra 아키텍처 설계해줘" | IaC 작성 전 provider/topology/reliability·cost·security pre-check 기반 인프라 아키텍처 설계 |
+| `ywc-iac-author` | `ywc-iac-author` | "Terraform 작성해줘" | 설계 결과로부터 AWS/GCP/Azure/Kubernetes Terraform 작성, validate/plan 검증 및 blast-radius 점검 |
+| `ywc-infra-review` | `ywc-infra-review` | "IaC 리뷰해줘" | Apply 전 IaC/Cloud 설정의 misconfiguration, least privilege, cost, reliability 검토 |
+| `ywc-infra-optimize` | `ywc-infra-optimize` | "인프라 비용 최적화해줘" | 기존 인프라 cost right-sizing, 미사용 리소스 정리, reserved/spot 전환, drift remediation |
+| `ywc-team-assemble` | `ywc-team-assemble` | "specialist team 꾸려서 작업해줘" | 복잡한 작업을 specialist subagent team으로 분할·위임하는 swarm 조립 |
 | `ywc-worktrees` | `ywc-worktrees` | "worktree lifecycle 관리해줘" | git worktree lifecycle 관리 |
 
 > **정리:** 설치 Directory와 내부 Skill Name은 동일하게 `ywc-*` 이름을 사용합니다. Codex에서 호출할 때는 자연어 요청에 skill 이름이나 trigger phrase를 포함하면 matching 정확도가 높아집니다.
