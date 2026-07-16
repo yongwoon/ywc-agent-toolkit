@@ -60,6 +60,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-onboard-repo` | `ywc-onboard-repo` | "처음 보는 repo onboarding 해줘" | 기존 repo 진입 시 reconnaissance → Onboarding Guide + Starter AGENTS.md 생성 |
 | `ywc-refactor-clean` | `ywc-refactor-clean` | "dead code 정리해줘" | dead code 제거 및 SAFE/CAUTION/DANGER tier 분류 |
 | `ywc-agentic` | `ywc-agentic` | "이 goal을 agentic하게 구현해줘" | Goal → Plan → Execute → Evaluate → Repeat 자율 루프 |
+| `ywc-auth-implement` | `ywc-auth-implement` | "인증 구현 도와줘" | 인증 의도를 정책 기반 보안 gate를 거친 구현 경로로 전환 |
 | `ywc-worktrees` | `ywc-worktrees` | "worktree lifecycle 관리해줘" | git worktree lifecycle 관리 |
 
 > **정리:** 설치 Directory와 내부 Skill Name은 동일하게 `ywc-*` 이름을 사용합니다. Codex에서 호출할 때는 자연어 요청에 skill 이름이나 trigger phrase를 포함하면 matching 정확도가 높아집니다.
