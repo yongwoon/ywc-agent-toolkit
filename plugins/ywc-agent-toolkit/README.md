@@ -11,7 +11,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 41     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 42     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 48     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ### Codex Output Language Defaults
 
