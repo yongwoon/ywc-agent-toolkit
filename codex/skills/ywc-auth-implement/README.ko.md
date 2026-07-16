@@ -14,10 +14,10 @@
 $ywc-auth-implement
 ```
 
-읽기 전용 preflight와 9개 정책 인터뷰 후 다음 경로를 출력합니다. `$ywc-task-generator`는 `$ywc-spec-ready`가 `DONE`일 때만 출력하고 자동 실행하지 않습니다.
+읽기 전용 preflight와 9개 정책 인터뷰 후 다음 경로를 출력만 하고 자동 실행하지 않습니다. `$ywc-task-generator`는 medium/large 작업에서 `$ywc-spec-ready`가 `DONE`일 때만 출력합니다.
 
 ```text
 $ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
-Critical/High audit finding은 E2E·PR·cache를 모두 중단하며, 법률 초안은 `법적 검토 전 임시본`으로 표시합니다.
+Critical/High audit finding은 E2E·PR·cache를 모두 중단하며, remediation과 재감사가 끝날 때까지 경로는 `DONE_WITH_CONCERNS`로 종료됩니다. 법률 초안은 `법적 검토 전 임시본`으로 표시합니다.

@@ -14,10 +14,10 @@
 $ywc-auth-implement
 ```
 
-読み取り専用の事前確認と 9 セクションのポリシー面談の後、次の経路を表示します。task generation は自動実行しません。
+読み取り専用の事前確認と 9 セクションのポリシー面談の後、次の経路を表示するだけで、自動実行はしません。medium/large の作業では `$ywc-spec-ready` が `DONE` になって初めて表示します。
 
 ```text
 $ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
-Critical/High の監査結果では E2E、PR 提案、キャッシュを省略します。法務文書は常に `법적 검토 전 임시본` と表示します。
+Critical/High の監査結果では E2E、PR 提案、キャッシュを省略し、remediation と再監査が完了するまで経路は `DONE_WITH_CONCERNS` のまま終了します。法務文書は常に `법적 검토 전 임시본` と表示します。

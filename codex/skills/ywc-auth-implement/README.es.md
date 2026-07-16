@@ -14,10 +14,10 @@ Una habilidad de orquestación de Codex que convierte una intención de autentic
 $ywc-auth-implement
 ```
 
-La habilidad realiza una comprobación previa de solo lectura y una entrevista de política de nueve secciones. Después imprime, sin invocar automáticamente, esta ruta:
+La habilidad realiza una comprobación previa de solo lectura y una entrevista de política de nueve secciones. Solo imprime la ruta siguiente —nunca la invoca— y solo después de que `$ywc-spec-ready` alcance `DONE` para trabajo medium/large:
 
 ```text
 $ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
-Los hallazgos Critical/High omiten E2E, la propuesta de PR y la caché. El texto legal siempre lleva `법적 검토 전 임시본`.
+Los hallazgos Critical/High omiten E2E, la propuesta de PR y la caché, y la ruta termina como `DONE_WITH_CONCERNS` hasta que la remediación y una nueva auditoría los resuelvan. El texto legal siempre lleva `법적 검토 전 임시본`.

@@ -8,4 +8,4 @@ Before E2E, verify the audit evidence covers identity, session, authorization, r
 - Zero Critical and zero High is mandatory before E2E, PR proposal, or recommendation caching.
 - Critical or High means `DONE_WITH_CONCERNS`, with E2E/PR/cache skipped until remediation and a new audit.
 
-This is a documentation orchestration gate. Data Integrity hardening is not applicable because it creates no application data mutation.
+This orchestration document itself creates no application data mutation, so Data Integrity hardening is not applicable to it directly. The delegated `$ywc-code-gen`/backend implementation work this skill dispatches does mutate user, session, recovery, consent, and deletion data plus schema/transaction boundaries — that work must pass Data Integrity checks before E2E, per `$ywc-code-gen --review`'s audit evidence.
