@@ -1,6 +1,6 @@
 # Policy Interview — 9 Categories
 
-Ask all 9 categories in a single focused round (not one round-trip per category). For each category, record three things: the question asked, the response default offered when the user has no strong preference, and whether the answer is approved or explicitly deferred (with the stated risk).
+Ask all 9 categories in a single focused round (not one round-trip per category). For each category, record three things: the question asked, the response default offered when the user has no strong preference, and whether the answer is approved, explicitly deferred (with the stated risk), or not applicable (the category has no bearing on the selected auth methods).
 
 ## Sign-in Method and OAuth Provider Readiness
 
@@ -63,7 +63,7 @@ Record every category as:
 ### <category>
 - Question: <what was asked>
 - Response: <what the user answered, or "default accepted">
-- State: approved | deferred (risk: <stated risk>)
+- State: approved | deferred (risk: <stated risk>) | not applicable
 ```
 
 This record is what the SKILL.md "Policy Interview Summary" output section condenses to one line per category, and what the implementation dispatch prompts (FR-6/FR-7) reference as "the approved auth policy".
