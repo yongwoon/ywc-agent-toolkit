@@ -26,7 +26,13 @@ Una habilidad de Agente Revisor de Especificaciones que valida la calidad de las
 
 ## Agente de Ejecución
 
+Antes de la Fase 1, se valida la ruta `--spec`: si el archivo no existe, la ejecución termina de inmediato con estado `BLOCKED` y reporta la ruta faltante.
+
 ### Fase 1 — Análisis Paralelo (Sonnet × 4)
+
+Cada subagente recibe el contexto del proyecto y el texto del spec, y devuelve:
+- **Confirmed findings** — dimensión, severidad (Critical / Warning / Suggestion), archivo:línea, descripción y mejora sugerida
+- **Advisor candidates** — findings donde existen dos interpretaciones razonables (con la elección específica y su consecuencia, ≤100 líneas por candidato)
 
 | Subagente | Dimensión |
 |---|---|
@@ -34,6 +40,8 @@ Una habilidad de Agente Revisor de Especificaciones que valida la calidad de las
 | Consistency Subagent | Consistencia |
 | Feasibility Subagent | Factibilidad |
 | Code Compatibility Subagent | Compatibilidad con código |
+
+**Aggregate (Paso 4b)**: los findings se combinan y deduplican por `{archivo}:{línea}`. Los advisor candidates se limitan al `advisor_budget` (por defecto: 2), priorizando Critical sobre Warning; los candidatos descartados se registran en el reporte.
 
 ### Fase 2 — Advisor (Opus, hasta 2 llamadas)
 
