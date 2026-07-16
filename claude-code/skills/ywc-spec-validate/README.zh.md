@@ -31,6 +31,7 @@
 ### 阶段 1 — 并行分析（Sonnet × 4）
 
 每个 Subagent 会接收 Step 1 收集的 Project Context 和 spec 文本，并返回：
+
 - **Confirmed findings** — 维度标签、严重程度（Critical / Warning / Suggestion）、文件:行号、描述及改进建议
 - **Advisor candidates** — 存在两种合理解释的 Findings（包含具体选择及其后果，每项 ≤100 行）
 

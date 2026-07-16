@@ -31,6 +31,7 @@ Antes de la Fase 1, se valida la ruta `--spec`: si el archivo no existe, la ejec
 ### Fase 1 — Análisis Paralelo (Sonnet × 4)
 
 Cada subagente recibe el contexto del proyecto y el texto del spec, y devuelve:
+
 - **Confirmed findings** — dimensión, severidad (Critical / Warning / Suggestion), archivo:línea, descripción y mejora sugerida
 - **Advisor candidates** — findings donde existen dos interpretaciones razonables (con la elección específica y su consecuencia, ≤100 líneas por candidato)
 
