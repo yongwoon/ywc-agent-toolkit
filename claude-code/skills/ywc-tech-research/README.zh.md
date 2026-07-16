@@ -22,7 +22,7 @@
 
 ## 执行代理
 
-- **Research Agent**（claude-sonnet-4-20250514）
+- **Research Agent**（Sonnet）
 
 ## 输出格式
 

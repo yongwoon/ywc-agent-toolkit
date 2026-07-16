@@ -26,7 +26,27 @@
 
 ## 执行代理
 
-- **规范审查代理**（claude-opus-4-20250514）
+进入阶段 1 之前会先校验 `--spec` 路径：如果文件不存在，立即以 `BLOCKED` 状态终止执行，并报告缺失的路径。
+
+### 阶段 1 — 并行分析（Sonnet × 4）
+
+每个 Subagent 会接收 Step 1 收集的 Project Context 和 spec 文本，并返回：
+
+- **Confirmed findings** — 维度标签、严重程度（Critical / Warning / Suggestion）、文件:行号、描述及改进建议
+- **Advisor candidates** — 存在两种合理解释的 Findings（包含具体选择及其后果，每项 ≤100 行）
+
+| Subagent | 负责维度 |
+|---|---|
+| Completeness Subagent | 完整性 |
+| Consistency Subagent | 一致性 |
+| Feasibility Subagent | 可行性 |
+| Code Compatibility Subagent | 代码兼容性 |
+
+**Aggregate（Step 4b）**：按 `{文件}:{行号}` 合并并去重 Findings。Advisor candidates 数量上限为 `advisor_budget`（默认 2），优先保留 Critical 而非 Warning；被舍弃的候选会记录在报告中。
+
+### 阶段 2 — Advisor（Opus，最多 2 次）
+
+仅针对存在歧义的 Findings，由 Opus Advisor 提供判断。可通过 `--advisor-budget <n>` 控制每次调用的 escalation 次数；`--advisor-budget 0` 时禁用 escalation，并将该 Finding 报告为普通 Suggestion（用于 orchestrator 的成本控制）。
 
 ## 输出格式
 

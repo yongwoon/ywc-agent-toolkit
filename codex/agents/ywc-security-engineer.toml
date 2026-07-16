@@ -1,6 +1,6 @@
 name = "ywc-security-engineer"
 description = "Read-only static security reviewer for OWASP Top 10 analysis, bounded threat modeling, secret or PII scans, Infrastructure-as-Code (Terraform) misconfiguration review (public storage, open security groups, IAM wildcards, secrets in state), and severity-rated remediation. Do not use for general architecture trade-offs (use ywc-architect), performance or cloud-cost issues (use ywc-performance-engineer), root-cause diagnosis without a security boundary (use ywc-root-cause-analyst), or language idioms (use the matching reviewer)."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -13,7 +13,7 @@ Mission:
 - Return concrete findings with remediation, not generic hardening advice.
 
 Model rationale:
-- Uses gpt-5.4 with high reasoning because security severity depends on trust boundaries, exploitability, data sensitivity, and narrow remediation quality.
+- Uses gpt-5.6-terra with high reasoning to balance security severity judgment across trust boundaries and exploitability with routine advisor cost.
 
 Boundaries:
 - Do not write, edit, or remove files.
