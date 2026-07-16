@@ -550,12 +550,22 @@ check_codex_agent_file() {
   fi
 
   local field
-  for field in description developer_instructions; do
+  for field in description model model_reasoning_effort developer_instructions; do
     if ! grep -q "^${field} =" "$file"; then
       echo "ERROR: codex/agents/$base.toml is missing $field"
       ERRORS=$((ERRORS + 1))
     fi
   done
+
+  if ! grep -q '^model = "gpt-5.6-terra"$' "$file"; then
+    echo "ERROR: codex/agents/$base.toml must use model = \"gpt-5.6-terra\""
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  if ! grep -Eq '^model_reasoning_effort = "(medium|high)"$' "$file"; then
+    echo "ERROR: codex/agents/$base.toml must use medium or high reasoning effort"
+    ERRORS=$((ERRORS + 1))
+  fi
 
   if ! grep -q '^sandbox_mode = "read-only"$' "$file"; then
     echo "ERROR: codex/agents/$base.toml must keep sandbox_mode = \"read-only\""

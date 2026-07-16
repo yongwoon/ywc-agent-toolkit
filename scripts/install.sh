@@ -38,6 +38,8 @@ CC_MANIFEST="$CC_DEST/.ywc-agent-toolkit.manifest"
 CC_AGENTS_MANIFEST="$CC_AGENTS_DEST/.ywc-agent-toolkit.manifest"
 CODEX_MANIFEST="$CODEX_DEST/.ywc-agent-toolkit.manifest"
 CODEX_AGENTS_MANIFEST="$CODEX_AGENTS_DEST/.ywc-agent-toolkit.manifest"
+CODEX_GPT56_SUPPORTED=0
+CODEX_GPT56_SUPPORT_CHECKED=0
 
 CC_INSTALLED=0
 CC_AGENTS_INSTALLED=0
@@ -175,8 +177,39 @@ install_codex_agent() {
   local base
   base="$(basename "$src_file")"
   is_codex_agent_file "$src_file" || return 0
-  cp "$src_file" "$dest_dir/$base"
+  if [ "$CODEX_GPT56_SUPPORTED" -eq 1 ]; then
+    cp "$src_file" "$dest_dir/$base"
+  else
+    sed 's/gpt-5\.6-terra/gpt-5.4/g' "$src_file" > "$dest_dir/$base"
+  fi
   echo "  ✓ ${base%.toml}"
+}
+
+detect_codex_gpt56_support() {
+  [ "$CODEX_GPT56_SUPPORT_CHECKED" -eq 0 ] || return 0
+  CODEX_GPT56_SUPPORT_CHECKED=1
+
+  local version_output major minor patch
+  if ! command -v codex >/dev/null 2>&1; then
+    echo "  Codex CLI를 찾지 못해 custom agent를 GPT-5.4 호환 모드로 설치합니다."
+    return 0
+  fi
+
+  version_output="$(codex --version 2>/dev/null || true)"
+  if [[ ! "$version_output" =~ ([0-9]+)\.([0-9]+)(\.([0-9]+))? ]]; then
+    echo "  Codex CLI 버전을 읽지 못해 custom agent를 GPT-5.4 호환 모드로 설치합니다."
+    return 0
+  fi
+
+  major="${BASH_REMATCH[1]}"
+  minor="${BASH_REMATCH[2]}"
+  patch="${BASH_REMATCH[4]:-0}"
+  if (( 10#$major > 0 || (10#$major == 0 && 10#$minor > 144) || (10#$major == 0 && 10#$minor == 144 && 10#$patch >= 0) )); then
+    CODEX_GPT56_SUPPORTED=1
+    echo "  Codex CLI ${major}.${minor}.${patch}: GPT-5.6 Terra custom agents를 설치합니다."
+  else
+    echo "  Codex CLI ${major}.${minor}.${patch}는 GPT-5.6에 미지원이므로 custom agent를 GPT-5.4 호환 모드로 설치합니다."
+  fi
 }
 
 prune_agent_orphans() {
@@ -392,6 +425,7 @@ run_codex_agents_install() {
   [ -d "$CODEX_AGENTS_SRC" ] || { echo "  codex agents source not found: $CODEX_AGENTS_SRC" >&2; return 0; }
   mkdir -p "$CODEX_AGENTS_DEST"
   echo "Codex agents → $CODEX_AGENTS_DEST"
+  detect_codex_gpt56_support
 
   local current
   current="$(list_codex_agents "$CODEX_AGENTS_SRC")"
