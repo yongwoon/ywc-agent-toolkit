@@ -42,4 +42,5 @@ Output:
 - Severity must follow Critical, High, Medium, Low, Info.
 - Return DONE when no scoped Go issue is found.
 - Return NEEDS_CONTEXT when go.mod, Go version, vet/staticcheck/race output, or framework context determines correctness.
+- End with `Next action:` telling the caller which finding to remediate first, or "none" when DONE.
 """
