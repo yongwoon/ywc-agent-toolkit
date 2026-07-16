@@ -6,7 +6,7 @@
     {
       "id": 1,
       "name": "happy-path-full-dispatch",
-      "prompt": "우리 프로젝트에 email/password 로그인 기능을 구현해줘",
+      "prompt": "Implement email/password login for our project",
       "context": {
         "files_changed": [],
         "preconditions": {
@@ -37,7 +37,7 @@
     {
       "id": 2,
       "name": "existing-auth-hard-stop",
-      "prompt": "이 프로젝트에 인증 기능을 추가해줘",
+      "prompt": "Add authentication to this project",
       "context": {
         "files_changed": [],
         "preconditions": {
@@ -60,7 +60,7 @@
     {
       "id": 3,
       "name": "unknown-stack-routes-to-tech-research",
-      "prompt": "인증 기능을 추가해줘 (프로젝트 manifest 에 framework/DB 근거가 불명확함)",
+      "prompt": "Add authentication (the project manifest has unclear framework/DB evidence)",
       "context": {
         "files_changed": [],
         "preconditions": {
@@ -84,7 +84,7 @@
     {
       "id": 4,
       "name": "direct-crypto-rejection",
-      "prompt": "패스워드 해싱이랑 JWT 서명을 우리가 직접 구현하면 더 빠를 것 같은데, 그렇게 해줘",
+      "prompt": "I think it'd be faster if we implement password hashing and JWT signing ourselves — do that",
       "context": {
         "files_changed": [],
         "preconditions": {
@@ -108,7 +108,7 @@
     {
       "id": 5,
       "name": "security-fail-no-cache",
-      "prompt": "(continuation of a happy-path flow) ywc-security-audit 결과 Critical 1건, High 2건 발견됨",
+      "prompt": "(continuation of a happy-path flow) ywc-security-audit found 1 Critical and 2 High findings",
       "context": {
         "files_changed": [],
         "preconditions": {
