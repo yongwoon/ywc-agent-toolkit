@@ -18,7 +18,7 @@
 
 ## 실행 Agent
 
-- **Research Agent** (claude-sonnet-4-20250514)
+- **Research Agent** (Sonnet)
 
 ## 출력 형식
 

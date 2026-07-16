@@ -18,7 +18,7 @@ A Research Agent Skill for technical investigation and library comparison.
 
 ## Execution Agent
 
-- **Research Agent** (claude-sonnet-4-20250514)
+- **Research Agent** (Sonnet)
 
 ## Output Format
 

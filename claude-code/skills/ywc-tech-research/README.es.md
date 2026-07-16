@@ -22,7 +22,7 @@ Un Skill de Agente de Investigación para investigación técnica y comparación
 
 ## Agente de ejecución
 
-- **Research Agent** (claude-sonnet-4-20250514)
+- **Research Agent** (Sonnet)
 
 ## Formato de salida
 

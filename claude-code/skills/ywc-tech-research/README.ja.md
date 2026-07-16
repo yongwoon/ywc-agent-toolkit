@@ -18,7 +18,7 @@
 
 ## 実行 Agent
 
-- **Research Agent** (claude-sonnet-4-20250514)
+- **Research Agent** (Sonnet)
 
 ## 出力形式
 

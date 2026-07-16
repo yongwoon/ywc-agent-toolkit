@@ -26,7 +26,18 @@ Una habilidad de Agente Revisor de Especificaciones que valida la calidad de las
 
 ## Agente de Ejecución
 
-- **Agente Revisor de Especificaciones** (claude-opus-4-20250514)
+### Fase 1 — Análisis Paralelo (Sonnet × 4)
+
+| Subagente | Dimensión |
+|---|---|
+| Completeness Subagent | Completitud |
+| Consistency Subagent | Consistencia |
+| Feasibility Subagent | Factibilidad |
+| Code Compatibility Subagent | Compatibilidad con código |
+
+### Fase 2 — Advisor (Opus, hasta 2 llamadas)
+
+El Opus Advisor proporciona juicio solo para findings ambiguos. `--advisor-budget <n>` controla el número de escalaciones por invocación; `--advisor-budget 0` deshabilita la escalación y reporta esos findings como Suggestions normales (para el cost guarding del orchestrator).
 
 ## Formato de Salida
 

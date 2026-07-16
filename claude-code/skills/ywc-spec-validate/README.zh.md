@@ -26,7 +26,18 @@
 
 ## 执行代理
 
-- **规范审查代理**（claude-opus-4-20250514）
+### 阶段 1 — 并行分析（Sonnet × 4）
+
+| Subagent | 负责维度 |
+|---|---|
+| Completeness Subagent | 完整性 |
+| Consistency Subagent | 一致性 |
+| Feasibility Subagent | 可行性 |
+| Code Compatibility Subagent | 代码兼容性 |
+
+### 阶段 2 — Advisor（Opus，最多 2 次）
+
+仅针对存在歧义的 Findings，由 Opus Advisor 提供判断。可通过 `--advisor-budget <n>` 控制每次调用的 escalation 次数；`--advisor-budget 0` 时禁用 escalation，并将该 Finding 报告为普通 Suggestion（用于 orchestrator 的成本控制）。
 
 ## 输出格式
 
