@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+## [1.29.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.28.1...v1.29.0) (2026-07-16)
+
+
+### Added
+
+* add ywc-auth-implement skill for Claude Code and Codex ([#144](https://github.com/yongwoon/ywc-agent-toolkit/issues/144)) ([da29d14](https://github.com/yongwoon/ywc-agent-toolkit/commit/da29d1436be97847ec0ade92b6c04a12976f5825))
+* adopt GPT-5.6 Terra for Codex agents and clean up stale model references ([#146](https://github.com/yongwoon/ywc-agent-toolkit/issues/146)) ([915983a](https://github.com/yongwoon/ywc-agent-toolkit/commit/915983aafc904880ee14e68fc64b744ef257cb4b))
+
 ## [1.28.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.28.0...v1.28.1) (2026-07-15)
 
 
