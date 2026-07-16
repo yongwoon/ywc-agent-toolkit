@@ -13,7 +13,7 @@
 Claude Code および Codex 向けの開発ワークフロー自動化スキル集です。
 計画立案・仕様書作成・タスク分解・コード生成・レビュー・リリースまでをカバーします。
 
-現在、Claude Code skill 41 個、Codex skill 42 個、Claude Code agent 12 個、Codex custom agent 7 個を提供しています。
+現在、Claude Code skill 41 個、Codex skill 48 個、Claude Code agent 12 個、Codex custom agent 7 個を提供しています。
 
 Codex 専用 `ywc-setup` は Codex `ywc-*` artifact language default を設定します:
 `ywc-setup --scope project --lang ko`, `ywc-setup --scope user --lang ja`。
