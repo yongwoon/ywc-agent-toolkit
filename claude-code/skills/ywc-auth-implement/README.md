@@ -27,6 +27,9 @@
 ## 출력
 
 - Preflight 결과, 정책 인터뷰 요약, 추천 Library/Service, 디스패치된 Subagent 목록, Security/E2E Gate 결과, `## Output Format`의 4-값 Completion Status(`DONE`/`DONE_WITH_CONCERNS`/`BLOCKED`/`NEEDS_CONTEXT`)
+- Preflight는 인터뷰 질문 전에 중단되며, 기존 인증이 발견되면(사용자가 `new`/`extend`/`migrate`를 선택할 때까지) 또는 스택 근거가 불충분하면(먼저 `ywc-tech-research`로 라우팅) `NEEDS_CONTEXT`를 반환합니다
+- Security/E2E Gate는 `ywc-security-audit` 심각도를 상태로 매핑합니다: Critical/High = 0이면 정책-조건부 E2E로 진행하고, Critical/High ≥ 1이면 `DONE_WITH_CONCERNS`로 종료하며 remediation과 재감사 전까지 E2E·PR 제안·추천 캐싱을 모두 건너뜁니다. Audit command 실행 실패는 `BLOCKED`, scope/trust boundary 부족은 `NEEDS_CONTEXT`를 반환합니다
+- `DONE`은 Security Gate가 clean하고 승인된 모든 E2E flow가 fresh evidence(command, exit code, key output)와 함께 기록되어야 합니다. 그렇지 않으면 어느 Gate에서 중단되었는지와 함께 위 상태 중 하나를 보고합니다
 
 ## 관련 Skill
 

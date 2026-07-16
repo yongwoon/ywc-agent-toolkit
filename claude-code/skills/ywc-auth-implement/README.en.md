@@ -27,6 +27,9 @@ Or invoke via natural language:
 ## Output
 
 - Preflight results, policy interview summary, recommended library/service, dispatched subagent list, Security/E2E Gate result, and the `## Output Format` 4-value Completion Status (`DONE`/`DONE_WITH_CONCERNS`/`BLOCKED`/`NEEDS_CONTEXT`)
+- Preflight stops before any interview question and returns `NEEDS_CONTEXT` when existing auth is detected (until the user picks `new`/`extend`/`migrate`) or when stack evidence is insufficient (routes to `ywc-tech-research` first)
+- The Security/E2E gate maps `ywc-security-audit` severity to status: Critical/High = 0 proceeds to the policy-conditional E2E; Critical/High ≥ 1 ends the run as `DONE_WITH_CONCERNS` and skips E2E, the PR suggestion, and recommendation caching until remediation and re-audit; a failed audit command returns `BLOCKED`; an insufficient scope/trust boundary returns `NEEDS_CONTEXT`
+- `DONE` requires the Security gate clean and every approved E2E flow captured with fresh evidence (command, exit code, key output); anything short of that reports the status above with the specific gate that stopped it
 
 ## Related Skills
 
