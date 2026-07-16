@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auth Implementation Route"
+  short_description: "Plan secure auth with policy, audit, and E2E gates"
+  default_prompt: "Use $ywc-auth-implement to plan a policy-backed authentication implementation route without exposing secrets."
