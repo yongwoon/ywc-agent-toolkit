@@ -126,6 +126,8 @@ will read the files only when it needs to.
 
 ## Security, E2E, and PR Gates
 
+Before running the security audit, apply the shared subagent-status contract to every dispatch result from the Implementation Dispatch step above: `DONE` integrates as-is; `DONE_WITH_CONCERNS` requires resolving the stated correctness/scope concerns before integration; `NEEDS_CONTEXT` requires re-dispatching with the missing context supplied; `BLOCKED` requires triaging the blocker before continuing. Only proceed to the audit once every dispatched subagent's result is resolved to a clean integration state.
+
 After implementation, run `ywc-security-audit --code <auth-diff-path>`. `ywc-security-audit` is a skill call (not a §3.5 direct-dispatch target), so this skill maps its severity result to a Completion Status directly:
 
 | Audit result | Route | Cache |
@@ -135,7 +137,7 @@ After implementation, run `ywc-security-audit --code <auth-diff-path>`. `ywc-sec
 | Audit command fails to run | `BLOCKED` with the command and error evidence | Not eligible |
 | Scope/trust boundary insufficient | `NEEDS_CONTEXT` naming the missing item | Not eligible |
 
-E2E covers only interview-approved items (sign-up/sign-in/reset only if email/password was chosen, account deletion only if enabled, one flow per configured OAuth provider). Check `playwright.config.*` first: absent → run `ywc-e2e-test-strategy --init` once and inspect the generated flows; present → run `--audit` for current coverage. Either way, run `--flow <name>` only for the approved flows still missing — flow generation is never itself a pass. Run the project's actual E2E command fresh and capture `ywc-verify-done`-style evidence (command, exit code, key output) before claiming a pass. Missing provider credentials or test environment is `DONE_WITH_CONCERNS` only when it is non-security and the user explicitly deferred it; otherwise `BLOCKED`. Only after these gates pass, propose `ywc-create-pr` non-blockingly — never invoke it automatically.
+E2E covers only interview-approved items (sign-up/sign-in/reset only if email/password was chosen, account deletion only if enabled, one flow per configured OAuth provider, and MFA enrollment/verification only if MFA was approved and not deferred). Check `playwright.config.*` first: absent → run `ywc-e2e-test-strategy --init` once and inspect the generated flows; present → run `--audit` for current coverage. Either way, run `--flow <name>` only for the approved flows still missing — flow generation is never itself a pass. Run the project's actual E2E command fresh and capture `ywc-verify-done`-style evidence (command, exit code, key output) before claiming a pass. Missing provider credentials or test environment is `DONE_WITH_CONCERNS` only when it is non-security and the user explicitly deferred it; otherwise `BLOCKED`. Only after these gates pass, propose `ywc-create-pr` non-blockingly — never invoke it automatically.
 
 > **Action required**: Read [references/security-checklist.md](references/security-checklist.md) for the full security posture checklist and the detailed E2E policy-branch execution steps.
 
