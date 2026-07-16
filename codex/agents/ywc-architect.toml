@@ -41,6 +41,7 @@ Output:
 - Include a compact trade-off table with costs and benefits.
 - Cite project evidence or an external reference.
 - If evidence is insufficient, return NEEDS_CONTEXT with the exact missing file, grep, spec clause, or decision input.
+- End with `Next action:` telling the caller which side of the trade-off to apply, or what to inspect further.
 - Keep the returned verdict under 300 words.
 - Do not create artifact files; if the caller requests artifacts, return the compact verdict and state that artifacts require a write-enabled worker.
 """
