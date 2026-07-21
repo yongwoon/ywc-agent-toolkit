@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 # poll-pr-reviews.sh <pr-number>
+#
+# Output contract (the caller MUST parse the last line, not a bare integer):
+#   BOT_COUNT=<n> WINDOW=complete    exit 0 -> bots posted; handle reviews
+#   BOT_COUNT=0 WINDOW=complete      exit 1 -> full window elapsed, no bots; merge allowed
+#   BOT_COUNT=0 WINDOW=degraded      exit 3 -> every gh query failed; NOT evidence of zero bots
+#
+# If no `WINDOW=complete` line is printed, the poll did not finish (Bash tool
+# timeout, kill, network death). That is never evidence of BOT_COUNT==0 —
+# the caller must retry, and must not merge.
 
 set -euo pipefail
 
@@ -11,6 +20,7 @@ fi
 
 POLL_COUNT=0
 BOT_COUNT=0
+QUERY_OK=0
 
 until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   if [ "$POLL_COUNT" -eq 0 ]; then
@@ -19,7 +29,7 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
     sleep 30
   fi
 
-  BOT_COUNT=$(gh pr view "$PR_NUMBER" --json reviews,comments,reviewThreads \
+  if RESULT=$(gh pr view "$PR_NUMBER" --json reviews,comments,reviewThreads \
     --jq '
       [ .reviews[],
         .comments[],
@@ -28,10 +38,18 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
       | map(select(.author.login
           | test("coderabbitai|coderabbit|codex|claude|anthropic|github-actions"; "i")))
       | length
-    ' 2>/dev/null || echo "0")
+    ' 2>/dev/null) && case "$RESULT" in ''|*[!0-9]*) false ;; *) true ;; esac; then
+    BOT_COUNT="$RESULT"
+    QUERY_OK=1
+  fi
 
   POLL_COUNT=$((POLL_COUNT + 1))
 done
 
-echo "$BOT_COUNT"
+if [ "$QUERY_OK" -eq 0 ]; then
+  echo "BOT_COUNT=0 WINDOW=degraded"
+  exit 3
+fi
+
+echo "BOT_COUNT=$BOT_COUNT WINDOW=complete"
 [ "$BOT_COUNT" -gt 0 ]

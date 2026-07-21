@@ -107,7 +107,8 @@ values in skill bodies):
 - **Initial wait**: 60 seconds after CI passes before the first poll (bots begin
   analysis only after CI completes)
 - **Polling window**: 300 seconds (10 attempts × 30 s)
-- **Merge condition**: `BOT_COUNT == 0` after the full window → proceed; `BOT_COUNT > 0` → invoke `ywc-handle-pr-reviews`
+- **Merge condition**: `BOT_COUNT == 0` **with the `WINDOW=complete` marker** → proceed; `BOT_COUNT > 0` → invoke `ywc-handle-pr-reviews`; missing marker or `WINDOW=degraded` → re-run the poll, never merge
+- **Bash call**: pass `timeout: 600000` — the default 120 s kills the 360 s window mid-run, and a killed poll is not evidence of zero bots
 
 Skills must reference the file with an explicit `> **Action required**: Read
 [references/pr-bot-polling.md]` directive, not a bare hyperlink, so the LLM

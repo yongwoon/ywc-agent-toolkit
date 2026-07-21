@@ -16,11 +16,26 @@ Automated review bots (CodeRabbit, Codex Review, Claude Review) need time to ana
 
 ```bash
 bash claude-code/skills/scripts/poll-pr-reviews.sh <pr-number>
-# stdout: BOT_COUNT integer
-# exit 0 → BOT_COUNT > 0 (bots posted); exit 1 → BOT_COUNT == 0 (no bots after full window)
+# stdout (last line): BOT_COUNT=<n> WINDOW=complete|degraded
+# exit 0 → BOT_COUNT > 0 (bots posted)
+# exit 1 → BOT_COUNT == 0 after the FULL window (no bots) → merge allowed
+# exit 3 → WINDOW=degraded: every gh query failed → NOT evidence of zero bots
 ```
 
-Use the exit code to choose the action in [Action When Bot Comments Exist](#action-when-bot-comments-exist-bot_count--0) or [Action When No Bot Comments](#action-when-no-bot-comments) below. The script handles the 60-second initial wait, up to 10 × 30-second polls, and the jq query — no need to inline the loop.
+> **Mandatory Bash-call parameter**: invoke this with `timeout: 600000`. The window is up to 360 s; Claude Code's **default Bash timeout is 120 s**, which kills the poll mid-window. A bot that posts around the 2-minute mark is exactly the case that gets missed.
+
+**Completion gate — the merge condition is not a number, it is the marker.** Only `BOT_COUNT=0 WINDOW=complete` (exit 1) permits merging:
+
+| Observed | Meaning | Required action |
+|---|---|---|
+| `BOT_COUNT=<n>` with n > 0, `WINDOW=complete`, exit 0 | Bots posted | Invoke `ywc-handle-pr-reviews` |
+| `BOT_COUNT=0 WINDOW=complete`, exit 1 | Full window, no bots | Proceed to merge |
+| `WINDOW=degraded`, exit 3 | All `gh` queries failed | Re-run the poll; do **not** merge |
+| No `WINDOW=` line at all (Bash timeout, kill, hang) | Poll never finished | Re-run with `timeout: 600000`; do **not** merge |
+
+A Bash timeout, a `fetch failed`, or truncated output is **never** evidence of `BOT_COUNT == 0`. Merging on a missing marker line is the exact failure that shipped an unaddressed P1 bot finding in a downstream project.
+
+Use the exit code plus the marker line to choose the action in [Action When Bot Comments Exist](#action-when-bot-comments-exist-bot_count--0) or [Action When No Bot Comments](#action-when-no-bot-comments) below. The script handles the 60-second initial wait, up to 10 × 30-second polls, and the jq query — no need to inline the loop.
 
 **Reference implementation (if customization needed):**
 
@@ -87,7 +102,7 @@ Update the regex in the polling loop if the project uses a bot not listed above.
 
 ## Action When No Bot Comments
 
-If `BOT_COUNT == 0` after the full 300-second polling window (plus the 60-second initial wait), skip this sub-step entirely and proceed to merge.
+If `BOT_COUNT == 0` **and the run printed `WINDOW=complete`** (full 300-second window plus the 60-second initial wait), skip this sub-step entirely and proceed to merge. Without that marker the window did not close — re-run the poll instead of merging.
 
 ## Non-Stop Principle
 
