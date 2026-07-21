@@ -47,6 +47,11 @@ fi
 run_case 2 102 | grep -Fxq 2
 (cd "$TEMP_DIR" && PATH="$TEMP_DIR/bin:$PATH" bash "$SCRIPT" --verify 102) | grep -Fq '"bot_count": 2'
 
+if (cd "$TEMP_DIR" && PATH="$TEMP_DIR/bin:$PATH" bash "$SCRIPT" '../102') >/dev/null 2>&1; then
+  echo "expected a non-numeric PR number to fail validation" >&2
+  exit 1
+fi
+
 if run_case fail 103; then
   echo "expected failed API reads to fail polling" >&2
   exit 1

@@ -24,6 +24,8 @@ require_nonnegative_integer() {
   esac
 }
 
+require_nonnegative_integer PR_NUMBER "$PR_NUMBER"
+
 artifact_path() {
   git rev-parse --git-path "ywc-bot-review-polls/${PR_NUMBER}.json"
 }
@@ -43,8 +45,9 @@ if [ "$VERIFY_ONLY" = true ]; then
   fi
 
   ARTIFACT_HEAD_REF_OID="$(sed -n 's/.*"head_ref_oid": "\([^"]*\)".*/\1/p' "$ARTIFACT_PATH")"
-  CURRENT_HEAD_REF_OID="$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')"
-  if [ -z "$ARTIFACT_HEAD_REF_OID" ] || [ "$ARTIFACT_HEAD_REF_OID" != "$CURRENT_HEAD_REF_OID" ]; then
+  if ! CURRENT_HEAD_REF_OID="$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')" \
+    || [ -z "$ARTIFACT_HEAD_REF_OID" ] \
+    || [ "$ARTIFACT_HEAD_REF_OID" != "$CURRENT_HEAD_REF_OID" ]; then
     echo "Bot-review polling artifact is stale for PR #${PR_NUMBER}; poll again after the latest push." >&2
     exit 4
   fi
@@ -115,8 +118,8 @@ while [ "$BOT_COUNT" -eq 0 ] && [ "$POLL_COUNT" -lt "$MAX_POLLS" ]; do
 done
 
 mkdir -p "$(dirname "$ARTIFACT_PATH")"
-HEAD_REF_OID="$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')"
-if [ -z "$HEAD_REF_OID" ]; then
+if ! HEAD_REF_OID="$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')" \
+  || [ -z "$HEAD_REF_OID" ]; then
   echo "Could not determine the PR head SHA; refusing to create a merge-gate artifact." >&2
   exit 3
 fi
