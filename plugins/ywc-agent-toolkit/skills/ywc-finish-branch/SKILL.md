@@ -24,7 +24,7 @@ When tempted to skip a step, check this table first:
 |---|---|
 | "Step 4 (Merge) succeeded, that means we are done" | The Definition of Done has 5 conditions. Merge is condition 2 of 5. Mark Task Complete (Step 7) and branch deletion (Step 8) are equally required — skipping them silently breaks dependency resolution for downstream tasks. |
 | "Post-merge verification is just running `git log` — skip it for speed" | The hard gate exists because `git merge` can silently no-op (already merged, nothing to do, fast-forward elided) and the caller cannot tell from exit code alone. Always verify. |
-| "Bot review polling found 0 comments, skip the wait window" | Polling the full window is the contract. Bots can post asynchronously after CI completes; cutting short the window misses real findings. |
+| "Bot review polling found 0 comments, skip the wait window" | Polling the full window is the contract. Bots can post asynchronously after CI completes; cutting short the window misses real findings. `poll-pr-reviews.sh --verify` must confirm the completed-poll artifact before merge. |
 | "Branch was already deleted by `gh pr merge --delete-branch`, skip the local cleanup" | `--delete-branch` only removes the **remote** branch. The local copy persists and the next task's branch creation will conflict. Always run `git branch -d`. |
 | "Mode flag conflict was already validated upstream, skip the check here" | This skill is a callable unit and may be invoked outside the executors. Validate flag conflicts at every entry point, not just the upstream caller. |
 | "Mark Task Complete is bookkeeping — defer it for after all wave tasks merge" | `tasks/completed/` is the contract that downstream tasks read for dependency resolution. Move-then-merge ordering is forbidden by the Definition of Done; merge-then-move within the same task cycle is required. |
@@ -182,6 +182,8 @@ Invoke `gh pr ready <pr-number>` to convert the draft into an open PR. Skip for 
 
 Run the CI wait + fix loop and the bot review polling per [../references/pr-bot-polling.md](../references/pr-bot-polling.md). The polling reference defines the canonical loop; this skill applies its `--bot-action` parameter to choose the post-bot behavior:
 
+Before entering Step 4 final or Step 5, run the reference's `poll-pr-reviews.sh --verify <pr-number>` command. If it fails, return `BLOCKED`; do not treat a timeout, fetch failure, or missing artifact as zero bot comments, and do not call `gh pr merge`.
+
 - `--bot-action sequential`: after `ywc-handle-pr-reviews` runs, re-run the CI verification step before re-polling. Bot fixes may trigger a new CI run that must pass before merging.
 - `--bot-action parallel`: after `ywc-handle-pr-reviews` runs, re-poll without re-gating on CI. The wave loop in `ywc-parallel-executor` handles CI at the wave level.
 
@@ -237,6 +239,7 @@ gh pr view <pr-number> --json mergeable,mergeStateStatus --jq '{mergeable, merge
 
 For `--mode normal-pr`:
 ```bash
+# Step 4 must have produced and verified the completed-poll artifact for this PR.
 gh pr merge <pr-number> --delete-branch
 ```
 

@@ -641,6 +641,20 @@ check_cc_support_dirs() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  # The poll script is a merge gate: a wrong verdict lets an unreviewed PR
+  # merge. Both suites stub `gh` and need no network.
+  local poll_test
+  for poll_test in claude-code/skills/scripts/test-poll-pr-reviews.sh \
+                   codex/skills/scripts/test-poll-pr-reviews.sh; do
+    if [ ! -f "$poll_test" ]; then
+      echo "ERROR: poll-pr-reviews test suite is missing: $poll_test"
+      ERRORS=$((ERRORS + 1))
+    elif ! bash "$poll_test" >/dev/null 2>&1; then
+      echo "ERROR: poll-pr-reviews test suite failed: $poll_test"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
   # Every ../references/<file> link must resolve relative to the file that
   # contains it. From a SKILL.md this points at the shared references dir; from
   # a skill-local references/*.md it points back at that same local dir. We

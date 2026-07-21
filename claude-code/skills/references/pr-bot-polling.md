@@ -16,56 +16,41 @@ Automated review bots (CodeRabbit, Codex Review, Claude Review) need time to ana
 
 ```bash
 bash claude-code/skills/scripts/poll-pr-reviews.sh <pr-number>
-# stdout: BOT_COUNT integer
-# exit 0 → BOT_COUNT > 0 (bots posted); exit 1 → BOT_COUNT == 0 (no bots after full window)
+# stdout (last line): BOT_COUNT=<n> WINDOW=complete|degraded
+# exit 0 → BOT_COUNT > 0 (bots posted)
+# exit 1 → BOT_COUNT == 0 after the FULL window (no bots) → merge allowed
+# exit 3 → WINDOW=degraded: a gh query failed → NOT evidence of zero bots
 ```
 
-Use the exit code to choose the action in [Action When Bot Comments Exist](#action-when-bot-comments-exist-bot_count--0) or [Action When No Bot Comments](#action-when-no-bot-comments) below. The script handles the 60-second initial wait, up to 10 × 30-second polls, and the jq query — no need to inline the loop.
+> **Mandatory Bash-call parameter**: invoke this with `timeout: 600000`. The window is up to 360 s; Claude Code's **default Bash timeout is 120 s**, which kills the poll mid-window. A bot that posts around the 2-minute mark is exactly the case that gets missed.
 
-**Reference implementation (if customization needed):**
+**Completion gate — the merge condition is not a number, it is the marker.** Only `BOT_COUNT=0 WINDOW=complete` (exit 1) permits merging:
 
-> **Critical execution rule**: Submit the ENTIRE block below as a **single Bash call**. Never split it into per-iteration calls. If you run `gh pr view` once, see `BOT_COUNT=0`, and then issue a separate `sleep 30 && gh pr view` call, Claude Code's hook will block the `sleep &&` chain and the polling loop stalls entirely.
->
-> The approved wait-for-condition pattern in Claude Code is `until <check>; do sleep N; done` — sleep inside the loop body is permitted; `sleep N && command` as a standalone call is blocked.
+| Observed | Meaning | Required action |
+|---|---|---|
+| `BOT_COUNT=<n>` with n > 0, `WINDOW=complete`, exit 0 | Bots posted | Invoke `ywc-handle-pr-reviews` |
+| `BOT_COUNT=0 WINDOW=complete`, exit 1 | Full window, no bots | Proceed to merge |
+| `WINDOW=degraded`, exit 3 | A `gh` query failed, so a zero count is unproven | Re-run the poll; do **not** merge |
+| No `WINDOW=` line at all (Bash timeout, kill, hang) | Poll never finished | Re-run with `timeout: 600000`; do **not** merge |
 
-```bash
-# Run this ENTIRE block as a SINGLE Bash call — never split per iteration.
-# Initial wait (60s) is inside the loop to avoid a standalone `sleep 60`
-# that Claude Code's hook blocks as a "long leading sleep" command.
-POLL_COUNT=0
-BOT_COUNT=0
-until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
-  if [ "$POLL_COUNT" -eq 0 ]; then
-    sleep 60  # initial wait: bots begin analysis only after CI completes
-  else
-    sleep 30  # 30s between subsequent polls
-  fi
-  BOT_COUNT=$(gh pr view <pr-number> --json reviews,comments,reviewThreads \
-    --jq '
-      [ .reviews[],
-        .comments[],
-        (.reviewThreads[]?.comments[]?)
-      ]
-      | map(select(.author.login
-          | test("coderabbitai|coderabbit|codex|claude|anthropic|github-actions"; "i")))
-      | length
-    ')
-  POLL_COUNT=$((POLL_COUNT + 1))
-done
-# Total window: 60s (initial) + up to 10 × 30s = 360s max
-# BOT_COUNT > 0 → bots posted → invoke ywc-handle-pr-reviews
-# BOT_COUNT == 0 → no bots after full window → proceed to merge
-```
+A Bash timeout, a `fetch failed`, or truncated output is **never** evidence of `BOT_COUNT == 0`. Merging on a missing marker line is the exact failure that shipped an unaddressed P1 bot finding in a downstream project.
 
-## Why `reviewThreads` Is Included
+Use the exit code plus the marker line to choose the action in [Action When Bot Comments Exist](#action-when-bot-comments-exist-bot_count--0) or [Action When No Bot Comments](#action-when-no-bot-comments) below. The script handles the 60-second initial wait, up to 10 × 30-second polls, and the jq query — no need to inline the loop.
 
-GitHub stores PR data in three distinct fields. Line-level code annotations — the most common output from CodeRabbit and similar bots — live in `reviewThreads`, not in `reviews` or `comments`. Without `reviewThreads` the query misses most bot feedback.
+Do not copy or customize the polling loop inline. The bundled script owns the
+`WINDOW=complete` contract; invoke it as one Bash call with `timeout: 600000`.
 
-| GitHub PR Data Field | What It Contains |
-|---|---|
-| `reviews` | Top-level review submissions (Approve / Request Changes) |
-| `comments` | General PR comments (issue-style, not attached to code lines) |
-| `reviewThreads` | Line-level review comments (code annotations) |
+## Why Two Sources Are Required
+
+GitHub exposes PR feedback in three places, and **no single `gh` call returns all three**. Line-level code annotations — the most common output from CodeRabbit and similar bots — are not available to `gh pr view` at all.
+
+| Feedback | Where it lives | How to fetch |
+|---|---|---|
+| Top-level review submissions (Approve / Request Changes) | `reviews` | `gh pr view --json reviews` |
+| General PR comments (issue-style, not attached to code lines) | `comments` | `gh pr view --json comments` |
+| Line-level review comments (code annotations) | review threads | `gh api repos/{owner}/{repo}/pulls/<n>/comments` |
+
+> **`gh pr view --json reviewThreads` does not exist.** It is not an accepted field name, and `gh` rejects the *entire* call with `Unknown JSON field: "reviewThreads"` — so a query listing it returns nothing at all, not merely a partial result. Combined with a `|| echo "0"` fallback this yields a permanent `BOT_COUNT=0`: polling appears to run, always reports no bots, and never blocks a merge. Fetch line-level comments from the REST endpoint instead, and sum the two counts.
 
 ## Known Automated Reviewer Patterns
 
@@ -87,7 +72,7 @@ Update the regex in the polling loop if the project uses a bot not listed above.
 
 ## Action When No Bot Comments
 
-If `BOT_COUNT == 0` after the full 300-second polling window (plus the 60-second initial wait), skip this sub-step entirely and proceed to merge.
+If `BOT_COUNT == 0` **and the run printed `WINDOW=complete`** (full 300-second window plus the 60-second initial wait), skip this sub-step entirely and proceed to merge. Without that marker the window did not close — re-run the poll instead of merging.
 
 ## Non-Stop Principle
 

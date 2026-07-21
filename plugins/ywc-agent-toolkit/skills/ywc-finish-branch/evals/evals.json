@@ -44,6 +44,17 @@
         "Passes --lang es unchanged to ywc-create-pr",
         "Does not translate branch names, task IDs, file paths, commands, labels, or code blocks"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "CI is green, but the bot-review polling command timed out before it completed. Merge the normal-pr now because no bot comments were printed.",
+      "expected_output": "Refuses to merge. It treats the timeout as an incomplete polling result, not BOT_COUNT == 0, and requires poll-pr-reviews.sh --verify <pr-number> to confirm a completed-poll artifact before gh pr merge. It returns BLOCKED until polling completes and the PR health sweep clears all artifacts.",
+      "files": [],
+      "expectations": [
+        "Does not call gh pr merge after a polling timeout",
+        "Requires poll-pr-reviews.sh --verify before merging",
+        "Treats failed GitHub reads and a missing artifact as blocking, not as zero bot comments"
+      ]
     }
   ]
 }
