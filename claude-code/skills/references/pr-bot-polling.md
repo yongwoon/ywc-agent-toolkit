@@ -55,16 +55,16 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   else
     sleep 30  # 30s between subsequent polls
   fi
-  BOT_COUNT=$(gh pr view <pr-number> --json reviews,comments,reviewThreads \
-    --jq '
-      [ .reviews[],
-        .comments[],
-        (.reviewThreads[]?.comments[]?)
-      ]
-      | map(select(.author.login
-          | test("coderabbitai|coderabbit|codex|claude|anthropic|github-actions"; "i")))
-      | length
-    ')
+  # `gh pr view --json` has NO `reviewThreads` field — passing it fails the whole
+  # call. Line-level bot comments must come from the REST endpoint instead.
+  BOT_RE='coderabbitai|coderabbit|codex|claude|anthropic|github-actions'
+  TOP=$(gh pr view <pr-number> --json reviews,comments \
+    --jq "[ .reviews[], .comments[] ]
+          | map(select(.author.login | test(\"$BOT_RE\"; \"i\")))
+          | length")
+  LINE=$(gh api --paginate "repos/{owner}/{repo}/pulls/<pr-number>/comments" \
+    --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" | wc -l)
+  BOT_COUNT=$((TOP + LINE))
   POLL_COUNT=$((POLL_COUNT + 1))
 done
 # Total window: 60s (initial) + up to 10 × 30s = 360s max
@@ -72,15 +72,17 @@ done
 # BOT_COUNT == 0 → no bots after full window → proceed to merge
 ```
 
-## Why `reviewThreads` Is Included
+## Why Two Sources Are Required
 
-GitHub stores PR data in three distinct fields. Line-level code annotations — the most common output from CodeRabbit and similar bots — live in `reviewThreads`, not in `reviews` or `comments`. Without `reviewThreads` the query misses most bot feedback.
+GitHub exposes PR feedback in three places, and **no single `gh` call returns all three**. Line-level code annotations — the most common output from CodeRabbit and similar bots — are not available to `gh pr view` at all.
 
-| GitHub PR Data Field | What It Contains |
-|---|---|
-| `reviews` | Top-level review submissions (Approve / Request Changes) |
-| `comments` | General PR comments (issue-style, not attached to code lines) |
-| `reviewThreads` | Line-level review comments (code annotations) |
+| Feedback | Where it lives | How to fetch |
+|---|---|---|
+| Top-level review submissions (Approve / Request Changes) | `reviews` | `gh pr view --json reviews` |
+| General PR comments (issue-style, not attached to code lines) | `comments` | `gh pr view --json comments` |
+| Line-level review comments (code annotations) | review threads | `gh api repos/{owner}/{repo}/pulls/<n>/comments` |
+
+> **`gh pr view --json reviewThreads` does not exist.** It is not an accepted field name, and `gh` rejects the *entire* call with `Unknown JSON field: "reviewThreads"` — so a query listing it returns nothing at all, not merely a partial result. Combined with a `|| echo "0"` fallback this yields a permanent `BOT_COUNT=0`: polling appears to run, always reports no bots, and never blocks a merge. Fetch line-level comments from the REST endpoint instead, and sum the two counts.
 
 ## Known Automated Reviewer Patterns
 

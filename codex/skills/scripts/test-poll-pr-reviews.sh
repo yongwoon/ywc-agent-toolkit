@@ -19,6 +19,11 @@ run_case() {
 if [ "$result" = fail ]; then
   exit 1
 fi
+# The line-level REST call contributes no comments in these cases, so the
+# summed bot count equals the stubbed 'gh pr view' value.
+if [ "\$1" = api ]; then
+  exit 0
+fi
 printf '%s\\n' "$result"
 EOF
   chmod +x "$TEMP_DIR/bin/gh"

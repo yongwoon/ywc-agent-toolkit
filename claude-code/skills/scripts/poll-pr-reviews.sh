@@ -18,6 +18,24 @@ if [ -z "$PR_NUMBER" ]; then
   exit 2
 fi
 
+BOT_RE='coderabbitai|coderabbit|codex|claude|anthropic|github-actions'
+
+# Two sources are required. `gh pr view --json` has no `reviewThreads` field —
+# passing one makes the whole call fail — yet line-level review comments (the
+# most common bot output) live only there. They come from the REST endpoint.
+fetch_bot_count() {
+  local top line
+  top=$(gh pr view "$PR_NUMBER" --json reviews,comments \
+    --jq "[ .reviews[], .comments[] ]
+          | map(select(.author.login | test(\"$BOT_RE\"; \"i\")))
+          | length" 2>/dev/null) || return 1
+  line=$(gh api --paginate "repos/{owner}/{repo}/pulls/$PR_NUMBER/comments" \
+    --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" 2>/dev/null \
+    | wc -l | tr -d ' ') || return 1
+  case "$top$line" in ''|*[!0-9]*) return 1 ;; esac
+  echo $((top + line))
+}
+
 POLL_COUNT=0
 BOT_COUNT=0
 QUERY_OK=0
@@ -29,16 +47,7 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
     sleep 30
   fi
 
-  if RESULT=$(gh pr view "$PR_NUMBER" --json reviews,comments,reviewThreads \
-    --jq '
-      [ .reviews[],
-        .comments[],
-        (.reviewThreads[]?.comments[]?)
-      ]
-      | map(select(.author.login
-          | test("coderabbitai|coderabbit|codex|claude|anthropic|github-actions"; "i")))
-      | length
-    ' 2>/dev/null) && case "$RESULT" in ''|*[!0-9]*) false ;; *) true ;; esac; then
+  if RESULT=$(fetch_bot_count); then
     BOT_COUNT="$RESULT"
     QUERY_OK=1
   fi

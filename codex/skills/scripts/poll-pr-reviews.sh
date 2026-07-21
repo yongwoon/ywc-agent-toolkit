@@ -68,6 +68,24 @@ if [ "$MAX_POLLS" -eq 0 ] || [ "$MAX_FETCH_FAILURES" -eq 0 ]; then
   exit 2
 fi
 
+BOT_RE='coderabbitai|coderabbit|codex|claude|anthropic|github-actions'
+
+# Two sources are required. `gh pr view --json` has no `reviewThreads` field —
+# passing one makes the whole call fail — yet line-level review comments (the
+# most common bot output) live only there. They come from the REST endpoint.
+fetch_bot_count() {
+  local top line
+  top=$(gh pr view "$PR_NUMBER" --json reviews,comments \
+    --jq "[ .reviews[], .comments[] ]
+          | map(select(.author.login | test(\"$BOT_RE\"; \"i\")))
+          | length") || return 1
+  line=$(gh api --paginate "repos/{owner}/{repo}/pulls/$PR_NUMBER/comments" \
+    --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" \
+    | wc -l | tr -d ' ') || return 1
+  case "$top$line" in ''|*[!0-9]*) return 1 ;; esac
+  echo $((top + line))
+}
+
 # A stale successful artifact must never satisfy a later merge gate.
 rm -f "$ARTIFACT_PATH"
 
@@ -82,16 +100,7 @@ while [ "$BOT_COUNT" -eq 0 ] && [ "$POLL_COUNT" -lt "$MAX_POLLS" ]; do
     sleep "$INTERVAL_SECONDS"
   fi
 
-  if BOT_COUNT=$(gh pr view "$PR_NUMBER" --json reviews,comments,reviewThreads \
-    --jq '
-      [ .reviews[],
-        .comments[],
-        (.reviewThreads[]?.comments[]?)
-      ]
-      | map(select(.author.login
-          | test("coderabbitai|coderabbit|codex|claude|anthropic|github-actions"; "i")))
-      | length
-    '); then
+  if BOT_COUNT=$(fetch_bot_count); then
     require_nonnegative_integer "gh bot-comment count" "$BOT_COUNT"
     FETCH_FAILURES=0
     POLL_COUNT=$((POLL_COUNT + 1))
