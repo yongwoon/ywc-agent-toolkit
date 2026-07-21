@@ -37,40 +37,8 @@ A Bash timeout, a `fetch failed`, or truncated output is **never** evidence of `
 
 Use the exit code plus the marker line to choose the action in [Action When Bot Comments Exist](#action-when-bot-comments-exist-bot_count--0) or [Action When No Bot Comments](#action-when-no-bot-comments) below. The script handles the 60-second initial wait, up to 10 × 30-second polls, and the jq query — no need to inline the loop.
 
-**Reference implementation (if customization needed):**
-
-> **Critical execution rule**: Submit the ENTIRE block below as a **single Bash call**. Never split it into per-iteration calls. If you run `gh pr view` once, see `BOT_COUNT=0`, and then issue a separate `sleep 30 && gh pr view` call, Claude Code's hook will block the `sleep &&` chain and the polling loop stalls entirely.
->
-> The approved wait-for-condition pattern in Claude Code is `until <check>; do sleep N; done` — sleep inside the loop body is permitted; `sleep N && command` as a standalone call is blocked.
-
-```bash
-# Run this ENTIRE block as a SINGLE Bash call — never split per iteration.
-# Initial wait (60s) is inside the loop to avoid a standalone `sleep 60`
-# that Claude Code's hook blocks as a "long leading sleep" command.
-POLL_COUNT=0
-BOT_COUNT=0
-until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
-  if [ "$POLL_COUNT" -eq 0 ]; then
-    sleep 60  # initial wait: bots begin analysis only after CI completes
-  else
-    sleep 30  # 30s between subsequent polls
-  fi
-  # `gh pr view --json` has NO `reviewThreads` field — passing it fails the whole
-  # call. Line-level bot comments must come from the REST endpoint instead.
-  BOT_RE='coderabbitai|coderabbit|codex|claude|anthropic|github-actions'
-  TOP=$(gh pr view <pr-number> --json reviews,comments \
-    --jq "[ .reviews[], .comments[] ]
-          | map(select(.author.login | test(\"$BOT_RE\"; \"i\")))
-          | length")
-  LINE=$(gh api --paginate "repos/{owner}/{repo}/pulls/<pr-number>/comments" \
-    --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" | wc -l)
-  BOT_COUNT=$((TOP + LINE))
-  POLL_COUNT=$((POLL_COUNT + 1))
-done
-# Total window: 60s (initial) + up to 10 × 30s = 360s max
-# BOT_COUNT > 0 → bots posted → invoke ywc-handle-pr-reviews
-# BOT_COUNT == 0 → no bots after full window → proceed to merge
-```
+Do not copy or customize the polling loop inline. The bundled script owns the
+`WINDOW=complete` contract; invoke it as one Bash call with `timeout: 600000`.
 
 ## Why Two Sources Are Required
 

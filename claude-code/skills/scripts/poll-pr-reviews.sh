@@ -28,9 +28,9 @@ fetch_bot_count() {
   top=$(gh pr view "$PR_NUMBER" --json reviews,comments \
     --jq "[ .reviews[], .comments[] ]
           | map(select(.author.login | test(\"$BOT_RE\"; \"i\")))
-          | length" 2>/dev/null) || return 1
+          | length") || return 1
   line=$(gh api --paginate "repos/{owner}/{repo}/pulls/$PR_NUMBER/comments" \
-    --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" 2>/dev/null \
+    --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" \
     | wc -l | tr -d ' ') || return 1
   case "$top$line" in ''|*[!0-9]*) return 1 ;; esac
   echo $((top + line))
@@ -39,6 +39,7 @@ fetch_bot_count() {
 POLL_COUNT=0
 BOT_COUNT=0
 QUERY_OK=0
+QUERY_FAILURES=0
 
 until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   if [ "$POLL_COUNT" -eq 0 ]; then
@@ -50,6 +51,9 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   if RESULT=$(fetch_bot_count); then
     BOT_COUNT="$RESULT"
     QUERY_OK=1
+  else
+    QUERY_FAILURES=$((QUERY_FAILURES + 1))
+    echo "Failed to fetch review artifacts for PR #${PR_NUMBER} (attempt ${QUERY_FAILURES})" >&2
   fi
 
   POLL_COUNT=$((POLL_COUNT + 1))

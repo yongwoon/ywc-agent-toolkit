@@ -33,45 +33,9 @@ This is a **mechanical merge gate**: do not run `gh pr merge` and do not claim t
 
 Use the exit code as telemetry only after the completion artifact verifies. `BOT_COUNT > 0` tells you review bots posted during the window; `BOT_COUNT == 0` tells you none were detected after the full wait. In both cases, continue to [Action After Polling](#action-after-polling).
 
-**Reference implementation (if customization is needed):**
-
-> **Critical execution rule**: Submit the ENTIRE block below as a **single shell call**. Never split it into per-iteration calls. If you run `gh pr view` once, see `BOT_COUNT=0`, and then issue a separate `sleep 30 && gh pr view` call, command hooks may block the `sleep &&` chain and the polling loop stalls entirely.
->
-> The approved wait-for-condition pattern is `until <check>; do sleep N; done` — sleep inside the loop body is permitted; `sleep N && command` as a standalone call is blocked in some agent runtimes.
-
-```bash
-# Run this ENTIRE block as a SINGLE shell call — never split per iteration.
-# Initial wait (60s) is inside the loop to avoid a standalone `sleep 60`
-# that some command hooks block as a "long leading sleep" command.
-POLL_COUNT=0
-BOT_COUNT=0
-until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
-  if [ "$POLL_COUNT" -eq 0 ]; then
-    sleep 60  # initial wait: bots begin analysis only after CI completes
-  else
-    sleep 30  # 30s between subsequent polls
-  fi
-  # `gh pr view --json` has NO `reviewThreads` field — passing it fails the whole
-  # call. Line-level bot comments must come from the REST endpoint instead.
-  BOT_RE='coderabbitai|coderabbit|codex|claude|anthropic|github-actions'
-  if TOP=$(gh pr view <pr-number> --json reviews,comments \
-      --jq "[ .reviews[], .comments[] ]
-            | map(select(.author.login | test(\"$BOT_RE\"; \"i\")))
-            | length") \
-    && LINE=$(gh api --paginate "repos/{owner}/{repo}/pulls/<pr-number>/comments" \
-      --jq ".[] | select(.user.login | test(\"$BOT_RE\"; \"i\")) | .id" | wc -l) \
-    && BOT_COUNT=$((TOP + LINE)); then
-    POLL_COUNT=$((POLL_COUNT + 1))
-  else
-    # Never convert a failed read into BOT_COUNT=0. Retry or fail closed.
-    exit 3
-  fi
-done
-# Total window: 60s (initial) + up to 10 x 30s = 360s max
-# BOT_COUNT > 0 -> bots posted during the window
-# BOT_COUNT == 0 -> no bots detected after the full window
-# Both results -> invoke ywc-handle-pr-reviews as the PR health sweep
-```
+Do not copy or customize the polling loop inline. The bundled script owns the
+completion artifact and `--verify` contract; invoke it as one shell call with a
+600-second timeout instead.
 
 ## Why Two Sources Are Required
 

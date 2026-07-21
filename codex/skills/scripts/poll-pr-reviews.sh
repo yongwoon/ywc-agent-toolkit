@@ -38,13 +38,13 @@ if [ "$VERIFY_ONLY" = true ]; then
     exit 4
   fi
 
-  if ! grep -Fq "\"pr_number\": \"${PR_NUMBER}\"" "$ARTIFACT_PATH" \
-    || ! grep -Fq '"complete": true' "$ARTIFACT_PATH"; then
+  if ! jq -e --arg pr_number "$PR_NUMBER" \
+    '.pr_number == $pr_number and .complete == true' "$ARTIFACT_PATH" >/dev/null; then
     echo "Invalid bot-review polling artifact for PR #${PR_NUMBER}: $ARTIFACT_PATH" >&2
     exit 4
   fi
 
-  ARTIFACT_HEAD_REF_OID="$(sed -n 's/.*"head_ref_oid": "\([^"]*\)".*/\1/p' "$ARTIFACT_PATH")"
+  ARTIFACT_HEAD_REF_OID="$(jq -r '.head_ref_oid // empty' "$ARTIFACT_PATH")"
   if ! CURRENT_HEAD_REF_OID="$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')" \
     || [ -z "$ARTIFACT_HEAD_REF_OID" ] \
     || [ "$ARTIFACT_HEAD_REF_OID" != "$CURRENT_HEAD_REF_OID" ]; then
