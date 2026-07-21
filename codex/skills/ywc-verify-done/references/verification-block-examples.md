@@ -137,6 +137,8 @@ $ gh pr checks 1234 --json name,state,conclusion
  {"name":"lint","state":"COMPLETED","conclusion":"SUCCESS"}]
 $ bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" 1234
 exit=1   # = no bot reviews surfaced after 10×30s polling
+$ bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" --verify 1234
+{"pr_number":"1234", "complete":true, ...}
 ```
 
 **Claim:** PR #1234 has all required checks green and bot-review polling found no surfaced comments.

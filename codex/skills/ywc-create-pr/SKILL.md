@@ -279,9 +279,12 @@ If `gh pr checks` exits 1, at least one check failed. Apply fixes in the loop be
 bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" "$PR_NUMBER"
 # exit 0 → BOT_COUNT > 0 (bot reviews posted)
 # exit 1 → BOT_COUNT == 0 (no bot reviews within polling window)
+
+# Required before claiming the PR is ready: proves the poll completed.
+bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" --verify "$PR_NUMBER"
 ```
 
-Invoke `ywc-handle-pr-reviews` as a PR health sweep regardless of `BOT_COUNT == 0`. A zero bot-comment count is not terminal success; the handler still checks review artifacts, CI status, and merge-readiness. If the handler applies fixes, re-run `gh pr checks $PR_NUMBER --watch`, then re-run the polling script and repeat the health sweep until no new review artifacts, CI failures, or merge-readiness blockers remain, or until the handler reports a non-recoverable blocker.
+Allow the polling command at least 600 seconds. If it or `--verify` fails, report the PR as `BLOCKED`/`DONE_WITH_CONCERNS`; never convert that result to zero bot comments or claim the PR is ready. Invoke `ywc-handle-pr-reviews` as a PR health sweep regardless of `BOT_COUNT == 0`. A zero bot-comment count is not terminal success; the handler still checks review artifacts, CI status, and merge-readiness. If the handler applies fixes, re-run `gh pr checks $PR_NUMBER --watch`, then re-run the polling script, `--verify`, and health sweep until no new review artifacts, CI failures, or merge-readiness blockers remain, or until the handler reports a non-recoverable blocker.
 
 #### 8-4. Merge-Readiness (Conflict) Check
 

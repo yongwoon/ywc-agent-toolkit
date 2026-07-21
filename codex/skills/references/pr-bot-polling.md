@@ -18,9 +18,20 @@ Automated review bots (CodeRabbit, Codex Review, Claude Review) need time to ana
 bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" <pr-number>
 # stdout: BOT_COUNT integer
 # exit 0 -> BOT_COUNT > 0 (bots posted); exit 1 -> BOT_COUNT == 0 (no bots after full window)
+# exit 3 -> GitHub reads repeatedly failed; exit 4 -> no valid completed-poll artifact
 ```
 
-Use the exit code as telemetry only. `BOT_COUNT > 0` tells you review bots posted during the window; `BOT_COUNT == 0` tells you none were detected after the full wait. In both cases, continue to [Action After Polling](#action-after-polling). The script handles the 60-second initial wait, up to 10 x 30-second polls, and the jq query — no need to inline the loop.
+Allow this shell call at least **600 seconds** to finish. A tool timeout, interruption, or failed GitHub read is **not** a zero-result poll. The script handles the 60-second initial wait, up to 10 x 30-second polls, transient GitHub-read retries, and the jq query — no need to inline the loop.
+
+When the script exits 0 or 1, it atomically writes a completion artifact under the repository's Git directory. Before any merge or PR-ready claim, verify that the current PR has that artifact:
+
+```bash
+bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/poll-pr-reviews.sh" --verify <pr-number>
+```
+
+This is a **mechanical merge gate**: do not run `gh pr merge` and do not claim the PR is ready if either the poll or `--verify` fails. The artifact is removed before every new poll and written only after the complete window finishes. `--verify` also checks the recorded PR head SHA against GitHub, so a stale result, a new push, or a process killed by a tool timeout cannot be mistaken for `BOT_COUNT == 0`.
+
+Use the exit code as telemetry only after the completion artifact verifies. `BOT_COUNT > 0` tells you review bots posted during the window; `BOT_COUNT == 0` tells you none were detected after the full wait. In both cases, continue to [Action After Polling](#action-after-polling).
 
 **Reference implementation (if customization is needed):**
 
@@ -40,7 +51,7 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   else
     sleep 30  # 30s between subsequent polls
   fi
-  BOT_COUNT=$(gh pr view <pr-number> --json reviews,comments,reviewThreads \
+  if BOT_COUNT=$(gh pr view <pr-number> --json reviews,comments,reviewThreads \
     --jq '
       [ .reviews[],
         .comments[],
@@ -49,8 +60,12 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
       | map(select(.author.login
           | test("coderabbitai|coderabbit|codex|claude|anthropic|github-actions"; "i")))
       | length
-    ')
-  POLL_COUNT=$((POLL_COUNT + 1))
+    '); then
+    POLL_COUNT=$((POLL_COUNT + 1))
+  else
+    # Never convert a failed read into BOT_COUNT=0. Retry or fail closed.
+    exit 3
+  fi
 done
 # Total window: 60s (initial) + up to 10 x 30s = 360s max
 # BOT_COUNT > 0 -> bots posted during the window
@@ -81,7 +96,7 @@ Update the regex in the polling loop if the project uses a bot not listed above.
 
 ## Action After Polling
 
-Always invoke the `ywc-handle-pr-reviews` skill as a PR health sweep for the current PR, regardless of whether `BOT_COUNT` is greater than zero. A zero bot-comment count is not terminal success; it only means the polling window did not observe a known automated reviewer.
+Always invoke the `ywc-handle-pr-reviews` skill as a PR health sweep for the current PR, regardless of whether `BOT_COUNT` is greater than zero. A zero bot-comment count is not terminal success; it only means the polling window did not observe a known automated reviewer. After the handler runs, re-poll and re-verify whenever it pushes changes.
 
 The handler owns the three gates:
 
