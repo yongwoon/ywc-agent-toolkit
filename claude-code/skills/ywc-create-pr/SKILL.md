@@ -284,12 +284,17 @@ If `gh pr checks` exits 1, at least one check failed. Apply fixes in the loop be
 
 ```bash
 bash claude-code/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
-# exit 0 → BOT_COUNT > 0 (bot reviews posted)
-# exit 1 → BOT_COUNT == 0 (no bot reviews within polling window)
+# stdout (last line): BOT_COUNT=<n> WINDOW=complete|degraded
+# exit 0 → BOT_COUNT > 0 (bots posted)
+# exit 1 → BOT_COUNT == 0 after the FULL window (no bots) → merge allowed
+# exit 3 → WINDOW=degraded: every gh query failed → NOT evidence of zero bots
 ```
 
-- **BOT_COUNT > 0**: Invoke `ywc-handle-pr-reviews` to address all comments, then re-run the polling script to catch any follow-up comments. If code fixes were pushed, re-run `gh pr checks $PR_NUMBER --watch` (one additional fix attempt allowed).
-- **BOT_COUNT == 0**: No bot reviews — proceed to Step 8-4.
+**Completion gate — the merge condition is not a number, it is the marker.** Only `BOT_COUNT=0 WINDOW=complete` (exit 1) permits proceeding to Step 8-4:
+
+- **`BOT_COUNT=<n>` with n > 0, `WINDOW=complete`, exit 0**: Invoke `ywc-handle-pr-reviews` to address all comments, then re-run the polling script to catch any follow-up comments. If code fixes were pushed, re-run `gh pr checks $PR_NUMBER --watch` (one additional fix attempt allowed).
+- **`BOT_COUNT=0 WINDOW=complete`, exit 1**: No bot reviews — proceed to Step 8-4.
+- **`WINDOW=degraded`, exit 3, or no `WINDOW=` line at all (Bash timeout/kill/hang)**: The poll never completed a full window — this is **not** evidence of zero bots. Re-run the poll (with an explicit `timeout: 600000` if the prior call was killed by the Bash tool's default timeout). Do **not** proceed to Step 8-4 on a degraded or unfinished result.
 
 #### 8-4. Merge-Readiness (Conflict) Check
 
