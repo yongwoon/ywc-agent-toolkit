@@ -287,7 +287,7 @@ bash claude-code/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
 # stdout (last line): BOT_COUNT=<n> WINDOW=complete|degraded
 # exit 0 → BOT_COUNT > 0 (bots posted)
 # exit 1 → BOT_COUNT == 0 after the FULL window (no bots) → merge allowed
-# exit 3 → WINDOW=degraded: every gh query failed → NOT evidence of zero bots
+# exit 3 → WINDOW=degraded: a gh query failed → NOT evidence of zero bots
 ```
 
 **Completion gate — the merge condition is not a number, it is the marker.** Only `BOT_COUNT=0 WINDOW=complete` (exit 1) permits proceeding to Step 8-4:

@@ -4,7 +4,11 @@
 # Output contract (the caller MUST parse the last line, not a bare integer):
 #   BOT_COUNT=<n> WINDOW=complete    exit 0 -> bots posted; handle reviews
 #   BOT_COUNT=0 WINDOW=complete      exit 1 -> full window elapsed, no bots; merge allowed
-#   BOT_COUNT=0 WINDOW=degraded      exit 3 -> every gh query failed; NOT evidence of zero bots
+#   BOT_COUNT=0 WINDOW=degraded      exit 3 -> a gh query failed; NOT evidence of zero bots
+#
+# A zero-bot verdict requires a window in which EVERY query succeeded. One
+# failed query anywhere in the window degrades it, even if an earlier query
+# already succeeded and reported zero.
 #
 # If no `WINDOW=complete` line is printed, the poll did not finish (Bash tool
 # timeout, kill, network death). That is never evidence of BOT_COUNT==0 —
@@ -36,21 +40,25 @@ fetch_bot_count() {
   echo $((top + line))
 }
 
+# Overrides exist so the verdict branches are testable without waiting out the
+# real window. Defaults are the production 60s + 10 x 30s contract.
+INITIAL_WAIT_SECONDS="${YWC_POLL_INITIAL_WAIT_SECONDS:-60}"
+INTERVAL_SECONDS="${YWC_POLL_INTERVAL_SECONDS:-30}"
+MAX_POLLS="${YWC_POLL_MAX_POLLS:-11}"
+
 POLL_COUNT=0
 BOT_COUNT=0
-QUERY_OK=0
 QUERY_FAILURES=0
 
-until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
+until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge "$MAX_POLLS" ]; do
   if [ "$POLL_COUNT" -eq 0 ]; then
-    sleep 60
+    sleep "$INITIAL_WAIT_SECONDS"
   else
-    sleep 30
+    sleep "$INTERVAL_SECONDS"
   fi
 
   if RESULT=$(fetch_bot_count); then
     BOT_COUNT="$RESULT"
-    QUERY_OK=1
   else
     QUERY_FAILURES=$((QUERY_FAILURES + 1))
     echo "Failed to fetch review artifacts for PR #${PR_NUMBER} (attempt ${QUERY_FAILURES})" >&2
@@ -59,7 +67,10 @@ until [ "$BOT_COUNT" -gt 0 ] || [ "$POLL_COUNT" -ge 11 ]; do
   POLL_COUNT=$((POLL_COUNT + 1))
 done
 
-if [ "$QUERY_OK" -eq 0 ]; then
+# Only a zero count needs a clean window: BOT_COUNT > 0 is positive evidence
+# that survives a later failed query, but BOT_COUNT == 0 is an absence claim and
+# any failed query in the window makes that absence unproven.
+if [ "$BOT_COUNT" -eq 0 ] && [ "$QUERY_FAILURES" -gt 0 ]; then
   echo "BOT_COUNT=0 WINDOW=degraded"
   exit 3
 fi
