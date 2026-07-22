@@ -1,0 +1,19 @@
+{
+  "schema": 2,
+  "id": "toolkit-eval-out-of-domain-negative",
+  "prompt": "이 API 엔드포인트의 응답 지연을 프로파일링해줘",
+  "language": "ko",
+  "category": "negative",
+  "should_trigger": false,
+  "target_skill": "ywc-toolkit-eval",
+  "skill_dependencies": [],
+  "verifier_ids": [],
+  "fixture_files": [],
+  "output_paths": [],
+  "expected_checks": [
+    {
+      "type": "stdout_regex",
+      "pattern": "."
+    }
+  ]
+}
