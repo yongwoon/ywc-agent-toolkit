@@ -16,6 +16,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from fixture_validator import FixtureValidationError, validate_fixture
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - Python <3.11 fallback message
@@ -35,7 +37,8 @@ def find_repo_root(start: Path) -> Path | None:
 
 def count_lines(path: Path) -> int:
     try:
-        return sum(1 for _ in path.open("r", encoding="utf-8"))
+        with path.open("r", encoding="utf-8") as handle:
+            return sum(1 for _ in handle)
     except OSError:
         return -1
 
@@ -47,6 +50,33 @@ def locale_readmes(skill_dir: Path) -> dict[str, bool]:
         "ja": (skill_dir / "README.ja.md").is_file(),
         "ko": (skill_dir / "README.ko.md").is_file(),
     }
+
+
+def lint_skill(skill_md: Path) -> list[dict[str, object]]:
+    """Return warning-only, suppressible SKILL.md quality signals."""
+    warnings: list[dict[str, object]] = []
+    lines = skill_md.read_text(encoding="utf-8").splitlines()
+    def finding(rule_id: str, line: int, reason: str) -> dict[str, object]:
+        context = "\n".join(lines[max(0, line - 3) : line - 1])
+        suppressed = any(
+            candidate.strip().startswith(f"eval-lint: suppress={rule_id} reason=")
+            and bool(candidate.strip().split("reason=", 1)[1].strip())
+            for candidate in context.splitlines()
+        )
+        return {"rule_id": rule_id, "line": line, "reason": reason, "suppressed": suppressed}
+
+    if len(lines) > 500:
+        warnings.append(finding("SKILL-L001", 1, "SKILL.md exceeds 500 lines"))
+    seen: dict[str, int] = {}
+    for number, line in enumerate(lines, start=1):
+        normalized = line.strip()
+        if normalized and normalized in seen and not normalized.startswith(("#", "|")):
+            warnings.append(finding("SKILL-L002", number, f"duplicate instruction; first appears on line {seen[normalized]}"))
+        elif normalized:
+            seen[normalized] = number
+        if normalized.lower().startswith(("note:", "information:", "참고:")):
+            warnings.append(finding("SKILL-L003", number, "non-imperative guidance candidate"))
+    return warnings
 
 
 def enumerate_skills(repo_root: Path) -> list[dict]:
@@ -70,6 +100,7 @@ def enumerate_skills(repo_root: Path) -> list[dict]:
                 "has_references": (skill_dir / "references").is_dir(),
                 "has_evals": (skill_dir / "evals").is_dir(),
                 "has_openai_yaml": (skill_dir / "agents" / "openai.yaml").is_file(),
+                "linter_warnings": lint_skill(skill_md),
             }
         )
     return skills
@@ -141,6 +172,26 @@ def enumerate_agents(repo_root: Path) -> list[dict]:
         }
         agents.append(agent)
     return agents
+
+
+def fixture_diagnostics(repo_root: Path) -> list[dict[str, object]]:
+    """Expose read-only V1/V2 validation evidence to evaluator callers."""
+    evaluator_root = repo_root / ".codex" / "skills" / "ywc-codex-toolkit-eval" / "evals"
+    diagnostics: list[dict[str, object]] = []
+    for path in (evaluator_root / "evals.json", evaluator_root / "agent-smoke-fixtures.json"):
+        if not path.is_file():
+            continue
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            normalized = validate_fixture(
+                payload,
+                fixture_root=evaluator_root / "fixtures",
+                available_skills={skill["name"] for skill in enumerate_skills(repo_root)},
+            )
+            diagnostics.append({"path": str(path.relative_to(repo_root)), "passed": True, "schema": normalized["schema"], "v1_remaining": normalized["v1_remaining"]})
+        except (OSError, json.JSONDecodeError, FixtureValidationError) as exc:
+            diagnostics.append({"path": str(path.relative_to(repo_root)), "passed": False, "error": str(exc)})
+    return diagnostics
 
 
 def run_skill_validator(repo_root: Path) -> dict:
@@ -216,6 +267,7 @@ def main() -> int:
         "scope": args.only or "all",
         "skills": skills,
         "agents": agents,
+        "fixture_diagnostics": fixture_diagnostics(repo_root),
         "gate": {
             "skills_structural": skill_gate,
             "agents_structural": {
