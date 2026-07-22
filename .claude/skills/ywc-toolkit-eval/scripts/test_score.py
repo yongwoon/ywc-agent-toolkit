@@ -269,5 +269,74 @@ class FrontmatterAndStructureTest(unittest.TestCase):
                                   "Do not use during active feature work, or for X."))
 
 
+class ProseLintTest(unittest.TestCase):
+    """Prose lint — advisory signal only; must never move an axis."""
+
+    def test_noop_and_nondirective_are_flagged(self) -> None:
+        r = score._prose_lint(
+            "Always write clean code.\n"
+            "Follow best practices.\n"
+            "가독성 좋게 작성해라.\n"
+            "This is recommended.\n")
+        self.assertEqual([h["line"] for h in r["noop_lines"]], [1, 2, 3])
+        self.assertEqual([h["line"] for h in r["nondirective_lines"]], [4])
+
+    def test_concrete_anchor_is_not_flagged(self) -> None:
+        """A phrase carrying a real anchor is actionable, not an empty exhortation."""
+        r = score._prose_lint(
+            "Using `ripgrep` is recommended.\n"          # backtick identifier
+            "Reading src/main.py is recommended.\n"      # path
+            "Read the file; this is recommended.\n")     # tool name
+        self.assertEqual(r["noop_lines"], [])
+        self.assertEqual(r["nondirective_lines"], [])
+
+    def test_quoting_contexts_are_not_flagged(self) -> None:
+        """Rationalization Defense rows quote excuses verbatim — must not fire."""
+        r = score._prose_lint(
+            "# Follow best practices\n"                  # heading
+            "| excuse | write clean code |\n"            # table row
+            "> quoted: follow best practices\n"          # blockquote
+            "```\n"
+            "write clean code\n"                         # fenced code
+            "```\n")
+        self.assertEqual(r["noop_lines"], [])
+        self.assertEqual(r["nondirective_lines"], [])
+
+    def test_line_numbers_are_file_based(self) -> None:
+        text = "---\nname: ywc-x\n---\n\nAlways write clean code.\n"
+        _, body = score.split_frontmatter(text)
+        r = score._prose_lint(body, score._body_line_offset(text, body))
+        self.assertEqual(r["noop_lines"][0]["line"], 5)
+        self.assertEqual(text.splitlines()[4], "Always write clean code.")
+
+    def test_prose_lint_never_moves_an_axis(self) -> None:
+        """Poisoning the lint output must leave every axis byte-identical."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n"
+                "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+                "---\n\n**Announce at start:** x\n\nAlways write clean code.\n",
+                encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+
+            baseline = score.score_skill(d, {}, {})["axes"]
+            original = score._prose_lint
+            try:
+                score._prose_lint = lambda *a, **k: {
+                    "noop_lines": [{"line": 1, "text": "x", "phrase": "y"}] * 99,
+                    "nondirective_lines": [{"line": 2, "text": "z", "phrase": "w"}] * 99,
+                }
+                poisoned = score.score_skill(d, {}, {})
+            finally:
+                score._prose_lint = original
+
+            self.assertEqual(poisoned["axes"], baseline)
+            self.assertEqual(len(poisoned["signals"]["prose_lint"]["noop_lines"]), 99)
+
+
 if __name__ == "__main__":
     unittest.main()

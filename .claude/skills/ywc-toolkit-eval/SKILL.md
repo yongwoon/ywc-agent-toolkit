@@ -102,7 +102,9 @@ Run the deterministic scorer:
 python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --target <root> --format json
 ```
 
-It walks each item, parses frontmatter and body, and emits per-axis mechanical sub-scores plus the raw signals (body line count, locale-set completeness, dangling-reference list, sibling description n-gram overlap pairs, agent tool list, contract-marker presence). Do not hand-compute these — read them from the script output. Stop and fix the script if a signal is obviously wrong rather than overriding it in prose.
+It walks each item, parses frontmatter and body, and emits per-axis mechanical sub-scores plus the raw signals (body line count, locale-set completeness, dangling-reference list, sibling description n-gram overlap pairs, agent tool list, contract-marker presence, trigger-case coverage, `prose_lint`).
+
+`prose_lint` reports no-op exhortations ("write clean code") and non-directive phrasing ("X is recommended" where the body should command). It is **warning-only: it never gates an axis or the CI baseline** — treat its hits as backlog candidates, not deductions. Lines carrying a concrete anchor and lines that quote guidance (tables, block quotes, fenced code) are excluded by design, so a low hit count means the bodies are clean rather than that the check is off. Do not hand-compute these — read them from the script output. Stop and fix the script if a signal is obviously wrong rather than overriding it in prose.
 
 ### Step 3: Judgment Tier — Agent Judge Pass
 

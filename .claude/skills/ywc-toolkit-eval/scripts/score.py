@@ -60,6 +60,29 @@ TRIGGER_CASES = Path(__file__).resolve().parent.parent / "evals" / "trigger-case
 COVERAGE_MIN_POSITIVES = 3
 COVERAGE_MIN_COLLISIONS = 2
 
+# Prose lint — informational only, never feeds an axis or the CI baseline (same
+# contract as signals["coverage"]). Detects instructions that cost tokens without
+# changing agent behaviour: no-op exhortations and non-directive (advisory) phrasing.
+# Promotion into S2/S4 is a separate PR, gated on a measured false-positive rate.
+NOOP_PHRASES = (
+    r"\b(?:write|keep|make)\s+(?:clean|readable|high[- ]quality|maintainable)\s+code\b",
+    r"\b(?:follow|use)\s+best\s+practices\b",
+    r"\bbe\s+(?:careful|thorough|diligent)\b",
+    r"읽기\s*쉽게|가독성\s*(?:좋게|있게)",
+    r"모범\s*사례|최선의\s*방법",
+    r"(?:適切に|丁寧に)\s*\S*(?:実装|対応|記述)",
+)
+NONDIRECTIVE_PHRASES = (
+    r"\b(?:is|are)\s+recommended\b",
+    r"\bit\s+is\s+a\s+good\s+idea\b",
+    r"\byou\s+may\s+want\s+to\b",
+    r"\bshould\s+generally\b",
+    r"권장됩니다|권장된다|하는\s*것이\s*좋습니다|바람직합니다",
+    r"が望ましい|することを推奨",
+)
+# A line carrying any of these is treated as actionable, not an empty exhortation.
+CONCRETE_ANCHOR_RE = re.compile(r"`[^`]+`|\b(?:Read|Grep|Glob|Bash|Edit|Write|Task)\b|/|\d")
+
 
 # --- frontmatter / file parsing -------------------------------------------
 
@@ -274,7 +297,8 @@ def load_coverage() -> dict:
 # --- skill scoring ---------------------------------------------------------
 
 def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
-    fm, body = split_frontmatter((d / "SKILL.md").read_text(encoding="utf-8"))
+    text = (d / "SKILL.md").read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text)
     name = fm.get("name", d.name)
     desc = fm.get("description", "")
     body_lines = body.count("\n") + 1
@@ -341,6 +365,9 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     signals["coverage"] = coverage.get(
         name, {"positives": 0, "collisions": 0, "sufficient": False})
 
+    # Prose lint — informational only, never feeds any axis or the CI baseline.
+    signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
+
     return {
         "name": name,
         "kind": "skill",
@@ -396,6 +423,52 @@ def _rationalization_data_rows(body: str) -> int:
     return max(0, data)
 
 
+def _prose_lint(text: str, line_offset: int = 0) -> dict:
+    """Flag no-op exhortations and non-directive phrasing in a body.
+
+    Informational only — never feeds an axis or the CI baseline, exactly like
+    signals["coverage"]. A "no-op" is an instruction that costs Tier-1 tokens on
+    every invocation without changing what the agent does ("write clean code");
+    "non-directive" is advisory phrasing where a skill body should command
+    ("X is recommended" instead of "use X when Y").
+
+    Lines that *quote* guidance rather than instruct are skipped: fenced code,
+    table rows, block quotes, headings, and link-only lines. The table exclusion
+    is load-bearing — the Rationalization Defense table quotes excuses verbatim,
+    so no-op phrases legitimately appear there. A line carrying a concrete anchor
+    (backtick identifier, path, digit, tool name) is treated as actionable.
+
+    Line numbers are file-based (add `line_offset` for the frontmatter) because
+    the prioritized backlog requires a `file:line` citation.
+    """
+    findings: dict = {"noop_lines": [], "nondirective_lines": []}
+    in_fence = False
+    for index, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        if line.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if not line or in_fence or line.startswith(("#", ">", "|")):
+            continue
+        if re.fullmatch(r"[-*]?\s*\[[^]]+\]\([^)]*\)", line):
+            continue
+        if CONCRETE_ANCHOR_RE.search(line):
+            continue
+        for bucket, phrases in (("noop_lines", NOOP_PHRASES),
+                                ("nondirective_lines", NONDIRECTIVE_PHRASES)):
+            for pat in phrases:
+                if re.search(pat, line, re.IGNORECASE):
+                    findings[bucket].append(
+                        {"line": line_offset + index, "text": line, "phrase": pat})
+                    break
+    return findings
+
+
+def _body_line_offset(text: str, body: str) -> int:
+    """Lines consumed by the frontmatter, so prose-lint numbers are file-based."""
+    return text[:len(text) - len(body)].count("\n")
+
+
 def _unresolved_sibling_pointers(desc: str) -> list:
     """Flag `use ywc-<name>` pointers resolving to neither a skill dir nor an agent file (FR10)."""
     out = []
@@ -411,7 +484,8 @@ def _unresolved_sibling_pointers(desc: str) -> list:
 # --- agent scoring ---------------------------------------------------------
 
 def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
-    fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
+    text = path.read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text)
     name = fm.get("name", path.stem)
     desc = fm.get("description", "")
     tools_raw = fm.get("tools", "")
@@ -460,6 +534,9 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     # FR1b coverage — signals-only; A2 stays null in axes (Amendment A2)
     signals["coverage"] = coverage.get(
         name, {"positives": 0, "collisions": 0, "sufficient": False})
+
+    # Prose lint — informational only, never feeds any axis or the CI baseline.
+    signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
 
     return {
         "name": name,
