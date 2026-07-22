@@ -139,9 +139,34 @@ class SnapshotDiffTest(unittest.TestCase):
         try:
             before = runner.snapshot(ws)
             (ws / "out.json").write_text("{}", encoding="utf-8")
-            diff = runner.diff_snapshot(
-                before, runner.snapshot(ws), [str((ws / "out.json").resolve())])
+            diff = runner.diff_snapshot(before, runner.snapshot(ws), ["out.json"])
             self.assertEqual(diff, [])
+        finally:
+            runner.cleanup(ws)
+
+    def test_declared_nested_output_allows_its_parent_directories(self) -> None:
+        ws = self._ws()
+        try:
+            before = runner.snapshot(ws)
+            (ws / "sub").mkdir()
+            (ws / "sub" / "out.json").write_text("{}", encoding="utf-8")
+            diff = runner.diff_snapshot(
+                before, runner.snapshot(ws), ["sub/out.json"])
+            self.assertEqual(diff, [])
+        finally:
+            runner.cleanup(ws)
+
+    def test_allowed_path_does_not_license_a_same_named_file_elsewhere(self) -> None:
+        # Declaring `out.json` must not silently permit `sub/out.json` — a
+        # different file the case never declared.
+        ws = self._ws()
+        try:
+            before = runner.snapshot(ws)
+            (ws / "sub").mkdir()
+            (ws / "sub" / "out.json").write_text("{}", encoding="utf-8")
+            diff = runner.diff_snapshot(before, runner.snapshot(ws), ["out.json"])
+            self.assertTrue(any("sub/out.json" in d for d in diff),
+                            f"basename collision slipped through: {diff}")
         finally:
             runner.cleanup(ws)
 
@@ -153,8 +178,7 @@ class SnapshotDiffTest(unittest.TestCase):
             (ws / "link").unlink()
             (ws / "other.txt").write_text("o", encoding="utf-8")
             (ws / "link").symlink_to(ws / "other.txt")
-            diff = runner.diff_snapshot(
-                before, runner.snapshot(ws), [str((ws / "other.txt").resolve())])
+            diff = runner.diff_snapshot(before, runner.snapshot(ws), ["other.txt"])
             self.assertTrue(any("link" in d for d in diff),
                             f"symlink retarget not caught: {diff}")
         finally:
@@ -221,6 +245,38 @@ class RunCaseStatusTest(unittest.TestCase):
         record = runner.run_case(_case(), adapter=adapter)
         self.assertEqual(record["status"], "FAIL")
         self.assertTrue(any("stray.txt" in c for c in record["undeclared_changes"]))
+
+    def test_parent_escape_write_fails_the_case(self) -> None:
+        # The regression that matters most: a dispatch writing `../x` leaves
+        # the work directory entirely. Snapshotting only the work directory
+        # made this invisible and the case reported PASS.
+        adapter = claude_adapter.FakeAdapter(
+            result="DONE", writes={"../escaped.txt": "x"})
+        record = runner.run_case(_case(), adapter=adapter)
+        self.assertEqual(record["status"], "FAIL")
+        self.assertTrue(any("escaped.txt" in c for c in record["undeclared_changes"]),
+                        f"parent escape not caught: {record['undeclared_changes']}")
+
+    def test_escape_beyond_the_containment_root_is_a_known_best_effort_limit(self) -> None:
+        # Documents the boundary rather than overclaiming it. One level up is
+        # caught; two levels leaves the watched root and is NOT caught. Only an
+        # OS-level sandbox could close this, which route N1 does not have — so
+        # the honest grade stays `best-effort`, and this test exists so nobody
+        # reads the containment guarantee as total.
+        adapter = claude_adapter.FakeAdapter(
+            result="DONE", writes={"../../beyond-root.txt": "x"})
+        record = runner.run_case(_case(), adapter=adapter)
+        self.assertEqual(record["status"], "PASS",
+                         "if this now FAILs, containment improved — update the docstring")
+        stray = Path(record["workspace"]).parents[1] / "beyond-root.txt"
+        stray.unlink(missing_ok=True)
+
+    def test_escaped_write_is_cleaned_up_with_the_run(self) -> None:
+        adapter = claude_adapter.FakeAdapter(
+            result="DONE", writes={"../escaped.txt": "x"})
+        record = runner.run_case(_case(), adapter=adapter)
+        root = runner.containment_root(record["workspace"])
+        self.assertFalse(root.exists(), "containment root outlived the run")
 
     def test_declared_output_write_still_passes(self) -> None:
         adapter = claude_adapter.FakeAdapter(result="DONE", writes={"out.json": "{}"})

@@ -50,6 +50,9 @@ STATUSES: tuple[str, ...] = (
 COST_PER_DISPATCH_USD = 0.54
 
 WORKSPACE_PREFIX = "ywc-eval-"
+# The workspace sits one level inside the watched root so `../` writes are
+# visible to the snapshot rather than invisible outside it.
+WORK_DIR_NAME = "work"
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_ROOT = SKILL_ROOT / "evals" / "fixtures"
@@ -80,21 +83,40 @@ def new_run_id() -> str:
 
 
 def make_workspace(run_id: str) -> Path:
-    """Create this run's private workspace."""
-    return Path(tempfile.mkdtemp(prefix=f"{WORKSPACE_PREFIX}{run_id}-"))
+    """Create this run's workspace, nested one level inside a watched root.
+
+    The nesting is what makes `../` detectable. A dispatch that writes to
+    `../escaped.txt` lands in the containment root, and because the snapshot
+    walks the root rather than the work directory, that write shows up as an
+    undeclared change instead of passing unseen.
+
+    This does not make escape impossible — `../../` still leaves the root, and
+    only an OS-level sandbox could stop it. The grade stays `best-effort`; what
+    the nesting buys is that the *common* single-level escape is caught rather
+    than silently reported as a pass.
+    """
+    root = Path(tempfile.mkdtemp(prefix=f"{WORKSPACE_PREFIX}{run_id}-"))
+    workspace = root / WORK_DIR_NAME
+    workspace.mkdir()
+    return workspace
+
+
+def containment_root(workspace: Path | str) -> Path:
+    """The watched directory enclosing `workspace`."""
+    return Path(workspace).parent
 
 
 def cleanup(workspace: Path | str, keep_on_fail: bool = False,
             failed: bool = False) -> None:
-    """Remove the workspace unless it failed and retention was requested.
+    """Remove the containment root unless it failed and retention was requested.
 
     Retention is opt-in and failure-only: a passing run must leave nothing
-    behind, or the artifact budget in AC13 is meaningless.
+    behind, or the artifact budget in AC13 is meaningless. The whole root goes,
+    not just the work directory, so an escaped write is cleaned up too.
     """
-    path = Path(workspace)
     if keep_on_fail and failed:
         return
-    shutil.rmtree(path, ignore_errors=True)
+    shutil.rmtree(containment_root(workspace), ignore_errors=True)
 
 
 def redact(text: str) -> str:
@@ -134,15 +156,21 @@ def diff_snapshot(before: dict[str, str], after: dict[str, str],
                   allowed_paths: list[str]) -> list[str]:
     """Report every change not covered by a declared output path.
 
-    `allowed_paths` holds absolute, already-sealed paths from the manifest;
-    they are matched by basename so a declared output can be written without
-    tripping the gate.
+    `allowed_paths` holds paths relative to the snapshot root. Matching is on
+    the full relative path, not the basename: declaring `work/out.json` must
+    not also license `work/sub/out.json`, which is a different file that the
+    case never declared.
+
+    Directories on the way to a declared output are permitted implicitly,
+    since a declared nested output cannot be written without creating them.
     """
-    allowed = {Path(p).name for p in allowed_paths}
+    allowed = {str(Path(p)) for p in allowed_paths}
+    implied_dirs = {str(parent) for p in allowed for parent in Path(p).parents
+                    if str(parent) != "."}
     changes: list[str] = []
 
     for key in sorted(set(before) | set(after)):
-        if Path(key).name in allowed:
+        if key in allowed or key in implied_dirs:
             continue
         old, new = before.get(key), after.get(key)
         if old == new:
@@ -246,16 +274,24 @@ def run_case(case: dict, adapter=None, attempt: int = 1,
 
     failed = True
     try:
-        manifest = fixture_schema.normalize_manifest(case, FIXTURE_ROOT)
+        # Sealing runs for its own sake (it rejects a case whose declared paths
+        # escape fixture_root); the runtime allowance below is expressed
+        # relative to the snapshot root instead, since that is where the
+        # dispatch actually writes.
+        fixture_schema.normalize_manifest(case, FIXTURE_ROOT)
+        allowed = [str(Path(WORK_DIR_NAME) / declared)
+                   for declared in (case.get("output_paths") or [])]
 
-        before = snapshot(workspace)
+        # Snapshot the containment root, not the work directory — that is what
+        # makes a `../` write visible instead of invisible.
+        watched = containment_root(workspace)
+        before = snapshot(watched)
         payload = adapter.dispatch(
             case.get("target_skill", ""), case.get("prompt", ""), workspace)
-        after = snapshot(workspace)
+        after = snapshot(watched)
 
         record["result"] = redact(str(payload.get("result", "")))
-        record["undeclared_changes"] = diff_snapshot(
-            before, after, manifest["output_paths"])
+        record["undeclared_changes"] = diff_snapshot(before, after, allowed)
 
         if payload.get("is_error"):
             record["status"] = "ERROR"
