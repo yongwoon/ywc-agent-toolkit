@@ -21,3 +21,5 @@ tasks/
 .ywc-learnings.jsonl
 .worktrees/
 tasks-codex-sdlc-v11
+docs/skill-agent-eval/*/runs/
+
