@@ -9,7 +9,9 @@ nor credentials; providers are labels passed to the adapter only.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -35,14 +37,15 @@ def _inside(root: Path, path: Path) -> Path:
     return resolved
 
 
-def _snapshot(root: Path) -> dict[str, tuple[str, int, int]]:
-    result: dict[str, tuple[str, int, int]] = {}
+def _snapshot(root: Path) -> dict[str, tuple[str, str]]:
+    """Content-sensitive filesystem snapshot; metadata cannot mask an edit."""
+    result: dict[str, tuple[str, str]] = {}
     for path in root.rglob("*"):
         if path.is_symlink():
-            result[str(path.relative_to(root))] = ("link", 0, 0)
+            result[str(path.relative_to(root))] = ("link", os.readlink(path))
         elif path.is_file():
-            stat = path.stat()
-            result[str(path.relative_to(root))] = ("file", stat.st_size, stat.st_mtime_ns)
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            result[str(path.relative_to(root))] = ("file", digest)
     return result
 
 
@@ -69,7 +72,7 @@ def _install_skills(repo_root: Path, codex_home: Path, names: list[str]) -> None
         shutil.copytree(source, destination / name, symlinks=False)
 
 
-def _diff(before: dict[str, tuple[str, int, int]], after: dict[str, tuple[str, int, int]], outputs: list[str]) -> list[str]:
+def _diff(before: dict[str, tuple[str, str]], after: dict[str, tuple[str, str]], outputs: list[str]) -> list[str]:
     changed = sorted(set(before) | set(after))
     return [name for name in changed if before.get(name) != after.get(name) and not _allowed(name, outputs)][:MAX_DIFF_ITEMS]
 
@@ -83,8 +86,9 @@ def _run_verifiers(normalized: dict[str, Any], repo_root: Path, workspace: Path)
     for verifier_id in normalized["workspace"]["verifier_ids"]:
         verifier = get_verifier(verifier_id)
         cwd = workspace if verifier.mode is VerifierMode.FIXTURE_WORKSPACE else repo_root
-        roots = [repo_root / root for root in verifier.readonly_roots]
-        before = {str(root): _snapshot(root) for root in roots if root.is_dir()}
+        # The registry limits what can execute; the readonly promise covers every
+        # tracked source path, not merely the command's declared input roots.
+        before = _snapshot(repo_root)
         try:
             proc = subprocess.run(verifier.argv, cwd=cwd / verifier.cwd, capture_output=True, text=True,
                                   timeout=verifier.timeout_seconds, env={key: "" for key in verifier.allowed_environment})
@@ -92,14 +96,14 @@ def _run_verifiers(normalized: dict[str, Any], repo_root: Path, workspace: Path)
             return f"verifier timed out: {verifier_id}"
         if proc.returncode != verifier.expected_exit_status:
             return f"verifier failed: {verifier_id}"
-        for root in roots:
-            if root.is_dir() and before.get(str(root)) != _snapshot(root):
-                return f"readonly verifier mutated source root: {root.name}"
+        if verifier.mode is VerifierMode.SOURCE_CHECKOUT_READONLY and before != _snapshot(repo_root):
+            return "readonly verifier mutated source checkout"
     return None
 
 
 def run_case(payload: dict[str, Any], *, fixture_root: Path, repo_root: Path,
              adapter: CodexAdapter, credential_provider: str = "unavailable",
+             credential_material: tuple[str, str] | None = None,
              timeout_seconds: int = 60) -> dict[str, Any]:
     """Run once. Every call owns and removes its unique workspace on return."""
     if credential_provider not in VALID_PROVIDERS:
@@ -111,6 +115,8 @@ def run_case(payload: dict[str, Any], *, fixture_root: Path, repo_root: Path,
         manifest_root = _inside(fixture_root, fixture_root / workspace_spec["fixture_root"])
         if credential_provider == "unavailable":
             return {"status": "SKIPPED_UNAVAILABLE", "run_id": uuid.uuid4().hex}
+        if credential_material is None or credential_material[0] not in {"CODEX_API_KEY", "CODEX_SESSION_TOKEN"} or not credential_material[1]:
+            return {"status": "ERROR", "error": "missing ephemeral credential material"}
         run_id = uuid.uuid4().hex
         with tempfile.TemporaryDirectory(prefix="ywc-eval-") as temporary:
             root = Path(temporary)
@@ -119,7 +125,8 @@ def run_case(payload: dict[str, Any], *, fixture_root: Path, repo_root: Path,
             _copy_fixture(manifest_root, workspace, workspace_spec["fixture_files"])
             _install_skills(repo_root, codex_home, [workspace_spec["target_skill"], *workspace_spec["skill_dependencies"]])
             before = _snapshot(workspace)
-            result = adapter.run(RunnerRequest(run_id, workspace, codex_home, normalized["prompt"], workspace_spec["target_skill"], credential_provider), timeout_seconds=timeout_seconds)
+            credentials = {credential_material[0]: credential_material[1]}
+            result = adapter.run(RunnerRequest(run_id, workspace, codex_home, normalized["prompt"], workspace_spec["target_skill"], credential_provider, credentials), timeout_seconds=timeout_seconds)
             redirects = _symlinks(workspace)
             if redirects:
                 return {"status": "FAIL", "run_id": run_id, "error": "workspace symlink redirect", "diff": redirects}

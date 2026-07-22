@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Mapping, Protocol
 import json
 import os
 import subprocess
@@ -19,6 +19,7 @@ class RunnerRequest:
     prompt: str
     target_skill: str
     credential_provider: str
+    credential_environment: Mapping[str, str]
 
 
 @dataclass(frozen=True)
@@ -53,7 +54,7 @@ class CodexCliAdapter:
     """One supported CLI invocation, with a JSON-event and final-text fallback."""
     def run(self, request: RunnerRequest, *, timeout_seconds: int) -> AdapterResult:
         command = ("codex", "exec", "--json", request.prompt)
-        environment = {"CODEX_HOME": str(request.codex_home), "PATH": os.environ.get("PATH", "")}
+        environment = {"CODEX_HOME": str(request.codex_home), "PATH": os.environ.get("PATH", ""), **request.credential_environment}
         try:
             version = subprocess.run(("codex", "--version"), capture_output=True, text=True, timeout=10, env=environment).stdout.strip() or None
             proc = subprocess.run(command, cwd=request.workspace, capture_output=True, text=True, timeout=timeout_seconds, env=environment)
