@@ -2229,12 +2229,12 @@
       "note": "E2E strategy for an auth flow is owned by e2e-test-strategy per auth-implement's anti-trigger"
     },
     {
-      "id": "infra-review-vs-cloud-engineer-1",
+      "id": "infra-review-vs-security-audit-1",
       "prompt": "terraform IAM 정책에 과도한 권한 없는지 봐줘",
       "expected": "ywc-infra-review",
       "kind": "collision",
-      "impostor": "ywc-cloud-engineer",
-      "note": "user-facing prompt: 'iam 과권한' is infra-review's own declared trigger, so the skill owns the entry point and dispatches ywc-security-engineer as its security lens (ywc-infra-review/SKILL.md:59). cloud-engineer carries only the reliability lens and must not win."
+      "impostor": "ywc-security-audit",
+      "note": "same-root (skill) collision. infra-review's own anti-trigger cedes app-code auth/injection review to ywc-security-audit, so IaC-scoped IAM over-privilege is the contested edge between the two. The former pairing against the ywc-cloud-engineer agent was cross-root and unjudgeable per references/trigger-eval-method.md."
     },
     {
       "id": "architect-vs-cloud-engineer-1",
@@ -2243,6 +2243,14 @@
       "kind": "collision",
       "impostor": "ywc-cloud-engineer",
       "note": "architecture/topology judgment; cloud-engineer's anti-trigger explicitly disclaims it"
+    },
+    {
+      "id": "backend-coder-vs-cloud-engineer-1",
+      "prompt": "이 API 서버의 DB 커넥션 풀이랑 타임아웃 설정 좀 손봐줘",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "impostor": "ywc-cloud-engineer",
+      "note": "agent-root collision. 'connection pool / timeout' reads as infrastructure tuning, but it is application server configuration — cloud-engineer's own anti-trigger cedes application server / business logic to ywc-backend-coder."
     },
     {
       "id": "neg-explain-fn-1",
