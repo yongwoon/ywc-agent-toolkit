@@ -47,7 +47,28 @@ Mechanical. Scores the **10-rule mechanical structural subset** of `ywc-skill-au
 
 ## S3 — Behavioral Efficacy (weight 20)
 
-Judgment. "If an agent followed ONLY this SKILL.md body on the skill's canonical scenario, would the output satisfy the stated purpose?"
+"Does following this skill actually produce the intended outcome?" Measured by execution when a fixture exists, read from the body when one does not. The two are different claims, and the scorecard records which one produced the number (`s3_source`).
+
+### Measured path (fixture present) — `s3_source: "runner"`
+
+`scripts/runner.py` executes the skill's fixture cases in an isolated workspace, and S3 is the observed reliability, `passes / trials`, over `DEFAULT_TRIALS = 6` paired trials.
+
+| Score | Reliability | Band |
+|---|---|---|
+| 5 | = 1.00 | Every trial passed. |
+| 4 | ≥ 0.90 | Unreachable at 6 trials — see the resolution note below. |
+| 3 | ≥ 0.75 | Passes most of the time; failures are reproducible enough to diagnose. |
+| 2 | ≥ 0.50 | Coin-flip territory — the body does not constrain behavior. |
+| 1 | ≥ 0.25 | Usually fails. |
+| 0 | < 0.25 | Following the body produces the wrong artifact. |
+
+**Resolution at 6 trials (AC9).** Reliability is discrete, so not every band is attainable. At 6 trials **band 4 is unreachable**: 5/6 = 0.833 falls into band 3 and 6/6 = 1.00 jumps to band 5, with no ratio in between. Attainable scores are therefore `{0, 1, 2, 3, 5}`. This is a property of the trial count, not of the skills — raising trials to 10 closes the gap. `unreachable_bands(trials)` in `score.py` computes this rather than restating it, and the runner prints the warning once at startup.
+
+**Zero trials is `"unmeasured"`, not `0`.** No evidence and evidence-of-failure are different findings; collapsing them would let a missing fixture read as a broken skill.
+
+### Read-only fallback (no fixture) — `s3_source: "read-only"`
+
+When the skill has no fixture, S3 falls back to the judged reading below and is tagged `(read-only)` in the scorecard: "if an agent followed ONLY this SKILL.md body on the skill's canonical scenario, would the output satisfy the stated purpose?" A `4 (read-only)` and a measured `4` are not interchangeable — the first is a prediction, the second an observation.
 
 | Score | Band |
 |---|---|
@@ -57,6 +78,8 @@ Judgment. "If an agent followed ONLY this SKILL.md body on the skill's canonical
 | 2 | A step contradicts another, or the happy path is covered but the documented failure mode is not handled. |
 | 1 | Workflow is aspirational prose, not executable steps. |
 | 0 | Following the body would produce the wrong artifact. |
+
+**S3 never enters `axes` or the CI baseline (AC7).** `axes.S3` stays `null`; runner results reach the scorecard and the backlog only. Wiring a measured S3 into `axes` would make `score.py --ci` depend on model nondeterminism, turning the regression gate into a coin flip.
 
 ## S4 — Token Economy (weight 10)
 

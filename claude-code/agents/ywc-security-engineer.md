@@ -10,6 +10,7 @@ description: >-
   `Task(subagent_type=ywc-security-engineer)` dispatch by
   ywc-security-audit as the dedicated worker, ywc-impl-review Phase 1 named
   Security subagent dispatch (replaces the anonymous Security subagent),
+  ywc-infra-review as its security lens over scoped Terraform files,
   ywc-incident-postmortem when the incident involves a security boundary
   (auth bypass, data exfiltration, secret leak); natural language phrases
   "security audit", "OWASP 점검", "보안 리뷰", "セキュリティレビュー",

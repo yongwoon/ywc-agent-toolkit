@@ -5,8 +5,9 @@ description: >-
   Claude, or ChatGPT review) before responding. Verify before agreeing;
   block performative agreement ("You're absolutely right!"); clarify
   unclear items before partial implementation. Triggers: "리뷰 받았어",
-  "리뷰 코멘트", "리뷰 대응", "PR comment 처리", "review feedback", "respond
-  to review comments", "レビュー対応", "レビュー受信", "コメント返信",
+  "리뷰 코멘트", "리뷰 지적이 맞는지 확인", "PR comment 처리", "review
+  feedback", "is this review comment correct", "レビュー受信",
+  "レビュー指摘の妥当性確認", "コメント返信",
   "ywc-receive-review". Do not use for performing a code review yourself
   (ywc-impl-review), creating a PR (ywc-create-pr), the automation layer
   that fetches/replies to PR comments (ywc-handle-pr-reviews), or

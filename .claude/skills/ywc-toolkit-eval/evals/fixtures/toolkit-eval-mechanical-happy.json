@@ -1,0 +1,23 @@
+{
+  "schema": 2,
+  "id": "toolkit-eval-mechanical-happy",
+  "prompt": "toolkit skill들 구조만 빠르게 점수 매겨줘 (mechanical only)",
+  "language": "ko",
+  "category": "happy_path",
+  "should_trigger": true,
+  "target_skill": "ywc-toolkit-eval",
+  "skill_dependencies": [],
+  "verifier_ids": ["toolkit_eval_score_ci"],
+  "fixture_files": [],
+  "output_paths": [],
+  "expected_checks": [
+    {
+      "type": "stdout_regex",
+      "pattern": "mechanical"
+    },
+    {
+      "type": "verifier",
+      "verifier_id": "toolkit_eval_score_ci"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+name: Codex Skill Evaluations
+
+on:
+  pull_request:
+    paths:
+      - '.codex/skills/ywc-codex-toolkit-eval/**'
+      - '.github/workflows/codex-skill-evals.yml'
+      # The mocked suite inspects the evaluated catalogue itself, so a PR that
+      # only touches a target skill or agent must still run it.
+      - 'codex/skills/**'
+      - 'codex/agents/**'
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Evaluator suite (live requires configured provider and egress policy)'
+        required: true
+        default: mocked
+        type: choice
+        options: [mocked, live, ablation]
+
+permissions:
+  contents: read
+
+jobs:
+  mocked:
+    name: Mocked schema/lint evaluator checks
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule' || inputs.suite == 'mocked'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run PR-safe evaluator contract
+        run: |
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_fixture_validator.py
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_inventory_gate.py
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_runner.py
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_results.py
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_workflow_contract.py
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/runner.py --adapter fake --suite mocked
+      - name: Assert no live runtime is available in PR-safe suite
+        run: |
+          test -z "${EVAL_CREDENTIAL_PROVIDER:-}"
+          test -z "${EVAL_API_EGRESS_POLICY:-}"
+
+  live-gate:
+    name: Live evaluator availability gate
+    # Deliberately not on `schedule`. This job has no provider implementation
+    # and always exits 3, so a cron trigger would manufacture a failed run every
+    # week. It stays reachable only through an explicit manual dispatch.
+    if: inputs.suite == 'live'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require explicit credential handoff and egress policy
+        env:
+          EVAL_CREDENTIAL_PROVIDER: ${{ vars.EVAL_CREDENTIAL_PROVIDER }}
+          EVAL_API_EGRESS_POLICY: ${{ vars.EVAL_API_EGRESS_POLICY }}
+        run: |
+          if [ "$EVAL_CREDENTIAL_PROVIDER" != configured ] || [ "$EVAL_API_EGRESS_POLICY" != allow ]; then
+            echo 'SKIPPED_UNAVAILABLE: live evaluator credential provider or API-egress policy is not configured'
+            exit 3
+          fi
+          echo 'Live execution is deployment-owner configured; this workflow intentionally has no provider implementation.'
+          exit 3
+
+  ablation-gate:
+    name: Manual ablation gate
+    if: github.event_name == 'workflow_dispatch' && inputs.suite == 'ablation'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run aggregation only (manual review required)
+        run: |
+          python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_results.py
+          echo 'INCONCLUSIVE is non-retiring evidence and is permitted only in this manual ablation path.'
+
+  publish-mocked-artifacts:
+    name: Publish bounded evaluator artifacts
+    needs: mocked
+    if: always() && needs.mocked.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # This job uploads a generated directory. Leaving the checkout token
+          # in the git config would put a credential within reach of anything
+          # that copies repository state into the upload root.
+          persist-credentials: false
+      - name: Create redacted run-scoped report
+        run: |
+          run_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          root="docs/skill-agent-eval/codex/runs/${run_id}"
+          status=PASS
+          if [ "${{ needs.mocked.result }}" != success ]; then status=ERROR; fi
+          mkdir -p "$root"
+          printf '{"run_id":"%s","status":"%s","suite":"mocked"}\n' "$run_id" "$status" > "$root/summary.json"
+          printf 'Mocked/schema/lint evaluator workflow completed.\n' > "$root/report.md"
+      - name: Prune only stale failed evaluator runs
+        run: python3 .codex/skills/ywc-codex-toolkit-eval/scripts/workflow_contract.py --cleanup-root docs/skill-agent-eval/codex/runs
+      - name: Enforce redaction and 10 MB cap before upload
+        run: python3 .codex/skills/ywc-codex-toolkit-eval/scripts/workflow_contract.py --check-upload-root docs/skill-agent-eval/codex/runs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-evaluator-${{ github.run_id }}
+          path: docs/skill-agent-eval/codex/runs/${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7

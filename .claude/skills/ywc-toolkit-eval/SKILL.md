@@ -102,14 +102,17 @@ Run the deterministic scorer:
 python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --target <root> --format json
 ```
 
-It walks each item, parses frontmatter and body, and emits per-axis mechanical sub-scores plus the raw signals (body line count, locale-set completeness, dangling-reference list, sibling description n-gram overlap pairs, agent tool list, contract-marker presence). Do not hand-compute these — read them from the script output. Stop and fix the script if a signal is obviously wrong rather than overriding it in prose.
+It walks each item, parses frontmatter and body, and emits per-axis mechanical sub-scores plus the raw signals (body line count, locale-set completeness, dangling-reference list, sibling description n-gram overlap pairs, agent tool list, contract-marker presence, trigger-case coverage, `prose_lint`).
+
+`prose_lint` reports no-op exhortations ("write clean code") and non-directive phrasing ("X is recommended" where the body should command). It is **warning-only: it never gates an axis or the CI baseline** — treat its hits as backlog candidates, not deductions. Lines carrying a concrete anchor and lines that quote guidance (tables, block quotes, fenced code) are excluded by design, so a low hit count means the bodies are clean rather than that the check is off. Do not hand-compute these — read them from the script output. Stop and fix the script if a signal is obviously wrong rather than overriding it in prose.
 
 ### Step 3: Judgment Tier — Agent Judge Pass
 
 Skip this step when `--mode mechanical` or `--ci`. Otherwise spawn parallel judge subagents (Task tool, `model: sonnet`; escalate only genuinely ambiguous calls to `model: opus` within `--advisor-budget`). One judge per item per judgment axis:
 
-- **Activation judge (S1 / A2)** — given the item's `description` and the case set in `evals/trigger-cases.json`, predict activation for each positive / negative / collision prompt; compute precision & recall. A collision case that the item wins when a sibling should own it is a false positive.
-- **Behavioral judge (S3)** — read SKILL.md and answer: if an agent followed only this body on the canonical scenario, would the output satisfy the stated purpose? Score the gap, citing the specific step that is under-specified.
+- **Activation judge (S1 / A2)** — given the item's `description` and the case set in `evals/trigger-cases.json`, predict activation for each positive / negative / collision prompt; compute precision & recall. A collision case that the item wins when a sibling should own it is a false positive. **Read the mechanical `signals.coverage.sufficient` first: when it is `false` (the item is below the ≥3-positive / ≥2-collision floor), return S1/A2 as `"unmeasured"` with a one-line reason instead of a fabricated precision/recall — never carry forward a prior run's score.** An unmeasured item enters the prioritized backlog regardless of its total, because its heaviest axis is unmeasurable until the fixture is backfilled.
+  - **Run the activation judge 3 times** on the same input and take the majority verdict. The judge is an LLM and a single pass is one data point; without an isolated execution harness, repetition is the only available defense against nondeterminism. If the three runs disagree, do **not** average them — record "descriptions genuinely ambiguous" and treat the spread itself as the S1 signal (see [references/trigger-eval-method.md](references/trigger-eval-method.md) Determinism Note).
+- **Behavioral judge (S3)** — **prefer measurement over reading.** When the item has fixtures under `evals/fixtures/`, do not judge: run `scripts/runner.py` over them and take S3 from the observed reliability (`passes / trials` at 6 trials), recording `s3_source: "runner"`. **Band 4 is unreachable at 6 trials** — 5/6 lands in band 3 and 6/6 in band 5 — so a measured 4 is never a valid result (see [references/skill-rubric.md](references/skill-rubric.md) S3). When the item has **no** fixture, fall back to reading the body — if an agent followed only this body on the canonical scenario, would the output satisfy the stated purpose? — score the gap citing the under-specified step, tag it `(read-only)`, and record `s3_source: "read-only"`. A read 4 and a measured 4 are different claims; never merge them. If a fixture exists but every trial errored, S3 is `"unmeasured"`, not `0`. **Runner results never enter `axes.S3`** — they reach the scorecard and backlog only, so `--ci` stays deterministic.
 - **Boundary / fit judge (S6 / A1)** — compare the item's responsibility against its nearest siblings; flag overlap (two skills that would both fire) or gap (a real need no skill owns).
 - **Prompt-quality judge (A6)** — score persona clarity, anti-rationalization coverage, and vague-language density in the agent body.
 
@@ -118,6 +121,8 @@ Each judge returns a 0–5 score **with a one-line justification and a file:line
 ### Step 4: Aggregate the Scorecard
 
 Combine mechanical and judgment sub-scores per the weights above into a `/100` total per item. Write `evals/scorecard.md` using the layout in [references/scorecard-format.md](references/scorecard-format.md): one row per item, per-axis scores, total, and the weakest-axis tag.
+
+Do **not** hand-compute the totals or the run statistics. `score.py` owns those rules: `item_total(axes, weights)` returns `None` when any axis is unmeasured, and `build_history_row(scored, weights)` produces the `history.json` entry with `items.<name>: null` for unmeasured items, `unmeasured[]`, `measured`, `s3_source`, and a `mean_total` / `below_threshold` computed over measured items only. Deriving these in prose is how the two documents drift apart.
 
 ### Step 5: Prioritized Improvement Backlog
 
@@ -136,13 +141,25 @@ Append one row to `evals/history.json`: timestamp, per-item totals, and catalog-
 
 | Item | S1 | S2 | S3 | S4 | S5 | S6 | Total | Weakest |
 |------|----|----|----|----|----|----|-------|---------|
-| ywc-commit          | 5 | 5 | 4 | 5 | 5 | 4 | 92 | S3 |
+| ywc-commit          | 5 | 5 | 4 | 5 | 5 | 4 | 94 | S3 |
 | ywc-tech-research   | 3 | 4 | 3 | 3 | 4 | 2 | 64 | S6 |
+| ywc-sample-nofx     | 5 | 5 | ? | 5 | 5 | 4 | —  | S3 |
+| ywc-sample-mech     | 5 | 5 | · | 5 | 5 | · | —  | —  |
+
+Notation: `?` = cannot be measured (no fixture — backfill it) · `·` = not measured
+this run (judgment tier skipped — re-run `--mode full`) · `—` = no total, because
+an axis is `?` or `·`. `?` and `·` are never merged: one is coverage debt, the
+other is just a cheaper run mode. An item with a missing axis has at most 80
+weight available, so any `/100` it reported would understate itself — it records
+`items.<name>: null` and is excluded from `mean_total`, but still enters the
+backlog. Full legend: [references/scorecard-format.md](references/scorecard-format.md).
 
 ## Prioritized Backlog
 1. ywc-tech-research (64) — S6 catalog fit: description overlaps ywc-product-review
    on "compare options"; SKILL.md:1. Fix: add "Do not use for product/business
    comparison (use ywc-product-review)" anti-trigger.
+2. ywc-sample-nofx (—) — S3 unmeasurable: no fixture under evals/fixtures/.
+   Fix: add one happy_path and one negative case, then re-run.
 ```
 
 ## Validation
@@ -154,6 +171,8 @@ Before declaring an evaluation cycle complete, verify:
 - [ ] Every judgment-axis score carries a file:line citation.
 - [ ] The prioritized backlog has at least one concrete, actionable fix per listed item.
 - [ ] `evals/history.json` gained exactly one new row; no prior row was mutated.
+- [ ] Any item whose mechanical `signals.coverage.sufficient` is `false` has its S1 (skill) or A2 (agent) recorded as **"unmeasured"** — not a number, and not a value carried forward from a prior run. Every unmeasured item appears in the prioritized backlog regardless of its total.
+- [ ] The activation judge ran **3 times** per item and the reported score is the majority verdict; a three-way disagreement was recorded as "descriptions genuinely ambiguous" rather than averaged.
 - [ ] In `--ci` mode, exit code reflects regression (non-zero if any per-axis mechanical score dropped vs the committed `history.mechanical.json` baseline).
 
 ## Common Mistakes

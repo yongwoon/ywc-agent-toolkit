@@ -160,11 +160,36 @@ open(sys.argv[3], "w").write(updated)
 PYEOF
 ```
 
-Finally, update the PR description from the file:
+Finally, apply the update — but **re-fetch and compare first**. Between the `gh pr view` above and
+this write, someone else may have edited the description; writing `/tmp/pr_body_updated.txt` blindly
+would silently discard their change.
 
 ```bash
-gh pr edit <PR_NUMBER> --body-file /tmp/pr_body_updated.txt
+gh pr view <PR_NUMBER> --json body --jq '.body' > /tmp/pr_body_recheck.txt
+
+if diff -q /tmp/pr_body_original.txt /tmp/pr_body_recheck.txt >/dev/null; then
+  gh pr edit <PR_NUMBER> --body-file /tmp/pr_body_updated.txt
+else
+  echo "CONCURRENT EDIT DETECTED — not overwriting" >&2
+fi
 ```
+
+On `CONCURRENT EDIT DETECTED`, do **not** force the write. Re-apply instead:
+
+1. Copy `/tmp/pr_body_recheck.txt` over `/tmp/pr_body_original.txt` — the other party's version is now
+   the base, so their edit survives.
+2. Re-run the section-replacement script above against that new base. It rewrites only `## PR LIST`,
+   so their changes to other sections are preserved byte-for-byte.
+3. Repeat the re-fetch-and-compare once more.
+
+If the description changes again on that second attempt, **stop and report** rather than looping.
+Two consecutive collisions mean something else is actively writing, and a third attempt is as likely
+to lose data as to succeed.
+
+> This is a compare-and-swap by convention, not by guarantee. `gh` cannot condition a PR-body write
+> on the version it read, so a change landing between the re-fetch and the `gh pr edit` is still
+> lost. The guard closes the wide window (the whole build step), not the narrow one. Do not describe
+> it as atomic.
 
 **Important**: Do NOT construct the full body string manually. Always use the Python script above to ensure only the `## PR LIST` section is modified.
 

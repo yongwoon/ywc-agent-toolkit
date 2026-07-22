@@ -4,6 +4,11 @@
     "S4": 5,
     "S5": 5
   },
+  "claude-code/skills/ywc-auth-implement": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
   "claude-code/skills/ywc-brainstorm": {
     "S2": 5,
     "S4": 5,
@@ -240,7 +245,7 @@
     "A5": 5
   },
   "claude-code/agents/ywc-cloud-engineer": {
-    "A3": 3,
+    "A3": 5,
     "A4": 5,
     "A5": 5
   },

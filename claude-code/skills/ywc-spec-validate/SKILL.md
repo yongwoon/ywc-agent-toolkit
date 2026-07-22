@@ -159,6 +159,25 @@ When tempted to skip a step, check this table first:
 | `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
 | `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
 
+**Precedence — read this before emitting a status.** The table above and the Confidence Gate's
+Band-to-status mapping are **not two independent rules**; applied separately they contradict each
+other. A spec with zero Critical findings scoring 78 is `DONE` by the table and `NEEDS_CONTEXT` by
+the band. Resolve it this way:
+
+1. **The Confidence Gate band decides the status.** It is the outer gate; run it last and let it win.
+2. **The finding count only splits the PROCEED band** — `DONE` when no Critical findings remain,
+   `DONE_WITH_CONCERNS` when any do. Below PROCEED the finding count does not upgrade the status:
+   a zero-Critical spec in REVIEW is `NEEDS_CONTEXT`, and in STOP it is `BLOCKED`.
+3. **Input failures short-circuit both.** A missing/empty/unreadable `--spec` is `NEEDS_CONTEXT`, and
+   a missing spec file or an inconclusive Phase 2 advisor is `BLOCKED` — emitted *without* computing
+   a gate score, because there is nothing to score.
+
+So `NEEDS_CONTEXT` and `BLOCKED` each have two legitimate triggers: an input failure (rule 3) or a
+gate band (rule 1). That overlap is intentional, not a conflict — but always say which one fired, so
+a caller can tell "I could not read your spec" from "I read it and it is not ready".
+
+`SOCRATIC` sits outside this hierarchy: it is a mode, not a verdict, and no gate band produces it.
+
 **Re-plan handoff on `DONE_WITH_CONCERNS`** — after printing the report body, append the following one-liner so the user (or an interactive orchestrator) can resolve findings via `ywc-plan` Re-plan Mode instead of rewriting the spec from scratch:
 
 ```

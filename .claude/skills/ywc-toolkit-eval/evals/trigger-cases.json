@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Activation trigger-case dataset for ywc-toolkit-eval. Covers all 53 evaluated items (41 skills + 12 agents) with >= 3 positives and >= 2 collision appearances each. Mix of Korean, English, and Japanese prompts.",
+  "description": "Activation trigger-case dataset for ywc-toolkit-eval. Covers all 60 evaluated items (47 skills + 13 agents) with >= 3 positives and >= 2 collision appearances each. Negatives are in-domain: prompts inside the development domain that no ywc-* item should claim.",
   "cases": [
     {
       "id": "agentic-pos-1",
@@ -2055,6 +2055,293 @@
       "kind": "collision",
       "impostor": "ywc-project-mission",
       "note": "'persist project setup' overlaps project-mission's durable-memory surface, but the concrete ask fixes the output-language default, so setup-language wins"
+    },
+    {
+      "id": "auth-implement-pos-1",
+      "prompt": "이메일/비밀번호 로그인 기능 구현해줘",
+      "expected": "ywc-auth-implement",
+      "kind": "positive"
+    },
+    {
+      "id": "auth-implement-pos-2",
+      "prompt": "Google OAuth 연동해서 소셜 로그인 붙여줘",
+      "expected": "ywc-auth-implement",
+      "kind": "positive"
+    },
+    {
+      "id": "auth-implement-pos-3",
+      "prompt": "多要素認証を含むログイン機能を実装して",
+      "expected": "ywc-auth-implement",
+      "kind": "positive"
+    },
+    {
+      "id": "iac-author-pos-1",
+      "prompt": "이 설계대로 terraform 작성해줘",
+      "expected": "ywc-iac-author",
+      "kind": "positive"
+    },
+    {
+      "id": "iac-author-pos-2",
+      "prompt": "write the terraform modules for this VPC design",
+      "expected": "ywc-iac-author",
+      "kind": "positive"
+    },
+    {
+      "id": "iac-author-pos-3",
+      "prompt": "k8s 매니페스트를 Terraform helm provider로 만들어줘",
+      "expected": "ywc-iac-author",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-design-pos-1",
+      "prompt": "우리 서비스 클라우드 아키텍처 설계해줘",
+      "expected": "ywc-infra-design",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-design-pos-2",
+      "prompt": "design the infrastructure for a multi-tenant SaaS on GCP",
+      "expected": "ywc-infra-design",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-design-pos-3",
+      "prompt": "インフラ設計をお願いします。ネットワークトポロジーから",
+      "expected": "ywc-infra-design",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-optimize-pos-1",
+      "prompt": "클라우드 비용 최적화 좀 해줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-optimize-pos-2",
+      "prompt": "미사용 리소스 정리하고 reserved instance 적용 검토해줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-optimize-pos-3",
+      "prompt": "インフラ最適化して。使っていないリソースの整理から",
+      "expected": "ywc-infra-optimize",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-review-pos-1",
+      "prompt": "terraform 검토해줘. apply 전에 봐야 해",
+      "expected": "ywc-infra-review",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-review-pos-2",
+      "prompt": "review my terraform for public exposure and secrets in state",
+      "expected": "ywc-infra-review",
+      "kind": "positive"
+    },
+    {
+      "id": "infra-review-pos-3",
+      "prompt": "インフラレビューお願いします",
+      "expected": "ywc-infra-review",
+      "kind": "positive"
+    },
+    {
+      "id": "cloud-engineer-pos-1",
+      "prompt": "이 모듈 terraform으로 인프라 구현해줘",
+      "expected": "ywc-cloud-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "cloud-engineer-pos-2",
+      "prompt": "provision the infrastructure with terraform and run plan",
+      "expected": "ywc-cloud-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "cloud-engineer-pos-3",
+      "prompt": "インフラを実装して。terraform module を書いて",
+      "expected": "ywc-cloud-engineer",
+      "kind": "positive"
+    },
+    {
+      "id": "iac-author-vs-infra-design-1",
+      "prompt": "infra-design.md 나왔으니 이제 terraform 모듈로 옮겨줘",
+      "expected": "ywc-iac-author",
+      "kind": "collision",
+      "impostor": "ywc-infra-design",
+      "note": "design already exists; iac-author authors from it — infra-design owns topology decisions, not code"
+    },
+    {
+      "id": "infra-design-vs-iac-author-1",
+      "prompt": "AWS에 3-tier 웹서비스 올리려는데 VPC/서브넷/IAM 토폴로지부터 잡아줘",
+      "expected": "ywc-infra-design",
+      "kind": "collision",
+      "impostor": "ywc-iac-author",
+      "note": "no design exists yet; topology must be decided before any IaC is authored"
+    },
+    {
+      "id": "infra-review-vs-iac-author-1",
+      "prompt": "이 terraform 변경 apply 하기 전에 보안 그룹이랑 IAM 좀 봐줘",
+      "expected": "ywc-infra-review",
+      "kind": "collision",
+      "impostor": "ywc-iac-author",
+      "note": "the Terraform is already authored; this is pre-apply review, not authoring"
+    },
+    {
+      "id": "infra-optimize-vs-infra-review-1",
+      "prompt": "terraform drift 감지해서 원상복구까지 해줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "collision",
+      "impostor": "ywc-infra-review",
+      "note": "remediation is requested; infra-review is inspection-only and never executes the fix"
+    },
+    {
+      "id": "infra-review-vs-infra-optimize-1",
+      "prompt": "보안 그룹에 0.0.0.0/0 열린 게 있는지 점검만 해줘. 수정은 하지 말고",
+      "expected": "ywc-infra-review",
+      "kind": "collision",
+      "impostor": "ywc-infra-optimize",
+      "note": "inspection explicitly without remediation — infra-optimize owns the change loop, not read-only review"
+    },
+    {
+      "id": "infra-optimize-vs-infra-design-1",
+      "prompt": "지금 돌고 있는 EC2 인스턴스들 과다 스펙인지 보고 right-sizing 해줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "collision",
+      "impostor": "ywc-infra-design",
+      "note": "existing infrastructure is being improved; infra-design is greenfield topology only"
+    },
+    {
+      "id": "security-audit-vs-auth-implement-1",
+      "prompt": "방금 구현한 로그인 인증 로직에 취약점 없는지 검토해줘",
+      "expected": "ywc-security-audit",
+      "kind": "collision",
+      "impostor": "ywc-auth-implement",
+      "note": "post-implementation security review; auth-implement's own anti-trigger routes this to security-audit"
+    },
+    {
+      "id": "e2e-test-strategy-vs-auth-implement-1",
+      "prompt": "로그인/로그아웃 플로우 E2E 테스트 전략 잡아줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "impostor": "ywc-auth-implement",
+      "note": "E2E strategy for an auth flow is owned by e2e-test-strategy per auth-implement's anti-trigger"
+    },
+    {
+      "id": "infra-review-vs-security-audit-1",
+      "prompt": "terraform IAM 정책에 과도한 권한 없는지 봐줘",
+      "expected": "ywc-infra-review",
+      "kind": "collision",
+      "impostor": "ywc-security-audit",
+      "note": "same-root (skill) collision. infra-review's own anti-trigger cedes app-code auth/injection review to ywc-security-audit, so IaC-scoped IAM over-privilege is the contested edge between the two. The former pairing against the ywc-cloud-engineer agent was cross-root and unjudgeable per references/trigger-eval-method.md."
+    },
+    {
+      "id": "architect-vs-cloud-engineer-1",
+      "prompt": "인프라를 멀티리전으로 갈지 단일리전으로 갈지 판단해줘",
+      "expected": "ywc-architect",
+      "kind": "collision",
+      "impostor": "ywc-cloud-engineer",
+      "note": "architecture/topology judgment; cloud-engineer's anti-trigger explicitly disclaims it"
+    },
+    {
+      "id": "backend-coder-vs-cloud-engineer-1",
+      "prompt": "이 API 서버의 DB 커넥션 풀이랑 타임아웃 설정 좀 손봐줘",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "impostor": "ywc-cloud-engineer",
+      "note": "agent-root collision. 'connection pool / timeout' reads as infrastructure tuning, but it is application server configuration — cloud-engineer's own anti-trigger cedes application server / business logic to ywc-backend-coder."
+    },
+    {
+      "id": "neg-explain-fn-1",
+      "prompt": "이 함수가 무엇을 하는지 설명해줘",
+      "expected": null,
+      "kind": "negative",
+      "note": "plain code explanation — no workflow skill; ywc-impl-review may over-trigger"
+    },
+    {
+      "id": "neg-typo-1",
+      "prompt": "README 오타 한 글자만 고쳐줘",
+      "expected": null,
+      "kind": "negative",
+      "note": "trivial edit must not start a commit/doc workflow"
+    },
+    {
+      "id": "neg-git-log-1",
+      "prompt": "최근 git log 5개만 보여줘",
+      "expected": null,
+      "kind": "negative",
+      "note": "tool lookup, not a commit or release request"
+    },
+    {
+      "id": "neg-concept-jwt-1",
+      "prompt": "JWT가 무엇인지 간단히 설명해줘",
+      "expected": null,
+      "kind": "negative",
+      "note": "concept question — ywc-auth-implement must not fire"
+    },
+    {
+      "id": "neg-port-1",
+      "prompt": "port 3000이 이미 사용 중이라는 error가 무슨 뜻이야?",
+      "expected": null,
+      "kind": "negative",
+      "note": "single env question; ywc-docker-isolate / debug-rootcause may over-trigger"
+    },
+    {
+      "id": "neg-cmd-1",
+      "prompt": "Python version 확인하는 command가 뭐야?",
+      "expected": null,
+      "kind": "negative",
+      "note": "command lookup needs no skill"
+    },
+    {
+      "id": "neg-status-1",
+      "prompt": "지금 working tree에 어떤 파일이 바뀌었어?",
+      "expected": null,
+      "kind": "negative",
+      "note": "status inspection is not a commit request"
+    },
+    {
+      "id": "neg-http-verb-1",
+      "prompt": "REST API의 GET과 POST 차이를 알려줘",
+      "expected": null,
+      "kind": "negative",
+      "note": "conceptual question — ywc-api-design must not fire"
+    },
+    {
+      "id": "neg-flexbox-1",
+      "prompt": "CSS flexbox로 가운데 정렬하려면 어떻게 해?",
+      "expected": null,
+      "kind": "negative",
+      "note": "focused how-to; ywc-design-renew / frontend must not fire"
+    },
+    {
+      "id": "neg-assert-msg-1",
+      "prompt": "이 assertion failure message를 해석해줘",
+      "expected": null,
+      "kind": "negative",
+      "note": "interpreting a message is not authorization to debug or edit"
+    },
+    {
+      "id": "neg-terraform-what-1",
+      "prompt": "terraform plan이랑 apply 차이가 뭐야?",
+      "expected": null,
+      "kind": "negative",
+      "note": "concept question — the infra skill family must not over-trigger"
+    },
+    {
+      "id": "neg-en-type-error-1",
+      "prompt": "What does this TypeScript type error mean?",
+      "expected": null,
+      "kind": "negative",
+      "note": "English explanation request must remain unclaimed"
+    },
+    {
+      "id": "neg-ja-error-1",
+      "prompt": "このエラー文の意味を説明してください",
+      "expected": null,
+      "kind": "negative",
+      "note": "Japanese explanation request must remain unclaimed"
     }
   ]
 }

@@ -44,6 +44,15 @@ KANA = re.compile(r"[぀-ヿ]")
 JAPANESE = re.compile(r"[぀-ヿ一-鿿]")
 MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit", "Bash"}
 READONLY_HINT = re.compile(r"review|audit|analyst|reviewer|read-only", re.IGNORECASE)
+# An implementer verb in the role's OPENING clause vetoes a read-only classification.
+# Scoped to the opening clause (before the first em-dash) on purpose: scanning the whole
+# role statement also matches negations and routing notes ("does NOT execute", "fixes go
+# to X"), which would wrongly clear genuinely read-only agents.
+IMPL_ROLE_HINT = re.compile(
+    r"\b(implement|implementing|author|authoring|writ(?:e|ing)|modif(?:y|ying)"
+    r"|provision|scaffold)\b",
+    re.IGNORECASE,
+)
 
 # A5 model-tier heuristic (FR3) — role keywords matched against the agent NAME,
 # the canonical role id. Descriptions are deliberately NOT matched: they
@@ -59,6 +68,29 @@ A5_TIER_RANK = {"haiku": 1, "sonnet": 2, "opus": 3}
 TRIGGER_CASES = Path(__file__).resolve().parent.parent / "evals" / "trigger-cases.json"
 COVERAGE_MIN_POSITIVES = 3
 COVERAGE_MIN_COLLISIONS = 2
+
+# Prose lint — informational only, never feeds an axis or the CI baseline (same
+# contract as signals["coverage"]). Detects instructions that cost tokens without
+# changing agent behaviour: no-op exhortations and non-directive (advisory) phrasing.
+# Promotion into S2/S4 is a separate PR, gated on a measured false-positive rate.
+NOOP_PHRASES = (
+    r"\b(?:write|keep|make)\s+(?:clean|readable|high[- ]quality|maintainable)\s+code\b",
+    r"\b(?:follow|use)\s+best\s+practices\b",
+    r"\bbe\s+(?:careful|thorough|diligent)\b",
+    r"읽기\s*쉽게|가독성\s*(?:좋게|있게)",
+    r"모범\s*사례|최선의\s*방법",
+    r"(?:適切に|丁寧に)\s*\S*(?:実装|対応|記述)",
+)
+NONDIRECTIVE_PHRASES = (
+    r"\b(?:is|are)\s+recommended\b",
+    r"\bit\s+is\s+a\s+good\s+idea\b",
+    r"\byou\s+may\s+want\s+to\b",
+    r"\bshould\s+generally\b",
+    r"권장됩니다|권장된다|하는\s*것이\s*좋습니다|바람직합니다",
+    r"が望ましい|することを推奨",
+)
+# A line carrying any of these is treated as actionable, not an empty exhortation.
+CONCRETE_ANCHOR_RE = re.compile(r"`[^`]+`|\b(?:Read|Grep|Glob|Bash|Edit|Write|Task)\b|/|\d")
 
 
 # --- frontmatter / file parsing -------------------------------------------
@@ -274,7 +306,8 @@ def load_coverage() -> dict:
 # --- skill scoring ---------------------------------------------------------
 
 def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
-    fm, body = split_frontmatter((d / "SKILL.md").read_text(encoding="utf-8"))
+    text = (d / "SKILL.md").read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text)
     name = fm.get("name", d.name)
     desc = fm.get("description", "")
     body_lines = body.count("\n") + 1
@@ -341,6 +374,9 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     signals["coverage"] = coverage.get(
         name, {"positives": 0, "collisions": 0, "sufficient": False})
 
+    # Prose lint — informational only, never feeds any axis or the CI baseline.
+    signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
+
     return {
         "name": name,
         "kind": "skill",
@@ -396,6 +432,52 @@ def _rationalization_data_rows(body: str) -> int:
     return max(0, data)
 
 
+def _prose_lint(text: str, line_offset: int = 0) -> dict:
+    """Flag no-op exhortations and non-directive phrasing in a body.
+
+    Informational only — never feeds an axis or the CI baseline, exactly like
+    signals["coverage"]. A "no-op" is an instruction that costs Tier-1 tokens on
+    every invocation without changing what the agent does ("write clean code");
+    "non-directive" is advisory phrasing where a skill body should command
+    ("X is recommended" instead of "use X when Y").
+
+    Lines that *quote* guidance rather than instruct are skipped: fenced code,
+    table rows, block quotes, headings, and link-only lines. The table exclusion
+    is load-bearing — the Rationalization Defense table quotes excuses verbatim,
+    so no-op phrases legitimately appear there. A line carrying a concrete anchor
+    (backtick identifier, path, digit, tool name) is treated as actionable.
+
+    Line numbers are file-based (add `line_offset` for the frontmatter) because
+    the prioritized backlog requires a `file:line` citation.
+    """
+    findings: dict = {"noop_lines": [], "nondirective_lines": []}
+    in_fence = False
+    for index, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        if line.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if not line or in_fence or line.startswith(("#", ">", "|")):
+            continue
+        if re.fullmatch(r"[-*]?\s*\[[^]]+\]\([^)]*\)", line):
+            continue
+        if CONCRETE_ANCHOR_RE.search(line):
+            continue
+        for bucket, phrases in (("noop_lines", NOOP_PHRASES),
+                                ("nondirective_lines", NONDIRECTIVE_PHRASES)):
+            for pat in phrases:
+                if re.search(pat, line, re.IGNORECASE):
+                    findings[bucket].append(
+                        {"line": line_offset + index, "text": line, "phrase": pat})
+                    break
+    return findings
+
+
+def _body_line_offset(text: str, body: str) -> int:
+    """Lines consumed by the frontmatter, so prose-lint numbers are file-based."""
+    return text[:len(text) - len(body)].count("\n")
+
+
 def _unresolved_sibling_pointers(desc: str) -> list:
     """Flag `use ywc-<name>` pointers resolving to neither a skill dir nor an agent file (FR10)."""
     out = []
@@ -411,7 +493,8 @@ def _unresolved_sibling_pointers(desc: str) -> list:
 # --- agent scoring ---------------------------------------------------------
 
 def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
-    fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
+    text = path.read_text(encoding="utf-8")
+    fm, body = split_frontmatter(text)
     name = fm.get("name", path.stem)
     desc = fm.get("description", "")
     tools_raw = fm.get("tools", "")
@@ -424,7 +507,16 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     # of "review"/"audit" in its dispatcher trigger list — otherwise a coder/test
     # agent dispatched BY a review skill is wrongly flagged read-only (A3 false-).
     role_text = desc.split("Triggers:")[0]
-    readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(role_text))
+    # ...and stripping the trigger list is not enough on its own. An implementer can
+    # mention reviewing INSIDE its own role statement — ywc-cloud-engineer authors
+    # Terraform "including ... a reliability-lens review of the change" — and was
+    # scored A3=3 as a read-only agent holding Write/Edit/Bash. The role is declared
+    # by its opening clause, so an implementer verb there vetoes the classification.
+    role_head = re.split(r"—|--", role_text)[0]
+    readonly_role = bool(
+        (READONLY_HINT.search(name) or READONLY_HINT.search(role_text))
+        and not IMPL_ROLE_HINT.search(role_head)
+    )
     signals: dict = {}
 
     # A3 tool minimality (band logic in a3_tool_band — implementer agents that
@@ -460,6 +552,9 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     # FR1b coverage — signals-only; A2 stays null in axes (Amendment A2)
     signals["coverage"] = coverage.get(
         name, {"positives": 0, "collisions": 0, "sufficient": False})
+
+    # Prose lint — informational only, never feeds any axis or the CI baseline.
+    signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
 
     return {
         "name": name,
@@ -530,6 +625,132 @@ def mechanical_table(results: dict) -> str:
             lines.append(f"| {it['name']} | " + " | ".join(cells) + f" | {ncoll} |")
     lines.append("\n(· = judgment axis, filled by the agent judge pass)")
     return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------
+# History record rules (judgment tier)
+#
+# These functions shape `history.json` only. They deliberately touch nothing in
+# the axes computation above: `axes.S3` stays `None`, `flatten_mech()` keeps
+# storing only non-null axes, and so `--ci` stays a pure function of the
+# mechanical tier. Putting a runner-derived S3 into `axes` would make the CI
+# gate depend on LLM nondeterminism, which AC7 forbids.
+# --------------------------------------------------------------------------
+
+UNMEASURED = "unmeasured"
+
+# Trials adopted for a reliability measurement (spec AC10: 6 paired trials).
+DEFAULT_TRIALS = 6
+
+# reliability -> S3 band, as (minimum ratio, score), highest first.
+S3_RELIABILITY_BANDS: tuple[tuple[float, int], ...] = (
+    (1.00, 5),
+    (0.90, 4),
+    (0.75, 3),
+    (0.50, 2),
+    (0.25, 1),
+    (0.00, 0),
+)
+
+# An item's S3 came from one of two places, and they are not interchangeable:
+# a 4 from observed runs and a 4 from reading the body are different claims.
+S3_SOURCES = ("runner", "read-only")
+
+
+def reliability_band(passes: int, trials: int) -> int | str:
+    """Map `passes / trials` onto an S3 band.
+
+    Returns `"unmeasured"` for zero trials rather than inventing a 0 — no
+    evidence is not the same finding as evidence of failure.
+    """
+    if trials <= 0:
+        return UNMEASURED
+    ratio = passes / trials
+    for minimum, score in S3_RELIABILITY_BANDS:
+        if ratio >= minimum:
+            return score
+    return 0
+
+
+def unreachable_bands(trials: int = DEFAULT_TRIALS) -> list[int]:
+    """Bands that `passes / trials` cannot produce at this trial count (AC9).
+
+    Reliability is discrete, so some bands simply have no attainable ratio.
+    At the adopted 6 trials, band 4 is one of them: 5/6 = 0.833 lands in band
+    3 and 6/6 = 1.0 lands in band 5, with nothing in between. Callers surface
+    this instead of letting a reader assume every band is achievable.
+    """
+    all_bands = {score for _, score in S3_RELIABILITY_BANDS}
+    if trials <= 0:
+        return sorted(all_bands)
+    attainable = {reliability_band(p, trials) for p in range(trials + 1)}
+    return sorted(all_bands - attainable)
+
+
+def is_measured(axes: dict) -> bool:
+    """True when every axis of an item carries a number.
+
+    `None` (this run skipped the judgment tier) and `"unmeasured"` (no fixture
+    exists to measure with) both disqualify an item from having a total.
+    """
+    return all(isinstance(v, (int, float)) and not isinstance(v, bool)
+               for v in axes.values())
+
+
+def item_total(axes: dict, weights: dict) -> int | None:
+    """Weighted `/100` total, or `None` when any axis is unmeasured.
+
+    A total computed over 80 available weight is a score out of 80 wearing a
+    `/100` label. Emitting `null` is the honest alternative — the reader is
+    told the number does not exist rather than handed a quiet understatement.
+    """
+    if not is_measured(axes):
+        return None
+    return round(sum(axes[a] / 5 * w for a, w in weights.items() if a in axes))
+
+
+def unmeasured_axes(axes: dict) -> list[str]:
+    """Names of the axes blocking a total, in rubric order."""
+    return [a for a, v in axes.items()
+            if not (isinstance(v, (int, float)) and not isinstance(v, bool))]
+
+
+def build_history_row(scored: dict, weights: dict,
+                      below_threshold_at: int = 70) -> dict:
+    """Build one root's `history.json` entry from judged items.
+
+    `scored` maps item name -> {"axes": {...}, "s3_source": "runner"|"read-only"}.
+    Unmeasured items are recorded as `null` and excluded from `mean_total` and
+    `below_threshold`, so neither statistic silently absorbs a missing axis.
+    """
+    items: dict[str, int | None] = {}
+    unmeasured: list[str] = []
+    s3_source: dict[str, str] = {}
+
+    for name, entry in scored.items():
+        axes = entry.get("axes", {})
+        total = item_total(axes, weights)
+        items[name] = total
+        if total is None:
+            unmeasured.append(name)
+        source = entry.get("s3_source")
+        if source is not None:
+            if source not in S3_SOURCES:
+                raise ValueError(
+                    f"{name}: s3_source must be one of {S3_SOURCES}, got {source!r}")
+            s3_source[name] = source
+
+    measured_totals = [t for t in items.values() if t is not None]
+    return {
+        "count": len(items),
+        "measured": len(measured_totals),
+        "unmeasured": sorted(unmeasured),
+        "mean_total": (round(sum(measured_totals) / len(measured_totals), 1)
+                       if measured_totals else None),
+        "below_threshold": sum(1 for t in measured_totals if t < below_threshold_at),
+        "items": items,
+        "s3_source": s3_source,
+    }
 
 
 def flatten_mech(results: dict) -> dict:

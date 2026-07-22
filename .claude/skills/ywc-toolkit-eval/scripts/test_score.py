@@ -269,5 +269,258 @@ class FrontmatterAndStructureTest(unittest.TestCase):
                                   "Do not use during active feature work, or for X."))
 
 
+class ReadonlyRoleTest(unittest.TestCase):
+    """A3 — an implementer that mentions reviewing must not be scored read-only."""
+
+    @staticmethod
+    def _readonly(name: str, role_text: str) -> bool:
+        """Mirror score_agent()'s classification on an isolated role statement."""
+        import re
+        head = re.split(r"—|--", role_text)[0]
+        return bool(
+            (score.READONLY_HINT.search(name) or score.READONLY_HINT.search(role_text))
+            and not score.IMPL_ROLE_HINT.search(head)
+        )
+
+    def test_implementer_mentioning_review_is_not_readonly(self) -> None:
+        """The ywc-cloud-engineer regression: authors Terraform, reviews its own change."""
+        role = ("Use when implementing or modifying Infrastructure-as-Code — Terraform "
+                "modules and resources, including terraform plan verification and a "
+                "reliability-lens review of the change. ")
+        self.assertFalse(self._readonly("ywc-cloud-engineer", role))
+        self.assertEqual(score.a3_tool_band("Read, Write, Edit, Bash", False), 5)
+
+    def test_genuine_reviewer_stays_readonly(self) -> None:
+        role = "Use when reviewing Go code for goroutine lifecycle — leak detection. "
+        self.assertTrue(self._readonly("ywc-go-reviewer", role))
+
+    def test_readonly_holding_mutating_tool_is_still_banded_three(self) -> None:
+        """The veto must not disarm the real least-privilege check."""
+        self.assertEqual(score.a3_tool_band("Read, Grep, Write", True), 3)
+
+    def test_veto_reads_only_the_opening_clause(self) -> None:
+        """A negation or routing note after the em-dash must not clear a reviewer.
+
+        Mirrors ywc-performance-engineer, whose role statement declares itself
+        read-only and then mentions writing verbs only to route them elsewhere.
+        """
+        role = ("Use when analyzing performance characteristics — read-only; the agent "
+                "recommends but does NOT execute the fix; fixes go to ywc-backend-coder. ")
+        self.assertTrue(self._readonly("ywc-performance-engineer", role))
+
+
+class ProseLintTest(unittest.TestCase):
+    """Prose lint — advisory signal only; must never move an axis."""
+
+    def test_noop_and_nondirective_are_flagged(self) -> None:
+        r = score._prose_lint(
+            "Always write clean code.\n"
+            "Follow best practices.\n"
+            "가독성 좋게 작성해라.\n"
+            "This is recommended.\n")
+        self.assertEqual([h["line"] for h in r["noop_lines"]], [1, 2, 3])
+        self.assertEqual([h["line"] for h in r["nondirective_lines"]], [4])
+
+    def test_concrete_anchor_is_not_flagged(self) -> None:
+        """A phrase carrying a real anchor is actionable, not an empty exhortation."""
+        r = score._prose_lint(
+            "Using `ripgrep` is recommended.\n"          # backtick identifier
+            "Reading src/main.py is recommended.\n"      # path
+            "Read the file; this is recommended.\n")     # tool name
+        self.assertEqual(r["noop_lines"], [])
+        self.assertEqual(r["nondirective_lines"], [])
+
+    def test_quoting_contexts_are_not_flagged(self) -> None:
+        """Rationalization Defense rows quote excuses verbatim — must not fire."""
+        r = score._prose_lint(
+            "# Follow best practices\n"                  # heading
+            "| excuse | write clean code |\n"            # table row
+            "> quoted: follow best practices\n"          # blockquote
+            "```\n"
+            "write clean code\n"                         # fenced code
+            "```\n")
+        self.assertEqual(r["noop_lines"], [])
+        self.assertEqual(r["nondirective_lines"], [])
+
+    def test_line_numbers_are_file_based(self) -> None:
+        text = "---\nname: ywc-x\n---\n\nAlways write clean code.\n"
+        _, body = score.split_frontmatter(text)
+        r = score._prose_lint(body, score._body_line_offset(text, body))
+        self.assertEqual(r["noop_lines"][0]["line"], 5)
+        self.assertEqual(text.splitlines()[4], "Always write clean code.")
+
+    def test_prose_lint_never_moves_an_axis(self) -> None:
+        """Poisoning the lint output must leave every axis byte-identical."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n"
+                "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+                "---\n\n**Announce at start:** x\n\nAlways write clean code.\n",
+                encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+
+            baseline = score.score_skill(d, {}, {})["axes"]
+            original = score._prose_lint
+            try:
+                score._prose_lint = lambda *a, **k: {
+                    "noop_lines": [{"line": 1, "text": "x", "phrase": "y"}] * 99,
+                    "nondirective_lines": [{"line": 2, "text": "z", "phrase": "w"}] * 99,
+                }
+                poisoned = score.score_skill(d, {}, {})
+            finally:
+                score._prose_lint = original
+
+            self.assertEqual(poisoned["axes"], baseline)
+            self.assertEqual(len(poisoned["signals"]["prose_lint"]["noop_lines"]), 99)
+
+
+SKILL_WEIGHTS = {"S1": 30, "S2": 15, "S3": 20, "S4": 10, "S5": 15, "S6": 10}
+
+
+class S3ReliabilityBandTest(unittest.TestCase):
+    """S3 becomes an observed reliability, not a reading of the body."""
+
+    def test_perfect_reliability_is_five(self) -> None:
+        self.assertEqual(score.reliability_band(6, 6), 5)
+
+    def test_total_failure_is_zero(self) -> None:
+        self.assertEqual(score.reliability_band(0, 6), 0)
+
+    def test_bands_are_monotonic_in_passes(self) -> None:
+        bands = [score.reliability_band(p, 6) for p in range(7)]
+        self.assertEqual(bands, sorted(bands))
+
+    def test_zero_trials_is_unmeasured_not_zero(self) -> None:
+        # No evidence and evidence-of-failure are different findings; collapsing
+        # them would let a missing fixture read as a broken skill.
+        self.assertEqual(score.reliability_band(0, 0), score.UNMEASURED)
+
+    def test_band_four_is_unreachable_at_six_trials(self) -> None:
+        # AC9 wants the unreachable bands named rather than assumed away.
+        # 5/6 = 0.833 falls to band 3 and 6/6 = 1.0 jumps to band 5.
+        self.assertEqual(score.unreachable_bands(6), [4])
+
+    def test_more_trials_close_the_gap(self) -> None:
+        self.assertEqual(score.unreachable_bands(10), [])
+
+
+class HistoryRowHonestyTest(unittest.TestCase):
+    """An unmeasured axis must not be laundered into a smaller total."""
+
+    def _measured(self, **over) -> dict:
+        axes = {"S1": 5, "S2": 5, "S3": 4, "S4": 5, "S5": 5, "S6": 4}
+        axes.update(over)
+        return axes
+
+    def test_measured_item_gets_a_total(self) -> None:
+        self.assertEqual(score.item_total(self._measured(), SKILL_WEIGHTS), 94)
+
+    def test_unmeasured_axis_yields_no_total(self) -> None:
+        self.assertIsNone(
+            score.item_total(self._measured(S3=score.UNMEASURED), SKILL_WEIGHTS))
+
+    def test_skipped_judgment_axis_also_yields_no_total(self) -> None:
+        self.assertIsNone(score.item_total(self._measured(S3=None), SKILL_WEIGHTS))
+
+    def test_unmeasured_axes_are_named(self) -> None:
+        axes = self._measured(S1=score.UNMEASURED, S3=None)
+        self.assertEqual(score.unmeasured_axes(axes), ["S1", "S3"])
+
+    def test_unmeasured_item_is_null_and_excluded_from_statistics(self) -> None:
+        row = score.build_history_row({
+            "ywc-sample-a": {"axes": self._measured(), "s3_source": "runner"},
+            "ywc-sample-b": {"axes": self._measured(S3=score.UNMEASURED)},
+        }, SKILL_WEIGHTS)
+
+        self.assertIsNone(row["items"]["ywc-sample-b"])
+        self.assertEqual(row["unmeasured"], ["ywc-sample-b"])
+        self.assertEqual(row["count"], 2)
+        self.assertEqual(row["measured"], 1)
+        # The mean is over measured items only — averaging in a null, or
+        # treating it as zero, would both misreport the catalog.
+        self.assertEqual(row["mean_total"], 94.0)
+
+    def test_below_threshold_ignores_unmeasured_items(self) -> None:
+        row = score.build_history_row({
+            "weak": {"axes": {"S1": 2, "S2": 2, "S3": 2, "S4": 2, "S5": 2, "S6": 2}},
+            "unknown": {"axes": self._measured(S3=score.UNMEASURED)},
+        }, SKILL_WEIGHTS)
+        self.assertEqual(row["below_threshold"], 1)
+
+    def test_all_unmeasured_reports_no_mean_rather_than_zero(self) -> None:
+        row = score.build_history_row({
+            "a": {"axes": self._measured(S3=score.UNMEASURED)},
+        }, SKILL_WEIGHTS)
+        self.assertIsNone(row["mean_total"])
+        self.assertEqual(row["below_threshold"], 0)
+
+    def test_s3_source_is_recorded_and_validated(self) -> None:
+        # A 4 measured by the runner and a 4 inferred from reading the body are
+        # different claims; the row has to say which one it is.
+        row = score.build_history_row({
+            "a": {"axes": self._measured(), "s3_source": "runner"},
+            "b": {"axes": self._measured(), "s3_source": "read-only"},
+        }, SKILL_WEIGHTS)
+        self.assertEqual(row["s3_source"], {"a": "runner", "b": "read-only"})
+
+        with self.assertRaises(ValueError):
+            score.build_history_row(
+                {"c": {"axes": self._measured(), "s3_source": "vibes"}}, SKILL_WEIGHTS)
+
+
+class S3DoesNotReachTheCiBaselineTest(unittest.TestCase):
+    """AC7 — the CI gate stays a pure function of the mechanical tier."""
+
+    def test_axes_s3_is_none_for_every_skill(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n"
+                "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+                "---\n\n**Announce at start:** x\n", encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+            self.assertIsNone(score.score_skill(d, {}, {})["axes"]["S3"])
+
+    def test_judgment_axes_never_enter_the_real_baseline(self) -> None:
+        # The invariant that actually protects `--ci`: judgment axes stay
+        # `None` in `score_skill`, so `flatten_mech` never stores them and the
+        # baseline cannot move with an LLM's mood.
+        #
+        # Note what this does NOT claim: `flatten_mech` filters `None` only, so
+        # it would happily store a *number* someone wired into `axes.S3`. The
+        # guarantee lives upstream, which is why the assertion is made against
+        # real scored output rather than a hand-built dict.
+        baseline = score.flatten_mech(score.evaluate(".claude/skills"))
+        self.assertTrue(baseline, "no items scored — the assertion would be vacuous")
+        for key, axes in baseline.items():
+            for judgment_axis in ("S3", "S6"):
+                self.assertNotIn(judgment_axis, axes,
+                                 f"{key}: {judgment_axis} reached the CI baseline")
+
+    def test_runner_reliability_is_not_wired_into_axes(self) -> None:
+        # reliability_band() produces real S3 values, and they must stay out of
+        # the mechanical result entirely — scorecard and backlog only.
+        import tempfile
+        self.assertEqual(score.reliability_band(6, 6), 5)
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n"
+                "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+                "---\n\n**Announce at start:** x\n", encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+            flat = score.flatten_mech({"r": [score.score_skill(d, {}, {})]})
+            self.assertNotIn("S3", next(iter(flat.values())))
+
+
 if __name__ == "__main__":
     unittest.main()
