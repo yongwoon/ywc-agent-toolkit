@@ -16,11 +16,33 @@ class FixtureValidationError(ValueError):
 V2_CATEGORIES = {"happy_path", "negative", "boundary"}
 CHECK_TYPES = {"stdout_regex", "stderr_regex", "file_exists", "file_regex", "json_path_equals", "verifier"}
 FORBIDDEN_KEYS = {"command", "executable", "argv", "cwd", "timeout", "environment", "env", "shell"}
+CHECK_FIELDS: dict[str, tuple[tuple[str, type], ...]] = {
+    "stdout_regex": (("regex", str),),
+    "stderr_regex": (("regex", str),),
+    "file_exists": (("path", str),),
+    "file_regex": (("path", str), ("regex", str)),
+    "json_path_equals": (("path", str), ("json_path", str), ("expected_value", object)),
+    "verifier": (("verifier_id", str),),
+}
 
 
 def _require(value: Any, name: str, expected: type) -> None:
     if not isinstance(value, expected) or (expected is str and not value.strip()):
         raise FixtureValidationError(f"{name} is required and must be a {expected.__name__}")
+
+
+def _require_json_value(value: Any, name: str) -> None:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return
+    if isinstance(value, list):
+        for item in value:
+            _require_json_value(item, name)
+        return
+    if isinstance(value, dict) and all(isinstance(key, str) for key in value):
+        for item in value.values():
+            _require_json_value(item, name)
+        return
+    raise FixtureValidationError(f"{name} must be a JSON value")
 
 
 def _safe_relative(value: Any, name: str) -> Path:
@@ -53,6 +75,13 @@ def _validate_check(check: Any, declared_verifiers: set[str], manifest_root: Pat
     check_type = check.get("type")
     if check_type not in CHECK_TYPES:
         raise FixtureValidationError(f"unsupported check type: {check_type}")
+    for field, expected in CHECK_FIELDS[check_type]:
+        if field not in check:
+            raise FixtureValidationError(f"expected_checks.{field} is required for {check_type}")
+        if expected is object:
+            _require_json_value(check[field], f"expected_checks.{field}")
+        else:
+            _require(check[field], f"expected_checks.{field}", expected)
     for path_key in ("path", "file", "output_path"):
         if path_key in check:
             _contained(manifest_root, check[path_key], f"expected_checks.{path_key}", must_exist=False)

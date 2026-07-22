@@ -71,6 +71,22 @@ class FixtureValidatorTest(unittest.TestCase):
         with self.assertRaisesRegex(FixtureValidationError, "relative path"):
             validate_fixture(payload, fixture_root=self.root)
 
+    def test_rejects_incomplete_or_wrongly_typed_non_verifier_checks(self) -> None:
+        cases = (
+            ({"type": "stdout_regex"}, "regex.*required"),
+            ({"type": "stderr_regex", "regex": 3}, "regex.*str"),
+            ({"type": "file_exists"}, "path.*required"),
+            ({"type": "file_regex", "path": "input.txt"}, "regex.*required"),
+            ({"type": "json_path_equals", "path": "input.txt", "json_path": 3, "expected_value": True}, "json_path.*str"),
+            ({"type": "json_path_equals", "path": "input.txt", "json_path": "$.ok"}, "expected_value.*required"),
+            ({"type": "json_path_equals", "path": "input.txt", "json_path": "$.ok", "expected_value": object()}, "expected_value.*JSON"),
+        )
+        for check, error in cases:
+            payload = v2_fixture()
+            payload["expected_checks"] = [check]
+            with self.subTest(check=check), self.assertRaisesRegex(FixtureValidationError, error):
+                validate_fixture(payload, fixture_root=self.root)
+
     def test_rejects_symlink_escaping_fixture_root(self) -> None:
         outside = self.root / "outside.txt"
         outside.write_text("nope\n", encoding="utf-8")

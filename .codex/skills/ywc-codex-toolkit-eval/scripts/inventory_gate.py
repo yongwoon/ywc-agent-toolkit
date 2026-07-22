@@ -57,9 +57,12 @@ def lint_skill(skill_md: Path) -> list[dict[str, object]]:
     warnings: list[dict[str, object]] = []
     lines = skill_md.read_text(encoding="utf-8").splitlines()
     def finding(rule_id: str, line: int, reason: str) -> dict[str, object]:
-        directive = f"eval-lint: suppress={rule_id} reason="
-        context = "\n".join(lines[max(0, line - 2) : line])
-        suppressed = directive in context
+        context = "\n".join(lines[max(0, line - 3) : line - 1])
+        suppressed = any(
+            candidate.strip().startswith(f"eval-lint: suppress={rule_id} reason=")
+            and bool(candidate.strip().split("reason=", 1)[1].strip())
+            for candidate in context.splitlines()
+        )
         return {"rule_id": rule_id, "line": line, "reason": reason, "suppressed": suppressed}
 
     if len(lines) > 500:
@@ -180,7 +183,11 @@ def fixture_diagnostics(repo_root: Path) -> list[dict[str, object]]:
             continue
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-            normalized = validate_fixture(payload, fixture_root=evaluator_root / "fixtures")
+            normalized = validate_fixture(
+                payload,
+                fixture_root=evaluator_root / "fixtures",
+                available_skills={skill["name"] for skill in enumerate_skills(repo_root)},
+            )
             diagnostics.append({"path": str(path.relative_to(repo_root)), "passed": True, "schema": normalized["schema"], "v1_remaining": normalized["v1_remaining"]})
         except (OSError, json.JSONDecodeError, FixtureValidationError) as exc:
             diagnostics.append({"path": str(path.relative_to(repo_root)), "passed": False, "error": str(exc)})
