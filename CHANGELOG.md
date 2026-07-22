@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+## [1.30.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.29.0...v1.30.0) (2026-07-22)
+
+
+### Added
+
+* add isolated evaluation runners for Claude Code and Codex skills ([#151](https://github.com/yongwoon/ywc-agent-toolkit/issues/151)) ([0e8cee7](https://github.com/yongwoon/ywc-agent-toolkit/commit/0e8cee7210700922a3ac8f1f6754c07b9b8e7d57))
+
+
+### Fixed
+
+* treat an unfinished bot-review poll as blocking instead of zero bots ([#147](https://github.com/yongwoon/ywc-agent-toolkit/issues/147)) ([2b33fbc](https://github.com/yongwoon/ywc-agent-toolkit/commit/2b33fbc878b4bf24e2cbc0b00b65be38bb7a1fa5))
+
 ## [1.29.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.28.1...v1.29.0) (2026-07-16)
 
 
