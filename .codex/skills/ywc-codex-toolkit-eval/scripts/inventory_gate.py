@@ -178,7 +178,8 @@ def fixture_diagnostics(repo_root: Path) -> list[dict[str, object]]:
     """Expose read-only V1/V2 validation evidence to evaluator callers."""
     evaluator_root = repo_root / ".codex" / "skills" / "ywc-codex-toolkit-eval" / "evals"
     diagnostics: list[dict[str, object]] = []
-    for path in (evaluator_root / "evals.json", evaluator_root / "agent-smoke-fixtures.json"):
+    for path in (evaluator_root / "evals.json", evaluator_root / "agent-smoke-fixtures.json",
+                 evaluator_root / "agent-smoke-fixtures.v2.json"):
         if not path.is_file():
             continue
         try:
