@@ -165,24 +165,32 @@ Tier 2 files include an auto-generation notice at the top:
 
 Tier 2 files (es, zh) can be regenerated automatically using `scripts/translate.sh`.
 
-**Requirements**: `ANTHROPIC_API_KEY`, `jq`, `curl`
+**Requirements**: the `claude` CLI signed in (`claude auth status` reports `loggedIn: true`), and `jq`.
+
+Translation runs on your **Claude subscription** via `claude -p`. It does not use
+`ANTHROPIC_API_KEY` and never calls `api.anthropic.com` directly — this repository
+operates subscription-only.
 
 ```bash
 # Regenerate all Tier 2 translations
-ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh
+bash scripts/translate.sh
 
 # Regenerate a single language
-ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh --lang es
+bash scripts/translate.sh --lang es
 
 # Regenerate a single skill
-ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh --skill ywc-plan
+bash scripts/translate.sh --skill ywc-plan
 
 # Regenerate Codex skills only
-ANTHROPIC_API_KEY=sk-... bash scripts/translate.sh --codex
+bash scripts/translate.sh --codex
 
-# Preview what would be generated (no API calls)
+# Preview what would be generated (no model calls, no sign-in needed)
 bash scripts/translate.sh --dry-run
 ```
+
+Each file is one `claude -p` invocation, so a full regeneration is 258 calls
+(129 `README.zh.md` + 129 `README.es.md`) against your subscription. Prefer
+`--skill` or `--lang` for routine updates.
 
 ### How to add a new language
 

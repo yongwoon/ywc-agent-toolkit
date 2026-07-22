@@ -10,9 +10,12 @@
 #   bash scripts/translate.sh --dry-run               Print what would be translated
 #
 # Requirements:
-#   - ANTHROPIC_API_KEY env var must be set
+#   - claude CLI, signed in (`claude auth status` must report loggedIn)
 #   - jq (brew install jq)
-#   - curl
+#
+# Runs on the Claude subscription via `claude -p`. This script deliberately does
+# NOT use ANTHROPIC_API_KEY or call api.anthropic.com directly — project policy
+# is subscription-only operation.
 #
 # Language codes are read from translations.json (tier2.codes).
 # Generated files are marked with an auto-translation notice at the top.
@@ -34,10 +37,19 @@ CODEX_ONLY=false
 die() { echo "ERROR: $*" >&2; exit 1; }
 
 check_deps() {
-  command -v jq   >/dev/null 2>&1 || die "jq is required (brew install jq)"
-  command -v curl >/dev/null 2>&1 || die "curl is required"
-  $DRY_RUN || [ -n "${ANTHROPIC_API_KEY:-}" ] || die "ANTHROPIC_API_KEY is not set"
-  [ -f "$TRANSLATIONS_JSON" ]      || die "translations.json not found at $TRANSLATIONS_JSON"
+  command -v jq >/dev/null 2>&1 || die "jq is required (brew install jq)"
+  [ -f "$TRANSLATIONS_JSON" ]    || die "translations.json not found at $TRANSLATIONS_JSON"
+  $DRY_RUN && return 0
+
+  command -v claude >/dev/null 2>&1 || die "claude CLI is required (subscription-based translation)"
+
+  # Fail fast on auth rather than after N wasted invocations. `auth status` is a
+  # local read — it costs no model usage.
+  local auth
+  auth="$(claude auth status 2>/dev/null)" \
+    || die "could not read 'claude auth status' — is the CLI installed correctly?"
+  [ "$(printf '%s' "$auth" | jq -r '.loggedIn // false')" = "true" ] \
+    || die "claude CLI is not signed in. Run: claude auth login"
 }
 
 lang_name() {
@@ -67,31 +79,50 @@ translate_content() {
   local lang_label
   lang_label="$(lang_name "$lang")"
 
-  local payload
-  payload="$(jq -n \
-    --arg model "$MODEL" \
-    --arg lang "$lang_label" \
-    --arg content "$content" \
-    '{
-      model: $model,
-      max_tokens: 4096,
-      messages: [{
-        role: "user",
-        content: ("Translate the following Markdown documentation into " + $lang + ".\n\nRules:\n- Keep all code blocks, file paths, command examples, and YAML frontmatter exactly as-is\n- Translate only natural language text (headings, paragraphs, table cells, list items)\n- Preserve all Markdown formatting (headers, bold, italics, tables, lists)\n- Do not add explanatory text or notes\n- Output only the translated Markdown, nothing else\n\n" + $content)
-      }]
-    }')"
+  local instruction
+  instruction="Translate the Markdown documentation supplied on stdin into ${lang_label}.
 
-  local response
-  response="$(curl -s https://api.anthropic.com/v1/messages \
-    -H "x-api-key: $ANTHROPIC_API_KEY" \
-    -H "anthropic-version: 2023-06-01" \
-    -H "content-type: application/json" \
-    -d "$payload")"
+Rules:
+- Keep all code blocks, file paths, command examples, and YAML frontmatter exactly as-is
+- Translate only natural language text (headings, paragraphs, table cells, list items)
+- Preserve all Markdown formatting (headers, bold, italics, tables, lists)
+- Do not add explanatory text or notes
+- Output only the translated Markdown, nothing else"
 
-  echo "$response" | jq -r '.content[0].text // empty' || {
-    echo "API error: $(echo "$response" | jq -r '.error.message // "unknown"')" >&2
+  # The document goes over stdin rather than as an argument: READMEs are
+  # arbitrarily large, and this sidesteps ARG_MAX and every quoting hazard.
+  #
+  # --disable-slash-commands: translation needs no skill. Without it the whole
+  # installed skill catalogue is loaded into context on every call, which is
+  # pure cost for a text-transform task.
+  local response status
+  set +e
+  response="$(printf '%s' "$content" \
+    | claude -p "$instruction" \
+        --model "$MODEL" \
+        --disable-slash-commands \
+        --output-format json 2>/dev/null)"
+  status=$?
+  set -e
+
+  if [ $status -ne 0 ]; then
+    echo "claude CLI exited $status while translating to ${lang_label}" >&2
+    return 1
+  fi
+
+  if [ "$(printf '%s' "$response" | jq -r '.is_error // false')" = "true" ]; then
+    echo "translation failed (${lang_label}): $(printf '%s' "$response" | jq -r '.result // "unknown"')" >&2
+    return 1
+  fi
+
+  local text
+  text="$(printf '%s' "$response" | jq -r '.result // empty')"
+  [ -n "$text" ] || {
+    echo "translation returned no content (${lang_label})" >&2
     return 1
   }
+
+  printf '%s' "$text"
 }
 
 translate_file() {
@@ -119,7 +150,7 @@ translate_file() {
 # ---- main -------------------------------------------------------------------
 
 usage() {
-  sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,18p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 while [[ $# -gt 0 ]]; do
