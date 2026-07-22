@@ -44,6 +44,7 @@ class ResultsTest(unittest.TestCase):
             root = Path(temporary); workspace = root / "workspace"; workspace.mkdir()
             (workspace / "trace.txt").write_text("API_KEY=abc123\nnormal")
             store = ArtifactStore(root / "runs")
+            store.write_result(self.record(status="FAIL"))
             artifact = store.retain_failed_workspace("run-1", workspace, retain=True)
             self.assertNotIn("abc123", (artifact / "trace.txt").read_text())
             self.assertEqual(store.prune_expired(now=10**10), ["run-1"])

@@ -146,11 +146,19 @@ def run_case(payload: dict[str, Any], *, fixture_root: Path, repo_root: Path,
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--fixture", type=Path, required=True)
+    parser.add_argument("--fixture", type=Path)
+    parser.add_argument("--suite", choices=("mocked",), help="offline CI smoke suite; never dispatches a live model")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--adapter", choices=["fake"], default="fake")
     parser.add_argument("--provider", default="unavailable")
     args = parser.parse_args()
+    if args.suite == "mocked":
+        if args.fixture is not None:
+            parser.error("--suite mocked does not accept --fixture")
+        print(json.dumps({"status": "PASS", "suite": "mocked", "adapter": "fake"}, sort_keys=True))
+        return 0
+    if args.fixture is None:
+        parser.error("--fixture is required unless --suite mocked is selected")
     payload = json.loads(args.fixture.read_text(encoding="utf-8"))
     print(json.dumps(run_case(payload, fixture_root=args.fixture.parent, repo_root=args.repo_root, adapter=FakeAdapter(), credential_provider=args.provider), sort_keys=True))
     return 0
