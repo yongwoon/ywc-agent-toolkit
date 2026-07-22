@@ -111,6 +111,27 @@ class CheckWhitelistTest(unittest.TestCase):
                 any(key in e for e in errors),
                 f"free-form {key!r} was not rejected: {errors}")
 
+    def test_nested_command_keys_are_rejected(self) -> None:
+        # A shallow key check would let this through: the forbidden key hides
+        # one level down, inside an otherwise-valid check's comparison value.
+        errors = fixture_schema.validate_case(_valid_case(expected_checks=[
+            {"type": "json_path_equals", "expected": {"command": "/bin/sh"}}]))
+        self.assertTrue(any("command" in e for e in errors))
+
+    def test_top_level_command_keys_are_rejected(self) -> None:
+        self.assertTrue(fixture_schema.validate_case(_valid_case(command="/bin/sh")))
+
+    def test_command_keys_are_rejected_case_insensitively(self) -> None:
+        for key in ("Command", "ARGV", "Script"):
+            errors = fixture_schema.validate_case(
+                _valid_case(expected_checks=[{"type": "stdout_regex", key: "/bin/sh"}]))
+            self.assertTrue(errors, f"{key!r} slipped through on letter case")
+
+    def test_command_keys_are_rejected_inside_lists(self) -> None:
+        self.assertTrue(fixture_schema.validate_case(_valid_case(
+            expected_checks=[{"type": "stdout_regex", "pattern": "D",
+                              "any": [{"exec": "/bin/sh"}]}])))
+
     def test_verifier_check_requires_registered_id(self) -> None:
         errors = fixture_schema.validate_case(
             _valid_case(expected_checks=[{"type": "verifier", "verifier_id": "rm -rf /"}]))

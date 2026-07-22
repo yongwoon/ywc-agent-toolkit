@@ -38,7 +38,10 @@ CHECK_TYPES: frozenset[str] = frozenset({
 })
 
 # Keys that would turn a fixture into a command. Rejected wherever they appear
-# in a check, even alongside an otherwise-valid `type`.
+# anywhere in the case — at any nesting depth and in any letter case. A
+# shallow check on `expected_checks` entries would read as closed while
+# leaving `{"expected": {"command": ...}}` and top-level keys wide open, and
+# the next module to grow a passthrough would inherit that hole silently.
 FORBIDDEN_CHECK_KEYS: frozenset[str] = frozenset({
     "command", "argv", "shell", "exec", "executable", "cmd", "script",
     "entrypoint", "interpreter", "run",
@@ -57,6 +60,29 @@ def is_v2(case: dict) -> bool:
     return isinstance(case, dict) and case.get("schema") == SCHEMA_VERSION
 
 
+def _scan_forbidden_keys(node: object, where: str) -> list[str]:
+    """Report every command-naming key reachable from `node`, at any depth.
+
+    Case-insensitive and recursive on purpose: `Command` and
+    `{"expected": {"argv": [...]}}` are the same smuggling attempt as a
+    top-level `command`, and only a full walk can honestly claim the
+    whitelist is closed.
+    """
+    errors: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if isinstance(key, str) and key.lower() in FORBIDDEN_CHECK_KEYS:
+                errors.append(
+                    f"{where}: forbidden key {key!r} — a fixture may not name a "
+                    f"command; use type 'verifier' with a registered verifier_id "
+                    f"instead")
+            errors.extend(_scan_forbidden_keys(value, f"{where}.{key}"))
+    elif isinstance(node, list):
+        for index, item in enumerate(node):
+            errors.extend(_scan_forbidden_keys(item, f"{where}[{index}]"))
+    return errors
+
+
 def _validate_check(index: int, check: object) -> list[str]:
     """Validate one `expected_checks` entry; returns human-readable errors."""
     where = f"expected_checks[{index}]"
@@ -64,11 +90,6 @@ def _validate_check(index: int, check: object) -> list[str]:
         return [f"{where}: must be an object, got {type(check).__name__}"]
 
     errors: list[str] = []
-
-    for key in sorted(FORBIDDEN_CHECK_KEYS & set(check)):
-        errors.append(
-            f"{where}: forbidden key {key!r} — a fixture may not name a command; "
-            f"use type 'verifier' with a registered verifier_id instead")
 
     check_type = check.get("type")
     if check_type is None:
@@ -101,7 +122,7 @@ def validate_case(case: dict) -> list[str]:
     if not is_v2(case):
         return []
 
-    errors: list[str] = []
+    errors: list[str] = _scan_forbidden_keys(case, "case")
 
     for field in REQUIRED_FIELDS:
         if field not in case:
