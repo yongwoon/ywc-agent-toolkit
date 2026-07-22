@@ -88,3 +88,7 @@ class RunnerTest(unittest.TestCase):
             path = request.workspace / "input.txt"; path.write_text("other"); os.utime(path, ns=(original.st_atime_ns, original.st_mtime_ns))
         result = self.run_live(self.payload(), FakeAdapter(rewrite))
         self.assertEqual("FAIL", result["status"]); self.assertIn("input.txt", result["diff"])
+
+
+if __name__ == "__main__":
+    unittest.main()

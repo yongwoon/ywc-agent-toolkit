@@ -209,6 +209,11 @@ def validate_one(fixtures_path: Path, outputs_root: Path, seen_ids: set[str]) ->
 
 
 def validate(fixtures_path: Path, outputs_root: Path, v2_fixtures_path: Path | None = None) -> int:
+    # The required fixture file must exist. Skipping it the way an optional v2
+    # file is skipped would leave total == passed == 0, so a gate that verified
+    # nothing would report success.
+    if not fixtures_path.is_file():
+        raise ValueError(f"required fixture file not found: {fixtures_path}")
     paths = [fixtures_path]
     if v2_fixtures_path is not None:
         paths.append(v2_fixtures_path)
