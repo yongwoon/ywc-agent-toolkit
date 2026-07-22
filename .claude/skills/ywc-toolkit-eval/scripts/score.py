@@ -44,6 +44,15 @@ KANA = re.compile(r"[぀-ヿ]")
 JAPANESE = re.compile(r"[぀-ヿ一-鿿]")
 MUTATING_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit", "Bash"}
 READONLY_HINT = re.compile(r"review|audit|analyst|reviewer|read-only", re.IGNORECASE)
+# An implementer verb in the role's OPENING clause vetoes a read-only classification.
+# Scoped to the opening clause (before the first em-dash) on purpose: scanning the whole
+# role statement also matches negations and routing notes ("does NOT execute", "fixes go
+# to X"), which would wrongly clear genuinely read-only agents.
+IMPL_ROLE_HINT = re.compile(
+    r"\b(implement|implementing|author|authoring|writ(?:e|ing)|modif(?:y|ying)"
+    r"|provision|scaffold)\b",
+    re.IGNORECASE,
+)
 
 # A5 model-tier heuristic (FR3) — role keywords matched against the agent NAME,
 # the canonical role id. Descriptions are deliberately NOT matched: they
@@ -498,7 +507,16 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     # of "review"/"audit" in its dispatcher trigger list — otherwise a coder/test
     # agent dispatched BY a review skill is wrongly flagged read-only (A3 false-).
     role_text = desc.split("Triggers:")[0]
-    readonly_role = bool(READONLY_HINT.search(name) or READONLY_HINT.search(role_text))
+    # ...and stripping the trigger list is not enough on its own. An implementer can
+    # mention reviewing INSIDE its own role statement — ywc-cloud-engineer authors
+    # Terraform "including ... a reliability-lens review of the change" — and was
+    # scored A3=3 as a read-only agent holding Write/Edit/Bash. The role is declared
+    # by its opening clause, so an implementer verb there vetoes the classification.
+    role_head = re.split(r"—|--", role_text)[0]
+    readonly_role = bool(
+        (READONLY_HINT.search(name) or READONLY_HINT.search(role_text))
+        and not IMPL_ROLE_HINT.search(role_head)
+    )
     signals: dict = {}
 
     # A3 tool minimality (band logic in a3_tool_band — implementer agents that

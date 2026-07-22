@@ -269,6 +269,46 @@ class FrontmatterAndStructureTest(unittest.TestCase):
                                   "Do not use during active feature work, or for X."))
 
 
+class ReadonlyRoleTest(unittest.TestCase):
+    """A3 — an implementer that mentions reviewing must not be scored read-only."""
+
+    @staticmethod
+    def _readonly(name: str, role_text: str) -> bool:
+        """Mirror score_agent()'s classification on an isolated role statement."""
+        import re
+        head = re.split(r"—|--", role_text)[0]
+        return bool(
+            (score.READONLY_HINT.search(name) or score.READONLY_HINT.search(role_text))
+            and not score.IMPL_ROLE_HINT.search(head)
+        )
+
+    def test_implementer_mentioning_review_is_not_readonly(self) -> None:
+        """The ywc-cloud-engineer regression: authors Terraform, reviews its own change."""
+        role = ("Use when implementing or modifying Infrastructure-as-Code — Terraform "
+                "modules and resources, including terraform plan verification and a "
+                "reliability-lens review of the change. ")
+        self.assertFalse(self._readonly("ywc-cloud-engineer", role))
+        self.assertEqual(score.a3_tool_band("Read, Write, Edit, Bash", False), 5)
+
+    def test_genuine_reviewer_stays_readonly(self) -> None:
+        role = "Use when reviewing Go code for goroutine lifecycle — leak detection. "
+        self.assertTrue(self._readonly("ywc-go-reviewer", role))
+
+    def test_readonly_holding_mutating_tool_is_still_banded_three(self) -> None:
+        """The veto must not disarm the real least-privilege check."""
+        self.assertEqual(score.a3_tool_band("Read, Grep, Write", True), 3)
+
+    def test_veto_reads_only_the_opening_clause(self) -> None:
+        """A negation or routing note after the em-dash must not clear a reviewer.
+
+        Mirrors ywc-performance-engineer, whose role statement declares itself
+        read-only and then mentions writing verbs only to route them elsewhere.
+        """
+        role = ("Use when analyzing performance characteristics — read-only; the agent "
+                "recommends but does NOT execute the fix; fixes go to ywc-backend-coder. ")
+        self.assertTrue(self._readonly("ywc-performance-engineer", role))
+
+
 class ProseLintTest(unittest.TestCase):
     """Prose lint — advisory signal only; must never move an axis."""
 
