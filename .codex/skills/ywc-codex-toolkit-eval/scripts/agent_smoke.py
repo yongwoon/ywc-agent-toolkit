@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from fixture_validator import FixtureValidationError, validate_fixture
+
 
 REQUIRED_FIELDS = {
     "id",
@@ -24,6 +26,16 @@ REQUIRED_FIELDS = {
     "expected_status",
     "expected_signals",
     "forbidden_signals",
+}
+V2_REQUIRED_FIELDS = {
+    "id",
+    "agent",
+    "input",
+    "evidence_packet",
+    "expected_status",
+    "expected_signals",
+    "forbidden_signals",
+    "output_path",
 }
 VALID_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT"}
 AGENT_ROOT = Path("codex/agents")
@@ -81,13 +93,15 @@ def resolve_output_path(evaluator_root: Path, outputs_root: Path, output_path: s
 def validate_fixture_shape(
     fixture: Any,
     *,
+    schema: int,
     seen_ids: set[str],
     agent_names: set[str],
 ) -> tuple[str, str, str, str, list[str], list[str]]:
     if not isinstance(fixture, dict):
         raise ValueError("fixture entries must be JSON objects")
     fixture_id = require_string(fixture.get("id"), "id", "<unknown>")
-    missing = sorted(REQUIRED_FIELDS - set(fixture))
+    required_fields = V2_REQUIRED_FIELDS if schema == 2 else REQUIRED_FIELDS
+    missing = sorted(required_fields - set(fixture))
     if missing:
         raise ValueError(f"{fixture_id}: missing required fields: {', '.join(missing)}")
     if fixture_id in seen_ids:
@@ -98,7 +112,15 @@ def validate_fixture_shape(
     if agent not in agent_names:
         raise ValueError(f"{fixture_id}: unknown agent {agent}")
     output_path = require_string(fixture["output_path"], "output_path", fixture_id)
-    require_string(fixture["intent"], "intent", fixture_id)
+    if schema == 1:
+        require_string(fixture["intent"], "intent", fixture_id)
+        if "input" in fixture:
+            raise ValueError(f"{fixture_id}: schema 1 fixture must not contain V2 input")
+    else:
+        if "intent" in fixture:
+            raise ValueError(f"{fixture_id}: schema 2 fixture must not contain V1 intent")
+        if not isinstance(fixture["input"], dict):
+            raise ValueError(f"{fixture_id}: field 'input' must be an object")
     if not isinstance(fixture["evidence_packet"], dict):
         raise ValueError(f"{fixture_id}: field 'evidence_packet' must be an object")
     expected_status = require_string(fixture["expected_status"], "expected_status", fixture_id)
@@ -135,12 +157,17 @@ def validate_output(
     return failures
 
 
-def validate(fixtures_path: Path, outputs_root: Path) -> int:
+def validate_one(fixtures_path: Path, outputs_root: Path, seen_ids: set[str]) -> tuple[int, int]:
     payload = load_json(fixtures_path)
     if "schema" not in payload or "fixtures" not in payload:
         raise ValueError("fixture file requires top-level 'schema' and 'fixtures' fields")
-    if payload["schema"] != 1:
+    schema = payload["schema"]
+    if schema not in {1, 2}:
         raise ValueError(f"unsupported schema: {payload['schema']}")
+    try:
+        validate_fixture(payload, fixture_root=fixtures_path.parent / "fixtures")
+    except FixtureValidationError as exc:
+        raise ValueError(f"schema validation failed: {exc}") from exc
     fixtures = payload["fixtures"]
     if not isinstance(fixtures, list):
         raise ValueError("'fixtures' must be a list")
@@ -148,13 +175,12 @@ def validate(fixtures_path: Path, outputs_root: Path) -> int:
     repo_root = find_repo_root(fixtures_path.resolve())
     evaluator_root = outputs_root.resolve().parent.parent
     agent_names = known_agents(repo_root)
-    seen_ids: set[str] = set()
     failed = 0
 
     for fixture in fixtures:
         try:
             fixture_id, agent, output_path, expected_status, expected_signals, forbidden_signals = (
-                validate_fixture_shape(fixture, seen_ids=seen_ids, agent_names=agent_names)
+                validate_fixture_shape(fixture, schema=schema, seen_ids=seen_ids, agent_names=agent_names)
             )
             output_file = resolve_output_path(evaluator_root, outputs_root, output_path)
             failures = validate_output(
@@ -179,23 +205,40 @@ def validate(fixtures_path: Path, outputs_root: Path) -> int:
         else:
             print(f"PASS {fixture_id} ({agent})")
 
-    total = len(fixtures)
-    passed = total - failed
+    return len(fixtures) - failed, len(fixtures)
+
+
+def validate(fixtures_path: Path, outputs_root: Path, v2_fixtures_path: Path | None = None) -> int:
+    paths = [fixtures_path]
+    if v2_fixtures_path is not None:
+        paths.append(v2_fixtures_path)
+    seen_ids: set[str] = set()
+    passed = total = 0
+    for path in paths:
+        if not path.is_file():
+            continue
+        path_passed, path_total = validate_one(path, outputs_root, seen_ids)
+        passed += path_passed
+        total += path_total
     print(f"Summary: {passed}/{total} passed")
-    return 0 if failed == 0 else 1
+    return 0 if passed == total else 1
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fixtures", type=Path, required=True)
     parser.add_argument("--outputs", type=Path, required=True)
+    parser.add_argument("--v2-fixtures", type=Path, default=None,
+                        help="optional separately-versioned schema-2 fixture file")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     try:
-        return validate(args.fixtures, args.outputs)
+        default_v2 = args.fixtures.with_name(f"{args.fixtures.stem}.v2.json")
+        v2_fixtures = args.v2_fixtures or (default_v2 if default_v2.is_file() else None)
+        return validate(args.fixtures, args.outputs, v2_fixtures)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
