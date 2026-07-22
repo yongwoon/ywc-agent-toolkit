@@ -150,6 +150,53 @@ graph LR
   Q --> R
 ```
 
+---
+
+## Batch — Codex Skill Eval Upgrade
+
+- Spec: `docs/ywc-plans/codex-skill-eval-upgrade.md`
+- Granularity mode: `llm` · Language: Korean
+- Starting phase: `000064` (highest existing phase across dependency graph, `tasks/`, and `tasks/completed/` is `000063`)
+- Scope: local-only `.codex/skills/ywc-codex-toolkit-eval`; evaluator must not be distributed under `codex/skills/` or plugin output.
+
+### Phase 000064 — Evaluator Foundation
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000064-010-infra-evaluator-discovery-schema-registry` | infra | (root) |
+| `000064-020-domain-isolated-runner-adapter` | domain | `000064-010` |
+
+### Phase 000065 — Execution Evidence
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000065-010-domain-results-artifacts-ablation` | domain | `000064-020` |
+| `000065-020-test-v2-fixture-migration` | test | `000064-010`, `000064-020` |
+
+### Phase 000066 — Operationalization
+
+| Task | Category | Depends On |
+| --- | --- | --- |
+| `000066-010-infra-eval-ci-workflow-docs` | infra | `000065-010`, `000065-020` |
+
+## Parallel Execution Notes — Codex Skill Eval Upgrade
+
+- Initial ready set: `000064-010-infra-evaluator-discovery-schema-registry`.
+- `000064-020` must wait for `000064-010`: the runner consumes the manifest and verifier registry rather than redefining them.
+- After all Phase `000064` tasks merge, `000065-010` and `000065-020` can run in parallel. The former owns evaluator result/aggregation modules; the latter owns four distributable skill fixture directories plus evaluator fixture data.
+- `000066-010` is a hard gate after all Phase `000065` tasks. Its workflow must consume, not recreate, the finalized result status/artifact contract and migrated fixture inventory.
+- `000064-010` and `000064-020` must not run in parallel. `000066-010` must not run in parallel with either Phase `000065` task.
+
+```mermaid
+graph LR
+  A[000064-010 discovery/schema/registry] --> B[000064-020 isolated runner/adapter]
+  B --> C[000065-010 results/artifacts/ablation]
+  B --> D[000065-020 V2 fixture migration]
+  A --> D
+  C --> E[000066-010 CI workflow/docs]
+  D --> E
+```
+
 ## Batch 5 — Claude Code Executor TDD / Deep Module / Gray Box Improvements
 
 - Spec: `docs/ywc-plans/claude-code-executor-tdd-deep-module-gray-box.md`
@@ -1259,3 +1306,55 @@ graph LR
   A --> C[000063-030 verification]
   B --> C
 ```
+
+---
+
+## Batch — Claude Code Skill Eval Runner
+
+- Spec: `docs/ywc-plans/claude-skill-eval-runner.md` (Confidence 88/100 PROCEED, Phase 0 종결)
+- Granularity mode: `llm` · Language: Korean
+- Starting phase: `000067` (기존 최고 PHASE 는 `000066` — `dependency-graph.md` ∪ `tasks/` ∪ `tasks/completed/` 의 최댓값)
+- Scope: local-only `.claude/skills/ywc-toolkit-eval`. evaluator 는 `claude-code/skills/` 로 배포하지 않는다.
+- **노선 N1 확정** — catalog 격리 없이 구독 인증으로 실행하고, 귀속은 with/without ablation 차이로만 주장한다.
+
+### Phase 000067 — 평가 기반
+
+| Task | Category | Criticality | Depends On |
+| --- | --- | --- | --- |
+| `000067-010-infra-fixture-v2-schema-verifier-registry` | infra | critical | (root) |
+| `000067-020-domain-eval-runner-workspace-boundary` | domain | critical | `000067-010` |
+
+### Phase 000068 — 측정과 귀속
+
+| Task | Category | Criticality | Depends On |
+| --- | --- | --- | --- |
+| `000068-010-domain-s3-reliability-wiring` | domain | normal | `000067-020` |
+| `000068-020-domain-ablation-paired-trials` | domain | normal | `000067-010`, `000067-020` |
+
+### Phase 000069 — 운영
+
+| Task | Category | Criticality | Depends On |
+| --- | --- | --- | --- |
+| `000069-010-infra-eval-ci-two-tier-docs` | infra | normal | `000068-010`, `000068-020` |
+
+### 실행 순서
+
+```
+000067-010 ──> 000067-020 ──┬──> 000068-010 ──┐
+                            │                 ├──> 000069-010
+                            └──> 000068-020 ──┘
+```
+
+### Parallel Execution Notes
+
+- `000068-010` 과 `000068-020` 은 의존상 병렬 가능하나 **병렬 실행하지 않는다** — 둘 다 `.claude/skills/ywc-toolkit-eval/references/` 문서를 건드린다 (각 README 의 `Conflicts With` 참조).
+- `000069-010` 은 `scripts/validate.sh` 와 `.github/workflows/validate.yml` 이라는 저장소 전역 파일을 건드리므로 단독 실행한다.
+- Phase 경계는 hard gate 다. `000067` 전량 완료 전에는 `000068` 을 시작하지 않는다.
+
+### Open Questions (spec 저자에게)
+
+- 없음 — spec 의 Open Questions 4건은 `## Iteration 4 Amendments` 에서 노선 N1 확정으로 모두 해소되었다.
+
+### 비용 주의
+
+live 실행은 dispatch 당 약 **$0.54**(설치된 skill 전량이 컨텍스트에 실림), ablation 은 케이스당 `6 × 2 × $0.54 ≈ $6.5`. `000068-020` 과 `000069-010` 의 수동 검증은 대상 케이스를 소수로 엄선한다.
