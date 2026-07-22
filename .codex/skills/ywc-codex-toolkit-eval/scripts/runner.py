@@ -85,18 +85,24 @@ def _run_verifiers(normalized: dict[str, Any], repo_root: Path, workspace: Path)
     """Run only registry-owned commands and detect readonly-root mutation."""
     for verifier_id in normalized["workspace"]["verifier_ids"]:
         verifier = get_verifier(verifier_id)
-        cwd = workspace if verifier.mode is VerifierMode.FIXTURE_WORKSPACE else repo_root
+        readonly = verifier.mode is VerifierMode.SOURCE_CHECKOUT_READONLY
+        cwd = repo_root if readonly else workspace
         # The registry limits what can execute; the readonly promise covers every
-        # tracked source path, not merely the command's declared input roots.
-        before = _snapshot(repo_root)
+        # tracked source path, not merely the command's declared input roots. Only
+        # a readonly verifier needs that whole-checkout hash, so a workspace-mode
+        # verifier no longer pays for it.
+        before = _snapshot(repo_root) if readonly else None
+        # Allow-list semantics: a named key passes its real value through and
+        # nothing else reaches the subprocess.
+        env = {key: os.environ[key] for key in verifier.allowed_environment if key in os.environ}
         try:
             proc = subprocess.run(verifier.argv, cwd=cwd / verifier.cwd, capture_output=True, text=True,
-                                  timeout=verifier.timeout_seconds, env={key: "" for key in verifier.allowed_environment})
+                                  timeout=verifier.timeout_seconds, env=env)
         except subprocess.TimeoutExpired:
             return f"verifier timed out: {verifier_id}"
         if proc.returncode != verifier.expected_exit_status:
             return f"verifier failed: {verifier_id}"
-        if verifier.mode is VerifierMode.SOURCE_CHECKOUT_READONLY and before != _snapshot(repo_root):
+        if readonly and before != _snapshot(repo_root):
             return "readonly verifier mutated source checkout"
     return None
 
