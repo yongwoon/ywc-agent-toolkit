@@ -245,7 +245,8 @@ python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_workflow_contract.py
 ```
 
 Workflow reports live under `docs/skill-agent-eval/codex/runs/<run-id>/` and are
-gitignored. They are run-ID-scoped, redacted, capped at 10 MB before upload, and
+gitignored. They are run-ID-scoped, redacted or fail-closed when secret-like
+content is detected, capped at 10 MB before upload, and
 only stale `FAIL`/`ERROR` run directories older than seven days are cleaned.
 Status exits are `PASS=0`, `FAIL=1`, `ERROR=2`, and `SKIPPED_UNAVAILABLE=3`.
 

@@ -32,7 +32,7 @@ API-egress policy の両方が必要です。未設定なら静かに成功せ�
 `SKIPPED_UNAVAILABLE`（exit 3）を返します。Ablation は manual-only であり、
 `INCONCLUSIVE=0` はこの経路だけで許可され、retire 判定には使いません。
 report は gitignore 対象の `docs/skill-agent-eval/codex/runs/<run-id>/` に置き、
-upload 前に redaction と 10 MB cap を適用し、失敗 run は最大 7 日だけ保持します。
+upload 前に redaction または secret-like content の fail-closed 検査と 10 MB cap を適用し、失敗 run は最大 7 日だけ保持します。
 
 ## 関連 Skill
 

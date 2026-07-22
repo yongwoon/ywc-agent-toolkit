@@ -8,7 +8,7 @@ import json
 import os
 from pathlib import Path
 
-from results import MAX_ARTIFACT_BYTES, ArtifactStore
+from results import MAX_ARTIFACT_BYTES, ArtifactStore, redact
 
 STATUS_EXITS = {"PASS": 0, "FAIL": 1, "ERROR": 2, "SKIPPED_UNAVAILABLE": 3}
 SENSITIVE_PATH_PARTS = ("credential", "secret", "token", "password", "environment", "transcript")
@@ -48,6 +48,14 @@ def check_upload_root(root: Path) -> None:
         total += path.stat().st_size
         if total > MAX_ARTIFACT_BYTES:
             raise ValueError("evaluator artifacts exceed 10 MB cap")
+        try:
+            contents = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            # The report contract is text-only. Rejecting opaque binary data is
+            # safer than uploading bytes that cannot be scanned for secrets.
+            raise ValueError(f"non-text artifact is not uploadable: {relative}") from exc
+        if redact(contents) != contents:
+            raise ValueError(f"secret-like artifact content is not uploadable: {relative}")
 
 
 def main() -> int:

@@ -31,7 +31,8 @@ Live evaluation is scheduled/manual and requires an explicit credential-provider
 handoff plus an API-egress policy. Without both, it reports
 `SKIPPED_UNAVAILABLE` (exit 3), never a silent pass. Ablation is manual-only;
 `INCONCLUSIVE=0` is allowed there only and never causes retirement. Reports use
-`docs/skill-agent-eval/codex/runs/<run-id>/`, are gitignored/redacted, capped at
+`docs/skill-agent-eval/codex/runs/<run-id>/`, are gitignored and redacted or
+fail-closed for secret-like content, capped at
 10 MB before upload, and retain failed runs for at most seven days.
 
 ## Related Skills

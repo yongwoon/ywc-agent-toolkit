@@ -40,7 +40,11 @@ class WorkflowContractTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "sensitive"):
                 check_upload_root(root)
             (root / "secret").rename(root / "removed")
-            (root / "large.bin").write_bytes(b"x" * (10 * 1024 * 1024 + 1))
+            (root / "report.md").write_text("API_KEY=should-not-upload")
+            with self.assertRaisesRegex(ValueError, "secret-like artifact content"):
+                check_upload_root(root)
+            (root / "report.md").write_text("safe")
+            (root / "large.log").write_text("x" * (10 * 1024 * 1024 + 1))
             with self.assertRaisesRegex(ValueError, "10 MB"):
                 check_upload_root(root)
 

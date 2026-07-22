@@ -39,7 +39,7 @@ handoff와 API-egress policy가 모두 필요합니다. 둘 중 하나라도 없
 manual-only이며 `INCONCLUSIVE=0`은 이 경로에서만 허용되고 retire 결정으로
 사용되지 않습니다. 보고서는 gitignore된
 `docs/skill-agent-eval/codex/runs/<run-id>/` 아래에 저장하며, 업로드 전
-redaction 및 10 MB cap을 적용하고 실패 실행은 최대 7일만 보존합니다.
+redaction 또는 secret-like content fail-closed 검사와 10 MB cap을 적용하고 실패 실행은 최대 7일만 보존합니다.
 
 ## 관련 Skill
 
