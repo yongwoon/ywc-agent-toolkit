@@ -105,6 +105,19 @@ A skill or agent may be retired, but **its cases stay**. Do not delete the fixtu
 
 Retired cases are regression evidence: when a later model update makes the retired capability silently worse, these are the only cases that would have caught it. They do not contribute to any live item's coverage (the retired item is no longer in the catalog) and must not be treated as orphaned fixtures. This mirrors the Codex-side policy that fixtures survive retirement — see `docs/ywc-plans/codex-skill-eval-upgrade.md`.
 
+### How an item reaches retirement
+
+Retirement is irreversible in practice — once a skill is gone, the prompts that used to reach it fall through to whatever else claims them. So the path is deliberately narrow, and `scripts/ablation.py` enforces each step rather than leaving it to judgment.
+
+1. **Run the ablation.** `python3 scripts/ablation.py --case <id> --suite expensive --adapter claude --loaded-skill-count <n>`. The `--suite expensive` opt-in exists because this dispatches for real money: 6 trials × 2 arms × ~$0.54 ≈ **$6.50 per case**. Select a small, deliberate set of cases.
+2. **Read the verdict, not the pass counts.** `classify()` returns `CANDIDATE_FOR_REVIEW` only when all 6 pairs were valid, the cost is recorded, the loaded-skill count is recorded, and the without-arm failed at most **one** time more than the with-arm. Anything short of that is `INCONCLUSIVE` — which is not a weak yes, but "this experiment did not answer the question".
+3. **A human approves, by name.** `retire(suite, approved_by=...)` raises `ApprovalRequired` without a named approver, and raises it again when the verdict is anything other than `CANDIDATE_FOR_REVIEW`. Approval is necessary and not sufficient: nobody can approve a conclusion the evidence never reached.
+4. **Mark the fixture, never delete it** — `retired: true`, per the policy above.
+
+**What the verdict claims, and what it does not.** Route N1 loads the entire installed catalog in both arms, so a sibling skill may have contributed to the with-arm result. Every report prints the loaded-skill count for exactly that reason, and the claim is limited to the *difference between the two arms* — never "this skill alone produced the outcome". A run that cannot state how many skills were loaded is `INCONCLUSIVE` by construction.
+
+Ablation never runs in CI: it costs real money and needs the developer's subscription session, which CI does not have.
+
 ## Why Description-Only
 
 The judge must NOT read SKILL.md bodies. Real activation happens on Tier-1 metadata before any body loads. Judging on the body would measure a capability the runtime never has, and would mask descriptions that read well in full but collide as one-liners. This is the same reason `ywc-skill-author` forbids workflow summaries in the description.
