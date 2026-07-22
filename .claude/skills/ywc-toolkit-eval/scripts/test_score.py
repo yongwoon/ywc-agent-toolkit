@@ -378,5 +378,149 @@ class ProseLintTest(unittest.TestCase):
             self.assertEqual(len(poisoned["signals"]["prose_lint"]["noop_lines"]), 99)
 
 
+SKILL_WEIGHTS = {"S1": 30, "S2": 15, "S3": 20, "S4": 10, "S5": 15, "S6": 10}
+
+
+class S3ReliabilityBandTest(unittest.TestCase):
+    """S3 becomes an observed reliability, not a reading of the body."""
+
+    def test_perfect_reliability_is_five(self) -> None:
+        self.assertEqual(score.reliability_band(6, 6), 5)
+
+    def test_total_failure_is_zero(self) -> None:
+        self.assertEqual(score.reliability_band(0, 6), 0)
+
+    def test_bands_are_monotonic_in_passes(self) -> None:
+        bands = [score.reliability_band(p, 6) for p in range(7)]
+        self.assertEqual(bands, sorted(bands))
+
+    def test_zero_trials_is_unmeasured_not_zero(self) -> None:
+        # No evidence and evidence-of-failure are different findings; collapsing
+        # them would let a missing fixture read as a broken skill.
+        self.assertEqual(score.reliability_band(0, 0), score.UNMEASURED)
+
+    def test_band_four_is_unreachable_at_six_trials(self) -> None:
+        # AC9 wants the unreachable bands named rather than assumed away.
+        # 5/6 = 0.833 falls to band 3 and 6/6 = 1.0 jumps to band 5.
+        self.assertEqual(score.unreachable_bands(6), [4])
+
+    def test_more_trials_close_the_gap(self) -> None:
+        self.assertEqual(score.unreachable_bands(10), [])
+
+
+class HistoryRowHonestyTest(unittest.TestCase):
+    """An unmeasured axis must not be laundered into a smaller total."""
+
+    def _measured(self, **over) -> dict:
+        axes = {"S1": 5, "S2": 5, "S3": 4, "S4": 5, "S5": 5, "S6": 4}
+        axes.update(over)
+        return axes
+
+    def test_measured_item_gets_a_total(self) -> None:
+        self.assertEqual(score.item_total(self._measured(), SKILL_WEIGHTS), 94)
+
+    def test_unmeasured_axis_yields_no_total(self) -> None:
+        self.assertIsNone(
+            score.item_total(self._measured(S3=score.UNMEASURED), SKILL_WEIGHTS))
+
+    def test_skipped_judgment_axis_also_yields_no_total(self) -> None:
+        self.assertIsNone(score.item_total(self._measured(S3=None), SKILL_WEIGHTS))
+
+    def test_unmeasured_axes_are_named(self) -> None:
+        axes = self._measured(S1=score.UNMEASURED, S3=None)
+        self.assertEqual(score.unmeasured_axes(axes), ["S1", "S3"])
+
+    def test_unmeasured_item_is_null_and_excluded_from_statistics(self) -> None:
+        row = score.build_history_row({
+            "ywc-sample-a": {"axes": self._measured(), "s3_source": "runner"},
+            "ywc-sample-b": {"axes": self._measured(S3=score.UNMEASURED)},
+        }, SKILL_WEIGHTS)
+
+        self.assertIsNone(row["items"]["ywc-sample-b"])
+        self.assertEqual(row["unmeasured"], ["ywc-sample-b"])
+        self.assertEqual(row["count"], 2)
+        self.assertEqual(row["measured"], 1)
+        # The mean is over measured items only — averaging in a null, or
+        # treating it as zero, would both misreport the catalog.
+        self.assertEqual(row["mean_total"], 94.0)
+
+    def test_below_threshold_ignores_unmeasured_items(self) -> None:
+        row = score.build_history_row({
+            "weak": {"axes": {"S1": 2, "S2": 2, "S3": 2, "S4": 2, "S5": 2, "S6": 2}},
+            "unknown": {"axes": self._measured(S3=score.UNMEASURED)},
+        }, SKILL_WEIGHTS)
+        self.assertEqual(row["below_threshold"], 1)
+
+    def test_all_unmeasured_reports_no_mean_rather_than_zero(self) -> None:
+        row = score.build_history_row({
+            "a": {"axes": self._measured(S3=score.UNMEASURED)},
+        }, SKILL_WEIGHTS)
+        self.assertIsNone(row["mean_total"])
+        self.assertEqual(row["below_threshold"], 0)
+
+    def test_s3_source_is_recorded_and_validated(self) -> None:
+        # A 4 measured by the runner and a 4 inferred from reading the body are
+        # different claims; the row has to say which one it is.
+        row = score.build_history_row({
+            "a": {"axes": self._measured(), "s3_source": "runner"},
+            "b": {"axes": self._measured(), "s3_source": "read-only"},
+        }, SKILL_WEIGHTS)
+        self.assertEqual(row["s3_source"], {"a": "runner", "b": "read-only"})
+
+        with self.assertRaises(ValueError):
+            score.build_history_row(
+                {"c": {"axes": self._measured(), "s3_source": "vibes"}}, SKILL_WEIGHTS)
+
+
+class S3DoesNotReachTheCiBaselineTest(unittest.TestCase):
+    """AC7 — the CI gate stays a pure function of the mechanical tier."""
+
+    def test_axes_s3_is_none_for_every_skill(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n"
+                "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+                "---\n\n**Announce at start:** x\n", encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+            self.assertIsNone(score.score_skill(d, {}, {})["axes"]["S3"])
+
+    def test_judgment_axes_never_enter_the_real_baseline(self) -> None:
+        # The invariant that actually protects `--ci`: judgment axes stay
+        # `None` in `score_skill`, so `flatten_mech` never stores them and the
+        # baseline cannot move with an LLM's mood.
+        #
+        # Note what this does NOT claim: `flatten_mech` filters `None` only, so
+        # it would happily store a *number* someone wired into `axes.S3`. The
+        # guarantee lives upstream, which is why the assertion is made against
+        # real scored output rather than a hand-built dict.
+        baseline = score.flatten_mech(score.evaluate(".claude/skills"))
+        self.assertTrue(baseline, "no items scored — the assertion would be vacuous")
+        for key, axes in baseline.items():
+            for judgment_axis in ("S3", "S6"):
+                self.assertNotIn(judgment_axis, axes,
+                                 f"{key}: {judgment_axis} reached the CI baseline")
+
+    def test_runner_reliability_is_not_wired_into_axes(self) -> None:
+        # reliability_band() produces real S3 values, and they must stay out of
+        # the mechanical result entirely — scorecard and backlog only.
+        import tempfile
+        self.assertEqual(score.reliability_band(6, 6), 5)
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n"
+                "description: (ywc) Use when sampling. Do not use for others. 한국어 日本語\n"
+                "---\n\n**Announce at start:** x\n", encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+            flat = score.flatten_mech({"r": [score.score_skill(d, {}, {})]})
+            self.assertNotIn("S3", next(iter(flat.values())))
+
+
 if __name__ == "__main__":
     unittest.main()

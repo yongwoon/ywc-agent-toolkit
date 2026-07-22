@@ -627,6 +627,132 @@ def mechanical_table(results: dict) -> str:
     return "\n".join(lines)
 
 
+# --------------------------------------------------------------------------
+# History record rules (judgment tier)
+#
+# These functions shape `history.json` only. They deliberately touch nothing in
+# the axes computation above: `axes.S3` stays `None`, `flatten_mech()` keeps
+# storing only non-null axes, and so `--ci` stays a pure function of the
+# mechanical tier. Putting a runner-derived S3 into `axes` would make the CI
+# gate depend on LLM nondeterminism, which AC7 forbids.
+# --------------------------------------------------------------------------
+
+UNMEASURED = "unmeasured"
+
+# Trials adopted for a reliability measurement (spec AC10: 6 paired trials).
+DEFAULT_TRIALS = 6
+
+# reliability -> S3 band, as (minimum ratio, score), highest first.
+S3_RELIABILITY_BANDS: tuple[tuple[float, int], ...] = (
+    (1.00, 5),
+    (0.90, 4),
+    (0.75, 3),
+    (0.50, 2),
+    (0.25, 1),
+    (0.00, 0),
+)
+
+# An item's S3 came from one of two places, and they are not interchangeable:
+# a 4 from observed runs and a 4 from reading the body are different claims.
+S3_SOURCES = ("runner", "read-only")
+
+
+def reliability_band(passes: int, trials: int) -> int | str:
+    """Map `passes / trials` onto an S3 band.
+
+    Returns `"unmeasured"` for zero trials rather than inventing a 0 — no
+    evidence is not the same finding as evidence of failure.
+    """
+    if trials <= 0:
+        return UNMEASURED
+    ratio = passes / trials
+    for minimum, score in S3_RELIABILITY_BANDS:
+        if ratio >= minimum:
+            return score
+    return 0
+
+
+def unreachable_bands(trials: int = DEFAULT_TRIALS) -> list[int]:
+    """Bands that `passes / trials` cannot produce at this trial count (AC9).
+
+    Reliability is discrete, so some bands simply have no attainable ratio.
+    At the adopted 6 trials, band 4 is one of them: 5/6 = 0.833 lands in band
+    3 and 6/6 = 1.0 lands in band 5, with nothing in between. Callers surface
+    this instead of letting a reader assume every band is achievable.
+    """
+    all_bands = {score for _, score in S3_RELIABILITY_BANDS}
+    if trials <= 0:
+        return sorted(all_bands)
+    attainable = {reliability_band(p, trials) for p in range(trials + 1)}
+    return sorted(all_bands - attainable)
+
+
+def is_measured(axes: dict) -> bool:
+    """True when every axis of an item carries a number.
+
+    `None` (this run skipped the judgment tier) and `"unmeasured"` (no fixture
+    exists to measure with) both disqualify an item from having a total.
+    """
+    return all(isinstance(v, (int, float)) and not isinstance(v, bool)
+               for v in axes.values())
+
+
+def item_total(axes: dict, weights: dict) -> int | None:
+    """Weighted `/100` total, or `None` when any axis is unmeasured.
+
+    A total computed over 80 available weight is a score out of 80 wearing a
+    `/100` label. Emitting `null` is the honest alternative — the reader is
+    told the number does not exist rather than handed a quiet understatement.
+    """
+    if not is_measured(axes):
+        return None
+    return round(sum(axes[a] / 5 * w for a, w in weights.items() if a in axes))
+
+
+def unmeasured_axes(axes: dict) -> list[str]:
+    """Names of the axes blocking a total, in rubric order."""
+    return [a for a, v in axes.items()
+            if not (isinstance(v, (int, float)) and not isinstance(v, bool))]
+
+
+def build_history_row(scored: dict, weights: dict,
+                      below_threshold_at: int = 70) -> dict:
+    """Build one root's `history.json` entry from judged items.
+
+    `scored` maps item name -> {"axes": {...}, "s3_source": "runner"|"read-only"}.
+    Unmeasured items are recorded as `null` and excluded from `mean_total` and
+    `below_threshold`, so neither statistic silently absorbs a missing axis.
+    """
+    items: dict[str, int | None] = {}
+    unmeasured: list[str] = []
+    s3_source: dict[str, str] = {}
+
+    for name, entry in scored.items():
+        axes = entry.get("axes", {})
+        total = item_total(axes, weights)
+        items[name] = total
+        if total is None:
+            unmeasured.append(name)
+        source = entry.get("s3_source")
+        if source is not None:
+            if source not in S3_SOURCES:
+                raise ValueError(
+                    f"{name}: s3_source must be one of {S3_SOURCES}, got {source!r}")
+            s3_source[name] = source
+
+    measured_totals = [t for t in items.values() if t is not None]
+    return {
+        "count": len(items),
+        "measured": len(measured_totals),
+        "unmeasured": sorted(unmeasured),
+        "mean_total": (round(sum(measured_totals) / len(measured_totals), 1)
+                       if measured_totals else None),
+        "below_threshold": sum(1 for t in measured_totals if t < below_threshold_at),
+        "items": items,
+        "s3_source": s3_source,
+    }
+
+
 def flatten_mech(results: dict) -> dict:
     flat = {}
     for rel, items in results.items():
