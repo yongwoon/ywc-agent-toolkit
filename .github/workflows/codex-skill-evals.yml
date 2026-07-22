@@ -5,6 +5,10 @@ on:
     paths:
       - '.codex/skills/ywc-codex-toolkit-eval/**'
       - '.github/workflows/codex-skill-evals.yml'
+      # The mocked suite inspects the evaluated catalogue itself, so a PR that
+      # only touches a target skill or agent must still run it.
+      - 'codex/skills/**'
+      - 'codex/agents/**'
   schedule:
     - cron: '17 3 * * 1'
   workflow_dispatch:
@@ -41,7 +45,10 @@ jobs:
 
   live-gate:
     name: Live evaluator availability gate
-    if: github.event_name == 'schedule' || inputs.suite == 'live'
+    # Deliberately not on `schedule`. This job has no provider implementation
+    # and always exits 3, so a cron trigger would manufacture a failed run every
+    # week. It stays reachable only through an explicit manual dispatch.
+    if: inputs.suite == 'live'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,6 +82,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # This job uploads a generated directory. Leaving the checkout token
+          # in the git config would put a credential within reach of anything
+          # that copies repository state into the upload root.
+          persist-credentials: false
       - name: Create redacted run-scoped report
         run: |
           run_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
