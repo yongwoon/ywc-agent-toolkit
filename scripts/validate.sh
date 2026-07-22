@@ -623,6 +623,39 @@ check_local_codex_toolkit_eval() {
   fi
 }
 
+# Claude-side evaluator. Deliberately a separate function rather than a
+# parameterized version of the Codex one: the two evaluators have diverged —
+# the Claude side has runner.py and fixture_schema.py, the Codex side has
+# inventory_gate.py, which does not exist here — so folding them together
+# would need a flag per difference and would couple two surfaces that are
+# evolving independently.
+check_local_claude_toolkit_eval() {
+  local skill_dir=".claude/skills/ywc-toolkit-eval"
+  local required
+  local leaked_dir
+
+  # Local-only, for the same reason as the Codex evaluator: the thing that
+  # grades the skills must never ship alongside them.
+  for leaked_dir in claude-code/skills/ywc-toolkit-eval plugins/ywc-agent-toolkit/skills/ywc-toolkit-eval; do
+    if [ -e "$leaked_dir" ]; then
+      echo "ERROR: local-only ywc-toolkit-eval must not be packaged at $leaked_dir"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  for required in \
+    scripts/score.py \
+    scripts/test_score.py \
+    scripts/fixture_schema.py \
+    scripts/runner.py \
+    scripts/test_runner.py; do
+    if [ ! -f "$skill_dir/$required" ]; then
+      echo "ERROR: local Claude evaluator file is missing: $skill_dir/$required"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+}
+
 check_cc_support_dirs() {
   local ref
 
@@ -728,6 +761,9 @@ check_codex_agents
 
 echo "==> Validating local Codex evaluator skill..."
 check_local_codex_toolkit_eval
+
+echo "==> Validating local Claude evaluator skill..."
+check_local_claude_toolkit_eval
 
 echo "==> Checking install script (dry run)..."
 bash scripts/install.sh --list > /dev/null

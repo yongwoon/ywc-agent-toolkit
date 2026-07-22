@@ -35,3 +35,71 @@ jobs:
       - name: Toolkit eval — mechanical regression gate
         run: |
           python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci
+
+  # Tier 1 of 2 — the only tier that can run in CI at all.
+  #
+  # Live evaluation is deliberately absent and cannot be added: dispatching
+  # `claude -p` needs the developer's subscription session, which exists on a
+  # workstation and not on a GitHub runner, and this project excludes API-key
+  # auth. So CI proves the harness is well-formed and deterministic, while the
+  # measuring itself is a local activity run once per release cycle.
+  #
+  # Everything below is schema checks and fake-adapter tests: zero model
+  # dispatches, zero credentials, no network. Adding either would violate
+  # spec §Phase 5".
+  skill-eval-schema:
+    name: Skill eval — schema and mock verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate v2 fixtures against the schema
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          sys.path.insert(0, ".claude/skills/ywc-toolkit-eval/scripts")
+          import fixture_schema
+
+          root = pathlib.Path(".claude/skills/ywc-toolkit-eval/evals/fixtures")
+          files = sorted(root.glob("*.json"))
+          if not files:
+              sys.exit(f"no v2 fixtures found under {root}")
+
+          failed = False
+          for path in files:
+              case = json.loads(path.read_text(encoding="utf-8"))
+              errors = fixture_schema.validate_case(case)
+              if errors:
+                  failed = True
+                  print(f"FAIL {path.name}")
+                  for e in errors:
+                      print(f"  - {e}")
+              else:
+                  fixture_schema.normalize_manifest(case, root)
+                  print(f"OK   {path.name}")
+          sys.exit(1 if failed else 0)
+          PY
+
+      - name: Fixture schema and verifier registry tests
+        run: |
+          python3 .claude/skills/ywc-toolkit-eval/scripts/test_fixture_schema.py
+
+      - name: Runner tests (fake adapter — no model dispatch)
+        run: |
+          python3 .claude/skills/ywc-toolkit-eval/scripts/test_runner.py
+
+      - name: Ablation tests (fake adapter — no model dispatch)
+        run: |
+          python3 .claude/skills/ywc-toolkit-eval/scripts/test_ablation.py
+
+      - name: Assert this tier stayed offline
+        run: |
+          # Guards the failure this tier exists to prevent: someone wiring
+          # `--adapter claude` into CI later. The CLI is absent on the runner,
+          # so a real dispatch would fail anyway — this states the intent
+          # rather than leaving it incidental.
+          if command -v claude >/dev/null 2>&1; then
+            echo "ERROR: the claude CLI is present in CI; this tier must never dispatch"
+            exit 1
+          fi
+          echo "OK: no claude CLI on the runner — evaluation stayed offline"
