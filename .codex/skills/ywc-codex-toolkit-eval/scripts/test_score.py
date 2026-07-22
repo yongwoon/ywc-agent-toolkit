@@ -131,16 +131,14 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
             output_file.write_text(output_text, encoding="utf-8")
         return fixtures, outputs
 
-    def run_agent_smoke(self, fixtures: Path, outputs: Path) -> subprocess.CompletedProcess[str]:
+    def run_agent_smoke(self, fixtures: Path, outputs: Path, v2_fixtures: Path | None = None) -> subprocess.CompletedProcess[str]:
+        command = [
+            sys.executable, str(AGENT_SMOKE_SCRIPT), "--fixtures", str(fixtures), "--outputs", str(outputs),
+        ]
+        if v2_fixtures is not None:
+            command.extend(["--v2-fixtures", str(v2_fixtures)])
         return subprocess.run(
-            [
-                sys.executable,
-                str(AGENT_SMOKE_SCRIPT),
-                "--fixtures",
-                str(fixtures),
-                "--outputs",
-                str(outputs),
-            ],
+            command,
             text=True,
             capture_output=True,
             check=False,
@@ -398,6 +396,42 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
 
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("duplicate fixture id", proc.stdout)
+
+    def test_agent_smoke_accepts_separately_versioned_v2_fixture(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(output_text="Status: DONE\nbounded review\n")
+        v2 = fixtures.with_name("agent-smoke-fixtures.v2.json")
+        v2.write_text(json.dumps({"schema": 2, "fixtures": [{
+            "id": "reviewer-v2-safe-boundary", "agent": "ywc-reviewer",
+            "input": {"prompt": "Review this static packet without executing anything."},
+            "evidence_packet": {"summary": "Static, credential-free evidence only."},
+            "expected_status": "DONE", "expected_signals": ["bounded review"],
+            "forbidden_signals": ["edit files"],
+            "output_path": "evals/agent-smoke-output/ywc-reviewer/v2-safe-boundary.md",
+        }]}, indent=2), encoding="utf-8")
+        output = fixtures.parent.parent / "evals/agent-smoke-output/ywc-reviewer/v2-safe-boundary.md"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("Status: DONE\nbounded review\n", encoding="utf-8")
+
+        proc = self.run_agent_smoke(fixtures, outputs, v2)
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("PASS reviewer-v2-safe-boundary", proc.stdout)
+        self.assertIn("Summary: 2/2 passed", proc.stdout)
+
+    def test_agent_smoke_rejects_v2_fixture_with_v1_intent(self) -> None:
+        fixtures, outputs = self._write_agent_smoke_case(output_text="Status: DONE\nbounded review\n")
+        v2 = fixtures.with_name("agent-smoke-fixtures.v2.json")
+        v2.write_text(json.dumps({"schema": 2, "fixtures": [{
+            "id": "ambiguous", "agent": "ywc-reviewer", "intent": "legacy shape",
+            "input": {"prompt": "safe"}, "evidence_packet": {"summary": "static"},
+            "expected_status": "DONE", "expected_signals": ["bounded review"],
+            "forbidden_signals": [], "output_path": "evals/agent-smoke-output/ywc-reviewer/ambiguous.md",
+        }]}, indent=2), encoding="utf-8")
+
+        proc = self.run_agent_smoke(fixtures, outputs, v2)
+
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("schema 2 fixture must not contain V1 intent", proc.stdout)
 
 
 if __name__ == "__main__":
