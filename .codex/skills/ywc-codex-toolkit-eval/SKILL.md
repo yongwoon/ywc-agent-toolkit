@@ -227,6 +227,28 @@ Before claiming the evaluation is complete, verify:
 - [ ] No Claude-only paths were scored as Codex assets.
 - [ ] `ywc-codex-toolkit-eval` does not appear under `codex/skills/` or `.codex-plugin/skills/`.
 
+## CI and Artifact Policy
+
+The evaluator workflow has deliberately separated trust boundaries:
+
+| Path | Allowed work | Live access |
+|---|---|---|
+| Pull request / mocked | schema, lint, registry, and fake-adapter checks | Never |
+| Weekly or manual `live` | availability gate only | Requires both configured credential handoff and explicit API-egress approval; otherwise `SKIPPED_UNAVAILABLE` exits 3 |
+| Manual `ablation` | paired-trial aggregation | `INCONCLUSIVE=0` only here; it never retires a skill |
+
+Run the offline workflow command locally with:
+
+```bash
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/runner.py --adapter fake --suite mocked
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/test_workflow_contract.py
+```
+
+Workflow reports live under `docs/skill-agent-eval/codex/runs/<run-id>/` and are
+gitignored. They are run-ID-scoped, redacted, capped at 10 MB before upload, and
+only stale `FAIL`/`ERROR` run directories older than seven days are cleaned.
+Status exits are `PASS=0`, `FAIL=1`, `ERROR=2`, and `SKIPPED_UNAVAILABLE=3`.
+
 ## Common Mistakes
 
 - **Evaluating Claude Code artifacts with this skill** — use `.claude/skills/ywc-toolkit-eval` for Claude Code.

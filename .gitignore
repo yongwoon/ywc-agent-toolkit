@@ -22,4 +22,4 @@ tasks/
 .worktrees/
 tasks-codex-sdlc-v11
 docs/skill-agent-eval/*/runs/
-
+docs/skill-agent-eval/codex/runs/

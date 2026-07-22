@@ -147,12 +147,22 @@ class ArtifactStore:
         return target
 
     def prune_expired(self, *, now: float | None = None) -> list[str]:
+        """Remove only expired failed runs owned by this artifact root.
+
+        A malformed or incomplete run directory is intentionally retained: cleanup
+        must never turn an investigation artifact into data loss.
+        """
         current = time.time() if now is None else now
         if not self.root.exists():
             return []
         removed: list[str] = []
         for run_dir in sorted(path for path in self.root.iterdir() if path.is_dir()):
-            if current - run_dir.stat().st_mtime > self.retention_seconds:
+            summary = run_dir / "summary.json"
+            try:
+                status = json.loads(summary.read_text(encoding="utf-8")).get("status")
+            except (OSError, json.JSONDecodeError):
+                continue
+            if status in {"FAIL", "ERROR"} and current - run_dir.stat().st_mtime > self.retention_seconds:
                 shutil.rmtree(run_dir)
                 removed.append(run_dir.name)
         return removed

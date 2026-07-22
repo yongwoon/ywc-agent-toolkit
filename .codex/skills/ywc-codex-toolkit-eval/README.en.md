@@ -19,6 +19,21 @@ python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
 - `docs/skill-agent-eval/codex/scoreboard.md` — rolling scoreboard
 - `evals/history.mechanical.json` — reviewed mechanical baseline
 
+## CI boundary
+
+PRs run schema, lint, registry, and fake-adapter checks only:
+
+```bash
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/runner.py --adapter fake --suite mocked
+```
+
+Live evaluation is scheduled/manual and requires an explicit credential-provider
+handoff plus an API-egress policy. Without both, it reports
+`SKIPPED_UNAVAILABLE` (exit 3), never a silent pass. Ablation is manual-only;
+`INCONCLUSIVE=0` is allowed there only and never causes retirement. Reports use
+`docs/skill-agent-eval/codex/runs/<run-id>/`, are gitignored/redacted, capped at
+10 MB before upload, and retain failed runs for at most seven days.
+
 ## Related Skills
 
 - `ywc-skill-author` — source of Codex skill authoring rules

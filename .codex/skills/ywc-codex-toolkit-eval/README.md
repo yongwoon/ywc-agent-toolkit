@@ -25,6 +25,22 @@ python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --ci
 - `docs/skill-agent-eval/codex/scoreboard.md` — rolling scoreboard
 - `evals/history.mechanical.json` — reviewed mechanical baseline
 
+## CI 경계
+
+PR에서는 schema, lint, registry, fake-adapter 검사만 수행합니다.
+
+```bash
+python3 .codex/skills/ywc-codex-toolkit-eval/scripts/runner.py --adapter fake --suite mocked
+```
+
+Live 평가는 scheduled/manual 경로에만 있으며 명시적인 credential-provider
+handoff와 API-egress policy가 모두 필요합니다. 둘 중 하나라도 없으면 조용히
+성공하지 않고 `SKIPPED_UNAVAILABLE`(exit 3)을 보고합니다. Ablation은
+manual-only이며 `INCONCLUSIVE=0`은 이 경로에서만 허용되고 retire 결정으로
+사용되지 않습니다. 보고서는 gitignore된
+`docs/skill-agent-eval/codex/runs/<run-id>/` 아래에 저장하며, 업로드 전
+redaction 및 10 MB cap을 적용하고 실패 실행은 최대 7일만 보존합니다.
+
 ## 관련 Skill
 
 - `ywc-skill-author` — Codex Skill 구조와 authoring rule의 출처
