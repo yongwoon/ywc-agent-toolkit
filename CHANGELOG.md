@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+## [1.30.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.30.0...v1.30.1) (2026-07-24)
+
+
+### Fixed
+
+* **toolkit-eval:** reject description-derived trigger fixtures from the coverage floor ([#153](https://github.com/yongwoon/ywc-agent-toolkit/issues/153)) ([6c73da7](https://github.com/yongwoon/ywc-agent-toolkit/commit/6c73da7431836bd374cb77ec1bdec07639d76ba7))
+
 ## [1.30.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.29.0...v1.30.0) (2026-07-22)
 
 
