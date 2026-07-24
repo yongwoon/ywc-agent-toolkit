@@ -25,6 +25,11 @@ SKILL_ROOT = Path("codex/skills")
 AGENT_ROOT = Path("codex/agents")
 REQUIRED_READMES = ("README.md", "README.en.md", "README.ja.md", "README.ko.md")
 DEFAULT_HISTORY = Path(__file__).resolve().parent.parent / "evals" / "history.mechanical.json"
+TRIGGER_CASES = Path(__file__).resolve().parent.parent / "evals" / "trigger-cases.json"
+COVERAGE_MIN_POSITIVES = 3
+COVERAGE_MIN_COLLISIONS = 2
+INDEPENDENT_TRIGGER_SOURCES = frozenset({"user-prompt", "session-trace"})
+DESCRIPTION_DERIVED_SOURCE = "description-derived"
 
 SKILL_WEIGHTS = {
     "S1": 0.18,
@@ -193,7 +198,95 @@ def score_runtime_fit(frontmatter: dict[str, str], body: str) -> int:
     return 1
 
 
-def score_skill(skill_dir: Path, repo_root: Path) -> dict[str, object]:
+def load_coverage(cases_path: Path = TRIGGER_CASES) -> dict[str, dict[str, object]]:
+    """Return independent trigger-fixture coverage for each catalog item.
+
+    Description-derived fixtures may still be useful for a judge's case set,
+    but they cannot establish activation evidence: the judge reads the same
+    description from which those cases were authored.  Legacy cases without a
+    source are deliberately treated as description-derived rather than being
+    silently promoted to independent evidence.
+    """
+    if not cases_path.is_file():
+        return {}
+    data = json.loads(cases_path.read_text(encoding="utf-8"))
+    cases = data.get("cases", [])
+    if not isinstance(cases, list):
+        return {}
+
+    coverage: dict[str, dict[str, object]] = {}
+
+    def register(name: object) -> dict[str, object] | None:
+        if not isinstance(name, str):
+            return None
+        return coverage.setdefault(
+            name,
+            {
+                "positives": 0,
+                "collisions": 0,
+                "description_derived": 0,
+                "independent_positives": 0,
+                "independent_collisions": 0,
+                "sources": {},
+            },
+        )
+
+    default_source = data.get("default_source", DESCRIPTION_DERIVED_SOURCE)
+    if not isinstance(default_source, str):
+        default_source = DESCRIPTION_DERIVED_SOURCE
+    for case in cases:
+        if not isinstance(case, dict):
+            continue
+        source = case.get("source", default_source)
+        if not isinstance(source, str):
+            source = DESCRIPTION_DERIVED_SOURCE
+        independent = source in INDEPENDENT_TRIGGER_SOURCES
+        kind = case.get("kind")
+        names: set[str] = set()
+        expected = case.get("expected")
+        impostor = case.get("impostor")
+        if kind == "positive" and isinstance(expected, str):
+            names.add(expected)
+        elif kind == "collision":
+            names.update(name for name in (expected, impostor) if isinstance(name, str))
+        for name in names:
+            row = register(name)
+            assert row is not None
+            sources = row["sources"]
+            assert isinstance(sources, dict)
+            sources[source] = int(sources.get(source, 0)) + 1
+            if independent:
+                key = "independent_positives" if kind == "positive" else "independent_collisions"
+                row[key] = int(row[key]) + 1
+            else:
+                row["description_derived"] = int(row["description_derived"]) + 1
+
+    for row in coverage.values():
+        positives = int(row["independent_positives"])
+        collisions = int(row["independent_collisions"])
+        row["positives"] = positives
+        row["collisions"] = collisions
+        row["sufficient"] = (
+            positives >= COVERAGE_MIN_POSITIVES and collisions >= COVERAGE_MIN_COLLISIONS
+        )
+    return coverage
+
+
+def empty_coverage() -> dict[str, object]:
+    return {
+        "positives": 0,
+        "collisions": 0,
+        "description_derived": 0,
+        "independent_positives": 0,
+        "independent_collisions": 0,
+        "sources": {},
+        "sufficient": False,
+    }
+
+
+def score_skill(
+    skill_dir: Path, repo_root: Path, coverage: dict[str, dict[str, object]]
+) -> dict[str, object]:
     skill_md = skill_dir / "SKILL.md"
     text = skill_md.read_text(encoding="utf-8")
     frontmatter, body = split_frontmatter(text)
@@ -228,13 +321,19 @@ def score_skill(skill_dir: Path, repo_root: Path) -> dict[str, object]:
                 "structure_checks": schema_checks,
                 "missing_readmes": [name for name, ok in readme_checks(skill_dir).items() if not ok],
                 "missing_reference_links": referenced_files_exist(skill_dir, body),
+                "coverage": coverage.get(skill_dir.name, empty_coverage()),
             },
         },
         SKILL_WEIGHTS,
     )
 
 
-def score_agent(path: Path, repo_root: Path, skill_text_index: str) -> dict[str, object]:
+def score_agent(
+    path: Path,
+    repo_root: Path,
+    skill_text_index: str,
+    coverage: dict[str, dict[str, object]],
+) -> dict[str, object]:
     data, instructions, errors = parse_agent_toml(path)
     name = data.get("name")
     description = data.get("description")
@@ -289,6 +388,7 @@ def score_agent(path: Path, repo_root: Path, skill_text_index: str) -> dict[str,
                 "sandbox_mode": sandbox_mode,
                 "model": model,
                 "caller_reference_count": caller_refs,
+                "coverage": coverage.get(path.stem, empty_coverage()),
             },
         },
         AGENT_WEIGHTS,
@@ -323,6 +423,7 @@ def collect_skill_text(repo_root: Path) -> str:
 
 def evaluate(repo_root: Path, target: str, item: str | None) -> dict[str, object]:
     roots: dict[str, list[dict[str, object]]] = {}
+    coverage = load_coverage()
     if target in ("all", str(SKILL_ROOT)):
         skill_root = repo_root / SKILL_ROOT
         skills = []
@@ -330,7 +431,7 @@ def evaluate(repo_root: Path, target: str, item: str | None) -> dict[str, object
             for skill_dir in sorted(skill_root.iterdir()):
                 if skill_dir.is_dir() and (skill_dir / "SKILL.md").is_file():
                     if item is None or skill_dir.name == item:
-                        skills.append(score_skill(skill_dir, repo_root))
+                        skills.append(score_skill(skill_dir, repo_root, coverage))
         roots[str(SKILL_ROOT)] = skills
     if target in ("all", str(AGENT_ROOT)):
         agent_root = repo_root / AGENT_ROOT
@@ -339,7 +440,7 @@ def evaluate(repo_root: Path, target: str, item: str | None) -> dict[str, object
         if agent_root.is_dir():
             for agent_path in sorted(agent_root.glob("*.toml")):
                 if item is None or agent_path.stem == item:
-                    agents.append(score_agent(agent_path, repo_root, skill_text_index))
+                    agents.append(score_agent(agent_path, repo_root, skill_text_index, coverage))
         roots[str(AGENT_ROOT)] = agents
     return {
         "schema": 1,

@@ -69,6 +69,33 @@ TRIGGER_CASES = Path(__file__).resolve().parent.parent / "evals" / "trigger-case
 COVERAGE_MIN_POSITIVES = 3
 COVERAGE_MIN_COLLISIONS = 2
 
+# FR1c independence condition — where a case's *prompt* came from.
+#
+# A prompt written by reading the item's own `description` is then judged by a
+# judge that reads that same description, so the case cannot fail: it measures
+# the description against itself. Counting those toward the floor is what made
+# S1/A2 unfailable — the 2026-07-22 sweep scored 5/5 for all 60 items with the
+# three judge runs disagreeing on 0 of 353 cases. Only independently-sourced
+# prompts count toward the floor.
+#
+# Provenance describes the prompt, not the label. Deciding which sibling *should*
+# win a mined prompt is authoring work and does not re-introduce the circularity,
+# so a `collision` can be independently sourced as long as its prompt is.
+# Vocabulary is shared with the Codex-side scorer so one repo does not carry two
+# contradictory provenance schemas.
+CASE_SOURCE_DESCRIPTION = "description-derived"  # authored from the item's own description
+CASE_SOURCE_SESSION_TRACE = "session-trace"      # mined from a real session transcript
+CASE_SOURCE_USER_PROMPT = "user-prompt"          # verbatim prompt a user actually sent
+CASE_SOURCES = (
+    CASE_SOURCE_DESCRIPTION,
+    CASE_SOURCE_SESSION_TRACE,
+    CASE_SOURCE_USER_PROMPT,
+)
+INDEPENDENT_CASE_SOURCES = tuple(s for s in CASE_SOURCES if s != CASE_SOURCE_DESCRIPTION)
+# An unlabeled case is not a claim of independence. Defaulting the other way
+# would let every legacy case keep propping up the floor it was added to test.
+DEFAULT_CASE_SOURCE = CASE_SOURCE_DESCRIPTION
+
 # Prose lint — informational only, never feeds an axis or the CI baseline (same
 # contract as signals["coverage"]). Detects instructions that cost tokens without
 # changing agent behaviour: no-op exhortations and non-directive (advisory) phrasing.
@@ -265,18 +292,33 @@ def a3_tool_band(tools_raw: str, readonly_role: bool) -> int:
 
 
 def load_coverage() -> dict:
-    """Per-item trigger-case coverage from trigger-cases.json (FR1b).
+    """Per-item trigger-case coverage from trigger-cases.json (FR1b + FR1c).
 
-    Returns {item_name: {"positives": int, "collisions": int, "sufficient": bool}}.
+    Returns, per item::
+
+        {"positives": int, "collisions": int,              # independent only
+         "positives_total": int, "collisions_total": int,  # every case
+         "sufficient": bool}
+
+    Only cases whose `source` is in `INDEPENDENT_CASE_SOURCES` count toward the
+    floor; description-derived cases are still reported in the `_total` counts so
+    the gap between "cases we have" and "cases that can fail" stays visible. The
+    counts are equal only when every case for that item is independently sourced.
+
     Collisions count cases where the item is the owner (`expected`) or the near
     sibling (`impostor`), per the paired convention; a single case id is not
     double-counted for the same item. Missing file -> empty map.
+
+    Raises ValueError on an unrecognised `source` — a typo must not silently
+    demote a case to description-derived, nor silently promote one.
     """
     if not TRIGGER_CASES.exists():
         return {}
     data = json.loads(TRIGGER_CASES.read_text(encoding="utf-8"))
     pos: dict[str, int] = {}
     coll: dict[str, int] = {}
+    pos_all: dict[str, int] = {}
+    coll_all: dict[str, int] = {}
     seen_ids: set[str] = set()
     for c in data.get("cases", []):
         cid = c.get("id")
@@ -284,20 +326,31 @@ def load_coverage() -> dict:
             if cid in seen_ids:
                 continue  # a duplicate case id must not inflate coverage counts
             seen_ids.add(cid)
+        source = c.get("source", DEFAULT_CASE_SOURCE)
+        if source not in CASE_SOURCES:
+            raise ValueError(
+                f"{cid}: source must be one of {CASE_SOURCES}, got {source!r}")
+        independent = source in INDEPENDENT_CASE_SOURCES
         kind = c.get("kind")
         if kind == "positive":
             exp = c.get("expected")
             if exp:
-                pos[exp] = pos.get(exp, 0) + 1
+                pos_all[exp] = pos_all.get(exp, 0) + 1
+                if independent:
+                    pos[exp] = pos.get(exp, 0) + 1
         elif kind == "collision":
             for name in {v for v in (c.get("expected"), c.get("impostor")) if v}:
-                coll[name] = coll.get(name, 0) + 1
+                coll_all[name] = coll_all.get(name, 0) + 1
+                if independent:
+                    coll[name] = coll.get(name, 0) + 1
     out: dict[str, dict] = {}
-    for name in set(pos) | set(coll):
+    for name in set(pos_all) | set(coll_all):
         p, m = pos.get(name, 0), coll.get(name, 0)
         out[name] = {
             "positives": p,
             "collisions": m,
+            "positives_total": pos_all.get(name, 0),
+            "collisions_total": coll_all.get(name, 0),
             "sufficient": p >= COVERAGE_MIN_POSITIVES and m >= COVERAGE_MIN_COLLISIONS,
         }
     return out
@@ -372,7 +425,8 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
 
     # FR1b coverage — signals-only; S1 stays null in axes (Amendment A2)
     signals["coverage"] = coverage.get(
-        name, {"positives": 0, "collisions": 0, "sufficient": False})
+        name, {"positives": 0, "collisions": 0, "positives_total": 0,
+               "collisions_total": 0, "sufficient": False})
 
     # Prose lint — informational only, never feeds any axis or the CI baseline.
     signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
@@ -551,7 +605,8 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
 
     # FR1b coverage — signals-only; A2 stays null in axes (Amendment A2)
     signals["coverage"] = coverage.get(
-        name, {"positives": 0, "collisions": 0, "sufficient": False})
+        name, {"positives": 0, "collisions": 0, "positives_total": 0,
+               "collisions_total": 0, "sufficient": False})
 
     # Prose lint — informational only, never feeds any axis or the CI baseline.
     signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
@@ -820,7 +875,9 @@ def main() -> int:
     total = sum(len(items) for items in results.values())
     print(f"[coverage] {below} items below minimum (of {total}; need "
           f">= {COVERAGE_MIN_POSITIVES} positives & "
-          f">= {COVERAGE_MIN_COLLISIONS} collisions per item)", file=sys.stderr)
+          f">= {COVERAGE_MIN_COLLISIONS} collisions per item, counting only "
+          f"independently-sourced cases: {', '.join(INDEPENDENT_CASE_SOURCES)})",
+          file=sys.stderr)
 
     if args.ci:
         return ci_gate(results)

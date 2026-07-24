@@ -12,13 +12,15 @@ Activation accuracy is the highest-weighted axis because it is a property of the
 | `negative` | NO item should activate (or a non-sibling should) | drives **precision** |
 | `collision` | A *sibling* should win, not this item | the hard cases — drives precision against the nearest neighbor |
 
-Every item under evaluation needs ≥3 positives and ≥2 collisions naming the sibling that should win. Collisions are authored in **pairs**: the same prompt appears as a `positive` for the owner skill and a `collision` for the impostor.
+Every item under evaluation needs ≥3 **independently-sourced** positives and ≥2 independently-sourced collisions naming the sibling that should win. Collisions are authored in **pairs**: the same prompt appears as a `positive` for the owner skill and a `collision` for the impostor.
 
 **Authoring rules per kind:**
 
 - **`collision` must name a genuinely competing sibling.** The strongest evidence is the item's own `Do not use for ...` anti-trigger — that clause is the author's own declaration of where the boundary is contested. A prompt whose ownership is obvious to any reader is not a collision; it is just a positive for the owner. If an item genuinely has no competitor, the eval owner approves a documented exception — **never substitute a `negative` for a missing `collision`**, because the two measure different failure modes.
 - **Collision siblings must share a root.** The judge receives only the sibling descriptions for the same root (see Judge Procedure), so a skill↔agent collision cannot be adjudicated. Pick the competitor from the same root as the item.
 - **`negative` must be in-domain.** An off-domain prompt (weather, recipes, trivia) is trivially rejected by every description and therefore measures nothing — it inflates precision without ever testing it. Write negatives that sit *inside* the development domain but that no `ywc-*` item should claim: a plain explanation request, a one-character edit, a tool lookup, a concept question, an error-message interpretation. Use `note` to record which item is most likely to over-trigger on it.
+
+**Every case also carries a `source`** — see [Prompt Provenance and the Independence Condition](#prompt-provenance-and-the-independence-condition). It records where the *prompt* came from and decides whether the case counts toward the coverage floor.
 
 ```json
 {
@@ -28,7 +30,8 @@ Every item under evaluation needs ≥3 positives and ≥2 collisions naming the 
       "id": "commit-pos-1",
       "prompt": "지금까지 한 작업 커밋해줘",
       "expected": "ywc-commit",
-      "kind": "positive"
+      "kind": "positive",
+      "source": "description-derived"
     },
     {
       "id": "commit-vs-createpr-1",
@@ -42,11 +45,39 @@ Every item under evaluation needs ≥3 positives and ≥2 collisions naming the 
       "id": "neg-weather-1",
       "prompt": "오늘 도쿄 날씨 알려줘",
       "expected": null,
-      "kind": "negative"
+      "kind": "negative",
+      "source": "description-derived"
     }
   ]
 }
 ```
+
+## Prompt Provenance and the Independence Condition
+
+A case written by reading the item's own `description` is then judged by a judge that reads **that same description**. The case cannot fail — it measures the description against itself. This is not a hypothetical: the 2026-07-22 full sweep scored S1/A2 = 5 for all 60 items with three judge runs disagreeing on 0 of 353 cases. The heaviest axis in the rubric could not fail.
+
+So each case declares where its **prompt** came from:
+
+| `source` | Meaning | Counts toward the floor? |
+|---|---|---|
+| `description-derived` | authored by reading the item's own description | **no** |
+| `session-trace` | verbatim user message recovered from a session transcript | yes |
+| `user-prompt` | a prompt a user actually sent, captured outside a transcript | yes |
+
+`load_coverage()` counts only independent sources toward `positives` / `collisions`, and reports every case in `positives_total` / `collisions_total`, so the gap between "cases we have" and "cases that can fail" stays visible:
+
+```json
+{ "positives": 4, "collisions": 2, "positives_total": 7,
+  "collisions_total": 5, "sufficient": true }
+```
+
+**A missing `source` is read as `description-derived`.** Silence is not a claim of independence; defaulting the other way would let every legacy case keep propping up the floor it was added to test. An unrecognised value raises rather than defaulting, so a typo can neither quietly demote nor quietly promote a case.
+
+**Provenance is about the prompt, not the label.** Deciding which sibling *should* win a mined prompt is authoring work and does not re-introduce the circularity — a `collision` is independently sourced as long as its prompt is. This matters, because the alternative reading (collisions are inherently description-derived, since the boundary comes from the anti-trigger clause) would make the floor permanently unreachable, which is exactly as useless as a floor that can never fail.
+
+**Sanitize, do not paraphrase.** Mined prompts have internal hostnames, absolute paths and credentials removed. Typos, mixed-language phrasing and terse fragments stay — that is how prompts actually arrive, and smoothing them turns a real case back into an authored one.
+
+**Do not mine prompts that name the item.** "ywc-create-pr skill 로 pr 을 작성해줘" is a real prompt, but the item's own name in the text makes it trivially winnable — a second way to build a case that cannot fail. Prefer prompts that describe the intent.
 
 ## Judge Procedure
 
@@ -80,13 +111,7 @@ The `≥3 positives / ≥2 collisions` rule above is **not just prose** — `scr
 - `COVERAGE_MIN_POSITIVES = 3` — minimum `positive` cases whose `expected` is the item.
 - `COVERAGE_MIN_COLLISIONS = 2` — minimum `collision` cases naming the item.
 
-`load_coverage()` emits, per item, `signals.coverage`:
-
-```json
-{ "positives": 3, "collisions": 2, "sufficient": true }
-```
-
-A `collision` case credits **both** its `expected` owner and its `impostor` — one authored case raises the collision count of two items at once. `sufficient` is `positives >= COVERAGE_MIN_POSITIVES and collisions >= COVERAGE_MIN_COLLISIONS`. Duplicate case ids are counted once.
+A `collision` case credits **both** its `expected` owner and its `impostor` — one authored case raises the collision count of two items at once. `sufficient` is `positives >= COVERAGE_MIN_POSITIVES and collisions >= COVERAGE_MIN_COLLISIONS`, computed over independently-sourced cases only (see Prompt Provenance above). Duplicate case ids are counted once.
 
 **`score.py` does not compute S1/A2 itself.** Coverage is a `signals`-only measurement; `axes.S1` / `axes.A2` stay `null` in the mechanical output, and the judgment-tier activation judge produces the actual score.
 

@@ -4,7 +4,15 @@ Activation accuracy is the highest-weighted axis because it is a property of the
 
 ## Case Taxonomy
 
-`evals/trigger-cases.json` holds three kinds of case, each a natural-language prompt a user would actually type:
+`evals/trigger-cases.json` holds three kinds of case, each a natural-language prompt a user would actually type. Every new case must also record its `source`:
+
+| Source | Counts toward the coverage floor? | Meaning |
+|---|---:|---|
+| `user-prompt` | Yes | A prompt captured from a real user request, redacted as needed. |
+| `session-trace` | Yes | A prompt from a recorded evaluation or product session, redacted as needed. |
+| `description-derived` | No | A fixture authored from the target item's metadata or description. |
+
+Legacy cases without `source` are treated as `description-derived`. This is intentionally conservative: a case and the description it was written from cannot independently demonstrate activation accuracy.
 
 | Kind | Meaning | Scoring role |
 |---|---|---|
@@ -22,7 +30,8 @@ Every item under evaluation needs ≥3 positives and ≥2 collisions naming the 
       "id": "commit-pos-1",
       "prompt": "지금까지 한 작업 커밋해줘",
       "expected": "ywc-commit",
-      "kind": "positive"
+      "kind": "positive",
+      "source": "user-prompt"
     },
     {
       "id": "commit-vs-createpr-1",
@@ -62,6 +71,12 @@ precision = TP / (TP + FP)        # over cases where the item was predicted or e
 ```
 
 A `collision` case counts as a false positive for the impostor **and** (if the owner was not predicted) a false negative for the owner — one authored pair stresses both sides.
+
+## Coverage Floor and Unmeasured Scores
+
+`score.py` records coverage in every item's `signals.coverage`. At least three independently sourced positives and two independently sourced collision appearances are required for `sufficient: true`. Description-derived cases remain visible in `description_derived` and `sources`, but never count toward that floor.
+
+When coverage is insufficient, S1/A1 remains `unmeasured` in the judgment scorecard. Do not manufacture a total from a partial set of axes: aggregate means and below-threshold counts must use measured items only. The mechanical baseline remains separate and is reset only through the reviewed `--update-baseline` workflow.
 
 ## Mapping to the S1 / A1 Band
 
