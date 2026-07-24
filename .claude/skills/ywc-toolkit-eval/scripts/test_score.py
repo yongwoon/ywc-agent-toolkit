@@ -599,6 +599,15 @@ class CoverageIndependenceTest(unittest.TestCase):
             self.assertIn(case.get("source", score.DEFAULT_CASE_SOURCE),
                           score.CASE_SOURCES, case.get("id"))
 
+    def test_shipped_fixture_keeps_the_backfilled_items_above_the_floor(self) -> None:
+        # A future fixture reshuffle could silently erode these back below the
+        # floor without this test noticing — it pins the concrete result this PR
+        # backfilled, not just that `source` values are well-formed.
+        coverage = score.load_coverage()
+        for name in ("ywc-commit", "ywc-create-pr",
+                     "ywc-handle-pr-reviews", "ywc-debug-rootcause"):
+            self.assertTrue(coverage[name]["sufficient"], name)
+
 
 if __name__ == "__main__":
     unittest.main()
