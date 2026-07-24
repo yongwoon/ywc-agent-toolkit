@@ -11,6 +11,7 @@ Stdlib only (`unittest`), matching score.py's no-dependency convention. Run with
 """
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import unittest
@@ -520,6 +521,83 @@ class S3DoesNotReachTheCiBaselineTest(unittest.TestCase):
                 (d / loc).write_text("content", encoding="utf-8")
             flat = score.flatten_mech({"r": [score.score_skill(d, {}, {})]})
             self.assertNotIn("S3", next(iter(flat.values())))
+
+
+class CoverageIndependenceTest(unittest.TestCase):
+    """FR1c — a case authored from the item's own description cannot count.
+
+    The judge reads that same description, so such a case measures the
+    description against itself and can never fail. Only independently-sourced
+    prompts hold the floor up.
+    """
+
+    def _coverage(self, cases: list[dict]) -> dict:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "trigger-cases.json"
+            path.write_text(json.dumps({"schema": 1, "cases": cases}),
+                            encoding="utf-8")
+            original = score.TRIGGER_CASES
+            score.TRIGGER_CASES = path
+            try:
+                return score.load_coverage()
+            finally:
+                score.TRIGGER_CASES = original
+
+    def _cases(self, source: str | None) -> list[dict]:
+        """3 positives + 2 collisions for ywc-a — exactly the floor."""
+        def tag(case: dict) -> dict:
+            return case if source is None else {**case, "source": source}
+        cases = [tag({"id": f"a-pos-{i}", "prompt": f"p{i}",
+                      "expected": "ywc-a", "kind": "positive"})
+                 for i in range(1, 4)]
+        cases += [tag({"id": f"a-vs-b-{i}", "prompt": f"c{i}", "expected": "ywc-b",
+                       "kind": "collision", "impostor": "ywc-a"})
+                  for i in range(1, 3)]
+        return cases
+
+    def test_description_derived_coverage_is_insufficient(self) -> None:
+        cov = self._coverage(self._cases(score.CASE_SOURCE_DESCRIPTION))["ywc-a"]
+        self.assertFalse(cov["sufficient"])
+        self.assertEqual((cov["positives"], cov["collisions"]), (0, 0))
+
+    def test_unlabeled_cases_default_to_description_derived(self) -> None:
+        # Silence is not a claim of independence — the legacy cases were all
+        # authored from descriptions, so an unlabeled case must not hold the floor.
+        cov = self._coverage(self._cases(None))["ywc-a"]
+        self.assertFalse(cov["sufficient"])
+
+    def test_independently_sourced_coverage_is_sufficient(self) -> None:
+        cov = self._coverage(self._cases(score.CASE_SOURCE_SESSION_TRACE))["ywc-a"]
+        self.assertTrue(cov["sufficient"])
+        self.assertEqual((cov["positives"], cov["collisions"]), (3, 2))
+
+    def test_totals_still_report_every_case(self) -> None:
+        # The gap between "cases we have" and "cases that can fail" is the whole
+        # finding; collapsing the two would hide it.
+        cov = self._coverage(self._cases(score.CASE_SOURCE_DESCRIPTION))["ywc-a"]
+        self.assertEqual((cov["positives_total"], cov["collisions_total"]), (3, 2))
+
+    def test_mixed_provenance_counts_only_the_independent_half(self) -> None:
+        cases = (self._cases(score.CASE_SOURCE_DESCRIPTION)
+                 + [{"id": "a-pos-9", "prompt": "p9", "expected": "ywc-a",
+                     "kind": "positive", "source": score.CASE_SOURCE_SESSION_TRACE}])
+        cov = self._coverage(cases)["ywc-a"]
+        self.assertEqual(cov["positives"], 1)
+        self.assertEqual(cov["positives_total"], 4)
+        self.assertFalse(cov["sufficient"])
+
+    def test_unknown_source_is_rejected(self) -> None:
+        # A typo must neither silently demote nor silently promote a case.
+        with self.assertRaises(ValueError):
+            self._coverage([{"id": "a-pos-1", "prompt": "p", "expected": "ywc-a",
+                             "kind": "positive", "source": "vibes"}])
+
+    def test_shipped_fixture_has_only_known_sources(self) -> None:
+        data = json.loads(score.TRIGGER_CASES.read_text(encoding="utf-8"))
+        for case in data["cases"]:
+            self.assertIn(case.get("source", score.DEFAULT_CASE_SOURCE),
+                          score.CASE_SOURCES, case.get("id"))
 
 
 if __name__ == "__main__":
