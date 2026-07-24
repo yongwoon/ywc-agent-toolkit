@@ -10,6 +10,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+import score  # noqa: E402
+
 
 SCRIPT = Path(__file__).with_name("score.py")
 AGENT_SMOKE_SCRIPT = Path(__file__).with_name("agent_smoke.py")
@@ -241,6 +244,53 @@ Output: Start with Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
         self.assertIsInstance(undercovered, list)
         self.assertGreaterEqual(target["positive"], 3, undercovered)
         self.assertGreaterEqual(target["impostor"], 2, undercovered)
+
+    def test_description_derived_cases_do_not_satisfy_coverage(self) -> None:
+        cases = self.repo / "trigger-cases.json"
+        cases.write_text(
+            json.dumps(
+                {
+                    "cases": [
+                        {"kind": "positive", "expected": "ywc-example", "source": "description-derived"},
+                        {"kind": "positive", "expected": "ywc-example"},
+                        {"kind": "positive", "expected": "ywc-example", "source": "description-derived"},
+                        {"kind": "collision", "expected": "ywc-example", "impostor": "ywc-other", "source": "description-derived"},
+                        {"kind": "collision", "expected": "ywc-example", "impostor": "ywc-other", "source": "description-derived"},
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        coverage = score.load_coverage(cases)["ywc-example"]
+
+        self.assertEqual(coverage["positives"], 0)
+        self.assertEqual(coverage["collisions"], 0)
+        self.assertEqual(coverage["description_derived"], 5)
+        self.assertFalse(coverage["sufficient"])
+
+    def test_independent_cases_satisfy_coverage_floor(self) -> None:
+        cases = self.repo / "trigger-cases.json"
+        cases.write_text(
+            json.dumps(
+                {
+                    "cases": [
+                        {"kind": "positive", "expected": "ywc-example", "source": "user-prompt"},
+                        {"kind": "positive", "expected": "ywc-example", "source": "session-trace"},
+                        {"kind": "positive", "expected": "ywc-example", "source": "user-prompt"},
+                        {"kind": "collision", "expected": "ywc-example", "impostor": "ywc-other", "source": "session-trace"},
+                        {"kind": "collision", "expected": "ywc-example", "impostor": "ywc-other", "source": "user-prompt"},
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        coverage = score.load_coverage(cases)["ywc-example"]
+
+        self.assertEqual(coverage["positives"], 3)
+        self.assertEqual(coverage["collisions"], 2)
+        self.assertTrue(coverage["sufficient"])
 
     def test_ci_detects_regression_without_rewriting_history(self) -> None:
         history = self.repo / "history.mechanical.json"

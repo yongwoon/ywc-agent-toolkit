@@ -1,60 +1,67 @@
 {
   "schema": 1,
-  "updated_at": "2026-06-13",
+  "updated_at": "2026-07-24",
   "items": {
     "codex/skills/ywc-agentic": {
       "S2": 4,
       "S3": 4,
+      "S5": 4,
+      "S6": 4,
+      "S7": 4
+    },
+    "codex/skills/ywc-auth-implement": {
+      "S2": 4,
+      "S3": 4,
       "S5": 3,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-brainstorm": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-changelog-release-notes": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-code-gen": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-commit": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-confidence-gate": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-create-pr": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-debug-rootcause": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
@@ -65,117 +72,152 @@
       "S6": 4,
       "S7": 4
     },
+    "codex/skills/ywc-docker-isolate": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 4,
+      "S6": 4,
+      "S7": 4
+    },
     "codex/skills/ywc-e2e-test-strategy": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-finish-branch": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-gen-testcase": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-handle-pr-reviews": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
+    },
+    "codex/skills/ywc-iac-author": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 3,
+      "S6": 4,
+      "S7": 4
     },
     "codex/skills/ywc-impl-review": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-incident-postmortem": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
+      "S6": 4,
+      "S7": 4
+    },
+    "codex/skills/ywc-infra-design": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 3,
+      "S6": 4,
+      "S7": 4
+    },
+    "codex/skills/ywc-infra-optimize": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 3,
+      "S6": 4,
+      "S7": 4
+    },
+    "codex/skills/ywc-infra-review": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 3,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-merge-dependabot": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-onboard-repo": {
       "S2": 4,
       "S3": 4,
       "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-parallel-executor": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-plan": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 2
+      "S7": 4
     },
     "codex/skills/ywc-product-review": {
       "S2": 4,
       "S3": 4,
-      "S5": 0,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-project-docs": {
       "S2": 4,
       "S3": 4,
-      "S5": 0,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-project-scaffold": {
       "S2": 4,
       "S3": 4,
-      "S5": 0,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-receive-review": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-refactor-clean": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-release-pr-list": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-review-learnings": {
       "S2": 4,
@@ -187,95 +229,123 @@
     "codex/skills/ywc-security-audit": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-sequential-executor": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
+    },
+    "codex/skills/ywc-setup": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 4,
+      "S6": 4,
+      "S7": 4
     },
     "codex/skills/ywc-skill-author": {
       "S2": 4,
       "S3": 4,
       "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
+    },
+    "codex/skills/ywc-spec-ready": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 4,
+      "S6": 4,
+      "S7": 4
     },
     "codex/skills/ywc-spec-validate": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-spec-writer": {
       "S2": 4,
       "S3": 4,
       "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-task-generator": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-tdd-ritual": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
-      "S7": 3
+      "S7": 4
     },
     "codex/skills/ywc-team-assemble": {
       "S2": 4,
       "S3": 4,
-      "S5": 0,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-tech-research": {
       "S2": 4,
       "S3": 4,
-      "S5": 2,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-ubiquitous-language": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-ui-ux-review": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-verify-done": {
       "S2": 4,
       "S3": 4,
-      "S5": 3,
+      "S5": 4,
+      "S6": 4,
+      "S7": 4
+    },
+    "codex/skills/ywc-wayfinder": {
+      "S2": 4,
+      "S3": 4,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/skills/ywc-worktrees": {
       "S2": 4,
       "S3": 4,
-      "S5": 1,
+      "S5": 4,
       "S6": 4,
       "S7": 4
     },
     "codex/agents/ywc-architect.toml": {
+      "A2": 4,
+      "A4": 4,
+      "A5": 4,
+      "A6": 4,
+      "A7": 4
+    },
+    "codex/agents/ywc-cloud-engineer.toml": {
       "A2": 4,
       "A4": 4,
       "A5": 4,
@@ -308,14 +378,14 @@
       "A4": 4,
       "A5": 4,
       "A6": 4,
-      "A7": 1
+      "A7": 4
     },
     "codex/agents/ywc-security-engineer.toml": {
       "A2": 4,
       "A4": 4,
       "A5": 4,
       "A6": 4,
-      "A7": 1
+      "A7": 4
     },
     "codex/agents/ywc-typescript-reviewer.toml": {
       "A2": 4,
