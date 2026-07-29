@@ -84,6 +84,15 @@ When a persisted `ywc-tech-research --output <path>` artifact exists, cite that 
 
 **Prerequisite:** If `docs/ubiquitous-language.md` exists, read it before asking any questions. The vocabulary defined there must frame the clarification dialogue itself — use canonical terms in your questions and note any "Synonyms to Avoid" so the user's answers are captured in the right terms from the start.
 
+**Codebase-Fact Pre-check.** Before finalizing the anchor questions below, check whether the answer is already visible in the codebase — an existing pattern, a referenced file, a prior issue named in the request. Budget: at most **5 targeted lookups across at most 3 files**, using read-only `rg` searches or reads only — this is not a substitute for Step 2's full investigation.
+
+| Question type | Route |
+|---|---|
+| Codebase Fact — answer is verifiable by reading existing code, config, or a referenced file (e.g., "does this project already have an X pattern?", "what does the existing error format look like?") | Check the codebase first, citing `file:line` as evidence for the answer; only ask the user if the check is inconclusive or the budget is exhausted before a confident answer emerges. |
+| User Preference / Scope / Requirement — answer depends on intent, priority, or a decision only the user can make (e.g., "should this be opt-in or opt-out?", "is backward compatibility required?") | Ask the user directly — the codebase cannot answer this. |
+
+This pre-check stays active under `--non-interactive`: a Codebase Fact question the check resolves is answered from the cited evidence and never asked; one it leaves inconclusive falls through to the `--non-interactive` defaulting rule below. Because no default is defined for **What** or **Why**, an inconclusive or unresolved **What**/**Why** anchor under `--non-interactive` **stops** the skill and reports `NEEDS_CONTEXT` rather than proceeding to Step 2 with the change's intent unresolved.
+
 Ask focused questions to extract four anchors. Use one round of consolidated questions (not back-and-forth) unless the user's initial input already covers some anchors.
 
 | Anchor | What to ask | Why it matters |
@@ -95,7 +104,7 @@ Ask focused questions to extract four anchors. Use one round of consolidated que
 
 If the user's initial message already answers all four anchors, skip the questions and confirm understanding in one sentence.
 
-**`--non-interactive` mode:** When this flag is present, do not ask interactive clarification questions at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not ask interactive clarification questions at any point in Step 1. If the user's initial message leaves **Out of Scope** or **Done When** unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. **What** and **Why** have no default — if either remains unanswered after the Codebase-Fact Pre-check above, stop and report `NEEDS_CONTEXT` instead of proceeding. Otherwise, proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 
@@ -191,7 +200,7 @@ When scale is **Small**, generate `plan.md` at a user-specified path (default: `
 
 For the full `plan.md` structure and a worked example, see [references/small-plan-template.md](references/small-plan-template.md).
 
-The plan **must** include: Goal, Out of Scope, Files to touch (concrete paths), Implementation Steps (checkbox list with file/function references), Verification commands (using project's actual commands from Step 2), and Risks/Rollback.
+The plan **must** include: Goal, Out of Scope, Files to touch (concrete paths), Implementation Steps (checkbox list with file/function references), Verification commands (using project's actual commands from Step 2), Risks/Rollback, and Interfaces (optional — only when the plan touches ≥2 files that share a function/type signature).
 
 After writing the plan, surface this handoff message to the user:
 
@@ -207,6 +216,8 @@ When scale is **Medium** or **Large**, generate a spec document under `docs/ywc-
 For the full spec structure aligned with `ywc-spec-validate`'s evaluation dimensions, see [references/spec-template.md](references/spec-template.md).
 
 The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, and Open Questions (use `N/A — none identified` if none).
+
+Record project-wide constraints found in Step 2 (version floors, dependency constraints, naming/copy conventions, platform requirements) in the spec's `## Global Constraints` section — see [references/spec-template.md](references/spec-template.md).
 
 When the spec names module boundaries, key types, and interfaces, ground those design choices in the shared readable-code rubric — especially §G (structural smells) and its anti-dogma guardrails (do not specify speculative generality or premature abstraction the requirement does not yet need). See [../references/readable-code.md](../references/readable-code.md).
 
@@ -351,6 +362,8 @@ Before declaring the skill's task complete, verify:
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
 - [ ] Did not auto-execute downstream — only invoked `ywc-spec-ready` if the user explicitly answered **y** to the opt-in prompt (or skipped the prompt when `--non-interactive` is set)
+- [ ] If scale = Medium/Large, the spec's **Global Constraints** section is populated from Step 2 findings (or `N/A` after active consideration)
+- [ ] If the Small plan touches ≥2 files sharing a function/type signature, an **Interfaces** block declares each side's exact signature
 
 ## Common Mistakes
 
