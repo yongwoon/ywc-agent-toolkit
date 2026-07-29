@@ -73,15 +73,19 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
      empty. Record the supplied ref and resolved merge-base in the report.
    - `--code`: read the supplied path.
    - `--git-range`: run `git diff --name-only <range>` to obtain the changed-file list.
-   - `--working-tree`: derive the changed-file list without committing: combine `git diff --name-only --diff-filter=ACMRD`, `git diff --cached --name-only --diff-filter=ACMRD`, and `git ls-files --others --exclude-standard`; deduplicate paths; then apply the repository's ignore / generated-path rules to the **combined** list, so a tracked-but-ignored generated file is excluded exactly like an untracked one (`--exclude-standard` covers only the untracked leg). Capture the staged and unstaged diffs for tracked files, and treat each untracked file's full contents as its patch. **`D` (deletion) is included deliberately**: a deleted file is a reviewable change, and dropping it would let the removal of a critical-path module (auth, payment, crypto) pass the gate unseen. For a deleted path, forward the deletion diff and the pre-deletion contents.
+   - `--working-tree`: derive the changed-file list without committing: combine `git diff --name-only --diff-filter=ACMRDT`, `git diff --cached --name-only --diff-filter=ACMRDT`, and `git ls-files --others --exclude-standard`; deduplicate paths; then apply the repository's ignore / generated-path rules to the **combined** list, so a tracked-but-ignored generated file is excluded exactly like an untracked one (`--exclude-standard` covers only the untracked leg). Capture the staged and unstaged diffs for tracked files, and treat each untracked file's full contents as its patch. **`D` (deletion) is included deliberately**: a deleted file is a reviewable change, and dropping it would let the removal of a critical-path module (auth, payment, crypto) pass the gate unseen. **`T` (type change) is included deliberately too**: a tracked path turning into a symlink is a reviewable change that `ACMRD` alone would silently drop, letting it bypass the gate. For a deleted path, forward the deletion diff and the pre-deletion contents.
 
    Reject missing or mixed target modes with `NEEDS_CONTEXT` before reading the
    spec or review files. If the selected target has no reviewable source files,
    return `NEEDS_CONTEXT` and do not report an all-clear review. Read the
    specification file and every target code file. For base, range, and
    working-tree targets, provide the bounded relevant diff plus final file
-   contents to workers so they can judge both correctness and scope. This
-   context stays with the parent; do not forward it wholesale to Phase 2.
+   contents to workers so they can judge both correctness and scope. For a
+   deleted path in any of these three targets, forward the deletion diff and
+   the pre-deletion contents instead of final contents — a deletion is a
+   reviewable change in its own right, and passing only a nonexistent file's
+   final contents would let it slip past the gate unseen. This context stays
+   with the parent; do not forward it wholesale to Phase 2.
 
 3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five review workers in parallel. Do not pass Claude Code-only `model` fields; each worker receives its role from the prompt and matching reference file:
    - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status and multi-tenant scope gaps as one-line cross-references to the Security worker rather than duplicating them.

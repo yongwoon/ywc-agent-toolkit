@@ -14,7 +14,7 @@ Un Skill que realiza una verificación integral de conformidad de implementació
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --base main
 ```
 
-`--base <ref>` revisa desde `git merge-base <ref> HEAD` hasta `HEAD` e informa el ref suministrado y el merge-base resuelto. `--git-range A..B` sigue siendo la comparación explícita de dos extremos. Los cuatro modos de destino son mutuamente excluyentes.
+`--working-tree` revisa cambios source staged, unstaged y untracked sin crear un commit. `--base <ref>` revisa desde `git merge-base <ref> HEAD` hasta `HEAD` e informa el ref suministrado y el merge-base resuelto. `--git-range A..B` sigue siendo la comparación explícita de dos extremos. Se requiere exactamente uno de los cuatro modos de destino; son mutuamente excluyentes.
 
 ## Agentes de ejecución
 

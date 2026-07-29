@@ -20,6 +20,7 @@
         "Does not combine --working-tree with --code or --git-range",
         "Deduplicates paths across staged and unstaged change lists",
         "Includes deleted (D) paths so removing a critical-path file cannot bypass the gate",
+        "Includes type-changed (T) paths, such as a tracked file replaced by a symlink, so the change cannot bypass the gate",
         "Excludes ignored generated directories and files, for tracked and untracked paths alike"
       ]
     },

@@ -10,7 +10,7 @@ A Skill that performs comprehensive implementation conformance verification befo
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --base main
 ```
 
-`--base <ref>` reviews `git merge-base <ref> HEAD` through `HEAD` and reports both the supplied ref and resolved merge-base. `--git-range A..B` remains the explicit two-endpoint comparison. The four target modes are mutually exclusive.
+`--working-tree` reviews staged, unstaged, and untracked source changes without requiring a commit. `--base <ref>` reviews `git merge-base <ref> HEAD` through `HEAD` and reports both the supplied ref and resolved merge-base. `--git-range A..B` remains the explicit two-endpoint comparison. Exactly one of the four target modes is required; they are mutually exclusive.
 
 ## Execution Agents
 

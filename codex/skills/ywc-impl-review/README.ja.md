@@ -10,7 +10,7 @@
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --base main
 ```
 
-`--base <ref>` は `git merge-base <ref> HEAD` から `HEAD` までをレビューし、指定した ref と解決された merge-base をレポートします。`--git-range A..B` は明示的な二端点比較として維持します。4つの target mode は相互排他的です。
+`--working-tree` は commit を作成せず、staged・unstaged・untracked の source 変更をレビューします。`--base <ref>` は `git merge-base <ref> HEAD` から `HEAD` までをレビューし、指定した ref と解決された merge-base をレポートします。`--git-range A..B` は明示的な二端点比較として維持します。4つの target mode のうち正確に1つが必須で、互いに排他的です。
 
 ## 実行 Agent
 

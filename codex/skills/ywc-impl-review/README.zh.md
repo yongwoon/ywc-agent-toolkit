@@ -14,7 +14,7 @@
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --base main
 ```
 
-`--base <ref>` 审查 `git merge-base <ref> HEAD` 到 `HEAD` 的范围，并报告 supplied ref 和 resolved merge-base。`--git-range A..B` 仍是显式的双端点比较。四种 target mode 互斥。
+`--working-tree` 无需创建 commit，即可审查 staged、unstaged 和 untracked 的 source 改动。`--base <ref>` 审查 `git merge-base <ref> HEAD` 到 `HEAD` 的范围，并报告 supplied ref 和 resolved merge-base。`--git-range A..B` 仍是显式的双端点比较。四种 target mode 中必须且只能指定一种，彼此互斥。
 
 ## 执行 Agent
 
