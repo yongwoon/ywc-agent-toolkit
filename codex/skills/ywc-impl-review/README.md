@@ -8,9 +8,10 @@
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/routes/heatmaps.ts
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --base main
 ```
 
-`--working-tree`는 commit 없이 staged, unstaged, untracked source 변경을 검토합니다. `--code`, `--git-range`와 함께 사용하지 마세요.
+`--base <ref>`는 `git merge-base <ref> HEAD`부터 `HEAD`까지를 검토하고 supplied ref와 resolved merge-base를 보고합니다. `--git-range A..B`는 명시적인 two-endpoint 비교로 유지됩니다. 네 target mode는 서로 배타적입니다.
 
 ## 실행 Agent
 
