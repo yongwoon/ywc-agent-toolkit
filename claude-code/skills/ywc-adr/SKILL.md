@@ -1,13 +1,14 @@
 ---
 name: ywc-adr
 description: >-
-  (ywc) Use when capturing, reading, or listing a project's Architecture
-  Decision Records — durable records of a hard-to-reverse architectural
-  choice and the trade-off reasoning behind it. Triggers: "ADR 작성",
-  "아키텍처 결정 기록해줘", "이 결정 ADR 로 남겨줘", "architecture decision
-  record", "record this decision", "アーキテクチャ決定記録", "ADR作成". Do
-  not use for durable project intent (use ywc-project-mission), review
-  preferences (use ywc-review-learnings), domain vocabulary (use
+  (ywc) Use when capturing, reading, listing, or curating (deprecating) a
+  project's Architecture Decision Records — durable records of a
+  hard-to-reverse architectural choice and the trade-off reasoning behind
+  it. Triggers: "ADR 작성", "아키텍처 결정 기록해줘", "이 결정 ADR 로
+  남겨줘", "architecture decision record", "record this decision", "curate
+  an ADR", "deprecate ADR", "ADR-0004 정리해줘", "アーキテクチャ決定記録",
+  "ADR作成". Do not use for durable project intent (use ywc-project-mission),
+  review preferences (use ywc-review-learnings), domain vocabulary (use
   ywc-ubiquitous-language), or the planning process itself (use ywc-plan).
 ---
 
@@ -32,7 +33,7 @@ When tempted to bypass a rule, check this table first:
 | "Every Medium/Large `ywc-plan` run should offer to record an ADR" | Offering on every run trains the user to click through without reading, which turns a durable record into noise nobody trusts. Gate the offer on all three of hard-to-reverse, surprising-without-context, and a real trade-off between genuine alternatives — the same three-part test `ywc-plan` Step 3.5 already exists to answer. |
 | "Skip Alternatives Considered, we already know we won't reconsider" | The reader who needs Alternatives most is the one two years from now asking why the team didn't just do the simpler thing. Without it, the ADR reads as an assertion, not a decision. |
 | "Preload every ADR into CLAUDE.md the way review-learnings does" | Unlike a single compact file, a directory of ADRs grows unbounded and most entries are irrelevant to any one request. Read on demand, filtered by `--target`, per this skill's read mode — never blanket-preload. |
-| "The decision clearly meets the offer criteria, I'll write the ADR without asking" | Meeting the offer criteria only justifies making the offer, not skipping confirmation. Every write in this family goes through a user-confirmed CHANGESET (`ADD` / `SUPERSEDE`) — this skill has no exception. |
+| "The decision clearly meets the offer criteria, I'll write the ADR without asking" | Meeting the offer criteria only justifies making the offer, not skipping confirmation. Every write in this family goes through a user-confirmed CHANGESET (`ADD` / `SUPERSEDE` / `DEPRECATE`) — this skill has no exception. |
 | "`curate` found no direct successor, I'll leave the old ADR Accepted since deprecating loses information" | An ADR that no longer reflects the codebase but still reads `Accepted` misleads a future reader into applying a dead constraint. Mark it `Deprecated` with the reason — never hard-delete, but never leave it silently stale either. |
 
 **Violating the letter of these rules is violating the spirit.** A directory of unconfirmed, alternative-less, or silently-stale ADRs teaches future sessions the wrong constraints — worse than having no ADRs at all, because it reads as authoritative.
@@ -43,7 +44,7 @@ When tempted to bypass a rule, check this table first:
 |-----------|--------|---------|-------------|
 | `--mode` | `--mode new\|read\|list\|curate` | auto-detect | Force a specific mode (see Mode Detection below) |
 | `--supersedes` | `--supersedes <ADR-NNNN>` | — | With `new` mode, the ADR this decision replaces. Flips the named ADR's status to `Superseded by ADR-<new-id>` in the same CHANGESET |
-| `--target` | `--target <path\|area>` | all ADRs | With `read` mode, filter to ADRs whose recorded scope overlaps the given path or area |
+| `--target` | `--target <path\|area>` | all ADRs | With `read` mode, filter to ADRs whose recorded `Scope` field (see below) overlaps the given path or area |
 | `--source` | `--source plan\|manual` | `manual` | Where the candidate decision comes from — `plan` (a `ywc-plan` Step 3.5 verdict) or `manual` (a decision stated directly in conversation). Recorded as provenance |
 | `--output` | `--output <dir>` | `docs/adr/` | ADR directory |
 | `--dry-run` | flag | off | Show the proposed CHANGESET without writing to disk |
@@ -69,12 +70,12 @@ When tempted to bypass a rule, check this table first:
 
    If any of the three is missing, say so and skip — do not write an ADR for a decision with no real alternative or no real cost to reversing.
 
-2. **Gather the candidate.** From `--source plan`, take the framed decision, the trade-off table, and the chosen direction from the `ywc-plan` Step 3.5 verdict (`architecture-verdict.md` or equivalent). From `--source manual`, extract the decision, its context, and the alternatives from the conversation — ask for any of the four fields (Context / Decision / Alternatives / Consequences) that are missing rather than inventing them.
+2. **Gather the candidate.** From `--source plan`, take the framed decision, the trade-off table, and the chosen direction from the `ywc-plan` Step 3.5 verdict (`architecture-verdict.md` or equivalent). From `--source manual`, extract the decision, its context, and the alternatives from the conversation — ask for any of the four fields (Context / Decision / Alternatives / Consequences) that are missing rather than inventing them. Also record a **Scope** — the path or area this decision governs (e.g. `api/billing/`, `frontend`, or `repo-wide` if it applies everywhere) — asking for it if it isn't evident from context. `read --target` matches against this field (see [references/adr-format.md](references/adr-format.md) for the matching rule).
 
 3. **Assign the next ID.** Read `docs/adr/` (if present) and pick the next zero-padded 4-digit sequence number (`0001`, `0002`, …). If the directory is absent, this is `0001` and creates the directory.
 
 4. **Build the CHANGESET** for user confirmation:
-   - `ADD` — the new ADR's Title, Context, Decision, Alternatives Considered, and Consequences, in full.
+   - `ADD` — the new ADR's Title, Scope, Context, Decision, Alternatives Considered, and Consequences, in full.
    - `SUPERSEDE` (only with `--supersedes`) — the old ADR's status line change to `Superseded by ADR-<new-id>`.
 
    Do not write anything the user has not confirmed.
@@ -86,7 +87,7 @@ When tempted to bypass a rule, check this table first:
 Invoked before planning or review (typically by `ywc-plan` Step 2, or `ywc-onboard-repo`).
 
 1. **Read the directory.** If `docs/adr/` is absent, return an empty set and say so — never block planning or review on a missing ADR directory.
-2. **Filter.** Include an ADR if `--target` is omitted, or if the ADR's recorded scope overlaps the given path/area. Skip `Deprecated` and `Superseded` entries unless the caller explicitly asks for history.
+2. **Filter.** Include an ADR if `--target` is omitted, or if the ADR's recorded `Scope` overlaps the given path/area per the matching rule in [references/adr-format.md](references/adr-format.md) (prefix/substring match; a `Scope` of `repo-wide` always matches; an ADR with no `Scope` recorded is treated as `repo-wide`). Skip `Deprecated` and `Superseded` entries unless the caller explicitly asks for history.
 3. **Emit a compact block** — one line per active ADR: ID, Title, and a one-sentence gist of the Decision. Keep it tight; a caller drowning in ADR text plans worse, not better. The full Context / Alternatives / Consequences are available on request by reading the specific file.
 
 ### Mode: list — Display All ADRs
@@ -96,7 +97,7 @@ Print every ADR's ID, Title, Status, and Date, sorted by ID. Optionally filter b
 ### Mode: curate — Deprecate Stale ADRs
 
 1. Read `docs/adr/`. Identify candidates: an ADR whose Decision no longer matches the codebase and has no formal successor, or one the user reports as abandoned.
-2. Present a `DEPRECATE` list with the reason for each. On confirmation, change only the status line to `Deprecated: <reason>, <date>` — never edit or delete the Context / Decision / Consequences body, and never hard-delete the file.
+2. Present a `DEPRECATE` list with the reason for each. On confirmation, change only the status line to `Deprecated: <reason>, <date>` — never edit or delete the Context / Decision / Consequences body, and never hard-delete the file. Print an `ADR curated` confirmation block naming each deprecated ID and its reason.
 
 ## Output Format
 
@@ -110,6 +111,7 @@ The full per-ADR template (all four sections, the status-line grammar, and worke
 **Status:** Accepted
 **Date:** 2026-07-29
 **Provenance:** ywc-plan Step 3.5 (architecture-verdict.md), plan `docs/ywc-plans/webhook-delivery.md`
+**Scope:** `api/webhooks/`
 
 ## Context
 <the forces at play: why synchronous delivery was the starting assumption, what broke it>
@@ -141,18 +143,25 @@ The full per-ADR template (all four sections, the status-line grammar, and worke
   ~ ADR-0002 superseded — see ADR-0008
 ```
 
+**`ADR curated` confirmation (curate-mode emission):**
+
+```text
+✦ ADR curated
+  ~ ADR-0004 deprecated — reason: migrated off the custom job queue to a managed service months ago, no formal successor ADR was written
+```
+
 ## Validation
 
 Before declaring complete:
 
-- [ ] Every recorded ADR passed all three offer criteria (hard to reverse, surprising, real trade-off) — or the caller explicitly asked to record it anyway
+- [ ] Every recorded ADR passed all three offer criteria (hard to reverse, surprising, real trade-off)
 - [ ] Every ADR has a non-empty Alternatives Considered section naming at least one genuine rejected option
-- [ ] Every ADR has a `Status` of exactly `Accepted`, `Deprecated`, or `Superseded by ADR-<id>`
+- [ ] Every ADR has a `Status` of exactly `Accepted`, `Deprecated: <reason>, <date>`, or `Superseded by ADR-<id>`
 - [ ] A `SUPERSEDE` never rewrote the old ADR's Context / Decision / Consequences body — only its status line
 - [ ] The user confirmed the CHANGESET before any write (no inferred-and-written ADRs)
 - [ ] `docs/adr/NNNN-<slug>.md` filenames use a contiguous, zero-padded 4-digit sequence with no gaps or reused IDs
 - [ ] No `@docs/adr/` CLAUDE.md activation prompt was printed (deliberate deviation — see the skill summary)
-- [ ] An `ADR recorded` confirmation was printed for `new` mode
+- [ ] An `ADR recorded` confirmation was printed for `new` mode; an `ADR curated` confirmation was printed for `curate` mode
 
 ## Common Mistakes
 

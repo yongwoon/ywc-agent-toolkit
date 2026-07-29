@@ -37,15 +37,16 @@ Project의 Architecture Decision Record(ADR)를 관리하는 Skill입니다. 되
 
 - (선택) `--mode new|read|list|curate` — Mode 강제 지정 (생략 시 자동 감지)
 - (선택) `--supersedes <ADR-NNNN>` — `new` mode에서 대체할 기존 ADR
-- (선택) `--target <path|area>` — `read` mode에서 관련 범위로 필터링
+- (선택) `--target <path|area>` — `read` mode에서 ADR의 기록된 `Scope` 필드가 이 path/area와 겹치는지로 필터링 (Scope가 없는 ADR은 `repo-wide`로 간주)
 - (선택) `--source plan|manual` — 결정의 출처 (기본 `manual`)
 - (선택) `--output <디렉터리>` — ADR 디렉터리 경로 (기본: `docs/adr/`)
 - (선택) `--dry-run` — 쓰기 없이 CHANGESET만 표시
 
 ## 출력
 
-- `docs/adr/NNNN-<slug>.md` — Title / Status / Date / Provenance + Context / Decision / Alternatives Considered / Consequences 섹션을 갖춘 파일
-- `new`/`curate` mode 시: 변경 내역을 명시하는 `ADR recorded` 확인 block 출력
+- `docs/adr/NNNN-<slug>.md` — Title / Status / Date / Provenance / Scope + Context / Decision / Alternatives Considered / Consequences 섹션을 갖춘 파일
+- `new` mode 시: 새 ID(및 superseded ID)를 명시하는 `ADR recorded` 확인 block 출력
+- `curate` mode 시: deprecate된 각 ID와 사유를 명시하는 `ADR curated` 확인 block 출력
 - CLAUDE.md 자동 로드 안내는 출력하지 않음 (의도적 — 위 설명 참고)
 
 ## 출력 예시

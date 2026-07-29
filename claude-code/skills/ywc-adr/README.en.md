@@ -36,15 +36,16 @@ Or invoke with natural language:
 
 - (optional) `--mode new|read|list|curate` — force a specific mode (auto-detected if omitted)
 - (optional) `--supersedes <ADR-NNNN>` — with `new` mode, the existing ADR this decision replaces
-- (optional) `--target <path|area>` — with `read` mode, filter to a relevant scope
+- (optional) `--target <path|area>` — with `read` mode, filter to ADRs whose recorded `Scope` field overlaps this path or area (an ADR with no `Scope` recorded is treated as `repo-wide`)
 - (optional) `--source plan|manual` — where the decision comes from (default `manual`)
 - (optional) `--output <dir>` — ADR directory path (default: `docs/adr/`)
 - (optional) `--dry-run` — show the CHANGESET without writing
 
 ## Output
 
-- `docs/adr/NNNN-<slug>.md` — a file with Title / Status / Date / Provenance plus Context / Decision / Alternatives Considered / Consequences sections
-- On `new`/`curate`: an `ADR recorded` confirmation block naming exactly what changed
+- `docs/adr/NNNN-<slug>.md` — a file with Title / Status / Date / Provenance / Scope plus Context / Decision / Alternatives Considered / Consequences sections
+- On `new`: an `ADR recorded` confirmation block naming the new (and, if applicable, superseded) ID
+- On `curate`: an `ADR curated` confirmation block naming each deprecated ID and its reason
 - No CLAUDE.md activation prompt is printed (intentional — see above)
 
 ## Sample Output

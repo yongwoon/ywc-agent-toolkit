@@ -14,6 +14,7 @@ Full specification for a `docs/adr/NNNN-<slug>.md` file. Referenced from `SKILL.
 **Status:** Accepted <!-- | Deprecated: <reason>, <date> | Superseded by ADR-MMMM -->
 **Date:** YYYY-MM-DD
 **Provenance:** <ywc-plan Step 3.5, plan <path> | manual, conversation>
+**Scope:** <path|area this decision governs, e.g. `api/billing/`, `frontend` | `repo-wide`>
 
 ## Context
 
@@ -45,6 +46,14 @@ constraint future work must respect — e.g. "any new X must follow pattern Y" �
 so a later session can tell whether a proposed change conflicts with this ADR.>
 ```
 
+## Scope field and `--target` matching
+
+`Scope` records the path or area this decision governs, so `read --target <path|area>` can decide which ADRs are relevant without loading every file. Matching rule:
+
+- A `Scope` of `repo-wide` always matches any `--target`.
+- Otherwise, the ADR matches when `--target` and `Scope` overlap as strings: `--target` is a prefix of `Scope`, `Scope` is a prefix of `--target`, or one contains the other (e.g. `--target api/billing` matches a `Scope` of `api/billing/`, and `--target api` matches a `Scope` of `api/billing/` too).
+- An ADR written before this field existed, or with `Scope` omitted, is treated as `Scope: repo-wide` — never silently excluded from a `--target` filter for lack of a recorded scope.
+
 ## Status grammar
 
 | Status line | Meaning |
@@ -63,6 +72,7 @@ A `curate` or `new --supersedes` write changes **only** this line — the Contex
 **Status:** Accepted
 **Date:** 2026-07-29
 **Provenance:** ywc-plan Step 3.5 (architecture-verdict.md), plan docs/ywc-plans/webhook-delivery.md
+**Scope:** api/webhooks/
 
 ## Context
 

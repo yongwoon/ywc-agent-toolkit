@@ -36,15 +36,16 @@ Projectの Architecture Decision Record(ADR)を管理する Skill です。元�
 
 - (任意) `--mode new|read|list|curate` — Mode を強制指定(省略時は自動判定)
 - (任意) `--supersedes <ADR-NNNN>` — `new` mode で置き換える既存 ADR
-- (任意) `--target <path|area>` — `read` mode で関連範囲に絞り込み
+- (任意) `--target <path|area>` — `read` mode で ADR に記録された `Scope` フィールドがこの path/area と重なるかで絞り込み(Scope 未記録の ADR は `repo-wide` として扱う)
 - (任意) `--source plan|manual` — 決定の出所(デフォルト `manual`)
 - (任意) `--output <ディレクトリ>` — ADR ディレクトリのパス(デフォルト: `docs/adr/`)
 - (任意) `--dry-run` — 書き込みせず CHANGESET のみ表示
 
 ## 出力
 
-- `docs/adr/NNNN-<slug>.md` — Title / Status / Date / Provenance と Context / Decision / Alternatives Considered / Consequences セクションを備えたファイル
-- `new`/`curate` mode 時: 変更内容を明示する `ADR recorded` 確認 block を出力
+- `docs/adr/NNNN-<slug>.md` — Title / Status / Date / Provenance / Scope と Context / Decision / Alternatives Considered / Consequences セクションを備えたファイル
+- `new` mode 時: 新しい ID(該当する場合は superseded ID も)を明示する `ADR recorded` 確認 block を出力
+- `curate` mode 時: deprecate した各 ID とその理由を明示する `ADR curated` 確認 block を出力
 - CLAUDE.md 自動読み込み案内は出力しない(意図的 — 上記参照)
 
 ## 出力例
