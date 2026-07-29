@@ -107,13 +107,13 @@ If the initial request already answers one of these, do not re-ask — confirm i
 
 Once intent is clear, present 2 or 3 approaches in conversational prose. For each: one-sentence summary, the trade-offs, and an explicit "fits this case because…" or "less fit because…".
 
-Before presenting the recommendation, run a short blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md). Ask about any assumption that could change scope, an interface, data shape, permissions, or Done When; record only non-blocking risks and follow-ups in the Step 6 handoff. Keep the matrix term internal.
-
 Lead with your recommendation. Make the recommendation defensible from the anchors collected in Step 3, not from generic best-practice talk.
 
 If the user has a strong preference already, still present the alternatives — the explicit trade-off is what makes the choice defensible during `ywc-spec-validate` and later review.
 
 Ask which approach to use as the basis for the detailed design. Do not begin Step 5 until the user confirms it.
+
+After the user confirms the approach, run a short blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md). Resolve any uncertainty that could change scope, an interface, data shape, permissions, or Done When before Step 5; record only non-blocking risks and follow-ups in the Step 6 handoff. Keep the matrix term internal.
 
 ### Step 5: Present the design and get approval
 
