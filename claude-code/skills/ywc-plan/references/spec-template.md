@@ -15,6 +15,15 @@ The structure is aligned with `ywc-spec-validate`'s evaluation dimensions (Compl
 > Author: <user or agent name>
 > Spec Reference: <link to product/architecture doc, or `N/A — standalone feature`>
 
+## Global Constraints
+
+<Project-wide constraints found in Step 2 (`CLAUDE.md` / `AGENTS.md`, etc.) — version floors, dependency constraints, naming/copy conventions, platform requirements. One line each, verbatim values. Every FR and AC below implicitly inherits this section.>
+
+- <Constraint 1>
+- <Constraint 2>
+
+Use `N/A — no project-wide constraint beyond standard conventions` only after active consideration.
+
 ## Purpose
 
 <2-3 sentences: What problem does this feature solve, and why now?>
@@ -192,6 +201,12 @@ For a request like *"Add a settings page that lets users configure notification 
 > Status: Draft
 > Scale: Medium
 > Created: 2026-05-01
+
+## Global Constraints
+
+- Node.js >= 20 (per `package.json` engines field)
+- All new API routes follow the existing `/api/v1/` prefix convention
+- No new third-party notification vendor without a separate Medium-scale library-introduction review
 
 ## Purpose
 

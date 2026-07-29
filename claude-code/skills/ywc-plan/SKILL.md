@@ -74,6 +74,15 @@ After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-wr
 
 **Prerequisite (mission framing):** If `docs/project-mission.md` exists, read it before asking any questions (best-effort, alongside the ubiquitous-language read above). Use its Mission / North-Star and active Success Criteria to **frame** the clarification dialogue — anchor questions to the stated mission, and seed the artifact's Acceptance Criteria from any Success Criterion this request advances. This is purely additive framing: the mission file's **absence is a clean no-op** (NFR2) — never block, delay, or re-derive planning because it is missing, and never treat its presence as overriding the user's stated intent for *this* request.
 
+**Codebase-Fact Pre-check.** Before finalizing the anchor questions below, run a few bounded, targeted greps or reads to check whether the answer is already visible in the codebase — an existing pattern, a referenced file, a prior issue named in the request. This is not a substitute for Step 2's full investigation; it is bounded to a handful of targeted lookups scoped to what the anchor questions would otherwise ask the user, run before the anchor questions' wording is finalized.
+
+| Question type | Route |
+|---|---|
+| Codebase Fact — answer is verifiable by reading existing code, config, or a referenced file (e.g., "does this project already have an X pattern?", "what does the existing error format look like?") | Check the codebase first; only ask the user if the check is inconclusive. |
+| User Preference / Scope / Requirement — answer depends on intent, priority, or a decision only the user can make (e.g., "should this be opt-in or opt-out?", "is backward compatibility required?") | Ask the user directly — the codebase cannot answer this. |
+
+This pre-check stays active under `--non-interactive`: use its result to inform the default-filling logic below rather than skipping the check.
+
 Ask focused questions to extract four anchors. Use one round of consolidated questions (not back-and-forth) unless the user's initial input already covers some anchors.
 
 | Anchor | What to ask | Why it matters |
@@ -195,7 +204,7 @@ When scale is **Small**, generate `plan.md` at a user-specified path (default: `
 
 For the full `plan.md` structure and a worked example, see [references/small-plan-template.md](references/small-plan-template.md).
 
-The plan **must** include: Goal, Out of Scope, Files to touch (concrete paths), Implementation Steps (checkbox list with file/function references), Verification commands (using project's actual commands from Step 2), and Risks/Rollback.
+The plan **must** include: Goal, Out of Scope, Files to touch (concrete paths), Implementation Steps (checkbox list with file/function references), Verification commands (using project's actual commands from Step 2), Risks/Rollback, and Interfaces (optional — only when the plan touches ≥2 files that share a function/type signature).
 
 After writing the plan, surface this handoff message to the user:
 
@@ -211,6 +220,8 @@ When scale is **Medium** or **Large**, generate a spec document under `docs/ywc-
 For the full spec structure aligned with `ywc-spec-validate`'s evaluation dimensions, see [references/spec-template.md](references/spec-template.md).
 
 The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, and Open Questions (use `N/A — none identified` if none).
+
+Record project-wide constraints found in Step 2 (version floors, dependency constraints, naming/copy conventions, platform requirements) in the spec's `## Global Constraints` section — see [references/spec-template.md](references/spec-template.md).
 
 When the spec names module boundaries, key types, and interfaces, ground those design choices in the shared readable-code rubric — especially §G (structural smells) and its anti-dogma guardrails (do not specify speculative generality or premature abstraction the requirement does not yet need). See [../references/readable-code.md](../references/readable-code.md).
 
@@ -364,6 +375,8 @@ Before declaring the skill's task complete, verify:
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
 - [ ] Did not auto-execute downstream — invoked `ywc-spec-ready` **only** on an explicit **y**; for an **n** answer, a skipped prompt, or `--non-interactive`, ran no downstream skill at all
+- [ ] If scale = Medium/Large, the spec's **Global Constraints** section is populated from Step 2 findings (or `N/A` after active consideration)
+- [ ] If the Small plan touches ≥2 files sharing a function/type signature, an **Interfaces** block declares each side's exact signature
 
 ## Common Mistakes
 
