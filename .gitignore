@@ -18,8 +18,10 @@ __pycache__/
 docs/ywc-plans
 tasks/
 .ywc-run-state.json
+.codex/settings.local.json
 .ywc-learnings.jsonl
 .worktrees/
 tasks-codex-sdlc-v11
+.ywc-run-state.json
 docs/skill-agent-eval/*/runs/
 docs/skill-agent-eval/codex/runs/
