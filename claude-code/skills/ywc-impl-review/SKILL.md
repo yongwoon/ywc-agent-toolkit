@@ -8,7 +8,7 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-impl-review skill to run a five-axis (architecture / design / devex / security / QA) implementation review."
 
-Implementation conformance review skill. Runs five parallel reviewers (Phase 1: 4 Sonnet + 1 Haiku) and escalates only ambiguous findings to a short Opus advisor pass (Phase 2). The four code-review aspects (architecture / design / devex / security) follow the gstack review-army pattern; QA stays as a separate axis because coverage analysis is mechanical and benefits from a lighter model. See [Advisor Pattern](../references/advisor-pattern.md) for why this shape is used.
+Implementation conformance review skill. Runs five parallel reviewers (Phase 1: 3 Sonnet + 1 Haiku + 1 Opus for Security) and escalates only ambiguous findings from the Sonnet/Haiku lanes to a short Opus advisor pass (Phase 2). Security is the exception to the two-phase split: it runs at Opus from Phase 1 given its CRITICAL-severity, merge-blocking stakes, and does not produce Phase 2 advisor candidates — there is no higher-tier model in this catalog to escalate to. The remaining code-review aspects (architecture / design / devex) follow the gstack review-army pattern; QA stays as a separate axis because coverage analysis is mechanical and benefits from a lighter model. See [Advisor Pattern](../references/advisor-pattern.md) for why this shape is used.
 
 ## Rationalization Defense
 
@@ -62,20 +62,22 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
    If the selected target has no reviewable source files, return `NEEDS_CONTEXT` and do not report an all-clear review. Read the specification file and every target code file. For range and working-tree targets, provide the bounded relevant diff plus final file contents to the subagents so they can judge both correctness and scope. This context stays with the parent; do not forward it wholesale to Phase 2.
 
-3. **Phase 1 — Parallel Executor Review** — Use the Task tool to spawn five subagents in parallel. Pass `model` explicitly on each call so the executor layer stays at Sonnet or Haiku cost:
+3. **Phase 1 — Parallel Executor Review** — Use the Task tool to spawn five subagents in parallel. Pass `model` explicitly on each call — Architecture / Design / Devex / QA stay at Sonnet or Haiku cost; Security runs at Opus:
    - **Architecture subagent** (`model: sonnet`) — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status (B2) and multi-tenant scope (B6) gaps as one-line cross-references to the Security subagent rather than duplicating them.
    - **Design subagent** (`model: sonnet`) — API/interface design, naming, signatures, error models, return shapes, public-surface discipline, contract spec conformance. Reference: `references/design-agent.md`.
    - **Devex subagent** (`model: sonnet`) — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
-   - **Security subagent** (`model: sonnet`) — OWASP Top 10 analysis. Reference: `references/security-agent.md`. When the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so the subagent carries the dedicated worker persona (`tools/claude-code/agents/ywc-security-engineer.md`).
+   - **Security subagent** (`model: opus`) — OWASP Top 10 analysis. Reference: `references/security-agent.md`. Runs at Opus from Phase 1 (not Sonnet-then-escalate) because a missed or misjudged security finding is CRITICAL severity and merge-blocking, and the bounded diff/path scope keeps the cost delta small relative to the stakes. When the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so the subagent carries the dedicated Opus-tier worker persona (`tools/claude-code/agents/ywc-security-engineer.md`). Security returns **Confirmed findings only** (no Advisor candidates) — see the return-artifacts note below.
    - **QA subagent** (`model: haiku`) — Test coverage gaps and missing test cases. Reference: `references/qa-agent.md`. Haiku is appropriate because coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration) and does not typically require frontier reasoning.
 
    **Inject the Step 0 learnings** into each subagent prompt, filtered to that aspect's category: a `DO`/`DO-NOT` learning is an extra check; a `FALSE-POSITIVE` learning is an explicit instruction not to raise that finding here. **Apply the `--profile` dial**: in `chill` (default), a subagent suppresses its Style/Docs/Devex-polish nitpick tail (`Low`/`Info`) and surfaces only correctness/security/logic/runtime-risk findings; `assertive` emits the tail too (Critical/High/Medium are never suppressed). **Verify before surfacing** (the precision lever, [coderabbit-methodology.md §2](./references/coderabbit-methodology.md)): every finding must cite primary evidence — exact `file:line`, the symbol traced to its definition/callers, or fresh command output — and a finding that cannot be substantiated by re-reading the code or running a scoped check is **dropped**, not surfaced with a hedge. Where the project ships linters/scanners (ruff, eslint, golangci-lint, shellcheck, semgrep, gitleaks, ast-grep), run them and feed their output to the relevant subagent as *evidence* to triage — not as the verdict ([§4](./references/coderabbit-methodology.md)). **Surgical-changes check (all aspects, incl. Tier-2 language reviewers):** flag any changed hunk that does not trace to a spec line or PR-description intent as an out-of-scope finding — drive-by refactors, formatter/style churn, and edits outside the change's stated purpose. Every changed line should trace to the request.
 
-   Each subagent must return two artifacts:
+   The Architecture, Design, Devex, and QA subagents must each return two artifacts:
    - **Confirmed findings** — issues the executor is confident about (Phase 1 complete, no escalation needed).
    - **Advisor candidates** — findings the executor flags for Phase 2 review. Each candidate must include: the finding text, a bounded code snippet (≤100 lines), the relevant spec excerpt (if any), and a one-sentence reason the executor wants a second opinion.
 
-   Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The four code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
+   The **Security** subagent returns **Confirmed findings only** and never produces Advisor candidates: it already runs at Opus in Phase 1, so there is no higher-tier model to escalate an ambiguous finding to. If a finding is genuinely irresolvable because required context was not forwarded (e.g. an exemption list living outside the scoped diff), it returns `NEEDS_CONTEXT` for that item per its own Return Contract rather than escalating.
+
+   Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
 
    **Language-specific reviewer dispatch (Tier 2)** — when the changed-file list is dominated by a single language and the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, replace the Design and Devex generic `model: sonnet` subagents with the matching language reviewer for sharper findings. Currently shipped:
    - TypeScript / TSX / Vue / Svelte → `subagent_type: ywc-typescript-reviewer` (covers type-system depth, async correctness, framework idioms, tsconfig strictness, ESM/CJS interop)
@@ -84,9 +86,9 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
    Tier 2 reviewers for other languages (Swift / Rust) are follow-up PRs; in the meantime continue with the generic Design / Devex subagent prompts for those files.
 
-4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from all five subagents:
+4. **Aggregate and Select Phase 2 Candidates** — Combine candidate lists from the four Sonnet/Haiku subagents (Architecture / Design / Devex / QA). Security is excluded from this pool — it already ran at Opus in Phase 1 and returns Confirmed findings only:
    - Deduplicate findings that share `{file}:{line}` across categories.
-   - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Security > Architecture > Design > Devex > QA. (Architecture / Design / Devex order reflects irreversibility — structural decisions are hardest to walk back, then contracts, then operator UX.)
+   - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Architecture > Design > Devex > QA. (This order reflects irreversibility — structural decisions are hardest to walk back, then contracts, then operator UX.)
    - Log the candidates that were dropped due to the cap in the final report so the user can see what was not escalated.
 
 5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, spawn a short Opus subagent via the Task tool with `model: opus`. When the candidate's source category is **Architecture** and the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, prefer `subagent_type: ywc-architect` so the advisor carries the dedicated architectural-decision persona (`tools/claude-code/agents/ywc-architect.md`). When the candidate's ambiguous axis is **performance** (latency / throughput / memory / bundle-size / Web Vitals regression on an Architecture or Devex candidate), prefer `subagent_type: ywc-performance-engineer` (`tools/claude-code/agents/ywc-performance-engineer.md`) so the advisor carries the dedicated Performance persona with concrete remediation (specific query rewrite, missing-index DDL, dynamic-import split point, Web Vitals fix path, profiler invocation recommendation). This is a routing hint — Phase 2 subagent count and budget are unchanged. Other categories use the generic `model: opus` dispatch.
@@ -104,7 +106,7 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 ## Implementation Review Result: {spec} vs {code}
 
 ### Summary
-- Phase 1 findings (Sonnet/Haiku executor): Architecture A, Design D, Devex V, Security M, QA K
+- Phase 1 findings (Sonnet/Haiku executor for Architecture/Design/Devex/QA, Opus for Security): Architecture A, Design D, Devex V, Security M, QA K
 - Phase 2 advisor calls (Opus): X of Y budget used
 - Phase 2 adjustments: N confirmed as-is, M severity-adjusted
 
@@ -198,7 +200,7 @@ Read the corresponding reference file when spawning each subagent and include th
 - `references/architecture-agent.md` — Architecture's review dimensions (structural spec conformance, pattern consistency, module interface, simplicity, surgical changes) + advisor triggers
 - `references/design-agent.md` — Design's review dimensions (contract spec conformance, naming, signatures, error model, return shapes, public-surface discipline) + advisor triggers
 - `references/devex-agent.md` — Devex's review dimensions (readability, error messages, logging, documentation, debuggability, config UX) + advisor triggers
-- `references/security-agent.md` — Security's OWASP Top 10 checklist and advisor-escalation triggers
+- `references/security-agent.md` — Security's OWASP Top 10 checklist. Security runs at Opus in Phase 1 and does not have advisor-escalation triggers (see the file's Confirmed-Findings-Only note)
 - `references/qa-agent.md` — QA's coverage analysis and advisor-escalation triggers
 
 If a reference file does not yet contain an "Advisor Candidate Criteria" section, fall back to the three-property test in [advisor-pattern.md §5](../references/advisor-pattern.md): objective trigger, irreversibility, ambiguity. A finding must satisfy all three to be a Phase 2 candidate.

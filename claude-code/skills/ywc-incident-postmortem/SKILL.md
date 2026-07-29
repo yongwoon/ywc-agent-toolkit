@@ -75,7 +75,7 @@ Procedure:
 
 1. **Frame the security question** in one sentence: which OWASP category the failure maps to, and which trust boundary failed.
 2. **Assemble the bounded payload** — the affected code path (≤100 lines around the failure site), the auth / authz config relevant to the boundary (if separable from the rest), and the timeline excerpt showing the attacker / unintended actor's traversal. Do not forward the full log dump or the full codebase.
-3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-security-engineer)` with the bounded payload. Otherwise dispatch a `model: sonnet` subagent with the same payload plus the canonical persona prompt copied from `claude-code/agents/ywc-security-engineer.md` Mission section.
+3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-security-engineer)` with the bounded payload. Otherwise dispatch a `model: opus` subagent with the same payload plus the canonical persona prompt copied from `claude-code/agents/ywc-security-engineer.md` Mission section.
 4. **Integrate the findings** into the postmortem:
    - Root Cause section gains the OWASP category citation and the CWE ID when applicable
    - Prevention Action Items (Step 6) cite the advisor's concrete remediation steps, not generic "improve security"

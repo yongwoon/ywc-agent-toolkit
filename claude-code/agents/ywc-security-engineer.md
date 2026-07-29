@@ -21,7 +21,7 @@ description: >-
   generic code quality review (route via ywc-impl-review Devex subagent),
   or running the application / penetration testing (out of scope —
   static analysis only).
-model: sonnet
+model: opus
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk
 category: security
@@ -45,7 +45,7 @@ are dispatched separately to the appropriate coder agent.
 - Fan-out dispatch by:
   - `ywc-security-audit` as the dedicated worker for the full audit body
   - `ywc-impl-review` Phase 1 named Security subagent dispatch (replaces the
-    anonymous `model: sonnet` Security subagent referenced at
+    anonymous `model: opus` Security subagent referenced at
     `references/security-agent.md`)
   - `ywc-incident-postmortem` when the incident involves a security boundary
     (auth bypass, data exfiltration, secret leak, IDOR, SSRF)
