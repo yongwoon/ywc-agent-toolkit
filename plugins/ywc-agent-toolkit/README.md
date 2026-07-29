@@ -10,7 +10,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 41     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
 | Codex       | 48     | 7             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ### Codex Output Language Defaults
@@ -270,6 +270,7 @@ versions include Codex-compatible frontmatter and tool guidance.
 | [`ywc-tech-research`](../../claude-code/skills/ywc-tech-research/README.md) | Research libraries and compare technical approaches |
 | [`ywc-ubiquitous-language`](../../claude-code/skills/ywc-ubiquitous-language/README.md) | Create and maintain a domain ubiquitous language dictionary |
 | [`ywc-project-mission`](../../claude-code/skills/ywc-project-mission/README.md) | Persist the project's durable Mission / Success Criteria / Out-of-Scope in `docs/project-mission.md` (read by ywc-plan to frame planning) |
+| [`ywc-adr`](../../claude-code/skills/ywc-adr/README.md) | Record Architecture Decision Records in `docs/adr/`, one file per decision (offered by ywc-plan's Architectural Advisor Gate) |
 | [`ywc-brainstorm`](../../claude-code/skills/ywc-brainstorm/README.md) | Shape rough ideas before writing a formal plan or spec |
 | [`ywc-confidence-gate`](../../claude-code/skills/ywc-confidence-gate/README.md) | Check readiness and risk before starting substantial implementation |
 | [`ywc-onboard-repo`](../../claude-code/skills/ywc-onboard-repo/README.md) | Generate repository onboarding context for unfamiliar projects |
@@ -433,6 +434,12 @@ feeds the same loop after a production incident.
 intent — Mission / Success Criteria / Out-of-Scope — via `ywc-project-mission`; `ywc-plan`
 reads that file to frame every later planning pass. Intent is captured once and reused
 across features.
+
+**Decision persistence.** When `ywc-plan`'s Architectural Advisor Gate (Step 3.5) produces
+a verdict that is hard to reverse, surprising without context, and a real trade-off, it
+offers to record it as a durable ADR via `ywc-adr` (`docs/adr/NNNN-<slug>.md`, one file per
+decision); `ywc-plan` reads that directory back on later passes so a new plan doesn't
+silently contradict a settled decision.
 
 **New-codebase setup.** For a greenfield project, `ywc-project-scaffold` lays down the
 directory structure and `ywc-ubiquitous-language` seeds the domain glossary; for an existing

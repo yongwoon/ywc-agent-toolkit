@@ -1,0 +1,41 @@
+{
+  "skill_name": "ywc-adr",
+  "description": "Behavioral test prompts for the per-project ADR (Architecture Decision Record) skill. These are realistic invocations a developer would actually type; the expected_output describes the correct behavior (mode selection, offer-criteria gating, CHANGESET confirmation, status grammar) rather than a byte-exact artifact, because most paths are interactive and write a user-confirmed file. No output-contract harness key is set, so CI auto-discovery skips these; they are for manual and skill-creator evaluation.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "record-decision-with-alternatives",
+      "prompt": "We just decided to deliver webhooks through a queue instead of inline in the request handler, because a slow subscriber was blocking the triggering request. We also considered a short timeout and a third-party delivery service but rejected both. Record this as an ADR.",
+      "expected_output": "Enters new mode with --source manual. Confirms the decision meets all three offer criteria (hard to reverse, surprising, real trade-off) before proceeding. Extracts Context, Decision, and both rejected alternatives with their reasons from the conversation. Assigns the next sequential ADR ID. Presents an ADD CHANGESET for confirmation BEFORE writing docs/adr/NNNN-<slug>.md, then prints an 'ADR recorded' confirmation.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "reject-no-alternative-decision",
+      "prompt": "We fixed a typo in the config key name. Record this as an ADR so we remember why.",
+      "expected_output": "Checks the offer criteria first. Identifies that a typo fix has no real alternative and is trivially reversible, so it fails at least two of the three criteria (hard to reverse, real trade-off). Declines to create an ADR, states which criteria failed, and does not write any file.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "supersede-old-adr",
+      "prompt": "ADR-0002 said we'd use a single shared Postgres instance for all tenants. We've now decided to move to per-tenant database isolation because of a compliance requirement. Record the new decision and supersede ADR-0002.",
+      "expected_output": "Enters new mode with --supersedes ADR-0002. Builds a CHANGESET with an ADD for the new ADR (with Context, Decision, Alternatives, Consequences) and a SUPERSEDE entry that changes only ADR-0002's status line to 'Superseded by ADR-<new-id>' — never touching ADR-0002's Context/Decision/Consequences body. Presents both for confirmation before writing.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "read-applicable-before-planning",
+      "prompt": "Before drafting this spec for the reporting service, load any ADRs relevant to service boundaries or the monolith.",
+      "expected_output": "Enters read mode with a --target filter for service-boundary/monolith-related ADRs. Reads docs/adr/ (or reports it is absent without blocking). Emits a compact block of matching active (non-Deprecated, non-Superseded) ADRs — ID, title, one-line Decision gist — and skips unrelated ADRs such as an unrelated frontend styling decision.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "curate-stale-adr-without-successor",
+      "prompt": "ADR-0004 said we'd use a custom job queue, but we migrated off it months ago to a managed service and never wrote a follow-up ADR. Curate it.",
+      "expected_output": "Enters curate mode. Reads the file, confirms the Decision no longer matches the codebase and has no direct successor ADR. Proposes a DEPRECATE for ADR-0004 with the stated reason, changing only its status line to 'Deprecated: <reason>, <date>' while leaving Context/Decision/Consequences untouched, and asks for confirmation before writing.",
+      "files": []
+    }
+  ]
+}

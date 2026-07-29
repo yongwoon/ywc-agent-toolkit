@@ -20,8 +20,62 @@
         "Does not combine --working-tree with --code or --git-range",
         "Deduplicates paths across staged and unstaged change lists",
         "Includes deleted (D) paths so removing a critical-path file cannot bypass the gate",
+        "Includes type-changed (T) paths, such as a tracked file replaced by a symlink, so the change cannot bypass the gate",
         "Excludes ignored generated directories and files, for tracked and untracked paths alike"
       ]
+    },
+    {
+      "id": 3,
+      "name": "valid-base-merge-base-boundary",
+      "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --base main.",
+      "expected_output": "Resolves main with git rev-parse --verify main^{commit}, computes git merge-base main HEAD, rejects an empty merge-base...HEAD diff, and reports both supplied ref and resolved merge-base.",
+      "expectations": [
+        "Uses one mutually exclusive target mode.",
+        "Uses the same merge-base...HEAD range for names, patch, and final contents sent to every Phase 1 worker.",
+        "Does not reinterpret explicit --git-range semantics."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "base-needs-context-errors",
+      "prompt": "Review with --base missing-ref, then review with --base main when the merge-base diff is empty or the refs have no common ancestor.",
+      "expected_output": "Returns NEEDS_CONTEXT for unresolved refs, no common ancestor, or empty merge-base-to-HEAD diffs before reading review files.",
+      "expectations": [
+        "Does not emit an all-clear report for an empty diff.",
+        "Reports supplied ref and failure reason where available.",
+        "Treats a failed git merge-base operation as NEEDS_CONTEXT."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "mixed-target-rejection",
+      "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --base main --working-tree.",
+      "expected_output": "Rejects mixed or missing target modes with NEEDS_CONTEXT before reading code or spec files.",
+      "expectations": [
+        "Treats --base as mutually exclusive with --git-range, --code, and --working-tree."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "explicit-range-compatibility",
+      "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --git-range abc123..def456.",
+      "expected_output": "Keeps explicit two-endpoint A..B review semantics and does not substitute merge-base behavior.",
+      "expectations": [
+        "Preserves --git-range compatibility.",
+        "Rejects combining --git-range with --base."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "worker-three-dot-propagation",
+      "prompt": "Review a valid fixed-point branch with --base main and inspect the Phase 1 worker packets.",
+      "expected_output": "Every Phase 1 worker receives the identical merge-base...HEAD file list, patch boundary, and final contents, with report-header evidence for supplied ref and resolved merge-base."
+    },
+    {
+      "id": 8,
+      "name": "base-no-common-ancestor",
+      "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --base unrelated-root when unrelated-root has no common ancestor with HEAD.",
+      "expected_output": "Returns NEEDS_CONTEXT for the failed git merge-base operation before reading review files or reporting an all-clear result."
     }
   ]
 }

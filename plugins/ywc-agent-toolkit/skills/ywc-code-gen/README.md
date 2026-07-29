@@ -33,6 +33,7 @@ Worker 실행 전에 Backend, Frontend, QA 가 같은 public contract 를 보도
 
 - **sequential-executor**: 순차 실행 (의존성이 있는 작업에 적합)
 - **/ywc-code-gen**: 독립 Layer 병렬 생성 (SDK/API/Web 동시 필요 시)
+- **ywc-implement**: 승인된 단일 spec 또는 ticket의 직접 구현
 - 보완적으로 사용
 
 ## Triggering

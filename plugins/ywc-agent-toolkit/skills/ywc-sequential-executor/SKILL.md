@@ -6,8 +6,8 @@ description: >-
   000001-010", "run the next task", "implement all remaining tasks", "start
   implementing", "sequential-executor", "순차 실행", "タスク順次実行". Do not
   use for parallel/concurrent execution (use ywc-parallel-executor), code
-  generation without a task directory (use ywc-code-gen), or ad-hoc one-off
-  implementation requests.
+  generation without a task directory (use ywc-code-gen), or a single approved
+  spec/ticket implementation (use ywc-implement).
 ---
 
 # Sequential Executor
