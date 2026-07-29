@@ -37,10 +37,12 @@ When tempted to bypass the gate, check this table first:
 | "The user said 'just build it', I'll skip the questions" | "Just build it" is a request for speed, not a waiver on understanding. Confirm the four anchors (What, Why, Out of Scope, Done When) in one consolidated question. The user agrees to the design, and the implementation downstream stays on rails. |
 | "I'll ask all the questions at once to save turns" | One question at a time is non-negotiable. Multi-question dumps produce shallow answers (the user picks the easiest one) and miss the assumption you most needed to surface. Use multiple choice when it speeds the answer, but keep to one topic per turn. |
 | "I know the codebase, I don't need Step 1 (context exploration)" | Familiarity is the failure mode. The "I know this" agent reuses a stale mental model and proposes a design that conflicts with a constraint added last week. Always check current files, recent commits, and any `docs/ywc-plans/` or `docs/specification/` entries in the same area. |
+| "This existing-code problem I found isn't part of the request, so I won't mention it" | Ignoring it doesn't make it disappear — the new work lands on top of it either way. If it genuinely blocks or shapes the surface being changed (a file too large to extend safely, a boundary the new work must cross), fold a *targeted* improvement into the design's "Where it lives." If it merely lives nearby but doesn't block this round, name it once and route it to Out of Scope — never silently drop it, and never expand the design into an unrelated refactor. |
 | "The user only wants approach A, I'll skip proposing alternatives" | Always propose 2–3 approaches with trade-offs. The user often *thinks* they want A but, when shown B and C, picks something else. Even if A wins, the explicit trade-off makes the design defensible during review. Lead with the recommendation, but show the alternatives. |
 | "The request is too big for one design, I'll start anyway and split later" | If the request describes multiple independent subsystems ("a platform with X, Y, Z, and analytics"), STOP and decompose first. Each subsystem gets its own brainstorm → plan → spec cycle. Starting before decomposition produces a spec the user does not actually want and tasks that have to be re-cut. |
 | "I'll skip the visible 'design presented' step and just start a `ywc-plan`" | The handoff to `ywc-plan` carries the approved design as input. Without an explicit approval step, `ywc-plan` has nothing concrete to operate on and will re-ask the same anchors — duplicating work, frustrating the user, and breaking the contract that each skill has a single responsibility. |
 | "User wants to keep iterating in this session, I'll just keep brainstorming" | Once the design is approved, this skill terminates. Continuing to iterate inside the brainstorm scope reopens settled questions. If the user genuinely needs to change direction, end this skill, return to `ywc-brainstorm` for the *new* idea, and produce a new design doc. |
+| "Every section already got a 'looks right' from the user in Step 5, so a self-review pass is redundant" | Per-section approval checks each piece in isolation as it is presented; contradictions between two independently-approved sections (a "Where it lives" that touches a service "Failure modes" never accounts for) only surface once the design is read as a whole. Step 5.5 is that whole-design pass — cheap to run, and it catches what per-section approval structurally cannot. |
 
 **Violating the letter of these rules is violating the spirit.** The hard gate exists because every implementation skill is downstream of "the user said yes to this design."
 
@@ -63,7 +65,7 @@ Do **not** use when:
 
 ## Workflow
 
-The skill is a 6-step dialogue. Steps 1–2 are pre-flight; Steps 3–5 are the conversation; Step 6 is the handoff.
+The skill is a 6-step dialogue. Steps 1–2 are pre-flight; Steps 3–5 are the conversation; Step 5.5 is a self-review pass; Step 6 is the handoff.
 
 ### Step 1: Explore project context
 
@@ -75,6 +77,8 @@ Before the first question, read enough to ground the conversation in current sta
 - The exact files the user named, if any
 
 The point is not to read the whole repo — it is to avoid asking questions whose answers are already in the codebase, and to detect collisions with in-flight work.
+
+If this exploration surfaces an existing problem that affects the work at hand — a file that has grown too large, an unclear module boundary, a tangled responsibility the new work must cross — fold a *targeted* improvement into the design's "Where it lives" (Step 5). Do not propose unrelated refactoring that merely lives nearby; anything not blocking the current work is named once and routed to Step 3's Out of Scope, not built into the design.
 
 ### Step 2: Detect "too big for one design"
 
@@ -127,6 +131,17 @@ After the last section, ask explicitly: "Should I hand this off to `ywc-plan` to
 
 This is the approval gate. Until the user says yes, do not advance.
 
+### Step 5.5: Self-review the design
+
+Before drafting the Step 6 handoff, look at the approved design with fresh eyes and check four things:
+
+1. **Placeholder scan** — any "TBD", "TODO", or vague requirement left in the anchors or design sections? Fix it now.
+2. **Internal consistency** — does "Where it lives" match what "What we're building" describes? Does any section contradict another?
+3. **Scope check** — does this still fit one `ywc-plan` cycle, or did the conversation drift into a second subsystem that Step 2 should have caught?
+4. **Ambiguity check** — could any anchor be read two different ways? If so, pick one reading and make it explicit rather than carrying the ambiguity into the handoff.
+
+Fix issues inline — no need to re-run the full per-section approval loop for a self-review fix. Only go back to the user if a fix changes the substance of something they already approved.
+
 ### Step 6: Handoff to ywc-plan
 
 When approved, surface the handoff:
@@ -168,6 +183,7 @@ Before handing off, verify:
 - [ ] Step 4 presented at least 2 alternative approaches with explicit trade-offs — not just the recommended one
 - [ ] Step 4 surfaced blind-spot assumptions worth validating before handoff
 - [ ] Step 5 surfaced the design in sections and received explicit per-section confirmation
+- [ ] Step 5.5 self-review passed — placeholder scan, internal consistency, scope check, and ambiguity check all clear before the handoff was drafted
 - [ ] The user said "yes" (or equivalent) to the handoff prompt, not just to the recommendation
 - [ ] The handoff message includes the four anchors verbatim, not summarized
 - [ ] No implementation skill, spec drafting, or code edit happened during this dialogue

@@ -16,7 +16,8 @@
 4. **Step 4 — Propose 2–3 approaches with trade-offs** — 추천 1안 + 대안 1~2안, 각각의 trade-off 명시. Design 중심 요청은 2~4개 divergent HTML mockup 을 추가 생성해 사용자의 시각적 취향(Unknown Knowns)을 surface
 5. **Step 4.5 — Blind-spot pass (Unknown Matrix)** — design 제시 전 Unknown Knowns / Unknown Unknowns 를 명시적으로 점검
 6. **Step 5 — Present the design and get approval** — section 별 confirm, 마지막에 명시적 handoff 승인
-7. **Step 6 — Handoff to ywc-plan** — 4개 anchor 와 chosen approach 를 `ywc-plan` 에게 명시적 input 으로 전달
+7. **Step 5.5 — Self-review the design** — handoff 작성 전 placeholder scan / internal consistency / scope check / ambiguity check 4가지를 fresh eyes 로 점검, 문제는 inline 으로 즉시 수정
+8. **Step 6 — Handoff to ywc-plan** — 4개 anchor 와 chosen approach 를 `ywc-plan` 에게 명시적 input 으로 전달
 
 이 skill 은 절대로 `ywc-code-gen`, `ywc-spec-writer`, `ywc-task-generator`, executor 로 직접 분기하지 않습니다 — terminal state 는 항상 `ywc-plan` 호출입니다.
 
