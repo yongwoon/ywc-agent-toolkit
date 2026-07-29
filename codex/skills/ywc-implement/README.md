@@ -9,7 +9,7 @@
 
 ## 흐름
 
-깨끗한 baseline과 feature branch를 확인하고, 기존 패턴을 조사한 뒤 필요한 경우 TDD를 수행합니다. Focused check와 전체 검증 후 `ywc-impl-review`를 실행하고, 통과한 경우에만 conventional commit을 만듭니다.
+깨끗한 baseline과 feature branch를 확인하고, 기존 패턴을 조사합니다. 동작 변경은 TDD를 수행합니다. Focused check와 전체 검증 후 `ywc-impl-review`를 실행하고, 통과한 경우에만 conventional commit을 만듭니다.
 
 다중 Layer 생성은 `ywc-code-gen`, task directory 실행은 `ywc-sequential-executor`를 사용합니다.
 
