@@ -32,6 +32,7 @@ Use `--review` to run `ywc-impl-review` after generation passes verification and
 
 - **sequential-executor**: Sequential execution (suitable for tasks with dependencies)
 - **/ywc-code-gen**: Independent layer parallel generation (when SDK/API/Web are needed simultaneously)
+- **ywc-implement**: Direct implementation of one approved spec or ticket
 - Used complementarily
 
 ## Triggering
