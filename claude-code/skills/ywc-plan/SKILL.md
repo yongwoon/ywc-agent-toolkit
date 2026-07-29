@@ -74,14 +74,14 @@ After Scale assessment in Step 2 and before any downstream handoff (`ywc-spec-wr
 
 **Prerequisite (mission framing):** If `docs/project-mission.md` exists, read it before asking any questions (best-effort, alongside the ubiquitous-language read above). Use its Mission / North-Star and active Success Criteria to **frame** the clarification dialogue — anchor questions to the stated mission, and seed the artifact's Acceptance Criteria from any Success Criterion this request advances. This is purely additive framing: the mission file's **absence is a clean no-op** (NFR2) — never block, delay, or re-derive planning because it is missing, and never treat its presence as overriding the user's stated intent for *this* request.
 
-**Codebase-Fact Pre-check.** Before finalizing the anchor questions below, run a few bounded, targeted greps or reads to check whether the answer is already visible in the codebase — an existing pattern, a referenced file, a prior issue named in the request. This is not a substitute for Step 2's full investigation; it is bounded to a handful of targeted lookups scoped to what the anchor questions would otherwise ask the user, run before the anchor questions' wording is finalized.
+**Codebase-Fact Pre-check.** Before finalizing the anchor questions below, check whether the answer is already visible in the codebase — an existing pattern, a referenced file, a prior issue named in the request. Budget: at most **5 targeted lookups across at most 3 files**, using read-only tools only (`Grep` / `Glob` / `Read`) — this is not a substitute for Step 2's full investigation.
 
 | Question type | Route |
 |---|---|
-| Codebase Fact — answer is verifiable by reading existing code, config, or a referenced file (e.g., "does this project already have an X pattern?", "what does the existing error format look like?") | Check the codebase first; only ask the user if the check is inconclusive. |
+| Codebase Fact — answer is verifiable by reading existing code, config, or a referenced file (e.g., "does this project already have an X pattern?", "what does the existing error format look like?") | Check the codebase first, citing `file:line` as evidence for the answer; only ask the user if the check is inconclusive or the budget is exhausted before a confident answer emerges. |
 | User Preference / Scope / Requirement — answer depends on intent, priority, or a decision only the user can make (e.g., "should this be opt-in or opt-out?", "is backward compatibility required?") | Ask the user directly — the codebase cannot answer this. |
 
-This pre-check stays active under `--non-interactive`: use its result to inform the default-filling logic below rather than skipping the check.
+This pre-check stays active under `--non-interactive`: a Codebase Fact question the check resolves is answered from the cited evidence and never asked; one it leaves inconclusive falls through to the `--non-interactive` defaulting rule below. Because no default is defined for **What** or **Why**, an inconclusive or unresolved **What**/**Why** anchor under `--non-interactive` **stops** the skill and reports `NEEDS_CONTEXT` rather than proceeding to Step 2 with the change's intent unresolved.
 
 Ask focused questions to extract four anchors. Use one round of consolidated questions (not back-and-forth) unless the user's initial input already covers some anchors.
 
@@ -96,7 +96,7 @@ If the user's initial message already answers all four anchors, skip the questio
 
 If an anchor answer contradicts another anchor or the codebase evidence gathered in Step 2, **STOP** — name the contradiction explicitly and ask before proceeding. Do not silently reconcile it by picking one side.
 
-**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves any anchor unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Proceed directly to Step 2 without waiting for user input.
+**`--non-interactive` mode:** When this flag is present, do not call `AskUserQuestion` at any point in Step 1. If the user's initial message leaves **Out of Scope** or **Done When** unanswered, fill it with the following defaults automatically: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. **What** and **Why** have no default — if either remains unanswered after the Codebase-Fact Pre-check above, stop and report `NEEDS_CONTEXT` instead of proceeding. Otherwise, proceed directly to Step 2 without waiting for user input.
 
 ### Step 2: Investigate the Codebase
 
