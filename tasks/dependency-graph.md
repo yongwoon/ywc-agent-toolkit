@@ -1358,3 +1358,37 @@ graph LR
 ### 비용 주의
 
 live 실행은 dispatch 당 약 **$0.54**(설치된 skill 전량이 컨텍스트에 실림), ablation 은 케이스당 `6 × 2 × $0.54 ≈ $6.5`. `000068-020` 과 `000069-010` 의 수동 검증은 대상 케이스를 소수로 엄선한다.
+
+## Batch — Codex SDLC v1.1 Gap Closure
+
+- Spec: `docs/ywc-plans/codex-sdlc-v11-gap-closure.md`
+- Granularity mode: `llm`
+- Language: `en`
+- Starting phase: `000070`
+- Rationale: the pre-existing dependency graph reaches phase `000069`; this batch uses the next phase without colliding with user-owned graph entries.
+
+### Phase 000070 — Direct Lane Contracts
+
+- `000070-010-domain-ywc-implement-skill` → root
+- `000070-020-refactor-impl-review-merge-base` → depends on `000070-010`
+
+### Phase 000071 — Routing Handoffs
+
+- `000071-010-refactor-direct-lane-handoffs` → depends on `000070-020`
+
+### Phase 000072 — Distribution Gate
+
+- `000072-010-infra-sync-codex-package-validation` → depends on `000071-010`
+
+### Parallel Execution Notes (Batch — Codex SDLC v1.1 Gap Closure)
+
+- Initial ready set: `000070-010-domain-ywc-implement-skill`.
+- After `000070-010` merges: `000070-020-refactor-impl-review-merge-base` becomes runnable.
+- After `000070-020` merges: `000071-010-refactor-direct-lane-handoffs` becomes runnable.
+- After `000071-010` merges: `000072-010-infra-sync-codex-package-validation` becomes runnable.
+- No tasks are parallel-safe in this batch because each later task consumes or synchronizes the preceding source contract; generated output must remain terminal.
+
+### Open Questions (Batch — Codex SDLC v1.1 Gap Closure)
+
+- None. All emitted requirements have acceptance-criterion or motivating-goal support in the specification.
+
