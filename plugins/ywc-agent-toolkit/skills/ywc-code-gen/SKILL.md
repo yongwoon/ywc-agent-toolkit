@@ -1,7 +1,7 @@
 ---
 name: ywc-code-gen
 description: >-
-  (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for single-file edits, refactoring an existing module, debugging, or when no specification exists.
+  (ywc) Use when the user wants parallel multi-layer code generation (Backend + Frontend + QA simultaneously) from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for a single approved spec or ticket (use ywc-implement), single-file edits, refactoring an existing module, debugging, or when no specification exists.
 ---
 
 # ywc-code-gen

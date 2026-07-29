@@ -11,9 +11,10 @@
 ```text
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --code api/src/
 /ywc-impl-review --spec docs/outline/02-backend-api-design.md --working-tree
+/ywc-impl-review --spec docs/outline/02-backend-api-design.md --base main
 ```
 
-`--working-tree` 无需创建 commit，即可审查 staged、unstaged 和 untracked 的 source 改动。请勿与 `--code` 或 `--git-range` 结合使用。
+`--base <ref>` 审查 `git merge-base <ref> HEAD` 到 `HEAD` 的范围，并报告 supplied ref 和 resolved merge-base。`--git-range A..B` 仍是显式的双端点比较。四种 target mode 互斥。
 
 ## 执行 Agent
 
