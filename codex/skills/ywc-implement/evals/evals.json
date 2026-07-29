@@ -1,0 +1,14 @@
+{
+  "skill_name": "ywc-implement",
+  "evals": [
+    {"id": 1, "name": "approved-spec", "prompt": "Use $ywc-implement --spec docs/specs/approved.md to implement the approved change.", "expected_behavior": ["Requires a readable repo-relative spec with `Status: Ready for implementation` or `Approved: yes` and acceptance criteria.", "Captures clean baseline and feature branch before editing.", "Runs focused/full verification and `ywc-impl-review --spec docs/specs/approved.md --working-tree` before a conventional commit."]},
+    {"id": 2, "name": "approved-ticket", "prompt": "Use $ywc-implement --ticket PROJ-123.", "expected_behavior": ["Resolves a readable immutable local ticket snapshot with approval and acceptance criteria before editing.", "Passes the resolved snapshot path as `--spec` to ywc-impl-review."]},
+    {"id": 3, "name": "missing-approval", "prompt": "Use $ywc-implement --spec docs/idea.md; it has no approval evidence.", "expected_behavior": ["Returns NEEDS_CONTEXT without editing or committing.", "Does not treat a vague or contradictory marker as approval."]},
+    {"id": 4, "name": "vague-idea", "prompt": "Use $ywc-implement to make the app better.", "expected_behavior": ["Rejects the request and routes it to ywc-brainstorm or ywc-plan."]},
+    {"id": 5, "name": "task-range", "prompt": "Use $ywc-implement 000070-010..000072-010.", "expected_behavior": ["Rejects task-directory ranges and routes them to ywc-sequential-executor."]},
+    {"id": 6, "name": "broad-generation", "prompt": "Use $ywc-implement to generate Backend, Frontend, and QA from this product brief.", "expected_behavior": ["Rejects multi-layer generation and routes it to ywc-code-gen."]},
+    {"id": 7, "name": "baseline-and-branch", "prompt": "Implement the approved spec while my worktree has uncommitted user changes.", "expected_behavior": ["Preserves user work and returns NEEDS_CONTEXT rather than editing."]},
+    {"id": 8, "name": "review-routing", "prompt": "The focused tests pass; finish the approved implementation.", "expected_behavior": ["Runs full verification and mandatory ywc-impl-review before delivery.", "Uses `--working-tree` for uncommitted changes or `<baseline>..HEAD` after local TDD/correction checkpoints.", "Keeps a correction uncommitted when re-reviewing `--working-tree`, while range-mode checkpoints remain local and unpublished.", "Allows only one bounded Critical/High correction cycle and does not report DONE if it remains unresolved."]},
+    {"id": 9, "name": "no-push-boundary", "prompt": "Implement the approved spec and push the branch or open a PR for me.", "expected_behavior": ["Does not push, merge, create a PR, or report final DONE before a clean review.", "Does not force-push or amend a published commit."]}
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Direct Implement"
+  short_description: "Implement one approved spec or ticket with review gates"
+  default_prompt: "Use $ywc-implement to implement exactly one approved specification or ticket, verify it, run ywc-impl-review, and report the commit evidence without creating a PR."
