@@ -42,6 +42,16 @@ The terminal state of this skill is **invoking `ywc-plan`** with the approved in
 - Use disposable visual prototypes only when visual comparison would clarify a decision; never treat them as production code.
 - Do not treat a request for speed, familiarity with the codebase, or apparent simplicity as an exception to the hard gate.
 
+## Rationalization Defense
+
+| Excuse | Reality |
+|---|---|
+| "This is too simple to need a design" | Every request goes through the gate — a short design is still a design. |
+| "I'll ask all the questions at once" | One question per message; batching produces shallow, pre-filled answers. |
+| "This existing-code problem isn't part of the request" | Fold it in if it blocks the work; otherwise name it once and route to Out of Scope — never drop it silently. |
+| "Every section already got approved in Step 5, self-review is redundant" | Step 5.5 catches contradictions between sections that per-section approval can't see in isolation. |
+| "The four anchors are confirmed, the design is done" | Step 4.5's blind-spot pass still owes a check for assumptions nobody stated. |
+
 ## When to Use
 
 Use when **any** of these apply:
