@@ -14,7 +14,7 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-brainstorm skill to surface intent, constraints, and 2–3 alternative approaches before any implementation work begins."
 
-This skill is the entry point for any "I have an idea — let's build something" interaction. It exists because every implementation skill (`ywc-code-gen`, `ywc-sequential-executor`, `ywc-parallel-executor`) assumes the request is *understood*. When that assumption breaks, the implementation ships the wrong thing, and the spec / task / code work all has to be redone. The cost of one brainstorming session is 10–30 minutes; the cost of skipping it is a full re-plan iteration through `ywc-plan` → `ywc-spec-validate` → `ywc-task-generator` → code, measured in hours per iteration. Adapted from `superpowers:brainstorming`, tightened to hand off to `ywc-plan` rather than implementation.
+Clarify the request before planning. Hand the approved design to `ywc-plan`, never directly to implementation.
 
 ## The Hard Gate
 
@@ -27,24 +27,12 @@ This applies to **every** request, regardless of perceived simplicity. The desig
 
 The terminal state of this skill is **invoking `ywc-plan`** with the approved intent in hand. Do not jump to `ywc-code-gen`, `ywc-spec-writer`, `ywc-task-generator`, or any executor.
 
-## Rationalization Defense
+## Non-negotiables
 
-When tempted to bypass the gate, check this table first:
-
-| Excuse | Reality |
-|---|---|
-| "This is too simple to need a design" | "Simple" is where unexamined assumptions cause the most rework. Every project goes through the gate. The design can be short — but it must be presented and approved. |
-| "The user said 'just build it', I'll skip the questions" | "Just build it" is a request for speed, not a waiver on understanding. Confirm the four anchors (What, Why, Out of Scope, Done When) in one consolidated question. The user agrees to the design, and the implementation downstream stays on rails. |
-| "I'll ask all the questions at once to save turns" | One question at a time is non-negotiable. Multi-question dumps produce shallow answers (the user picks the easiest one) and miss the assumption you most needed to surface. Use multiple choice when it speeds the answer, but keep to one topic per turn. |
-| "I know the codebase, I don't need Step 1 (context exploration)" | Familiarity is the failure mode. The "I know this" agent reuses a stale mental model and proposes a design that conflicts with a constraint added last week. Always check current files, recent commits, and any `docs/ywc-plans/` or `docs/specification/` entries in the same area. |
-| "This existing-code problem I found isn't part of the request, so I won't mention it" | Ignoring it doesn't make it disappear — the new work lands on top of it either way. If it genuinely blocks or shapes the surface being changed (a file too large to extend safely, a boundary the new work must cross), fold a *targeted* improvement into the design's "Where it lives." If it merely lives nearby but doesn't block this round, name it once and route it to Out of Scope — never silently drop it, and never expand the design into an unrelated refactor. |
-| "The user only wants approach A, I'll skip proposing alternatives" | Always propose 2–3 approaches with trade-offs. The user often *thinks* they want A but, when shown B and C, picks something else. Even if A wins, the explicit trade-off makes the design defensible during review. Lead with the recommendation, but show the alternatives. |
-| "The request is too big for one design, I'll start anyway and split later" | If the request describes multiple independent subsystems ("a platform with X, Y, Z, and analytics"), STOP and decompose first. Each subsystem gets its own brainstorm → plan → spec cycle. Starting before decomposition produces a spec the user does not actually want and tasks that have to be re-cut. |
-| "I'll skip the visible 'design presented' step and just start a `ywc-plan`" | The handoff to `ywc-plan` carries the approved design as input. Without an explicit approval step, `ywc-plan` has nothing concrete to operate on and will re-ask the same anchors — duplicating work, frustrating the user, and breaking the contract that each skill has a single responsibility. |
-| "User wants to keep iterating in this session, I'll just keep brainstorming" | Once the design is approved, this skill terminates. Continuing to iterate inside the brainstorm scope reopens settled questions. If the user genuinely needs to change direction, end this skill, return to `ywc-brainstorm` for the *new* idea, and produce a new design doc. |
-| "Every section already got a 'looks right' from the user in Step 5, so a self-review pass is redundant" | Per-section approval checks each piece in isolation as it is presented; contradictions between two independently-approved sections (a "Where it lives" that touches a service "Failure modes" never accounts for) only surface once the design is read as a whole. Step 5.5 is that whole-design pass — cheap to run, and it catches what per-section approval structurally cannot. |
-
-**Violating the letter of these rules is violating the spirit.** The hard gate exists because every implementation skill is downstream of "the user said yes to this design."
+- Explore current context; include only existing-code improvements that directly shape this work.
+- Decompose independent subsystems before asking detailed questions.
+- Ask one question at a time, present 2–3 approaches, and get approval for both the chosen approach and the detailed design.
+- Do not treat a request for speed, familiarity with the codebase, or apparent simplicity as an exception to the hard gate.
 
 ## When to Use
 
@@ -109,11 +97,13 @@ If the initial request already answers one of these, do not re-ask — confirm i
 
 Once intent is clear, present 2 or 3 approaches in conversational prose. For each: one-sentence summary, the trade-offs, and an explicit "fits this case because…" or "less fit because…".
 
-Before presenting the recommendation, run a quick blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md) and surface any assumptions that are still worth validating. Keep the term internal; present them as concrete follow-up questions or caveats, not as "Unknown Matrix" jargon. Carry unresolved assumptions and their validation follow-ups into the Step 6 handoff and preserve them in the downstream plan's risk / follow-up language.
+Before presenting the recommendation, run a short blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md). Ask about any assumption that could change scope, an interface, data shape, permissions, or Done When; record only non-blocking risks and follow-ups in the Step 6 handoff. Keep the matrix term internal.
 
 Lead with your recommendation. Make the recommendation defensible from the anchors collected in Step 3, not from generic best-practice talk.
 
 If the user has a strong preference already, still present the alternatives — the explicit trade-off is what makes the choice defensible during `ywc-spec-validate` and later review.
+
+Ask which approach to use as the basis for the detailed design. Do not begin Step 5 until the user confirms it.
 
 ### Step 5: Present the design and get approval
 
@@ -138,7 +128,7 @@ Before drafting the Step 6 handoff, look at the approved design with fresh eyes 
 1. **Placeholder scan** — any "TBD", "TODO", or vague requirement left in the anchors or design sections? Fix it now.
 2. **Internal consistency** — does "Where it lives" match what "What we're building" describes? Does any section contradict another?
 3. **Scope check** — does this still fit one `ywc-plan` cycle, or did the conversation drift into a second subsystem that Step 2 should have caught?
-4. **Ambiguity check** — could any anchor be read two different ways? If so, pick one reading and make it explicit rather than carrying the ambiguity into the handoff.
+4. **Ambiguity check** — clarify only wording that does not change the approved substance. If an interpretation could change scope, behavior, an interface, data shape, permissions, or Done When, return to Step 3 and ask the user.
 
 Fix issues inline — no need to re-run the full per-section approval loop for a self-review fix. Only go back to the user if a fix changes the substance of something they already approved.
 
