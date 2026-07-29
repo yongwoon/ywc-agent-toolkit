@@ -31,6 +31,14 @@ Use this template when `ywc-plan` Step 3 selects **Small** scale. The output is 
 
 (List all files. Do not write `several files in src/` — write the actual paths.)
 
+## Interfaces (optional — multi-file only)
+
+<Only write this section when Files to Touch lists ≥2 files that share a function/type signature. Omit entirely for single-file changes or when there is no shared contract between files.>
+
+- `<file path>`
+  - Consumes: `<function/type name>(<params>): <return type>` — defined in `<other file>`
+  - Produces: `<function/type name>(<params>): <return type>` — consumed by `<other file>`
+
 ## Implementation Steps
 
 - [ ] Step 1: <Concrete action — reference specific file, function, or behavior>
@@ -133,3 +141,5 @@ Expected: all pass, no new warnings.
 - [ ] Non-BOM CSV uploads still return 200 (no regression)
 - [ ] Verification commands all pass
 ```
+
+This example omits the **Interfaces** section — the change touches three files but only one (`csv-import.ts`) contains a modified function; the test and fixture files share no function/type contract with it, so there is no cross-file signature to declare.
