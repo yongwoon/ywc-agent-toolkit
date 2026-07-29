@@ -7,6 +7,10 @@ reviews:
   review_status: true
   review_details: true
 
+  path_filters:
+    - "!**/README.md"
+    - "!**/README.*.md"
+
   path_instructions:
     - path: "claude-code/skills/*/SKILL.md"
       instructions: |
@@ -15,11 +19,6 @@ reviews:
         - `description:` should contain concrete trigger phrases and explicit anti-triggers.
         - Flag `@skill-name` style force-load references.
         - Flag cases where long reference material should move to `references/`.
-
-    - path: "claude-code/skills/*/README*.md"
-      instructions: |
-        Check that README examples and wording still match the corresponding `SKILL.md`.
-        If the English README changes materially, call out likely translation follow-up for `README.ja.md`, `README.ko.md`, `README.es.md`, and `README.zh.md`.
 
     - path: "codex/skills/SKILL.md"
       instructions: |
