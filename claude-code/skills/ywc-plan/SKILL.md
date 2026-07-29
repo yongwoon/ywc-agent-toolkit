@@ -102,6 +102,7 @@ Read targeted files to ground the plan in actual project state. Step 2 is organi
 - Relevant `docs/ywc-plans/`, `docs/architecture/`, `docs/product/` if the project uses the LLM development guide layout
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and their "Synonyms to Avoid"; spec text and Out of Scope items must use canonical terms and never use synonym identifiers
 - `docs/project-mission.md` (if it exists) — Mission / North-Star + active Success Criteria; frame the plan's scope and seed Acceptance Criteria from criteria this request advances. Absence is a clean no-op (NFR2)
+- `docs/adr/` (if it exists) — invoke `ywc-adr --mode read` (best-effort, filtered by the request's touched area when known) to load active ADRs. A plan must not silently contradict a non-deprecated ADR's Decision; if it would, surface the conflict and ask the user whether to proceed anyway or record a superseding ADR later via Step 3.5. Absence is a clean no-op (NFR2)
 - **Parent spec / design doc** named in the plan's own header (`Parent spec:`, `親 spec:`, `Spec Reference:`) — when the request is a follow-up or amendment to an existing plan, read the parent end-to-end. A follow-up that silently narrows the parent's explicit removal/scope list is a cross-document Consistency finding: in the LP column-drop follow-up, the parent said "delete `markDone`/`markFailed`" but the follow-up's removal list dropped `markDone`, which would have left a dangling write against the dropped column.
 
 #### Conditional reads (only when relevant to the request)
@@ -170,6 +171,15 @@ If both conditions fail, skip to Step 4 directly. The gate exists to head off th
 2. **Assemble the bounded payload** — the spec excerpt that touches the decision (≤30 lines), the most relevant existing code reference (file path + 1-paragraph summary, not the full file), and the project convention or prior-art entry if one applies. Do not forward the whole spec.
 3. **Dispatch the advisor**. When the Claude Code runtime is in use and the named-agent catalog at `tools/claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-architect)` with the bounded payload. When the runtime does not support named agents, dispatch a `model: opus` subagent with the same payload and the canonical persona prompt copied from `tools/claude-code/agents/ywc-architect.md` Mission section.
 4. **Record the verdict** in `docs/ywc-plans/<plan-slug>/architecture-verdict.md` (or alongside the spec when the spec path is provided). The file captures: the framed decision, the trade-off table the advisor returned, the chosen direction, and the file / type / structural shape recommendation. Subsequent steps cite this file rather than re-litigating the decision.
+
+   **Optional: ADR write-back.** When the verdict's decision is hard to reverse, would be surprising to a future reader without this context, and reflects a genuine trade-off between real alternatives (the same three-part test `ywc-adr` uses), offer **once** to persist it as a durable record:
+
+   ```text
+   This architectural decision (<one-line gist>) looks durable. Record it as an ADR?
+   → ywc-adr --mode new --source plan   [y / skip]
+   ```
+
+   On acceptance, invoke `ywc-adr --mode new --source plan` with the framed decision, the trade-off table, and the chosen direction as input; its own CHANGESET confirmation gate still applies. On decline or silence, it is a clean no-op — never write an ADR unasked, and never block the plan on the answer. Skip the offer entirely when the verdict does not meet the three-part test (the common case for narrower structural choices).
 5. **Handle non-DONE statuses** per the standard contract:
    - `DONE_WITH_CONCERNS` → cite the concerns explicitly in the spec's Constraints section so reviewers see the caveat
    - `NEEDS_CONTEXT` → run the additional Read / Grep the advisor names, then re-dispatch with the enriched payload
@@ -370,3 +380,4 @@ Before declaring the skill's task complete, verify:
 - **Downstream (Medium/Large path)**: `ywc-spec-ready` (auto-converge shortcut) or `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
 - **Pairs with**: `ywc-product-review` (run before `ywc-plan` when business framing is unclear), `ywc-project-docs` (run after if `docs/` set is missing)
 - **Reads / writes-back**: `ywc-project-mission` — Step 1 reads `docs/project-mission.md` (best-effort) to frame clarification and seed Acceptance Criteria; Step 5 offers an opt-in `update --source plan` write-back when the plan finalizes ≥1 new durable success criterion. Both are no-ops on absence / decline (NFR2).
+- **Reads / writes-back**: `ywc-adr` — Step 2 reads `docs/adr/` (best-effort) so the plan does not contradict a settled decision; Step 3.5 offers an opt-in `new --source plan` write-back when the Architectural Advisor Gate's verdict meets the three-part offer test. Both are no-ops on absence / decline, and Step 3.5 itself is skipped entirely on the Small path or when no architectural ambiguity surfaced.

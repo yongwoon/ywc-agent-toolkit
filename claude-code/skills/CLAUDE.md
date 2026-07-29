@@ -210,30 +210,37 @@ caller performed the update — explicit propagation makes the contract auditabl
 
 ## Stateful-File Family and Harness-Feedback / Mission Edges
 
-Three skills share one architecture: a **per-project, committed Markdown file**
+Four skills share one architecture: **per-project, committed Markdown**
 maintained through **mode-based access** with **user-confirmed writes** (an
-ADD / MODIFY / DEPRECATE CHANGESET, never an inferred-and-written entry), a
-first-creation `@`-activation prompt for `CLAUDE.md`, and a no-block invariant
-(absence never blocks the host workflow). They differ in content domain and in
-their exact mode set:
+ADD / MODIFY / DEPRECATE-style CHANGESET, never an inferred-and-written entry),
+and a no-block invariant (absence never blocks the host workflow). They differ
+in content domain, exact mode set, and — for `ywc-adr` — storage shape:
 
 | Skill | File | Modes | Domain |
 |---|---|---|---|
 | `ywc-review-learnings` | `docs/review-learnings.md` | `read` / `update` / `list` / `curate` | durable code-review preferences (what + why + polarity) |
 | `ywc-project-mission` | `docs/project-mission.md` | `read` / `update` / `list` / `curate` | durable project intent (Mission / North-Star, measurable Success Criteria, Out-of-Scope) |
 | `ywc-ubiquitous-language` | `docs/ubiquitous-language.md` | `new` / `extract` / `update` | shared domain vocabulary (canonical terms + synonyms to avoid) |
+| `ywc-adr` | `docs/adr/NNNN-<slug>.md` (one file per decision) | `new` / `read` / `list` / `curate` | point-in-time architecture decisions (Context / Decision / Alternatives / Consequences) |
 
 `ywc-review-learnings` and `ywc-project-mission` share the four-mode
-`read` / `update` / `list` / `curate` shape; `ywc-ubiquitous-language` uses a
-`new` / `extract` / `update` variant. What all three genuinely share is the
-per-project committed file, the user-confirmed CHANGESET write, the
-first-creation activation prompt, and the no-block invariant. When adding a new
-read/update/list/curate member, clone that four-mode shape from
-`ywc-review-learnings` (the canonical template) and add a row here.
+`read` / `update` / `list` / `curate` shape over one accumulating file, each
+with a first-creation `@`-activation `CLAUDE.md` prompt. `ywc-ubiquitous-language`
+uses a `new` / `extract` / `update` mode variant, still over one accumulating
+file. `ywc-adr` deviates on two axes at once, both deliberately: it swaps
+`update` for `new` (an ADR is superseded, never edited in place) and stores one
+immutable-ish file per decision rather than one accumulating file — and for
+that reason it **skips** the `@`-activation prompt entirely (an unbounded
+directory is not cheap to preload the way a single compact file is; see
+`ywc-adr/SKILL.md` for the reasoning). When adding a new member: clone the
+four-mode `read`/`update`/`list`/`curate` shape from `ywc-review-learnings` if
+the content genuinely accumulates into one file; clone `ywc-adr`'s shape if the
+content is instead a series of point-in-time, individually-citable records.
+Either way, add a row here.
 
-### Cross-skill edges (harness-feedback loop + mission persistence)
+### Cross-skill edges (harness-feedback loop + mission persistence + decision persistence)
 
-Four edges connect producers of durable knowledge to these files. Each is an
+Five edges connect producers of durable knowledge to these files. Each is an
 **offer** subject to the target skill's own confirmation gate — never an
 automatic write — and each is a clean no-op on decline or file absence:
 
@@ -252,10 +259,16 @@ automatic write — and each is a clean no-op on decline or file absence:
    (best-effort) to frame clarification and seed Acceptance Criteria; Step 5
    offers an opt-in `update --source plan` write-back when the plan finalizes a
    new durable success criterion.
+5. **`ywc-plan` ↔ `ywc-adr`** — Step 2 reads `docs/adr/` (best-effort) so the
+   plan does not silently contradict a settled decision; Step 3.5
+   (Architectural Advisor Gate) offers an opt-in `new --source plan` write-back
+   when the gate's verdict meets `ywc-adr`'s three-part offer test (hard to
+   reverse + surprising without context + real trade-off).
 
 Edges 1–2 form the harness-feedback loop (a confirmed defect tightens future
 review); edges 3–4 form mission persistence (durable intent frames future
-planning).
+planning); edge 5 forms decision persistence (a durable architectural verdict
+frames future planning the same way).
 
 ## Subagent Return Payload Contract and Structured Surface-to-User
 
