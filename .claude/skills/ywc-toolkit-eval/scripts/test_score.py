@@ -91,12 +91,12 @@ class A5HeuristicTest(unittest.TestCase):
         self.assertEqual(score.expected_model_tier("ywc-root-cause-analyst"), "opus")
         self.assertEqual(score.expected_model_tier("ywc-doc-writer"), "haiku")
         self.assertEqual(score.expected_model_tier("ywc-backend-coder"), "sonnet")
-        self.assertEqual(score.expected_model_tier("ywc-security-engineer"), "sonnet")
+        self.assertEqual(score.expected_model_tier("ywc-security-engineer"), "opus")
 
     def test_bands_for_current_catalog_roles(self) -> None:
         # Well-matched current-catalog pairings all score 5 (Amendment A1).
         self.assertEqual(score.a5_model_band("ywc-architect", "opus"), 5)
-        self.assertEqual(score.a5_model_band("ywc-security-engineer", "sonnet"), 5)
+        self.assertEqual(score.a5_model_band("ywc-security-engineer", "opus"), 5)
         self.assertEqual(score.a5_model_band("ywc-doc-writer", "haiku"), 5)
 
     def test_bands_discriminate_mismatches(self) -> None:

@@ -59,7 +59,11 @@ IMPL_ROLE_HINT = re.compile(
 # cross-reference sibling agents (e.g. "route to ywc-architect"), which would
 # false-flag many agents as Opus-expected. Authoritative mapping and the pinned
 # 12-agent table live in references/agent-rubric.md §A5 (Amendment A1).
-A5_OPUS_ROLE_KW = ("architect", "root-cause", "root_cause", "rootcause", "critic")
+# "security" added per the CRITICAL-severity static-analysis judgment that
+# ywc-security-engineer now runs on Opus for (#159) — same frontier-judgment
+# bucket as architect/root-cause/critic.
+A5_OPUS_ROLE_KW = ("architect", "root-cause", "root_cause", "rootcause", "critic",
+                   "security")
 A5_HAIKU_ROLE_KW = ("doc-writer", "documentation", "formatting",
                     "mechanical", "enumeration")
 A5_TIER_RANK = {"haiku": 1, "sonnet": 2, "opus": 3}
