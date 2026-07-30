@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+## [1.31.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.30.1...v1.31.0) (2026-07-30)
+
+
+### Added
+
+* add ywc-adr, ywc-implement skills and Codex SDLC v1.1 gap closure ([#155](https://github.com/yongwoon/ywc-agent-toolkit/issues/155)) ([39b68a5](https://github.com/yongwoon/ywc-agent-toolkit/commit/39b68a59e1e4b5e7180efbc471c75a382e53c8e5))
+* **ywc-brainstorm:** add self-review pass and existing-code guidance ([#158](https://github.com/yongwoon/ywc-agent-toolkit/issues/158)) ([b3bb65d](https://github.com/yongwoon/ywc-agent-toolkit/commit/b3bb65d188f1daa581130649b78baa4cfb9f67d7))
+* **ywc-plan:** add Codebase-Fact Pre-check and Global Constraints/Interfaces sections ([#157](https://github.com/yongwoon/ywc-agent-toolkit/issues/157)) ([a0d885b](https://github.com/yongwoon/ywc-agent-toolkit/commit/a0d885b27c1ece3b483b66d3652487179f529f22))
+* **ywc-security-engineer:** promote to Opus tier, remove Phase 2 escalation ([#159](https://github.com/yongwoon/ywc-agent-toolkit/issues/159)) ([7158da9](https://github.com/yongwoon/ywc-agent-toolkit/commit/7158da91cae4443e28ee8c3ee09453ce134dfb8d))
+
+
+### Fixed
+
+* **ywc-toolkit-eval:** recognize security-engineer as Opus-tier role ([#160](https://github.com/yongwoon/ywc-agent-toolkit/issues/160)) ([66b1a9e](https://github.com/yongwoon/ywc-agent-toolkit/commit/66b1a9e3af86f316c94ec1347f5b557ed747421f))
+
 ## [1.30.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.30.0...v1.30.1) (2026-07-24)
 
 
