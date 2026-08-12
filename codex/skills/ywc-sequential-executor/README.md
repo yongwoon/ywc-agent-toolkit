@@ -59,7 +59,7 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 | `--group-name <name>` | Aggregate work branch 이름 지정 (`work/<name>`). `--aggregate-pr`에서만 유효 | `--group-name billing-rollout` |
 | `--base-branch <branch>` | Base branch 지정 (default: auto-detect) | `--base-branch develop` |
 | `--worktree` | 전체 invocation을 단일 run worktree에서 실행. Delivery mode가 아니므로 다른 mode flag와 조합 가능 | `--worktree` |
-| `--resume-disposition resume|stop` | checkpoint 재개 결정을 prompt 없이 전달. 누락/불일치 시 bounded `NEEDS_CONTEXT` 반환 | `--resume-disposition resume` |
+| `--resume-disposition resume\|stop` | checkpoint 재개 결정을 prompt 없이 전달. 누락/불일치 시 bounded `NEEDS_CONTEXT` 반환 | `--resume-disposition resume` |
 | `--dry-run` | 실행 계획만 표시 (Task 순서, dependency, mode). 실제 실행하지 않음 | |
 
 > `--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` 는 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
