@@ -11,6 +11,8 @@
 
 `--working-tree`는 commit 없이 staged, unstaged, untracked source 변경을 검토합니다. `--code`, `--git-range`와 함께 사용하지 마세요.
 
+`--non-interactive` (기본값: 미설정 = interactive)는 Step 7의 learnings 승격 확인 prompt를 열지 않습니다. 대신 report에 `Learning candidates (not promoted — non-interactive)` block으로 후보를 나열합니다. 어떤 mode에서도 사용자 확인 없이는 `docs/review-learnings.md`에 기록하지 않습니다.
+
 ## 실행 Agent
 
 | Agent                  | 검증 내용                                                        |

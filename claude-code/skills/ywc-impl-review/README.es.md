@@ -15,6 +15,8 @@ Un Skill que realiza una verificación integral de conformidad de implementació
 
 `--working-tree` revisa los cambios de source staged, unstaged y untracked sin crear un commit. No lo combine con `--code` ni con `--git-range`.
 
+`--non-interactive` (por defecto: sin definir = interactive) omite el prompt de confirmación de promoción de learnings del Step 7; en lugar de preguntar, el report enumera los candidatos en un block `Learning candidates (not promoted — non-interactive)`. Ningún mode escribe en `docs/review-learnings.md` sin confirmación del usuario.
+
 ## Agentes de ejecución
 
 | Agente | Ámbito de verificación |
