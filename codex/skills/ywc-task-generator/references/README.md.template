@@ -50,6 +50,17 @@ Files expected to be created or modified in this task.
 ## Notes
 Important considerations, pitfalls, or design decisions.
 
+## Architecture Contract Packet
+Copy only the sanitized packet resolved by `ywc-task-generator` when an
+architecture contract applies. Do not copy manifest/evidence contents, raw
+verifier data, command-like fields, transcripts, or full diffs.
+
+- `Contract State:` `<aggregate_verdict or N/A — no architecture contract>`
+- `Component IDs:` `<affected component ids>`
+- `Rule IDs:` `<affected rule ids>`
+- `Invariant Verdict:` `<MAINTAINED | VIOLATED | N/A | NEEDS_CONTEXT>`
+- `Evidence Artifact Path:` `<repository-relative path or N/A>`
+
 ## Preview Approval Metadata
 When this task set comes from a persisted preview approval flow, copy the
 canonical preview identity and any wide-refactor invalidation fields here.
