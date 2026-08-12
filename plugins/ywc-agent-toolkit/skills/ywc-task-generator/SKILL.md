@@ -45,6 +45,8 @@ When tempted to bend a rule, check this table first:
 | `--preview-path <path>` | `docs/ywc-plans/<slug>.task-preview.md` | Persisted preview artifact path. Must be repository-relative Markdown under a safe root. |
 | `--approve-preview` | off | Consume a previously approved persisted preview with matching identity. Never re-decompose on this path. |
 | `--non-interactive` | off | Required when an autonomous caller consumes a previously approved preview without interactive confirmation. |
+| `--manifest <path>` | off | Optional repository-relative architecture contract; omitted input permits root-only discovery. |
+| `--architecture-evidence <path>` | off | Optional normalized evidence artifact; paired with `--manifest`, never raw evidence text. |
 
 ## Language Option
 
@@ -192,6 +194,38 @@ Safety invariants — DB migration separation, Library introduction separation, 
 See [references/granularity-modes.md](references/granularity-modes.md) for the full mode specification.
 
 **Persist the decision.** After parsing `--mode` / `--granularity` or receiving confirmation, record the selected mode in a re-checkable location (e.g., a top-line scratchpad note, or `write_memory("granularity_mode", <value>)` when Serena MCP is available) and apply it consistently through Steps 6–9 (size, bundling, Ownership scope, Implementation Steps depth, test.md inclusion). Mode drift mid-generation produces inconsistent task directories.
+
+### Step 5.5: Resolve Architecture Contract Packet
+
+If `--manifest` or `--architecture-evidence` is supplied, resolve the pair
+through the shared `../scripts/architecture-invariants.py` helper before task
+decomposition. A supplied manifest is repository-relative; invalid or missing
+input returns `NEEDS_CONTEXT` without discovery fallback. Evidence without a
+valid manifest is `NEEDS_CONTEXT`. A valid manifest without evidence preserves
+the existing task-generation flow and adds no packet. Derive the bounded
+`--changed-path` set only from paths already named by the specification and
+candidate task Ownership; never scan the repository broadly.
+
+Record only this sanitized packet in preview/task metadata and checklist
+context:
+
+```text
+Architecture Contract Packet:
+- contract_state: <VALIDATED | N/A — no architecture contract | NEEDS_CONTEXT>
+- component_ids: <affected component ids>
+- rule_ids: <affected rule ids>
+- verifier_requirement: v1 validation-only; no verifier execution
+- invariant_verdict: <MAINTAINED | VIOLATED | N/A | NEEDS_CONTEXT>
+- evidence_artifact_path: <repository-relative path or N/A>
+```
+
+Mapping is separate: `status` controls dispatch; `aggregate_verdict` becomes `invariant_verdict`; rule IDs, sanitized evidence paths, and artifact path remain distinct. Successful audits use `contract_state: VALIDATED`; no-manifest is `N/A — no architecture contract`; `NEEDS_CONTEXT` is terminal before writing.
+Do not copy manifest/evidence contents, raw evidence, command-like fields,
+transcripts, full diffs, or inferred edges into task artifacts. Propagate
+`NEEDS_CONTEXT` before writing any preview or task directory. Surface
+`VIOLATED` as a task-generation finding; `N/A` and `MAINTAINED` permit the
+existing decomposition. The packet does not elevate task-generator authority
+or authorize execution.
 
 ### Step 6: Task Decomposition
 

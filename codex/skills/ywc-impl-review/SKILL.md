@@ -104,12 +104,20 @@ same packet boundary for sibling workers when relevant:
 
 ```text
 Architecture Contract Packet:
-- contract_state: <aggregate_verdict or N/A — no architecture contract>
+- contract_state: <VALIDATED | N/A — no architecture contract | NEEDS_CONTEXT>
 - component_ids: <affected component ids>
 - rule_ids: <affected rule ids>
 - invariant_verdict: <MAINTAINED | VIOLATED | N/A | NEEDS_CONTEXT>
 - evidence_artifact_path: <repository-relative path or N/A>
 ```
+
+Do not conflate the helper result with the packet: helper `status` is the
+bounded dispatch status; helper `aggregate_verdict` is projected as
+`invariant_verdict`; and `rule_results[].rule_id` is projected as `rule_ids`.
+Use only sanitized `rule_results[].evidence_paths` as source citations for an
+Architecture finding. They are not `contract_state` and are not the artifact
+path. A successful audit uses `contract_state: VALIDATED`, while no-manifest
+fallback uses `N/A — no architecture contract`.
 
 Do not forward manifest/evidence contents, raw verifier data, command-like
 fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`

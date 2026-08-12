@@ -122,12 +122,23 @@ Forward to every worker only this sanitized packet:
 
 ```text
 Architecture Contract Packet:
-- contract_state: <aggregate_verdict or N/A — no architecture contract>
+- contract_state: <VALIDATED | N/A — no architecture contract | NEEDS_CONTEXT>
 - component_ids: <affected component ids>
 - rule_ids: <affected rule ids>
 - invariant_verdict: <MAINTAINED | VIOLATED | N/A | NEEDS_CONTEXT>
 - evidence_artifact_path: <repository-relative path or N/A>
 ```
+
+Keep the resolver result separate from this packet. The helper's bounded audit
+result has `status`, `aggregate_verdict`, and `rule_results`; `aggregate_verdict`
+maps to `invariant_verdict`, while `rule_results[].rule_id` maps to `rule_ids`.
+`rule_results[].evidence_paths` are sanitized source paths for the normal finding
+channel only; they are not renamed to `contract_state` or copied into the worker
+packet. `evidence_artifact_path` is the normalized artifact path, not an evidence
+entry path. `status` controls dispatch (`NEEDS_CONTEXT` stops; `DONE` permits
+projection) and is never used as the invariant verdict. For a successful audit,
+`contract_state` is `VALIDATED`; no-manifest fallback remains
+`N/A — no architecture contract`.
 
 Do not forward manifest/evidence contents, raw verifier data, command-like
 fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`

@@ -90,6 +90,35 @@
       "prompt": "Use --preview-only with an inline spec, or point --spec to ../outside.md, or set --preview-path /tmp/out.txt.",
       "expected_output": "Returns NEEDS_CONTEXT before any artifact write when the spec is missing, inline-only, path-escaping, symlink-escaping, or the preview path is not safe Markdown under the allowed root.",
       "files": []
+    },
+    {
+      "id": 16,
+      "name": "architecture-packet-positive",
+      "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
+      "expected_output": "Records a sanitized packet: contract_state VALIDATED, component ownership, rule IDs projected from rule_results, invariant_verdict projected from aggregate_verdict, and the evidence artifact path. Helper status, aggregate verdict, rule results, and evidence paths remain distinct.",
+      "expectations": ["Does not copy raw evidence, transcripts, command-like fields, or full diffs into task metadata", "Uses evidence paths only as bounded citations, not as contract state or artifact path"],
+      "files": []
+    },
+    {
+      "id": 17,
+      "name": "architecture-packet-no-evidence",
+      "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json without --architecture-evidence.",
+      "expected_output": "Preserves existing task generation and writes no architecture packet; missing evidence is not converted into VIOLATED.",
+      "files": []
+    },
+    {
+      "id": 18,
+      "name": "architecture-packet-invalid-evidence",
+      "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json --architecture-evidence invalid.json with malformed, unknown, or forbidden evidence fields.",
+      "expected_output": "Returns NEEDS_CONTEXT before writing preview or task artifacts and does not copy or expose invalid evidence content.",
+      "files": []
+    },
+    {
+      "id": 19,
+      "name": "architecture-packet-violation",
+      "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json --architecture-evidence forbidden-edge.json where aggregate_verdict is VIOLATED.",
+      "expected_output": "Projects invariant_verdict VIOLATED and affected rule IDs, surfaces VIOLATED as a task-generation finding, and does not grant task-generator or implementer authority to execute or override gates.",
+      "files": []
     }
   ]
 }

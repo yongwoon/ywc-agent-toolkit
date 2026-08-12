@@ -211,7 +211,7 @@ context:
 
 ```text
 Architecture Contract Packet:
-- contract_state: <aggregate_verdict or N/A — no architecture contract>
+- contract_state: <VALIDATED | N/A — no architecture contract | NEEDS_CONTEXT>
 - component_ids: <affected component ids>
 - rule_ids: <affected rule ids>
 - verifier_requirement: v1 validation-only; no verifier execution
@@ -219,6 +219,7 @@ Architecture Contract Packet:
 - evidence_artifact_path: <repository-relative path or N/A>
 ```
 
+Mapping is separate: `status` controls dispatch; `aggregate_verdict` becomes `invariant_verdict`; rule IDs, sanitized evidence paths, and artifact path remain distinct. Successful audits use `contract_state: VALIDATED`; no-manifest is `N/A — no architecture contract`; `NEEDS_CONTEXT` is terminal before writing.
 Do not copy manifest/evidence contents, raw evidence, command-like fields,
 transcripts, full diffs, or inferred edges into task artifacts. Propagate
 `NEEDS_CONTEXT` before writing any preview or task directory. Surface
