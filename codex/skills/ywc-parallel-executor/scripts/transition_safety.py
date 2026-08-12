@@ -48,9 +48,9 @@ def resolve_resume_disposition(
 ) -> dict[str, object]:
     if not checkpoint_exists:
         return {"status": "DONE", "reason": "fresh_run"}
-    if disposition not in {None, "resume", "stop"}:
-        return terminal_status("missing_resume")
-    if saved_scope != current_scope and disposition is None:
+    # An existing checkpoint always demands an explicit disposition; `None` never
+    # silently resumes, regardless of whether the saved scope matches the current one.
+    if disposition not in {"resume", "stop"}:
         return terminal_status("missing_resume")
     if disposition == "stop":
         return terminal_status("resume_stopped")
@@ -60,10 +60,10 @@ def resolve_resume_disposition(
 def _walk(value: object, path: str = "$") -> None:
     if isinstance(value, dict):
         for key, child in value.items():
-            if key.lower() in PRIVATE_FIELDS:
-                raise ValueError(f"privacy field: {path}.{key}")
             if not isinstance(key, str):
                 raise ValueError("non-string property")
+            if key.lower() in PRIVATE_FIELDS:
+                raise ValueError(f"privacy field: {path}.{key}")
             if isinstance(child, str) and len(child) > 512:
                 raise ValueError(f"bounded field: {path}.{key}")
             _walk(child, f"{path}.{key}")
@@ -93,7 +93,9 @@ def _validate_handoff(payload: object) -> None:
     for worker in identity["worker_shas"]:
         worker = _exact(worker, {"worker_id", "sha"}, "worker_sha")
         worker_ids.append(worker["worker_id"])
-    if not all(isinstance(worker_id, str) for worker_id in worker_ids) or worker_ids != sorted(set(worker_ids)):
+    if not all(isinstance(worker_id, str) for worker_id in worker_ids):
+        raise ValueError("parallel worker identity type")
+    if worker_ids != sorted(set(worker_ids)):
         raise ValueError("parallel worker ordering")
     current = _exact(root["current_unit"], {"id", "kind", "status"}, "current_unit")
     next_unit = _exact(root["next_unit"], {"id", "kind"}, "next_unit")
@@ -127,15 +129,15 @@ def atomic_write_handoff(
     destination: Path,
     payload: dict[str, object],
     *,
-    run_root: Path | None = None,
+    run_root: Path,
     fail_after_write: bool = False,
 ) -> None:
     """Atomically replace only the root aggregate cache."""
     destination = Path(destination)
-    if run_root is not None and destination != aggregate_handoff_path(run_root, "root"):
+    # `run_root` is mandatory: the sole legal destination is the root aggregate path,
+    # so a worker cannot claim write authority by omitting the root context.
+    if destination != aggregate_handoff_path(run_root, "root"):
         raise ValueError("parallel workers cannot write handoff")
-    if destination.name != ROOT_HANDOFF_NAME:
-        raise ValueError("invalid handoff destination")
     _validate_handoff(payload)
     destination.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=f"{ROOT_HANDOFF_NAME}.tmp.", dir=destination.parent)
@@ -166,7 +168,7 @@ def load_handoff(destination: Path, checkpoint_identity: dict[str, object]) -> d
     try:
         payload = json.loads(Path(destination).read_text(encoding="utf-8"))
         _validate_handoff(payload)
-    except (OSError, ValueError, json.JSONDecodeError):
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
         return {"status": "NEEDS_CONTEXT", "reason": "handoff_reconstruct"}
     if payload["checkpoint_identity"] != checkpoint_identity:
         return {"status": "NEEDS_CONTEXT", "reason": "handoff_reconstruct"}

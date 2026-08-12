@@ -54,7 +54,7 @@ When tempted to skip a step, check this table first:
 | `--group-name` | `--group-name <name>` | `--group-name payments` | Names the aggregate branch (`aggregate/<name>`) and disambiguates concurrent groups. `--aggregate-pr` only; defaults to `aggregate/<base-branch>-<timestamp>` when omitted |
 | `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for every PR mode; pass explicit values unchanged to `$ywc-create-pr --lang <pr-lang>`. If omitted or `auto`, resolve through [language-resolution.md](../references/language-resolution.md); if no tier resolves a language, interactive runs may ask, while non-interactive runs return `NEEDS_CONTEXT: --pr-lang`. |
 | `--non-interactive` | flag | | Never wait for approval, progress, resume, conflict, CI, or URL-policy input; return a bounded terminal status instead. |
-| `--resume-disposition` | `resume\|stop` | `--resume-disposition resume` | Required when an authoritative checkpoint exists and the invocation scope is unresolved or differs. Missing input returns `NEEDS_CONTEXT`; `stop` leaves checkpoint state unchanged. |
+| `--resume-disposition` | `resume\|stop` | `--resume-disposition resume` | Required whenever an authoritative checkpoint exists, including when the invocation scope matches. Missing input returns `NEEDS_CONTEXT`; `stop` leaves checkpoint state unchanged. |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no worktree audit lines, no mode explanations |
 
 `--review` can be combined with other flags.
