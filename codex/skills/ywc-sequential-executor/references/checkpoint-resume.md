@@ -54,7 +54,7 @@ If the file exists, apply these checks in order:
    ```
 6. In non-interactive execution, `--resume-disposition resume` skips Pre-flight and jumps to the saved task and step.
 7. `--resume-disposition stop` returns `DONE_WITH_CONCERNS` with `resume_stopped` and leaves checkpoint state untouched.
-8. A missing or invalid disposition returns `NEEDS_CONTEXT: --resume-disposition`; it never prompts, deletes state, or invokes the executor.
+8. A missing or invalid disposition returns `NEEDS_CONTEXT: --resume-disposition`; it never prompts, deletes state, or invokes the executor. This applies **whenever a checkpoint exists**, with no scope-comparison exception: a saved scope that matches the current scope does **not** license a silent auto-resume. `resume` and `stop` are the only two values that let the run continue.
 
 The executable contract seam is `scripts/transition_safety.py`. It is cache-only:
 resume disposition cannot mutate `.ywc-run-state.json`.
