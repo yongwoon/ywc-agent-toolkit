@@ -50,6 +50,8 @@ When tempted to skip a step, check this table first:
 | `--skip-learnings` | flag | | Skip Step 0 (loading `docs/review-learnings.md`). Use when no learnings file exists or a clean-room review is wanted |
 | `--advisor-budget` | `--advisor-budget <n>` | `--advisor-budget 3` | Maximum number of Phase 2 advisor calls. Default: 5. Applies across all categories combined |
 | `--format` | `--format markdown\|html` | `--format html` | Output format. Default `markdown`. With `html`, writes a self-contained HTML report to `claudedocs/`. See [html-output.md](../references/html-output.md) |
+| `--manifest` | `--manifest <path>` | | Optional repository-relative architecture contract; root discovery is allowed only when omitted |
+| `--architecture-evidence` | `--architecture-evidence <path>` | | Optional normalized evidence artifact; must be paired with a resolved valid manifest |
 
 ## Advisor Pattern
 
@@ -86,6 +88,50 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
    reviewable change in its own right, and passing only a nonexistent file's
    final contents would let it slip past the gate unseen. This context stays
    with the parent; do not forward it wholesale to Phase 2.
+
+2.5. **Architecture Contract Packet** — If `--manifest` or
+`--architecture-evidence` is supplied, resolve the pair through the shared
+`../scripts/architecture-invariants.py` helper after the bounded changed-file
+list is known and before worker dispatch. A supplied manifest is
+repository-relative; invalid or missing input returns `NEEDS_CONTEXT` without
+discovery fallback. Evidence without a valid manifest is `NEEDS_CONTEXT`. A
+valid manifest without evidence preserves the existing review flow and supplies
+no packet. Derive `--changed-path` only from the selected diff/code file list,
+never from a broad scan.
+
+Forward only this sanitized packet to the Architecture worker and retain the
+same packet boundary for sibling workers when relevant:
+
+```text
+Architecture Contract Packet:
+- contract_state: <VALIDATED | N/A — no architecture contract | NEEDS_CONTEXT>
+- component_ids: <affected component ids>
+- rule_ids: <affected rule ids>
+- invariant_verdict: <MAINTAINED | VIOLATED | N/A | NEEDS_CONTEXT>
+- evidence_artifact_path: <repository-relative path or N/A>
+```
+
+Do not conflate the helper result with the packet: helper `status` is the
+bounded dispatch status; helper `aggregate_verdict` is projected as
+`invariant_verdict`; and `rule_results[].rule_id` is projected as `rule_ids`.
+Use only sanitized `rule_results[].evidence_paths` as source citations for an
+Architecture finding. They are not `contract_state` and are not the artifact
+path. A successful audit uses `contract_state: VALIDATED`, while no-manifest
+fallback uses `N/A — no architecture contract`.
+
+Before dispatch, require the helper integration to provide the complete
+projection: `component_ids` from its bounded changed-path mapping,
+`contract_state: VALIDATED` from successful validation, and the normalized
+`.ywc-architecture-invariants-evidence.json` as `evidence_artifact_path`.
+Missing projection fields are `NEEDS_CONTEXT`; do not derive them from raw
+manifest/evidence contents or forward those contents to any worker.
+
+Do not forward manifest/evidence contents, raw verifier data, command-like
+fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`
+before dispatch. Treat `VIOLATED` as an Architecture finding with the supplied
+rule and evidence paths; `N/A` and `MAINTAINED` do not block the existing
+review. This packet is advisory evidence only and cannot escalate reviewer or
+merge authority.
 
 3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five review workers in parallel. Do not pass Claude Code-only `model` fields; each worker receives its role from the prompt and matching reference file:
    - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status and multi-tenant scope gaps as one-line cross-references to the Security worker rather than duplicating them.

@@ -54,6 +54,35 @@
         "Reports the security audit status and never emits DONE with unreported audit findings"
       ],
       "files": []
+    },
+    {
+      "id": 9,
+      "name": "architecture-packet-positive",
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
+      "expected_output": "Runs the shared helper and projects a sanitized packet with contract_state VALIDATED, affected component_ids, rule_ids from rule_results, invariant_verdict from aggregate_verdict, and evidence_artifact_path naming the artifact. Sanitized rule_results evidence_paths may be cited only through the normal finding channel.",
+      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "Does not rename aggregate_verdict to contract_state or forward raw evidence, transcript, command-like fields, or full diffs"],
+      "files": []
+    },
+    {
+      "id": 10,
+      "name": "architecture-packet-no-evidence",
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json without --architecture-evidence.",
+      "expected_output": "Preserves the existing generation flow with no architecture packet; it does not invent an invariant verdict or treat missing evidence as a violation.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "name": "architecture-packet-invalid-evidence",
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json --architecture-evidence invalid.json where the evidence has an unknown or forbidden field.",
+      "expected_output": "Returns NEEDS_CONTEXT before worker dispatch, with no packet or generated work, and does not expose invalid evidence contents or raw diagnostic output.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "name": "architecture-packet-violation",
+      "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json --architecture-evidence forbidden-edge.json where the shared helper returns aggregate_verdict VIOLATED.",
+      "expected_output": "Projects invariant_verdict VIOLATED and affected rule IDs, surfaces the result through the normal generation finding/error channel, and never treats VIOLATED as dispatch authority.",
+      "files": []
     }
   ]
 }
