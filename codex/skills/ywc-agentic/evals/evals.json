@@ -64,7 +64,7 @@
     {
       "id": 11,
       "prompt": "Use $ywc-agentic --non-interactive for a Medium feature where ywc-spec-ready reports Suggestions, then test --suggestions apply with residual Suggestions and --suggestions defer.",
-      "expected_output": "apply performs exactly one amendment/re-validation and returns NEEDS_CONTEXT: --suggestions with only the remaining count when Suggestions remain; defer records deferral and allows only a DONE ready Artifact. No branch waits for user input.",
+      "expected_output": "Invokes the callee as `ywc-spec-ready --spec <verified-candidate> --non-interactive --suggestions apply|defer`, forwarding --non-interactive on every call and adding --suggestions only once preflight determines Suggestions exist; it never omits --non-interactive, never substitutes --output or a reconstructed path for the verified candidate, and never invents a --suggestions value. apply performs exactly one amendment/re-validation and returns NEEDS_CONTEXT: --suggestions with only the remaining count when Suggestions remain; defer records deferral and allows only a DONE ready Artifact. Missing --suggestions when Suggestions are reported returns bounded NEEDS_CONTEXT: --suggestions with zero downstream calls. A DONE Result from the callee advances to the Task Phase using that ready Artifact verbatim; any NEEDS_CONTEXT or other terminal status is propagated unchanged and stops before ywc-task-generator. No branch waits for user input.",
       "files": []
     },
     {
@@ -77,11 +77,11 @@
       "id": 13,
       "name": "context-safety-routing-matrix",
       "prompt": "Run the focused agentic context-safety matrix with a valid Small Result, invalid Result variants, Medium/Large ready artifacts, missing --mode/--lang/--suggestions/--resume-disposition, and guessed paths.",
-      "input": {"valid": "One labelled producer Result and an existing repository-relative Markdown Artifact.", "invalid": ["duplicate Result", "missing field", "out-of-root path", "basename reconstructed from logs", "missing deterministic non-interactive argument"]},
+      "input": {"valid": "One labelled producer Result and an existing repository-relative Markdown Artifact.", "invalid": ["duplicate Result", "missing field", "out-of-root path", "basename reconstructed from logs", "missing deterministic non-interactive argument at its own staged preflight (e.g. --mode immediately before Medium/Large task generation, --suggestions after the ywc-spec-ready Result reports Suggestions, --resume-disposition after an executor checkpoint is found)"]},
       "expected_status": ["DONE", "BLOCKED", "NEEDS_CONTEXT"],
-      "expected_downstream_calls": {"valid": 1, "invalid": 0},
+      "expected_downstream_calls": {"valid": 1, "invalid": 0, "note": "invalid counts calls at or after the rejecting stage's preflight; callees that legitimately completed at earlier stages are not counted — a Small-scale goal never reaches the --mode preflight at all"},
       "expected_handoff": "accepted only for the complete validated Result; rejected for every malformed, guessed, or incomplete input",
-      "expected_output": "Uses only the paired labelled Scale/Artifact or final ready Artifact, returns the named bounded terminal status for each case, and never prompts or calls a downstream skill after a rejected preflight."
+      "expected_output": "Uses only the paired labelled Scale/Artifact or final ready Artifact, returns the named bounded terminal status for each case, and never prompts or calls a downstream skill after a rejected preflight. Each argument is validated immediately before the callee that consumes it, so a Small-scale --non-interactive goal is never blocked on a missing --mode."
     }
   ]
 }
