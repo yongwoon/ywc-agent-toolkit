@@ -54,3 +54,7 @@ Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文�
 ## 输出
 
 此 skill 遵循 [SKILL.md](./SKILL.md) 中定义的 report、artifact 和 status format。如果 skill 输出 Completion Status，请保持 `DONE`、`DONE_WITH_CONCERNS`、`BLOCKED` 和 `NEEDS_CONTEXT` 的含义。
+
+## Transition Safety
+
+`--non-interactive` 运行不会等待提示，而是返回有界的终端状态。Parallel run 只在根 `.ywc-run-state.json` 旁原子地写入一个 aggregate `.ywc-context-handoff.json`；worker 没有 handoff 权限，也不会传递 peer conclusion。无效 handoff 按 checkpoint、当前 `README.md`、`task.md` 顺序重建。

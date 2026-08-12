@@ -27,6 +27,7 @@ $ywc-sequential-executor
 - `--aggregate-pr`: 各 task を個別 feature branch で実行し、結果を 1 つの work branch に local merge で累積して、最後に work -> base PR 1 件で delivery します。
 - `--group-name <name>`: aggregate の work branch を `work/<name>` に固定します。`--aggregate-pr` と一緒に使う場合のみ有効です。
 - `--worktree`: sequential invocation 全体を main checkout の外にある単一 run worktree で実行します。Delivery mode ではないため、他の mode flag と組み合わせられます。
+- `--resume-disposition resume|stop`: prompt を開かずに checkpoint の再開判断を渡します。欠落または scope 不一致は bounded `NEEDS_CONTEXT` で終了します。
 - Stale `.ywc-run-state.json` guard: 保存済み run-state が今回の明示 range と一致しない場合、自動 resume せず、保存済み run-state を続けるか削除して新しい run を開始するかの選択を求めます。
 
 ## Contract / TDD baseline

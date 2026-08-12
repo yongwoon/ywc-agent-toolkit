@@ -88,6 +88,14 @@ Initialize after Pre-flight passes. Always update `last_checkpoint` to the curre
 | Step 4e wave loop complete (all tasks delivered or `BLOCKED`) | Set wave `status` to `completed`; `current_wave` to next wave number |
 | All waves done | `rm -f .ywc-run-state.json` |
 
+## Parallel aggregate transition cache
+
+Parallel resume keeps `.ywc-run-state.json` as the only lifecycle authority. After a wave transition, the executor may write exactly one `.ywc-context-handoff.json` beside that root state through `scripts/transition_safety.py`. The file is a bounded, non-authoritative aggregate cache: worker worktrees never write handoffs, and worker-local output or peer conclusions are not copied into it.
+
+The writer uses a same-directory temporary sibling, fsync, rename, and parent-directory fsync where supported. If replacement fails, the previous valid cache remains and checkpoint, completion, cleanup, and worktree deletion are unchanged. Readers discard missing, malformed, stale, mismatched, private, or worker-local values and reconstruct in this order: authoritative checkpoint, current `README.md`, then `task.md`.
+
+With `--non-interactive`, resume, branch/worktree conflict, CI wait/timeout, and policy decisions are terminal statuses rather than prompts: missing `--resume-disposition` is `NEEDS_CONTEXT`, branch/worktree conflict is `BLOCKED`, and CI timeout is `DONE_WITH_CONCERNS` with `ci_timeout`.
+
 ## Manual Inspection
 
 ```bash
