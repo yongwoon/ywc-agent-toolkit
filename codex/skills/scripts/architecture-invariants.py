@@ -4,8 +4,10 @@
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -19,6 +21,17 @@ EVIDENCE_KEYS = {"version", "scope_paths", "scope_digest", "covered_rule_ids", "
 EDGE_KEYS = {"rule_id", "source_component", "target_component", "evidence_path", "line"}
 RESULT_KEYS = {"version", "aggregate_verdict", "rule_results"}
 RESULT_ITEM_KEYS = {"rule_id", "verdict", "evidence_paths"}
+RESULT_VERDICTS = {"MAINTAINED", "VIOLATED", "N/A", "NEEDS_CONTEXT"}
+FORBIDDEN_EVIDENCE_FIELDS = {
+    "raw_command",
+    "raw_command_output",
+    "transcript",
+    "source",
+    "generated_source",
+    "chain_of_thought",
+    "full_diff",
+}
+ARCHITECTURE_EVIDENCE_PATH = ".ywc-architecture-invariants-evidence.json"
 
 
 class ContractError(ValueError):
@@ -32,6 +45,19 @@ def _fail(message):
 def _object(value, keys, label):
     if not isinstance(value, dict) or set(value) != keys:
         _fail("%s must have exactly these fields: %s" % (label, ", ".join(sorted(keys))))
+
+
+def _reject_forbidden_fields(value):
+    """Reject privacy-sensitive fields at every nesting level before parsing."""
+    if isinstance(value, dict):
+        forbidden = sorted(set(value).intersection(FORBIDDEN_EVIDENCE_FIELDS))
+        if forbidden:
+            _fail("forbidden evidence field: %s" % forbidden[0])
+        for item in value.values():
+            _reject_forbidden_fields(item)
+    elif isinstance(value, list):
+        for item in value:
+            _reject_forbidden_fields(item)
 
 
 def _path(value, root, glob=False):
@@ -225,6 +251,87 @@ def audit(manifest, evidence, changed_paths, root):
     return {"version": 1, "aggregate_verdict": aggregate, "rule_results": results}
 
 
+def validate_audit_result(result, manifest=None, root=None):
+    """Validate the closed result object used by local diagnostic evidence."""
+    root = Path(".") if root is None else root
+    _reject_forbidden_fields(result)
+    _object(result, RESULT_KEYS, "audit result")
+    if not isinstance(result["version"], int) or isinstance(result["version"], bool) or result["version"] != VERSION:
+        _fail("audit result version must be 1")
+    if result["aggregate_verdict"] not in RESULT_VERDICTS:
+        _fail("invalid aggregate verdict")
+    if not isinstance(result["rule_results"], list):
+        _fail("rule_results must be an array")
+    normalized = []
+    seen = set()
+    for item in result["rule_results"]:
+        _object(item, RESULT_ITEM_KEYS, "rule result")
+        if not isinstance(item["rule_id"], str) or not ID_RE.fullmatch(item["rule_id"]):
+            _fail("invalid result rule id")
+        if item["rule_id"] in seen:
+            _fail("duplicate result rule id")
+        seen.add(item["rule_id"])
+        if item["verdict"] not in RESULT_VERDICTS:
+            _fail("invalid rule result verdict")
+        paths = normalize_paths(item["evidence_paths"], root, glob=False) if item["evidence_paths"] else []
+        if not isinstance(item["evidence_paths"], list):
+            _fail("evidence_paths must be an array")
+        normalized.append({"rule_id": item["rule_id"], "verdict": item["verdict"], "evidence_paths": paths})
+    if [item["rule_id"] for item in result["rule_results"]] != sorted(seen):
+        _fail("rule_results must be sorted and duplicate-free")
+    order = {"VIOLATED": 0, "NEEDS_CONTEXT": 1, "MAINTAINED": 2, "N/A": 3}
+    expected_aggregate = min(
+        (item["verdict"] for item in normalized),
+        key=lambda verdict: order[verdict],
+        default="N/A",
+    )
+    if result["aggregate_verdict"] != expected_aggregate:
+        _fail("aggregate verdict does not match rule results")
+    if manifest is not None:
+        rule_ids = {rule["id"] for rule in manifest["rules"]}
+        if any(item["rule_id"] not in rule_ids for item in normalized):
+            _fail("unknown result rule")
+    return {"version": 1, "aggregate_verdict": result["aggregate_verdict"], "rule_results": normalized}
+
+
+def write_audit_result(result, root, output=ARCHITECTURE_EVIDENCE_PATH):
+    """Atomically replace the ignored diagnostic artifact after validation."""
+    normalized = validate_audit_result(result, root=root)
+    destination_path = _path(output, root)
+    destination = root.joinpath(*destination_path.split("/"))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=".%s." % destination.name, dir=str(destination.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(normalized, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, destination)
+        directory_fd = os.open(destination.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    except Exception:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+        raise
+    return destination_path
+
+
+def read_audit_result(root, path=ARCHITECTURE_EVIDENCE_PATH):
+    """Read and validate diagnostic evidence; never return unvalidated JSON."""
+    normalized_path = _path(path, root)
+    try:
+        value = json.loads(root.joinpath(*normalized_path.split("/")).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        _fail("cannot read audit result: %s" % exc)
+    return validate_audit_result(value, root=root)
+
+
 def _load(path, root):
     normalized = _path(path, root)
     try:
@@ -286,7 +393,9 @@ def main(argv=None):
                 if manifest is None:
                     result = {"status": "N/A", "aggregate_verdict": "N/A", "contract_state": "N/A — no architecture contract"}
                 else:
-                    result = {"status": "DONE", **audit(manifest, _load(args.evidence, root), args.changed_path, root)}
+                    audit_result = audit(manifest, _load(args.evidence, root), args.changed_path, root)
+                    write_audit_result(audit_result, root)
+                    result = {"status": "DONE", **audit_result}
         print(json.dumps(result, sort_keys=True))
         return 0
     except (ContractError, OSError, json.JSONDecodeError) as exc:
