@@ -76,6 +76,7 @@ def test_handoff_rejects_stale_and_private_payloads_and_preserves_old_file():
         destination = root / ".ywc-context-handoff.json"
         checkpoint, valid = valid_payload()
         atomic_write_handoff(destination, valid)
+        original = destination.read_bytes()
         assert load_handoff(destination, checkpoint, project_root=root)["status"] == "DONE"
         stale_checkpoint = dict(checkpoint, unit_id="task-b")
         assert load_handoff(destination, stale_checkpoint, project_root=root)["status"] == "NEEDS_CONTEXT"
@@ -86,13 +87,14 @@ def test_handoff_rejects_stale_and_private_payloads_and_preserves_old_file():
             pass
         else:
             raise AssertionError("private handoff field was accepted")
+        assert destination.read_bytes() == original
         try:
             atomic_write_handoff(destination, valid, fail_after_write=True)
         except OSError:
             pass
         else:
             raise AssertionError("failure injection did not fail")
-        assert json.loads(destination.read_text())["run_id"] == "run-1"
+        assert destination.read_bytes() == original
 
 
 def test_nested_private_key_variants_are_rejected():
