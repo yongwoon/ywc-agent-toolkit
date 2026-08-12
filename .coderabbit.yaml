@@ -10,6 +10,19 @@ reviews:
   path_filters:
     - "!**/README.md"
     - "!**/README.*.md"
+    - "!plugins/ywc-agent-toolkit/**"
+    - "!.claude-plugin/**"
+    - "!.codex-plugin/**"
+    - "!.omc/**"
+    - "!.serena/**"
+    - "!docs/**"
+    - "!tasks/**"
+    - "!TODO.md"
+    - "!SECURITY.md"
+    - "!CONTRIBUTING.md"
+    - "!CODE_OF_CONDUCT.md"
+    - "!CHANGELOG.md"
+    - "!VERSION"
 
   path_instructions:
     - path: "claude-code/skills/*/SKILL.md"
