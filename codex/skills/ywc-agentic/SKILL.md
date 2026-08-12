@@ -16,6 +16,10 @@ description: >-
 
 This skill turns a single natural-language goal into delivered code by orchestrating the existing `ywc-*` skills through an autonomous **Plan → Execute → Evaluate → Repeat** loop. It does not implement code itself — it sequences `ywc-plan`, `ywc-spec-validate`, `ywc-task-generator`, an executor, `ywc-impl-review`, and (for Small-scale goals) `ywc-code-gen`, then re-plans on evaluation failure until the implementation passes review or a user-defined iteration ceiling is reached.
 
+## Architecture evidence boundary
+
+The optional `.ywc-architecture-invariants-evidence.json` file is diagnostic run evidence only. Agentic flows may pass its validated audit result to an architecture consultation, but must never treat it as authoritative checkpoint or task state. `.ywc-run-state.json`, the task directory, and executor transitions remain authoritative. The artifact is a closed result object containing only `version`, `aggregate_verdict`, and `rule_results`; do not persist or forward `raw_command`, `raw_command_output`, `transcript`, `source`, `generated_source`, `chain_of_thought`, `full_diff`, or unknown fields. Missing, malformed, or out-of-scope evidence cannot authorize execution and remains a diagnostic `NEEDS_CONTEXT` condition.
+
 If the goal is still in a multi-session discovery state with unresolved architectural tickets and no stable plan boundary, stop before the loop and route the user to `ywc-wayfinder`. This skill assumes the goal is ready to enter an implementation-oriented planning pipeline.
 
 ```text
