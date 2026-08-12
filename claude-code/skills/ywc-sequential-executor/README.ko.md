@@ -54,10 +54,12 @@ Task 를 지정하지 않으면 dependency graph 를 분석하여 실행 가능�
 | `--base-branch <branch>` | Base branch 지정 (default: auto-detect)                                              | `--base-branch develop`    |
 | `--dry-run`              | 실행 계획만 표시 (Task 순서, dependency, mode). 실제 실행하지 않음                    |                            |
 | `--worktree`             | range 전체를 **격리된 git worktree 1개** 안에서 실행하여 main checkout 을 비워 둠. run-level 격리 — Task 는 순차 실행. 독립 flag, 4종 delivery mode·`--review` 와 결합 가능. 상세 [references/worktree-run.md](./references/worktree-run.md) | `--worktree` |
+| `--non-interactive`      | 이번 run 의 interactive prompt 를 skip. External URL Policy 에 저장된 결정이 없으면 묻지 않고 `deny` 를 적용하고 저장하지 않음 (이번 run 한정). Step 4.5 의 `/ywc-impl-review` 자동 호출에도 전달됨. 독립 flag, 4종 delivery mode·`--review`·`--dry-run`·`--worktree` 와 결합 가능 | `--non-interactive` |
 
 > `--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` 는 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
 > `--local-merge` 는 **원격 CI 를 거치지 않으므로** 로컬 verification (lint/typecheck/test) 만이 merge 의 안전장치입니다. 민감한 변경에는 권장하지 않습니다.
 > `--worktree` 는 위 mutual-exclusion 집단과 **독립**입니다 (5번째 멤버 아님). worktree 안 Docker stack 은 host 의 기존 dev stack 과 host port 가 충돌할 수 있습니다 (host-isolation follow-up 소관). Task 가 순차 실행되므로 *병렬* 충돌은 발생하지 않습니다.
+> `--non-interactive` 도 위 mutual-exclusion 집단과 **독립**입니다 (5번째 멤버 아님).
 
 ### Group 단위 실행 (`--aggregate-pr`)
 
@@ -112,7 +114,7 @@ Task 마다: 이전 feature branch 에서 분기 (chain branching) → 구현 �
 Step 1: Dependency Validation & Spec Loading
   └─ Depends On 의 모든 Task 가 tasks/completed/ 에 있는지 확인
   └─ README.md 의 Spec Reference (Primary Sources / Summary / Out of Scope) 를 로드
-  └─ 외부 URL 은 .claude/settings.local.json 의 taskExecutor.externalSpecUrls 정책에 따름
+  └─ 외부 URL 은 .claude/settings.local.json 의 taskExecutor.externalSpecUrls 정책에 따름 (미저장 상태에서 `--non-interactive` 지정 시 저장 없이 deny 적용)
 
 Step 2: Branch Creation (매 Task 마다 실행 — range 에서도 건너뛰지 않음)
   └─ (normal/local-merge) git checkout <base> && git pull && git checkout -b feature/<task-name>

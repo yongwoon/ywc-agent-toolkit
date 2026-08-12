@@ -54,10 +54,12 @@ Task を指定しない場合、dependency graph を分析して実行可能な�
 | `--base-branch <branch>` | Base branch 指定 (default: auto-detect) | `--base-branch develop` |
 | `--dry-run` | 実行計画のみ表示 (Task 順序、dependency、mode)。実際には実行しない | |
 | `--worktree` | range 全体を **隔離された git worktree 1個** の中で実行し、main checkout を空けておきます。run-level 隔離 — Task は依然として順次実行。独立 flag で 4 種 delivery mode・`--review` と組み合わせ可能。詳細は [references/worktree-run.md](./references/worktree-run.md) | `--worktree` |
+| `--non-interactive` | この run の interactive prompt を skip します。External URL Policy に保存済みの決定がない場合、確認せず `deny` を適用し、保存もしません(この run 限定)。Step 4.5 の `/ywc-impl-review` 自動呼び出しにもそのまま伝播します。独立 flag、4 種 delivery mode・`--review`・`--dry-run`・`--worktree` と組み合わせ可能 | `--non-interactive` |
 
 > `--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` は相互排他です。複数指定した場合 Skill は中断し、どの mode を意図したか確認します。
 > `--local-merge` は **リモート CI を経由しない** ため、Step 4 のローカル verification (lint/typecheck/test) だけが merge の安全装置となります。重要な変更には推奨しません。
 > `--worktree` は上記の mutual-exclusion 集団と **独立** です (5 番目のメンバーではない)。worktree の中で Docker stack を起動すると host の既存 dev stack と host port が衝突する可能性があります (host-isolation follow-up の管轄)。Task は順次実行されるため *並列* の衝突は発生しません。
+> `--non-interactive` も上記の mutual-exclusion 集団と **独立** です (5 番目のメンバーではない)。
 
 ### Group 単位の実行 (`--aggregate-pr`)
 
@@ -112,7 +114,7 @@ Task ごとに: 前の feature branch から分岐 (chain branching) → 実装 
 Step 1: Dependency Validation & Spec Loading
   └─ Depends On の全 Task が tasks/completed/ にあるか確認
   └─ README.md の Spec Reference (Primary Sources / Summary / Out of Scope) をロード
-  └─ 外部 URL は .claude/settings.local.json の taskExecutor.externalSpecUrls policy に従う
+  └─ 外部 URL は .claude/settings.local.json の taskExecutor.externalSpecUrls policy に従う(`--non-interactive` かつ未保存の場合、保存せず deny を適用)
 
 Step 2: Branch Creation (毎 Task 実行 — range でもスキップしない)
   └─ (normal/local-merge) git checkout <base> && git pull && git checkout -b feature/<task-name>
