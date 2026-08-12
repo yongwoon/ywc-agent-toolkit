@@ -15,3 +15,8 @@ No lo use para preguntas simples, ediciones de un solo archivo o trabajo estrict
 - `SKILL.md` — team assembly workflow
 - `agents/openai.yaml` — Codex metadata
 - `references/prompt-templates.md` — templates para explorer, worker y reviewer
+- `evals/evals.json` — evaluaciones del contrato de aislamiento de roles, Claim/Evidence, límite y privacidad
+
+## Context Safety
+
+Los prompts del equipo validan Claims acotados y evidencia citada antes de proyectarlos. El revisor independiente recibe solo el alcance y las rutas de artifacts; el rol dependiente recibe solo Claims y los artifacts citados. Se rechazan conclusiones o recomendaciones de pares, transcript, contenido raw, artifacts no citados y Claims inválidos o fuera del límite.

@@ -18,6 +18,30 @@
       "prompt": "Delegate implementation that needs production credentials.",
       "expected_output": "Treats secrets/live credentials as out of scope unless explicitly approved and returns BLOCKED or NEEDS_CONTEXT when required.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Assemble an independent reviewer and a dependent role from three validated Claims and cited artifacts.",
+      "expected_output": "Builds separate allowlisted payloads: the independent reviewer receives included/excluded scope and artifact paths only, while the dependent role receives Claims plus cited artifact paths only; neither receives peer conclusions, recommendations, transcript, or raw content.",
+      "files": ["references/prompt-templates.md"]
+    },
+    {
+      "id": 5,
+      "prompt": "Assemble a team with four Claims, one uncited Claim, and a Claim containing raw-response content.",
+      "expected_output": "Rejects the complete payload as BLOCKED before role projection: Claims is capped at three, every Claim needs valid project-relative file:line or artifact evidence, and forbidden privacy fields are rejected without echoing their values.",
+      "files": ["references/prompt-templates.md"]
+    },
+    {
+      "id": 6,
+      "prompt": "Assemble a team where the independent reviewer would benefit from a peer's conclusion or recommendation.",
+      "expected_output": "Refuses to forward peer claims, conclusions, recommendations, transcript, or raw output to the independent reviewer and states that the reviewer must form an independent finding.",
+      "files": ["SKILL.md", "references/prompt-templates.md"]
+    },
+    {
+      "id": 7,
+      "prompt": "Assemble a dependent role with an uncited artifact and a raw tool output field nested in metadata.",
+      "expected_output": "Rejects the payload terminally as BLOCKED for recursive privacy validation or missing citation; it does not redact, summarize, retry, or forward the invalid payload.",
+      "files": ["references/prompt-templates.md"]
     }
   ]
 }
