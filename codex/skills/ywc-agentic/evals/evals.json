@@ -72,6 +72,16 @@
       "prompt": "Resume an agentic run whose selected executor has an authoritative checkpoint, without --resume-disposition, and with an invalid externalSpecUrls profile.",
       "expected_output": "Returns bounded NEEDS_CONTEXT for --resume-disposition or .codex/settings.local.json:ywDevSequentialExecutor.externalSpecUrls before executor invocation. It never prompts, mutates checkpoint state, guesses a URL policy, or calls downstream execution.",
       "files": []
+    },
+    {
+      "id": 13,
+      "name": "context-safety-routing-matrix",
+      "prompt": "Run the focused agentic context-safety matrix with a valid Small Result, invalid Result variants, Medium/Large ready artifacts, missing --mode/--lang/--suggestions/--resume-disposition, and guessed paths.",
+      "input": {"valid": "One labelled producer Result and an existing repository-relative Markdown Artifact.", "invalid": ["duplicate Result", "missing field", "out-of-root path", "basename reconstructed from logs", "missing deterministic non-interactive argument"]},
+      "expected_status": ["DONE", "BLOCKED", "NEEDS_CONTEXT"],
+      "expected_downstream_calls": {"valid": 1, "invalid": 0},
+      "expected_handoff": "accepted only for the complete validated Result; rejected for every malformed, guessed, or incomplete input",
+      "expected_output": "Uses only the paired labelled Scale/Artifact or final ready Artifact, returns the named bounded terminal status for each case, and never prompts or calls a downstream skill after a rejected preflight."
     }
   ]
 }

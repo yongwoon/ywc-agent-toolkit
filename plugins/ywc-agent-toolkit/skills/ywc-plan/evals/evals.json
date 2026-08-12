@@ -95,6 +95,16 @@
         "Choosing the first or last Result block.",
         "Scanning unlabelled prose or --output to recover an artifact path."
       ]
+    },
+    {
+      "id": 7,
+      "name": "result-parser-exact-matrix",
+      "prompt": "Evaluate ywc-plan's agentic Result parser with one complete block, duplicate or missing Scale/Artifact fields, unlabelled prose, an outside-root path, and a non-Markdown artifact.",
+      "input": {"accepted": "## Result with Status: DONE, Scale: Small|Medium|Large, and one docs/ywc-plans/*.md Artifact", "rejected": ["duplicate field", "missing field", "prose path", "../outside.md", "docs/ywc-plans/data.json"]},
+      "expected_status": "DONE for the accepted fixture; BLOCKED for every rejected fixture",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepted only for the exact complete in-root Markdown Result; rejected otherwise",
+      "expected_output": "Reports bounded parser failure details without storing response text or selecting a fallback path."
     }
   ]
 }

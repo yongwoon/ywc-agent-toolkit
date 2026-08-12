@@ -37,6 +37,16 @@
       "prompt": "Parse a ywc-spec-ready response with a duplicate Result block and an Artifact outside the validated candidate root.",
       "expected_output": "Returns BLOCKED with producer name, failed field, candidate count, path digest, and a bounded reason; calls no task generator or other downstream skill and uses no fallback artifact.",
       "files": []
+    },
+    {
+      "id": 6,
+      "name": "ready-result-exact-matrix",
+      "prompt": "Evaluate ywc-spec-ready's Result parser with one Status/Artifact block, a Scale field, duplicate fields, a stale candidate path, a non-DONE status, and a raw-response-only path.",
+      "input": {"accepted": "## Result with Status: DONE and one existing Markdown Artifact under the validated candidate root", "rejected": ["Scale present", "duplicate Result", "stale path", "Status: NEEDS_CONTEXT", "path only in raw response"]},
+      "expected_status": "DONE for the accepted fixture; BLOCKED for every rejected fixture",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepted only for the exact DONE Status/Artifact pair; rejected otherwise",
+      "expected_output": "Never infers Scale, recovers a path from prose, or forwards a non-DONE or stale artifact."
     }
   ]
 }

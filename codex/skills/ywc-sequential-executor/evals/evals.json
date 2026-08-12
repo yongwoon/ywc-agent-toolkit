@@ -114,6 +114,16 @@
       "prompt": "Run the focused transition safety fixtures.",
       "expected_output": "`python3 codex/skills/ywc-sequential-executor/scripts/test-transition-safety.py` passes all resume, URL-policy, privacy, stale-read, and atomic-preservation assertions.",
       "files": ["scripts/test-transition-safety.py"]
+    },
+    {
+      "id": 20,
+      "name": "sequential-context-closure-matrix",
+      "prompt": "Run focused sequential fixtures for checkpoint resume, branch/worktree conflict, CI wait/timeout, invalid external URL policy, missing or stale handoff, privacy rejection, and atomic replacement failure.",
+      "input": {"accepted": ["matching checkpoint with resume", "valid handoff adjacent to authoritative state"], "rejected": ["scope mismatch without --resume-disposition", "branch conflict", "invalid URL policy", "malformed/stale/mismatched/private handoff", "failed atomic write"]},
+      "expected_status": "DONE or DONE_WITH_CONCERNS for bounded closure; NEEDS_CONTEXT/BLOCKED for invalid inputs",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepted only for matching validated state; otherwise reconstructed from checkpoint then task source or preserved prior cache",
+      "expected_output": "No fixture emits a user prompt, mutates authoritative checkpoint state, or forwards prohibited content."
     }
   ]
 }

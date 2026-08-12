@@ -83,6 +83,16 @@
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json --architecture-evidence forbidden-edge.json where the shared helper returns aggregate_verdict VIOLATED.",
       "expected_output": "Projects invariant_verdict VIOLATED and affected rule IDs, surfaces the result through the normal generation finding/error channel, and never treats VIOLATED as dispatch authority.",
       "files": []
+    },
+    {
+      "id": 13,
+      "name": "artifact-authority-matrix",
+      "prompt": "Invoke code generation with the exact validated final Artifact from agentic routing, then repeat with a guessed plan.md path, a basename-only path, and a raw response path.",
+      "input": {"accepted": "--spec docs/ywc-plans/20260812-small_profile.md", "rejected": ["plan.md", "profile.md reconstructed from basename", "path found by scanning raw response"]},
+      "expected_status": "DONE for the exact Artifact; NEEDS_CONTEXT for every guessed-path fixture",
+      "expected_downstream_calls": {"accepted": 3, "rejected": 0},
+      "expected_handoff": "accepted only for the explicit validated Artifact; rejected before worker dispatch otherwise",
+      "expected_output": "Does not construct or recover an authority path outside the producer Result."
     }
   ]
 }
