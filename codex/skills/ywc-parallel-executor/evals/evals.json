@@ -54,6 +54,30 @@
             "prompt": "Use $ywc-parallel-executor 000007-010..000007-020 --per-task-pr --pr-lang zh.",
             "expected_output": "Treats `--pr-lang zh` as a supported per-task PR language. Each per-task PR creation path preserves the exact value and delegates from the task worktree to `$ywc-create-pr --lang zh`; it does not fall back to raw `gh pr create` with untranslated placeholder title/body text.",
             "files": []
-        }
-    ]
+        },
+    {
+      "id": 20,
+      "prompt": "Non-interactive parallel resume has a checkpoint whose scope differs and no --resume-disposition.",
+      "expected_output": "Returns bounded NEEDS_CONTEXT naming --resume-disposition, invokes no executor, emits no prompt, and leaves checkpoint state unchanged.",
+      "files": ["scripts/transition_safety.py", "references/checkpoint-resume.md"]
+    },
+    {
+      "id": 21,
+      "prompt": "Parallel workers transition through branch conflict, CI timeout, and handoff failure.",
+      "expected_output": "Branch/worktree conflict is BLOCKED and CI timeout is DONE_WITH_CONCERNS; no branch waits for user input. The sole root aggregate handoff is atomically replaced, and a failed write preserves the previous valid cache.",
+      "files": ["scripts/transition_safety.py", "SKILL.md"]
+    },
+    {
+      "id": 22,
+      "prompt": "A parallel aggregate handoff is missing, malformed, stale, mismatched, private, or present in a worker worktree.",
+      "expected_output": "The reader rejects or ignores the cache, never accepts worker-local authority or peer conclusions, and reconstructs from checkpoint followed by current README.md and task.md without changing run state.",
+      "files": ["scripts/transition_safety.py", "SKILL.md"]
+    },
+    {
+      "id": 23,
+      "prompt": "Run the focused parallel transition safety fixtures.",
+      "expected_output": "python3 codex/skills/ywc-parallel-executor/scripts/test-transition-safety.py passes aggregate-location, worker-isolation, prompt-closure, identity, privacy, and atomic-preservation assertions.",
+      "files": ["scripts/test-transition-safety.py"]
+    }
+  ]
 }
