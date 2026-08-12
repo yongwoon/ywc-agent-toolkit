@@ -19,6 +19,9 @@ HANDOFF_FIELDS = {
     "unresolved_status", "ownership_boundary",
 }
 ROOT_HANDOFF_NAME = ".ywc-context-handoff.json"
+MAX_LIST_ITEMS = 200
+MAX_NESTING_DEPTH = 8
+MAX_HANDOFF_BYTES = 65536
 
 
 def aggregate_handoff_path(run_root: Path, root_kind: str) -> Path | None:
@@ -57,7 +60,9 @@ def resolve_resume_disposition(
     return {"status": "DONE", "reason": "resume_accepted"}
 
 
-def _walk(value: object, path: str = "$") -> None:
+def _walk(value: object, path: str = "$", depth: int = 0) -> None:
+    if depth > MAX_NESTING_DEPTH:
+        raise ValueError(f"nesting depth: {path}")
     if isinstance(value, dict):
         for key, child in value.items():
             if not isinstance(key, str):
@@ -66,10 +71,12 @@ def _walk(value: object, path: str = "$") -> None:
                 raise ValueError(f"privacy field: {path}.{key}")
             if isinstance(child, str) and len(child) > 512:
                 raise ValueError(f"bounded field: {path}.{key}")
-            _walk(child, f"{path}.{key}")
+            _walk(child, f"{path}.{key}", depth + 1)
     elif isinstance(value, list):
+        if len(value) > MAX_LIST_ITEMS:
+            raise ValueError(f"list size: {path}")
         for index, child in enumerate(value):
-            _walk(child, f"{path}[{index}]")
+            _walk(child, f"{path}[{index}]", depth + 1)
 
 
 def _exact(value: object, keys: set[str], label: str) -> dict[str, object]:
@@ -123,6 +130,9 @@ def _validate_handoff(payload: object) -> None:
     if root["ownership_boundary"]["authority"] != "cache_only":
         raise ValueError("handoff authority")
     _walk(root)
+    encoded_size = len(json.dumps(root, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode())
+    if encoded_size > MAX_HANDOFF_BYTES:
+        raise ValueError("handoff payload size")
 
 
 def atomic_write_handoff(

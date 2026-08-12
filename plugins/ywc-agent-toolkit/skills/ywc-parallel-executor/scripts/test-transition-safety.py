@@ -114,6 +114,8 @@ def test_malformed_stale_private_and_failed_handoff_reconstruct_without_replacin
         atomic_write_handoff(destination, valid, run_root=root)
         assert load_handoff(destination, checkpoint)["status"] == "DONE"
         assert load_handoff(destination, dict(checkpoint, unit_id="wave-2"))["status"] == "NEEDS_CONTEXT"
+        stale_timestamp = dict(checkpoint, checkpoint_timestamp="2020-01-01T00:00:00Z")
+        assert load_handoff(destination, stale_timestamp)["status"] == "NEEDS_CONTEXT"
         try:
             atomic_write_handoff(destination, dict(valid, transcript="forbidden"), run_root=root)
         except ValueError:
@@ -127,6 +129,20 @@ def test_malformed_stale_private_and_failed_handoff_reconstruct_without_replacin
         else:
             raise AssertionError("failure injection did not fail")
         assert json.loads(destination.read_text())["run_id"] == "run-1"
+
+
+def test_oversized_artifact_paths_list_is_rejected():
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        destination = aggregate_handoff_path(root, "root")
+        _, valid = valid_payload()
+        oversized = dict(valid, artifact_paths=[f"artifact-{i}.md" for i in range(201)])
+        try:
+            atomic_write_handoff(destination, oversized, run_root=root)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("oversized artifact_paths list was accepted")
 
 
 def test_mixed_type_worker_ids_do_not_crash_the_reader():
