@@ -129,9 +129,10 @@ Architecture Contract Packet:
 - evidence_artifact_path: <repository-relative path or N/A>
 ```
 
-Keep the resolver result separate from this packet. The helper's bounded audit
-result has `status`, `aggregate_verdict`, and `rule_results`; `aggregate_verdict`
-maps to `invariant_verdict`, while `rule_results[].rule_id` maps to `rule_ids`.
+Keep the resolver result separate from this packet. A successful audit result has
+`status`, `aggregate_verdict`, `rule_results`, `component_ids`, `contract_state`,
+and `evidence_artifact_path`; `aggregate_verdict` maps to `invariant_verdict`,
+while `rule_results[].rule_id` maps to `rule_ids`.
 `rule_results[].evidence_paths` are sanitized source paths for the normal finding
 channel only; they are not renamed to `contract_state` or copied into the worker
 packet. `evidence_artifact_path` is the normalized artifact path, not an evidence
@@ -141,12 +142,14 @@ projection) and is never used as the invariant verdict. For a successful audit,
 `N/A — no architecture contract`.
 
 The successful helper integration must supply the complete projection before
-dispatch: `component_ids` comes only from the helper's bounded changed-path
-mapping, `contract_state` is the helper's successful-validation state
-(`VALIDATED`), and `evidence_artifact_path` is the helper's normalized
-`.ywc-architecture-invariants-evidence.json` path. If any of these three
-projection fields is unavailable, stop with `NEEDS_CONTEXT`; never derive them
-from raw manifest/evidence contents in a worker prompt.
+dispatch, and every field is read straight off the helper's own audit result:
+`component_ids` is the helper's `component_ids` (its bounded changed-path
+mapping), `contract_state` is the helper's `contract_state` (`VALIDATED` on a
+successful audit), and `evidence_artifact_path` is the helper's returned
+`evidence_artifact_path` — the normalized artifact path it wrote, never a
+filename assumed by this skill. If any of these three projection fields is
+absent from the helper result, stop with `NEEDS_CONTEXT`; never derive them from
+raw manifest/evidence contents in a worker prompt.
 
 Do not forward manifest/evidence contents, raw verifier data, command-like
 fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`

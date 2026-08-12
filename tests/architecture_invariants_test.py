@@ -35,6 +35,9 @@ RED_FIRST_CASES = {
     "verdict-precedence",
     "no-manifest-fallback",
     "zero-child-processes",
+    "component-shared-optional",
+    "root-manifest-symlink-escape",
+    "audit-projection-component-ids",
 }
 
 FIXTURE_REGISTRY = {
@@ -51,6 +54,9 @@ FIXTURE_REGISTRY = {
     "verdict-precedence": "test_verdict_precedence",
     "no-manifest-fallback": "test_no_manifest_fallback",
     "zero-child-processes": "test_zero_child_processes",
+    "component-shared-optional": "test_component_shared_defaults_to_false",
+    "root-manifest-symlink-escape": "test_root_manifest_symlink_escape_is_not_absent",
+    "audit-projection-component-ids": "test_audit_projection_exposes_component_ids",
 }
 
 
@@ -255,6 +261,55 @@ class ArchitectureInvariantFixtures(unittest.TestCase):
 
     def test_no_manifest_fallback(self):
         self.assertEqual(self.invoke("--mode", "validate")["contract_state"], "N/A — no architecture contract")
+
+    def test_component_shared_defaults_to_false(self):
+        value = manifest()
+        del value["components"][0]["shared"]
+        self.write_json("contract.json", value)
+        self.assertEqual(self.invoke("--mode", "validate", "--manifest", "contract.json")["status"], "DONE")
+        normalized = HELPER.validate_manifest(value, self.repo)
+        self.assertEqual([item["shared"] for item in normalized["components"]], [False, False])
+
+    def test_component_shared_must_be_boolean_when_present(self):
+        value = manifest()
+        value["components"][0]["shared"] = "yes"
+        self.write_json("contract.json", value)
+        self.assertEqual(self.invoke("--mode", "validate", "--manifest", "contract.json")["status"], "NEEDS_CONTEXT")
+
+    def test_component_unknown_field_rejected_when_shared_omitted(self):
+        value = manifest()
+        del value["components"][0]["shared"]
+        value["components"][0]["command"] = "echo unsafe"
+        self.write_json("contract.json", value)
+        self.assertEqual(self.invoke("--mode", "validate", "--manifest", "contract.json")["status"], "NEEDS_CONTEXT")
+
+    def test_root_manifest_symlink_escape_is_not_absent(self):
+        with tempfile.TemporaryDirectory() as outside:
+            target = Path(outside) / "contract.json"
+            target.write_text(json.dumps(manifest()), encoding="utf-8")
+            (self.repo / "architecture-invariants.json").symlink_to(target)
+            result = self.invoke("--mode", "validate")
+        self.assertEqual(result["status"], "NEEDS_CONTEXT")
+        self.assertNotEqual(result["contract_state"], "N/A — no architecture contract")
+
+    def test_root_manifest_dangling_symlink_is_not_absent(self):
+        (self.repo / "architecture-invariants.json").symlink_to(self.repo / "missing-contract.json")
+        result = self.invoke("--mode", "validate")
+        self.assertEqual(result["status"], "NEEDS_CONTEXT")
+        self.assertNotEqual(result["contract_state"], "N/A — no architecture contract")
+
+    def test_audit_projection_exposes_component_ids(self):
+        result = self.audit(manifest(), self.evidence(["src/api/file.py"], ["api-forbids-ui"]), "src/api/file.py")
+        self.assertEqual(result["status"], "DONE")
+        self.assertEqual(result["component_ids"], ["api"])
+        self.assertEqual(result["contract_state"], "VALIDATED")
+        self.assertEqual(result["evidence_artifact_path"], HELPER.ARCHITECTURE_EVIDENCE_PATH)
+
+    def test_audit_artifact_projection_stays_closed(self):
+        result = self.audit(manifest(), self.evidence(["src/api/file.py"], ["api-forbids-ui"]), "src/api/file.py")
+        artifact = json.loads((self.repo / HELPER.ARCHITECTURE_EVIDENCE_PATH).read_text(encoding="utf-8"))
+        self.assertEqual(set(artifact), HELPER.RESULT_KEYS)
+        self.assertEqual(HELPER.validate_audit_result(artifact, root=self.repo)["aggregate_verdict"], result["aggregate_verdict"])
 
     def test_validate_advisory_terminal_state(self):
         self.write_json("contract.json", manifest())

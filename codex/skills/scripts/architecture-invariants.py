@@ -15,7 +15,8 @@ VERSION = 1
 ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 SHA_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 MANIFEST_KEYS = {"version", "owner", "enforcement", "components", "rules"}
-COMPONENT_KEYS = {"id", "paths", "owner", "shared"}
+COMPONENT_KEYS = {"id", "paths", "owner"}
+COMPONENT_OPTIONAL_KEYS = {"shared"}
 RULE_KEYS = {"id", "source", "target", "policy", "rationale"}
 EVIDENCE_KEYS = {"version", "scope_paths", "scope_digest", "covered_rule_ids", "edges"}
 EDGE_KEYS = {"rule_id", "source_component", "target_component", "evidence_path", "line"}
@@ -32,6 +33,7 @@ FORBIDDEN_EVIDENCE_FIELDS = {
     "full_diff",
 }
 ARCHITECTURE_EVIDENCE_PATH = ".ywc-architecture-invariants-evidence.json"
+DEFAULT_MANIFEST_PATH = "architecture-invariants.json"
 
 
 class ContractError(ValueError):
@@ -42,9 +44,13 @@ def _fail(message):
     raise ContractError(message)
 
 
-def _object(value, keys, label):
-    if not isinstance(value, dict) or set(value) != keys:
-        _fail("%s must have exactly these fields: %s" % (label, ", ".join(sorted(keys))))
+def _object(value, keys, label, optional=frozenset()):
+    if not isinstance(value, dict) or not keys.issubset(value) or not set(value).issubset(keys | set(optional)):
+        _fail("%s must have exactly these fields: %s%s" % (
+            label,
+            ", ".join(sorted(keys)),
+            " (optional: %s)" % ", ".join(sorted(optional)) if optional else "",
+        ))
 
 
 def _reject_forbidden_fields(value):
@@ -115,15 +121,16 @@ def validate_manifest(manifest, root):
     normalized = {"version": 1, "owner": manifest["owner"], "enforcement": manifest["enforcement"], "components": [], "rules": []}
     component_ids = set()
     for item in components:
-        _object(item, COMPONENT_KEYS, "component")
+        _object(item, COMPONENT_KEYS, "component", COMPONENT_OPTIONAL_KEYS)
         if not isinstance(item["id"], str) or not ID_RE.fullmatch(item["id"]):
             _fail("invalid component id")
         if item["id"] in component_ids:
             _fail("duplicate component id")
         component_ids.add(item["id"])
-        if not isinstance(item["owner"], str) or not item["owner"].strip() or not isinstance(item["shared"], bool):
+        shared = item.get("shared", False)
+        if not isinstance(item["owner"], str) or not item["owner"].strip() or not isinstance(shared, bool):
             _fail("invalid component metadata")
-        normalized["components"].append({"id": item["id"], "paths": normalize_paths(item["paths"], root, glob=True), "owner": item["owner"], "shared": item["shared"]})
+        normalized["components"].append({"id": item["id"], "paths": normalize_paths(item["paths"], root, glob=True), "owner": item["owner"], "shared": shared})
     pairs = set()
     rule_ids = set()
     for item in rules:
@@ -248,7 +255,12 @@ def audit(manifest, evidence, changed_paths, root):
         results.append({"rule_id": rule["id"], "verdict": verdict, "evidence_paths": paths})
     order = {"VIOLATED": 0, "NEEDS_CONTEXT": 1, "MAINTAINED": 2, "N/A": 3}
     aggregate = min((item["verdict"] for item in results), key=lambda verdict: order[verdict], default="N/A")
-    return {"version": 1, "aggregate_verdict": aggregate, "rule_results": results}
+    return {"version": 1, "aggregate_verdict": aggregate, "rule_results": results, "component_ids": sorted(set(mapping.values()))}
+
+
+def audit_artifact(result):
+    """Project the closed on-disk artifact subset out of an audit result."""
+    return {key: result[key] for key in sorted(RESULT_KEYS)}
 
 
 def validate_audit_result(result, manifest=None, root=None):
@@ -343,10 +355,14 @@ def _load(path, root):
 def _manifest(args, root):
     if args.manifest:
         return validate_manifest(_load(args.manifest, root), root)
-    path = root / "architecture-invariants.json"
-    if not path.exists():
+    # Root discovery must pass through the same path/symlink validation as an
+    # explicit --manifest; a symlink that escapes the repository (broken or not)
+    # is a contract error, never an absent contract.
+    normalized = _path(DEFAULT_MANIFEST_PATH, root)
+    candidate = root.joinpath(*normalized.split("/"))
+    if not candidate.exists() and not candidate.is_symlink():
         return None
-    return validate_manifest(json.loads(path.read_text(encoding="utf-8")), root)
+    return validate_manifest(_load(DEFAULT_MANIFEST_PATH, root), root)
 
 
 def main(argv=None):
@@ -394,8 +410,8 @@ def main(argv=None):
                     result = {"status": "N/A", "aggregate_verdict": "N/A", "contract_state": "N/A — no architecture contract"}
                 else:
                     audit_result = audit(manifest, _load(args.evidence, root), args.changed_path, root)
-                    write_audit_result(audit_result, root)
-                    result = {"status": "DONE", **audit_result}
+                    artifact_path = write_audit_result(audit_artifact(audit_result), root)
+                    result = {"status": "DONE", **audit_result, "contract_state": "VALIDATED", "evidence_artifact_path": artifact_path}
         print(json.dumps(result, sort_keys=True))
         return 0
     except (ContractError, OSError, json.JSONDecodeError) as exc:

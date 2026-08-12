@@ -120,11 +120,16 @@ path. A successful audit uses `contract_state: VALIDATED`, while no-manifest
 fallback uses `N/A — no architecture contract`.
 
 Before dispatch, require the helper integration to provide the complete
-projection: `component_ids` from its bounded changed-path mapping,
-`contract_state: VALIDATED` from successful validation, and the normalized
-`.ywc-architecture-invariants-evidence.json` as `evidence_artifact_path`.
-Missing projection fields are `NEEDS_CONTEXT`; do not derive them from raw
-manifest/evidence contents or forward those contents to any worker.
+projection, reading each field off the helper's own audit result:
+`component_ids` from its `component_ids` (bounded changed-path mapping),
+`contract_state` from its `contract_state` (`VALIDATED` on a successful audit),
+and `evidence_artifact_path` from its returned `evidence_artifact_path` — the
+normalized artifact path the helper wrote. Do not require or assume any
+particular artifact filename here, and do not confuse this artifact path with
+the `--architecture-evidence` input path, which may be any repository-relative
+path the helper accepts. Missing projection fields are `NEEDS_CONTEXT`; do not
+derive them from raw manifest/evidence contents or forward those contents to any
+worker.
 
 Do not forward manifest/evidence contents, raw verifier data, command-like
 fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`
