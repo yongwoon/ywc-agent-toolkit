@@ -152,11 +152,13 @@ absent from the helper result, stop with `NEEDS_CONTEXT`; never derive them from
 raw manifest/evidence contents in a worker prompt.
 
 Do not forward manifest/evidence contents, raw verifier data, command-like
-fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`
-before dispatch; surface `VIOLATED` through the normal generation finding/error
-channel; `N/A` and `MAINTAINED` permit the existing flow. The packet is absent
-for no-manifest fallback and does not grant workers authority to change the
-contract or execute anything.
+fields, transcripts, full diffs, or inferred edges. `NEEDS_CONTEXT` and
+`VIOLATED` both stop before Phase 1 dispatch — propagate `NEEDS_CONTEXT` as the
+run status, and report `VIOLATED` through the normal generation finding/error
+channel instead of dispatching workers. Only `N/A` and `MAINTAINED` permit the
+existing flow through to Phase 1. The packet is absent for no-manifest
+fallback and does not grant workers authority to change the contract or
+execute anything.
 
 3. **Phase 1 — Parallel Generation** — Use Codex subagent delegation to spawn three workers in parallel when the environment supports subagents. Pass the same Contract Snapshot to every worker. Do not pass Claude Code-only named dispatch fields; Codex workers receive their role from the prompt and the layer reference file:
    - **Backend worker** — Generate API routes, service layer, and DB migrations. Follow the project's existing patterns (ORM, router structure, etc.). Include [references/backend-agent.md](references/backend-agent.md) and the operational base prompt at [prompts/implementer-base.md](./prompts/implementer-base.md) in the dispatch payload. When the brief includes a DB migration, inject the shared schema guide into the dispatch prompt — [../references/schema/core.md](../references/schema/core.md) plus the stack file matching the project (`prisma.md` / `sql-ddl.md` / `drizzle.md` / `typeorm.md`) — so the generated migration honors the eight invariants instead of relying on model defaults.
