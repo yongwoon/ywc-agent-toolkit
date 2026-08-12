@@ -54,10 +54,12 @@ When no task is specified, the Skill analyzes the dependency graph and selects t
 | `--base-branch <branch>` | Base branch override (default: auto-detect) | `--base-branch develop` |
 | `--dry-run` | Show execution plan (task order, dependencies, mode) without executing | |
 | `--worktree` | Run the **whole range inside one isolated git worktree** so the main checkout stays free. Run-level isolation — tasks still run strictly sequentially. Independent flag, combines with all four delivery modes and `--review`. See [references/worktree-run.md](./references/worktree-run.md) | `--worktree` |
+| `--non-interactive` | Skip interactive prompts for this run. When the External URL Policy has no persisted decision, apply `deny` without asking and do not persist it — this run only. Also forwarded to the auto-invoked `/ywc-impl-review` in Step 4.5. Independent flag, combines with all four delivery modes, `--review`, `--dry-run`, and `--worktree` | `--non-interactive` |
 
 > `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. The Skill stops and asks which mode you intended if more than one is passed.
 > `--local-merge` **does not run remote CI**, so the only safety net for the merge is the local verification in Step 4 (lint/typecheck/test). Avoid it for sensitive changes.
 > `--worktree` is **independent** of the mutual-exclusion group above (not a fifth member). A Docker stack started inside the worktree can collide with the host's existing dev stack on host ports (owned by the host-isolation follow-up); because tasks run sequentially, *parallel* port contention does not arise.
+> `--non-interactive` is likewise **independent** of the mutual-exclusion group above (not a fifth member).
 
 ### Group Execution (`--aggregate-pr`)
 
@@ -109,7 +111,7 @@ Per task: branch from previous feature branch (chain branching) → implement �
 Step 1: Dependency Validation & Spec Loading
   └─ Verify all Depends On tasks exist in tasks/completed/
   └─ Load README.md's Spec Reference (Primary Sources / Summary / Out of Scope)
-  └─ External URLs follow the taskExecutor.externalSpecUrls policy in .claude/settings.local.json
+  └─ External URLs follow the taskExecutor.externalSpecUrls policy in .claude/settings.local.json (with `--non-interactive` and no saved decision, applies deny without persisting)
 
 Step 2: Branch Creation (runs for every task — never skipped in range mode)
   └─ (normal/local-merge) git checkout <base> && git pull && git checkout -b feature/<task-name>

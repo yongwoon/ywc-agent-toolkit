@@ -51,9 +51,11 @@ Cuando no se especifica ninguna tarea, la Skill analiza el grafo de dependencias
 | `--local-merge` | Omitir PR completamente — mergear la rama de función en la rama base localmente y hacer push (la verificación del Paso 4 sigue ejecutándose) | |
 | `--base-branch <branch>` | Sobrescribir la rama base (predeterminado: auto-detección) | `--base-branch develop` |
 | `--dry-run` | Mostrar el plan de ejecución (orden de tareas, dependencias, modo) sin ejecutar | |
+| `--non-interactive` | Omitir los prompts interactivos de esta ejecución. Cuando la External URL Policy no tiene una decisión persistida, aplica `deny` sin preguntar y no la persiste (solo para esta ejecución). También se reenvía a la invocación automática de `/ywc-impl-review` en el Paso 4.5. Flag independiente, se combina con todos los modos de entrega y `--review`, `--dry-run` | `--non-interactive` |
 
 > `--local-merge`, `--draft` y `--skip-ci-wait` son mutuamente excluyentes. La Skill se detiene y pregunta qué modo se pretendía si se pasa más de uno.
 > `--local-merge` **no ejecuta CI remoto**, por lo que la única red de seguridad para el merge es la verificación local del Paso 4 (lint/typecheck/test). Evítalo para cambios sensibles.
+> `--non-interactive` es igualmente **independiente** del grupo de exclusión mutua anterior (no es un quinto miembro).
 
 ## Ciclo de Ejecución
 
@@ -82,7 +84,7 @@ Por tarea: crear rama desde la rama de función anterior (ramificación en caden
 Paso 1: Validación de Dependencias y Carga de Especificaciones
   └─ Verificar que todas las tareas de Depends On existen en tasks/completed/
   └─ Cargar la Referencia de Especificaciones de README.md (Fuentes Primarias / Resumen / Fuera de Alcance)
-  └─ Las URLs externas siguen la política taskExecutor.externalSpecUrls en .claude/settings.local.json
+  └─ Las URLs externas siguen la política taskExecutor.externalSpecUrls en .claude/settings.local.json (con `--non-interactive` y sin decisión guardada, aplica deny sin persistir)
 
 Paso 2: Creación de Rama (se ejecuta para cada tarea — nunca se omite en modo de rango)
   └─ (normal/local-merge) git checkout <base> && git pull && git checkout -b feature/<task-name>
