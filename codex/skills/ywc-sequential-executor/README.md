@@ -59,6 +59,7 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 | `--group-name <name>` | Aggregate work branch 이름 지정 (`work/<name>`). `--aggregate-pr`에서만 유효 | `--group-name billing-rollout` |
 | `--base-branch <branch>` | Base branch 지정 (default: auto-detect) | `--base-branch develop` |
 | `--worktree` | 전체 invocation을 단일 run worktree에서 실행. Delivery mode가 아니므로 다른 mode flag와 조합 가능 | `--worktree` |
+| `--resume-disposition resume|stop` | checkpoint 재개 결정을 prompt 없이 전달. 누락/불일치 시 bounded `NEEDS_CONTEXT` 반환 | `--resume-disposition resume` |
 | `--dry-run` | 실행 계획만 표시 (Task 순서, dependency, mode). 실제 실행하지 않음 | |
 
 > `--local-merge`, `--draft`, `--skip-ci-wait`, `--aggregate-pr` 는 상호 배타적입니다. 동시에 지정하면 Skill 이 중단되고 어떤 mode 인지 되묻습니다.
@@ -106,7 +107,7 @@ Step 7: Final Aggregate PR (--aggregate-pr only)
 
 ## Worktree Run
 
-`--worktree` 는 sequential range 전체를 main checkout 밖의 단일 run worktree에서 실행합니다. Task 순서, per-task feature branch, verification, `ywc-finish-branch` delivery semantics는 그대로 유지되며, git command / file edit / verification / transition gate만 `$WT` context로 redirect됩니다.
+`--worktree` 는 sequential range 전체를 main checkout 밖의 단일 run worktree에서 실행합니다. Task 순서, per-task feature branch, verification, `ywc-finish-branch` delivery semantics는 그대로 유지되며, git command / file edit / verification / transition gate만 `$WT` context로 redirect됩니다. Non-interactive transition은 prompt 없이 bounded status를 반환하고, handoff는 checkpoint 이후 atomic cache로만 기록됩니다.
 
 ```text
 Use $ywc-sequential-executor to run tasks 001010..003020 with --worktree --pr-lang ko.
