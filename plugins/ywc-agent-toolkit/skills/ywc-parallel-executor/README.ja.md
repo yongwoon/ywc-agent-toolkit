@@ -54,3 +54,7 @@ Wave planning は shared public contract を単なる file path ではなく Sha
 ## 出力
 
 この Skill は [SKILL.md](./SKILL.md) に定義された report、artifact、status format に従います。Completion Status を出力する場合、`DONE`、`DONE_WITH_CONCERNS`、`BLOCKED`、`NEEDS_CONTEXT` の意味を維持します。
+
+## Transition Safety
+
+`--non-interactive` 実行は prompt を開かず bounded terminal status を返します。Parallel run は root の `.ywc-run-state.json` の隣に aggregate `.ywc-context-handoff.json` を 1 つだけ原子的に書き込み、worker handoff と peer conclusion を許可しません。無効な handoff は checkpoint、現在の `README.md`、`task.md` の順で再構成します。

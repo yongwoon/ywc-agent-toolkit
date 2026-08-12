@@ -15,3 +15,8 @@ Codex에서 사용자가 명시적으로 specialist team, subagent delegation, p
 - `SKILL.md` — team assembly workflow
 - `agents/openai.yaml` — Codex metadata
 - `references/prompt-templates.md` — explorer, worker, reviewer prompt template
+- `evals/evals.json` — role-isolation, Claim/Evidence, cap, privacy contract evals
+
+## Context Safety
+
+Team prompt는 projection 전에 bounded Claims와 cited evidence를 검증합니다. Independent reviewer에는 scope와 artifact path만, dependent role에는 Claims와 해당 Claim이 인용한 artifact만 전달합니다. peer conclusion/recommendation, transcript, raw content, uncited artifact, invalid 또는 over-cap Claim은 거부합니다.
