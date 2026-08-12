@@ -1,0 +1,22 @@
+{
+  "schema": 2,
+  "id": "architecture-invariants-v2-no-manifest-fallback",
+  "prompt": "With no repository-root architecture manifest, preserve the documented N/A no-contract fallback.",
+  "language": "en",
+  "category": "negative",
+  "should_trigger": true,
+  "expected_checks": [
+    {"type": "file_exists", "path": "input.json"},
+    {"type": "file_regex", "path": "input.json", "regex": "N/A"},
+    {"type": "verifier", "verifier_id": "bundle.validate"}
+  ],
+  "workspace": {
+    "fixture_root": "ywc-architecture-invariants/no-manifest",
+    "target_skill": "ywc-architecture-invariants",
+    "skill_dependencies": [],
+    "fixture_files": ["input.json"],
+    "output_paths": ["evidence/fallback.json"],
+    "evidence_packet": {"mode": "validate", "manifest": "absent", "expected_status": "N/A — no architecture contract"},
+    "verifier_ids": ["bundle.validate"]
+  }
+}

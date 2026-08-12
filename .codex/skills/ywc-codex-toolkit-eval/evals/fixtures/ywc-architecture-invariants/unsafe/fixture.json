@@ -1,0 +1,22 @@
+{
+  "schema": 2,
+  "id": "architecture-invariants-v2-reject-unsafe-contract",
+  "prompt": "Reject malformed architecture input containing executable verifier data and escaping paths; do not execute it.",
+  "language": "en",
+  "category": "negative",
+  "should_trigger": true,
+  "expected_checks": [
+    {"type": "file_exists", "path": "input.json"},
+    {"type": "file_regex", "path": "input.json", "regex": "do-not-execute"},
+    {"type": "verifier", "verifier_id": "bundle.validate"}
+  ],
+  "workspace": {
+    "fixture_root": "ywc-architecture-invariants/unsafe",
+    "target_skill": "ywc-architecture-invariants",
+    "skill_dependencies": [],
+    "fixture_files": ["input.json"],
+    "output_paths": ["evidence/rejection.json"],
+    "evidence_packet": {"mode": "validate", "expected_status": "NEEDS_CONTEXT", "execute_verifier_data": false},
+    "verifier_ids": ["bundle.validate"]
+  }
+}
