@@ -119,6 +119,13 @@ Architecture finding. They are not `contract_state` and are not the artifact
 path. A successful audit uses `contract_state: VALIDATED`, while no-manifest
 fallback uses `N/A — no architecture contract`.
 
+Before dispatch, require the helper integration to provide the complete
+projection: `component_ids` from its bounded changed-path mapping,
+`contract_state: VALIDATED` from successful validation, and the normalized
+`.ywc-architecture-invariants-evidence.json` as `evidence_artifact_path`.
+Missing projection fields are `NEEDS_CONTEXT`; do not derive them from raw
+manifest/evidence contents or forward those contents to any worker.
+
 Do not forward manifest/evidence contents, raw verifier data, command-like
 fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`
 before dispatch. Treat `VIOLATED` as an Architecture finding with the supplied

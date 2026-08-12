@@ -12,7 +12,7 @@
 
 Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de trabajo de desarrollo completo — desde la planificación y escritura de especificaciones hasta la generación de código, revisión y lanzamiento.
 
-Actualmente incluye 42 skills para Claude Code, 48 skills para Codex, 12 agentes de Claude Code y 7 custom agents de Codex.
+Actualmente incluye 42 skills para Claude Code, 52 skills para Codex, 12 agentes de Claude Code y 8 custom agents de Codex.
 
 `ywc-setup` es Codex-only y configura el artifact language default de Codex
 `ywc-*`: `ywc-setup --scope project --lang ko`, `ywc-setup --scope user --lang ja`.
@@ -205,7 +205,7 @@ Nueve skills de revisión y reporte soportan un flag opt-in `--format html` que 
 
 Claude Code incluye **12 agentes** personalizados para worker, reviewer y specialist dispatch. Se instalan en `~/.claude/agents/` y están documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
 
-Codex incluye **7 agentes** especialistas de solo lectura que complementan los skills `ywc-*`. Se instalan en `~/.codex/agents/`.
+Codex incluye **8 agentes** especialistas de solo lectura que complementan los skills `ywc-*`. Se instalan en `~/.codex/agents/`.
 
 | Agente | Propósito | Sandbox |
 |--------|-----------|---------|

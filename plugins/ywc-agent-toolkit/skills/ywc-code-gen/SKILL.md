@@ -140,6 +140,14 @@ projection) and is never used as the invariant verdict. For a successful audit,
 `contract_state` is `VALIDATED`; no-manifest fallback remains
 `N/A — no architecture contract`.
 
+The successful helper integration must supply the complete projection before
+dispatch: `component_ids` comes only from the helper's bounded changed-path
+mapping, `contract_state` is the helper's successful-validation state
+(`VALIDATED`), and `evidence_artifact_path` is the helper's normalized
+`.ywc-architecture-invariants-evidence.json` path. If any of these three
+projection fields is unavailable, stop with `NEEDS_CONTEXT`; never derive them
+from raw manifest/evidence contents in a worker prompt.
+
 Do not forward manifest/evidence contents, raw verifier data, command-like
 fields, transcripts, full diffs, or inferred edges. Propagate `NEEDS_CONTEXT`
 before dispatch; surface `VIOLATED` through the normal generation finding/error

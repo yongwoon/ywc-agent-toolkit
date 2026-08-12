@@ -60,7 +60,7 @@
       "name": "architecture-packet-positive",
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
       "expected_output": "Runs the shared helper and projects a sanitized packet with contract_state VALIDATED, affected component_ids, rule_ids from rule_results, invariant_verdict from aggregate_verdict, and evidence_artifact_path naming the artifact. Sanitized rule_results evidence_paths may be cited only through the normal finding channel.",
-      "expectations": ["Does not rename aggregate_verdict to contract_state", "Does not forward raw evidence, transcript, command-like fields, or full diffs"],
+      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "Does not rename aggregate_verdict to contract_state or forward raw evidence, transcript, command-like fields, or full diffs"],
       "files": []
     },
     {
