@@ -13,7 +13,7 @@
 面向 Claude Code 和 Codex 的开发工作流自动化技能集合。
 涵盖计划制定、规格书撰写、任务分解、代码生成、审查和发布的完整开发流程。
 
-目前包含 42 个 Claude Code skill、48 个 Codex skill、12 个 Claude Code agent 和 7 个 Codex custom agent。
+目前包含 42 个 Claude Code skill、52 个 Codex skill、12 个 Claude Code agent 和 8 个 Codex custom agent。
 
 Codex-only `ywc-setup` 用于设置 Codex `ywc-*` artifact language default：
 `ywc-setup --scope project --lang ko`、`ywc-setup --scope user --lang ja`。
@@ -206,7 +206,7 @@ bash scripts/install.sh --all
 
 Claude Code 包含 **12 个**用于 worker、reviewer、specialist dispatch 的 custom agent，安装到 `~/.claude/agents/`，详细信息请参阅 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
 
-Codex 包含 **7 个**补充 `ywc-*` skill 的 read-only specialist agent，安装到 `~/.codex/agents/`。
+Codex 包含 **8 个**补充 `ywc-*` skill 的 read-only specialist agent，安装到 `~/.codex/agents/`。
 
 | Agent | 用途 | Sandbox |
 |-------|------|---------|

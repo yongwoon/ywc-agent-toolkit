@@ -71,3 +71,7 @@ Rough idea를 구현 직전 상태(Small path 직접 실행 plan, 또는 Medium/
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+## Agentic artifact profile
+
+`--artifact-profile agentic` is mutually exclusive with `--output`. Small uses `docs/ywc-plans/YYYYMMDD-small_<slug>.md`; Medium/Large uses `docs/ywc-plans/YYYYMMDD-<slug>.md`. Success returns one Result block with `Status`, `Scale`, and `Artifact`; Artifact must be an existing regular repository-relative Markdown file under `docs/ywc-plans/`.

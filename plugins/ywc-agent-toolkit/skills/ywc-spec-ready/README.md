@@ -27,3 +27,7 @@ $ywc-spec-ready --spec docs/ywc-plans/example.md --dry-run
 ## 출력
 
 이 Skill은 [SKILL.md](./SKILL.md)에 정의된 report, loop log, status format을 따릅니다.
+
+## Agentic artifact profile
+
+`--artifact-profile agentic` 성공 시 `Status: DONE`과 `Artifact: <path>`만 포함한 Result 블록 하나를 반환합니다. Artifact는 검증된 후보 루트 안의 기존 일반 파일인 저장소 상대 Markdown이어야 하며 `Scale`이나 prose/basename/raw-response fallback은 허용하지 않습니다.

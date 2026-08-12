@@ -1,4 +1,4 @@
 interface:
   display_name: "Parallel Executor"
   short_description: "Run task waves with merge delivery and preserved implementation notes"
-  default_prompt: "Use $ywc-parallel-executor to execute independent task folders concurrently in isolated worktrees with wave gating, delivery mode handling, cleanup, preserved non-obvious implementation notes, and --pr-lang en|ja|ko|zh|es pass-through to PR creation."
+  default_prompt: "Use $ywc-parallel-executor to execute independent task folders concurrently in isolated worktrees with wave gating, delivery mode handling, checkpoint-first non-interactive transitions, one root aggregate context handoff, cleanup, preserved non-obvious implementation notes, and --pr-lang en|ja|ko|zh|es pass-through to PR creation."

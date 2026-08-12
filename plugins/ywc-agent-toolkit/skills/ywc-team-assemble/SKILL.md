@@ -50,6 +50,41 @@ If the task is a generated task wave from `ywc-task-generator`, prefer `ywc-para
 5. Continue useful local work while subagents run.
 6. Review returned outputs, integrate only relevant changes, and report the final result.
 
+## Claim/Evidence and role isolation
+
+Every team prompt is assembled from a validated, bounded context packet. The
+packet contains only `Included scope`, `Excluded scope`, `Artifacts` (paths),
+and optional `Claims`. Validate the complete packet recursively before making
+any role projection; a rejected packet is terminal and must not be redacted,
+summarized, retried, or forwarded.
+
+Claims follow the canonical Claim/Evidence contract in the shared
+`subagent-status-actions.md` reference owned by `ywc-sequential-executor`:
+
+- Emit at most three Claims. Each Claim has exactly `Statement` and `Evidence`.
+- `Statement` is factual and at most 1,024 characters.
+- `Evidence` is a project-relative `file:line` citation with a positive line
+  number or a project-relative artifact path; absolute paths, `..`, URIs, and
+  unlabelled prose are invalid.
+- Reject missing, uncited, over-cap, malformed, or private fields as `BLOCKED`
+  and name only the field and bounded rule in the diagnostic.
+
+Role projections are strict allowlists:
+
+- An independent reviewer receives only included scope, excluded scope, and
+  artifact paths. It receives no Claims, peer conclusions, peer
+  recommendations, transcript, or raw content.
+- A dependent role receives only Claims and the artifact paths cited by those
+  Claims. It receives no uncited artifacts, peer transcript, peer conclusions,
+  peer recommendations, or raw content. Missing cited context returns
+  `NEEDS_CONTEXT` with the missing path/citation.
+
+Privacy validation rejects forbidden raw-content keys recursively, including
+case/separator variants of `transcript`, `chain_of_thought`, `generated_source`,
+`full_diff`, `raw_tool_output`, `raw_response`, and `tool_output`. This check
+also covers nested Claim/Evidence data, artifact metadata, concerns, blockers,
+and wrapper objects before projection.
+
 ## Role Design
 
 Use a small team. Two to four roles is usually enough.
@@ -98,6 +133,11 @@ Each subagent prompt should include:
 4. Ownership boundary
 5. Output format
 6. Whether file edits are allowed
+
+For reviewer and dependent packets, the prompt must also name the projection
+(`independent` or `dependent`) and list the exact allowed fields. Never pass a
+source payload and ask a role to ignore disallowed fields; construct the
+allowlisted projection first.
 
 ## Execution Pattern
 

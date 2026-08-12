@@ -15,3 +15,8 @@
 - `SKILL.md` — team assembly workflow
 - `agents/openai.yaml` — Codex metadata
 - `references/prompt-templates.md` — explorer、worker、reviewer prompt template
+- `evals/evals.json` — role isolation、Claim/Evidence、cap、privacy の contract evals
+
+## Context Safety
+
+Team prompt は projection 前に bounded Claims と cited evidence を検証します。Independent reviewer には scope と artifact path のみ、dependent role には Claims とそれらが引用する artifact のみを渡します。peer conclusion/recommendation、transcript、raw content、uncited artifact、invalid または over-cap Claim は拒否します。

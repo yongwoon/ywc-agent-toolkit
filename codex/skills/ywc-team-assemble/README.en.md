@@ -15,3 +15,8 @@ Do not use it for simple questions, single-file edits, or strictly sequential wo
 - `SKILL.md` — team assembly workflow
 - `agents/openai.yaml` — Codex metadata
 - `references/prompt-templates.md` — explorer, worker, and reviewer prompt templates
+- `evals/evals.json` — role-isolation, Claim/Evidence, cap, and privacy contract evals
+
+## Context Safety
+
+Team prompts validate bounded Claims and cited evidence before projection. Independent reviewers receive scope and artifact paths only; dependent roles receive Claims and their cited artifacts only. Peer conclusions, recommendations, transcripts, raw content, uncited artifacts, and invalid or over-cap Claims are rejected.

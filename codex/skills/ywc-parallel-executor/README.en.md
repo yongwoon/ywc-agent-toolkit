@@ -54,3 +54,7 @@ Use `--aggregate-pr --group-name <name>` when many tasks should be delivered as 
 ## Output
 
 This skill follows the report, artifact, and status format defined in [SKILL.md](./SKILL.md). If the skill emits Completion Status, preserve the meanings of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, and `NEEDS_CONTEXT`.
+
+## Transition Safety
+
+`--non-interactive` runs return bounded terminal statuses without prompts. A parallel run writes exactly one aggregate `.ywc-context-handoff.json` beside root `.ywc-run-state.json`; workers have no handoff authority and peer conclusions are excluded. Invalid handoffs are reconstructed from checkpoint, then current `README.md` and `task.md`.

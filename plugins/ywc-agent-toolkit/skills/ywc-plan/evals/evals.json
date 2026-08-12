@@ -66,6 +66,45 @@
         "Pretending the discovery state is already plan-ready.",
         "Treating ywc-wayfinder as ordinary brainstorming."
       ]
+    },
+    {
+      "id": 5,
+      "name": "agentic-result-profile-contract",
+      "prompt": "Use ywc-plan --non-interactive --artifact-profile agentic to plan a small, self-contained CLI change.",
+      "expected_behavior": [
+        "Creates an existing regular Markdown artifact under docs/ywc-plans/ named docs/ywc-plans/YYYYMMDD-small_<slug>.md.",
+        "Returns exactly one success Result block with only Status, Scale, and Artifact fields, where Scale is Small.",
+        "Validates the labelled Artifact as repository-relative and inside docs/ywc-plans/ before any downstream handoff."
+      ],
+      "anti_behavior": [
+        "Accepting --artifact-profile agentic together with --output.",
+        "Recovering an artifact from plan.md, prose, a basename, or raw response text.",
+        "Treating a missing, duplicate, out-of-root, escaping, non-Markdown, or non-regular Artifact as usable.",
+        "Writing raw response, transcript, or raw tool output into diagnostics."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "agentic-result-rejection-is-bounded",
+      "prompt": "Parse a ywc-plan response containing two Result blocks, a conflicting Scale, and an out-of-root Artifact.",
+      "expected_behavior": [
+        "Returns BLOCKED with only producer name, failed field, candidate count, path digest, and a bounded reason.",
+        "Makes zero downstream calls and does not select a fallback or guessed artifact."
+      ],
+      "anti_behavior": [
+        "Choosing the first or last Result block.",
+        "Scanning unlabelled prose or --output to recover an artifact path."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "result-parser-exact-matrix",
+      "prompt": "Evaluate ywc-plan's agentic Result parser with one complete block, duplicate or missing Scale/Artifact fields, unlabelled prose, an outside-root path, and a non-Markdown artifact.",
+      "input": {"accepted": "## Result with Status: DONE, Scale: Small|Medium|Large, and one docs/ywc-plans/*.md Artifact", "rejected": ["duplicate field", "missing field", "prose path", "../outside.md", "docs/ywc-plans/data.json"]},
+      "expected_status": "DONE for the accepted fixture; BLOCKED for every rejected fixture",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepted only for the exact complete in-root Markdown Result; rejected otherwise",
+      "expected_output": "Reports bounded parser failure details without storing response text or selecting a fallback path."
     }
   ]
 }

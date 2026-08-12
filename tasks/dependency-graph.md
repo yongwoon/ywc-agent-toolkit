@@ -1392,3 +1392,142 @@ live 실행은 dispatch 당 약 **$0.54**(설치된 skill 전량이 컨텍스트
 
 - None. All emitted requirements have acceptance-criterion or motivating-goal support in the specification.
 
+## Batch — Codex Architecture Invariants
+
+- Spec: `docs/ywc-plans/20260812-codex-architecture-invariants.md`
+- Granularity mode: `llm`
+- Language: English
+- Starting phase: `000073`
+- Rationale: task-local metadata establishes 000073 as the architecture-invariants source batch and 000074 as its terminal distribution gate.
+
+### Phase 000073 — Contract, Fixtures, Consumers, and Evidence
+
+- `000073-010-domain-architecture-invariants-contract` → root
+- `000073-020-test-architecture-invariants-evaluator` → depends on `000073-010`
+- `000073-030-refactor-architecture-consumer-packets` → depends on `000073-010`
+- `000073-040-domain-architecture-run-evidence` → depends on `000073-010`
+
+### Phase 000074 — Distribution Gate
+
+- `000074-010-infra-architecture-invariants-distribution` → depends on all Phase `000073` tasks
+
+### Parallel Execution Notes — Codex Architecture Invariants
+
+- Initial ready set: `000073-010` only.
+- After `000073-010` merges: `000073-020`, `000073-030`, and `000073-040` become runnable.
+- `000073-020` and `000073-030` must not run in parallel because both may extend the shared architecture eval inventory.
+- `000073-040` must not run alongside `000073-010` because it changes the shared architecture helper/evidence boundary.
+- `000074-010` waits for all four Phase `000073` tasks and is the terminal generated-package and install-validation gate.
+
+### Open Questions — Codex Architecture Invariants
+
+- None. Dependencies and shared-surface constraints are taken from each task's `README.md`.
+
+## Batch — Codex Agentic Context Safety
+
+- Spec: `docs/ywc-plans/20260812-codex-agentic-context-safety.md`
+- Granularity mode: `llm` · Language: English
+- Starting phase: `000075` (highest existing phase is `000074`)
+- Invocation: `ywc-task-generator docs/ywc-plans/20260812-codex-agentic-context-safety.md`, approved interactively after preview
+- Advisor pass: unavailable in this runtime; direct phase/cycle review applied
+
+### Phase 000075 — Shared Contracts
+
+- `000075-010-domain-context-handoff-contract` → (root)
+- `000075-020-domain-subagent-claim-contract` → (root)
+
+### Phase 000076 — Producer, Orchestrator, Executor, and Team Behavior
+
+- `000076-010-domain-producer-result-artifact-profile` → depends on `000075-010`
+- `000076-020-domain-agentic-authority-preflight` → depends on `000076-010`
+- `000076-030-domain-sequential-transition-safety` → depends on `000075-010`, `000075-020`
+- `000076-040-domain-parallel-transition-safety` → depends on `000075-010`, `000075-020`
+- `000076-050-domain-team-claim-isolation` → depends on `000075-020`
+
+### Phase 000077 — Evaluation and Distribution Gate
+
+- `000077-010-test-context-safety-evaluation-matrix` → depends on all Phase `000076` tasks
+- `000077-020-infra-distribution-validation` → depends on `000077-010`
+
+### Parallel Execution Notes — Codex Agentic Context Safety
+
+- Initial ready set: `000075-010`, `000075-020`.
+- After `000075-010` merges: `000076-010` becomes runnable.
+- After `000076-010` merges: `000076-020` becomes runnable.
+- After both Phase `000075` tasks merge: `000076-030`, `000076-040`, and `000076-050` are runnable; `000076-030` and `000076-040` must not run in parallel because both modify executor transition semantics and shared checkpoint/handoff behavior.
+- After all Phase `000076` tasks merge: `000077-010` becomes runnable.
+- After `000077-010` merges: `000077-020` becomes runnable and is the final distribution gate.
+- `000077-020` must not run alongside any implementation or eval task because it synchronizes shared metadata, inventory, and generated plugin output.
+
+### Open Questions
+
+- None. The specification explicitly fixes the v1 boundary to `--artifact-profile agentic` and local-only handoff.
+
+---
+
+# Batch — Claude Code Agentic Context Safety
+
+Preview Approval Metadata:
+
+- `Preview Path:` (interactive preview; no persisted preview file)
+- `Preview Revision:` `rev-002` (rev-001 renumbered `000075`→`000078` at user request)
+- `Spec Path:` `docs/ywc-plans/20260812-claude-code-agentic-context-safety.md`
+- `Tasks Dir:` `tasks/`
+- `Mode:` `llm`
+- `Language:` `ko`
+- `Invocation:` `/ywc-task-generator docs/ywc-plans/20260812-claude-code-agentic-context-safety.md`
+- `Approval:` explicit interactive approval
+
+- Spec ready log: `docs/ywc-plans/20260812-claude-code-agentic-context-safety.spec-ready-log.md`
+- Starting phase: `000078` — phases `000075`–`000077` are occupied by the Codex context-safety batch (sibling spec `20260812-codex-agentic-context-safety.md`).
+- Scope: `claude-code/skills/**` and `claude-code/agents/**` only. The Codex twin is a separate batch; Root Independence means no automatic propagation.
+- Hard boundary: `git diff --name-only main...HEAD | grep -c '^codex/'` must be `0` (AC17). No generated plugin sync — `claude-code/` has no plugin package.
+- Advisor pass: skipped — phase boundaries are mechanically determined by file ownership (one skill directory per task, one validation gate).
+- No-AC requirements: none — FR-1…FR-7 all trace to AC1…AC17.
+- Safety invariants: no DB migration, no library introduction — no forced split.
+
+## Phase 000078 — Contract, Propagation, Agent Scope
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000078-010-docs-impl-review-bounded-payload-noninteractive` | docs | (root) |
+| `000078-020-docs-sequential-executor-noninteractive` | docs | `000078-010` |
+| `000078-030-docs-parallel-executor-flag-compaction` | docs | `000078-010` |
+| `000078-040-docs-code-gen-agentic-propagation` | docs | `000078-010`, `000078-020` |
+| `000078-050-docs-refactor-cleaner-write-scope` | docs | (root) |
+
+## Phase 000079 — Validation Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000079-010-infra-context-safety-validation` | infra | `000078-010`, `-020`, `-030`, `-040`, `-050` |
+
+## Parallel Execution Notes (Claude Code Agentic Context Safety)
+
+- Initial ready set: `000078-010` and `000078-050` — disjoint ownership (`ywc-impl-review/**` vs `claude-code/agents/ywc-refactor-cleaner.md`), parallel-safe from the start.
+- After `000078-010` merges: `000078-020` and `000078-030` become runnable and are parallel-safe with each other and with `000078-050` — each owns exactly one skill directory.
+- `000078-040` waits for both `000078-010` and `000078-020` because its `ywc-agentic` Step 5 forward references the sequential executor's newly defined flag.
+- Phase-gate placement: `000078-020` / `-030` / `-040` each depend on only *some* Phase 000078 tasks, so per the phase-gate rule they live in Phase 000078 ordered by `Depends On`, not a separate phase. Only `000079-010` depends on all five — it is the sole hard gate.
+- `000079-010` is verification-only and owns `history.mechanical.json` regeneration. It must not run alongside any Phase 000078 task: regenerating the baseline before every edit lands produces an incomplete baseline.
+- Ownership is disjoint across all five Phase 000078 tasks — no file is written by two tasks. `000078-030` reads `ywc-sequential-executor/SKILL.md:155` for the compaction 문형 but never edits it.
+- FR-7's 12 README locale files are **not** a separate task: each skill directory's READMEs belong to that skill's owner (`000078-010` for impl-review ×6, `000078-020` for sequential ×6). This keeps one owner per skill directory.
+- Recommended execution: `ywc-sequential-executor --local-merge` over 010→020→030→040→050→(079-010) on one branch, or parallel worktrees for {010, 050} then {020, 030} then {040}.
+- FR mapping: FR-1+FR-2+FR-7(impl-review)→`000078-010`; FR-3(2)+FR-4+FR-7(sequential)→`000078-020`; FR-3(2)+FR-6→`000078-030`; FR-3(3)+FR-4(agentic forward)→`000078-040`; FR-5→`000078-050`; AC16+AC17+구조적 AC grep→`000079-010`.
+
+```mermaid
+graph LR
+  A[000078-010 impl-review bounded payload + non-interactive] --> B[000078-020 sequential non-interactive]
+  A --> C[000078-030 parallel flag + compaction]
+  A --> D[000078-040 code-gen + agentic propagation]
+  B --> D
+  E[000078-050 refactor-cleaner Write scope]
+  A --> F[000079-010 context-safety validation]
+  B --> F
+  C --> F
+  D --> F
+  E --> F
+```
+
+### Open Questions (Claude Code Agentic Context Safety)
+
+- None. The spec's own `## Open Questions` section records `N/A — none identified`, and every emitted task traces to a Functional Requirement with a backing Acceptance Criterion.

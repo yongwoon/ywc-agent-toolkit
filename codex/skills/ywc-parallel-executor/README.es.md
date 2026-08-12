@@ -54,3 +54,7 @@ En `--per-task-pr`, una tarea anterior de la misma wave puede avanzar la rama ba
 ## Salida
 
 Este skill sigue el formato de reportes, artefactos y estados definido en [SKILL.md](./SKILL.md). Si el skill emite Completion Status, conserva los significados de `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED` y `NEEDS_CONTEXT`.
+
+## Transition Safety
+
+Las ejecuciones `--non-interactive` devuelven estados terminales acotados sin prompts. Una ejecución paralela escribe atómicamente un único `.ywc-context-handoff.json` agregado junto a `.ywc-run-state.json` en la raíz; los workers no tienen autoridad de handoff y se excluyen las conclusiones de pares. Los handoffs inválidos se reconstruyen desde el checkpoint y luego `README.md`/`task.md` actuales.

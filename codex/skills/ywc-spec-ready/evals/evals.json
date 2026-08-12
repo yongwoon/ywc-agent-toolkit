@@ -18,6 +18,36 @@
       "prompt": "Use $ywc-spec-ready --spec ../outside.md to validate an existing spec.",
       "expected_output": "Rejects the path before validation because it escapes the repository/spec directory contract. Returns NEEDS_CONTEXT with the invalid path and does not run ywc-spec-validate or modify files.",
       "files": []
+    },
+    {
+      "id": 4,
+      "name": "agentic-ready-result-contract",
+      "prompt": "Use $ywc-spec-ready --spec docs/ywc-plans/candidate.md --artifact-profile agentic --non-interactive --suggestions defer to finalize the candidate.",
+      "expected_output": "Exercises the agentic producer path because --artifact-profile agentic is present. On DONE, emits exactly one Result block containing only Status: DONE and Artifact: <path>; validates the existing regular Markdown Artifact against the permitted root for the mode (the validated candidate's spec root in --spec mode, docs/ywc-plans/ in agentic goal mode); does not emit or infer Scale. With --non-interactive --suggestions defer it never prompts: it records the deferral and hands off only when a valid DONE artifact already exists from a prior validation pass, otherwise returning bounded NEEDS_CONTEXT.",
+      "anti_behavior": [
+        "Accepting a Result block with Scale, duplicate fields, missing fields, a stale candidate path, or a non-DONE status as a final artifact authority.",
+        "Recovering the path from prose, --output, basename reconstruction, or raw response scanning.",
+        "Persisting raw response or raw tool output in the loop log.",
+        "Prompting the user for the Suggestion decision, or looping on Suggestions, while --non-interactive is set."
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "agentic-ready-rejection-is-bounded",
+      "prompt": "Parse a ywc-spec-ready response with a duplicate Result block and an Artifact outside the validated candidate root.",
+      "expected_output": "Returns BLOCKED with producer name, failed field, candidate count, path digest, and a bounded reason; calls no task generator or other downstream skill and uses no fallback artifact.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "ready-result-exact-matrix",
+      "prompt": "Evaluate ywc-spec-ready's Result parser with one Status/Artifact block, a Scale field, duplicate fields, a stale candidate path, a non-DONE status, and a raw-response-only path.",
+      "input": {"accepted": "## Result with Status: DONE and one existing Markdown Artifact under the validated candidate root", "rejected": ["Scale present", "duplicate Result", "stale path", "Status: NEEDS_CONTEXT", "path only in raw response"]},
+      "expected_status": "DONE for the accepted fixture; BLOCKED for every rejected fixture",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepted only for the exact DONE Status/Artifact pair; rejected otherwise",
+      "expected_output": "Never infers Scale, recovers a path from prose, or forwards a non-DONE or stale artifact."
     }
   ]
 }

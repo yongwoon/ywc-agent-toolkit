@@ -10,44 +10,19 @@ Run before Pre-flight checks:
 test -f .ywc-run-state.json && cat .ywc-run-state.json || echo "no-state"
 ```
 
-If the file exists:
+If the file exists, this is an authoritative checkpoint: `--resume-disposition resume|stop` is required (see the parallel executor's Arguments table). No step below opens an interactive prompt — every branch produces a bounded status.
 
-1. **Executor check** — `executor` must be `"parallel"`. If `"sequential"`, warn: *"State belongs to sequential-executor. Cannot resume as parallel."* Stop until user deletes the file.
-2. **Age check** — if `last_checkpoint` is older than 48 hours, treat as stale. Ask: *"Stale checkpoint found (<date>). Delete and start fresh? [Y/n]"*
+1. **Executor check** — `executor` must be `"parallel"`. If `"sequential"`, return `BLOCKED`: "State belongs to sequential-executor. Cannot resume as parallel." Do not delete the file; the user removes it manually if that is the intended recovery.
+2. **Age check** — if `last_checkpoint` is older than 48 hours, note `stale_checkpoint: true` in the bounded report. This is informational only — it does not change the outcome; the disposition below still decides whether the run resumes or stops.
 3. **Worktree validation** — for each task in the in-progress wave's `pending` list, validate the resolved path using the same precedence as resume-state validation: recorded state root, then project `.worktrees/`, then `CLAUDE.md worktree_root`, then legacy fallback. If a worktree is missing, add a warning: the agent must recreate it in Step 4a before implementation can continue.
-4. **Intent-match guard (run before offering resume)** — compare the current invocation's explicit task specifier/range against the saved run's task set. Prefer the union of `waves[].tasks`; if `waves` is absent or incomplete, fall back to parsing saved `args`.
-   - **No explicit specifier** (auto-detect mode or `--all`) → skip this guard and continue to step 5. Auto-detect reasonably means "continue the interrupted run."
-   - **Matching specifier** → continue to step 5. A match means the requested single task or range is the same as the saved task set, or is a subset of it.
-   - **Mismatching specifier** → treat the checkpoint as stale for the current intent. Do **not** auto-resume, and do not silently discard the state. Surface the divergence and require an explicit choice:
-
-     ```text
-     Stale run-state for a different scope found:
-       Saved run : <saved waves' tasks / args> (last checkpoint <date>, mode <mode>)
-       Requested : <current specifier>
-
-     These do not match. Choose:
-       [1] Resume the saved run — the requested specifier is ignored
-       [2] Discard the saved run and start the requested specifier — first delete
-           .ywc-run-state.json and clean up the saved run's worktrees/branches,
-           then run Pre-flight fresh
-     ```
-
-     Cleanup for option [2] must cover more than the state file: run the worktree audit/prune flow from `ywc-worktrees`, then remove any saved worktree entries and `feature/<task-name>` branches that belong to the discarded run. Do not remove unknown worktrees or branches owned by another active operator.
-
-     This guard prevents a stale run-state from hijacking a freshly requested range, including the common case where an interrupted aggregate run is followed by a different explicit task request.
-5. **Offer resume**:
-
-```text
-Resumable run found:
-  Last checkpoint : <last_checkpoint>
-  Resume at       : Wave <resume_wave>
-  Already merged  : <merged_in_wave> (this wave)
-  Pending         : <pending>
-Resume? [Y/n]
-```
-
-6. If **Y** — skip Pre-flight and jump to Wave `resume_wave`, skipping already-merged tasks.
-7. If **N**, or if the user chooses option [2] from the mismatch branch — delete `.ywc-run-state.json`, clean up saved worktrees/branches that belong to the discarded run, and proceed with a fresh run.
+4. **Intent-match guard** — compare the current invocation's explicit task specifier/range against the saved run's task set. Prefer the union of `waves[].tasks`; if `waves` is absent or incomplete, fall back to parsing saved `args`.
+   - **No explicit specifier** (auto-detect mode or `--all`) → no mismatch; continue to step 5.
+   - **Matching specifier** → no mismatch; continue to step 5. A match means the requested single task or range is the same as the saved task set, or is a subset of it.
+   - **Mismatching specifier** → do not auto-resume the saved run under a silently different scope. Include the divergence in the bounded report (`saved: <saved waves' tasks / args> (last checkpoint <date>, mode <mode>)`, `requested: <current specifier>`) and continue to step 5 — disposition still governs the outcome, and `resume` means resuming the saved run with the requested specifier ignored.
+5. **Resolve disposition** — read `--resume-disposition`:
+   - Missing, or not exactly `resume` / `stop` → `NEEDS_CONTEXT: --resume-disposition`. Never guess and never fall back to an implicit default.
+   - `resume` → skip Pre-flight and jump to Wave `resume_wave`, skipping already-merged tasks. On a scope mismatch (step 4), the requested specifier is ignored in favor of the saved run.
+   - `stop` → leave `.ywc-run-state.json` and every worktree/branch it references unchanged; return `DONE_WITH_CONCERNS` (`resume_stopped`). Discarding the saved run and starting the requested specifier fresh is a separate, explicit follow-up: clean it up via the `ywc-worktrees` audit/prune flow — do not remove unknown worktrees or branches owned by another active operator — then re-invoke with a fresh `--resume-disposition` once no checkpoint remains.
 
 ## State File Format
 
@@ -87,6 +62,14 @@ Initialize after Pre-flight passes. Always update `last_checkpoint` to the curre
 | Step 4e per-task delivery complete (`ywc-finish-branch` returned `DONE` for `--local-merge` / `--draft` / `--aggregate-pr`, or the inline `--per-task-pr` PR merge + Mark Complete path succeeded) | Move task from `pending` to `merged` in the wave entry |
 | Step 4e wave loop complete (all tasks delivered or `BLOCKED`) | Set wave `status` to `completed`; `current_wave` to next wave number |
 | All waves done | `rm -f .ywc-run-state.json` |
+
+## Parallel aggregate transition cache
+
+Parallel resume keeps `.ywc-run-state.json` as the only lifecycle authority. After a wave transition, the executor may write exactly one `.ywc-context-handoff.json` beside that root state through `scripts/transition_safety.py`. The file is a bounded, non-authoritative aggregate cache: worker worktrees never write handoffs, and worker-local output or peer conclusions are not copied into it.
+
+The writer uses a same-directory temporary sibling, fsync, rename, and parent-directory fsync where supported. If replacement fails, the previous valid cache remains and checkpoint, completion, cleanup, and worktree deletion are unchanged. Readers discard missing, malformed, stale, mismatched, private, or worker-local values and reconstruct in this order: authoritative checkpoint, current `README.md`, then `task.md`.
+
+With `--non-interactive`, resume, branch/worktree conflict, CI wait/timeout, and policy decisions are terminal statuses rather than prompts: missing `--resume-disposition` is `NEEDS_CONTEXT`, branch/worktree conflict is `BLOCKED`, and CI timeout is `DONE_WITH_CONCERNS` with `ci_timeout`.
 
 ## Manual Inspection
 

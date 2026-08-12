@@ -24,14 +24,7 @@ category: maintenance
 
 ## Mission
 
-Execute the SAFE-tier deletion worklist handed down by `ywc-refactor-clean`
-Step 3. Owns: per-item grep verification of zero references, scoped test run
-before the deletion (baseline green), surgical removal via the `Edit` tool
-with no adjacent re-formatting, scoped test run after (still green), and a
-single conventional commit per deletion (`chore(cleanup): remove unused
-<symbol> (<tool>)`). The worker reads only the items on its SAFE worklist —
-classification, CAUTION verification, DANGER reporting, and duplicate
-consolidation belong to the parent skill.
+Execute the SAFE-tier deletion worklist handed down by `ywc-refactor-clean` Step 3, owning per-item grep verification, pre/post-deletion test runs, and one conventional commit (`chore(cleanup): remove unused <symbol> (<tool>)`) per surgical deletion made exclusively via the `Edit` tool.
 
 ## Triggers
 
@@ -70,6 +63,10 @@ consolidation belong to the parent skill.
   own SAFE item that the parent skill's next detection pass picks up
 - Use `git add -A` or `git add .` at commit time — always stage by exact
   path so unrelated tracked files do not slip into the cleanup commit
+- Use `Write` for production source or any file outside the parent's
+  artifact directory — `Write` is scoped to per-item evidence files only; if
+  a legitimate need to `Write` a production or out-of-scope file arises,
+  return `DONE_WITH_CONCERNS` to the parent instead of writing it directly
 
 ## Success Criteria
 
@@ -127,3 +124,4 @@ counts (deleted / reclassified / skipped), and the artifact path return.
 | Editing adjacent code while deleting (formatter run, import reorder, comment polish) | Contaminates the bisect target — the commit no longer represents a pure deletion | Stage only the deletion lines; if the editor's autoformat applied unrelated changes, discard them with `git restore --staged --worktree` on the affected lines |
 | Returning a 500-line summary of which items were processed | Saturates the orchestrator's context, defeats fan-out scaling | Write the commit list + per-item evidence to a file under the parent's artifact directory; return only the path + status + counts |
 | Consolidating two near-duplicate helpers because "they're both unused except for each other" | That's a behavior change (call sites would resolve to a different implementation); belongs to `ywc-tdd-ritual` + `ywc-code-gen`, not this worker | Delete each separately under SAFE if both are unused, OR escalate both as a single duplicate-consolidation item to the parent via `DONE_WITH_CONCERNS` |
+| Rewriting a whole file via `Write` instead of deleting the unused symbol via `Edit` | Pollutes the `git bisect` target with a full-file rewrite and violates the Mission's Edit-only deletion rule | Perform surgical deletion with `Edit`; reserve `Write` for per-item evidence files under the parent's artifact directory |

@@ -66,6 +66,64 @@
       "prompt": "Use $ywc-sequential-executor 000004-030 --tasks-dir tasks/ --pr-lang es.",
       "expected_output": "`--pr-lang es`를 supported PR language로 인정하고 Step 5 `ywc-finish-branch` delegation에 `--pr-lang es`를 그대로 전달한다. Downstream PR creation은 같은 값을 `--lang es`로 사용해야 하며, executor는 Spanish를 다른 언어로 변환하지 않는다.",
       "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "Non-interactive sequential resume has a checkpoint whose scope differs and no --resume-disposition.",
+      "expected_output": "Returns bounded `NEEDS_CONTEXT` naming `--resume-disposition`, invokes no executor, emits no prompt, and leaves checkpoint state unchanged.",
+      "files": ["scripts/transition_safety.py", "references/checkpoint-resume.md"]
+    },
+    {
+      "id": 13,
+      "prompt": "Non-interactive sequential resume receives --resume-disposition stop.",
+      "expected_output": "Returns bounded `DONE_WITH_CONCERNS` with `resume_stopped`; it does not mutate or delete authoritative checkpoint state.",
+      "files": ["scripts/transition_safety.py", "references/checkpoint-resume.md"]
+    },
+    {
+      "id": 14,
+      "prompt": "Sequential branch/worktree conflict or CI wait/timeout occurs during a transition.",
+      "expected_output": "Branch/worktree conflict is `BLOCKED`; CI timeout is `DONE_WITH_CONCERNS`; neither branch opens a user prompt or leaves a wait state.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 15,
+      "prompt": "Sequential executor reads missing, invalid, or non-canonical external URL policy.",
+      "expected_output": "Returns `NEEDS_CONTEXT` naming `.codex/settings.local.json:ywDevSequentialExecutor.externalSpecUrls`; it does not create settings, invent a default, or prompt.",
+      "files": ["scripts/transition_safety.py", "references/external-url-policy.md"]
+    },
+    {
+      "id": 16,
+      "prompt": "Sequential handoff is missing, malformed, stale, mismatched, or privacy-violating.",
+      "expected_output": "Reader reconstructs from checkpoint first, then current README/task source; it ignores the cache and never mutates authoritative state or forwards prohibited fields.",
+      "files": ["scripts/transition_safety.py", "references/checkpoint-resume.md"]
+    },
+    {
+      "id": 17,
+      "prompt": "Atomic sequential handoff replacement fails after a valid handoff already exists.",
+      "expected_output": "The old valid handoff remains intact; only the failed temporary sibling may be removed; checkpoint, completion, cleanup, and deletion state are untouched.",
+      "files": ["scripts/transition_safety.py"]
+    },
+    {
+      "id": 18,
+      "prompt": "Sequential handoff recovery is exercised in a run worktree.",
+      "expected_output": "The handoff is adjacent to that worktree's authoritative `.ywc-run-state.json`; no root or worker handoff is created, and identity mismatch returns bounded `NEEDS_CONTEXT`.",
+      "files": ["scripts/transition_safety.py", "references/checkpoint-resume.md"]
+    },
+    {
+      "id": 19,
+      "prompt": "Run the focused transition safety fixtures.",
+      "expected_output": "`python3 codex/skills/ywc-sequential-executor/scripts/test-transition-safety.py` passes all resume, URL-policy, privacy, stale-read, and atomic-preservation assertions.",
+      "files": ["scripts/test-transition-safety.py"]
+    },
+    {
+      "id": 20,
+      "name": "sequential-context-closure-matrix",
+      "prompt": "Run focused sequential fixtures for checkpoint resume, branch/worktree conflict, CI wait/timeout, invalid external URL policy, missing or stale handoff, privacy rejection, and atomic replacement failure.",
+      "input": {"accepted": ["matching checkpoint with resume", "valid handoff adjacent to authoritative state"], "rejected": ["scope mismatch without --resume-disposition", "branch conflict", "invalid URL policy", "malformed/stale/mismatched/private handoff", "failed atomic write"]},
+      "expected_status": "DONE or DONE_WITH_CONCERNS for bounded closure; NEEDS_CONTEXT/BLOCKED for invalid inputs",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepted only for matching validated state; otherwise reconstructed from checkpoint then task source or preserved prior cache",
+      "expected_output": "No fixture emits a user prompt, mutates authoritative checkpoint state, or forwards prohibited content."
     }
   ]
 }

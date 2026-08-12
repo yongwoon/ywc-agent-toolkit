@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architecture Invariants"
+  short_description: "Validate optional architecture boundary contracts"
+  default_prompt: "Use $ywc-architecture-invariants to validate a bounded architecture contract or audit normalized evidence without executing verifier data."

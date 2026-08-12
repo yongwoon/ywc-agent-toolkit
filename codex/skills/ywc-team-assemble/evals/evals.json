@@ -18,6 +18,40 @@
       "prompt": "Delegate implementation that needs production credentials.",
       "expected_output": "Treats secrets/live credentials as out of scope unless explicitly approved and returns BLOCKED or NEEDS_CONTEXT when required.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Assemble an independent reviewer and a dependent role from three validated Claims and cited artifacts.",
+      "expected_output": "Builds separate allowlisted payloads: the independent reviewer receives included/excluded scope and artifact paths only, while the dependent role receives Claims plus cited artifact paths only; neither receives peer conclusions, recommendations, transcript, or raw content.",
+      "files": ["references/prompt-templates.md"]
+    },
+    {
+      "id": 5,
+      "prompt": "Assemble a team with four Claims, one uncited Claim, and a Claim containing raw-response content.",
+      "expected_output": "Rejects the complete payload as BLOCKED before role projection: Claims is capped at three, every Claim needs valid project-relative file:line or artifact evidence, and forbidden privacy fields are rejected without echoing their values.",
+      "files": ["references/prompt-templates.md"]
+    },
+    {
+      "id": 6,
+      "prompt": "Assemble a team where the independent reviewer would benefit from a peer's conclusion or recommendation.",
+      "expected_output": "Refuses to forward peer claims, conclusions, recommendations, transcript, or raw output to the independent reviewer and states that the reviewer must form an independent finding.",
+      "files": ["SKILL.md", "references/prompt-templates.md"]
+    },
+    {
+      "id": 7,
+      "prompt": "Assemble a dependent role with an uncited artifact and a raw tool output field nested in metadata.",
+      "expected_output": "Rejects the payload terminally as BLOCKED for recursive privacy validation or missing citation; it does not redact, summarize, retry, or forward the invalid payload.",
+      "files": ["references/prompt-templates.md"]
+    },
+    {
+      "id": 8,
+      "name": "claims-isolation-privacy-matrix",
+      "prompt": "Project team payloads from three cited Claims, then reject four Claims, an uncited Claim, peer conclusions in an independent reviewer payload, and each recursively nested forbidden privacy field.",
+      "input": {"accepted": "At most three statement-plus-evidence Claims with project-relative file:line or artifact citations", "rejected": ["fourth Claim", "uncited Claim", "peer conclusion for independent reviewer", "transcript", "chain_of_thought", "generated_source", "full_diff", "raw_tool_output", "raw_response", "tool_output"], "rejected_key_variants": ["Raw-Tool-Output", "RAW_TOOL_OUTPUT", "rawToolOutput", "Raw Tool Output", "Full-Diff", "FULL_DIFF", "Chain-Of-Thought", "CHAIN_OF_THOUGHT", "Generated-Source", "Tool-Output", "TRANSCRIPT"]},
+      "expected_status": "DONE for the cited three-Claim projection; BLOCKED for every cap, isolation, citation, or privacy violation, including every entry of rejected_key_variants regardless of letter case or separator style",
+      "expected_downstream_calls": {"accepted": 2, "rejected": 0},
+      "expected_handoff": "independent payload accepts scope/artifacts only; dependent payload accepts Claims and cited artifacts only; invalid payloads are rejected",
+      "expected_output": "Rejects recursively without echoing forbidden values and never redacts, summarizes, retries, or forwards invalid content. Each rejected_key_variant is normalized (case-folded, separators collapsed) to its canonical forbidden key, is BLOCKED with zero downstream calls, and its value is never echoed in the diagnostic; the diagnostic names only the field and the bounded rule."
     }
   ]
 }

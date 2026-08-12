@@ -60,15 +60,22 @@ Parse `$ARGUMENTS` for the following parameters:
 | `--aggregate-pr` | flag | | Deliver the whole range as **one work branch + one PR**: each task is local-merged onto a `work/<name>` branch sequentially, then a single PR delivers the group to the base branch (ready → CI → bot → merge). The real base is never mutated until the final merge. See [references/aggregate-pr.md](./references/aggregate-pr.md) |
 | `--group-name` | `--group-name <name>` | `--group-name project-health` | Names the work branch (`work/<name>`). `--aggregate-pr` only; defaults to `work/<base-branch>-<timestamp>` when omitted |
 | `--worktree` | flag | | Run the **whole range inside one isolated git worktree** so the main checkout stays free. Run-level isolation — tasks still run strictly sequentially. **Independent flag**, not part of the mutual-exclusion group: combines with all four delivery modes and `--review`. Full lifecycle in [references/worktree-run.md](./references/worktree-run.md). |
+| `--non-interactive` | flag | | Suppress **every** user prompt in this skill — no decision point may still ask, and no answer may be assumed except where a deterministic outcome is named below. Each prompt is replaced by a fixed result (see [references/non-interactive-mode.md](./references/non-interactive-mode.md)): flag conflict → `NEEDS_CONTEXT`; feature-branch continuation → `BLOCKED`; resume offer → `NEEDS_CONTEXT`; [External URL Policy](#external-url-policy) with no persisted (or a malformed) decision → apply `deny` without asking and do **not** persist it, this run only. Also forwarded to the auto-invoked implementation review in Step 4.5 (see that section). **Independent flag**, not a fifth member of the mutual-exclusion group: combines with any one delivery mode plus `--review`, `--dry-run`, and `--worktree`. |
 
-**Flag conflicts**: `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want. The reason is that `--local-merge` skips PRs entirely while the others assume a PR exists — silently picking one would surprise the user. `--group-name` is valid only with `--aggregate-pr`. `--worktree` is **orthogonal** to this group — it is not a fifth member and may combine with any one delivery mode (§A8 S4); see [references/worktree-run.md](./references/worktree-run.md).
+**Flag conflicts**: `--local-merge`, `--draft`, `--skip-ci-wait`, and `--aggregate-pr` are mutually exclusive. If the user passes more than one, stop **before any branch or implementation work** and ask which mode they actually want — or, with `--non-interactive`, do not ask: stop at the same point and return `NEEDS_CONTEXT` naming the conflicting flags. The reason is that `--local-merge` skips PRs entirely while the others assume a PR exists — silently picking one would surprise the user. `--group-name` is valid only with `--aggregate-pr`. `--worktree` is **orthogonal** to this group — it is not a fifth member and may combine with any one delivery mode (§A8 S4); see [references/worktree-run.md](./references/worktree-run.md). `--non-interactive` is likewise **orthogonal** to this group — it is not a fifth member either; it combines with any one delivery mode plus `--review`, `--dry-run`, and `--worktree`.
 
 Example:
 ```text
 /ywc-sequential-executor 000001-010 --local-merge --draft
 # → Stop. Report: "--local-merge and --draft are mutually exclusive
 #   (local-merge produces no PR; draft requires one). Which mode did you want?"
+#   With --non-interactive: same stop point, no ask — Completion Status: NEEDS_CONTEXT
+#   naming the conflicting flags.
 ```
+
+### Non-Interactive Mode
+
+> **Action required when `--non-interactive` is set**: Read [references/non-interactive-mode.md](./references/non-interactive-mode.md). It is the complete prompt map — every prompt this skill can issue, paired with the exact deterministic status that replaces it. `--non-interactive` is a total rule: no decision point may still ask, and no answer may be assumed except the one row that documents `deny`. A new decision point needs a row there before it may prompt.
 
 `--review` can be combined with any delivery mode flag.
 
@@ -95,12 +102,12 @@ Do **not** create branches, modify files, or run any git commands beyond read-on
 
 ## Pre-flight
 
-> **Resume check first**: Before running the checks below, look for `.ywc-run-state.json` in the project root. If it exists, follow the **Resume Detection** procedure in [Checkpoint and Resume](#checkpoint-and-resume). If the user confirms resume, skip Pre-flight and jump to the saved task and step. If the user declines or there is no state file, proceed with the checks below. **Intent-match guard (do not skip)**: if this invocation specifies an explicit range/task that does **not** match the saved run's `range`, never silently resume — surface the divergence and require an explicit choice (resume the saved run vs discard it and start the new range), per the guard in [references/checkpoint-resume.md](./references/checkpoint-resume.md). A new range hijacked by a stale interrupted run is the failure this guard prevents.
+> **Resume check first**: Before running the checks below, look for `.ywc-run-state.json` in the project root. If it exists, follow the **Resume Detection** procedure in [Checkpoint and Resume](#checkpoint-and-resume). If the user confirms resume, skip Pre-flight and jump to the saved task and step. If the user declines or there is no state file, proceed with the checks below. **Intent-match guard (do not skip)**: if this invocation specifies an explicit range/task that does **not** match the saved run's `range`, never silently resume — surface the divergence and require an explicit choice (resume the saved run vs discard it and start the new range), per the guard in [references/checkpoint-resume.md](./references/checkpoint-resume.md). A new range hijacked by a stale interrupted run is the failure this guard prevents. **With `--non-interactive`**, neither the resume offer nor the guard's choice may be issued or assumed: return `NEEDS_CONTEXT` reporting the saved run's scope, task, and step, and leave `.ywc-run-state.json` untouched.
 
 Before starting execution, verify these conditions:
 
 1. **Clean working tree** — `git status --porcelain` must be empty. If dirty, warn the user and stop.
-2. **On base branch** — Should be on main/develop/master. If on a feature branch, warn and ask whether to continue.
+2. **On base branch** — Should be on main/develop/master. If on a feature branch, warn and ask whether to continue. With `--non-interactive`, do not ask: report `BLOCKED` with the current branch and the detected base branch. Continuing on an unexpected branch would silently base every task in the range on unrelated work, so it is not a decision the executor may make for the user.
 3. **gh CLI ready** — `gh auth status` must succeed.
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
@@ -116,9 +123,13 @@ grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null \
 
 Tasks generated by `ywc-task-generator` may list external URLs in `Spec Reference > Primary Sources`. Fetching external content mid-task is unpredictable (network, rate limits, SSO walls) and is also a privacy decision the user must make once per project.
 
-**Procedure**: at Pre-flight, check `.claude/settings.local.json` for `taskExecutor.externalSpecUrls`. If present, use it silently. If missing, ask the user **once** to choose `deny` (default), `allow`, or `allowlist`, then persist the decision under the `taskExecutor` key (preserving every other key in the file). During Step 1b enforcement, apply the chosen policy: `deny` skips all `http(s)://` URLs, `allow` fetches everything, `allowlist` fetches only matching host+path prefixes.
+> **Action required**: [references/external-url-policy.md](./references/external-url-policy.md) is the **complete** procedure — every branch, the jsonc schema, the exact prompt wording, the Completion Report lines, and the rationale. Read it at Pre-flight and follow it; the summary below is an index into it, not a second source of truth.
 
-**For full procedure, jsonc schema, exact prompt wording, and rationale**, see [references/external-url-policy.md](./references/external-url-policy.md).
+**Procedure summary**: at Pre-flight, check `.claude/settings.local.json` for `taskExecutor.externalSpecUrls`, then take exactly one branch: value is `deny`/`allow`/`allowlist` → use it silently (reference §2); key absent and `--non-interactive` **not** set → ask once, persist under `taskExecutor`, preserving every other key (reference §3a+§4); key absent and `--non-interactive` set → apply `deny` for this run, do **not** persist (reference §3b); key present but malformed → treat as absent, then apply the branch above for the active mode, never coercing or overwriting the stored value (reference §3c).
+
+**Never echo a malformed value.** It can itself be a credential-bearing URL or a pasted token, and the Completion Report travels into PRs, CI logs, and chat. The report line is `External URL policy: malformed value (redacted) — treated as absent for this run` — safe type info only if more detail is genuinely needed (reference §3c).
+
+During Step 1b enforcement, apply the chosen policy: `deny` skips all `http(s)://` URLs, `allow` fetches everything, `allowlist` fetches only matching host+path prefixes.
 
 ## Definition of Done
 
@@ -334,11 +345,11 @@ If any layer fails: **fix the code, never the test** — no `skip`/`xit`/`.only`
 
 ### Step 4.5: Implementation Review (optional)
 
-If `--review` is set, invoke `/ywc-impl-review` on the current feature branch after all verification layers in Step 4 pass. The review runs before PR creation (Step 5) or local merge (Step 6a), so any issues it surfaces can be fixed while still on the feature branch.
+If `--review` is set, invoke `/ywc-impl-review` on the current feature branch after all verification layers in Step 4 pass — forward `--non-interactive` to that invocation when this skill itself was invoked with `--non-interactive`. The review runs before PR creation (Step 5) or local merge (Step 6a), so any issues it surfaces can be fixed while still on the feature branch.
 
 This is optional — it adds time and tokens but catches design issues, naming problems, and patterns that automated tests miss. It pairs especially well with `--local-merge`, where no remote CI runs and this review becomes the last quality gate before code reaches the base branch.
 
-**Critical-path auto-escalation (forced, even without `--review`).** Gray-box review is the default, but it is insufficient for critical modules. When the task's declared Ownership matches a critical path (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries — full list and `CLAUDE.md` `critical_paths` override in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4), invoke `/ywc-impl-review` **and** `/ywc-security-audit` on the feature branch before Step 5 delivery, regardless of whether `--review` was passed. Detection is on the task's Ownership (known before implementation). Non-critical tasks keep the default gray-box verification.
+**Critical-path auto-escalation (forced, even without `--review`).** Gray-box review is the default, but it is insufficient for critical modules. When the task's declared Ownership matches a critical path (auth / authz / session / token / password / secret / crypto / payment / billing / finance / PII / external-input boundaries — full list and `CLAUDE.md` `critical_paths` override in [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4), invoke `/ywc-impl-review` **and** `/ywc-security-audit` on the feature branch before Step 5 delivery, regardless of whether `--review` was passed. Forward `--non-interactive` to the `/ywc-impl-review` call when this skill itself was invoked with `--non-interactive` — `/ywc-security-audit` has no equivalent flag and does not receive it (a known gap, not an oversight to fix silently here). Detection is on the task's Ownership (known before implementation). Non-critical tasks keep the default gray-box verification.
 
 The review applies the [recurring real-world defects catalog](../ywc-impl-review/references/recurring-defects.md) — the classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation / fail-fast, HTTP status, test fidelity) that PR-review bots such as CodeRabbit flag most. In PR-based modes (`normal-pr`, `--draft`, `--skip-ci-wait`), catching these *before* the PR opens directly reduces the bot-review round-trips handled later by `ywc-handle-pr-reviews` — the issue is fixed on the feature branch instead of in a follow-up review cycle.
 
@@ -484,7 +495,7 @@ When `--pr-lang` is not specified, detect the language in this priority:
 
 ## Error Handling
 
-Merge conflict during pull → stop and ask the user to resolve manually. PR-vs-base conflict at delivery → `ywc-finish-branch`'s Merge-Readiness Gate (Step 4 final, per [../references/pr-conflict-resolution.md](../references/pr-conflict-resolution.md)) handles it: a merely-behind branch is auto-updated and CI re-verified; a real textual conflict returns `BLOCKED` for human resolution. CI timeout (>30 min) → report status and ask whether to continue waiting. CI failure → `ywc-finish-branch` Step 4 diagnoses the failing checks, categorizes the failure (lint/format, type, test, build), and applies up to 2 fix attempts automatically; returns `BLOCKED` only when fixes are exhausted — do not stop at the first CI failure. `gh` CLI not authenticated → provide setup instructions and stop. Task not found → list available tasks and ask the user to specify. Dirty working tree → show changed files and ask the user to commit or stash.
+Merge conflict during pull → stop and ask the user to resolve manually. PR-vs-base conflict at delivery → `ywc-finish-branch`'s Merge-Readiness Gate (Step 4 final, per [../references/pr-conflict-resolution.md](../references/pr-conflict-resolution.md)) handles it: a merely-behind branch is auto-updated and CI re-verified; a real textual conflict returns `BLOCKED` for human resolution. CI timeout (>30 min) → report status and ask whether to continue waiting. CI failure → `ywc-finish-branch` Step 4 diagnoses the failing checks, categorizes the failure (lint/format, type, test, build), and applies up to 2 fix attempts automatically; returns `BLOCKED` only when fixes are exhausted — do not stop at the first CI failure. `gh` CLI not authenticated → provide setup instructions and stop. Task not found → list available tasks and ask the user to specify. Dirty working tree → show changed files and ask the user to commit or stash. **With `--non-interactive`**, every ask above becomes its terminal status instead — see [references/non-interactive-mode.md](./references/non-interactive-mode.md) for the exact mapping.
 
 ## Notes
 

@@ -74,3 +74,7 @@
 
 - [韩语（默认）](./README.md)
 - [日语](./README.ja.md)
+
+## Agentic artifact profile
+
+`--artifact-profile agentic` 不能与 `--output` 同时使用。Small 使用 `docs/ywc-plans/YYYYMMDD-small_<slug>.md`，Medium/Large 使用 `docs/ywc-plans/YYYYMMDD-<slug>.md`。成功时只返回包含 `Status`、`Scale` 和 `Artifact` 的一个 Result 块；Artifact 必须是 `docs/ywc-plans/` 内已存在的普通仓库相对 Markdown 文件。

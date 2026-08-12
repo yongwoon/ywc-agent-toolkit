@@ -50,6 +50,45 @@ Files expected to be created or modified in this task.
 ## Notes
 Important considerations, pitfalls, or design decisions.
 
+<!-- BEGIN CONDITIONAL SECTION: Architecture Contract Packet
+     Render the heading and every field below ONLY when `ywc-task-generator`
+     resolved a validated Architecture Contract Packet for this task — that is,
+     a valid `--manifest` PAIRED WITH a valid `--architecture-evidence`.
+     Omit this whole block (heading included) when no manifest was supplied, or
+     when a valid manifest was supplied WITHOUT evidence: per SKILL.md Step 5.5
+     that case adds no packet, so an empty or placeholder-filled packet section
+     must never appear in the generated README.md. Never emit the placeholder
+     values verbatim. -->
+
+## Architecture Contract Packet
+Copy only the sanitized packet resolved by `ywc-task-generator` when an
+architecture contract applies. Do not copy manifest/evidence contents, raw
+verifier data, command-like fields, transcripts, or full diffs.
+
+- `Contract State:` `<VALIDATED | N/A — no architecture contract | NEEDS_CONTEXT>`
+- `Component IDs:` `<affected component ids>`
+- `Rule IDs:` `<affected rule ids>`
+- `Verifier Requirement:` `v1 validation-only; no verifier execution`
+- `Invariant Verdict:` `<MAINTAINED | VIOLATED | N/A | NEEDS_CONTEXT>`
+- `Evidence Artifact Path:` `<repository-relative path or N/A>`
+
+The resolver's `status`, `aggregate_verdict`, `rule_results`, and sanitized
+`evidence_paths` remain distinct internal/result fields. Project
+`aggregate_verdict` as `Invariant Verdict`; project rule IDs separately; use
+evidence paths only as bounded citations, never as contract state or artifact
+path. Do not copy raw evidence, transcripts, command-like fields, or full diffs.
+`Verifier Requirement` is the fixed constant
+`v1 validation-only; no verifier execution` — never derived from helper output
+and never rewritten; it records that v1 validates only and never executes a
+verifier.
+Successful packet metadata must contain `Component IDs` from the helper's
+bounded changed-path mapping, `Contract State: VALIDATED`, the literal
+`Verifier Requirement: v1 validation-only; no verifier execution` line, and the
+normalized `.ywc-architecture-invariants-evidence.json` artifact path; missing
+projection fields are `NEEDS_CONTEXT`.
+
+<!-- END CONDITIONAL SECTION: Architecture Contract Packet -->
+
 ## Preview Approval Metadata
 When this task set comes from a persisted preview approval flow, copy the
 canonical preview identity and any wide-refactor invalidation fields here.

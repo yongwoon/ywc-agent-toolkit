@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+* **ywc-architecture-invariants:** distribute the optional architecture contract validator and normalized-evidence audit skill.
+
+## [1.32.0] (2026-08-12)
+
+### Added
+
+* **context safety:** add executable evaluation coverage for verified artifact authority, non-interactive closure, context handoff, claim isolation, and privacy boundaries across the affected Codex skills.
+
+### Changed
+
+* **Codex distribution:** synchronize the eight affected skills, release metadata, and generated plugin bundle for the context-safety contract.
+
 ## [1.31.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.30.1...v1.31.0) (2026-07-30)
 
 

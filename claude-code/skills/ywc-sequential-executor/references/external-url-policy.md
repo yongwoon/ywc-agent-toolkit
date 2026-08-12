@@ -1,7 +1,9 @@
 # External URL Policy (Spec Reference)
 
 > Referenced from: SKILL.md → Pre-flight (item 5)
-> Read this when: Pre-flight detects no existing `taskExecutor.externalSpecUrls` decision in `.claude/settings.local.json`, OR when applying the policy in Step 1b's Spec Reference Loading.
+> Read this when: Pre-flight reaches the External URL Policy check for any reason — decision present, absent, or malformed — or when applying the policy in Step 1b's Spec Reference Loading.
+>
+> This document is the **canonical, complete** procedure. SKILL.md carries only a branch-index summary; when the two appear to differ, this file wins and SKILL.md is the bug.
 
 ## Why a separate decision is needed
 
@@ -35,11 +37,26 @@ Read `.claude/settings.local.json`. Look for a `taskExecutor.externalSpecUrls` k
 }
 ```
 
-### 2. If the key exists, use it silently
+### 2. If the key exists and holds a valid value, use it silently
 
-Do **not** re-prompt the user. The whole point of persistence is to avoid re-asking.
+Valid values are exactly `deny`, `allow`, and `allowlist`. Do **not** re-prompt the
+user. The whole point of persistence is to avoid re-asking.
 
-### 3. If the key is missing, ask the user **once**
+If the key exists but its value is **not** one of the three, go to §3c
+(malformed value) instead — a malformed value is never silently coerced into a
+valid one.
+
+### 3. If the key is missing, resolve it without inventing state
+
+Which branch applies depends on `--non-interactive`:
+
+| Situation | Branch |
+|---|---|
+| Key absent, `--non-interactive` **not** set | §3a — ask once, then persist |
+| Key absent, `--non-interactive` set | §3b — assume `deny`, do not persist |
+| Key present but malformed | §3c — treat as absent, then apply §3a or §3b by mode |
+
+### 3a. Key absent, interactive — ask the user **once**
 
 Use a concrete, answerable question:
 
@@ -50,9 +67,50 @@ Use a concrete, answerable question:
 >
 > I'll save your answer to `.claude/settings.local.json` so I don't have to ask again."
 
-### 4. Persist the decision
+### 3b. Key absent, `--non-interactive` set — assume `deny`, do not persist
+
+Apply `deny` for this run without asking, and do **not** write the decision to
+`.claude/settings.local.json`. The assumption holds for this run only, so the
+next interactive run still gets to make the real project-level decision. Log
+skipped URLs exactly as the persisted `deny` policy does (§5).
+
+Record this line in the Completion Report:
+
+```text
+External URL policy: deny (assumed — non-interactive, not persisted)
+```
+
+With `--dry-run`, the same fact surfaces as one line in the plan output and
+changes nothing else.
+
+### 3c. Key present but malformed — treat as absent for this run
+
+A value that is not `deny` / `allow` / `allowlist` is malformed. Never coerce it
+to a valid value, and never overwrite or persist over it automatically.
+
+- **Interactive**: first announce that the existing value is invalid and is being
+  replaced, then follow §3a (ask once, persist the answer).
+- **`--non-interactive`**: apply `deny` for this run only, without persisting
+  (§3b behavior).
+
+Both modes record this line in the Completion Report:
+
+```text
+External URL policy: malformed value (redacted) — treated as absent for this run
+```
+
+> **Never echo the malformed value.** A malformed config value can itself be a
+> credential-bearing URL or a pasted token, and the Completion Report is copied
+> into PRs, CI logs, and chat. Report only that it was malformed. If more detail
+> is genuinely needed for debugging, record safe type information only — e.g.
+> `malformed value (redacted; type: string, length: 87)` — never the content, and
+> never a prefix or suffix of it.
+
+### 4. Persist the decision (§3a only)
 
 Write the decision back to `.claude/settings.local.json` under the `taskExecutor` key. **Preserve every other key** in the file (especially `permissions`). If the file does not exist, create it with both `permissions: { "allow": [], "deny": [], "ask": [] }` and the `taskExecutor` key.
+
+§3b and §3c-non-interactive **never** reach this step — an assumed policy is not a decision, and writing it would silently answer a question the user was never asked.
 
 ### 5. Enforce the policy in Step 1b (Spec Reference Loading)
 

@@ -18,6 +18,7 @@ __pycache__/
 docs/ywc-plans
 tasks/
 .ywc-run-state.json
+.ywc-architecture-invariants-evidence.json
 .codex/settings.local.json
 .ywc-learnings.jsonl
 .worktrees/

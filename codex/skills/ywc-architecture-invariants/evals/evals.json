@@ -1,0 +1,18 @@
+{
+  "skill_name": "ywc-architecture-invariants",
+  "evals": [
+    {"id": 1, "prompt": "Run the closed-unknown-fields fixture.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "closed-unknown-fields", "test_method": "test_closed_unknown_fields"}, "expected_behavior": ["Returns NEEDS_CONTEXT."]},
+    {"id": 2, "prompt": "Run explicit-manifest-no-fallback.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "explicit-manifest-no-fallback", "test_method": "test_explicit_manifest_no_fallback"}, "expected_behavior": ["Returns NEEDS_CONTEXT without discovery fallback."]},
+    {"id": 3, "prompt": "Run glob-zero-segment.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "glob-zero-segment", "test_method": "test_glob_zero_segment"}, "expected_behavior": ["Terminal ** matches zero remaining path segments."]},
+    {"id": 4, "prompt": "Run glob-single-segment.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "glob-single-segment", "test_method": "test_glob_single_segment"}, "expected_behavior": ["* matches exactly one path segment."]},
+    {"id": 5, "prompt": "Run glob-terminal-multi-segment.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "glob-terminal-multi-segment", "test_method": "test_glob_terminal_multi_segment"}, "expected_behavior": ["Terminal ** matches multiple remaining path segments."]},
+    {"id": 6, "prompt": "Run ambiguous-non-shared-mapping.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "ambiguous-non-shared-mapping", "test_method": "test_ambiguous_non_shared_mapping"}, "expected_behavior": ["Returns NEEDS_CONTEXT."]},
+    {"id": 7, "prompt": "Run scope-digest-mismatch.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "scope-digest-mismatch", "test_method": "test_scope_digest_mismatch"}, "expected_behavior": ["Returns NEEDS_CONTEXT."]},
+    {"id": 8, "prompt": "Run incomplete-rule-coverage.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "incomplete-rule-coverage", "test_method": "test_incomplete_rule_coverage"}, "expected_behavior": ["Returns NEEDS_CONTEXT."]},
+    {"id": 9, "prompt": "Run forbid-observed-edge.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "forbid-observed-edge", "test_method": "test_forbid_observed_edge_is_violated"}, "expected_behavior": ["Returns VIOLATED."]},
+    {"id": 10, "prompt": "Run allow-observed-edge.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "allow-observed-edge", "test_method": "test_allow_observed_edge_is_maintained"}, "expected_behavior": ["Returns MAINTAINED."]},
+    {"id": 11, "prompt": "Run verdict-precedence.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "verdict-precedence", "test_method": "test_verdict_precedence"}, "expected_behavior": ["VIOLATED takes precedence over other verdicts."]},
+    {"id": 12, "prompt": "Run no-manifest-fallback.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "no-manifest-fallback", "test_method": "test_no_manifest_fallback"}, "expected_behavior": ["Returns N/A without changing existing behavior."]},
+    {"id": 13, "prompt": "Inspect zero-child-processes across validate, audit, and draft.", "files": ["tests/architecture_invariants_test.py"], "context": {"fixture_id": "zero-child-processes", "test_method": "test_zero_child_processes"}, "expected_behavior": ["Launches zero child processes for valid and adversarial inputs."]}
+  ]
+}

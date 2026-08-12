@@ -51,9 +51,11 @@
 | `--local-merge` | 完全跳过 PR — 将功能分支本地合并到基础分支并推送（步骤 4 验证仍运行） | |
 | `--base-branch <branch>` | 基础分支覆盖（默认：自动检测） | `--base-branch develop` |
 | `--dry-run` | 显示执行计划（任务顺序、依赖、模式）但不实际执行 | |
+| `--non-interactive` | 跳过本次运行的交互式提示。当 External URL Policy 没有已保存的决定时，不询问直接应用 `deny`，且不保存该决定（仅限本次运行）。同时会转发给步骤 4.5 中自动调用的 `/ywc-impl-review`。独立 flag，可与所有交付模式及 `--review`、`--dry-run` 组合 | `--non-interactive` |
 
 > `--local-merge`、`--draft` 和 `--skip-ci-wait` 互斥。如果传入多个，Skill 会停止并询问您的意图。
 > `--local-merge` **不运行远程 CI**，因此合并的唯一安全网是步骤 4 中的本地验证（lint/typecheck/test）。敏感变更请避免使用。
+> `--non-interactive` 与上述互斥组**独立**（不是第五个成员）。
 
 ## 执行周期
 
@@ -85,7 +87,7 @@
 步骤 1：依赖验证与规范加载
   └─ 验证所有依赖任务存在于 tasks/completed/ 中
   └─ 加载 README.md 的规范引用（主要来源 / 摘要 / 范围外）
-  └─ 外部 URL 遵循 .claude/settings.local.json 中的 taskExecutor.externalSpecUrls 策略
+  └─ 外部 URL 遵循 .claude/settings.local.json 中的 taskExecutor.externalSpecUrls 策略（未保存且指定 `--non-interactive` 时，不保存直接应用 deny）
 
 步骤 2：分支创建（每个任务运行 — 范围模式下从不跳过）
   └─ （普通/local-merge）git checkout <base> && git pull && git checkout -b feature/<task-name>

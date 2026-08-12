@@ -14,8 +14,8 @@ Run this check once during Pre-flight, before touching any task.
 
 1. Read `.codex/settings.local.json`.
 2. Look for `ywDevSequentialExecutor.externalSpecUrls`.
-3. If it exists, use it silently.
-4. If it does not exist, ask the user once and persist the answer under `ywDevSequentialExecutor`.
+3. If it exists and validates, use it silently.
+4. If it does not exist or does not validate, return `NEEDS_CONTEXT` and do not create or modify configuration.
 
 Expected shape:
 
@@ -25,28 +25,24 @@ Expected shape:
   "ywDevSequentialExecutor": {
     "externalSpecUrls": "deny",
     "externalSpecUrlAllowlist": [
-      "github.com",
-      "figma.com/file"
+      "https://github.com",
+      "https://figma.com"
     ],
     "decidedAt": "2026-04-05"
   }
 }
 ```
 
-If the file does not exist, create it with both the existing `permissions` structure and the `ywDevSequentialExecutor` key.
-
-## Prompt when no policy exists
-
-Ask once with a concrete choice:
-
-> Some tasks may list external URLs in their Spec Reference. How should I handle them: `deny` (recommended), `allow`, or `allowlist`? I will save the choice to `.codex/settings.local.json` so I do not need to ask again.
+The non-interactive contract names the missing input precisely:
+`NEEDS_CONTEXT: .codex/settings.local.json:ywDevSequentialExecutor.externalSpecUrls`.
+The executor must not prompt, invent `deny`, or write the missing setting.
 
 ## Enforcement during Step 1
 
-- `deny`: ignore external URLs, rely on project-relative paths and the Summary field, and log skipped URLs.
-- `allow`: fetch every external URL. Treat network or auth failures as warnings, not fatal errors.
-- `allowlist`: fetch only URLs whose host or host-plus-path prefix matches an allowed entry. Skip the rest and log them.
+- `deny`: ignore external URLs, rely on project-relative paths and record only a bounded policy status.
+- `allow`: fetch every external URL; network or auth failures become bounded terminal status, not a prompt.
+- `allowlist`: require a non-empty list of canonical HTTPS origins and fetch only matching URLs. Invalid or missing profiles return `NEEDS_CONTEXT`.
 
 ## Rationale
 
-Persisting the choice per project avoids repeated prompts that would break range execution while still keeping the decision explicit and auditable.
+Reading the existing profile once per project keeps task ranges deterministic while preserving an explicit, auditable decision boundary.
