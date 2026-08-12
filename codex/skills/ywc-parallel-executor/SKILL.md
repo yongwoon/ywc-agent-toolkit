@@ -53,14 +53,18 @@ When tempted to skip a step, check this table first:
 | `--per-task-pr` | flag | | Per task: create the PR, wait for CI, handle bot reviews, then **merge the PR** (`gh pr merge --delete-branch`), sync base, and mark complete — the full lifecycle, mirroring `ywc-sequential-executor`'s default `normal-pr` mode |
 | `--aggregate-pr` | flag | | Whole invocation → **one** branch + **one** PR. Tasks still run in parallel and accumulate onto a single aggregate branch, then the end-of-run PR is marked ready, CI-verified, bot-reviewed, and **merged**. The full-lifecycle twin of `--draft`. See [references/aggregate-pr.md](references/aggregate-pr.md) |
 | `--group-name` | `--group-name <name>` | `--group-name payments` | Names the aggregate branch (`aggregate/<name>`) and disambiguates concurrent groups. `--aggregate-pr` only; defaults to `aggregate/<base-branch>-<timestamp>` when omitted |
-| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for every PR mode; pass explicit values unchanged to `$ywc-create-pr --lang <pr-lang>`. If omitted or `auto`, resolve through [language-resolution.md](../references/language-resolution.md); if no tier resolves a language, ask the user before invoking the selected executor. |
+| `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang es` | Preferred PR title/body language for every PR mode; pass explicit values unchanged to `$ywc-create-pr --lang <pr-lang>`. If omitted or `auto`, resolve through [language-resolution.md](../references/language-resolution.md); if no tier resolves a language, interactive runs may ask, while non-interactive runs return `NEEDS_CONTEXT: --pr-lang`. |
+| `--non-interactive` | flag | | Never wait for approval, progress, resume, conflict, CI, or URL-policy input; return a bounded terminal status instead. |
+| `--resume-disposition` | `resume\|stop` | `--resume-disposition resume` | Required when an authoritative checkpoint exists and the invocation scope is unresolved or differs. Missing input returns `NEEDS_CONTEXT`; `stop` leaves checkpoint state unchanged. |
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no worktree audit lines, no mode explanations |
 
 `--review` can be combined with other flags.
 
-**Flag conflicts**: `--local-merge`, `--draft`, `--per-task-pr`, and `--aggregate-pr` are mutually exclusive. If multiple are specified, ask for clarification before execution. `--group-name` is valid only with `--aggregate-pr`.
+**Flag conflicts**: `--local-merge`, `--draft`, `--per-task-pr`, and `--aggregate-pr` are mutually exclusive. Interactive runs may ask for clarification; non-interactive runs return `NEEDS_CONTEXT` naming the conflicting mode flags. `--group-name` is valid only with `--aggregate-pr`.
 
-**Default behavior**: When none of `--local-merge`, `--draft`, `--per-task-pr`, or `--aggregate-pr` is specified, ask the user which mode to use before execution. Do not silently default to any mode. Present: `--local-merge` (direct merge/push), `--draft` (single draft PR left open), `--per-task-pr` (full lifecycle PR per task), or `--aggregate-pr` (one full-lifecycle PR for the whole invocation).
+**Default behavior**: When none of `--local-merge`, `--draft`, `--per-task-pr`, or `--aggregate-pr` is specified, interactive runs may ask which mode to use; non-interactive runs return `NEEDS_CONTEXT: --local-merge|--draft|--per-task-pr|--aggregate-pr`. Do not silently default to any mode. Present: `--local-merge` (direct merge/push), `--draft` (single draft PR left open), `--per-task-pr` (full lifecycle PR per task), or `--aggregate-pr` (one full-lifecycle PR for the whole invocation).
+
+**Non-interactive transition contract**: With `--non-interactive`, no branch/worktree conflict, CI wait, resume, or policy branch may open a prompt. Return only `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT` plus bounded reason/missing identifiers. Branch/worktree conflict is `BLOCKED`; CI timeout is `DONE_WITH_CONCERNS` with `ci_timeout`; missing checkpoint disposition is `NEEDS_CONTEXT: --resume-disposition`. Do not invent a mode, disposition, URL policy, or progress decision.
 
 ## Definition of Done
 
@@ -138,6 +142,12 @@ The fix is a one-time Codex command-approval setup that pre-authorizes a small s
 ## Checkpoint and Resume
 
 The executor writes `.ywc-run-state.json` in the project root after each major wave event. If a multi-wave run is interrupted, resume from the last checkpoint: completed waves are skipped and the in-progress wave restarts with only its remaining pending tasks. For the resume procedure, on-disk state schema, checkpoint event table, and manual inspection commands, read [references/checkpoint-resume.md](references/checkpoint-resume.md).
+
+## Context Handoff
+
+After a wave transition, write exactly one non-authoritative `.ywc-context-handoff.json` beside the root `.ywc-run-state.json` using `scripts/transition_safety.py`. This is an aggregate reconstruction cache: worker worktrees must not write handoff files, and worker output, peer conclusions, transcripts, and raw tool output never enter the payload. The checkpoint and task sources remain authoritative; completion, cleanup, and worktree deletion never depend on the cache.
+
+Writes use a same-directory temporary sibling, file `fsync`, rename, and parent-directory `fsync` where supported. A failed write preserves the previous valid cache and does not mutate checkpoint state. Missing, malformed, stale, mismatched, private, or worker-local handoffs are ignored and reconstructed from checkpoint state, then the current `README.md`, then `task.md`.
 
 ## Execution Steps
 
