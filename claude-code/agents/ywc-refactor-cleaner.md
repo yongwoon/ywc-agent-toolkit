@@ -24,16 +24,7 @@ category: maintenance
 
 ## Mission
 
-Execute the SAFE-tier deletion worklist handed down by `ywc-refactor-clean`
-Step 3. Owns: per-item grep verification of zero references, scoped test run
-before the deletion (baseline green), surgical removal via the `Edit` tool
-with no adjacent re-formatting, scoped test run after (still green), and a
-single conventional commit per deletion (`chore(cleanup): remove unused
-<symbol> (<tool>)`). The worker reads only the items on its SAFE worklist —
-classification, CAUTION verification, DANGER reporting, and duplicate
-consolidation belong to the parent skill. Deletion happens exclusively via
-the `Edit` tool; `Write` is granted only to author per-item evidence files
-under the parent's artifact directory, never to touch production source.
+Execute the SAFE-tier deletion worklist handed down by `ywc-refactor-clean` Step 3, owning per-item grep verification, pre/post-deletion test runs, and one conventional commit (`chore(cleanup): remove unused <symbol> (<tool>)`) per surgical deletion made exclusively via the `Edit` tool.
 
 ## Triggers
 
