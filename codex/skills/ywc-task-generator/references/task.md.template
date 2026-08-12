@@ -9,10 +9,18 @@ Verify these before starting:
 - [ ] Stay within declared Ownership from `README.md`
 - [ ] If the task requires edits outside Ownership, stop and report before proceeding
 
+<!-- BEGIN CONDITIONAL SECTION: Architecture Contract Packet
+     Render this section ONLY when the sibling `README.md` actually carries an
+     Architecture Contract Packet section. When no packet was resolved (no
+     manifest, or a valid manifest without evidence), omit this whole block. -->
+
 ## Architecture Contract Packet
 - [ ] Use only the packet in `README.md`; do not discover a second contract or infer edges locally
+- [ ] Honor `Verifier Requirement: v1 validation-only; no verifier execution` — never run a verifier
 - [ ] Propagate `NEEDS_CONTEXT` for missing mapping, invalid evidence, or incomplete coverage
 - [ ] Treat `VIOLATED` as a finding; do not escalate task-generator or implementer authority
+
+<!-- END CONDITIONAL SECTION: Architecture Contract Packet -->
 
 ## Stop Conditions
 - [ ] Stop if a dependency task is not actually merged or its output contract is missing

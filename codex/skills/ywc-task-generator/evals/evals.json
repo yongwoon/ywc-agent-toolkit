@@ -104,6 +104,7 @@
       "name": "architecture-packet-no-evidence",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json without --architecture-evidence.",
       "expected_output": "Preserves existing task generation and writes no architecture packet; missing evidence is not converted into VIOLATED.",
+      "expectations": ["No generated README.md contains an `## Architecture Contract Packet` heading", "No generated task.md contains an `## Architecture Contract Packet` heading", "No placeholder packet fields (Contract State, Component IDs, Rule IDs, Verifier Requirement, Invariant Verdict, Evidence Artifact Path) are emitted"],
       "files": []
     },
     {
@@ -123,12 +124,31 @@
     {
       "id": 20,
       "name": "non-interactive-context-matrix",
-      "prompt": "Run task generation from a validated final spec while independently omitting --mode, unresolved --lang, or preview identity fields.",
-      "input": {"accepted": "Final DONE spec artifact with valid mode and resolved language chain", "rejected": ["missing --mode", "unresolved --lang", "missing or mismatched preview identity"]},
+      "prompt": "Run non-interactive task generation from a validated final spec with no preview flags involved, while independently omitting --mode or leaving --lang unresolved.",
+      "input": {"accepted": "Final DONE spec artifact with an explicit --mode and a resolved language chain", "rejected": ["missing --mode with no resolvable value", "unresolved --lang after the full resolution chain"]},
       "expected_status": "DONE for the accepted fixture; NEEDS_CONTEXT for every rejected fixture",
       "expected_downstream_calls": {"accepted": 0, "rejected": 0},
       "expected_handoff": "accepted only after all deterministic inputs are verified; rejected without task artifact handoff",
-      "expected_output": "Names the missing argument or preview identity and never prompts or guesses a default."
+      "expected_output": "Names the missing or unresolved argument and never prompts or guesses a default. Preview identity is not evaluated on this path because no preview flags are supplied, so a normal non-interactive run is never rejected for absent preview fields."
+    },
+    {
+      "id": 21,
+      "name": "architecture-evidence-without-manifest",
+      "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --architecture-evidence .ywc-architecture-invariants-evidence.json with no --manifest at all.",
+      "expected_output": "Per SKILL.md Step 5.5, evidence without a valid manifest is NEEDS_CONTEXT. Returns NEEDS_CONTEXT before any artifact write and never falls back to root-only manifest discovery in order to accept the supplied evidence.",
+      "expectations": ["Returns NEEDS_CONTEXT and names the missing --manifest", "Creates or writes no preview artifact, no task directories, no dependency-graph.md, and no architecture packet", "Does not copy or expose the supplied evidence content in the response"],
+      "files": []
+    },
+    {
+      "id": 22,
+      "name": "approve-preview-identity-mismatch",
+      "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/billing.md --approve-preview --preview-path docs/ywc-plans/billing.task-preview.md --non-interactive against an approved persisted preview, with exactly one preview identity field missing or mismatched.",
+      "input": {"accepted": "Approved preview whose preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, and mode all match exactly", "rejected": ["missing preview_digest", "mismatched preview_revision", "mismatched tasks_dir", "mismatched lang", "mismatched mode"]},
+      "expected_status": "DONE for the exact-match fixture; NEEDS_CONTEXT for every single-field mismatch",
+      "expected_downstream_calls": {"accepted": 0, "rejected": 0},
+      "expected_handoff": "task artifacts handed off only from the exactly matching approved preview; no handoff on any mismatch",
+      "expected_output": "Per the Preview Approval Gate, exact preview identity match is required only on the --approve-preview path. Names the specific missing or mismatched identity field, never re-decomposes, never silently refreshes the preview, and writes no task artifacts on mismatch.",
+      "files": []
     }
   ]
 }
