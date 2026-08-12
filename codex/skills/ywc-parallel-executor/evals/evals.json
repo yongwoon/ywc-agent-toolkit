@@ -78,6 +78,16 @@
       "prompt": "Run the focused parallel transition safety fixtures.",
       "expected_output": "python3 codex/skills/ywc-parallel-executor/scripts/test-transition-safety.py passes aggregate-location, worker-isolation, prompt-closure, identity, privacy, and atomic-preservation assertions.",
       "files": ["scripts/test-transition-safety.py"]
+    },
+    {
+      "id": 24,
+      "name": "parallel-context-closure-matrix",
+      "prompt": "Run focused parallel fixtures for checkpoint resume, branch/worktree conflict, CI timeout, aggregate handoff failure, worker-local handoff, stale or mismatched identity, and privacy violations.",
+      "input": {"accepted": ["matching checkpoint with resume", "one valid aggregate handoff at root"], "rejected": ["scope mismatch without disposition", "worker handoff", "malformed/stale/mismatched/private aggregate", "atomic write failure"]},
+      "expected_status": "DONE or DONE_WITH_CONCERNS for bounded closure; NEEDS_CONTEXT/BLOCKED for invalid inputs",
+      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_handoff": "accepts only one root aggregate; otherwise reconstructs from checkpoint then task source and preserves prior cache on write failure",
+      "expected_output": "No worker-local authority, peer conclusion, prompt, raw output, or authoritative state mutation is accepted."
     }
   ]
 }
