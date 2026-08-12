@@ -81,6 +81,57 @@ def _symlinks(root: Path) -> list[str]:
     return [str(path.relative_to(root)) for path in root.rglob("*") if path.is_symlink()][:MAX_DIFF_ITEMS]
 
 
+def _read_output(workspace: Path, relative: str) -> str:
+    path = _inside(workspace, workspace / relative)
+    if not path.is_file() or path.is_symlink():
+        raise ValueError(f"expected output does not exist: {relative}")
+    return path.read_text(encoding="utf-8")
+
+
+def _json_path(value: Any, path: str) -> Any:
+    if not path.startswith("$."):
+        raise ValueError(f"unsupported JSON path: {path}")
+    current = value
+    for key in path[2:].split("."):
+        if not isinstance(current, dict) or key not in current:
+            raise ValueError(f"JSON path not found: {path}")
+        current = current[key]
+    return current
+
+
+def _check_expected_outputs(normalized: dict[str, Any], workspace: Path, result: AdapterResult) -> str | None:
+    for check in normalized["expected_checks"]:
+        check_type = check["type"]
+        if check_type == "verifier":
+            continue
+        if check_type in {"stdout_regex", "stderr_regex"}:
+            import re
+            text = result.final_output if check_type == "stdout_regex" else result.error
+            if re.search(check["regex"], text) is None:
+                return f"expected check failed: {check_type}"
+        elif check_type == "file_exists":
+            path = _inside(workspace, workspace / check["path"])
+            if not path.is_file() or path.is_symlink():
+                return f"expected check failed: missing {check['path']}"
+        elif check_type == "file_regex":
+            import re
+            try:
+                text = _read_output(workspace, check["path"])
+            except (OSError, ValueError) as exc:
+                return str(exc)
+            if re.search(check["regex"], text) is None:
+                return f"expected check failed: file_regex {check['path']}"
+        elif check_type == "json_path_equals":
+            try:
+                value = json.loads(_read_output(workspace, check["path"]))
+                actual = _json_path(value, check["json_path"])
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                return str(exc)
+            if actual != check["expected_value"]:
+                return f"expected check failed: json_path_equals {check['path']}"
+    return None
+
+
 def _run_verifiers(normalized: dict[str, Any], repo_root: Path, workspace: Path) -> str | None:
     """Run only registry-owned commands and detect readonly-root mutation."""
     for verifier_id in normalized["workspace"]["verifier_ids"]:
@@ -142,6 +193,9 @@ def run_case(payload: dict[str, Any], *, fixture_root: Path, repo_root: Path,
             verifier_error = _run_verifiers(normalized, repo_root, workspace)
             if verifier_error:
                 return {"status": "FAIL", "run_id": run_id, "error": verifier_error}
+            expected_error = _check_expected_outputs(normalized, workspace, result)
+            if expected_error:
+                return {"status": "FAIL", "run_id": run_id, "error": expected_error}
             if result.status not in {"PASS", "FAIL", "ERROR", "INCONCLUSIVE", "SKIPPED_UNAVAILABLE"}:
                 return {"status": "ERROR", "run_id": run_id, "error": "unparseable adapter status"}
             return {"status": result.status, "run_id": run_id, "final_output": result.final_output, "error": result.error,

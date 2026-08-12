@@ -1,0 +1,1 @@
+{"architecture_invariants":{"version":1,"command":"do-not-execute","verifier":{"argv":["id"]},"path":"../../outside"},"expected":"reject unsafe contract"}

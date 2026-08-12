@@ -1,0 +1,25 @@
+{
+  "schema": 2,
+  "id": "architecture-invariants-v2-valid-contract",
+  "prompt": "Validate the contained architecture contract and report bounded normalized evidence without executing verifier data.",
+  "language": "en",
+  "category": "happy_path",
+  "should_trigger": true,
+  "expected_checks": [
+    {"type": "file_exists", "path": "architecture-invariants.json"},
+    {"type": "file_exists", "path": "input.json"},
+    {"type": "file_regex", "path": "input.json", "regex": "validation_only"},
+    {"type": "file_exists", "path": "evidence/validation.json"},
+    {"type": "json_path_equals", "path": "evidence/validation.json", "json_path": "$.status", "expected_value": "DONE"},
+    {"type": "verifier", "verifier_id": "bundle.validate"}
+  ],
+  "workspace": {
+    "fixture_root": "ywc-architecture-invariants/valid",
+    "target_skill": "ywc-architecture-invariants",
+    "skill_dependencies": [],
+    "fixture_files": ["architecture-invariants.json", "input.json"],
+    "output_paths": ["evidence/validation.json"],
+    "evidence_packet": {"mode": "validate", "verifier_execution": false},
+    "verifier_ids": ["bundle.validate"]
+  }
+}
