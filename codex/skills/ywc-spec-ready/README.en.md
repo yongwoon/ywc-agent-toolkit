@@ -27,3 +27,7 @@ On success, this skill prints `ywc-task-generator <spec-path>` and stops. It doe
 ## Output
 
 This skill follows the report, loop log, and status format defined in [SKILL.md](./SKILL.md).
+
+## Agentic artifact profile
+
+With `--artifact-profile agentic`, success returns one Result block containing only `Status: DONE` and `Artifact: <path>`. Artifact must be an existing regular repository-relative Markdown file inside the validated candidate root; `Scale` and prose/basename/raw-response fallbacks are rejected.

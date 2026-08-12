@@ -70,3 +70,7 @@ Scale に応じて以下のいずれか:
 
 - [Korean (default)](./README.md)
 - [English](./README.en.md)
+
+## Agentic artifact profile
+
+`--artifact-profile agentic` は `--output` と併用できません。Small は `docs/ywc-plans/YYYYMMDD-small_<slug>.md`、Medium/Large は `docs/ywc-plans/YYYYMMDD-<slug>.md` を使います。成功時は `Status`、`Scale`、`Artifact` を持つ Result ブロックを 1 つだけ返します。Artifact は `docs/ywc-plans/` 内の既存の通常のリポジトリ相対 Markdown に限ります。

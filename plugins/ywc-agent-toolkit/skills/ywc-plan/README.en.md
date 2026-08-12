@@ -70,3 +70,7 @@ Trigger conditions are defined in the `description` field of [SKILL.md](./SKILL.
 
 - [Korean (default)](./README.md)
 - [Japanese](./README.ja.md)
+
+## Agentic artifact profile
+
+`--artifact-profile agentic` is mutually exclusive with `--output`. Small uses `docs/ywc-plans/YYYYMMDD-small_<slug>.md`; Medium/Large uses `docs/ywc-plans/YYYYMMDD-<slug>.md`. Success returns one Result block with `Status`, `Scale`, and `Artifact`; Artifact must be an existing regular repository-relative Markdown file under `docs/ywc-plans/`.

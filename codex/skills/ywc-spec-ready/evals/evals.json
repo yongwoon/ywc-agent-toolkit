@@ -18,6 +18,25 @@
       "prompt": "Use $ywc-spec-ready --spec ../outside.md to validate an existing spec.",
       "expected_output": "Rejects the path before validation because it escapes the repository/spec directory contract. Returns NEEDS_CONTEXT with the invalid path and does not run ywc-spec-validate or modify files.",
       "files": []
+    },
+    {
+      "id": 4,
+      "name": "agentic-ready-result-contract",
+      "prompt": "Use $ywc-spec-ready --spec docs/ywc-plans/candidate.md --non-interactive --suggestions defer to finalize the candidate.",
+      "expected_output": "On DONE, emits exactly one Result block containing only Status: DONE and Artifact: <path>; validates the existing regular Markdown Artifact against the candidate's permitted repository-relative root; does not emit or infer Scale.",
+      "anti_behavior": [
+        "Accepting a Result block with Scale, duplicate fields, missing fields, a stale candidate path, or a non-DONE status as a final artifact authority.",
+        "Recovering the path from prose, --output, basename reconstruction, or raw response scanning.",
+        "Persisting raw response or raw tool output in the loop log."
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "agentic-ready-rejection-is-bounded",
+      "prompt": "Parse a ywc-spec-ready response with a duplicate Result block and an Artifact outside the validated candidate root.",
+      "expected_output": "Returns BLOCKED with producer name, failed field, candidate count, path digest, and a bounded reason; calls no task generator or other downstream skill and uses no fallback artifact.",
+      "files": []
     }
   ]
 }
