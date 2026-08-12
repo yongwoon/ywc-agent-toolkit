@@ -1392,6 +1392,37 @@ live 실행은 dispatch 당 약 **$0.54**(설치된 skill 전량이 컨텍스트
 
 - None. All emitted requirements have acceptance-criterion or motivating-goal support in the specification.
 
+## Batch — Codex Architecture Invariants
+
+- Spec: `docs/ywc-plans/20260812-codex-architecture-invariants.md`
+- Granularity mode: `llm`
+- Language: English
+- Starting phase: `000073`
+- Rationale: task-local metadata establishes 000073 as the architecture-invariants source batch and 000074 as its terminal distribution gate.
+
+### Phase 000073 — Contract, Fixtures, Consumers, and Evidence
+
+- `000073-010-domain-architecture-invariants-contract` → root
+- `000073-020-test-architecture-invariants-evaluator` → depends on `000073-010`
+- `000073-030-refactor-architecture-consumer-packets` → depends on `000073-010`
+- `000073-040-domain-architecture-run-evidence` → depends on `000073-010`
+
+### Phase 000074 — Distribution Gate
+
+- `000074-010-infra-architecture-invariants-distribution` → depends on all Phase `000073` tasks
+
+### Parallel Execution Notes — Codex Architecture Invariants
+
+- Initial ready set: `000073-010` only.
+- After `000073-010` merges: `000073-020`, `000073-030`, and `000073-040` become runnable.
+- `000073-020` and `000073-030` must not run in parallel because both may extend the shared architecture eval inventory.
+- `000073-040` must not run alongside `000073-010` because it changes the shared architecture helper/evidence boundary.
+- `000074-010` waits for all four Phase `000073` tasks and is the terminal generated-package and install-validation gate.
+
+### Open Questions — Codex Architecture Invariants
+
+- None. Dependencies and shared-surface constraints are taken from each task's `README.md`.
+
 ## Batch — Codex Agentic Context Safety
 
 - Spec: `docs/ywc-plans/20260812-codex-agentic-context-safety.md`
@@ -1500,4 +1531,3 @@ graph LR
 ### Open Questions (Claude Code Agentic Context Safety)
 
 - None. The spec's own `## Open Questions` section records `N/A — none identified`, and every emitted task traces to a Functional Requirement with a backing Acceptance Criterion.
-
