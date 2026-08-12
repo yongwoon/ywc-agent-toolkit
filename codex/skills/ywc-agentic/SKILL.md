@@ -126,17 +126,17 @@ Skipped entirely in **Resume Mode**. In **Full Mode** (first iteration) and on *
    ```
    Parse `Scale` and `Artifact` atomically. Resolve the labelled Artifact against the repository root; require an existing regular Markdown file under `docs/ywc-plans/`, and for Small require `docs/ywc-plans/YYYYMMDD-small_<slug>.md`. Reject duplicate/missing/conflicting fields, absolute or escaping paths, non-Markdown files, unlabelled prose, basenames, requested output paths, and raw-response recovery. A parseable non-`DONE` terminal status is propagated; missing or invalid status/result is `BLOCKED`. The bounded diagnostic may contain only producer, failed field, candidate count, path digest, and reason; never store response text or tool output.
 3. Branch on the verified Scale:
-   - **Small** → pass the resolved Artifact verbatim to `ywc-code-gen --spec <artifact> --feature <original-goal> --skip-reuse-check`. Skip task generation and executors.
+   - **Small** → skip task generation and executors; do not invoke `ywc-code-gen` here. Proceed to Step 5 (Execute Phase), which invokes it against this resolved Artifact only after recording the pre-iteration baseline SHA.
    - **Medium / Large** → pass the resolved candidate Artifact verbatim to `ywc-spec-ready --spec <artifact> [--non-interactive]`, forwarding `--non-interactive` only when the orchestrator received it. Invoke it **without** `--suggestions` first — the flag is only meaningful once a `ywc-spec-ready` Result exists. Only when that Result reports Suggestions does the `--suggestions` preflight run, immediately before the amendment call; under `--non-interactive` a missing `--suggestions` there returns bounded `NEEDS_CONTEXT: --suggestions` with only the count and invokes no further callee. Continue only when its single Result is `Status: DONE`; otherwise propagate its parseable terminal status or return bounded `BLOCKED`.
 
 **Re-plan — iteration N > 1 after an Evaluate Fail:**
 
-- Do **not** create a new spec file or reconstruct an artifact path. Invoke against the verified candidate:
+- Do **not** create a new spec file or reconstruct an artifact path. Invoke against the verified final-spec Artifact:
   ```text
-  ywc-plan --update-spec <verified-candidate> --failure-context "<fix-priority section>" [--non-interactive] --artifact-profile agentic
+  ywc-plan --update-spec <verified-final-spec-artifact> --failure-context "<fix-priority section>" [--non-interactive] --artifact-profile agentic
   ```
   `--non-interactive` is forwarded only when the orchestrator received it.
-- `--update-spec` appends an `## Iteration N Amendments` section to the verified candidate, so completed-task context is preserved. `--failure-context` carries the prioritized CRITICAL/HIGH findings from the previous Evaluate Phase (Step 6) — the corrective scope, not the whole spec.
+- `--update-spec` appends an `## Iteration N Amendments` section to the verified final-spec Artifact, so completed-task context is preserved. `--failure-context` carries the prioritized CRITICAL/HIGH findings from the previous Evaluate Phase (Step 6) — the corrective scope, not the whole spec.
 - After the amendment, Medium/Large goals re-enter Step 4 with only the amended/uncovered tasks; Small Path goals re-enter Step 5 (Small Path) with the amended verified Artifact.
 
 The verified final-spec Artifact is fixed for the entire run and reused verbatim by every Evaluate Phase; it is never reconstructed from a filename or log.
@@ -205,7 +205,11 @@ Forward `--pr-lang` unchanged when it is one of `en|ja|ko|zh|es`; do not normali
 - **Not `--non-interactive`** → ask the user before invoking the selected executor, then forward only the resolved language code.
 - **`--non-interactive`** → return bounded `NEEDS_CONTEXT: --pr-lang` and invoke no executor. Never prompt during a non-interactive run.
 
-**Small Path:** invoke `ywc-code-gen` directly against the verified planner Artifact from Step 3. No executor, no `tasks/` directory. `ywc-code-gen` commits its output to the base branch so the Evaluate Phase can range over it.
+**Small Path:** after recording the baseline SHA above, invoke `ywc-code-gen` directly against the verified planner Artifact from Step 3:
+```text
+ywc-code-gen --spec <verified-planner-artifact> --feature <original-goal> --skip-reuse-check
+```
+No executor, no `tasks/` directory. `ywc-code-gen` commits its output to the base branch so the Evaluate Phase can range over it.
 
 If the executor or `ywc-code-gen` reports a merge conflict or unrecoverable CI error, stop immediately — record to `agentic-log.md` (Step 8) and report (see Edge Cases). Never auto-resolve.
 
