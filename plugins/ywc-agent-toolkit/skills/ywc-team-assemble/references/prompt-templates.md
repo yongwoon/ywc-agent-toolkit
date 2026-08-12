@@ -37,7 +37,7 @@ to ignore fields in a larger payload:
 | Projection | Allowed input | Excluded input |
 | --- | --- | --- |
 | Independent reviewer | `Included scope`, `Excluded scope`, `Artifacts` (paths only) | `Claims`, peer conclusions, peer recommendations, transcript, raw content |
-| Dependent role | `Claims`, and only the artifact paths cited by those Claims | uncited artifacts, peer transcript, peer conclusions, peer recommendations, raw content |
+| Dependent role | `Claims`, and only the paths cited by those Claims — an artifact path verbatim, or the source-file path parsed from a `file:line` citation | uncited artifacts, uncited source files, peer transcript, peer conclusions, peer recommendations, raw content |
 
 If a dependent role's cited artifact or citation is unavailable, return
 `NEEDS_CONTEXT` with the missing path/citation and do not forward the producer
@@ -140,7 +140,8 @@ Claims:
   - Statement: {factual statement, <= 1,024 characters}
     Evidence: {project-relative file:line or artifact path}
 Artifacts:
-- {only the project-relative artifact paths cited by the Claims above}
+- {only the paths cited by the Claims above: an artifact path verbatim, or
+  the source-file path parsed from a file:line citation}
 ```
 
 Body of the prompt, appended to whichever packet was selected:
@@ -152,7 +153,8 @@ Review the allowlisted scope for {risk area}.
 Scope:
 - Independent: inspect only the paths under `Included scope` and `Artifacts`,
   and never anything under `Excluded scope`.
-- Dependent: inspect only the artifact paths cited by `Claims`.
+- Dependent: inspect only the paths cited by `Claims` — an artifact path
+  verbatim, or the source-file path parsed from a `file:line` citation.
 - Never place diff content, raw file content, or peer conclusions in any field
   of either packet.
 - Do not edit files.
@@ -167,7 +169,8 @@ Output:
 Projection:
 - Independent reviewers get scope and artifact paths only; omit peer Claims,
   conclusions, recommendations, transcript, and raw content.
-- Dependent reviewers get only validated Claims and the artifacts those Claims
-  cite; omit every uncited artifact and every peer/raw field.
+- Dependent reviewers get only validated Claims and the paths those Claims
+  cite (artifact paths verbatim, or source-file paths parsed from `file:line`
+  citations); omit every uncited path and every peer/raw field.
 - Validate the complete payload, including nested metadata, before projection.
 ```
