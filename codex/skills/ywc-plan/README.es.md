@@ -74,3 +74,7 @@ Las condiciones de activación están definidas en el campo `description` de [SK
 
 - [Coreano (por defecto)](./README.md)
 - [Japonés](./README.ja.md)
+
+## Agentic artifact profile
+
+`--artifact-profile agentic` no se puede combinar con `--output`. Small usa `docs/ywc-plans/YYYYMMDD-small_<slug>.md` y Medium/Large usa `docs/ywc-plans/YYYYMMDD-<slug>.md`. El éxito devuelve un bloque Result con `Status`, `Scale` y `Artifact`; Artifact debe ser un Markdown relativo al repositorio, existente y regular, dentro de `docs/ywc-plans/`.

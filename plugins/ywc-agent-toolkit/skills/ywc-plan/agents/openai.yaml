@@ -1,4 +1,4 @@
 interface:
   display_name: "Plan"
   short_description: "Turn rough requests into execution plans with explicit unknowns"
-  default_prompt: "Use $ywc-plan to clarify this change request, assess scale, surface unresolved assumptions explicitly, and route it to the right specification, task, or implementation path."
+  default_prompt: "Use $ywc-plan to clarify this change request, assess scale, surface unresolved assumptions explicitly, and route it to the right specification, task, or implementation path. For agentic-owned output, use --artifact-profile agentic and consume only its validated Result block."

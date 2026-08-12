@@ -33,3 +33,7 @@ $ywc-spec-ready --spec docs/ywc-plans/example.md --dry-run
 ## 输出
 
 本 Skill 遵循 [SKILL.md](./SKILL.md) 中定义的 report、loop log 和 status format。
+
+## Agentic artifact profile
+
+使用 `--artifact-profile agentic` 时，成功只返回一个 Result 块，其中只有 `Status: DONE` 和 `Artifact: <path>`。Artifact 必须是已验证候选根目录内已存在的普通仓库相对 Markdown 文件；拒绝 `Scale` 以及 prose/basename/raw-response 回退。

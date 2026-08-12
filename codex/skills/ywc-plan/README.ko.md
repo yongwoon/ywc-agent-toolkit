@@ -70,3 +70,7 @@ Rough idea 를 구현 직전 상태(Small path 직접 실행 plan, 또는 Medium
 
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
+
+## Agentic artifact profile
+
+`--artifact-profile agentic`은 `--output`과 함께 사용할 수 없습니다. Small은 `docs/ywc-plans/YYYYMMDD-small_<slug>.md`, Medium/Large는 `docs/ywc-plans/YYYYMMDD-<slug>.md`를 사용합니다. 성공 시 `Status`, `Scale`, `Artifact`를 포함한 Result 블록 하나만 반환하며 Artifact는 `docs/ywc-plans/` 아래의 기존 일반 저장소 상대 Markdown이어야 합니다.

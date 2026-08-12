@@ -24,6 +24,7 @@ This skill converts a rough idea, vague request, or partially-formed change desc
 | `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used with `--failure-context`. Mutually exclusive with normal spec generation. |
 | `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec` to identify which parts of the spec need amendment. |
 | `--output <path>` | string | Explicit output path for the generated spec or plan (e.g., `--output docs/ywc-plans/agentic-iteration-1.md`). When omitted, defaults to `./plan.md` (Small) or `docs/ywc-plans/<slug>.md` (Medium/Large). |
+| `--artifact-profile agentic` | enum | Agentic-owned artifact mode. Mutually exclusive with `--output`; direct calls without this flag retain the existing output behavior. |
 
 ## Rationalization Defense
 
@@ -328,6 +329,28 @@ If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <
 If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
 
 The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. When `ywc-spec-ready` reaches `DONE` with only Suggestion findings left, it should ask the user whether to run one more suggestion-focused amendment pass or defer those Suggestions before handing off to `ywc-task-generator`.
+
+### Agentic artifact profile
+
+When `--artifact-profile agentic` is present, reject `--output` before planning. The planner owns the artifact filename and must write an existing regular Markdown file under `docs/ywc-plans/`:
+
+- Small: `docs/ywc-plans/YYYYMMDD-small_<slug>.md`
+- Medium/Large: `docs/ywc-plans/YYYYMMDD-<slug>.md`
+
+`YYYYMMDD` is the run date and `<slug>` is the planner's sanitized request slug. Do not use `plan.md`, reconstruct a basename, inspect `--output`, scan prose, or recover a path from a raw response. Direct calls without the profile keep their existing output behavior.
+
+On a successful agentic run, emit exactly one producer Result block and no additional fields:
+
+```text
+## Result
+Status: DONE
+Scale: Small | Medium | Large
+Artifact: <repository-relative regular Markdown file>
+```
+
+The literal Scale value must be the selected scale. A Result block is authoritative only when it is the only complete block, each field occurs exactly once, and no extra field occurs in the block. Trim surrounding whitespace only; never recover labels from unlabelled prose. Before handoff, canonicalize `Artifact` against the repository root and require a relative, non-escaping path to an existing regular `.md` file inside `docs/ywc-plans/`. Missing, duplicate, conflicting, absolute, escaping, outside-root, non-Markdown, or non-regular candidates are rejected.
+
+Terminal statuses other than `DONE` use the existing Completion Status report and are not Result authorities. A missing or invalid Result produces a bounded `BLOCKED` report containing only producer name, failed field, candidate count, a digest of any candidate path, and a bounded reason; it stores no response text or raw tool output and makes no downstream call.
 
 ## Output Format
 
