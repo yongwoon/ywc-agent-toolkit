@@ -11,6 +11,8 @@ A Skill that performs comprehensive implementation conformance verification befo
 
 `--working-tree` reviews staged, unstaged, and untracked source changes without requiring a commit. Do not combine it with `--code` or `--git-range`.
 
+`--non-interactive` (default: unset = interactive) skips Step 7's learnings-promotion confirmation prompt; instead of asking, the report lists candidates in a `Learning candidates (not promoted — non-interactive)` block. No mode ever writes to `docs/review-learnings.md` without user confirmation.
+
 ## Execution Agents
 
 | Agent                  | Verification Scope                                                              |

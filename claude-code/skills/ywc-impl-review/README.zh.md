@@ -15,6 +15,8 @@
 
 `--working-tree` 在不创建 commit 的情况下审查 staged、unstaged 和 untracked 的 source 变更。请勿与 `--code` 或 `--git-range` 同时使用。
 
+`--non-interactive`（默认：未设置 = interactive）会跳过 Step 7 的 learnings 提升确认 prompt，不再询问，而是在 report 中以 `Learning candidates (not promoted — non-interactive)` block 列出候选项。任何 mode 下都不会在未经用户确认的情况下写入 `docs/review-learnings.md`。
+
 ## 执行 Agent
 
 | Agent | 验证范围 |
