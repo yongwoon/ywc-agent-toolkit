@@ -143,11 +143,8 @@ The fix is a one-time Codex command-approval setup that pre-authorizes a small s
 The executor writes `.ywc-run-state.json` in the project root after each major wave event. If a multi-wave run is interrupted, resume from the last checkpoint: completed waves are skipped and the in-progress wave restarts with only its remaining pending tasks. For the resume procedure, on-disk state schema, checkpoint event table, and manual inspection commands, read [references/checkpoint-resume.md](references/checkpoint-resume.md).
 
 ## Context Handoff
-
 After each wave transition, `scripts/transition_safety.py` writes exactly one non-authoritative `.ywc-context-handoff.json` beside root `.ywc-run-state.json`. It is an aggregate cache only: workers never write handoffs, and worker output, peer conclusions, transcripts, or raw tool output never enter it. Checkpoint/task sources remain authoritative.
-
 Writes use a same-directory temporary sibling, `fsync`, rename, and parent-directory `fsync` where supported. Failed, missing, malformed, stale, mismatched, private, or worker-local handoffs preserve checkpoint state and reconstruct from checkpoint, `README.md`, then `task.md`.
-
 ## Execution Steps
 
 ### Step 1: Parse Dependency Graph

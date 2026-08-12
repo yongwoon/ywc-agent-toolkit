@@ -119,6 +119,16 @@
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json --architecture-evidence forbidden-edge.json where aggregate_verdict is VIOLATED.",
       "expected_output": "Projects invariant_verdict VIOLATED and affected rule IDs, surfaces VIOLATED as a task-generation finding, and does not grant task-generator or implementer authority to execute or override gates.",
       "files": []
+    },
+    {
+      "id": 20,
+      "name": "non-interactive-context-matrix",
+      "prompt": "Run task generation from a validated final spec while independently omitting --mode, unresolved --lang, or preview identity fields.",
+      "input": {"accepted": "Final DONE spec artifact with valid mode and resolved language chain", "rejected": ["missing --mode", "unresolved --lang", "missing or mismatched preview identity"]},
+      "expected_status": "DONE for the accepted fixture; NEEDS_CONTEXT for every rejected fixture",
+      "expected_downstream_calls": {"accepted": 0, "rejected": 0},
+      "expected_handoff": "accepted only after all deterministic inputs are verified; rejected without task artifact handoff",
+      "expected_output": "Names the missing argument or preview identity and never prompts or guesses a default."
     }
   ]
 }
