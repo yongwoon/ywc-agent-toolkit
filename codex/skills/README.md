@@ -65,6 +65,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-iac-author` | `ywc-iac-author` | "Terraform 작성해줘" | 설계 결과로부터 AWS/GCP/Azure/Kubernetes Terraform 작성, validate/plan 검증 및 blast-radius 점검 |
 | `ywc-infra-review` | `ywc-infra-review` | "IaC 리뷰해줘" | Apply 전 IaC/Cloud 설정의 misconfiguration, least privilege, cost, reliability 검토 |
 | `ywc-infra-optimize` | `ywc-infra-optimize` | "인프라 비용 최적화해줘" | 기존 인프라 cost right-sizing, 미사용 리소스 정리, reserved/spot 전환, drift remediation |
+| `ywc-architecture-invariants` | `ywc-architecture-invariants` | "architecture boundary contract 검증해줘" | 선택적 architecture contract와 정규화된 evidence를 검증하며 verifier data는 실행하지 않음 |
 | `ywc-team-assemble` | `ywc-team-assemble` | "specialist team 꾸려서 작업해줘" | 복잡한 작업을 specialist subagent team으로 분할·위임하는 swarm 조립 |
 | `ywc-worktrees` | `ywc-worktrees` | "worktree lifecycle 관리해줘" | git worktree lifecycle 관리 |
 

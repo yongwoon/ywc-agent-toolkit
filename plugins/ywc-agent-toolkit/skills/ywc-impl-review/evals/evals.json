@@ -82,7 +82,7 @@
       "name": "architecture-packet-positive",
       "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --working-tree --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
       "expected_output": "The Architecture worker receives only the sanitized packet. Helper status remains dispatch status; aggregate_verdict becomes invariant_verdict; rule_results rule IDs become rule_ids; sanitized evidence paths remain bounded finding citations; contract_state is VALIDATED and evidence_artifact_path names the artifact.",
-      "expectations": ["No raw evidence, transcript, command-like field, or full diff is included in the architecture packet", "The packet is advisory evidence and cannot alter merge authority"],
+      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "No raw evidence, transcript, command-like field, or full diff is included and the packet cannot alter merge authority"],
       "files": []
     },
     {

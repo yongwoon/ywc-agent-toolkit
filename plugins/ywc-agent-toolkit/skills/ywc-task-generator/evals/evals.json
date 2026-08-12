@@ -96,7 +96,7 @@
       "name": "architecture-packet-positive",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
       "expected_output": "Records a sanitized packet: contract_state VALIDATED, component ownership, rule IDs projected from rule_results, invariant_verdict projected from aggregate_verdict, and the evidence artifact path. Helper status, aggregate verdict, rule results, and evidence paths remain distinct.",
-      "expectations": ["Does not copy raw evidence, transcripts, command-like fields, or full diffs into task metadata", "Uses evidence paths only as bounded citations, not as contract state or artifact path"],
+      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "Does not copy raw evidence, transcripts, command-like fields, or full diffs into task metadata; evidence paths remain bounded citations"],
       "files": []
     },
     {

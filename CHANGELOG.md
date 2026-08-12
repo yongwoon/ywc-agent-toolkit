@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+* **ywc-architecture-invariants:** distribute the optional architecture contract validator and normalized-evidence audit skill.
+
 ## [1.31.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.30.1...v1.31.0) (2026-07-30)
 
 
