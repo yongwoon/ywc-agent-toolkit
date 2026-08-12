@@ -25,8 +25,8 @@ Expected shape:
   "ywDevSequentialExecutor": {
     "externalSpecUrls": "deny",
     "externalSpecUrlAllowlist": [
-      "github.com",
-      "figma.com/file"
+      "https://github.com",
+      "https://figma.com"
     ],
     "decidedAt": "2026-04-05"
   }

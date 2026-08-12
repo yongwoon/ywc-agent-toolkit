@@ -3,8 +3,11 @@ name: ywc-architecture-invariants
 description: >-
   (ywc) Validate an optional repository-root architecture-invariants.json
   contract and bounded normalized edge evidence. Triggers: "architecture
-  invariants", "architecture boundary", "architecture contract", or
+  invariants", "architecture boundary", "architecture contract",
   "boundary validation". Validation-only in v1; never executes verifier data.
+  Do not use for: verifier execution, general architecture advisory or design
+  trade-off judgment (use ywc-architect), or security review (use
+  ywc-security-audit / ywc-security-engineer).
 ---
 
 # ywc-architecture-invariants

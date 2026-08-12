@@ -497,7 +497,7 @@ Before emitting the Completion Report, verify:
 - [ ] The final line is exactly one Completion Status declaration
 
 ## Context Handoff
-Write one adjacent `.ywc-context-handoff.json` cache via `scripts/transition_safety.py` after checkpoint/task transition. Readers discard invalid values and reconstruct checkpoint → `README.md` → `task.md`; failed writes preserve the cache and never change lifecycle state.
+Write one adjacent `.ywc-context-handoff.json` cache via `scripts/transition_safety.py` after checkpoint/task transition. Readers accept the cache only at the authoritative project root's own `.ywc-context-handoff.json` path — a structurally valid handoff found anywhere else (a worker worktree, a renamed copy) is not this run's handoff and is discarded unread. Readers also discard invalid values, and reconstruct checkpoint → `README.md` → `task.md` in either case; failed writes preserve the cache and never change lifecycle state.
 
 ## Error Handling
 

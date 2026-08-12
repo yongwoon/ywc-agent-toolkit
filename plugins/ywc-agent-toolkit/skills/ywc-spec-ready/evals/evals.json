@@ -22,12 +22,13 @@
     {
       "id": 4,
       "name": "agentic-ready-result-contract",
-      "prompt": "Use $ywc-spec-ready --spec docs/ywc-plans/candidate.md --non-interactive --suggestions defer to finalize the candidate.",
-      "expected_output": "On DONE, emits exactly one Result block containing only Status: DONE and Artifact: <path>; validates the existing regular Markdown Artifact against the candidate's permitted repository-relative root; does not emit or infer Scale.",
+      "prompt": "Use $ywc-spec-ready --spec docs/ywc-plans/candidate.md --artifact-profile agentic --non-interactive --suggestions defer to finalize the candidate.",
+      "expected_output": "Exercises the agentic producer path because --artifact-profile agentic is present. On DONE, emits exactly one Result block containing only Status: DONE and Artifact: <path>; validates the existing regular Markdown Artifact against the permitted root for the mode (the validated candidate's spec root in --spec mode, docs/ywc-plans/ in agentic goal mode); does not emit or infer Scale. With --non-interactive --suggestions defer it never prompts: it records the deferral and hands off only when a valid DONE artifact already exists from a prior validation pass, otherwise returning bounded NEEDS_CONTEXT.",
       "anti_behavior": [
         "Accepting a Result block with Scale, duplicate fields, missing fields, a stale candidate path, or a non-DONE status as a final artifact authority.",
         "Recovering the path from prose, --output, basename reconstruction, or raw response scanning.",
-        "Persisting raw response or raw tool output in the loop log."
+        "Persisting raw response or raw tool output in the loop log.",
+        "Prompting the user for the Suggestion decision, or looping on Suggestions, while --non-interactive is set."
       ],
       "files": []
     },

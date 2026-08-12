@@ -46,15 +46,25 @@ conclusions or recommendations.
 
 ## Read-only Explorer
 
+Explorer is an independent role. Pass the independent projection only: the
+three allowlisted fields below and nothing else. There is no free-form
+background field, because a free-form field can smuggle a peer conclusion, raw
+content, or a diff past the allowlist.
+
 ```text
-Context:
-{project or task background}
+Included scope:
+- {project-relative path or bounded scope}
+Excluded scope:
+- {project-relative path or explicit exclusion}
+Artifacts:
+- {project-relative artifact path}
 
 Goal:
 Answer this bounded codebase question: {question}
 
 Scope:
-- Read only these paths when possible: {paths}
+- Read only the paths listed under `Included scope` and `Artifacts`.
+- Do not read anything listed under `Excluded scope`.
 - Do not edit files.
 - Do not run destructive commands.
 
@@ -65,8 +75,12 @@ Output:
 - Open questions, if any
 
 Isolation:
-- If this is an independent review, receive only the independent projection.
-- Do not request or accept peer Claims, conclusions, recommendations, or transcript.
+- This packet contains only `Included scope`, `Excluded scope`, and `Artifacts`
+  (paths). Never add diff content, raw file content, peer Claims, peer
+  conclusions, peer recommendations, or transcript to any field.
+- Do not request or accept those fields if offered.
+- If the question cannot be answered from the allowlisted scope, return
+  `NEEDS_CONTEXT` naming the missing path or citation.
 ```
 
 ## Implementation Worker
@@ -94,21 +108,53 @@ Output:
 
 Claims:
 - If a dependent consumer is explicitly requested, return no more than three
-  factual Claims, each with one valid project-relative citation or artifact path.
+  Claims. Each Claim has exactly two fields, named `Statement` and `Evidence` —
+  no more and no fewer.
+  - `Statement`: factual, at most 1,024 characters.
+  - `Evidence`: exactly one valid project-relative `file:line` citation with a
+    positive line number, or one project-relative artifact path.
+- Do not rename these fields, and do not add any third field to a Claim.
 - Do not include raw output, generated source, full diffs, or transcript fields.
 ```
 
 ## Reviewer
 
-```text
-Context:
-{project or task background}
+Choose exactly one projection and pass only that projection's allowlisted
+fields. Do not include a free-form background field in either variant.
 
+Independent reviewer packet:
+
+```text
+Included scope:
+- {project-relative path or bounded scope}
+Excluded scope:
+- {project-relative path or explicit exclusion}
+Artifacts:
+- {project-relative artifact path}
+```
+
+Dependent reviewer packet:
+
+```text
+Claims:
+  - Statement: {factual statement, <= 1,024 characters}
+    Evidence: {project-relative file:line or artifact path}
+Artifacts:
+- {only the project-relative artifact paths cited by the Claims above}
+```
+
+Body of the prompt, appended to whichever packet was selected:
+
+```text
 Goal:
-Review {scope} for {risk area}.
+Review the allowlisted scope for {risk area}.
 
 Scope:
-- Inspect: {paths or diff}
+- Independent: inspect only the paths under `Included scope` and `Artifacts`,
+  and never anything under `Excluded scope`.
+- Dependent: inspect only the artifact paths cited by `Claims`.
+- Never place diff content, raw file content, or peer conclusions in any field
+  of either packet.
 - Do not edit files.
 - Prioritize concrete bugs, regressions, and missing tests.
 

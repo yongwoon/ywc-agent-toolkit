@@ -24,6 +24,19 @@ HANDOFF_FIELDS = {
     "next_unit", "aggregate_status", "verified_commands", "artifact_paths",
     "unresolved_status", "ownership_boundary",
 }
+ROOT_HANDOFF_NAME = ".ywc-context-handoff.json"
+
+
+def _normalize_field(name: str) -> str:
+    """Collapse a key to a lowercase alphanumeric token.
+
+    `raw-response`, `rawResponse`, and `RAW_RESPONSE` all normalize to
+    `rawresponse`, so separator and casing variants cannot bypass the check.
+    """
+    return "".join(character for character in name if character.isalnum()).lower()
+
+
+PRIVATE_FIELD_TOKENS = {_normalize_field(field) for field in PRIVATE_FIELDS}
 
 
 def resolve_resume_disposition(
@@ -32,11 +45,15 @@ def resolve_resume_disposition(
     current_scope: str,
     disposition: str | None,
 ) -> dict[str, object]:
+    """Resolve resume intent without prompting.
+
+    `saved_scope` / `current_scope` are retained for caller reporting only: an
+    existing checkpoint always demands an explicit disposition, so a scope match
+    never licenses a silent auto-resume.
+    """
     if not checkpoint_exists:
         return {"status": "DONE", "reason": "fresh_run"}
-    if disposition not in {None, "resume", "stop"}:
-        return {"status": "NEEDS_CONTEXT", "missing": ["--resume-disposition"]}
-    if saved_scope != current_scope and disposition is None:
+    if disposition not in {"resume", "stop"}:
         return {"status": "NEEDS_CONTEXT", "missing": ["--resume-disposition"]}
     if disposition == "stop":
         return {"status": "DONE_WITH_CONCERNS", "reason": "resume_stopped"}
@@ -84,7 +101,10 @@ def _walk(value: object, path: str = "$", seen: set[str] | None = None) -> None:
         seen = set()
     if isinstance(value, dict):
         for key, child in value.items():
-            if key.lower() in PRIVATE_FIELDS:
+            # Containment, not equality: an affixed key such as `tool_output_text`
+            # carries the same payload as `tool_output` and must not slip through.
+            normalized = _normalize_field(key) if isinstance(key, str) else ""
+            if any(token in normalized for token in PRIVATE_FIELD_TOKENS):
                 raise ValueError(f"privacy field: {path}.{key}")
             if key in seen:
                 raise ValueError(f"duplicate field: {path}.{key}")
@@ -112,7 +132,7 @@ def atomic_write_handoff(
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(
-        prefix=".ywc-context-handoff.json.tmp.", dir=destination.parent, text=False
+        prefix=f"{ROOT_HANDOFF_NAME}.tmp.", dir=destination.parent, text=False
     )
     temporary_path = Path(temporary)
     try:
@@ -143,8 +163,27 @@ def atomic_write_handoff(
         raise
 
 
-def load_handoff(destination: Path, checkpoint_identity: dict[str, object]) -> dict[str, object]:
+def expected_handoff_path(project_root: Path) -> Path:
+    """The single legal handoff location: the authoritative project root's cache."""
+    return Path(project_root).resolve() / ROOT_HANDOFF_NAME
+
+
+def load_handoff(
+    destination: Path,
+    checkpoint_identity: dict[str, object],
+    *,
+    project_root: Path,
+) -> dict[str, object]:
+    """Read the cache only from the authoritative project root.
+
+    A structurally valid handoff written inside a worker worktree is still not
+    this run's handoff, so any destination other than the expected root path is
+    rejected before its payload is parsed — recovery then falls back to the
+    checkpoint and task sources downstream.
+    """
     try:
+        if Path(destination).resolve() != expected_handoff_path(project_root):
+            return {"status": "NEEDS_CONTEXT", "reason": "handoff_reconstruct"}
         payload = json.loads(Path(destination).read_text(encoding="utf-8"))
         _validate_handoff(payload)
     except (OSError, ValueError, json.JSONDecodeError):
@@ -159,9 +198,11 @@ def recover_handoff(
     checkpoint_identity: dict[str, object],
     readme: Path,
     task: Path,
+    *,
+    project_root: Path,
 ) -> dict[str, object]:
     """Use checkpoint first, then task sources; never infer from the cache."""
-    loaded = load_handoff(destination, checkpoint_identity)
+    loaded = load_handoff(destination, checkpoint_identity, project_root=project_root)
     if loaded["status"] == "DONE":
         return loaded
     sources = [path for path in (readme, task) if Path(path).is_file()]
