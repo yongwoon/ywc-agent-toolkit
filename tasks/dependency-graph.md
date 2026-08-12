@@ -1531,3 +1531,104 @@ graph LR
 ### Open Questions (Claude Code Agentic Context Safety)
 
 - None. The spec's own `## Open Questions` section records `N/A — none identified`, and every emitted task traces to a Functional Requirement with a backing Acceptance Criterion.
+
+---
+
+## Batch — Codex Evaluation S5 Hardening
+
+## Batch
+
+- Spec: `docs/ywc-plans/20260812-codex-evaluation-s5-hardening.md`
+- Granularity mode: `llm`
+- Language: `en`
+- Starting phase: `000080`
+- Preview approval: interactive approval received after preview.
+- Invocation: `ywc-task-generator docs/ywc-plans/20260812-codex-evaluation-s5-hardening.md --mode llm --lang en`
+- Existing highest phase: `000079` across `tasks/dependency-graph.md`, `tasks/`, and `tasks/completed/`.
+- Advisor pass: used once; verdict `DONE_WITH_CONCERNS`, incorporated by splitting infrastructure fixtures into two tasks.
+
+## Phase 000080 — Deterministic Fixture Evidence
+
+- `000080-010-test-architecture-invariant-fixtures` → root
+- `000080-020-test-iac-design-safety-fixtures` → root
+- `000080-030-test-infra-routing-fixtures` → root
+
+## Phase 000081 — Regression, Scoring, and Reporting
+
+- `000081-010-infra-eval-rescore-report` → depends on `000080-010`, `000080-020`, `000080-030`
+
+## Parallel Execution Notes
+
+- Initial ready set: `000080-010`, `000080-020`, `000080-030`.
+- The three Phase `000080` tasks are parallel-safe while they remain within their fixture subtrees and named owning skill files.
+- Phase `000080` tasks must not concurrently modify shared validator, runner, verifier registry, or shared test files. If needed, stop and serialize that change through an explicit follow-up task.
+- After all Phase `000080` tasks merge, `000081-010` becomes runnable.
+- `000081-010` must not run in parallel with any task modifying `docs/skill-agent-eval/codex/**` or `evals/history.mechanical.json`.
+
+## Open Questions Retained from Spec
+
+- Live-adapter behavioral evidence remains deferred until explicitly approved and credentialed.
+- S8 watch items remain a separate low-priority pass.
+
+```mermaid
+graph LR
+  A[000080-010 architecture fixtures] --> D[000081-010 rescore/report]
+  B[000080-020 IaC/design fixtures] --> D
+  C[000080-030 routing/review fixtures] --> D
+```
+
+<!-- This graph is the execution-order source of truth for this batch. -->
+
+---
+
+## Batch 19 — Toolkit-Eval Trigger-Case Coverage Backfill
+
+- Spec: `docs/ywc-plans/20260812-toolkit-eval-trigger-coverage.md` (Iteration 4 amendments, 0 Critical findings)
+- Granularity mode: `llm` · Language: korean · Starting phase: `000082`
+- Scope: `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json` only (append-only to `cases` array). No Codex-side (`.codex/skills/ywc-codex-toolkit-eval`) coverage, no `score.py` logic changes, no SKILL.md/agent `.md` edits.
+- Existing phase note: highest existing phase across `dependency-graph.md` / `tasks/` / `tasks/completed/` is `000081`, so this batch starts at `000082`.
+- Advisor pass: skipped — phase boundary is mechanically determined (9 chained authoring tasks + 1 verification hard gate), consistent with prior single-file-append batches.
+- Design divergence from the spec: the spec's Fix A2/Fix X assume an orchestrator that appends parallel batch *returns* one at a time. This decomposition instead uses a strict `Depends On` chain across all 9 authoring tasks (`000082-010`→`000082-090`) — each task commits directly to `evals/trigger-cases.json` after its predecessor merges, which satisfies the same single-writer invariant without an orchestrator role. Cost: no worktree parallelism within Phase `000082`; recommended execution is `ywc-sequential-executor --local-merge` over `010→090`.
+- User decisions applied: Open Question 1 (agent independent source) → caller-skill dispatch-trigger prose is treated as session-trace-equivalent for agents (`000082-090`). Open Question 2 (mining dry-run) → folded into `000082-010`, which reports mined-vs-authored yield in its Implementation Notes for later tasks to consult.
+
+### Phase 000082 — Trigger-Case Authoring (strict chain, single shared file)
+
+| Task | Category | Items | Depends On |
+|---|---|---|---|
+| `000082-010-test-trigger-cases-planning-core` | test | S1 (6): plan, brainstorm, tech-research, confidence-gate, spec-writer, spec-validate — + OQ2 mining dry-run | (root) |
+| `000082-020-test-trigger-cases-spec-execution` | test | S2 (6): spec-ready, task-generator, agentic, sequential-executor, parallel-executor, code-gen | `000082-010` |
+| `000082-030-test-trigger-cases-devenv` | test | S3 (4): worktrees, docker-isolate, refactor-clean, onboard-repo | `000082-020` |
+| `000082-040-test-trigger-cases-iac-infra` | test | S4 (4): infra-design, iac-author, infra-review, infra-optimize | `000082-030` |
+| `000082-050-test-trigger-cases-review-quality` | test | S5 (5): impl-review, security-audit, ui-ux-review, design-renew, product-review | `000082-040` |
+| `000082-060-test-trigger-cases-git-release` | test | S6 (5): finish-branch, merge-dependabot, changelog-release-notes, release-pr-list, receive-review | `000082-050` |
+| `000082-070-test-trigger-cases-durable-memory` | test | S7 (6): adr, project-mission, review-learnings, ubiquitous-language, project-docs, project-scaffold | `000082-060` |
+| `000082-080-test-trigger-cases-testing-misc` | test | S8 (8): gen-testcase, e2e-test-strategy, tdd-ritual, verify-done, auth-implement, setup-language, skill-author, incident-postmortem | `000082-070` |
+| `000082-090-test-trigger-cases-agents` | test | A1 (13 agents, single batch per spec Fix D/AC8) | `000082-080` |
+
+### Phase 000083 — Verification Hard Gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `000083-010-infra-toolkit-eval-coverage-rerun` | infra | all 9 Phase `000082` tasks |
+
+### Parallel Execution Notes (Batch 19)
+
+- Initial ready set: `000082-010-test-trigger-cases-planning-core`.
+- Every Phase `000082` task is chained strictly (`010→020→...→090`) because all 9 append to the same `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json` file — this is the single-writer invariant the spec's own Existing Constraints table requires ("the file is never restructured, only extended"). **No worktree parallelism within Phase `000082`.**
+- `000083-010` is a hard gate: waits for all 9 Phase `000082` tasks, then runs catalog-wide coverage check, judgment-tier re-run (`/ywc-toolkit-eval --mode full --target all`), and baseline diff (AC5/AC6).
+- `history.mechanical.json` (the `--ci` regression baseline) is untouched by this entire batch — S1/A2 is judgment-tier and is never stored there (`score.py`: "signals-only, never axes"). No task in this batch runs `--ci`.
+- Exception handling (Fix G/T): any item that cannot reach `sufficient == true` after one remediation retry is routed to a documented exception list with category (a)/(b) evidence (Fix M/W), verified catalog-wide by `000083-010` (AC11/AC12/AC13) — this never blocks the chain (Fix P/X: the gate is append success, not per-item sufficiency).
+
+```mermaid
+graph LR
+  A[000082-010 planning-core] --> B[000082-020 spec-execution]
+  B --> C[000082-030 devenv]
+  C --> D[000082-040 iac-infra]
+  D --> E[000082-050 review-quality]
+  E --> F[000082-060 git-release]
+  F --> G[000082-070 durable-memory]
+  G --> H[000082-080 testing-misc]
+  H --> I[000082-090 agents]
+  I --> J[000083-010 coverage-rerun]
+```
+

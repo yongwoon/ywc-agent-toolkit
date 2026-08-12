@@ -100,6 +100,14 @@ For each PR, run these checks **before** attempting to merge. If any check fails
 | **Major version upgrade** | PR bumps a major version (e.g. 2.x → 3.x), which risks breaking changes | `Skipped (Major version upgrade)` |
 | **CI status** | Required CI checks have not all passed | `Failed (CI not passing)` |
 
+To detect a Dockerfile FROM change:
+
+```bash
+gh pr diff {number} --name-only | grep -qi 'Dockerfile' && \
+  gh pr diff {number} | grep -qE '^[-+]FROM ' && \
+  echo "Dockerfile FROM change detected — skip"
+```
+
 To detect major version bumps, compare the version numbers in the PR title (Dependabot titles typically follow the pattern "Bump X from A to B"). A major bump means the leftmost non-zero version segment changed.
 
 ### 2.5. Ecosystem Grouping (parallel-auto mode only)
@@ -147,7 +155,23 @@ gh pr checks {number} --required
 gh pr merge {number} --merge
 ```
 
-**If a merge conflict occurs**, resolve it in this order. First, comment `@dependabot rebase` on the PR and wait for Dependabot to rebase (consistent with the Rationalization Defense above). Only if the rebase does **not** clear the conflict, fall back to the manual path below:
+**If a merge conflict occurs**, resolve it in this order. First, comment `@dependabot rebase` on the PR, then poll for the rebase to land (consistent with the Rationalization Defense above) — do not guess at how long to wait:
+
+```bash
+gh pr comment {number} --body "@dependabot rebase"
+# Wait up to 10 minutes for Dependabot's rebase, polling every 30 seconds.
+deadline=$(( $(date +%s) + 600 ))
+while [ "$(date +%s)" -lt "$deadline" ]; do
+  merge_status=$(gh pr view {number} --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
+  if [ "$merge_status" != "CONFLICTING" ] && [ "$merge_status" != "DIRTY" ]; then
+    echo "rebase landed, mergeStateStatus=$merge_status"
+    break
+  fi
+  sleep 30
+done
+```
+
+If the loop exits at the deadline still `CONFLICTING`/`DIRTY`, the rebase did **not** clear the conflict — fall back to the manual path below:
 
 1. Check out the PR branch and attempt to resolve the conflict
 2. Push the resolved branch

@@ -9,7 +9,7 @@ docs/
 ├── README.md
 ├── product/            # Product goals, target users, scope
 ├── architecture/       # System structure, technical choices, ADR
-├── specification/      # Per-feature detailed rules, implementation criteria
+├── specification/      # Per-feature detailed rules — owned by ywc-spec-writer, not this skill
 ├── plans/              # Implementation order, milestones, dependencies
 ├── manuals/            # Operating procedures, configuration guides, how-to
 ├── troubleshooting/    # Incident response, known-issue resolution
@@ -30,8 +30,9 @@ When creating a new document, choose the directory by the document's **purpose**
 |---|---|---|---|
 | Product goals, target users, scope | `docs/product/` | "Why does this feature exist?" | `product-overview.md`, `prd-*.md`, `feature-scope.md` |
 | System design, technical choices | `docs/architecture/` | "Why and how was it built?" | `technical-spec.md`, `directory-structure.md`, `adr-*.md` |
-| Per-feature detailed rules | `docs/specification/` | "What should be built?" | `authentication.md`, `data-model.md`, `api-contract.md` |
 | Implementation order, milestones | `docs/plans/` | "When do we implement what?" | `implementation-plan.md`, `phase-1.md`, `dependency-graph.md` |
+
+> **`docs/specification/` is out of scope for this skill.** Per-feature detailed rules and implementation criteria belong there, but that directory is owned exclusively by `ywc-spec-writer` (task-range and PR-based incremental spec updates). Route any request for specification content to `ywc-spec-writer` instead of writing it here.
 
 ### Secondary axis (operations, assets, temporary)
 
@@ -47,7 +48,7 @@ When creating a new document, choose the directory by the document's **purpose**
 
 1. "Why does this feature exist?" → `product/`
 2. "Why does this system behave this way?" → `architecture/`
-3. "What are the detailed rules of this feature?" → `specification/`
+3. "What are the detailed rules of this feature?" → `specification/` (owned by `ywc-spec-writer`, not this skill)
 4. "What do we implement first?" → `plans/`
 5. "How do we configure this service?" → `manuals/`
 6. "How do we resolve this problem?" → `troubleshooting/`

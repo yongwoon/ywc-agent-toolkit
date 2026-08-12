@@ -1,7 +1,7 @@
 ---
 name: ywc-project-docs
 version: 2.3.0
-description: "(ywc) Use when the user wants to generate or add project docs/ documentation in Korean, Japanese, English, Chinese, or Spanish (Task, Architecture, Specification, Product, operational guides). Triggers: '문서 작성', 'write a doc', 'add to docs/', 'English docs', '中文文档', 'ドキュメント作成', '文書作成', 'documentación del proyecto'. Do not use for code comments, README at repo root, skill authoring (use ywc-skill-author), domain glossary (use ywc-ubiquitous-language), changelog/release notes (use ywc-changelog-release-notes), implementation tasks (use ywc-task-generator), README-locale/WHY-comments/CHANGELOG entries (use ywc-doc-writer), or a standalone Specification document (use ywc-spec-writer)."
+description: "(ywc) Use when the user wants to generate or add project docs/ documentation in Korean, Japanese, English, Chinese, or Spanish (Architecture, Product, Plans, operational guides). Triggers: '문서 작성', 'write a doc', 'add to docs/', 'English docs', '中文文档', 'ドキュメント作成', '文書作成', 'documentación del proyecto'. Do not use for code comments, README at repo root, skill authoring (use ywc-skill-author), domain glossary (use ywc-ubiquitous-language), changelog/release notes (use ywc-changelog-release-notes), implementation tasks (use ywc-task-generator), README-locale/WHY-comments/CHANGELOG entries (use ywc-doc-writer), or any docs/specification/ content — per-feature detailed rules, implementation criteria, acceptance criteria (use ywc-spec-writer; that directory is its exclusive ownership, not this skill's)."
 category: spec
 phase: planning
 requires: []
@@ -67,7 +67,7 @@ Then apply the corresponding policy from the Language Policy section below.
 ## Common Conventions
 
 Directory structure, routing rules, naming conventions, document templates,
-anti-patterns, folder-specific conventions (Architecture/Specification/Product),
+anti-patterns, folder-specific conventions (Architecture/Product/Plans),
 and the pre-creation checklist follow the **shared reference**:
 
 → [`../references/project-docs-structure.md`](../references/project-docs-structure.md)

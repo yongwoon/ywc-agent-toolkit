@@ -53,15 +53,15 @@ When tempted to skip a step, check this table first:
 
 ## Input Analysis
 
-Identify the following elements from user input. Use reasonable defaults for unspecified items, but confirm important choices with the user.
+Identify the following elements from user input. Language, Framework, and Scale are never defaulted — always ask (see Rationalization Defense). Architecture, Protocol, and Domain may fall back to the listed default when unspecified.
 
 | Element | Example | Default |
 |---------|---------|---------|
-| **Language** | Python, Ruby, Go, Rust, JavaScript, TypeScript | Required |
-| **Framework** | FastAPI, Rails, NestJS, Next.js, Astro, Gin, Echo | Recommended by language |
+| **Language** | Python, Ruby, Go, Rust, JavaScript, TypeScript | Required — always ask |
+| **Framework** | FastAPI, Rails, NestJS, Next.js, Astro, Gin, Echo | Required — always ask |
 | **Architecture** | Clean Architecture, Hexagonal, DDD, MVC, Layered | Follows Framework conventions |
 | **Protocol** | REST API, GraphQL, gRPC, WebSocket, Message Queue | REST API |
-| **Scale** | small, medium, large | medium |
+| **Scale** | small, medium, large | Required — always ask |
 | **Domain** | e-commerce, SaaS, chat, CMS, etc. | General-purpose |
 
 ### Scale Criteria

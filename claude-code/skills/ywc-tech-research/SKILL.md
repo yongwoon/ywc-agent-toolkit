@@ -81,7 +81,7 @@ Parse `$ARGUMENTS` for:
 
    Supplement context7 with direct official docs. For any source, check the last-updated date:
    - Prefer documentation updated within the last 12 months
-   - Flag sources older than 2 years as `[potentially stale]` in the References section
+   - Flag sources older than 12 months as `[potentially stale]` in the References section (Source Discipline Rule 4 applies this threshold to every claim); sources older than 2 years should not be cited without an explicit caveat
    - Distinguish official docs from community resources (Stack Overflow, blogs) — present them separately
 
    **Step 3c — `--compare` parallel mode**
