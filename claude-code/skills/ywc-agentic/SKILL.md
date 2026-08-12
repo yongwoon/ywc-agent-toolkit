@@ -143,6 +143,8 @@ ywc-<sequential|parallel>-executor --all --tasks-dir <tasks-dir> --local-merge -
 ```
 `--local-merge` keeps iterations fast — no PR round-trip; completed tasks merge to the base branch directly. After the executor returns, collect each task's success/failure status from its return payload.
 
+When Step 4 selected `ywc-sequential-executor`, append `--non-interactive` to this invocation, forwarding the loop's autonomy contract into the executor's own forced review calls. When Step 4 selected `ywc-parallel-executor`, do **not** append it — `ywc-parallel-executor` has no `--non-interactive` flag of its own.
+
 **Small Path:** invoke `ywc-code-gen` directly against the `plan.md` from Step 3. No executor, no `tasks/` directory. `ywc-code-gen` commits its output to the base branch so the Evaluate Phase can range over it.
 
 Invoke it **without `--review`**. Step 6 (Evaluate Phase) already runs `ywc-impl-review` on the same branch, so passing `--review` reviews it twice per loop iteration. `ywc-code-gen`'s forced critical-path escalation still runs on its own — that is by design and must not be suppressed.
@@ -153,7 +155,7 @@ If the executor or `ywc-code-gen` reports a merge conflict or unrecoverable CI e
 
 Run `ywc-impl-review` over only this iteration's changes, judged against the original full spec:
 ```text
-ywc-impl-review --spec docs/ywc-plans/agentic-<slug>-iter1.md --git-range <pre-iter-sha>..HEAD
+ywc-impl-review --spec docs/ywc-plans/agentic-<slug>-iter1.md --git-range <pre-iter-sha>..HEAD --non-interactive
 ```
 - `--spec` is **always the original full spec**, never a re-plan's narrow amendment. A narrow spec would not flag regressions that iteration N introduced into iteration 1's code.
 - `--git-range` scopes the review to commits added during this iteration (`<pre-iter-sha>` recorded in Step 5).

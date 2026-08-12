@@ -194,8 +194,8 @@ When running downstream through `ywc-sequential-executor` or `ywc-parallel-execu
 
    | Trigger | What runs |
    |---------|-----------|
-   | `--review` passed | `/ywc-impl-review --spec <spec-path> --working-tree` |
-   | Any generated file matches a **critical path** — forced, **even without `--review`** | `/ywc-impl-review --spec <spec-path> --working-tree` **and** `/ywc-security-audit` |
+   | `--review` passed | `/ywc-impl-review --spec <spec-path> --working-tree --non-interactive` |
+   | Any generated file matches a **critical path** — forced, **even without `--review`** | `/ywc-impl-review --spec <spec-path> --working-tree --non-interactive` **and** `/ywc-security-audit` |
 
    **Review target depends on `--tdd`** — get this wrong and the gate reviews nothing:
 
