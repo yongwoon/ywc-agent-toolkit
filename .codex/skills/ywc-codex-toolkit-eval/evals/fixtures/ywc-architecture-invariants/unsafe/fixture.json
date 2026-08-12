@@ -6,15 +6,18 @@
   "category": "negative",
   "should_trigger": true,
   "expected_checks": [
+    {"type": "file_exists", "path": "architecture-invariants.json"},
     {"type": "file_exists", "path": "input.json"},
     {"type": "file_regex", "path": "input.json", "regex": "do-not-execute"},
+    {"type": "file_exists", "path": "evidence/rejection.json"},
+    {"type": "json_path_equals", "path": "evidence/rejection.json", "json_path": "$.status", "expected_value": "NEEDS_CONTEXT"},
     {"type": "verifier", "verifier_id": "bundle.validate"}
   ],
   "workspace": {
     "fixture_root": "ywc-architecture-invariants/unsafe",
     "target_skill": "ywc-architecture-invariants",
     "skill_dependencies": [],
-    "fixture_files": ["input.json"],
+    "fixture_files": ["architecture-invariants.json", "input.json"],
     "output_paths": ["evidence/rejection.json"],
     "evidence_packet": {"mode": "validate", "expected_status": "NEEDS_CONTEXT", "execute_verifier_data": false},
     "verifier_ids": ["bundle.validate"]

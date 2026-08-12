@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import os
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -88,6 +89,50 @@ class RunnerTest(unittest.TestCase):
             path = request.workspace / "input.txt"; path.write_text("other"); os.utime(path, ns=(original.st_atime_ns, original.st_mtime_ns))
         result = self.run_live(self.payload(), FakeAdapter(rewrite))
         self.assertEqual("FAIL", result["status"]); self.assertIn("input.txt", result["diff"])
+
+    def test_expected_checks_are_enforced(self):
+        def write(request):
+            (request.workspace / "result.json").write_text('{"status":"DONE"}')
+        payload = self.payload(outputs=["result.json"])
+        payload["expected_checks"] = [
+            {"type": "file_exists", "path": "result.json"},
+            {"type": "json_path_equals", "path": "result.json", "json_path": "$.status", "expected_value": "DONE"},
+        ]
+        result = self.run_live(payload, FakeAdapter(write))
+        self.assertEqual("PASS", result["status"])
+        payload["expected_checks"][1]["expected_value"] = "BLOCKED"
+        result = self.run_live(payload, FakeAdapter(write))
+        self.assertEqual("FAIL", result["status"])
+        self.assertIn("json_path_equals", result["error"])
+
+    def test_architecture_fixture_manifests_validate_in_isolation(self):
+        fixture_root = Path(__file__).parents[1] / "evals" / "fixtures"
+        repo_root = Path(__file__).parents[4]
+        def write_evidence(request):
+            evidence = {
+                "Validate": "evidence/validation.json",
+                "Reject": "evidence/rejection.json",
+                "With": "evidence/fallback.json",
+            }[request.prompt.split(" ")[0]]
+            source = json.loads((request.workspace / "input.json").read_text(encoding="utf-8"))
+            manifest = request.workspace / "architecture-invariants.json"
+            if manifest.exists():
+                contract = json.loads(manifest.read_text(encoding="utf-8"))
+                status = "NEEDS_CONTEXT" if "verifier" in contract or not contract.get("components") else "DONE"
+            else:
+                status = source["expected"]
+            path = request.workspace / evidence
+            path.parent.mkdir()
+            path.write_text(json.dumps({"status": status}, ensure_ascii=False))
+        original_verifiers = runner._run_verifiers
+        runner._run_verifiers = lambda *_args: None
+        try:
+            for relative in ("ywc-architecture-invariants/valid/fixture.json", "ywc-architecture-invariants/unsafe/fixture.json", "ywc-architecture-invariants/no-manifest/fixture.json"):
+                payload = json.loads((fixture_root / relative).read_text(encoding="utf-8"))
+                result = run_case(payload, fixture_root=fixture_root, repo_root=repo_root, adapter=FakeAdapter(write_evidence), credential_provider="injected_ci_secret", credential_material=("CODEX_API_KEY", "test-only-secret"))
+                self.assertEqual("PASS", result["status"], f"{relative}: {result}")
+        finally:
+            runner._run_verifiers = original_verifiers
 
 
 if __name__ == "__main__":

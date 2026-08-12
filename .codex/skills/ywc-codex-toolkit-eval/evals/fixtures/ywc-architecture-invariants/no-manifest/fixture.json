@@ -8,6 +8,8 @@
   "expected_checks": [
     {"type": "file_exists", "path": "input.json"},
     {"type": "file_regex", "path": "input.json", "regex": "N/A"},
+    {"type": "file_exists", "path": "evidence/fallback.json"},
+    {"type": "json_path_equals", "path": "evidence/fallback.json", "json_path": "$.status", "expected_value": "N/A — no architecture contract"},
     {"type": "verifier", "verifier_id": "bundle.validate"}
   ],
   "workspace": {
