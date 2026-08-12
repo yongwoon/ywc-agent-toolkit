@@ -1,0 +1,13 @@
+{
+  "skill_name": "ywc-architecture-invariants",
+  "evals": [
+    {"id": 1, "prompt":"Run the closed-unknown-fields fixture.","expected_behavior":["Returns NEEDS_CONTEXT."]},
+    {"id": 2, "prompt":"Run explicit-manifest-no-fallback.","expected_behavior":["Returns NEEDS_CONTEXT without discovery fallback."]},
+    {"id": 3, "prompt":"Check glob-zero-segment, glob-single-segment, and glob-terminal-multi-segment.","expected_behavior":["Applies only the specified glob semantics."]},
+    {"id": 4, "prompt":"Run ambiguous-non-shared-mapping.","expected_behavior":["Returns NEEDS_CONTEXT."]},
+    {"id": 5, "prompt":"Run scope-digest-mismatch and incomplete-rule-coverage.","expected_behavior":["Returns NEEDS_CONTEXT."]},
+    {"id": 6, "prompt":"Run forbid-observed-edge, allow-observed-edge, and verdict-precedence.","expected_behavior":["Returns VIOLATED, MAINTAINED, and precedence VIOLATED respectively."]},
+    {"id": 7, "prompt":"Run no-manifest-fallback.","expected_behavior":["Returns N/A without changing existing behavior."]},
+    {"id": 8, "prompt":"Inspect zero-child-processes.","expected_behavior":["Launches zero child processes."]}
+  ]
+}
