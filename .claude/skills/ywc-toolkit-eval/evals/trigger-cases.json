@@ -3195,7 +3195,7 @@
     },
     {
       "id": "code-gen-pos-5",
-      "prompt": "이 스펙으로 백엔드랑 프론트 동시에 코드 생성해줘",
+      "prompt": "이 기능 구현하는데 서버 쪽이랑 화면 쪽 한꺼번에 만들어줄 수 있어?",
       "expected": "ywc-code-gen",
       "kind": "positive",
       "source": "user-prompt"
@@ -3233,7 +3233,7 @@
       "note": "spec-ready wins while the spec still has Critical/Warning findings; task-generator is for an already-DONE spec"
     },
     {
-      "id": "taskgenerator-vs-specready-1",
+      "id": "task-generator-vs-spec-ready-1",
       "prompt": "스펙 검증 다 끝났고 DONE이야, 이제 이걸로 작업 목록 나눠줘",
       "expected": "ywc-task-generator",
       "kind": "collision",
@@ -3251,7 +3251,7 @@
       "note": "agentic wins for autonomous end-to-end delivery with no pre-existing tasks/ directory; sequential-executor requires tasks/ already defined"
     },
     {
-      "id": "sequentialexecutor-vs-parallelexecutor-2",
+      "id": "sequential-executor-vs-parallel-executor-2",
       "prompt": "이 작업들 순서 중요하니까 하나씩 차례로 처리해줘, 동시에 하지 말고",
       "expected": "ywc-sequential-executor",
       "kind": "collision",
@@ -3260,7 +3260,7 @@
       "note": "sequential-executor wins when order is explicitly required; parallel-executor is for independent tasks run simultaneously"
     },
     {
-      "id": "parallelexecutor-vs-sequentialexecutor-1",
+      "id": "parallel-executor-vs-sequential-executor-1",
       "prompt": "이 작업들 서로 독립적이니까 워크트리로 나눠서 동시에 처리해줘",
       "expected": "ywc-parallel-executor",
       "kind": "collision",
@@ -3269,7 +3269,7 @@
       "note": "parallel-executor wins for independent tasks run simultaneously via worktree isolation; sequential-executor runs in strict order"
     },
     {
-      "id": "codegen-vs-sequentialexecutor-2",
+      "id": "code-gen-vs-sequential-executor-2",
       "prompt": "아직 작업 목록 없고 스펙만 있는데, 백엔드랑 프론트 코드 새로 생성해줘",
       "expected": "ywc-code-gen",
       "kind": "collision",
@@ -3278,7 +3278,7 @@
       "note": "code-gen wins when only a spec exists and no tasks/ directory has been generated yet; sequential-executor needs tasks/ already defined"
     },
     {
-      "id": "codegen-vs-parallelexecutor-2",
+      "id": "code-gen-vs-parallel-executor-2",
       "prompt": "아직 아무 작업 목록도 없어, 이 스펙으로 API랑 화면 새로 만들어줘",
       "expected": "ywc-code-gen",
       "kind": "collision",
