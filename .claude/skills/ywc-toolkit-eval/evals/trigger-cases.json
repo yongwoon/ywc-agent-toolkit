@@ -3382,13 +3382,13 @@
       "note": "sequential-executor wins for a single-task run with no worktree port collision; docker-isolate's own anti-trigger names exactly this scenario"
     },
     {
-      "id": "docker-isolate-vs-worktrees-2",
-      "prompt": "워크트리 자체는 이미 다 만들어놨고, 그 안에서 도커 포트만 안 겹치게 해줘",
+      "id": "docker-isolate-vs-infra-design-1",
+      "prompt": "이건 로컬 개발 환경 도커 포트 충돌 문제야, 인프라 설계 얘기 아니고",
       "expected": "ywc-docker-isolate",
       "kind": "collision",
       "source": "user-prompt",
-      "impostor": "ywc-worktrees",
-      "note": "docker-isolate wins for port-collision isolation specifically; worktrees only manages the worktree lifecycle itself, not Docker port allocation"
+      "impostor": "ywc-infra-design",
+      "note": "docker-isolate wins for local/dev docker port collisions; ywc-infra-design's own anti-trigger explicitly defers exactly this case to ywc-docker-isolate"
     },
     {
       "id": "refactor-clean-vs-code-gen-1",
@@ -3425,6 +3425,15 @@
       "source": "user-prompt",
       "impostor": "ywc-onboard-repo",
       "note": "project-scaffold wins for creating a brand-new repo from scratch; onboard-repo's own anti-trigger explicitly defers that case to project-scaffold"
+    },
+    {
+      "id": "finish-branch-vs-worktrees-1",
+      "prompt": "이 브랜치 이제 머지하고 완료 처리까지 해줘",
+      "expected": "ywc-finish-branch",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-worktrees",
+      "note": "finish-branch wins for CI/merge/Mark-Complete delivery; worktrees' own anti-trigger explicitly defers that case to finish-branch"
     }
   ]
 }
