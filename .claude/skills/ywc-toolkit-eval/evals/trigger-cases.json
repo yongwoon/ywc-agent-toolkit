@@ -4685,7 +4685,7 @@
     },
     {
       "id": "qa-engineer-vs-doc-writer-1",
-      "prompt": "이건 문서 작성이 아니라, 이 함수에 대한 실제 검증 코드 짜달라는 거야",
+      "prompt": "이건 README나 주석 작업이 아니라, 이 함수에 대한 실제 검증 코드 짜달라는 거야",
       "expected": "ywc-qa-engineer",
       "kind": "collision",
       "source": "user-prompt",

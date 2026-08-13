@@ -14,9 +14,12 @@ Loaded by ywc-impl-review before review; each entry records what + WHY + polarit
 
 | L004 | `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json` | Design | DO-NOT | L001's "no verbatim trigger phrase" rule applies even in a "not-X" / rejection framing (e.g. "코드 리뷰 말고, 취약점만 봐줘" for a `security-audit` collision whose `impostor` is `ywc-impl-review`) — the literal string is still present in the prompt regardless of the sentence's polarity. | The activation judge matches on text, not on the author's intended polarity; a prompt that says "not X" while literally containing X's trigger phrase still trivially resolves to X by naive/keyword matching, defeating the collision case's entire purpose (to make the *other* item win). | ywc-impl-review finding (self-caught by the automated L001 check before commit), task 000082-050-test-trigger-cases-review-quality, 2026-08-13 |
 
+| L005 | `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json` | Design | DO | When applying L001/L004 to an **agent** (`claude-code/agents/*.md`), extract trigger phrases from the body's `- Natural language: "..."` bullet list, not just the frontmatter `description:` field's "Triggers:"/"natural language phrases" prose — the two lists can differ (e.g. `ywc-doc-writer`'s frontmatter list omits "문서 작성", which only appears in the body list). Check both. | `ywc-impl-review` (Architecture) caught a case that reproduced an agent's body-only trigger phrase verbatim inside a "not-X" negation — the frontmatter-only extraction used earlier in this task missed it because the two lists are authored independently and are not guaranteed to be supersets of each other. | ywc-impl-review finding, task 000082-090-test-trigger-cases-agents, 2026-08-13 |
+
 ## Change Log
 - 2026-08-13: L001 added (source: review, task 000082-010).
 - 2026-08-13: L001 widened to cover verbatim trigger-phrase reuse (not just the identifier); L002 added (source: review, task 000082-020).
 - 2026-08-13: L003 added (source: review, task 000082-040).
 - 2026-08-13: L004 added (source: review, task 000082-050).
 - 2026-08-13: L003 strengthened after a 6-of-9 collision-direction regression (source: review, task 000082-080).
+- 2026-08-13: L005 added (source: review, task 000082-090).
