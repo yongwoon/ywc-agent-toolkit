@@ -16,6 +16,8 @@ Loaded by ywc-impl-review before review; each entry records what + WHY + polarit
 
 | L005 | `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json` | Design | DO | When applying L001/L004 to an **agent** (`claude-code/agents/*.md`), extract trigger phrases from the body's `- Natural language: "..."` bullet list, not just the frontmatter `description:` field's "Triggers:"/"natural language phrases" prose — the two lists can differ (e.g. `ywc-doc-writer`'s frontmatter list omits "문서 작성", which only appears in the body list). Check both. | `ywc-impl-review` (Architecture) caught a case that reproduced an agent's body-only trigger phrase verbatim inside a "not-X" negation — the frontmatter-only extraction used earlier in this task missed it because the two lists are authored independently and are not guaranteed to be supersets of each other. | ywc-impl-review finding, task 000082-090-test-trigger-cases-agents, 2026-08-13 |
 
+| L006 | `.claude/skills/ywc-toolkit-eval/evals/trigger-cases.json` | Design | DO-NOT | Never let AC4/L003 grounding-clause selection override the actual scenario semantics: `expected` must be the item that genuinely wins the situation described in `prompt`, independent of which side's own clause happens to satisfy the strict grounding check. Write the prompt and decide the winner FIRST, then find/verify grounding for that direction — never pick whichever direction has a citable clause and let the prompt follow it. | A judgment-tier rerun caught 2 cases (`e2e-test-strategy-vs-gen-testcase-1/2`) where `expected`/`impostor` were backwards relative to both the prompt content and the case's own `note` — introduced while fixing an AC4-direction problem (L003) by conflating "which side's clause proves genuine competition" with "who actually wins this prompt." A backwards winner label is worse than a technically-imperfect grounding citation: it corrupts both mechanical coverage counting and judgment-tier precision/recall for two items simultaneously. | ywc-impl-review finding (S8 judge cluster), task 000083-010-infra-toolkit-eval-coverage-rerun, 2026-08-13 |
+
 ## Change Log
 - 2026-08-13: L001 added (source: review, task 000082-010).
 - 2026-08-13: L001 widened to cover verbatim trigger-phrase reuse (not just the identifier); L002 added (source: review, task 000082-020).
@@ -23,3 +25,4 @@ Loaded by ywc-impl-review before review; each entry records what + WHY + polarit
 - 2026-08-13: L004 added (source: review, task 000082-050).
 - 2026-08-13: L003 strengthened after a 6-of-9 collision-direction regression (source: review, task 000082-080).
 - 2026-08-13: L005 added (source: review, task 000082-090).
+- 2026-08-13: L006 added (source: review, task 000083-010).
