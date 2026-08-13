@@ -52,13 +52,13 @@ Source note: 2026-07-01 rows cite `docs/skill-agent-eval/codex/2026-07-01-post-i
 | `codex/agents/ywc-root-cause-analyst.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
 | `codex/agents/ywc-security-engineer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
 | `codex/agents/ywc-typescript-reviewer.toml` | agent | A / 4.00 | A / 4.00 | same | 2026-07-01 | No score below 4 | Maintain; agent smoke evidence passing |
-| `codex/skills/ywc-architecture-invariants` | skill | A / 3.74 | n/a | same | 2026-08-13 | S5=2 | Fixture coverage added; scorer integration/judgment pass still required |
+| `codex/skills/ywc-architecture-invariants` | skill | A / 3.74 | n/a | new | 2026-08-13 | S5=2 | Fixture coverage added; scorer integration/judgment pass still required |
 | `codex/skills/ywc-auth-implement` | skill | A / 4.00 | n/a | new | 2026-08-12 | No score below 4 | Maintain |
-| `codex/skills/ywc-iac-author` | skill | A / 3.87 | n/a | same | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
+| `codex/skills/ywc-iac-author` | skill | A / 3.87 | n/a | new | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
 | `codex/skills/ywc-implement` | skill | A / 4.00 | n/a | new | 2026-08-12 | No score below 4 | Maintain |
-| `codex/skills/ywc-infra-design` | skill | A / 3.87 | n/a | same | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
-| `codex/skills/ywc-infra-optimize` | skill | A / 3.87 | n/a | same | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
-| `codex/skills/ywc-infra-review` | skill | A / 3.87 | n/a | same | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
+| `codex/skills/ywc-infra-design` | skill | A / 3.87 | n/a | new | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
+| `codex/skills/ywc-infra-optimize` | skill | A / 3.87 | n/a | new | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
+| `codex/skills/ywc-infra-review` | skill | A / 3.87 | n/a | new | 2026-08-13 | S5=3 | Behavioral fixture added; scorer integration/judgment pass still required |
 | `codex/skills/ywc-setup` | skill | A / 4.00 | n/a | new | 2026-08-12 | No score below 4 | Maintain |
 | `codex/skills/ywc-wayfinder` | skill | A / 4.00 | n/a | new | 2026-08-12 | No score below 4 | Maintain |
 | `codex/agents/ywc-cloud-engineer.toml` | agent | A / 4.00 | n/a | new | 2026-08-12 | No score below 4 | Maintain; smoke evidence passing |

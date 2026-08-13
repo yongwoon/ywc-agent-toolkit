@@ -69,16 +69,29 @@ grouped rows above account for all 58 assets: 50 skills and 8 agents.
 - Improved: 0 claimed from this evaluation alone.
 - Regressed: 0.
 - Lowest current grade: A / 3.74.
-- Next review scope: targeted S5 fixture coverage for architecture/infrastructure skills.
+- Next review scope: scorer integration or judgment pass for the new fixture evidence.
 
 ## 2026-08-13 Offline Evidence Pass
 
 | Check | Result | Evidence |
 |---|---|---|
-| Architecture fixtures | PASS | Valid, unsafe, and no-manifest V2 cases under `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-architecture-invariants/`; runner output checks enforce structured status evidence. |
-| IaC/design fixtures | PASS | Missing-design `NEEDS_CONTEXT`, validate/plan-only, review handoff, design-only, and IaC handoff assertions under the IaC/design fixture roots. |
-| Optimization/review fixtures | PASS | SAFE/CAUTION/DANGER routing, no auto-execution, three-lens status, and Critical BLOCK evidence under the optimization/review fixture roots. |
-| Required gates | PASS | Targeted validator/runner tests, mocked runner, inventory gate, contract evals, `scripts/validate.sh`, mechanical markdown score, and mechanical CI score. |
+| Architecture fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-architecture-invariants/{valid,unsafe,no-manifest}/fixture.json`; runner output checks enforce structured status evidence. |
+| IaC/design fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-iac-author/{missing-design,happy-path,boundary}/fixture.json` and `ywc-infra-design/{happy-path,negative}/fixture.json`. |
+| Optimization/review fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-infra-optimize/{happy-path,caution,boundary}/fixture.json` and `ywc-infra-review/{happy-path,negative}/fixture.json`. |
+
+### Required command evidence
+
+| Command | Exit | Result |
+|---|---:|---|
+| `test_fixture_validator.py` | 0 | 8 tests passed |
+| `test_runner.py` | 0 | 10 tests passed |
+| `test_workflow_contract.py` | 0 | 5 tests passed |
+| `runner.py --adapter fake --suite mocked` | 0 | PASS |
+| `inventory_gate.py --only skills --json` | 0 | PASS; 50 skills |
+| `run-codex-skill-contract-evals.sh` | 0 | PASS |
+| `scripts/validate.sh` | 0 | PASS; 58 mechanical items, no regression |
+| `score.py --mode mechanical --target all --format markdown` | 0 | PASS; S5 unchanged |
+| `score.py --mode mechanical --target all --ci` | 0 | PASS |
 
 ### AC8 Limitation
 
