@@ -3285,6 +3285,146 @@
       "source": "user-prompt",
       "impostor": "ywc-parallel-executor",
       "note": "code-gen wins when no tasks/ directory exists yet; parallel-executor requires tasks already defined to run in parallel"
+    },
+    {
+      "id": "worktrees-pos-5",
+      "prompt": "이 작업 격리해서 진행할 워크트리 하나 만들어줘",
+      "expected": "ywc-worktrees",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "worktrees-pos-6",
+      "prompt": "다 쓴 워크트리들 안 쓰는 거 있으면 지워줘",
+      "expected": "ywc-worktrees",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "docker-isolate-pos-4",
+      "prompt": "워크트리 여러 개 띄웠는데 도커 스택끼리 서로 포트가 겹쳐서 안 뜨네, 이거 좀 나눠줘",
+      "expected": "ywc-docker-isolate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "docker-isolate-pos-5",
+      "prompt": "이미 포트 사용 중이라고 에러 나는데, 워크트리별로 안 겹치게 나눠줄 수 있어?",
+      "expected": "ywc-docker-isolate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "docker-isolate-pos-6",
+      "prompt": "각 워크트리마다 컨테이너 스택이 독립적으로 뜨게 설정해줘",
+      "expected": "ywc-docker-isolate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "refactor-clean-pos-5",
+      "prompt": "안 쓰는 함수랑 export 있으면 찾아서 지워줘",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "refactor-clean-pos-6",
+      "prompt": "비슷한 유틸 함수들 중복되는 거 하나로 합쳐줘",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "refactor-clean-pos-7",
+      "prompt": "오래 방치된 죽은 코드 있으면 이번에 한번 정리해줘",
+      "expected": "ywc-refactor-clean",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "onboard-repo-pos-5",
+      "prompt": "이 저장소 처음 열어보는데 구조부터 좀 설명해줄래",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "onboard-repo-pos-6",
+      "prompt": "새로 합류한 팀원한테 보여줄 이 코드베이스 브리핑 자료 만들어줘",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "onboard-repo-pos-7",
+      "prompt": "이 프로젝트 컨벤션 파악해서 시작용 가이드 문서 초안 만들어줘",
+      "expected": "ywc-onboard-repo",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "worktrees-vs-parallel-executor-2",
+      "prompt": "지금 워크트리들 상태가 이상한데, 감사만 해줘, 작업 실행은 하지 말고",
+      "expected": "ywc-worktrees",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-parallel-executor",
+      "note": "worktrees wins for a standalone create/audit/prune request; task-level orchestration is explicitly out of scope per worktrees' own anti-trigger"
+    },
+    {
+      "id": "docker-isolate-vs-sequential-executor-1",
+      "prompt": "이건 작업 하나만 있는 거라 워크트리도 안 쓰는데, 포트 충돌은 없어. 순서대로만 실행해줘",
+      "expected": "ywc-sequential-executor",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-docker-isolate",
+      "note": "sequential-executor wins for a single-task run with no worktree port collision; docker-isolate's own anti-trigger names exactly this scenario"
+    },
+    {
+      "id": "docker-isolate-vs-worktrees-2",
+      "prompt": "워크트리 자체는 이미 다 만들어놨고, 그 안에서 도커 포트만 안 겹치게 해줘",
+      "expected": "ywc-docker-isolate",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-worktrees",
+      "note": "docker-isolate wins for port-collision isolation specifically; worktrees only manages the worktree lifecycle itself, not Docker port allocation"
+    },
+    {
+      "id": "refactor-clean-vs-code-gen-1",
+      "prompt": "이 함수 로직 자체를 바꿔서 새 동작 추가하는 리팩터링 해줘",
+      "expected": "ywc-code-gen",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-refactor-clean",
+      "note": "code-gen wins for a behavior-changing refactor; refactor-clean's own anti-trigger restricts it to byte-for-byte equivalence only"
+    },
+    {
+      "id": "refactor-clean-vs-tdd-ritual-1",
+      "prompt": "이 코드 동작 방식을 바꾸는 거라 테스트부터 다시 짜면서 리팩터링해줘",
+      "expected": "ywc-tdd-ritual",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-refactor-clean",
+      "note": "tdd-ritual wins for a behavior-changing, test-first refactor; refactor-clean's own anti-trigger excludes behavior-changing refactors"
+    },
+    {
+      "id": "onboard-repo-vs-project-scaffold-2",
+      "prompt": "이 기존 프로젝트 처음 보는데 구조랑 컨벤션부터 파악하고 싶어, 새로 만드는 거 말고",
+      "expected": "ywc-onboard-repo",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-project-scaffold",
+      "note": "onboard-repo wins for an existing, unfamiliar repo; project-scaffold's own domain is a brand-new repo from scratch"
+    },
+    {
+      "id": "project-scaffold-vs-onboard-repo-2",
+      "prompt": "이건 완전히 새 프로젝트인데 처음부터 구조 잡아서 만들어줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-onboard-repo",
+      "note": "project-scaffold wins for creating a brand-new repo from scratch; onboard-repo's own anti-trigger explicitly defers that case to project-scaffold"
     }
   ]
 }
