@@ -3087,6 +3087,204 @@
       "source": "user-prompt",
       "impostor": "ywc-spec-writer",
       "note": "task-generator decomposes an already-finalized spec into tasks; spec-writer authors/updates the spec document itself"
+    },
+    {
+      "id": "specready-pos-4",
+      "prompt": "스펙에 아직 critical 항목 남았는데, 통과할 때까지 알아서 계속 돌려줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "specready-pos-5",
+      "prompt": "지금 스펙 완성도가 부족한데, 통과할 때까지 자동으로 반복 검증하고 수정해줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "specready-pos-6",
+      "prompt": "계획하고 검증 계속 왔다갔다 하지 말고 알아서 수렴시켜줘, 준비되면 멈춰줘",
+      "expected": "ywc-spec-ready",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "task-generator-pos-5",
+      "prompt": "이 스펙 문서 다 됐으니까 구현 작업들로 쪼개줘",
+      "expected": "ywc-task-generator",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "task-generator-pos-6",
+      "prompt": "확정된 사양서를 바탕으로 작업 단위 나눠줘",
+      "expected": "ywc-task-generator",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "task-generator-pos-7",
+      "prompt": "스펙 완성됐어, 이제 작업 목록 뽑아줘",
+      "expected": "ywc-task-generator",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "agentic-pos-5",
+      "prompt": "이 기능 계획부터 구현, 검증까지 알아서 전부 자동으로 끝내줘",
+      "expected": "ywc-agentic",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "agentic-pos-6",
+      "prompt": "사람 개입 없이 처음부터 끝까지 자율로 진행해줘",
+      "expected": "ywc-agentic",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "agentic-pos-7",
+      "prompt": "목표만 줄테니까 사양서, 작업 분해, 구현, 리뷰까지 전부 자동으로 돌려줘",
+      "expected": "ywc-agentic",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "sequential-executor-pos-5",
+      "prompt": "작업 폴더에 있는 것들 순서대로 하나씩 실행해줘",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "sequential-executor-pos-6",
+      "prompt": "번호 순서 지켜서 브랜치-구현-머지까지 차례로 진행해줘",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "sequential-executor-pos-7",
+      "prompt": "이 작업 목록 차례대로 하나 끝나면 다음 걸로 넘어가줘",
+      "expected": "ywc-sequential-executor",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "parallel-executor-pos-5",
+      "prompt": "독립적인 작업들 여러 개 워크트리로 동시에 실행해줘",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "parallel-executor-pos-6",
+      "prompt": "서로 의존 없는 작업들이니까 한꺼번에 빠르게 처리해줘",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "parallel-executor-pos-7",
+      "prompt": "이 작업들 순서 상관없으니 동시에 돌려서 시간 단축해줘",
+      "expected": "ywc-parallel-executor",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "code-gen-pos-5",
+      "prompt": "이 스펙으로 백엔드랑 프론트 동시에 코드 생성해줘",
+      "expected": "ywc-code-gen",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "code-gen-pos-6",
+      "prompt": "API랑 화면 한번에 스캐폴딩해줘",
+      "expected": "ywc-code-gen",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "code-gen-pos-7",
+      "prompt": "CRUD 기능 풀스택으로 새로 생성해줘",
+      "expected": "ywc-code-gen",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "specready-vs-agentic-2",
+      "prompt": "이 스펙 그냥 처음부터 끝까지 구현, 검증까지 다 자동으로 돌려줘",
+      "expected": "ywc-agentic",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-spec-ready",
+      "note": "agentic wins for the full plan-execute-evaluate pipeline; spec-ready only loops plan+validate up to the task-generator handoff"
+    },
+    {
+      "id": "specready-vs-taskgenerator-1",
+      "prompt": "이 스펙 아직 critical 항목 남아있는데, 그거 통과할 때까지 자동으로 계속 돌려줘",
+      "expected": "ywc-spec-ready",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-task-generator",
+      "note": "spec-ready wins while the spec still has Critical/Warning findings; task-generator is for an already-DONE spec"
+    },
+    {
+      "id": "taskgenerator-vs-specready-1",
+      "prompt": "스펙 검증 다 끝났고 DONE이야, 이제 이걸로 작업 목록 나눠줘",
+      "expected": "ywc-task-generator",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-spec-ready",
+      "note": "task-generator wins once the spec is already DONE; spec-ready is for driving a not-yet-ready spec to DONE"
+    },
+    {
+      "id": "agentic-vs-sequentialexecutor-2",
+      "prompt": "따로 작업 목록 안 만들어도 되니까 처음부터 끝까지 알아서 진행해줘",
+      "expected": "ywc-agentic",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-sequential-executor",
+      "note": "agentic wins for autonomous end-to-end delivery with no pre-existing tasks/ directory; sequential-executor requires tasks/ already defined"
+    },
+    {
+      "id": "sequentialexecutor-vs-parallelexecutor-2",
+      "prompt": "이 작업들 순서 중요하니까 하나씩 차례로 처리해줘, 동시에 하지 말고",
+      "expected": "ywc-sequential-executor",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-parallel-executor",
+      "note": "sequential-executor wins when order is explicitly required; parallel-executor is for independent tasks run simultaneously"
+    },
+    {
+      "id": "parallelexecutor-vs-sequentialexecutor-1",
+      "prompt": "이 작업들 서로 독립적이니까 워크트리로 나눠서 동시에 처리해줘",
+      "expected": "ywc-parallel-executor",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-sequential-executor",
+      "note": "parallel-executor wins for independent tasks run simultaneously via worktree isolation; sequential-executor runs in strict order"
+    },
+    {
+      "id": "codegen-vs-sequentialexecutor-2",
+      "prompt": "아직 작업 목록 없고 스펙만 있는데, 백엔드랑 프론트 코드 새로 생성해줘",
+      "expected": "ywc-code-gen",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-sequential-executor",
+      "note": "code-gen wins when only a spec exists and no tasks/ directory has been generated yet; sequential-executor needs tasks/ already defined"
+    },
+    {
+      "id": "codegen-vs-parallelexecutor-2",
+      "prompt": "아직 아무 작업 목록도 없어, 이 스펙으로 API랑 화면 새로 만들어줘",
+      "expected": "ywc-code-gen",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-parallel-executor",
+      "note": "code-gen wins when no tasks/ directory exists yet; parallel-executor requires tasks already defined to run in parallel"
     }
   ]
 }
