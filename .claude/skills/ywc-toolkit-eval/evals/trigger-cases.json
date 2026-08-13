@@ -2901,17 +2901,17 @@
     },
     {
       "id": "plan-pos-5",
-      "prompt": "$ywc-plan 평가 결과를 바탕으로 개선 계획을 세워줘",
+      "prompt": "이번에 평가 결과 나온 거 반영해서, 어떻게 개선할지 계획부터 세워줘",
       "expected": "ywc-plan",
       "kind": "positive",
-      "source": "session-trace"
+      "source": "user-prompt"
     },
     {
       "id": "plan-pos-6",
-      "prompt": "그래 ywc-plan으로 핸드오프해도 되. 그 다음 개선 계획을 이어서 세워줘",
+      "prompt": "지금까지 논의한 내용으로 실제 진행 계획 정리해줘",
       "expected": "ywc-plan",
       "kind": "positive",
-      "source": "session-trace"
+      "source": "user-prompt"
     },
     {
       "id": "plan-pos-7",
@@ -2922,10 +2922,10 @@
     },
     {
       "id": "brainstorm-pos-5",
-      "prompt": "/ywc-brainstorm 이 프로젝트에서 다음 step을 어떻게 가지고가면 될지 검토해줘.",
+      "prompt": "이 프로젝트 다음 단계로 뭘 하면 좋을지 같이 고민해보고 싶어",
       "expected": "ywc-brainstorm",
       "kind": "positive",
-      "source": "session-trace"
+      "source": "user-prompt"
     },
     {
       "id": "brainstorm-pos-6",
@@ -3006,17 +3006,17 @@
     },
     {
       "id": "spec-validate-pos-5",
-      "prompt": "ywc-spec-validate 을 부탁해.",
+      "prompt": "이 스펙 문서 완성도 있는지 한번 봐줄래, 놓친 요구사항 없는지",
       "expected": "ywc-spec-validate",
       "kind": "positive",
-      "source": "session-trace"
+      "source": "user-prompt"
     },
     {
       "id": "spec-validate-pos-6",
-      "prompt": "ywc-spec-validate 로 validation 을 부탁해.",
+      "prompt": "구현 들어가기 전에 지금 스펙이 충분히 검증됐는지 확인해줘",
       "expected": "ywc-spec-validate",
       "kind": "positive",
-      "source": "session-trace"
+      "source": "user-prompt"
     },
     {
       "id": "spec-validate-pos-7",
