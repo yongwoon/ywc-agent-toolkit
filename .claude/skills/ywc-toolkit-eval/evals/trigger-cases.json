@@ -3547,13 +3547,22 @@
       "note": "infra-optimize wins for executing cost/drift remediation; infra-review's own anti-trigger defers execution to infra-optimize"
     },
     {
-      "id": "infra-design-vs-infra-optimize-1",
-      "prompt": "이건 완전 새로 만드는 프로젝트인데, 클라우드 구성 처음부터 잡아줘",
-      "expected": "ywc-infra-design",
+      "id": "infra-review-vs-infra-design-1",
+      "prompt": "이건 새로 설계하는 게 아니고, 지금 있는 인프라 구성 문제없는지 봐주는 거야",
+      "expected": "ywc-infra-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-infra-design",
+      "note": "infra-review wins for reviewing an existing infrastructure setup; infra-design's own anti-trigger explicitly defers that case to infra-review"
+    },
+    {
+      "id": "iac-author-vs-infra-optimize-1",
+      "prompt": "이거 기존 리소스 최적화하는 게 아니고, 처음부터 새로 코드 짜서 만드는 거야",
+      "expected": "ywc-iac-author",
       "kind": "collision",
       "source": "user-prompt",
       "impostor": "ywc-infra-optimize",
-      "note": "infra-design wins for greenfield infrastructure; infra-optimize's own anti-trigger defers greenfield design to infra-design"
+      "note": "iac-author wins for first-time IaC authoring; infra-optimize's own anti-trigger explicitly defers that case to iac-author"
     }
   ]
 }
