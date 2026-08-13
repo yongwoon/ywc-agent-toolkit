@@ -4355,6 +4355,450 @@
       "source": "user-prompt",
       "impostor": "ywc-e2e-test-strategy",
       "note": "auth-implement wins for implementing the auth feature itself; grounded in auth-implement's own anti-trigger naming e2e-test-strategy for non-auth E2E test authoring"
+    },
+    {
+      "id": "architect-pos-5",
+      "prompt": "이 모듈 경계를 이렇게 나누는 게 맞는지 판단이 안 서, 깊게 검토해줘",
+      "expected": "ywc-architect",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "architect-pos-6",
+      "prompt": "이 의존성 방향이 되돌리기 어려운 결정인데 판단 좀 도와줘",
+      "expected": "ywc-architect",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "architect-pos-7",
+      "prompt": "지금 이 추상화를 만드는 게 나을지 중복을 허용하는 게 나을지 저울질해줘",
+      "expected": "ywc-architect",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "backend-coder-pos-5",
+      "prompt": "이 엔드포인트 서버 쪽 로직 짜줘",
+      "expected": "ywc-backend-coder",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "backend-coder-pos-6",
+      "prompt": "이 도메인 비즈니스 로직 코드로 옮겨줘",
+      "expected": "ywc-backend-coder",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "backend-coder-pos-7",
+      "prompt": "외부 서비스 연동 부분 서버 코드로 처리해줘",
+      "expected": "ywc-backend-coder",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "frontend-coder-pos-5",
+      "prompt": "이 화면 컴포넌트 짜줘",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "frontend-coder-pos-6",
+      "prompt": "이 상태 관리랑 라우팅 붙여줘",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "frontend-coder-pos-7",
+      "prompt": "접근성 신경 써서 이 화면 스타일링해줘",
+      "expected": "ywc-frontend-coder",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "qa-engineer-pos-5",
+      "prompt": "이 로직에 대한 단위 검증 코드 짜줘",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "qa-engineer-pos-6",
+      "prompt": "엣지 케이스까지 포함해서 통합 검증 코드 추가해줘",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "qa-engineer-pos-7",
+      "prompt": "이 함수 목이랑 픽스처까지 포함해서 검증 범위 넓혀줘",
+      "expected": "ywc-qa-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "doc-writer-pos-5",
+      "prompt": "README에 언어별 항목 하나 새로 넣어줘",
+      "expected": "ywc-doc-writer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "doc-writer-pos-6",
+      "prompt": "이 코드에 왜 이렇게 짰는지 설명하는 주석 하나 남겨줘",
+      "expected": "ywc-doc-writer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "doc-writer-pos-7",
+      "prompt": "이 API 사용법 문서로 남겨줘",
+      "expected": "ywc-doc-writer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "cloud-engineer-pos-4",
+      "prompt": "이 클라우드 리소스 코드로 짜줘, AWS로",
+      "expected": "ywc-cloud-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "cloud-engineer-pos-5",
+      "prompt": "쿠버네티스 리소스 헬름으로 짜줘",
+      "expected": "ywc-cloud-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "cloud-engineer-pos-6",
+      "prompt": "이 변경사항 계획 돌려서 검증까지 해줘",
+      "expected": "ywc-cloud-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "refactor-cleaner-pos-5",
+      "prompt": "이 안 쓰는 코드 하나씩 안전하게 지워줘, 테스트 돌려가면서",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "refactor-cleaner-pos-6",
+      "prompt": "분류된 목록 중에 안전한 것만 골라서 삭제 실행해줘",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "refactor-cleaner-pos-7",
+      "prompt": "이 항목 grep으로 확인하고 개별 커밋으로 하나씩 진행해줘",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "go-reviewer-pos-5",
+      "prompt": "이 Go 코드 고루틴 새는 데 없는지 봐줘",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "go-reviewer-pos-6",
+      "prompt": "이 채널 쓰는 방식 괜찮은지 봐줘",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "go-reviewer-pos-7",
+      "prompt": "이 에러 감싸는 방식 Go스럽게 됐는지 확인해줘",
+      "expected": "ywc-go-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "python-reviewer-pos-5",
+      "prompt": "이 파이썬 코드 타입 힌트 제대로 됐는지 봐줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "python-reviewer-pos-6",
+      "prompt": "이 비동기 코드에 블로킹 호출 섞여있는지 확인해줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "python-reviewer-pos-7",
+      "prompt": "이 ORM 쿼리 반복 조회 문제 없는지 봐줘",
+      "expected": "ywc-python-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "typescript-reviewer-pos-5",
+      "prompt": "이 타입스크립트 코드 타입 안정성 봐줘",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "typescript-reviewer-pos-6",
+      "prompt": "이 훅 사용 규칙 지켜졌는지 봐줘",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "typescript-reviewer-pos-7",
+      "prompt": "엄격 모드 기준으로 이 코드 타입 점검해줘",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "performance-engineer-pos-5",
+      "prompt": "이 쿼리 반복 조회 문제 있는지 속도 관점에서 봐줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "performance-engineer-pos-6",
+      "prompt": "이 화면 로딩 속도 느려지는 원인 찾아줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "performance-engineer-pos-7",
+      "prompt": "빌드 결과물 용량이 예산 넘는지 확인해줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "root-cause-analyst-pos-5",
+      "prompt": "이 버그 왜 나는 건지 하나씩 파고들어서 밝혀줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "root-cause-analyst-pos-6",
+      "prompt": "이 실패, 여러 가설 세워서 증거랑 대조해가며 진짜 원인 찾아줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "root-cause-analyst-pos-7",
+      "prompt": "계속 같은 데서 고치는 게 안 먹히는데 구조적 문제인지 판단해줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-engineer-pos-5",
+      "prompt": "이 코드 취약점 기준으로 정적 분석해줘",
+      "expected": "ywc-security-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-engineer-pos-6",
+      "prompt": "이 diff 범위에서 노출된 민감정보 없는지 훑어봐줘",
+      "expected": "ywc-security-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-engineer-pos-7",
+      "prompt": "이 인프라 코드 권한 와일드카드나 외부 노출 있는지 봐줘",
+      "expected": "ywc-security-engineer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "architect-vs-security-engineer-2",
+      "prompt": "이건 보안 취약점 얘기가 아니라, 이 모듈 경계 나누는 방식 자체가 맞는지 판단 얘기야",
+      "expected": "ywc-architect",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-security-engineer",
+      "note": "architect wins for a module-boundary judgment call; architect's own definition names security-engineer as the sibling for security analysis specifically, which this ask is not"
+    },
+    {
+      "id": "cloud-engineer-vs-architect-2",
+      "prompt": "이건 설계 판단 얘기가 아니라, 이미 정해진 구조대로 테라폼 코드로 실제로 짜달라는 거야",
+      "expected": "ywc-cloud-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-architect",
+      "note": "cloud-engineer wins for actually authoring the IaC; cloud-engineer's own definition names architect for architecture/module-boundary judgment, which this ask is not"
+    },
+    {
+      "id": "cloud-engineer-vs-security-engineer-1",
+      "prompt": "이건 보안 취약점 스캔 얘기가 아니라, 이 인프라 리소스 자체를 코드로 짜달라는 거야",
+      "expected": "ywc-cloud-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-security-engineer",
+      "note": "cloud-engineer wins for authoring the IaC itself; cloud-engineer's own definition names security-engineer for application security static analysis, which this ask is not"
+    },
+    {
+      "id": "backend-coder-vs-frontend-coder-2",
+      "prompt": "이건 화면 쪽 작업이 아니라, 서버 API 로직 구현 얘기야",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-frontend-coder",
+      "note": "backend-coder wins for server-side logic; backend-coder's own definition names frontend-coder for client-side UI work, which this ask is not"
+    },
+    {
+      "id": "frontend-coder-vs-backend-coder-2",
+      "prompt": "이건 서버 로직 얘기가 아니라, 화면 컴포넌트랑 상태 관리 얘기야",
+      "expected": "ywc-frontend-coder",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-backend-coder",
+      "note": "frontend-coder wins for client-side UI work; frontend-coder's own definition names backend-coder for backend/API contract work, which this ask is not"
+    },
+    {
+      "id": "backend-coder-vs-qa-engineer-1",
+      "prompt": "이건 테스트만 추가하는 게 아니라, 실제 운영 코드 로직을 구현해달라는 거야",
+      "expected": "ywc-backend-coder",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-qa-engineer",
+      "note": "backend-coder wins for production code changes; backend-coder's own definition names qa-engineer for test-only authoring, which this ask is not"
+    },
+    {
+      "id": "qa-engineer-vs-doc-writer-1",
+      "prompt": "이건 README나 주석 작업이 아니라, 이 함수에 대한 실제 검증 코드 짜달라는 거야",
+      "expected": "ywc-qa-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-doc-writer",
+      "note": "qa-engineer wins for authoring test code; qa-engineer's own definition names doc-writer for pure documentation work, which this ask is not"
+    },
+    {
+      "id": "doc-writer-vs-qa-engineer-1",
+      "prompt": "이건 테스트 코드가 아니라, 이 로직 옆에 왜 이렇게 짰는지 설명하는 주석 남겨달라는 거야",
+      "expected": "ywc-doc-writer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-qa-engineer",
+      "note": "doc-writer wins for a WHY comment; doc-writer's own definition names qa-engineer for test authoring, which this ask is not"
+    },
+    {
+      "id": "refactor-cleaner-vs-backend-coder-1",
+      "prompt": "이건 새 기능 구현이 아니라, 이미 분류된 안 쓰는 코드 안전하게 지우는 작업이야",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-backend-coder",
+      "note": "refactor-cleaner wins for the SAFE deletion loop; refactor-cleaner's own definition names backend-coder for behavior-changing consolidation work, which this ask is not"
+    },
+    {
+      "id": "refactor-cleaner-vs-backend-coder-2",
+      "prompt": "이건 유틸 함수 합치는 것도 아니고, 그냥 grep으로 확인된 미사용 항목 하나씩 삭제만 해줘",
+      "expected": "ywc-refactor-cleaner",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-backend-coder",
+      "note": "refactor-cleaner wins again for pure SAFE-tier deletion, distinct scenario from consolidation; same grounding"
+    },
+    {
+      "id": "go-reviewer-vs-typescript-reviewer-2",
+      "prompt": "이건 프론트엔드 타입스크립트 코드가 아니라, Go 서버 코드 리뷰해달라는 거야",
+      "expected": "ywc-go-reviewer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "go-reviewer wins for Go-specific review; go-reviewer's own definition names typescript-reviewer for TypeScript/JavaScript code, which this ask is not"
+    },
+    {
+      "id": "go-reviewer-vs-python-reviewer-2",
+      "prompt": "이건 파이썬 코드가 아니라, 이 Go 패키지의 인터페이스 설계 리뷰해달라는 거야",
+      "expected": "ywc-go-reviewer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-python-reviewer",
+      "note": "go-reviewer wins for Go interface design review; go-reviewer's own definition names python-reviewer for Python code, which this ask is not"
+    },
+    {
+      "id": "typescript-reviewer-vs-python-reviewer-2",
+      "prompt": "이건 파이썬 코드가 아니라, 이 리액트 컴포넌트 타입 리뷰해달라는 거야",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-python-reviewer",
+      "note": "typescript-reviewer wins for TS/React review; typescript-reviewer's own definition names python-reviewer for Python code, which this ask is not"
+    },
+    {
+      "id": "typescript-reviewer-vs-go-reviewer-1",
+      "prompt": "이건 Go 코드가 아니라, 이 프론트엔드 타입스크립트 코드 리뷰해달라는 거야",
+      "expected": "ywc-typescript-reviewer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-go-reviewer",
+      "note": "typescript-reviewer wins for TypeScript review; typescript-reviewer's own definition names go-reviewer for Go code, which this ask is not"
+    },
+    {
+      "id": "python-reviewer-vs-performance-engineer-1",
+      "prompt": "이건 속도 측정 얘기가 아니라, 이 비동기 코드가 파이썬답게 짜여있는지 리뷰해달라는 거야",
+      "expected": "ywc-python-reviewer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-performance-engineer",
+      "note": "python-reviewer wins for flagging the async idiom itself; python-reviewer's own definition names performance-engineer for quantifying runtime performance, which this ask is not"
+    },
+    {
+      "id": "performance-engineer-vs-go-reviewer-1",
+      "prompt": "이건 Go 문법이 맞는지가 아니라, 이 락 경합 때문에 처리량이 얼마나 떨어지는지 측정해달라는 거야",
+      "expected": "ywc-performance-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-go-reviewer",
+      "note": "performance-engineer wins for quantifying lock-contention throughput; performance-engineer's own definition names go-reviewer for flagging the Go idiom itself, which this ask is not"
+    },
+    {
+      "id": "root-cause-analyst-vs-architect-1",
+      "prompt": "이건 설계를 새로 짜자는 게 아니라, 지금 이 실패가 왜 나는 건지부터 파고들어달라는 거야",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-architect",
+      "note": "root-cause-analyst wins for pre-verdict root-cause investigation; root-cause-analyst's own definition names architect for architectural redesign decisions, which only applies once the analyst names the architecture as wrong"
+    },
+    {
+      "id": "root-cause-analyst-vs-security-engineer-1",
+      "prompt": "이건 보안 취약점 스캔이 아니라, 이 버그가 왜 계속 재현되는지 파고들어서 밝혀달라는 거야",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-security-engineer",
+      "note": "root-cause-analyst wins for general root-cause investigation; root-cause-analyst's own definition names security-engineer for security-boundary failures specifically, which this ask is not"
+    },
+    {
+      "id": "security-engineer-vs-backend-coder-1",
+      "prompt": "이건 코드를 고쳐달라는 게 아니라, 이 코드 취약점 있는지 정적으로 분석만 해달라는 거야",
+      "expected": "ywc-security-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-backend-coder",
+      "note": "security-engineer wins for read-only static analysis; security-engineer's own definition names backend-coder as where fixes are dispatched separately, which this ask is not"
     }
   ]
 }
