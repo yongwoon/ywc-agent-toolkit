@@ -69,4 +69,37 @@ grouped rows above account for all 58 assets: 50 skills and 8 agents.
 - Improved: 0 claimed from this evaluation alone.
 - Regressed: 0.
 - Lowest current grade: A / 3.74.
-- Next review scope: targeted S5 fixture coverage for architecture/infrastructure skills.
+- Next review scope: scorer integration or judgment pass for the new fixture evidence.
+
+## 2026-08-13 Offline Evidence Pass
+
+| Check | Result | Evidence |
+|---|---|---|
+| Architecture fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-architecture-invariants/{valid,unsafe,no-manifest}/fixture.json`; runner output checks enforce structured status evidence. |
+| IaC/design fixtures | ADDED | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-iac-author/{missing-design,happy-path,boundary}/fixture.json` and `ywc-infra-design/{happy-path,negative}/fixture.json`; behavior execution remains pending fixture-harness integration. |
+| Optimization/review fixtures | ADDED | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-infra-optimize/{happy-path,caution,boundary}/fixture.json` and `ywc-infra-review/{happy-path,negative}/fixture.json`; behavior execution remains pending fixture-harness integration. |
+
+### Required command evidence
+
+| Command | Exit | Result |
+|---|---:|---|
+| `test_fixture_validator.py` | 0 | 8 tests passed |
+| `test_runner.py` | 0 | 10 tests passed |
+| `test_workflow_contract.py` | 0 | 5 tests passed |
+| `runner.py --adapter fake --suite mocked` | 0 | PASS |
+| `inventory_gate.py --only skills --json` | 0 | PASS; 50 skills |
+| `run-codex-skill-contract-evals.sh` | 0 | PASS |
+| `scripts/validate.sh` | 0 | PASS; 58 mechanical items, no regression |
+| `score.py --mode mechanical --target all --format markdown` | 0 | PASS; S5 unchanged |
+| `score.py --mode mechanical --target all --ci` | 0 | PASS |
+
+### AC8 Limitation
+
+The mechanical scorer remains unchanged: architecture-invariants is still S5=2,
+and the four infrastructure skills remain S5=3. The current scorer reads its
+deterministic dimensions from the existing inventory/evaluation records and does
+not consume the new per-skill V2 fixture subtrees as score inputs. The fixture
+evidence is therefore recorded as architecture-tested plus infrastructure
+fixture definitions pending harness integration; no score movement is claimed
+until the judgment pass or scorer integration explicitly consumes those
+fixtures. `evals/history.mechanical.json` was not modified.
