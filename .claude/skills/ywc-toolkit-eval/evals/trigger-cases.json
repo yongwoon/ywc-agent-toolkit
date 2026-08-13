@@ -3563,6 +3563,165 @@
       "source": "user-prompt",
       "impostor": "ywc-infra-optimize",
       "note": "iac-author wins for first-time IaC authoring; infra-optimize's own anti-trigger explicitly defers that case to iac-author"
+    },
+    {
+      "id": "impl-review-pos-5",
+      "prompt": "구현 다 끝났는데 PR 올리기 전에 스펙대로 됐는지 종합적으로 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "impl-review-pos-6",
+      "prompt": "이 기능 스펙이랑 맞게 짰는지 전체적으로 확인해줘",
+      "expected": "ywc-impl-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "impl-review-pos-7",
+      "prompt": "PR 올리기 전에 품질 전반적으로 한번 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-audit-pos-5",
+      "prompt": "이 인증 코드 취약점 있는지 봐줘",
+      "expected": "ywc-security-audit",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-audit-pos-6",
+      "prompt": "외부에서 들어오는 입력 처리하는 부분, 보안 문제 없는지 봐줘",
+      "expected": "ywc-security-audit",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-audit-pos-7",
+      "prompt": "정기적으로 보안 쪽 한번 훑어봐줘",
+      "expected": "ywc-security-audit",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "ui-ux-review-pos-5",
+      "prompt": "이 화면 실제로 띄워서 접근성이랑 사용성 같이 봐줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "ui-ux-review-pos-6",
+      "prompt": "정보 구조랑 시각적 디자인 같이 검토해줘, 실제 화면 보면서",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "ui-ux-review-pos-7",
+      "prompt": "이 UI 실사용 흐름 살펴보면서 개선점 찾아줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "design-renew-pos-5",
+      "prompt": "이 화면 너무 흔한 AI가 만든 느낌인데 확 다르게 바꿔줘",
+      "expected": "ywc-design-renew",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "design-renew-pos-6",
+      "prompt": "그라디언트 텍스트에 카드 그리드 남발한 거 배포 전에 손봐줘",
+      "expected": "ywc-design-renew",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "design-renew-pos-7",
+      "prompt": "이거 배포하기 전에 너무 뻔해 보이는 화면 요소들 손좀 봐줘",
+      "expected": "ywc-design-renew",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "product-review-pos-5",
+      "prompt": "이 프로젝트 사용자 가치나 성장 관점에서 뭘 개선하면 좋을지 봐줘",
+      "expected": "ywc-product-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "product-review-pos-6",
+      "prompt": "이거 서비스로서 어디를 손보면 더 좋아질지 의견 줘",
+      "expected": "ywc-product-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "product-review-pos-7",
+      "prompt": "이거 시장이나 리스크 관점에서 어떻게 보이는지 의견 줘",
+      "expected": "ywc-product-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "security-audit-vs-impl-review-2",
+      "prompt": "이거 그냥 전체적으로 훑는 거 말고, 취약점만 집중해서 봐줘",
+      "expected": "ywc-security-audit",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-impl-review",
+      "note": "security-audit wins for a security-only ask; impl-review's own anti-trigger defers security-only audits to security-audit"
+    },
+    {
+      "id": "impl-review-vs-security-audit-2",
+      "prompt": "이건 보안 이슈 얘기 아니고 그냥 구현이 스펙대로 됐는지 전체적으로 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-security-audit",
+      "note": "impl-review wins for a general spec-conformance review, not a security-only ask; security-audit's own anti-trigger defers general code review to impl-review"
+    },
+    {
+      "id": "product-review-vs-impl-review-2",
+      "prompt": "코드 얘기 말고, 이 서비스가 사용자한테 가치 있는지 사업적으로 봐줘",
+      "expected": "ywc-product-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-impl-review",
+      "note": "product-review wins for a business-perspective ask; impl-review's own anti-trigger defers product/business review to product-review"
+    },
+    {
+      "id": "ui-ux-review-vs-design-renew-2",
+      "prompt": "디자인 확 바꾸는 거 말고, 사용성이랑 접근성 위주로 화면 점검해줘",
+      "expected": "ywc-ui-ux-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-design-renew",
+      "note": "ui-ux-review wins for usability/accessibility review; design-renew's own anti-trigger defers usability/accessibility review to ui-ux-review"
+    },
+    {
+      "id": "design-renew-vs-ui-ux-review-2",
+      "prompt": "사용성 확인하는 거 말고, 이 화면이 너무 뻔해 보여서 시각적으로 확 다르게 바꾸고 싶어",
+      "expected": "ywc-design-renew",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-ui-ux-review",
+      "note": "design-renew wins for visual-renewal/AI-slop de-slopping; ui-ux-review's own anti-trigger defers that aesthetic renewal ask to design-renew"
+    },
+    {
+      "id": "product-review-vs-ui-ux-review-1",
+      "prompt": "화면 디자인 얘기 말고, 이 기능이 사업적으로 성장에 도움 되는지 봐줘",
+      "expected": "ywc-product-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-ui-ux-review",
+      "note": "product-review wins for a business/growth-perspective ask; ui-ux-review's own anti-trigger defers product/business strategy review to product-review"
     }
   ]
 }
