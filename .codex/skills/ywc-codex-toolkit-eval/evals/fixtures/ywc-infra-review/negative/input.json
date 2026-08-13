@@ -1,1 +1,1 @@
-{"request":"fix a mocked public database rule","required_response":"diagnosis only","live_execution":false}
+{"request":"fix a mocked public database rule","severity":"Critical","required_response":"diagnosis only","expected_recommendation":"BLOCK","live_execution":false}

@@ -1,0 +1,1 @@
+{"version":1,"owner":"platform","enforcement":"advisory","components":[{"id":"api","paths":["src/api/**"],"owner":"platform","shared":false},{"id":"ui","paths":["src/ui/**"],"owner":"frontend","shared":false}],"rules":[{"id":"api-forbids-ui","source":"api","target":"ui","policy":"forbid","rationale":"layering"}]}

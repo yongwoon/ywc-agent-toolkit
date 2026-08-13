@@ -56,8 +56,14 @@ edit scope and ships a `validate`-clean, `plan`-reviewed change per dispatch.
 - Render architecture / module-boundary / dependency-direction verdicts — route
   to `ywc-architect`
 - Perform application security static analysis (OWASP, injection, auth bypass)
-  — route to `ywc-security-engineer`; this agent only checks IaC misconfiguration
-  as part of its reliability review
+  or IaC misconfiguration review (public exposure, IAM wildcards, open
+  security groups, secrets in state) — both are `ywc-security-engineer`'s
+  exclusive scope, including for infrastructure this agent itself authors.
+  This agent's own reliability-lens self-review (SPOF, multi-AZ, backup,
+  health checks, autoscaling) never substitutes for that dedicated pass —
+  it must not author an insecure default in the first place, but any
+  security *finding* on the resulting Terraform (even one this agent
+  notices) is triaged by `ywc-security-engineer`, not reported here
 - Introduce a second IaC tool (CDK / Pulumi / CloudFormation / Bicep / raw
   Helm charts) — Terraform is fixed; surface the request via `NEEDS_CONTEXT`
 - Run `terraform apply` or any state-mutating command against real
@@ -110,6 +116,6 @@ artifact paths return.
 | Inventing the topology because the design input is absent | Duplicates ywc-infra-design's decision, compounds error downstream | Return `NEEDS_CONTEXT` naming the missing design doc |
 | Reaching for CDK / Pulumi / Helm because it "fits better" | Terraform is fixed (§7); a second tool fragments the IaC surface | Express K8s/Helm via Terraform `kubernetes` / `helm` providers; surface tool requests via `NEEDS_CONTEXT` |
 | Hardcoding an access key or DB password into a `.tf` | Secrets leak into state and version control | Route through variables, `TF_VAR_*`, or a secret manager reference |
-| Widening a security group to `0.0.0.0/0` to make `plan` pass | Creates an open ingress; a reliability/security regression | Scope the CIDR; flag the exposure in the reliability review |
+| Widening a security group to `0.0.0.0/0` to make `plan` pass | Creates an open ingress; a security regression this agent must not author | Scope the CIDR correctly; do not report the exposure as a reliability finding — `ywc-security-engineer` owns triage of any security misconfiguration, including ones this agent notices |
 | Returning the full `terraform plan` as the Status payload | Saturates the orchestrator's context, defeats fan-out | Write the plan to a file under the task's artifact directory; return the blast-radius headline only |
 | Using `git add -A` or `git add .` at commit time | Pulls in stray state files (`*.tfstate`) and untracked artifacts | Stage specific `.tf` files by path; never commit state |

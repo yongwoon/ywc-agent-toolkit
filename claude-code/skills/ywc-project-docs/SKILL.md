@@ -1,7 +1,7 @@
 ---
 name: ywc-project-docs
 version: 2.3.0
-description: "(ywc) Use when the user wants to generate or add project docs/ documentation in Korean, Japanese, English, Chinese, or Spanish (Task, Architecture, Specification, Product, operational guides). Triggers: '문서 작성', 'write a doc', 'add to docs/', 'English docs', '中文文档', 'ドキュメント作成', '文書作成', 'documentación del proyecto'. Do not use for code comments, README at repo root, skill authoring (use ywc-skill-author), domain glossary (use ywc-ubiquitous-language), changelog/release notes (use ywc-changelog-release-notes), implementation tasks (use ywc-task-generator), README-locale/WHY-comments/CHANGELOG entries (use ywc-doc-writer), or a standalone Specification document (use ywc-spec-writer)."
+description: "(ywc) Use when the user wants to generate or add project docs/ documentation in Korean, Japanese, English, Chinese, or Spanish (Architecture, Product, Plans, operational guides). Triggers: '문서 작성', 'write a doc', 'add to docs/', 'English docs', '中文文档', 'ドキュメント作成', '文書作成', 'documentación del proyecto'. Do not use for code comments, README at repo root, skill authoring (use ywc-skill-author), domain glossary (use ywc-ubiquitous-language), changelog/release notes (use ywc-changelog-release-notes), implementation tasks (use ywc-task-generator), README-locale/WHY-comments/CHANGELOG entries (use ywc-doc-writer), or any docs/specification/ content — per-feature detailed rules, implementation criteria, acceptance criteria (use ywc-spec-writer; that directory is its exclusive ownership, not this skill's)."
 category: spec
 phase: planning
 requires: []
@@ -26,7 +26,7 @@ When tempted to skip a step, check this table first:
 | "Language not specified, default to Korean" | Always ask. Default-language assumption produces wrong-language docs that get rewritten. |
 | "Existing docs/ uses different naming, follow my own pattern" | Match the project's existing naming and structure exactly. Drift creates inconsistent docs over time. |
 | "Translate Technical terms into local-language equivalents for readability" | Keep API, Backend, Database, etc. in English per the language policy. Over-translation breaks searchability. |
-| "Doc target unclear, write a generic README" | If target type (Task, Architecture, Spec, Product, Operations) is ambiguous, ask. Generic docs are noise. |
+| "Doc target unclear, write a generic README" | If target type (Architecture, Product, Plans, Operations) is ambiguous, ask. Generic docs are noise. Specification content is routed to ywc-spec-writer, not this skill. |
 | "Reuse content from another doc verbatim" | Cross-reference by relative path. Duplicated content drifts and becomes contradictory. |
 | "Skip the spec/source link section, content is self-contained" | Always include source/spec references. Docs without source tracing become orphaned over time. |
 | "English/Chinese/Spanish docs can ignore the same structure" | All supported languages use the same routing, filename, cross-reference, and source-link rules. |
@@ -67,7 +67,7 @@ Then apply the corresponding policy from the Language Policy section below.
 ## Common Conventions
 
 Directory structure, routing rules, naming conventions, document templates,
-anti-patterns, folder-specific conventions (Architecture/Specification/Product),
+anti-patterns, folder-specific conventions (Architecture/Product/Plans),
 and the pre-creation checklist follow the **shared reference**:
 
 → [`../references/project-docs-structure.md`](../references/project-docs-structure.md)
