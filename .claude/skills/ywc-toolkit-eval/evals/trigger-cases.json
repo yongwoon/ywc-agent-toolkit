@@ -4088,6 +4088,273 @@
       "source": "user-prompt",
       "impostor": "ywc-ubiquitous-language",
       "note": "project-docs wins for general project documentation structure; project-docs' own anti-trigger defers domain vocabulary to ubiquitous-language"
+    },
+    {
+      "id": "gen-testcase-pos-5",
+      "prompt": "이번 PR 검증용으로 수동으로 확인할 항목들 만들어줘",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "gen-testcase-pos-6",
+      "prompt": "이 task 구현한 거 QA랑 개발자가 각자 확인할 체크리스트 뽑아줘",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "gen-testcase-pos-7",
+      "prompt": "이번 릴리즈 범위에 대한 확인 항목들 정리해줘",
+      "expected": "ywc-gen-testcase",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "e2e-test-strategy-pos-5",
+      "prompt": "이 프로젝트 자동화 브라우저 테스트 환경 처음부터 잡아줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "e2e-test-strategy-pos-6",
+      "prompt": "지금 자동화 테스트 커버리지 어디 빠졌는지 점검해줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "e2e-test-strategy-pos-7",
+      "prompt": "이 핵심 사용자 흐름 자동화 스크립트로 만들어줘, CI 연동까지",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "tdd-ritual-pos-5",
+      "prompt": "이 기능 짜기 전에 실패하는 케이스부터 만들고 확인한 다음에 구현해줘",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "tdd-ritual-pos-6",
+      "prompt": "이번엔 실패 확인하고 통과시키는 순서 지켜서 진행하자",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "tdd-ritual-pos-7",
+      "prompt": "이전에 나던 버그 다시 안 나게, 그거 막는 케이스부터 짜고 시작하자",
+      "expected": "ywc-tdd-ritual",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "verify-done-pos-5",
+      "prompt": "이거 다 됐다고 하기 전에 실제로 확인부터 하고 알려줘",
+      "expected": "ywc-verify-done",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "verify-done-pos-6",
+      "prompt": "머지하기 전에 정말 통과하는지 다시 한번 봐줘",
+      "expected": "ywc-verify-done",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "verify-done-pos-7",
+      "prompt": "이거 됐다고 말하기 전에 근거 남겨줘",
+      "expected": "ywc-verify-done",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "auth-implement-pos-4",
+      "prompt": "이 서비스에 로그인 붙여야 하는데, 방식부터 정하고 실제 구현까지 부탁해",
+      "expected": "ywc-auth-implement",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "auth-implement-pos-5",
+      "prompt": "구글 계정으로 로그인되게 처음부터 세팅해줘",
+      "expected": "ywc-auth-implement",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "auth-implement-pos-6",
+      "prompt": "2단계 인증 넣어야 하는데, 쓸만한 라이브러리 추천부터 실제 구현까지 진행해줘",
+      "expected": "ywc-auth-implement",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "setup-language-pos-4",
+      "prompt": "이제부터 매번 지정 안 해도 되게, 기본 출력 쓰는 말 하나로 고정해줘",
+      "expected": "ywc-setup-language",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "setup-language-pos-5",
+      "prompt": "지금 고정돼 있는 기본 언어가 뭔지 보여줘",
+      "expected": "ywc-setup-language",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "setup-language-pos-6",
+      "prompt": "앞으로 생성되는 문서, PR, 커밋 메시지 전부 한국어로 고정해줘",
+      "expected": "ywc-setup-language",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "skill-author-pos-5",
+      "prompt": "새 ywc 계열 skill 하나 만들어야 하는데, 규칙에 맞게 짜줘",
+      "expected": "ywc-skill-author",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "skill-author-pos-6",
+      "prompt": "기존 ywc 계열 skill 구조 좀 규칙에 맞게 다시 정리해줘",
+      "expected": "ywc-skill-author",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "skill-author-pos-7",
+      "prompt": "지금 있는 ywc 계열 skill들 규칙 위반한 거 없는지 점검해줘",
+      "expected": "ywc-skill-author",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "incident-postmortem-pos-5",
+      "prompt": "이번에 터진 문제, 타임라인부터 원인분석까지 정리된 회고 문서 만들어줘",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "incident-postmortem-pos-6",
+      "prompt": "왜 이 문제가 났는지 다섯 번 물어보면서 파고들어서 재발방지책까지 정리해줘",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "incident-postmortem-pos-7",
+      "prompt": "이번 서비스 중단 영향 범위랑 대응 내용 정리해서 보고서로 만들어줘",
+      "expected": "ywc-incident-postmortem",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "confidence-gate-vs-verify-done-2",
+      "prompt": "아직 시작 전에 준비됐는지 판단하는 거 말고, 이미 끝났다는 거 검증부터 해줘",
+      "expected": "ywc-verify-done",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-confidence-gate",
+      "note": "verify-done wins for post-completion verification; grounded in confidence-gate's own anti-trigger naming verify-done for completion verification"
+    },
+    {
+      "id": "incident-postmortem-vs-changelog-1",
+      "prompt": "이번 릴리즈에 뭐가 바뀌었는지 정리하는 게 아니라, 지난번 터진 문제를 왜 그랬는지 회고하고 싶어",
+      "expected": "ywc-incident-postmortem",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-changelog-release-notes",
+      "note": "incident-postmortem wins for a structured incident retrospective; incident-postmortem's own anti-trigger defers post-fix changelog/release-note writing to changelog-release-notes"
+    },
+    {
+      "id": "auth-implement-vs-plan-1",
+      "prompt": "이건 일반적인 기능 기획 얘기 아니고, 구체적으로 인증 붙이는 작업 얘기야",
+      "expected": "ywc-auth-implement",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-plan",
+      "note": "auth-implement wins for the specific auth-implementation flow; auth-implement's own anti-trigger defers general feature planning unrelated to auth to plan"
+    },
+    {
+      "id": "e2e-test-strategy-vs-gen-testcase-1",
+      "prompt": "코드로 자동화 짜는 거 말고, PM이 브라우저에서 직접 확인할 체크리스트로 뽑아줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-gen-testcase",
+      "note": "gen-testcase wins for a manual dual-audience checklist ask — this case exercises e2e-test-strategy's own anti-trigger, which explicitly names gen-testcase for manual verification test sheets"
+    },
+    {
+      "id": "e2e-test-strategy-vs-gen-testcase-2",
+      "prompt": "이건 Playwright 코드 짜는 거 아니고, 사람이 손으로 체크할 표만 필요해",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-gen-testcase",
+      "note": "second manual-sheet framing, distinct wording; same grounding as the sibling case, e2e-test-strategy's own anti-trigger names gen-testcase"
+    },
+    {
+      "id": "e2e-test-strategy-vs-security-audit-1",
+      "prompt": "취약점 점검 얘기 아니고, 이 흐름 자동화 테스트로 커버되게 만들어줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-security-audit",
+      "note": "e2e-test-strategy wins for automated flow-coverage test authoring; grounded in e2e-test-strategy's own anti-trigger naming security-audit for penetration testing"
+    },
+    {
+      "id": "tdd-ritual-vs-verify-done-1",
+      "prompt": "이건 다 됐다고 검증하자는 얘기 아니고, 구현 시작하기 전에 실패하는 테스트부터 짜자는 거야",
+      "expected": "ywc-tdd-ritual",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-verify-done",
+      "note": "tdd-ritual wins for the pre-implementation red-green-refactor discipline; grounded in tdd-ritual's own anti-trigger naming verify-done for completion-claim verification"
+    },
+    {
+      "id": "verify-done-vs-code-gen-1",
+      "prompt": "아직 구현 중인 거 새로 짜달라는 거 아니고, 이미 됐다는 것부터 확인해줘",
+      "expected": "ywc-verify-done",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-code-gen",
+      "note": "verify-done wins for gating a completion claim with fresh evidence; grounded in verify-done's own anti-trigger naming code-gen for ongoing implementation drafting"
+    },
+    {
+      "id": "project-docs-vs-skill-author-1",
+      "prompt": "이건 skill 자체를 만들거나 고치는 거 아니고, 그냥 이 프로젝트 아키텍처 문서 하나 작성해줘",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-skill-author",
+      "note": "project-docs wins for general project documentation; grounded in project-docs' own anti-trigger naming skill-author for skill authoring specifically, which this ask is not"
+    },
+    {
+      "id": "project-docs-vs-skill-author-2",
+      "prompt": "이건 ywc skill 감사하는 거 아니고, 그냥 운영 가이드 문서 하나 추가해달라는 거야",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-skill-author",
+      "note": "project-docs wins again for a plain ops-guide doc, distinct scenario from skill auditing; same grounding as the sibling case"
+    },
+    {
+      "id": "auth-implement-vs-e2e-test-strategy-1",
+      "prompt": "이건 일반적인 흐름 테스트 얘기가 아니라, 이 서비스에 로그인을 새로 붙이는 작업이야",
+      "expected": "ywc-auth-implement",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-e2e-test-strategy",
+      "note": "auth-implement wins for implementing the auth feature itself; grounded in auth-implement's own anti-trigger naming e2e-test-strategy for non-auth E2E test authoring"
     }
   ]
 }
