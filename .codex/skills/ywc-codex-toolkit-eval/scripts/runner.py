@@ -107,7 +107,11 @@ def _check_expected_outputs(normalized: dict[str, Any], workspace: Path, result:
         if check_type in {"stdout_regex", "stderr_regex"}:
             import re
             text = result.final_output if check_type == "stdout_regex" else result.error
-            if re.search(check["regex"], text) is None:
+            try:
+                matched = re.search(check["regex"], text) is not None
+            except re.error as exc:
+                raise FixtureValidationError(f"invalid regex in {check_type}: {exc}") from exc
+            if not matched:
                 return f"expected check failed: {check_type}"
         elif check_type == "file_exists":
             path = _inside(workspace, workspace / check["path"])
@@ -119,7 +123,11 @@ def _check_expected_outputs(normalized: dict[str, Any], workspace: Path, result:
                 text = _read_output(workspace, check["path"])
             except (OSError, ValueError) as exc:
                 return str(exc)
-            if re.search(check["regex"], text) is None:
+            try:
+                matched = re.search(check["regex"], text) is not None
+            except re.error as exc:
+                raise FixtureValidationError(f"invalid regex in file_regex: {exc}") from exc
+            if not matched:
                 return f"expected check failed: file_regex {check['path']}"
         elif check_type == "json_path_equals":
             try:
