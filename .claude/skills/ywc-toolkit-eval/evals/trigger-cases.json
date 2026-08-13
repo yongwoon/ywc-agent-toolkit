@@ -3722,6 +3722,183 @@
       "source": "user-prompt",
       "impostor": "ywc-ui-ux-review",
       "note": "product-review wins for a business/growth-perspective ask; ui-ux-review's own anti-trigger defers product/business strategy review to product-review"
+    },
+    {
+      "id": "finish-branch-pos-5",
+      "prompt": "이 브랜치 이제 CI 통과했으니까 머지하고 완료 처리까지 해줘",
+      "expected": "ywc-finish-branch",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "finish-branch-pos-6",
+      "prompt": "리뷰봇 대응까지 끝났으면 이제 실제로 merge 진행해줘",
+      "expected": "ywc-finish-branch",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "finish-branch-pos-7",
+      "prompt": "이 작업 다 됐으니까 배달까지 마무리해줘, 브랜치 정리까지",
+      "expected": "ywc-finish-branch",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "merge-dependabot-pos-4",
+      "prompt": "쌓여있는 의존성 업데이트들 한번에 처리해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "merge-dependabot-pos-5",
+      "prompt": "봇이 열어놓은 패키지 업데이트 관련 요청들 확인하고 정리해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "merge-dependabot-pos-6",
+      "prompt": "자동으로 올라온 보안 패치 관련 요청들 있으면 검토하고 합쳐줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "changelog-pos-5",
+      "prompt": "이번 릴리즈에서 뭐가 바뀌었는지 유저용 문서 만들어줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "changelog-pos-6",
+      "prompt": "머지된 것들 보고 사용자에게 보여줄 변경사항 정리해줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "changelog-pos-7",
+      "prompt": "이번 스프린트 끝났으니까 이력 문서 갱신해줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "release-pr-list-pos-5",
+      "prompt": "develop에서 main으로 올릴 PR에 넣을 머지된 것들 목록 뽑아줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "release-pr-list-pos-6",
+      "prompt": "이번에 머지된 것들 작성자별로 정리해서 본문에 넣어줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "release-pr-list-pos-7",
+      "prompt": "릴리즈용 PR 본문에 들어갈 머지 목록 만들어줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "receive-review-pos-5",
+      "prompt": "리뷰에서 이렇게 지적받았는데, 이 말이 맞는 건지부터 확인하고 싶어",
+      "expected": "ywc-receive-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "receive-review-pos-6",
+      "prompt": "이 코멘트 무조건 받아들이기 전에 근거가 맞는지 검증해줘",
+      "expected": "ywc-receive-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "receive-review-pos-7",
+      "prompt": "리뷰어가 남긴 코멘트들, 하나씩 타당한지 판단하고 나서 반영해줘",
+      "expected": "ywc-receive-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "release-pr-list-vs-changelog-2",
+      "prompt": "변경 이력 작성하는 거 아니고, 그냥 이번에 머지된 것들 작성자별로 목록만 뽑아줘",
+      "expected": "ywc-release-pr-list",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-changelog-release-notes",
+      "note": "release-pr-list wins for a plain merged-PR listing task; changelog-release-notes' own anti-trigger defers that listing to release-pr-list"
+    },
+    {
+      "id": "changelog-vs-release-pr-list-2",
+      "prompt": "머지 목록만 뽑는 거 말고, 이번에 뭐가 달라졌는지 유저용으로 정리해줘",
+      "expected": "ywc-changelog-release-notes",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-release-pr-list",
+      "note": "changelog-release-notes wins for generating user-facing release notes; release-pr-list's own anti-trigger defers changelog/release-note generation to it"
+    },
+    {
+      "id": "finish-branch-vs-create-pr-2",
+      "prompt": "PR만 만드는 거 말고, CI 기다렸다가 머지까지 끝내줘",
+      "expected": "ywc-finish-branch",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-create-pr",
+      "note": "finish-branch wins for full delivery through merge; create-pr's role is draft PR creation only per finish-branch's own anti-trigger boundary"
+    },
+    {
+      "id": "finish-branch-vs-handle-pr-reviews-1",
+      "prompt": "리뷰 코멘트 대응 말고, 이제 이 브랜치 머지랑 완료 처리까지 다 해줘",
+      "expected": "ywc-finish-branch",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-handle-pr-reviews",
+      "note": "finish-branch wins for merge + completion bookkeeping; finish-branch's own anti-trigger defers PR review comment handling to handle-pr-reviews"
+    },
+    {
+      "id": "merge-dependabot-vs-create-pr-2",
+      "prompt": "새로 짠 기능 PR 얘기 아니고, 자동으로 열린 업데이트들 정리해서 머지해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-create-pr",
+      "note": "merge-dependabot wins for batch-processing Dependabot PRs; its own anti-trigger defers feature-PR creation to create-pr"
+    },
+    {
+      "id": "merge-dependabot-vs-create-pr-3",
+      "prompt": "이건 사람이 짠 코드 PR이 아니라, 봇이 연 의존성 업데이트들 얘기야, 그것들만 정리해줘",
+      "expected": "ywc-merge-dependabot",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-create-pr",
+      "note": "merge-dependabot wins for bot-opened dependency-update PRs specifically, distinct from a human feature PR handled by create-pr"
+    },
+    {
+      "id": "receive-review-vs-impl-review-1",
+      "prompt": "내가 직접 리뷰하는 거 말고, 이미 받은 지적이 타당한지부터 검토하고 싶어",
+      "expected": "ywc-receive-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-impl-review",
+      "note": "receive-review wins for verifying already-received feedback before responding; receive-review's own anti-trigger defers performing a review to impl-review"
+    },
+    {
+      "id": "receive-review-vs-handle-pr-reviews-2",
+      "prompt": "자동으로 댓글 달고 답장하는 거 말고, 이 지적이 맞는 말인지 나부터 판단하고 싶어",
+      "expected": "ywc-receive-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-handle-pr-reviews",
+      "note": "receive-review wins for the human-judgment verify-before-agreeing step; handle-pr-reviews is the automation layer that fetches/replies, per receive-review's own anti-trigger"
     }
   ]
 }
