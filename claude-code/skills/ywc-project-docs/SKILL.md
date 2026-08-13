@@ -26,7 +26,7 @@ When tempted to skip a step, check this table first:
 | "Language not specified, default to Korean" | Always ask. Default-language assumption produces wrong-language docs that get rewritten. |
 | "Existing docs/ uses different naming, follow my own pattern" | Match the project's existing naming and structure exactly. Drift creates inconsistent docs over time. |
 | "Translate Technical terms into local-language equivalents for readability" | Keep API, Backend, Database, etc. in English per the language policy. Over-translation breaks searchability. |
-| "Doc target unclear, write a generic README" | If target type (Task, Architecture, Spec, Product, Operations) is ambiguous, ask. Generic docs are noise. |
+| "Doc target unclear, write a generic README" | If target type (Architecture, Product, Plans, Operations) is ambiguous, ask. Generic docs are noise. Specification content is routed to ywc-spec-writer, not this skill. |
 | "Reuse content from another doc verbatim" | Cross-reference by relative path. Duplicated content drifts and becomes contradictory. |
 | "Skip the spec/source link section, content is self-contained" | Always include source/spec references. Docs without source tracing become orphaned over time. |
 | "English/Chinese/Spanish docs can ignore the same structure" | All supported languages use the same routing, filename, cross-reference, and source-link rules. |
