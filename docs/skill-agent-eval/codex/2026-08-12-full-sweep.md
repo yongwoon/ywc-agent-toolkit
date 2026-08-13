@@ -70,3 +70,22 @@ grouped rows above account for all 58 assets: 50 skills and 8 agents.
 - Regressed: 0.
 - Lowest current grade: A / 3.74.
 - Next review scope: targeted S5 fixture coverage for architecture/infrastructure skills.
+
+## 2026-08-13 Offline Evidence Pass
+
+| Check | Result | Evidence |
+|---|---|---|
+| Architecture fixtures | PASS | Valid, unsafe, and no-manifest V2 cases under `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-architecture-invariants/`; runner output checks enforce structured status evidence. |
+| IaC/design fixtures | PASS | Missing-design `NEEDS_CONTEXT`, validate/plan-only, review handoff, design-only, and IaC handoff assertions under the IaC/design fixture roots. |
+| Optimization/review fixtures | PASS | SAFE/CAUTION/DANGER routing, no auto-execution, three-lens status, and Critical BLOCK evidence under the optimization/review fixture roots. |
+| Required gates | PASS | Targeted validator/runner tests, mocked runner, inventory gate, contract evals, `scripts/validate.sh`, mechanical markdown score, and mechanical CI score. |
+
+### AC8 Limitation
+
+The mechanical scorer remains unchanged: architecture-invariants is still S5=2,
+and the four infrastructure skills remain S5=3. The current scorer reads its
+deterministic dimensions from the existing inventory/evaluation records and does
+not consume the new per-skill V2 fixture subtrees as score inputs. The fixture
+evidence is therefore recorded as complete offline coverage, but no score
+movement is claimed until the judgment pass or scorer integration explicitly
+consumes those fixtures. `evals/history.mechanical.json` was not modified.
