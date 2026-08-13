@@ -103,7 +103,7 @@ For each PR, run these checks **before** attempting to merge. If any check fails
 To detect a Dockerfile FROM change:
 
 ```bash
-gh pr diff {number} --name-only | grep -qi 'Dockerfile' && \
+gh pr diff {number} --name-only | grep -qE '(^|/)(Dockerfile|Dockerfile\.[^/]*)$' && \
   gh pr diff {number} | grep -qE '^[-+]FROM ' && \
   echo "Dockerfile FROM change detected — skip"
 ```
@@ -161,9 +161,16 @@ gh pr merge {number} --merge
 gh pr comment {number} --body "@dependabot rebase"
 # Wait up to 10 minutes for Dependabot's rebase, polling every 30 seconds.
 deadline=$(( $(date +%s) + 600 ))
+lookup_failures=0
 while [ "$(date +%s)" -lt "$deadline" ]; do
-  merge_status=$(gh pr view {number} --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
-  if [ "$merge_status" != "CONFLICTING" ] && [ "$merge_status" != "DIRTY" ]; then
+  merge_status=$(gh pr view {number} --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null)
+  if [ -z "$merge_status" ]; then
+    lookup_failures=$((lookup_failures + 1))
+    sleep 30
+    continue
+  fi
+  lookup_failures=0
+  if [ "$merge_status" != "CONFLICTING" ] && [ "$merge_status" != "DIRTY" ] && [ "$merge_status" != "UNKNOWN" ]; then
     echo "rebase landed, mergeStateStatus=$merge_status"
     break
   fi
@@ -171,23 +178,11 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
 done
 ```
 
-If the loop exits at the deadline still `CONFLICTING`/`DIRTY`, the rebase did **not** clear the conflict — fall back to the manual path below:
+A failed `gh pr view` lookup (empty output) is **not** evidence of a resolved conflict — it continues polling rather than exiting the loop. If lookups keep failing, treat it as a degraded/unknown state, not a safe merge signal.
 
-1. Check out the PR branch and attempt to resolve the conflict
-2. Push the resolved branch
-3. Wait for CI to re-run and pass
-4. Merge if CI passes
-5. If the conflict cannot be resolved cleanly, skip the PR
+If the loop exits at the deadline still `CONFLICTING`/`DIRTY`/`UNKNOWN`, or lookups kept failing, the rebase did **not** confirm-clear the conflict — fall back to the manual path.
 
-```bash
-gh pr checkout {number}
-# resolve conflicts
-git add <resolved-files>  # stage only the conflict-resolved files explicitly
-git commit -m "fix: resolve merge conflict for dependabot PR #{number}"
-git push
-# wait for CI, then merge
-gh pr merge {number} --merge
-```
+> **Action required**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) and follow **Update Branch From Base** for the manual fallback — merge the base into the Dependabot branch (never rebase, it orphans review threads), push, and re-verify CI before merging. Do not inline or approximate that procedure here.
 
 **If CI fails** after conflict resolution or at any point, skip the PR and record the failure.
 
