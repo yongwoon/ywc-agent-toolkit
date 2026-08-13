@@ -95,8 +95,10 @@ Advisor escalations used: 0/5
 13. ywc-project-mission (92) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 14. ywc-infra-design (94) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 15. ywc-plan (94) — S3=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
+16. ywc-spec-writer (94) — S3=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
+17. ywc-tech-research (94) — S3=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 
-Per this task's own declared scope (`000083-010-infra-toolkit-eval-coverage-rerun`: "새로 드러난 backlog 항목에 대한 실제 fix 작업... 다음 개선 cycle의 입력일 뿐, 이 task 범위 밖"), the per-item file:line evidence and concrete-fix text a fresh targeted review would produce were not authored in this rerun — the axis scores above are this run's judge-cluster verdicts, but the fine-grained citation trail is next-cycle work, not something already sitting in `task.md`. The 15 rows above are the actionable input handed to that next cycle; treat "score + weakest axis" as the finding for now.
+Per this task's own declared scope (`000083-010-infra-toolkit-eval-coverage-rerun`: "새로 드러난 backlog 항목에 대한 실제 fix 작업... 다음 개선 cycle의 입력일 뿐, 이 task 범위 밖"), the per-item file:line evidence and concrete-fix text a fresh targeted review would produce were not authored in this rerun — the axis scores above are this run's judge-cluster verdicts, but the fine-grained citation trail is next-cycle work, not something already sitting in `task.md`. The 17 rows above are the actionable input handed to that next cycle; treat "score + weakest axis" as the finding for now.
 
 ## Regression vs 2026-08-12
 - `claude-code/skills.measured`: 4 → 47  (▲ +43, all newly coverage-sufficient items from Batch 19)
