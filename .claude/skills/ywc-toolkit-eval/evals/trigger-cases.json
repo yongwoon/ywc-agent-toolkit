@@ -4258,49 +4258,13 @@
       "source": "user-prompt"
     },
     {
-      "id": "e2e-test-strategy-vs-auth-implement-2",
-      "prompt": "이건 로그인 붙이는 작업 얘기가 아니라, 이미 있는 핵심 흐름 자동화 테스트로 커버해달라는 거야",
-      "expected": "ywc-e2e-test-strategy",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-auth-implement",
-      "note": "e2e-test-strategy wins for automating an existing critical flow; matches the established baseline direction against auth-implement"
-    },
-    {
-      "id": "gen-testcase-vs-e2e-test-strategy-2",
-      "prompt": "코드로 자동화 짜는 거 말고, PM이 브라우저에서 직접 확인할 체크리스트로 뽑아줘",
-      "expected": "ywc-gen-testcase",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-e2e-test-strategy",
-      "note": "gen-testcase wins for a manual dual-audience checklist, not code-level automation; grounded in e2e-test-strategy's own anti-trigger naming gen-testcase"
-    },
-    {
-      "id": "gen-testcase-vs-e2e-test-strategy-3",
-      "prompt": "이건 Playwright 코드 짜는 거 아니고, 사람이 손으로 체크할 표만 필요해",
-      "expected": "ywc-gen-testcase",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-e2e-test-strategy",
-      "note": "gen-testcase wins again for the manual-sheet framing, distinct prompt wording; same grounding as the sibling case"
-    },
-    {
-      "id": "verify-done-vs-tdd-ritual-2",
-      "prompt": "테스트부터 짜자는 게 아니라, 이미 짠 거 다 됐다고 하기 전에 검증부터 하고 싶은 거야",
-      "expected": "ywc-verify-done",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-tdd-ritual",
-      "note": "verify-done wins for gating a completion claim; matches the established baseline direction against tdd-ritual"
-    },
-    {
       "id": "confidence-gate-vs-verify-done-2",
       "prompt": "아직 시작 전에 준비됐는지 판단하는 거 말고, 이미 끝났다는 거 검증부터 해줘",
       "expected": "ywc-verify-done",
       "kind": "collision",
       "source": "user-prompt",
       "impostor": "ywc-confidence-gate",
-      "note": "verify-done wins for post-completion verification; matches the established baseline direction against confidence-gate"
+      "note": "verify-done wins for post-completion verification; grounded in confidence-gate's own anti-trigger naming verify-done for completion verification"
     },
     {
       "id": "incident-postmortem-vs-changelog-1",
@@ -4312,24 +4276,6 @@
       "note": "incident-postmortem wins for a structured incident retrospective; incident-postmortem's own anti-trigger defers post-fix changelog/release-note writing to changelog-release-notes"
     },
     {
-      "id": "skill-author-vs-project-docs-2",
-      "prompt": "일반 프로젝트 문서 작성 얘기가 아니고, ywc 계열 skill 자체를 규칙에 맞게 만들거나 고치는 얘기야",
-      "expected": "ywc-skill-author",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-project-docs",
-      "note": "skill-author wins for authoring/restructuring a ywc-* skill; grounded in project-docs' own anti-trigger naming skill-author"
-    },
-    {
-      "id": "skill-author-vs-project-docs-3",
-      "prompt": "docs 폴더 문서 얘기 말고, 기존 ywc skill들이 규칙 다 지키고 있는지 감사해줘",
-      "expected": "ywc-skill-author",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-project-docs",
-      "note": "skill-author wins for auditing existing ywc-* skills against the canonical rule set; same grounding, distinct scenario (audit vs authoring)"
-    },
-    {
       "id": "auth-implement-vs-plan-1",
       "prompt": "이건 일반적인 기능 기획 얘기 아니고, 구체적으로 인증 붙이는 작업 얘기야",
       "expected": "ywc-auth-implement",
@@ -4337,6 +4283,78 @@
       "source": "user-prompt",
       "impostor": "ywc-plan",
       "note": "auth-implement wins for the specific auth-implementation flow; auth-implement's own anti-trigger defers general feature planning unrelated to auth to plan"
+    },
+    {
+      "id": "e2e-test-strategy-vs-gen-testcase-1",
+      "prompt": "코드로 자동화 짜는 거 말고, PM이 브라우저에서 직접 확인할 체크리스트로 뽑아줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-gen-testcase",
+      "note": "gen-testcase wins for a manual dual-audience checklist ask — this case exercises e2e-test-strategy's own anti-trigger, which explicitly names gen-testcase for manual verification test sheets"
+    },
+    {
+      "id": "e2e-test-strategy-vs-gen-testcase-2",
+      "prompt": "이건 Playwright 코드 짜는 거 아니고, 사람이 손으로 체크할 표만 필요해",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-gen-testcase",
+      "note": "second manual-sheet framing, distinct wording; same grounding as the sibling case, e2e-test-strategy's own anti-trigger names gen-testcase"
+    },
+    {
+      "id": "e2e-test-strategy-vs-security-audit-1",
+      "prompt": "취약점 점검 얘기 아니고, 이 흐름 자동화 테스트로 커버되게 만들어줘",
+      "expected": "ywc-e2e-test-strategy",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-security-audit",
+      "note": "e2e-test-strategy wins for automated flow-coverage test authoring; grounded in e2e-test-strategy's own anti-trigger naming security-audit for penetration testing"
+    },
+    {
+      "id": "tdd-ritual-vs-verify-done-1",
+      "prompt": "이건 다 됐다고 검증하자는 얘기 아니고, 구현 시작하기 전에 실패하는 테스트부터 짜자는 거야",
+      "expected": "ywc-tdd-ritual",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-verify-done",
+      "note": "tdd-ritual wins for the pre-implementation red-green-refactor discipline; grounded in tdd-ritual's own anti-trigger naming verify-done for completion-claim verification"
+    },
+    {
+      "id": "verify-done-vs-code-gen-1",
+      "prompt": "아직 구현 중인 거 새로 짜달라는 거 아니고, 이미 됐다는 것부터 확인해줘",
+      "expected": "ywc-verify-done",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-code-gen",
+      "note": "verify-done wins for gating a completion claim with fresh evidence; grounded in verify-done's own anti-trigger naming code-gen for ongoing implementation drafting"
+    },
+    {
+      "id": "project-docs-vs-skill-author-1",
+      "prompt": "이건 skill 자체를 만들거나 고치는 거 아니고, 그냥 이 프로젝트 아키텍처 문서 하나 작성해줘",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-skill-author",
+      "note": "project-docs wins for general project documentation; grounded in project-docs' own anti-trigger naming skill-author for skill authoring specifically, which this ask is not"
+    },
+    {
+      "id": "project-docs-vs-skill-author-2",
+      "prompt": "이건 ywc skill 감사하는 거 아니고, 그냥 운영 가이드 문서 하나 추가해달라는 거야",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-skill-author",
+      "note": "project-docs wins again for a plain ops-guide doc, distinct scenario from skill auditing; same grounding as the sibling case"
+    },
+    {
+      "id": "auth-implement-vs-e2e-test-strategy-1",
+      "prompt": "이건 일반적인 흐름 테스트 얘기가 아니라, 이 서비스에 로그인을 새로 붙이는 작업이야",
+      "expected": "ywc-auth-implement",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-e2e-test-strategy",
+      "note": "auth-implement wins for implementing the auth feature itself; grounded in auth-implement's own anti-trigger naming e2e-test-strategy for non-auth E2E test authoring"
     }
   ]
 }
