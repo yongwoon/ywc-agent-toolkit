@@ -2898,6 +2898,195 @@
       "kind": "negative",
       "source": "session-trace",
       "note": "one-command git query — ywc-worktrees / ywc-finish-branch are the likeliest over-triggers"
+    },
+    {
+      "id": "plan-pos-5",
+      "prompt": "이번에 평가 결과 나온 거 반영해서, 어떻게 개선할지 계획부터 세워줘",
+      "expected": "ywc-plan",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "plan-pos-6",
+      "prompt": "지금까지 논의한 내용으로 실제 진행 계획 정리해줘",
+      "expected": "ywc-plan",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "plan-pos-7",
+      "prompt": "OK, 일단 그걸로 됐어. 그럼 plan을 작성해줘",
+      "expected": "ywc-plan",
+      "kind": "positive",
+      "source": "session-trace"
+    },
+    {
+      "id": "brainstorm-pos-5",
+      "prompt": "이 프로젝트 다음 단계로 뭘 하면 좋을지 같이 고민해보고 싶어",
+      "expected": "ywc-brainstorm",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "brainstorm-pos-6",
+      "prompt": "현제 project에서 다음 step으로 뭘 하면 좋을지 brainstorming을 하고 싶어.",
+      "expected": "ywc-brainstorm",
+      "kind": "positive",
+      "source": "session-trace"
+    },
+    {
+      "id": "brainstorm-pos-7",
+      "prompt": "아직 뭘 만들지 확실친 않은데, 같이 아이디어부터 구상해볼래?",
+      "expected": "ywc-brainstorm",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "tech-research-pos-5",
+      "prompt": "이 기능에 쓸 라이브러리 몇 개 있는데 뭐가 나은지 비교 조사해줘",
+      "expected": "ywc-tech-research",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "tech-research-pos-6",
+      "prompt": "구현 방식 여러 개 있을 것 같은데 장단점 조사하고 best practice 좀 찾아줘",
+      "expected": "ywc-tech-research",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "tech-research-pos-7",
+      "prompt": "스펙 쓰기 전에 이 기술 조사부터 좀 해줄래? 어떤 게 나을지",
+      "expected": "ywc-tech-research",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "confidence-gate-pos-5",
+      "prompt": "이제 구현 시작해도 될 만큼 준비됐는지 확인해줘",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "confidence-gate-pos-6",
+      "prompt": "code-gen 돌리기 전에 confidence 체크 한 번 하고 싶어",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "confidence-gate-pos-7",
+      "prompt": "이 설계로 그냥 진행해도 괜찮을지 gate 체크해줄래",
+      "expected": "ywc-confidence-gate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "spec-writer-pos-5",
+      "prompt": "지금까지 정리된 내용으로 사양서 새로 작성해줘, docs/specification/에",
+      "expected": "ywc-spec-writer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "spec-writer-pos-6",
+      "prompt": "이번 PR 반영해서 사양서 업데이트 좀 해줘",
+      "expected": "ywc-spec-writer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "spec-writer-pos-7",
+      "prompt": "이번 task 범위 끝났으니까 그 내용으로 spec 문서 갱신해줘",
+      "expected": "ywc-spec-writer",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "spec-validate-pos-5",
+      "prompt": "이 스펙 문서 완성도 있는지 한번 봐줄래, 놓친 요구사항 없는지",
+      "expected": "ywc-spec-validate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "spec-validate-pos-6",
+      "prompt": "구현 들어가기 전에 지금 스펙이 충분히 검증됐는지 확인해줘",
+      "expected": "ywc-spec-validate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "spec-validate-pos-7",
+      "prompt": "지금까지 작성한 스펙에 빠진 요구사항 없는지 검토해줘, 구현 들어가기 전에",
+      "expected": "ywc-spec-validate",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "plan-vs-brainstorm-2",
+      "prompt": "결제 연동 기능 구현 계획 세워줘 — 요구사항은 이미 다 정리됐어",
+      "expected": "ywc-plan",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-brainstorm",
+      "note": "plan wins once intent/requirements are already clear; brainstorm is for still-vague ideation"
+    },
+    {
+      "id": "tech-research-vs-plan-2",
+      "prompt": "이 기능 구현하기 전에 아키텍처만 먼저 설계 검토하고 싶어, 라이브러리 선택지도 같이",
+      "expected": "ywc-tech-research",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-plan",
+      "note": "tech-research wins for architecture-only/library-comparison questions; plan's own anti-trigger defers those to tech-research"
+    },
+    {
+      "id": "tech-research-vs-brainstorm-2",
+      "prompt": "이 기능에 쓸 프레임워크 후보 몇 개 비교해줘, 뭐가 나을지",
+      "expected": "ywc-tech-research",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-brainstorm",
+      "note": "tech-research wins for concrete library/framework comparison; brainstorm is for pre-intent idea exploration"
+    },
+    {
+      "id": "spec-writer-vs-spec-validate-1",
+      "prompt": "이번 논의 정리해서 사양서 새로 작성해줘, docs/specification/에 넣어줘",
+      "expected": "ywc-spec-writer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-spec-validate",
+      "note": "spec-writer authors the spec document; spec-validate only reviews an existing one"
+    },
+    {
+      "id": "confidence-gate-vs-spec-validate-2",
+      "prompt": "구현 들어가기 전에 준비됐는지 confidence gate로 점검해줘, 스펙 자체 리뷰 말고",
+      "expected": "ywc-confidence-gate",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-spec-validate",
+      "note": "confidence-gate scores implementation readiness; spec-validate reviews the spec document itself"
+    },
+    {
+      "id": "confidence-gate-vs-brainstorm-1",
+      "prompt": "설계는 이미 다 정했고, 이제 이대로 진행해도 되는지만 확인하고 싶어",
+      "expected": "ywc-confidence-gate",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-brainstorm",
+      "note": "confidence-gate wins once a path is already chosen and only readiness needs checking; brainstorm is for pre-decision ideation"
+    },
+    {
+      "id": "task-generator-vs-spec-writer-1",
+      "prompt": "이 확정된 스펙 문서를 task들로 쪼개줘",
+      "expected": "ywc-task-generator",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-spec-writer",
+      "note": "task-generator decomposes an already-finalized spec into tasks; spec-writer authors/updates the spec document itself"
     }
   ]
 }
