@@ -76,8 +76,8 @@ grouped rows above account for all 58 assets: 50 skills and 8 agents.
 | Check | Result | Evidence |
 |---|---|---|
 | Architecture fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-architecture-invariants/{valid,unsafe,no-manifest}/fixture.json`; runner output checks enforce structured status evidence. |
-| IaC/design fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-iac-author/{missing-design,happy-path,boundary}/fixture.json` and `ywc-infra-design/{happy-path,negative}/fixture.json`. |
-| Optimization/review fixtures | PASS | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-infra-optimize/{happy-path,caution,boundary}/fixture.json` and `ywc-infra-review/{happy-path,negative}/fixture.json`. |
+| IaC/design fixtures | ADDED | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-iac-author/{missing-design,happy-path,boundary}/fixture.json` and `ywc-infra-design/{happy-path,negative}/fixture.json`; behavior execution remains pending fixture-harness integration. |
+| Optimization/review fixtures | ADDED | `.codex/skills/ywc-codex-toolkit-eval/evals/fixtures/ywc-infra-optimize/{happy-path,caution,boundary}/fixture.json` and `ywc-infra-review/{happy-path,negative}/fixture.json`; behavior execution remains pending fixture-harness integration. |
 
 ### Required command evidence
 
@@ -99,6 +99,7 @@ The mechanical scorer remains unchanged: architecture-invariants is still S5=2,
 and the four infrastructure skills remain S5=3. The current scorer reads its
 deterministic dimensions from the existing inventory/evaluation records and does
 not consume the new per-skill V2 fixture subtrees as score inputs. The fixture
-evidence is therefore recorded as complete offline coverage, but no score
-movement is claimed until the judgment pass or scorer integration explicitly
-consumes those fixtures. `evals/history.mechanical.json` was not modified.
+evidence is therefore recorded as architecture-tested plus infrastructure
+fixture definitions pending harness integration; no score movement is claimed
+until the judgment pass or scorer integration explicitly consumes those
+fixtures. `evals/history.mechanical.json` was not modified.
