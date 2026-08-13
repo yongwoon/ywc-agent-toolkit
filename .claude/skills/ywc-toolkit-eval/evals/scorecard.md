@@ -3,7 +3,9 @@
 Mode: full
 Advisor escalations used: 0/5
 
-`»` marks a row carried forward unchanged from the 2026-08-12 baseline run (not re-judged this cycle, out of this task's scope — see `## Regression vs 2026-08-12` below). Unlike `·`, a `»` row's Total is retained rather than forced to `—`, because the value is real prior-run data, not missing data.
+`?` marks an axis that was not measured this cycle; a row with any `?` axis has its Total forced to `—`.
+
+`»` marks a row carried forward unchanged from the 2026-08-12 baseline run (not re-judged this cycle, out of this task's scope — see `## Regression vs 2026-08-12` below). Unlike `?`, a `»` row's Total is retained rather than forced to `—`, because the value is real prior-run data, not missing data.
 
 ## claude-code/skills  (48 items, mean 95.9/100)
 
@@ -26,7 +28,7 @@ Advisor escalations used: 0/5
 | ywc-gen-testcase | 5 | 5 | 5 | 5 | 5 | 5 | 100 | S1 |
 | ywc-handle-pr-reviews | » | » | » | » | » | » | 86 | — |
 | ywc-iac-author | 5 | 5 | 5 | 5 | 5 | 5 | 100 | S1 |
-| ywc-impl-review | 4 | 5 | 5 | 5 | 5 | 3 | 90 | S1 |
+| ywc-impl-review | 4 | 5 | 5 | 5 | 5 | 3 | 90 | S6 |
 | ywc-incident-postmortem | 5 | 5 | 5 | 5 | 5 | 5 | 100 | S1 |
 | ywc-infra-design | 4 | 5 | 5 | 5 | 5 | 5 | 94 | S1 |
 | ywc-infra-optimize | 5 | 5 | 5 | 5 | 5 | 5 | 100 | S1 |
@@ -85,7 +87,7 @@ Advisor escalations used: 0/5
 5. ywc-security-audit (88) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 6. ywc-task-generator (88) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 7. ywc-agentic (90) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
-8. ywc-impl-review (90) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
+8. ywc-impl-review (90) — S6=3: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 9. ywc-merge-dependabot (90) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 10. ywc-parallel-executor (90) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
 11. ywc-docker-isolate (92) — S1=4: citation not preserved from this run's judge dispatch — needs a fresh targeted review to produce file:line evidence and a concrete fix next cycle.
