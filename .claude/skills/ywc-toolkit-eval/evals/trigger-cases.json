@@ -3434,6 +3434,135 @@
       "source": "user-prompt",
       "impostor": "ywc-worktrees",
       "note": "finish-branch wins for CI/merge/Mark-Complete delivery; worktrees' own anti-trigger explicitly defers that case to finish-branch"
+    },
+    {
+      "id": "infra-design-pos-4",
+      "prompt": "AWS로 이번 프로젝트 인프라 어떻게 구성할지 처음부터 잡아줘",
+      "expected": "ywc-infra-design",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-design-pos-5",
+      "prompt": "네트워크랑 스토리지 짜기 전에 요구사항부터 정리하고 싶어",
+      "expected": "ywc-infra-design",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-design-pos-6",
+      "prompt": "클라우드 provider 정하고 전체 구조 잡아줘, IAM 토폴로지까지",
+      "expected": "ywc-infra-design",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "iac-author-pos-4",
+      "prompt": "이 설계대로 실제 배포 코드 짜줘",
+      "expected": "ywc-iac-author",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "iac-author-pos-5",
+      "prompt": "쿠버네티스 리소스 헬름 프로바이더로 정의해줘",
+      "expected": "ywc-iac-author",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "iac-author-pos-6",
+      "prompt": "이 리소스들 코드로 만들어서 실제로 프로비저닝되게 해줘",
+      "expected": "ywc-iac-author",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-review-pos-4",
+      "prompt": "이 코드 적용하기 전에 보안 그룹이랑 권한 설정 문제 없는지 봐줘",
+      "expected": "ywc-infra-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-review-pos-5",
+      "prompt": "지금 이 설정 과도한 권한 있는지 apply 전에 점검해줘",
+      "expected": "ywc-infra-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-review-pos-6",
+      "prompt": "이 구성 단일 장애점이나 백업 누락 있는지 확인해줘",
+      "expected": "ywc-infra-review",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-optimize-pos-4",
+      "prompt": "안 쓰는 자원 있으면 찾아서 비용 좀 줄여줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-optimize-pos-5",
+      "prompt": "지금 상태가 원래 코드랑 어긋난 거 있는지 맞춰줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "infra-optimize-pos-6",
+      "prompt": "예약형이나 스팟으로 바꿀 수 있는 인스턴스 있으면 전환해줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "iac-author-vs-infra-design-2",
+      "prompt": "설계는 이미 다 끝났고, 이제 실제 코드로 작성해줘",
+      "expected": "ywc-iac-author",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-infra-design",
+      "note": "iac-author wins once the design is already done and the ask is to write actual IaC; infra-design's own anti-trigger defers writing IaC to iac-author"
+    },
+    {
+      "id": "infra-review-vs-iac-author-2",
+      "prompt": "이 코드 새로 작성하지 말고, 지금 있는 거 문제 없는지 점검만 해줘",
+      "expected": "ywc-infra-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-iac-author",
+      "note": "infra-review wins for a review-only ask on existing IaC; iac-author's own anti-trigger defers review to infra-review"
+    },
+    {
+      "id": "infra-optimize-vs-infra-review-2",
+      "prompt": "리뷰는 이미 끝났고, 이제 실제로 비용 줄이고 안 쓰는 자원 정리까지 실행해줘",
+      "expected": "ywc-infra-optimize",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-infra-review",
+      "note": "infra-optimize wins for executing cost/drift remediation; infra-review's own anti-trigger defers execution to infra-optimize"
+    },
+    {
+      "id": "infra-review-vs-infra-design-1",
+      "prompt": "이건 새로 설계하는 게 아니고, 지금 있는 인프라 구성 문제없는지 봐주는 거야",
+      "expected": "ywc-infra-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-infra-design",
+      "note": "infra-review wins for reviewing an existing infrastructure setup; infra-design's own anti-trigger explicitly defers that case to infra-review"
+    },
+    {
+      "id": "iac-author-vs-infra-optimize-1",
+      "prompt": "이거 기존 리소스 최적화하는 게 아니고, 처음부터 새로 코드 짜서 만드는 거야",
+      "expected": "ywc-iac-author",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-infra-optimize",
+      "note": "iac-author wins for first-time IaC authoring; infra-optimize's own anti-trigger explicitly defers that case to iac-author"
     }
   ]
 }
