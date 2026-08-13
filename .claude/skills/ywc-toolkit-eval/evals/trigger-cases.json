@@ -3899,6 +3899,195 @@
       "source": "user-prompt",
       "impostor": "ywc-handle-pr-reviews",
       "note": "receive-review wins for the human-judgment verify-before-agreeing step; handle-pr-reviews is the automation layer that fetches/replies, per receive-review's own anti-trigger"
+    },
+    {
+      "id": "adr-pos-1",
+      "prompt": "이 아키텍처 결정 나중에 볼 수 있게 기록으로 남겨줘",
+      "expected": "ywc-adr",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "adr-pos-2",
+      "prompt": "왜 이 방식으로 정했는지, 고려했던 다른 대안이랑 트레이드오프까지 문서로 남겨줘",
+      "expected": "ywc-adr",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "adr-pos-3",
+      "prompt": "예전에 남긴 결정 기록들 중에 이제 안 맞는 거 있으면 정리해줘",
+      "expected": "ywc-adr",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-mission-pos-5",
+      "prompt": "이 프로젝트가 왜 존재하는지, 뭘 목표로 하는지 정리해서 남겨줘",
+      "expected": "ywc-project-mission",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-mission-pos-6",
+      "prompt": "이 프로젝트에서 뭘 이루면 성공인지 명확하게 적어두고 싶어",
+      "expected": "ywc-project-mission",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-mission-pos-7",
+      "prompt": "이건 이 프로젝트가 다루지 않을 범위라는 것도 같이 기록해두자",
+      "expected": "ywc-project-mission",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "review-learnings-pos-5",
+      "prompt": "이 리뷰 지적, 앞으로도 계속 적용되게 저장해줘",
+      "expected": "ywc-review-learnings",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "review-learnings-pos-6",
+      "prompt": "이건 잘못 지적된 거였으니까 다음부터는 다시 지적하지 않게 기록해줘",
+      "expected": "ywc-review-learnings",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "review-learnings-pos-7",
+      "prompt": "지금까지 쌓인 리뷰 선호사항들 뭐 있는지 보여줘",
+      "expected": "ywc-review-learnings",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "ubiquitous-language-pos-5",
+      "prompt": "이 도메인에서 쓰는 용어들 정리해서 모아줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "ubiquitous-language-pos-6",
+      "prompt": "코드베이스 보고 쓰이는 도메인 개념 이름들 뽑아내줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "ubiquitous-language-pos-7",
+      "prompt": "새로운 개념 생겼으니까 기존 용어 정리 파일에 반영해줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-docs-pos-5",
+      "prompt": "이 프로젝트 아키텍처 관련 내용 docs 폴더에 정리해줘",
+      "expected": "ywc-project-docs",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-docs-pos-6",
+      "prompt": "운영 가이드 하나 새로 추가해줘",
+      "expected": "ywc-project-docs",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-docs-pos-7",
+      "prompt": "제품 관련 내용 한국어로 정리한 문서 만들어줘",
+      "expected": "ywc-project-docs",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-scaffold-pos-5",
+      "prompt": "이 기술 스택으로 새 프로젝트 폴더 짜줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-scaffold-pos-6",
+      "prompt": "이 아키텍처 패턴에 맞는 디렉토리 레이아웃 설계해줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "project-scaffold-pos-7",
+      "prompt": "처음부터 시작하는 프로젝트인데, 뼈대부터 잡아줘",
+      "expected": "ywc-project-scaffold",
+      "kind": "positive",
+      "source": "user-prompt"
+    },
+    {
+      "id": "adr-vs-project-mission-1",
+      "prompt": "이건 프로젝트 전체 목표 얘기 아니고, 이번에 정한 이 아키텍처 결정 하나만 기록해줘",
+      "expected": "ywc-adr",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-project-mission",
+      "note": "adr wins for recording a single hard-to-reverse architectural decision; adr's own anti-trigger defers durable project-wide intent to project-mission"
+    },
+    {
+      "id": "adr-vs-review-learnings-1",
+      "prompt": "이건 리뷰 선호도 얘기가 아니고, 아키텍처 관련 결정 하나 기록해두는 거야",
+      "expected": "ywc-adr",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-review-learnings",
+      "note": "adr wins for recording an architectural decision; adr's own anti-trigger defers review preferences to review-learnings"
+    },
+    {
+      "id": "adr-vs-ubiquitous-language-1",
+      "prompt": "용어 정의 얘기가 아니라, 이 구조를 왜 이렇게 하기로 했는지 결정 자체를 남기고 싶어",
+      "expected": "ywc-adr",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-ubiquitous-language",
+      "note": "adr wins for recording a decision's reasoning; adr's own anti-trigger defers domain vocabulary to ubiquitous-language"
+    },
+    {
+      "id": "project-mission-vs-ubiquitous-language-1",
+      "prompt": "용어 정리 말고, 이 프로젝트가 궁극적으로 뭘 목표로 하는지부터 정리하고 싶어",
+      "expected": "ywc-project-mission",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-ubiquitous-language",
+      "note": "project-mission wins for durable north-star intent; project-mission's own anti-trigger defers domain vocabulary to ubiquitous-language"
+    },
+    {
+      "id": "review-learnings-vs-ubiquitous-language-1",
+      "prompt": "용어집 얘기 아니고, 이 리뷰 선호도를 앞으로도 계속 반영되게 저장해두고 싶어",
+      "expected": "ywc-review-learnings",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-ubiquitous-language",
+      "note": "review-learnings wins for accumulating durable review preferences; review-learnings' own anti-trigger defers domain vocabulary to ubiquitous-language"
+    },
+    {
+      "id": "ubiquitous-language-vs-project-docs-2",
+      "prompt": "전체 문서 구조 얘기 말고, 이 도메인에서 쓰는 용어들만 따로 정리해줘",
+      "expected": "ywc-ubiquitous-language",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-project-docs",
+      "note": "ubiquitous-language wins for domain vocabulary specifically; ubiquitous-language's own anti-trigger defers general documentation structure to project-docs"
+    },
+    {
+      "id": "project-docs-vs-ubiquitous-language-2",
+      "prompt": "용어 정리 말고, 이 프로젝트 아키텍처 문서를 docs 폴더 구조에 맞게 작성해줘",
+      "expected": "ywc-project-docs",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-ubiquitous-language",
+      "note": "project-docs wins for general project documentation structure; project-docs' own anti-trigger defers domain vocabulary to ubiquitous-language"
     }
   ]
 }
