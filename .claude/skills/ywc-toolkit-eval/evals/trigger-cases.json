@@ -4287,19 +4287,19 @@
     {
       "id": "e2e-test-strategy-vs-gen-testcase-1",
       "prompt": "코드로 자동화 짜는 거 말고, PM이 브라우저에서 직접 확인할 체크리스트로 뽑아줘",
-      "expected": "ywc-e2e-test-strategy",
+      "expected": "ywc-gen-testcase",
       "kind": "collision",
       "source": "user-prompt",
-      "impostor": "ywc-gen-testcase",
+      "impostor": "ywc-e2e-test-strategy",
       "note": "gen-testcase wins for a manual dual-audience checklist ask — this case exercises e2e-test-strategy's own anti-trigger, which explicitly names gen-testcase for manual verification test sheets"
     },
     {
       "id": "e2e-test-strategy-vs-gen-testcase-2",
       "prompt": "이건 Playwright 코드 짜는 거 아니고, 사람이 손으로 체크할 표만 필요해",
-      "expected": "ywc-e2e-test-strategy",
+      "expected": "ywc-gen-testcase",
       "kind": "collision",
       "source": "user-prompt",
-      "impostor": "ywc-gen-testcase",
+      "impostor": "ywc-e2e-test-strategy",
       "note": "second manual-sheet framing, distinct wording; same grounding as the sibling case, e2e-test-strategy's own anti-trigger names gen-testcase"
     },
     {
