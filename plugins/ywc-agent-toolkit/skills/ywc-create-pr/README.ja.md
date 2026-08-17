@@ -14,6 +14,7 @@ Feature Branch での作業完了後、Commit 作成から Draft PR 作成まで
 - `.github/pull_request_template.md` があれば自動適用
 - すべての PR を Draft で作成
 - `--lang` / `--language` で PR title/body prose を `en`、`ja`、`ko`、`zh`、`es` のいずれかにし、task ID、branch name、file path、command、label、明示的な `--title` 値はそのまま保持
+- branch に対応する task の `## Spec Reference` を優先確認し、なければ `docs/ywc-plans/` 配下の plan を best-effort で検索して設計背景を PR 本文に追加
 
 ## 使用方法
 
@@ -24,6 +25,8 @@ $ywc-create-pr --skip-ci-check
 $ywc-create-pr main --skip-ci-check
 $ywc-create-pr --lang zh
 $ywc-create-pr --language spanish
+$ywc-create-pr --plan-doc docs/ywc-plans/20260814-small_example.md
+$ywc-create-pr --no-plan-ref
 ```
 
 自然言語 Trigger は [SKILL.md](./SKILL.md) に定義されています。

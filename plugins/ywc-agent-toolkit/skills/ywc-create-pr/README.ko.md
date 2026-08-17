@@ -14,6 +14,7 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 - `.github/pull_request_template.md`가 있으면 자동 적용
 - 모든 PR을 Draft 상태로 생성
 - `--lang` / `--language`로 PR title/body prose를 `en`, `ja`, `ko`, `zh`, `es` 중 하나로 작성하며, task ID, branch name, file path, command, label, 명시적 `--title` 값은 그대로 유지
+- branch에 대응하는 task의 `## Spec Reference`를 우선 확인하고, 없으면 `docs/ywc-plans/` 하위 plan을 best-effort로 찾아 설계 배경을 PR 본문에 추가
 
 ## 사용 방법
 
@@ -24,6 +25,8 @@ $ywc-create-pr --skip-ci-check
 $ywc-create-pr main --skip-ci-check
 $ywc-create-pr --lang zh
 $ywc-create-pr --language spanish
+$ywc-create-pr --plan-doc docs/ywc-plans/20260814-small_example.md
+$ywc-create-pr --no-plan-ref
 ```
 
 자연어 Trigger는 [SKILL.md](./SKILL.md)에 정의되어 있습니다.

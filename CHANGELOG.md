@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 * **ywc-architecture-invariants:** distribute the optional architecture contract validator and normalized-evidence audit skill.
+* **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
 ## [1.33.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.32.0...v1.33.0) (2026-08-13)

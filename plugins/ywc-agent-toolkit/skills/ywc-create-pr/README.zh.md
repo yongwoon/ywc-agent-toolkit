@@ -18,6 +18,7 @@
 - 在可用时应用 `.github/pull_request_template.md`
 - 将每个 PR 创建为草稿
 - 通过 `--lang` / `--language` 支持用 `en`、`ja`、`ko`、`zh` 或 `es` 编写 PR title/body prose，同时保持 task ID、branch name、file path、command、label 和显式 `--title` 值不变
+- 优先检查分支对应 task 的 `## Spec Reference`，否则在 `docs/ywc-plans/` 下 best-effort 查找相关 plan，并将设计背景追加到 PR 正文
 
 ## 使用方法
 
@@ -28,6 +29,8 @@ $ywc-create-pr --skip-ci-check
 $ywc-create-pr main --skip-ci-check
 $ywc-create-pr --lang zh
 $ywc-create-pr --language spanish
+$ywc-create-pr --plan-doc docs/ywc-plans/20260814-small_example.md
+$ywc-create-pr --no-plan-ref
 ```
 
 自然语言触发词在 [SKILL.md](./SKILL.md) 中定义。
