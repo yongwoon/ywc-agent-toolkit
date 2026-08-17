@@ -318,6 +318,7 @@ them instead of inlining equivalent logic in SKILL.md bodies.
 | `ywc-merge-dependabot/scripts/detect-major-bump.py --title <t> \| (stdin)` | ywc-merge-dependabot | Deterministic "leftmost non-zero segment" semver major-bump gate; NDJSON output; `major_bump: true\|false\|null` (null = undecidable, LLM falls back) |
 | `ywc-release-pr-list/scripts/extract-merged-prs.sh [--exclude <pr>]` | ywc-release-pr-list | Pure-text extraction of merged PR numbers from commit headlines (2 anchored patterns only); dedup + ascending sort; no network |
 | `ywc-confidence-gate/scripts/score-gate.py --scope N --architecture N --evidence N --reuse N --root-cause N` | ywc-confidence-gate | Weighted aggregate + band (PROCEED/REVIEW/STOP) + single-dim ≤50 override; JSON output |
+| `ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` | ywc-task-generator | Collapse fully completed phases in `dependency-graph.md` to `## Phase NNNNNN — done`; drop fully completed Notes/Mermaid sections; invoked by `scripts/mark-complete.sh` and by the Step 2 >300-line gate |
 
 All paths are relative to the repository root. When authoring a new `ywc-*`
 skill that needs deterministic parsing or a bounded wait loop, add a script

@@ -119,6 +119,7 @@ Gather information about the project environment to generate realistic tasks. Th
 
 **When existing tasks are present:**
 - Determine the next starting number by scanning **both** `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`). Completed tasks are moved out of `<tasks-dir>/` into `<tasks-dir>/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning only the active root misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `<tasks-dir>/` or in `<tasks-dir>/completed/` — the new batch starts at `000017-010`. If `<tasks-dir>/` is empty (every task already completed and archived), fall back to the highest number in `<tasks-dir>/completed/` and apply the same `+1 phase` rule.
+- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
 - The task **directories are the single source of truth** for number allocation — `dependency-graph.md` is a derived artifact and must **not** override the directory scan. Running `scripts/next-task-number.sh [tasks-dir]` performs the scan above and, when `<tasks-dir>/dependency-graph.md` exists, additionally cross-checks the graph's highest full-ID PHASE against the directory result, emitting a **STDERR warning on mismatch** (the directory result still wins). A warning signals the graph has drifted from the actual task directories — reconcile the graph before generating the new batch, but never trust the graph's number over the directories.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
@@ -365,6 +366,7 @@ After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 
 This graph must be consistent with the Dependencies sections in individual README.md files.
+Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 
 ### Step 11: Final Validation
 
