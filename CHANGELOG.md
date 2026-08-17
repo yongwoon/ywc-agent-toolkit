@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.34.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.33.0...v1.34.0) (2026-08-17)
+
+
+### Added
+
+* **ywc-create-pr:** cite related task/plan design background in PR bodies ([#165](https://github.com/yongwoon/ywc-agent-toolkit/issues/165)) ([110f10a](https://github.com/yongwoon/ywc-agent-toolkit/commit/110f10a417c589f0e9ac2211545501e0f864eeac))
+* **ywc-task-generator:** auto-compact completed phases in dependency-graph.md ([#164](https://github.com/yongwoon/ywc-agent-toolkit/issues/164)) ([6ec3d36](https://github.com/yongwoon/ywc-agent-toolkit/commit/6ec3d366ab67e16354454e78e8c3699b5631f146))
+
 ## [1.33.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.32.0...v1.33.0) (2026-08-13)
 
 
