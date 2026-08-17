@@ -51,6 +51,8 @@ TASKS_DIR="${TASKS_DIR%/}"
 SRC="$TASKS_DIR/$TASK"
 DEST="$TASKS_DIR/completed/$TASK"
 MSG="chore: mark $TASK as completed"
+COMPACT_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-task-generator/scripts/compact-dependency-graph.py"
+[ -f "$COMPACT_SCRIPT" ] || COMPACT_SCRIPT="codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py"
 
 [ -d "$SRC" ]  || { echo "error: source task dir not found: $SRC" >&2; exit 1; }
 [ -e "$DEST" ] && { echo "error: destination already exists: $DEST" >&2; exit 1; }
@@ -60,10 +62,13 @@ mkdir -p "$TASKS_DIR/completed"
 if git check-ignore -q "$SRC" 2>/dev/null; then
   # Gitignored tasks/ — git mv cannot track the move; plain mv + empty marker.
   mv "$SRC" "$DEST"
+  python3 "$COMPACT_SCRIPT" "$TASKS_DIR"
   git commit --allow-empty -m "$MSG"
 else
   # Tracked tasks/ — git mv stages the rename; the commit content IS the move.
   git mv "$SRC" "$DEST"
+  python3 "$COMPACT_SCRIPT" "$TASKS_DIR"
+  git add "$TASKS_DIR/dependency-graph.md"
   git commit -m "$MSG"
 fi
 

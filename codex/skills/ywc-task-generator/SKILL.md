@@ -149,6 +149,7 @@ Gather information about the project environment to generate realistic tasks. Th
 
 **When existing tasks are present:**
 - Determine the next starting number by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Extract existing task IDs from the graph and from directory names, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it appears in `dependency-graph.md`, `tasks/`, or `tasks/completed/` — the new batch starts at `000017-010`. If the graph and directory scan disagree, continue with the union-based next PHASE and report the mismatch as a concern.
+- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `tasks/completed/` and never touches a phase with outstanding or unresolvable work.
 - Identify dependency relationships with existing tasks, preferring `dependency-graph.md` when present, and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -286,7 +287,6 @@ Each task name follows this format:
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
-- **Starting PHASE for a new batch**: when any tasks already exist, parse `tasks/dependency-graph.md` first when present, then scan both `tasks/` and `tasks/completed/`; take the highest PHASE across the union of graph entries and directory names, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already recorded in the dependency graph or archived into `tasks/completed/`.
 
 **Category:**
 - `lib` — New library/framework introduction
@@ -431,7 +431,7 @@ After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 
 This graph must be consistent with the Dependencies sections in individual README.md files.
-
+Once every task in a phase reaches `tasks/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
 
 After generating all tasks, verify the following:
