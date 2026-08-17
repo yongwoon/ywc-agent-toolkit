@@ -17,6 +17,7 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 - Admite verificaciones de CI previas al push como lint, format, typecheck y test
 - Ejecuta una auto-revisión obligatoria del diff completo antes de presentar el PR (detecta scope creep, restos de debug y secrets)
 - Aplica `.github/pull_request_template.md` cuando está disponible
+- Cita el documento de diseño relacionado en el cuerpo del PR: primero el `## Spec Reference` de la task de la branch, luego una coincidencia best-effort bajo `docs/ywc-plans/` (non-blocking)
 - Crea cada PR como borrador
 
 ## Uso
@@ -26,6 +27,8 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --plan-doc docs/ywc-plans/20260814-small_feature.md
+/create-pr --no-plan-ref
 ```
 
 Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
