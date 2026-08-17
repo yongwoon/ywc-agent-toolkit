@@ -208,7 +208,7 @@ Record the result in the PR description as `Author Self-Review Gate: passed`. Th
 
 PR bodies generated purely from diff/commit history lose the *why* behind a design decision already captured by `ywc-brainstorm`/`ywc-plan` in `docs/ywc-plans/` or by `ywc-task-generator` in a task README's `## Spec Reference`. This step looks for that document and, when found with confidence, holds it for Step 7 to cite in a design-background section. It never blocks PR creation — no match is a normal, silent outcome.
 
-1. **Explicit override.** If `--plan-doc <path>` is present, validate it first: the path must be repository-relative (reject a leading `/` or any `..` segment) and must end in `.md`. String checks alone do not stop a symlink from pointing outside the repository, so also resolve the candidate to its canonical path (`realpath <path>`) and reject it unless the result is still inside the repository root (`git rev-parse --show-toplevel`). If invalid, missing, or unreadable, print one line explaining why and continue to Step 7 with no design-background result; do not fall back to Path A/Path B. If valid and readable, treat it as the single confident candidate and continue to sub-step 6.
+1. **Explicit override.** If `--plan-doc <path>` is present, validate it first: the path must be repository-relative (reject a leading `/` or any `..` segment) and must end in `.md`. String checks alone do not stop a symlink from pointing outside the repository, so also resolve the candidate to its canonical path (`realpath <path>`) and reject it unless the result is still inside the repository root (`git rev-parse --show-toplevel`). Read that **canonical** path from here on, never the original argument — re-resolving the original leaves a window in which the symlink is repointed between the check and the read. If invalid, missing, or unreadable, print one line explaining why and continue to Step 7 with no design-background result; do not fall back to Path A/Path B. If valid and readable, treat it as the single confident candidate and continue to sub-step 6.
 2. **Path A — Task-based lookup (authoritative, tried first).**
    - If the current branch does not start with `feature/`, Path A has no candidate; go to Path B.
    - Let `<task-name>` be the branch name with `feature/` stripped. Glob `tasks/<task-name>/README.md`; if absent, Glob `tasks/completed/<task-name>/README.md`.
@@ -224,7 +224,8 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
    - A candidate is confident when it shares at least 2 tokens, or exactly 1 token of at least 6 characters.
 5. **Resolve Path B matches.** Zero matches stop silently. One match holds `{source: "plan", plan_path}`. Two or more matches must not be guessed: print one line listing the candidates and instruct the user to rerun with `--plan-doc <path>`, then continue to Step 7 without a design-background result.
 6. **Excerpt extraction (`source: "plan"` or override only).** Bound the read before it happens — a large plan file would otherwise burn the context this PR still needs. Bound it on **bytes**, not lines — a 120-line cap still admits a single multi-megabyte line. Take the excerpt source from `head -c 8192 <plan_path>` (first 8 KB, truncated mid-line if needed), never a full-file read. Within that window, take the content under `## Goal` or `## Purpose` until the next `##` heading, capped at 5 lines / approximately 500 characters. If neither heading exists, use the first paragraph after the title with the same cap. Never forward the full file. Skip this sub-step for `source: "task"`; use its extracted summary verbatim.
-7. Hold `{source: "task", ...}`, `{source: "plan", ...}`, or nothing for Step 7. This step performs no writes.
+7. **Untracked-source confirmation gate.** Whatever the source, if git does not track the document (`git ls-files --error-unmatch <path>` exits non-zero — the normal case for a `.gitignore`d `docs/ywc-plans/`), its text has never passed review and may hold local secrets or PII that this step would publish verbatim to a remote PR. Show the user the path and the exact excerpt, and ask for explicit confirmation before citing it. On decline, continue to Step 7 with no design-background result. Tracked documents skip this gate.
+8. Hold `{source: "task", ...}`, `{source: "plan", ...}`, or nothing for Step 7. This step performs no writes.
 
 ### 7. Create PR
 
@@ -262,8 +263,8 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
   | es | `## Antecedentes de diseño (Design Background)` | `> Derivado de la Spec Reference de la tarea \`<task_readme_path>\`.` | `> Extraído de \`<plan_path>\` — consulte el archivo para el contexto completo.` |
 
   For `source: "task"`, include the localized heading, intro, `**Primary Sources**: <primary_sources>`, and the verbatim summary. For `source: "plan"` (including `--plan-doc`), include the localized heading, intro, and verbatim excerpt. If Step 6.6 held no result, omit the section entirely — never add an empty placeholder.
-- Create a **draft** PR with `gh pr create --draft --base <base-branch> --title "<title>" --body-file - <<'EOF'`
-- Always specify `--title` and `--body-file -` (or `--body`) explicitly to avoid interactive prompts
+- Write the finished body to a temp file and create a **draft** PR with `gh pr create --draft --base <base-branch> --title "<title>" --body-file "$body_file"`. Do **not** pipe the body through a `<<'EOF'` heredoc: the Design Background block carries verbatim third-party document text, and a line reading exactly `EOF` inside it would close the heredoc early and hand the remainder to the shell as commands.
+- Always specify `--title` and `--body-file` explicitly to avoid interactive prompts
 
 ### 8. Remote CI & Bot Review Check
 
