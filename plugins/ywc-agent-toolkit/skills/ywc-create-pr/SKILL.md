@@ -28,6 +28,9 @@ When tempted to skip a step, check this table first:
 | "The PR conflicts with base — I'll rebase the feature branch to fix it" | Rebasing rewrites commit SHAs and orphans existing PR review threads. Merge the base *into* the feature branch instead (`git merge --no-ff origin/<base>`); it preserves SHAs and review history. See `../references/pr-conflict-resolution.md`. |
 | "The UL update adds noise before every PR" | The update is a diff-driven incremental review, not a full re-extraction. If no new domain terms appeared in the branch, the skill produces no changes. Skipping it lets the glossary drift from the codebase with every PR that introduces new vocabulary. |
 | "Security scan and CI already checked the branch, so I do not need to read the diff" | Automated checks do not catch scope creep, drive-by edits, debug residue, or convention mismatch. Before PR creation, the author must read `git diff <base-branch>...HEAD`; this does not replace independent reviewer or CI review. |
+| "Checking the task README too is extra work, just fuzzy-match the plan folder" | The task README's `## Spec Reference` → `Primary Sources` is already recorded precisely by `ywc-task-generator` — it is the authoritative source. Path A (task lookup) always runs before Path B (fuzzy match), never the reverse. |
+| "Completed plans always live in `OLD/`, so I only need to search that folder" | The subdirectory name for completed plans is project-specific (`OLD`, `archive`, `done`, etc.). Search `docs/ywc-plans/**/*.md` recursively instead of hardcoding one folder name. |
+| "`docs/ywc-plans/` is missing, treat it as an error" | Other projects reusing this skill may never have created the directory, or it may be `.gitignore`d. Absence is a normal state — skip Step 6.6's Path B silently, never surface it as a failure. |
 
 **Violating the letter of these rules is violating the spirit.** If you find yourself rephrasing a rule to make an exception, stop and ask the user.
 
@@ -47,6 +50,8 @@ Follow the steps below to commit and create a PR.
 3. Apply the chosen language consistently when writing the PR description in Step 7. Localize only PR title/body prose; keep branch names, task IDs, file paths, commands, labels, code blocks, YAML keys, JSON keys, and other machine identifiers unchanged.
 4. **Post-CI check**: Check `$ARGUMENTS` for `--skip-post-ci-check`. If present, skip Step 8 (Remote CI & Bot Review). This flag is passed by `ywc-finish-branch`, which handles CI verification independently in its own Step 4.
 5. **Ubiquitous Language update**: Check `$ARGUMENTS` for `--skip-ubiquitous-update`. Store the flag — it controls Step 0.5.
+6. **Plan-doc override**: Check `$ARGUMENTS` for `--plan-doc <path>`. If present, store the path — Step 6.6 treats it as the single confident candidate and skips its own Task/Plan discovery (Path A/B).
+7. **Plan-doc opt-out**: Check `$ARGUMENTS` for `--no-plan-ref`. Store the flag — it disables Step 6.6 entirely. Mutually exclusive with `--plan-doc`; if both are present, `--plan-doc` wins and `--no-plan-ref` is ignored.
 
 ### 0.5. Ubiquitous Language Update (optional)
 
@@ -197,6 +202,30 @@ Read the full diff and reject the branch for cleanup before PR creation if any o
 
 Record the result in the PR description as `Author Self-Review Gate: passed`. This gate does not replace independent reviewer, CI, secret-scan, or bot-review checks; it only ensures the author has read the complete branch diff before asking others to review it.
 
+### 6.6. Discover Related Task/Plan/Design-Intent Document (best-effort, non-blocking)
+
+**Skip this step entirely if `--no-plan-ref` is present in `$ARGUMENTS` and `--plan-doc` is absent.** If both flags are present, `--plan-doc` takes precedence and proceeds to sub-step 1.
+
+PR bodies generated purely from diff/commit history lose the *why* behind a design decision already captured by `ywc-brainstorm`/`ywc-plan` in `docs/ywc-plans/` or by `ywc-task-generator` in a task README's `## Spec Reference`. This step looks for that document and, when found with confidence, holds it for Step 7 to cite in a design-background section. It never blocks PR creation — no match is a normal, silent outcome.
+
+1. **Explicit override.** If `--plan-doc <path>` is present, validate it first: the path must be repository-relative (reject a leading `/` or any `..` segment) and must end in `.md`. If invalid, missing, or unreadable, print one line explaining why and continue to Step 7 with no design-background result; do not fall back to Path A/Path B. If valid and readable, treat it as the single confident candidate and continue to sub-step 6.
+2. **Path A — Task-based lookup (authoritative, tried first).**
+   - If the current branch does not start with `feature/`, Path A has no candidate; go to Path B.
+   - Let `<task-name>` be the branch name with `feature/` stripped. Glob `tasks/<task-name>/README.md`; if absent, Glob `tasks/completed/<task-name>/README.md`.
+   - If neither exists, Path A has no candidate; go to Path B.
+   - If found, read the file and extract its `## Spec Reference` section: the `### Primary Sources` list and `### Summary` text. If `Primary Sources` says `N/A — no external spec (housekeeping / refactor / config only)` (or equivalent), treat Path A as having no candidate and go to Path B.
+   - Otherwise hold `{source: "task", task_readme_path, primary_sources, summary}` as the confident result and skip Path B.
+3. **Path B — Plan-directory fuzzy match (fallback, only when Path A found no candidate).**
+   - Glob `docs/ywc-plans/**/*.md` recursively. Exclude `*.spec-ready-log.md` and `*/architecture-verdict.md` sidecar files.
+   - If `docs/ywc-plans/` does not exist or the Glob returns zero files, stop silently. Use filesystem Glob/Read only — never `git log`/`git ls-files`, since the directory may be untracked or ignored.
+4. **Branch-to-filename token match (Path B only).**
+   - Strip one leading `<type>/` segment (`feature/`, `fix/`, `chore/`, etc.), tokenize the remainder on `-`/`_`/`.` into lowercase tokens, and drop tokens shorter than 4 characters to avoid false matches from the recurring `ywc` prefix.
+   - For each candidate basename, strip its `YYYYMMDD-` prefix, optional `small_` prefix, and `.md` suffix, then tokenize the same way; ignore the candidate's directory.
+   - A candidate is confident when it shares at least 2 tokens, or exactly 1 token of at least 6 characters.
+5. **Resolve Path B matches.** Zero matches stop silently. One match holds `{source: "plan", plan_path}`. Two or more matches must not be guessed: print one line listing the candidates and instruct the user to rerun with `--plan-doc <path>`, then continue to Step 7 without a design-background result.
+6. **Excerpt extraction (`source: "plan"` or override only).** Read the matched file and take the content under `## Goal` or `## Purpose` until the next `##` heading, capped at 5 lines / approximately 500 characters. If neither heading exists, use the first paragraph after the title with the same cap. Never forward the full file. Skip this sub-step for `source: "task"`; use its extracted summary verbatim.
+7. Hold `{source: "task", ...}`, `{source: "plan", ...}`, or nothing for Step 7. This step performs no writes.
+
 ### 7. Create PR
 
 - Check if `.github/pull_request_template.md` exists
@@ -222,6 +251,17 @@ Record the result in the PR description as `Author Self-Review Gate: passed`. Th
 - **PR title**: if `--title` was provided in Step 0, use it verbatim. Otherwise, generate a title from the commit history in the language resolved in Step 0 (`en`, `ja`, `ko`, `zh`, or `es`).
 - Write all description prose in the language chosen in Step 0. Do not translate branch names, task IDs, file paths, commands, labels, code blocks, YAML keys, JSON keys, or other machine identifiers.
 - If there are no UI changes, write "N/A" in the screenshot section (if the template has one)
+- **Design Background (optional, appended)**: if Step 6.6 held a result, append this section after the template/default body above. This augments the body; it never replaces or reorders the project's template structure. Localize the heading and intro line to the language chosen in Step 0; keep the quoted summary/excerpt verbatim:
+
+  | Language | Heading | Intro (`source: "task"`) | Intro (`source: "plan"`) |
+  |---|---|---|---|
+  | en | `## Design Background` | `> Derived from task \`<task_readme_path>\`'s Spec Reference.` | `> Excerpted from \`<plan_path>\` — see the file for full context.` |
+  | ko | `## 설계 배경 (Design Background)` | `> task \`<task_readme_path>\`의 Spec Reference에서 도출됨.` | `> \`<plan_path>\`에서 발췌 — 전체 맥락은 원문 참조.` |
+  | ja | `## 設計背景 (Design Background)` | `> タスク \`<task_readme_path>\` の Spec Reference から抽出。` | `> \`<plan_path>\` から抜粋 — 全文は原文参照。` |
+  | zh | `## 设计背景 (Design Background)` | `> 源自任务 \`<task_readme_path>\` 的 Spec Reference。` | `> 摘自 \`<plan_path>\` — 完整内容请参见原文件。` |
+  | es | `## Antecedentes de diseño (Design Background)` | `> Derivado de la Spec Reference de la tarea \`<task_readme_path>\`.` | `> Extraído de \`<plan_path>\` — consulte el archivo para el contexto completo.` |
+
+  For `source: "task"`, include the localized heading, intro, `**Primary Sources**: <primary_sources>`, and the verbatim summary. For `source: "plan"` (including `--plan-doc`), include the localized heading, intro, and verbatim excerpt. If Step 6.6 held no result, omit the section entirely — never add an empty placeholder.
 - Create a **draft** PR with `gh pr create --draft --base <base-branch> --title "<title>" --body-file - <<'EOF'`
 - Always specify `--title` and `--body-file -` (or `--body`) explicitly to avoid interactive prompts
 

@@ -14,6 +14,7 @@ After work on a feature branch is complete, this Skill automates the flow from c
 - Applies `.github/pull_request_template.md` when available
 - Creates every PR as a draft
 - Supports PR title/body prose in `en`, `ja`, `ko`, `zh`, or `es` via `--lang` / `--language`, while keeping task IDs, branch names, file paths, commands, labels, and explicit `--title` values unchanged
+- Cites related design background by checking the branch's task `## Spec Reference` first, then best-effort fuzzy matching under `docs/ywc-plans/`
 
 ## Usage
 
@@ -24,6 +25,8 @@ $ywc-create-pr --skip-ci-check
 $ywc-create-pr main --skip-ci-check
 $ywc-create-pr --lang zh
 $ywc-create-pr --language spanish
+$ywc-create-pr --plan-doc docs/ywc-plans/20260814-small_example.md
+$ywc-create-pr --no-plan-ref
 ```
 
 Natural-language triggers are defined in [SKILL.md](./SKILL.md).

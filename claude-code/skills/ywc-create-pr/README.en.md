@@ -13,6 +13,7 @@ After work on a feature branch is complete, this Skill automates the flow from c
 - Supports pre-push CI checks such as lint, format, typecheck, and test
 - Runs a mandatory author self-review of the full diff before filing (catches scope creep, leftover debug output, and secrets)
 - Applies `.github/pull_request_template.md` when available
+- Cites the related design document in the PR body: the branch's task `## Spec Reference` first, then a best-effort match under `docs/ywc-plans/` (non-blocking)
 - Creates every PR as a draft
 
 ## Usage
@@ -22,6 +23,8 @@ After work on a feature branch is complete, this Skill automates the flow from c
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --plan-doc docs/ywc-plans/20260814-small_feature.md
+/create-pr --no-plan-ref
 ```
 
 Natural-language triggers are defined in [SKILL.md](./SKILL.md).

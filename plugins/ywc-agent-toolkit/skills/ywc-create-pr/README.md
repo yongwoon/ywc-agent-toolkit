@@ -14,6 +14,7 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 - **PR Template 지원**: `.github/pull_request_template.md`가 있으면 자동 적용
 - **Draft PR 생성**: 모든 PR은 Draft 상태로 생성
 - **PR 언어 지원**: `--lang` / `--language`로 PR title/body prose를 `en`, `ja`, `ko`, `zh`, `es` 중 하나로 작성하며, task ID, branch name, file path, command, label, 명시적 `--title` 값은 그대로 유지
+- **관련 설계 문서 인용**: branch에 대응하는 task의 `## Spec Reference`를 우선 확인하고, 없으면 `docs/ywc-plans/` 하위 plan을 best-effort로 탐색해 PR 본문에 설계 배경을 append
 
 ## 사용 방법
 
@@ -36,6 +37,8 @@ $ywc-create-pr --skip-ci-check
 $ywc-create-pr main --skip-ci-check
 $ywc-create-pr --lang zh
 $ywc-create-pr --language spanish
+$ywc-create-pr --plan-doc docs/ywc-plans/20260814-small_example.md
+$ywc-create-pr --no-plan-ref
 ```
 
 ### 자연어 호출

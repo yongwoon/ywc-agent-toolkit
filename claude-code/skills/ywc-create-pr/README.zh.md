@@ -17,6 +17,7 @@
 - 支持推送前的 CI 检查，如 lint、format、typecheck 和 test
 - 在提交 PR 前对完整 diff 进行强制的作者自我审查（检测 scope creep、调试残留和 secret）
 - 在可用时应用 `.github/pull_request_template.md`
+- 在 PR 正文中引用相关设计文档：优先使用 branch 对应 task 的 `## Spec Reference`，否则在 `docs/ywc-plans/` 下尽力匹配（non-blocking）
 - 将每个 PR 创建为草稿
 
 ## 使用方法
@@ -26,6 +27,8 @@
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --plan-doc docs/ywc-plans/20260814-small_feature.md
+/create-pr --no-plan-ref
 ```
 
 自然语言触发词在 [SKILL.md](./SKILL.md) 中定义。

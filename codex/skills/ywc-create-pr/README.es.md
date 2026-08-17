@@ -18,6 +18,7 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 - Aplica `.github/pull_request_template.md` cuando está disponible
 - Crea cada PR como borrador
 - Admite prose de title/body del PR en `en`, `ja`, `ko`, `zh` o `es` mediante `--lang` / `--language`, manteniendo sin cambios task IDs, branch names, file paths, commands, labels y valores explícitos de `--title`
+- Cita los antecedentes de diseño relacionados comprobando primero `## Spec Reference` de la tarea de la rama y, si no existe, buscando best-effort en `docs/ywc-plans/`
 
 ## Uso
 
@@ -28,6 +29,8 @@ $ywc-create-pr --skip-ci-check
 $ywc-create-pr main --skip-ci-check
 $ywc-create-pr --lang zh
 $ywc-create-pr --language spanish
+$ywc-create-pr --plan-doc docs/ywc-plans/20260814-small_example.md
+$ywc-create-pr --no-plan-ref
 ```
 
 Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).

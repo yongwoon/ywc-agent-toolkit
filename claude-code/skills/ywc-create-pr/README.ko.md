@@ -13,6 +13,7 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 - push 전에 lint, format, typecheck, test 등 CI Check 수행
 - PR 생성 전 자기 diff 전체를 필수 Self-Review (scope creep, debug 잔여물, secret 검출)
 - `.github/pull_request_template.md`가 있으면 자동 적용
+- Branch에 대응하는 task의 `## Spec Reference`(우선) 또는 `docs/ywc-plans/` 하위 plan을 찾아 PR 본문에 "설계 배경"으로 인용 (best-effort, non-blocking)
 - 모든 PR을 Draft 상태로 생성
 
 ## 사용 방법
@@ -22,6 +23,8 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 /create-pr main
 /create-pr --skip-ci-check
 /create-pr main --skip-ci-check
+/create-pr --plan-doc docs/ywc-plans/20260814-small_feature.md
+/create-pr --no-plan-ref
 ```
 
 자연어 Trigger는 [SKILL.md](./SKILL.md)에 정의되어 있습니다.
