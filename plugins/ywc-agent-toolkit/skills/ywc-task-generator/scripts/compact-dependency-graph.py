@@ -33,8 +33,10 @@ Exit 0 always (no-op is not an error); prints how many sections were
 compacted or dropped, and the resulting line-count delta.
 """
 from __future__ import annotations  # `list[str] | None` annotations on py3.9
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 SECTION_SPLIT_RE = re.compile(r"(?m)^(?=## )")
@@ -111,6 +113,19 @@ def compact(content: str, tasks_dir: Path) -> tuple[str, int, int]:
     return "".join(kept), compacted_phases, dropped_sections
 
 
+def _atomic_write(path: Path, text: str) -> None:
+    """Write via a same-directory temp file + os.replace so a crash mid-write
+    can never leave the execution-order graph truncated."""
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=path.parent, delete=False
+    ) as tmp:
+        tmp.write(text)
+        tmp.flush()
+        os.fsync(tmp.fileno())
+        tmp_path = Path(tmp.name)
+    os.replace(tmp_path, path)
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("usage: compact-dependency-graph.py <tasks-dir>", file=sys.stderr)
@@ -125,7 +140,7 @@ def main() -> int:
     if compacted_phases or dropped_sections:
         before_lines = original.count("\n")
         after_lines = updated.count("\n")
-        graph_path.write_text(updated, encoding="utf-8")
+        _atomic_write(graph_path, updated)
         print(f"compacted {compacted_phases} phase(s), dropped {dropped_sections} notes/diagram section(s); {before_lines} -> {after_lines} lines")
     else:
         print("nothing to compact")

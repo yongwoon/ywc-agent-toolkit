@@ -45,7 +45,7 @@ graph LR
      runs codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py
      after every task completion, reading the Phase / Parallel Execution Notes /
      Visual Dependency Graph headings directly. Once every task id under a Phase
-     heading exists in tasks/completed/, that phase collapses to
+     heading exists in <tasks-dir>/completed/, that phase collapses to
      "## Phase NNNNNN — done" and a "- Completed: ..." bullet; once every task
      id referenced by a Notes/Mermaid section is completed, that whole section
      is dropped. Do not hand-edit an already-compacted phase heading or bullet. -->

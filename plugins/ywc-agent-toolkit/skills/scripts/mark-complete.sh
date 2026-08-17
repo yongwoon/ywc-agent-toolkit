@@ -59,16 +59,27 @@ COMPACT_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-task-generator/scripts/co
 
 mkdir -p "$TASKS_DIR/completed"
 
+# Stage the compacted graph only when it exists and is not ignored — the graph
+# may be absent (no graph generated) or ignored independently of <tasks-dir>,
+# and a bare `git add` on either would abort the mandatory marker commit.
+stage_graph() {
+  graph="$TASKS_DIR/dependency-graph.md"
+  [ -f "$graph" ] || return 0
+  git check-ignore -q "$graph" 2>/dev/null && return 0
+  git add -- "$graph"
+}
+
 if git check-ignore -q "$SRC" 2>/dev/null; then
   # Gitignored tasks/ — git mv cannot track the move; plain mv + empty marker.
   mv "$SRC" "$DEST"
   python3 "$COMPACT_SCRIPT" "$TASKS_DIR"
+  stage_graph
   git commit --allow-empty -m "$MSG"
 else
   # Tracked tasks/ — git mv stages the rename; the commit content IS the move.
   git mv "$SRC" "$DEST"
   python3 "$COMPACT_SCRIPT" "$TASKS_DIR"
-  git add "$TASKS_DIR/dependency-graph.md"
+  stage_graph
   git commit -m "$MSG"
 fi
 
