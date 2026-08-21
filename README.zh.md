@@ -1,261 +1,187 @@
 # ywc-agent-toolkit
 
-> 本文档正在翻译中。完整文档请参阅 [English](README.md)。
+> 本文档正在翻译中。完整内容请参阅 [English](README.md)。
 >
-> 欢迎帮助翻译，请创建 [Translation Issue](../../issues/new?template=translation.md)。
+> 如果您想参与翻译，请创建 [Translation Issue](../../issues/new?template=translation.md)。
 
 ---
 
-> 📖 **[文档 & 指南手册](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/)** — 分步引导你完成入门、技能选择和运行完整工作流。
+面向 Claude Code 与 Codex 的开发工作流自动化技能集，覆盖从规划、规格编写、任务拆解到代码生成、评审与发布的完整流程。
+
+[English](README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | [Español](README.es.md)
+
+> 📖 **[文档 & 指南](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/)** — 本 README 是简要导览。前提条件、安装、完整 skill 参考以及分步工作流指南都在指南中。
+
+| 您想了解 | 指南页面 |
+| -------- | -------- |
+| 5 分钟交付第一个功能 | [03. 快速开始](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/03-quickstart/) |
+| 该运行哪个 skill、按什么顺序 | [17. 完整 Skill 参考](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/14-skill-reference/) |
+| 前提条件、安装路径、环境变量 | [18. 前提条件与安装](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/15-prerequisites-installation/) |
+| 小改动 / 多任务 / 自主循环 | [04](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/04-general-cycle-small/) · [05](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/05-general-cycle-medium-large/) · [06](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/06-agentic-autonomous-loop/) |
+
+## 支持的工具
+
+| 工具        | Skills | Custom Agents | 安装路径                                  |
+| ----------- | ------ | ------------- | ---------------------------------------- |
+| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 52     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
-面向 Claude Code 和 Codex 的开发工作流自动化技能集合。
-涵盖计划制定、规格书撰写、任务分解、代码生成、审查和发布的完整开发流程。
+## 快速开始
 
-目前包含 42 个 Claude Code skill、52 个 Codex skill、12 个 Claude Code agent 和 8 个 Codex custom agent。
+### Claude Code
 
-Codex-only `ywc-setup` 用于设置 Codex `ywc-*` artifact language default：
-`ywc-setup --scope project --lang ko`、`ywc-setup --scope user --lang ja`。
-Resolution 顺序为 explicit `--lang` > project `.codex/ywc.json` > `AGENTS.md` /
-`CODEX.md` / `CLAUDE.md` > user `~/.codex/ywc.json` > 询问用户。Session default
-不支持。
-
-## 前提条件
-
-插件市场和 Codex 插件安装**无需前提条件** — 工具会自动处理一切。
-
-使用 **bash 脚本 fallback** 时，运行 `install.sh` 前需安装以下工具：
-
-| 工具 | 用途 | 安装方式 |
-| ---- | ---- | -------- |
-| `git` | 克隆仓库 | 大多数系统已预装 |
-| `bash ≥ 3.2` | 运行 `install.sh` | macOS / Linux 已预装 |
-| `jq` | Hook 注册 | `brew install jq` / `apt-get install jq` |
-
-**Skill 运行时**（安装时不需要）：
-
-| 工具 | 使用的 Skill | 安装方式 |
-| ---- | ------------ | -------- |
-| `python3 ≥ 3.9` | Skill 运行时辅助功能：`ywc-parallel-executor`、`ywc-finish-branch`、`ywc-merge-dependabot`；Claude Code hooks 需要 Python ≥ 3.11 | macOS 12.3+ 已预装；`brew install python3` |
-| `gh` CLI | 基于 PR 和 GitHub release 的 Skill/模式：`ywc-handle-pr-reviews`、`ywc-spec-writer --from-pr/--from-prs`、`ywc-release-pr-list`、`ywc-create-pr`、`ywc-finish-branch` PR 模式、`ywc-merge-dependabot`、`ywc-sequential-executor`/`ywc-parallel-executor`、`ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
-
-使用基于 PR 的 Skill 前，请先完成 GitHub CLI 认证：
+通过插件市场安装 — 无需 clone，也没有前提条件:
 
 ```bash
-gh auth login
-gh auth setup-git
-gh auth status
+/plugin marketplace add yongwoon/ywc-agent-toolkit    # 1. 注册市场源
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit   # 2. 安装插件
 ```
 
-推荐贡献者安装以下工具，以便与本地 CI parity 保持一致：
+`marketplace add` 仅注册来源，之后还需执行 `/plugin install`，或在 Plugin UI 的 **Marketplaces** 标签页中安装。安装后重启 Claude Code，skill 才会出现。
 
-| 工具 | 用途 | 安装方式 |
-| ---- | ---- | -------- |
-| `uv` | 运行 Claude Code Python hooks | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| `ripgrep` (`rg`) | onboarding、validation、review 中的快速 repository scan | `brew install ripgrep` / `apt-get install ripgrep` |
-| `node` / `npm` / `npx` | Markdown lint、Playwright setup、JS/TS cleanup helper | [nodejs.org](https://nodejs.org/) 或 Node version manager |
-| `shellcheck` | 与 GitHub Actions shell script lint gate 对齐的本地检查 | `brew install shellcheck` / `apt-get install shellcheck` |
-| `markdownlint-cli2` | 与 GitHub Actions Markdown lint gate 对齐的本地检查 | `npm install -g markdownlint-cli2` |
-
----
-
-## 安装
-
-### Claude Code 插件市场（推荐）
+### Codex
 
 ```bash
-# 1. 添加市场源（仅需一次）
-/plugin marketplace add yongwoon/ywc-agent-toolkit
-
-# 2. 从该市场安装插件
-/plugin install ywc-agent-toolkit@ywc-agent-toolkit
+codex plugin marketplace add yongwoon/ywc-agent-toolkit   # 1. 注册市场源
+codex plugin add ywc-agent-toolkit@ywc-agent-toolkit      # 2. 安装插件
 ```
 
-`marketplace add` 只是注册市场源，本身不会安装任何内容。
-必须再运行 `/plugin install`，或在 Plugin UI 的 **Marketplaces** 标签页中安装 **ywc-agent-toolkit** 才能启用。
-无需克隆或运行 bash，自动安装到 `~/.claude/skills/`；安装后重启 Claude Code 即可看到相关 skill。
+若此前已添加过该市场，请先用 `codex plugin marketplace upgrade ywc-agent-toolkit` 刷新其 Git 快照。您也可以运行 `codex` 后打开 `/plugins`，在 **YWC Agent Toolkit** 标签页中安装。
 
-### Codex CLI 插件目录
+若使用 **Codex App**，请在侧边栏打开 **Plugins**，选择 **YWC Agent Toolkit** 源，确认来源为 `yongwoon/ywc-agent-toolkit`，然后在插件详情页安装。
 
-本仓库采用与 Superpowers 相同的 multi-harness packaging pattern：Claude Code 元数据位于 [`.claude-plugin/`](.claude-plugin/)，Codex 元数据位于 [`.codex-plugin/`](.codex-plugin/)。Codex 的 source of truth 是 [codex/skills](codex/skills)。仓库范围的 Codex marketplace catalog [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) 暴露 generated plugin package `plugins/ywc-agent-toolkit`，其中的 `skills/` 目录由 `bash scripts/sync-codex-plugin.sh` 从 `codex/skills` 生成，并由 `bash scripts/validate.sh` 检查是否保持最新。
+### 然后运行 skill
 
-将本仓库添加为 Codex plugin marketplace source 后，可以在 Codex 中安装 `ywc-agent-toolkit`，但这不表示它已经上架到官方 OpenAI-curated marketplace。
-
-将本仓库添加为 Codex plugin marketplace source：
+两种工具提供相同的命令:
 
 ```bash
-codex plugin marketplace add yongwoon/ywc-agent-toolkit
+/ywc-onboard-repo           # 数分钟内理解陌生代码库
+/ywc-plan                   # 把粗略想法变成 plan 或 spec
+/ywc-debug-rootcause        # 追踪缺陷的根本原因
+/ywc-impl-review            # 从 spec / 安全 / 质量角度评审代码
+/ywc-agentic                # 由一个 goal 自主运行完整 pipeline
 ```
 
-如果之前已经添加过 marketplace，请先刷新 Git snapshot：
+→ 前提条件、bash 脚本 fallback、安装路径以及 `CLAUDE_SKILLS_DIR` / `CLAUDE_AGENTS_DIR` / `CODEX_HOME` 覆盖方式，请参阅 [前提条件与安装](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/15-prerequisites-installation/)。
+
+### 指南中未涵盖的安装选项
 
 ```bash
-codex plugin marketplace upgrade ywc-agent-toolkit
+# 仅安装指定 skill
+bash scripts/install.sh --cc ywc-plan ywc-commit ywc-create-pr
+bash scripts/install.sh --codex ywc-plan ywc-commit ywc-ui-ux-review
+
+# 仅安装选定 agent，或只装 skill 不装 agent
+bash scripts/install.sh --cc-agents ywc-backend-coder ywc-qa-engineer
+bash scripts/install.sh --cc --skip-agents
 ```
 
-然后从已配置的 marketplace 直接安装：
+### Codex 输出语言默认值
+
+Codex 专用的 `ywc-setup` 用于设置 Codex `ywc-*` skill 的 artifact 语言默认值:
 
 ```bash
-codex plugin add ywc-agent-toolkit@ywc-agent-toolkit
+ywc-setup --scope project --lang ko
+ywc-setup --scope user --lang ja
 ```
 
-或打开插件目录：
-
-```text
-codex
-/plugins
-```
-
-在交互式 Codex 会话中选择 **YWC Agent Toolkit** marketplace 标签页，搜索 **ywc-agent-toolkit**，然后选择 **Install plugin**。
-
-### Codex App Plugins 侧边栏
-
-在 Codex App 中，从侧边栏打开 **Plugins**，选择 **YWC Agent Toolkit** source，然后搜索或浏览 **ywc-agent-toolkit**。确认插件来源是 `yongwoon/ywc-agent-toolkit`，然后在插件详情页安装。
-
-如果你的环境无法使用 marketplace source installation，请使用下面的 bash fallback。
-
-### Codex skill 维护 workflow
-
-Codex skill 请在 [codex/skills](codex/skills) 中修改。`plugins/ywc-agent-toolkit/skills` 是 `codex plugin add` 使用的 generated marketplace package，不要把它作为 primary source 直接编辑。
-
-请先安装一次 repository Git hooks，让 Codex marketplace package 自动保持同步：
-
-```bash
-bash scripts/install-git-hooks.sh
-```
-
-安装 hooks 后，当 commit 中 staged 了 `codex/skills` 变更时，会运行 `bash scripts/sync-codex-plugin.sh`，自动 stage generated package `plugins/ywc-agent-toolkit`，然后运行 `bash scripts/validate.sh`。包含 Codex skill/package 变更的 push 也会运行 stale package check 和 validation。
-
-如果当前环境没有安装 hooks，请在 commit 前手动运行同样的命令：
-
-```bash
-bash scripts/sync-codex-plugin.sh
-bash scripts/validate.sh
-```
-
-如果 `bash scripts/validate.sh` 报告 `plugins/ywc-agent-toolkit/skills` 已 stale，请先重新生成 generated package：
-
-```bash
-bash scripts/sync-codex-plugin.sh
-bash scripts/validate.sh
-```
-
-bash fallback（`bash scripts/install.sh --codex`）会直接从 `codex/skills` 安装。marketplace flow（`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`）会从 generated package `plugins/ywc-agent-toolkit` 安装。
-
-### bash 脚本 fallback
-
-```bash
-YWC_REF=<release-tag-or-reviewed-commit>
-git clone --branch "$YWC_REF" --depth 1 https://github.com/yongwoon/ywc-agent-toolkit.git
-cd ywc-agent-toolkit
-git remote get-url origin
-git rev-parse --verify HEAD
-
-# Claude Code
-bash scripts/install.sh --cc
-
-# Codex
-bash scripts/install.sh --codex
-
-# 两者都安装
-bash scripts/install.sh --all
-```
-
-详细说明请参阅 [README.md](README.md)。
+解析顺序为 explicit `--lang` > project `.codex/ywc.json` > project guidance（`AGENTS.md` / `CODEX.md` / `CLAUDE.md`）> user `~/.codex/ywc.json` > 询问用户。不支持 session 级默认值。
 
 ---
 
 ## Skills
 
-### 规划与规格
+大多数 `ywc-*` skill 在 Claude Code 与 Codex 上均可使用。按目的整理的完整目录位于 [完整 Skill 参考](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/14-skill-reference/)。从这里开始:
 
-| Skill | 说明 |
-| ----- | ---- |
-| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | 将粗略想法转换为 `plan.md`（Small）或规格文档（Medium/Large） |
-| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | 编写和更新规格文档（`docs/specification/`） |
-| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | 验证规格质量（Completeness / Consistency / Feasibility） |
-| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | 调研库并比较技术方案 |
-| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | 创建并维护领域 ubiquitous language 词典 |
-| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | 将项目长期有效的 Mission / Success Criteria / Out-of-Scope 持久化到 `docs/project-mission.md`（ywc-plan 会读取它来框定规划） |
-| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | 在编写正式 plan 或 spec 之前整理粗略想法 |
-| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | 在开始较大实现前检查准备度和风险 |
-| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | 为不熟悉的仓库生成 onboarding 上下文 |
-| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | 递归收敛 spec 到 ywc-spec-validate DONE（validate ↔ ywc-plan --update-spec 循环，默认最多 5 次迭代） |
+| 目标 | Skills |
+| ---- | ------ |
+| 把想法变成 plan 或 spec | [`ywc-plan`](claude-code/skills/ywc-plan/README.md) → [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) |
+| 理解陌生的代码库 | [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) |
+| 拆解为依赖安全的任务 | [`ywc-task-generator`](claude-code/skills/ywc-task-generator/README.md) |
+| 端到端实现任务 | [`ywc-sequential-executor`](claude-code/skills/ywc-sequential-executor/README.md) / [`ywc-parallel-executor`](claude-code/skills/ywc-parallel-executor/README.md) |
+| 由 goal 运行完整 pipeline | [`ywc-agentic`](claude-code/skills/ywc-agentic/README.md) |
+| 定位缺陷的根本原因 | [`ywc-debug-rootcause`](claude-code/skills/ywc-debug-rootcause/README.md) |
+| 评审代码质量与安全 | [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md), [`ywc-security-audit`](claude-code/skills/ywc-security-audit/README.md) |
+| 创建 PR 并处理评审意见 | [`ywc-create-pr`](claude-code/skills/ywc-create-pr/README.md) → [`ywc-handle-pr-reviews`](claude-code/skills/ywc-handle-pr-reviews/README.md) |
+| 生成 QA 测试单 | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
+| 撰写发布说明 | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
+| 编写新的 `ywc-*` skill | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
 
----
+所有 skill 目录位于 [`claude-code/skills/`](claude-code/skills) 与 [`codex/skills/`](codex/skills)，每个都有各自的 README。
 
-## Review Skill HTML 输出模式
+**它们如何衔接:** `ywc-plan` → （Medium/Large）`ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`，由 executor 端到端交付每个任务。临时性改动不经过 executor: `ywc-create-pr` → `ywc-handle-pr-reviews`。各路径的命令与标志详见 [核心 pipeline 指南](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/02-core-concepts/)。
 
-9 个 Review / Report skill 支持可选的 `--format html` flag，生成可直接在浏览器中打开的 self-contained HTML 报告，而非 Markdown。
+### HTML 输出模式
 
-**支持的 Skill：** `ywc-impl-review`、`ywc-security-audit`、`ywc-spec-validate`、`ywc-tech-research`、`ywc-incident-postmortem`、`ywc-product-review`、`ywc-ui-ux-review`、`ywc-gen-testcase`、`ywc-design-renew`
-
-**背景：** AI 生成的超过 100 行的 Markdown 文档往往无法被完整阅读，而未被阅读的报告无法推动决策。HTML 通过颜色、severity 标记、标签页和交互控件（复选框、`Copy as Markdown`）让接收方真正阅读并采取行动。
+九个 Review / Report skill 支持 `--format html` 标志，生成可直接在浏览器打开的自包含 HTML 报告，而非 Markdown。配色、severity coding、标签页与交互控件让接收方真正愿意阅读并采取行动。
 
 ```bash
 /ywc-impl-review --spec docs/spec.md --code src/ --format html
-/ywc-gen-testcase 250 --format html   # 通过 localStorage 保存签收状态的交互式测试表
+/ywc-gen-testcase 250 --format html   # 带 localStorage 签核的交互式测试单
 ```
 
-> **⚠️ Token 成本** — HTML 输出比 Markdown 消耗 2-4 倍的 output token，生成时间也更长。默认值为 `markdown`，仅在需要人工在浏览器中阅读报告时才启用 HTML。
+> **⚠️ Token 成本** — HTML 输出消耗的 output token 约为 Markdown 的 2～4 倍。默认值为 `markdown`，请仅在人会用浏览器阅读的报告上启用。
+
+支持的 skill 与详情: [`references/html-output.md`](claude-code/skills/references/html-output.md)。
 
 ---
 
 ## Custom Agent
 
-Claude Code 包含 **12 个**用于 worker、reviewer、specialist dispatch 的 custom agent，安装到 `~/.claude/agents/`，详细信息请参阅 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
+Claude Code 提供 12 个用于 worker、reviewer 与 specialist dispatch 的 custom agent，安装至 `~/.claude/agents/`，详见 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
 
-Codex 包含 **8 个**补充 `ywc-*` skill 的 read-only specialist agent，安装到 `~/.codex/agents/`。
+Codex 提供与之对应的 7 个只读 specialist agent，安装至 `~/.codex/agents/`（可用 `CODEX_HOME` 覆盖），每个 agent 一个 TOML 文件:
 
-| Agent | 用途 | Sandbox |
-|-------|------|---------|
-| `ywc-architect` | 架构决策与权衡 advisor | `read-only` |
-| `ywc-security-engineer` | 静态安全审查与威胁模型分类 | `read-only` |
-| `ywc-root-cause-analyst` | 根因与故障原因分析 | `read-only` |
-| `ywc-performance-engineer` | 性能审查与性能分析建议 | `read-only` |
-| `ywc-typescript-reviewer` | TypeScript / JavaScript 语言专项审查 | `read-only` |
-| `ywc-python-reviewer` | Python 语言专项审查 | `read-only` |
-| `ywc-go-reviewer` | Go 语言专项审查 | `read-only` |
+| Agent | 用途 |
+| ----- | ---- |
+| [`ywc-architect`](claude-code/agents/ywc-architect.md) | 架构决策与权衡顾问 |
+| [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | 静态安全评审与 threat model 分级 |
+| [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | 根因与故障原因分析 |
+| [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | 性能评审与性能分析建议 |
+| [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 语言专项评审 |
+| [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 语言专项评审 |
+| [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 语言专项评审 |
 
-## 推荐开发 Pipeline
+所有 Codex agent 均为只读，绝不修改文件。它们返回标准化的 `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`、精简的 finding 集合，以及当调用方需要应用或查看时的 `Next action:`。源 TOML 位于 [`codex/agents/`](codex/agents/)。
 
-此 spine 反映的是 skill 在日常中实际被调用的方式，而非完整 catalog。一次 planning pass、递归式 spec 收敛 gate（`ywc-spec-ready`）、task 分解，然后是作为主力的 executor — 每个 task 都通过 `ywc-finish-branch` 端到端交付，并将适合性 review（`--review`）、PR 创建、bot review 处理与 merge 折叠为 sub-step，因此在 task 驱动流程中它们很少单独运行。
+---
 
-```mermaid
-flowchart TD
-    A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
-    B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
-    B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
-    C --> CV["ywc-spec-ready\nrecursively converge to validate DONE\n(loops ywc-spec-validate ↔ ywc-plan --update-spec)"]
-    CV --> D
-    D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
-    E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
-```
+## Claude Code Hooks
+
+在 Claude Code tool 调用前后运行的自动化 hook。安装至 `~/.claude/hooks/`（全局）或 `./.claude/hooks/`（项目本地），并自动注册到 `settings.json`。需要 `jq` 与 `uv`。
 
 ```bash
-# Step 4 example — run a task range with full delivery:
-ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
-# common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
-# (ywc-parallel-executor is the worktree-isolated alternative)
+bash scripts/install.sh --hooks                    # 全局安装全部 hook
+bash scripts/install.sh --hooks --local            # 安装到当前项目
+bash scripts/install.sh --hooks cost-tracker       # 仅安装指定 hook
+bash scripts/install.sh --list --hooks             # 列出可用 hook
 ```
 
-**Ad-hoc / 非 task 变更**会跳过 executor 并手动交付：`ywc-create-pr` 打开 draft PR，然后 `ywc-handle-pr-reviews` 将 bot / human review 推进到 green。每当 open PR 上出现新的 review comment 时（无论是否 task 驱动），都需要重新运行 `ywc-handle-pr-reviews`。
+| Hook                        | Event                  | 说明                                                                    |
+| --------------------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `block-dangerous-commands`  | `PreToolUse`           | 拦截危险的 shell 命令（critical/high/strict 级别）                       |
+| `check-claude-md-freshness` | `PreToolUse`           | 在 `git push` 前校验 CLAUDE.md 是否最新                                  |
+| `cost-tracker`              | `PostToolUse` + `Stop` | 记录 tool 调用统计，并在退出时输出会话摘要                                |
+| `notify-permission`         | `Notification`         | 等待授权时发送 Slack 提醒（需要 `CCH_SLA_WEBHOOK`）                      |
+| `permission-request`        | `PermissionRequest`    | 自动批准安全的 tool（Read、Write、Edit）                                 |
+| `protect-secrets`           | `PreToolUse`           | 拦截对 `.env`、SSH 密钥等机密文件的访问                                  |
+| `session-start`             | `SessionStart`         | 会话开始时注入 git status、`CONTEXT.md`、TODO 与 GitHub Issue            |
 
-实际工作中还会用到：`ywc-ubiquitous-language`（spec 编写前/中的 domain glossary），以及 release 时的 `ywc-release-pr-list` + `ywc-changelog-release-notes`。
+各 hook 的用法详情: [`claude-code/hooks/README.md`](claude-code/hooks/README.md)。
 
-其余 skill 视情况使用，并非每次都运行 — `ywc-debug-rootcause`（test 或 build 失败且原因不明时）、`ywc-tdd-ritual`（严格的 red-green-refactor）、`ywc-tech-research`（决策前比较方案）、`ywc-impl-review`（executor 之外的单独适合性 review）、`ywc-spec-validate`（`ywc-spec-ready` loop 之外的一次性 spec review），以及上方 [Skills](#skills) 表中的其他项。
+---
 
-### Other pipelines
+## 参与贡献
 
-除 per-task spine 之外，还有几条多 skill 流程是设计好的一等 sequence：
+欢迎贡献！提交 PR 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-**Autonomous — 一条命令完成 goal → code。** `ywc-agentic` 将单个 goal 转化为已交付的 code，以 Plan → Execute → Evaluate → Repeat loop 编排 `ywc-plan → ywc-spec-validate → ywc-task-generator → executor → ywc-impl-review`。它在 review 失败时 re-plan，并在用户设定的 iteration 上限处停止 — 与其手动驱动 spine，不如使用它。
+- **缺陷报告与 skill 改进**: 提交 issue 或 PR
+- **新增 skill**: 遵循 [ywc-skill-author](claude-code/skills/ywc-skill-author/SKILL.md) 指南
+- **翻译**: 参阅 [翻译指南](CONTRIBUTING.md#translations)
+- **Codex 包同步**: 参阅 [Codex skill 维护 workflow](CONTRIBUTING.md#maintainer-workflow-for-codex-skills)
 
-**Defect → root cause → prevention（harness-feedback loop）。** 当出现 bug 或 test 失败时，`ywc-debug-rootcause` 将其追踪至 root cause；反复出现的 cause class 会被 offer 给 `ywc-review-learnings`，而 `ywc-impl-review` 与 `ywc-design-renew` 会在之后的每次 review 中读取该文件 — 因此一个已确认的 defect 会强化未来的 review。`ywc-incident-postmortem` 在 production 事故后向同一 loop 提供输入。
+## License
 
-**Mission persistence。** `ywc-brainstorm` 梳理粗略的 idea，并 offer 通过 `ywc-project-mission` 持久化 durable 的 intent — Mission / Success Criteria / Out-of-Scope；`ywc-plan` 会读取该文件来为之后的每次 planning pass 设定框架。intent 一次捕获，可在多个 feature 间复用。
-
-**New-codebase setup。** 对于 greenfield project，`ywc-project-scaffold` 搭建 directory 结构，`ywc-ubiquitous-language` 为 domain glossary 播种；对于已有的陌生 repo，`ywc-onboard-repo` 会在首次 `ywc-plan` 之前生成 onboarding context。
-
-详细信息请参阅 [README.md](README.md)。
+MIT

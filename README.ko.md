@@ -6,257 +6,182 @@
 
 ---
 
-> 📖 **[문서 & 가이드북](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/)** — 시작하기, 스킬 선택, 전체 워크플로우 실행을 단계별로 안내합니다.
+Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니다. 계획 수립, 사양서 작성, 태스크 분해, 코드 생성, 리뷰, 릴리스까지 전 과정을 지원합니다.
+
+[English](README.md) | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
+
+> 📖 **[문서 & 가이드북](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/)** — 이 README는 짧은 소개입니다. 사전 요구사항, 설치, 전체 skill reference, 단계별 워크플로우 안내는 가이드북에 있습니다.
+
+| 찾으시는 내용 | 가이드북 페이지 |
+| ------------- | --------------- |
+| 5분 만에 첫 기능 출시하기 | [03. 빠른 시작](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/03-quickstart/) |
+| 어떤 skill을 어떤 순서로 실행할지 | [17. 전체 Skill Reference](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/14-skill-reference/) |
+| 사전 요구사항, 설치 경로, 환경변수 | [18. 사전 요구사항 및 설치](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/15-prerequisites-installation/) |
+| 소규모 변경 / 다중 태스크 / 자율 루프 | [04](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/04-general-cycle-small/) · [05](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/05-general-cycle-medium-large/) · [06](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/06-agentic-autonomous-loop/) |
+
+## 지원 도구
+
+| 도구        | Skills | Custom Agents | 설치 경로                                 |
+| ----------- | ------ | ------------- | ---------------------------------------- |
+| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 52     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
-Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니다.
-계획 수립, 사양서 작성, 태스크 분해, 코드 생성, 리뷰, 릴리스까지 전 과정을 지원합니다.
+## 빠른 시작
 
-현재 Claude Code skill 42개, Codex skill 52개, Claude Code agent 12개, Codex custom agent 8개를 제공합니다.
+### Claude Code
 
-Codex 전용 `ywc-setup`은 Codex `ywc-*` artifact 언어 기본값을 설정합니다:
-`ywc-setup --scope project --lang ko`, `ywc-setup --scope user --lang ja`.
-Resolution은 explicit `--lang` > project `.codex/ywc.json` > `AGENTS.md` /
-`CODEX.md` / `CLAUDE.md` > user `~/.codex/ywc.json` > 질문 순서입니다. Session
-default는 지원하지 않습니다.
-
-## 사전 요구사항
-
-플러그인 마켓플레이스 및 Codex 플러그인 설치는 **사전 요구사항 없음** — 도구가 자동으로 처리합니다.
-
-**bash 스크립트 fallback** 사용 시, `install.sh` 실행 전에 다음이 필요합니다:
-
-| 도구 | 필요한 이유 | 설치 방법 |
-| ---- | ----------- | --------- |
-| `git` | 저장소 클론 | 대부분의 시스템에 기본 설치됨 |
-| `bash ≥ 3.2` | `install.sh` 실행 | macOS / Linux에 기본 설치됨 |
-| `jq` | 훅 등록 | `brew install jq` / `apt-get install jq` |
-
-**스킬 런타임** (설치에는 불필요):
-
-| 도구 | 사용 스킬 | 설치 방법 |
-| ---- | --------- | --------- |
-| `python3 ≥ 3.9` | 스킬 런타임 보조 기능: `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot`; Claude Code hooks는 Python ≥ 3.11 필요 | macOS 12.3+에 기본 설치; `brew install python3` |
-| `gh` CLI | PR 기반 및 GitHub release 스킬/모드: `ywc-handle-pr-reviews`, `ywc-spec-writer --from-pr/--from-prs`, `ywc-release-pr-list`, `ywc-create-pr`, `ywc-finish-branch` PR 모드, `ywc-merge-dependabot`, `ywc-sequential-executor`/`ywc-parallel-executor`, `ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
-
-PR 기반 스킬을 사용하기 전에 GitHub CLI 인증을 완료하세요:
+플러그인 마켓플레이스로 설치합니다 — clone도, 사전 요구사항도 필요하지 않습니다:
 
 ```bash
-gh auth login
-gh auth setup-git
-gh auth status
+/plugin marketplace add yongwoon/ywc-agent-toolkit    # 1. 소스 등록
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit   # 2. 플러그인 설치
 ```
 
-기여자 및 로컬 CI parity 용 권장 도구:
+`marketplace add`는 소스를 등록할 뿐이므로, 이어서 `/plugin install`을 실행하시거나 Plugin UI의 **Marketplaces** 탭에서 설치하셔야 합니다. 설치 후 Claude Code를 재시작하면 skill이 나타납니다.
 
-| 도구 | 사용처 | 설치 방법 |
-| ---- | ------ | --------- |
-| `uv` | Claude Code Python hook 실행 | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| `ripgrep` (`rg`) | onboarding, validation, review 중 빠른 repository scan | `brew install ripgrep` / `apt-get install ripgrep` |
-| `node` / `npm` / `npx` | Markdown lint, Playwright setup, JS/TS cleanup helper | [nodejs.org](https://nodejs.org/) 또는 Node version manager |
-| `shellcheck` | GitHub Actions shell script lint gate와 동일한 로컬 검사 | `brew install shellcheck` / `apt-get install shellcheck` |
-| `markdownlint-cli2` | GitHub Actions Markdown lint gate와 동일한 로컬 검사 | `npm install -g markdownlint-cli2` |
-
----
-
-## 설치
-
-### Claude Code 플러그인 마켓플레이스 (권장)
+### Codex
 
 ```bash
-# 1. 마켓플레이스 소스 추가 (최초 1회)
-/plugin marketplace add yongwoon/ywc-agent-toolkit
-
-# 2. 해당 마켓플레이스에서 플러그인 설치
-/plugin install ywc-agent-toolkit@ywc-agent-toolkit
+codex plugin marketplace add yongwoon/ywc-agent-toolkit   # 1. 소스 등록
+codex plugin add ywc-agent-toolkit@ywc-agent-toolkit      # 2. 플러그인 설치
 ```
 
-`marketplace add`는 소스를 등록만 할 뿐, 그 자체로는 아무것도 설치되지 않습니다.
-반드시 `/plugin install`을 실행하거나 Plugin UI의 **Marketplaces** 탭에서 **ywc-agent-toolkit**을 설치해야 활성화됩니다.
-클론이나 bash 없이 `~/.claude/skills/`에 자동 설치되며, 설치 후 Claude Code를 재시작하면 스킬이 나타납니다.
+이미 마켓플레이스를 추가하신 경우에는 `codex plugin marketplace upgrade ywc-agent-toolkit`으로 Git 스냅샷을 먼저 갱신하시기 바랍니다. `codex` 실행 후 `/plugins`에서 **YWC Agent Toolkit** 탭을 통해 설치하실 수도 있습니다.
 
-### Codex CLI 플러그인 디렉터리
+**Codex App**을 사용하시는 경우, 사이드바에서 **Plugins**를 열고 **YWC Agent Toolkit** 소스를 선택한 뒤, 소스가 `yongwoon/ywc-agent-toolkit`인지 확인하고 플러그인 상세 화면에서 설치하시면 됩니다.
 
-이 저장소는 Superpowers와 같은 multi-harness 패키징 방식을 따릅니다. Claude Code 메타데이터는 [`.claude-plugin/`](.claude-plugin/) 아래에, Codex 메타데이터는 [`.codex-plugin/`](.codex-plugin/) 아래에 분리되어 있습니다. Codex의 source of truth는 [codex/skills](codex/skills)입니다. repo 범위 Codex marketplace catalog인 [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)은 generated plugin package인 `plugins/ywc-agent-toolkit`을 노출하며, 그 안의 `skills/` 디렉터리는 `bash scripts/sync-codex-plugin.sh`가 `codex/skills`에서 생성하고 `bash scripts/validate.sh`가 최신 상태를 검사합니다.
+### 이후 skill 실행
 
-이 저장소를 Codex plugin marketplace source로 추가하면 Codex에서 `ywc-agent-toolkit`을 설치할 수 있지만, 공식 OpenAI curated marketplace에 등록되었다는 의미는 아닙니다.
-
-이 저장소를 Codex plugin marketplace source로 추가하세요:
+두 도구 모두 동일한 명령을 제공합니다:
 
 ```bash
-codex plugin marketplace add yongwoon/ywc-agent-toolkit
+/ywc-onboard-repo           # 낯선 코드베이스를 몇 분 만에 파악
+/ywc-plan                   # 러프한 아이디어를 plan 또는 spec으로
+/ywc-debug-rootcause        # 버그의 근본 원인 추적
+/ywc-impl-review            # spec / 보안 / 품질 관점의 코드 리뷰
+/ywc-agentic                # goal 하나로 전체 pipeline 자율 실행
 ```
 
-이미 marketplace를 추가한 상태라면 Git snapshot을 먼저 갱신하세요:
+→ 사전 요구사항, bash 스크립트 fallback, 설치 경로, `CLAUDE_SKILLS_DIR` / `CLAUDE_AGENTS_DIR` / `CODEX_HOME` 재정의는 [사전 요구사항 및 설치](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/15-prerequisites-installation/)를 참조하세요.
+
+### 가이드북에서 다루지 않는 설치 옵션
 
 ```bash
-codex plugin marketplace upgrade ywc-agent-toolkit
+# 특정 skill만 설치
+bash scripts/install.sh --cc ywc-plan ywc-commit ywc-create-pr
+bash scripts/install.sh --codex ywc-plan ywc-commit ywc-ui-ux-review
+
+# 선택한 agent만 설치하거나, agent 없이 skill만 설치
+bash scripts/install.sh --cc-agents ywc-backend-coder ywc-qa-engineer
+bash scripts/install.sh --cc --skip-agents
 ```
 
-그다음 설정된 marketplace에서 바로 설치하세요:
+### Codex 출력 언어 기본값
+
+Codex 전용 `ywc-setup`은 Codex `ywc-*` skill의 artifact 언어 기본값을 설정합니다:
 
 ```bash
-codex plugin add ywc-agent-toolkit@ywc-agent-toolkit
+ywc-setup --scope project --lang ko
+ywc-setup --scope user --lang ja
 ```
 
-또는 플러그인 디렉터리를 여세요:
-
-```text
-codex
-/plugins
-```
-
-인터랙티브 Codex 세션 안에서 **YWC Agent Toolkit** marketplace 탭을 선택하고 **ywc-agent-toolkit**을 검색한 뒤 **Install plugin**을 선택하세요.
-
-### Codex App Plugins 사이드바
-
-Codex App에서는 사이드바의 **Plugins**를 열고 **YWC Agent Toolkit** source를 선택한 뒤 **ywc-agent-toolkit**을 검색하거나 찾으세요. 플러그인 소스가 `yongwoon/ywc-agent-toolkit`인지 확인하고 플러그인 상세 화면에서 설치하세요.
-
-사용 중인 환경에서 marketplace source 설치를 사용할 수 없다면 아래 bash fallback을 사용하세요.
-
-### Codex skill 유지보수 workflow
-
-Codex skill은 [codex/skills](codex/skills)에서 수정하세요. `plugins/ywc-agent-toolkit/skills`는 `codex plugin add`가 사용하는 generated marketplace package이므로 primary source로 직접 수정하지 마세요.
-
-Codex marketplace package가 자동으로 최신 상태를 유지되도록 repository Git hook을 한 번 설치하세요:
-
-```bash
-bash scripts/install-git-hooks.sh
-```
-
-Hook이 설치되어 있으면 `codex/skills` 변경이 staged된 commit에서 `bash scripts/sync-codex-plugin.sh`를 실행하고, generated package인 `plugins/ywc-agent-toolkit`을 자동 stage한 뒤 `bash scripts/validate.sh`를 실행합니다. Codex skill/package 변경이 포함된 push에서도 stale package 검사와 validation을 실행합니다.
-
-Hook을 설치하지 않은 환경에서는 commit 전에 같은 명령을 수동으로 실행하세요:
-
-```bash
-bash scripts/sync-codex-plugin.sh
-bash scripts/validate.sh
-```
-
-`bash scripts/validate.sh` 가 `plugins/ywc-agent-toolkit/skills` stale 상태를 보고하면 generated package를 먼저 다시 빌드하세요:
-
-```bash
-bash scripts/sync-codex-plugin.sh
-bash scripts/validate.sh
-```
-
-bash fallback(`bash scripts/install.sh --codex`)은 `codex/skills`에서 직접 설치합니다. marketplace flow(`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`)는 generated package인 `plugins/ywc-agent-toolkit`에서 설치합니다.
-
-### bash 스크립트 fallback
-
-```bash
-YWC_REF=<release-tag-or-reviewed-commit>
-git clone --branch "$YWC_REF" --depth 1 https://github.com/yongwoon/ywc-agent-toolkit.git
-cd ywc-agent-toolkit
-git remote get-url origin
-git rev-parse --verify HEAD
-
-# Claude Code
-bash scripts/install.sh --cc
-
-# Codex
-bash scripts/install.sh --codex
-
-# 양쪽 모두
-bash scripts/install.sh --all
-```
-
-자세한 내용은 [README.md](README.md) 를 참조하세요.
+Resolution 순서는 explicit `--lang` > project `.codex/ywc.json` > project guidance(`AGENTS.md` / `CODEX.md` / `CLAUDE.md`) > user `~/.codex/ywc.json` > 사용자 질문입니다. Session default는 지원하지 않습니다.
 
 ---
 
 ## Skills
 
-### Planning & Spec
+대부분의 `ywc-*` skill은 Claude Code와 Codex 양쪽에서 사용 가능합니다. 목적별로 정리된 전체 카탈로그는 [전체 Skill Reference](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/14-skill-reference/)에 있습니다. 여기서 시작하세요:
 
-| Skill | 설명 |
-| ----- | ---- |
-| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | 러프한 아이디어를 `plan.md`(Small) 또는 Spec 문서(Medium/Large)로 변환합니다 |
-| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | Spec 문서(`docs/specification/`)를 작성하고 업데이트합니다 |
-| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Spec 품질(Completeness / Consistency / Feasibility)을 검증합니다 |
-| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | 라이브러리를 조사하고 기술 접근 방식을 비교합니다 |
-| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | 도메인 ubiquitous language 사전을 만들고 유지합니다 |
-| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | 프로젝트의 지속적인 Mission / Success Criteria / Out-of-Scope를 `docs/project-mission.md`에 저장합니다(ywc-plan이 계획의 프레임으로 읽음) |
-| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | 공식 plan 또는 spec을 작성하기 전에 러프한 아이디어를 정리합니다 |
-| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | 규모 있는 구현을 시작하기 전에 준비 상태와 리스크를 확인합니다 |
-| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | 익숙하지 않은 저장소를 위한 온보딩 컨텍스트를 생성합니다 |
-| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | spec을 ywc-spec-validate DONE 상태까지 재귀적으로 수렴시킵니다(validate ↔ ywc-plan --update-spec 루프, 기본 최대 5회) |
+| 목적 | Skills |
+| ---- | ------ |
+| 아이디어를 plan 또는 spec으로 | [`ywc-plan`](claude-code/skills/ywc-plan/README.md) → [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) |
+| 낯선 코드베이스 파악 | [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) |
+| 의존성 안전한 task로 분해 | [`ywc-task-generator`](claude-code/skills/ywc-task-generator/README.md) |
+| task를 end-to-end로 구현 | [`ywc-sequential-executor`](claude-code/skills/ywc-sequential-executor/README.md) / [`ywc-parallel-executor`](claude-code/skills/ywc-parallel-executor/README.md) |
+| goal에서 전체 pipeline 실행 | [`ywc-agentic`](claude-code/skills/ywc-agentic/README.md) |
+| 버그의 근본 원인 찾기 | [`ywc-debug-rootcause`](claude-code/skills/ywc-debug-rootcause/README.md) |
+| 코드 품질 및 보안 리뷰 | [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md), [`ywc-security-audit`](claude-code/skills/ywc-security-audit/README.md) |
+| PR 생성 및 리뷰 코멘트 대응 | [`ywc-create-pr`](claude-code/skills/ywc-create-pr/README.md) → [`ywc-handle-pr-reviews`](claude-code/skills/ywc-handle-pr-reviews/README.md) |
+| QA 테스트 시트 생성 | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
+| 릴리스 노트 작성 | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
+| 새 `ywc-*` skill 작성 | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
 
----
+모든 skill 디렉터리는 [`claude-code/skills/`](claude-code/skills)와 [`codex/skills/`](codex/skills)에서 확인하실 수 있으며, 각각 자체 README를 가지고 있습니다.
 
-## Review Skill HTML 출력 모드
+**연결 관계:** `ywc-plan` → (Medium/Large) `ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`가 각 task를 end-to-end로 전달합니다. Ad-hoc 변경은 executor를 건너뛰고 `ywc-create-pr` → `ywc-handle-pr-reviews`로 진행합니다. 각 경로의 명령과 flag는 [핵심 pipeline 가이드](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/02-core-concepts/)에서 다룹니다.
 
-9개의 Review / Report skill이 opt-in `--format html` flag를 지원합니다. 이 flag는 Markdown 대신 브라우저에서 바로 열리는 self-contained HTML report를 생성합니다.
+### HTML 출력 모드
 
-**지원 Skill:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`, `ywc-design-renew`
-
-**도입 배경:** AI가 생성한 100줄 이상의 Markdown 문서는 끝까지 읽히지 않는 경향이 있으며, 읽히지 않는 report는 의사결정을 이끌지 못합니다. HTML은 색상, severity coding, tab, 인터랙티브 control(체크박스, `Copy as Markdown`)을 더해, 결과물을 받는 사람이 실제로 읽고 행동하게 만듭니다.
+9개의 Review / Report skill이 `--format html` flag를 지원하며, Markdown 대신 브라우저에서 바로 열리는 self-contained HTML report를 생성합니다. 색상, severity coding, tab, 인터랙티브 control을 더해 결과물을 받는 사람이 실제로 읽고 행동하게 만듭니다.
 
 ```bash
 /ywc-impl-review --spec docs/spec.md --code src/ --format html
-/ywc-security-audit --code api/src/ --format html
 /ywc-gen-testcase 250 --format html   # localStorage sign-off가 포함된 인터랙티브 테스트시트
 ```
 
-> **⚠️ Token 비용** — HTML 출력은 Markdown 대비 output token을 2~4배 사용하며 생성 시간도 더 깁니다. 기본값은 `markdown`이며, 사람이 브라우저에서 읽을 report에 한해 HTML을 활성화하시기 바랍니다.
+> **⚠️ Token 비용** — HTML 출력은 Markdown 대비 output token을 2~4배 사용합니다. 기본값은 `markdown`이며, 사람이 브라우저에서 읽을 report에 한해 활성화하시기 바랍니다.
+
+지원 skill 목록과 상세: [`references/html-output.md`](claude-code/skills/references/html-output.md).
 
 ---
 
 ## Custom Agent
 
-Claude Code에는 worker, reviewer, specialist dispatch용 **12개**의 custom agent가 포함되어 있습니다. `~/.claude/agents/`에 설치되며, 자세한 내용은 [`claude-code/agents/README.md`](claude-code/agents/README.md)를 참조하세요.
+Claude Code에는 worker, reviewer, specialist dispatch용 12개의 custom agent가 포함되어 있습니다. `~/.claude/agents/`에 설치되며, 자세한 내용은 [`claude-code/agents/README.md`](claude-code/agents/README.md)를 참조하세요.
 
-Codex에는 `ywc-*` skill을 보완하는 **8개**의 read-only specialist agent가 포함됩니다. `~/.codex/agents/`에 설치됩니다.
+Codex에는 이에 대응하는 read-only specialist agent 7개가 `~/.codex/agents/`(`CODEX_HOME`으로 재정의 가능)에 agent당 TOML 파일 하나씩 설치됩니다:
 
-| Agent | 용도 | Sandbox |
-|-------|------|---------|
-| `ywc-architect` | 아키텍처 결정 및 트레이드오프 advisor | `read-only` |
-| `ywc-security-engineer` | 정적 보안 리뷰 및 threat model 분류 | `read-only` |
-| `ywc-root-cause-analyst` | 근본 원인 및 장애 원인 분석 | `read-only` |
-| `ywc-performance-engineer` | 성능 리뷰 및 프로파일링 권장사항 | `read-only` |
-| `ywc-typescript-reviewer` | TypeScript / JavaScript 언어별 리뷰 | `read-only` |
-| `ywc-python-reviewer` | Python 언어별 리뷰 | `read-only` |
-| `ywc-go-reviewer` | Go 언어별 리뷰 | `read-only` |
+| Agent | 용도 |
+| ----- | ---- |
+| [`ywc-architect`](claude-code/agents/ywc-architect.md) | 아키텍처 결정 및 트레이드오프 advisor |
+| [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | 정적 보안 리뷰 및 threat model 분류 |
+| [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | 근본 원인 및 장애 원인 분석 |
+| [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | 성능 리뷰 및 프로파일링 권장사항 |
+| [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 언어별 리뷰 |
+| [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 언어별 리뷰 |
+| [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 언어별 리뷰 |
 
-## 권장 개발 Pipeline
+모든 Codex agent는 read-only이며 파일을 편집하지 않습니다. 표준화된 `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`와 간결한 finding, 그리고 호출자가 적용하거나 확인해야 할 때 `Next action:`을 반환합니다. 원본 TOML은 [`codex/agents/`](codex/agents/)에 있습니다.
 
-이 spine은 전체 catalog가 아니라 skill이 실제로 매일 호출되는 방식을 반영합니다. 한 번의 planning pass, 재귀적 spec 수렴 gate(`ywc-spec-ready`), task 분해, 그리고 workhorse 역할의 executor — 각 task에 대해 `ywc-finish-branch`를 통해 end-to-end로 전달하며, 적합성 review(`--review`), PR 생성, bot review 처리, merge를 sub-step으로 포함하므로 task 기반 flow에서는 이들이 단독으로 실행되는 경우가 드뭅니다.
+---
 
-```mermaid
-flowchart TD
-    A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
-    B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
-    B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
-    C --> CV["ywc-spec-ready\nrecursively converge to validate DONE\n(loops ywc-spec-validate ↔ ywc-plan --update-spec)"]
-    CV --> D
-    D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
-    E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
-```
+## Claude Code Hooks
+
+Claude Code tool 호출 전후에 실행되는 자동화 hook입니다. `~/.claude/hooks/`(전역) 또는 `./.claude/hooks/`(프로젝트 로컬)에 설치되며 `settings.json`에 자동 등록됩니다. `jq`와 `uv`가 필요합니다.
 
 ```bash
-# Step 4 example — run a task range with full delivery:
-ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
-# common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
-# (ywc-parallel-executor is the worktree-isolated alternative)
+bash scripts/install.sh --hooks                    # 전체 hook을 전역 설치
+bash scripts/install.sh --hooks --local            # 현재 프로젝트에 설치
+bash scripts/install.sh --hooks cost-tracker       # 특정 hook만 설치
+bash scripts/install.sh --list --hooks             # 사용 가능한 hook 목록
 ```
 
-**Ad-hoc / non-task 변경**은 executor를 건너뛰고 수동으로 전달합니다: `ywc-create-pr`가 draft PR을 열고, `ywc-handle-pr-reviews`가 bot / human review를 green 상태로 이끕니다. `ywc-handle-pr-reviews`는 open PR에 새 review comment가 달릴 때마다(task 기반이든 아니든) 다시 실행하는 skill이기도 합니다.
+| Hook                        | Event                  | 설명                                                                    |
+| --------------------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `block-dangerous-commands`  | `PreToolUse`           | 위험한 shell 명령 차단(critical/high/strict 레벨)                        |
+| `check-claude-md-freshness` | `PreToolUse`           | `git push` 전 CLAUDE.md 최신 여부 확인                                   |
+| `cost-tracker`              | `PostToolUse` + `Stop` | tool 호출 통계를 기록하고 종료 시 세션 요약 출력                          |
+| `notify-permission`         | `Notification`         | 권한 대기 시 Slack 알림 전송(`CCH_SLA_WEBHOOK` 필요)                     |
+| `permission-request`        | `PermissionRequest`    | 안전한 tool(Read, Write, Edit) 자동 승인                                 |
+| `protect-secrets`           | `PreToolUse`           | `.env`, SSH 키 등 시크릿 파일 접근 차단                                  |
+| `session-start`             | `SessionStart`         | 세션 시작 시 git status, `CONTEXT.md`, TODO, GitHub Issue 주입           |
 
-실제 작업에서 함께 사용되는 것: `ywc-ubiquitous-language`(spec 작성 전·중의 domain glossary), 그리고 release 시점의 `ywc-release-pr-list` + `ywc-changelog-release-notes`.
+hook별 사용법: [`claude-code/hooks/README.md`](claude-code/hooks/README.md).
 
-나머지 skill은 상황에 따라 사용되며 매번 실행되지는 않습니다 — `ywc-debug-rootcause`(test나 build 실패의 원인이 불분명할 때), `ywc-tdd-ritual`(엄격한 red-green-refactor), `ywc-tech-research`(결정 전 접근 방식 비교), `ywc-impl-review`(executor 밖의 단독 적합성 review), `ywc-spec-validate`(`ywc-spec-ready` loop 밖의 일회성 spec review), 그리고 위 [Skills](#skills) 표의 기타 항목들.
+---
 
-### Other pipelines
+## 기여하기
 
-per-task spine 외에도, 몇 가지 다중 skill flow가 설계된 1급 sequence로 존재합니다:
+기여를 환영합니다. PR 제출 전 [CONTRIBUTING.md](CONTRIBUTING.md)를 읽어주세요.
 
-**Autonomous — goal → code를 한 번의 명령으로.** `ywc-agentic`은 단일 goal을 전달된 code로 바꾸며, `ywc-plan → ywc-spec-validate → ywc-task-generator → executor → ywc-impl-review`를 Plan → Execute → Evaluate → Repeat loop로 orchestration합니다. review 실패 시 re-plan하고 사용자가 정한 iteration 상한에서 멈춥니다 — spine을 수동으로 운전하는 대신 이것을 사용하세요.
+- **버그 리포트 및 skill 개선**: issue 또는 PR을 열어주세요
+- **새 skill**: [ywc-skill-author](claude-code/skills/ywc-skill-author/SKILL.md) 가이드라인을 따라주세요
+- **번역**: [번역 가이드](CONTRIBUTING.md#translations)를 참조하세요
+- **Codex 패키지 동기화**: [Codex skill 유지보수 workflow](CONTRIBUTING.md#maintainer-workflow-for-codex-skills)를 참조하세요
 
-**Defect → root cause → prevention (harness-feedback loop).** bug나 test 실패가 발생하면 `ywc-debug-rootcause`가 root cause까지 추적하고, 반복되는 cause class는 `ywc-review-learnings`로 offer됩니다. 이 파일은 이후 모든 review에서 `ywc-impl-review`와 `ywc-design-renew`가 읽으므로, 확인된 defect가 향후 review를 강화합니다. `ywc-incident-postmortem`은 production 장애 이후 동일한 loop에 기여합니다.
+## License
 
-**Mission persistence.** `ywc-brainstorm`은 대략적인 idea를 다듬고 durable한 intent — Mission / Success Criteria / Out-of-Scope — 를 `ywc-project-mission`으로 저장하도록 offer합니다. `ywc-plan`은 이후 모든 planning pass의 frame을 잡기 위해 이 파일을 읽습니다. intent는 한 번 캡처되어 여러 feature에 걸쳐 재사용됩니다.
-
-**New-codebase setup.** greenfield project의 경우 `ywc-project-scaffold`가 directory 구조를 잡고 `ywc-ubiquitous-language`가 domain glossary를 seed합니다. 기존의 낯선 repo의 경우 `ywc-onboard-repo`가 첫 `ywc-plan` 전에 onboarding context를 생성합니다.
-
-자세한 내용은 [README.md](README.md)를 참조하세요.
+MIT

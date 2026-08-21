@@ -45,6 +45,27 @@ bash scripts/install.sh --cc-agents     # install Claude Code custom agents
 bash scripts/install.sh --codex-agents  # install Codex custom agents
 ```
 
+### Maintainer workflow for Codex skills
+
+Edit Codex skills in [codex/skills](codex/skills). Do not edit `plugins/ywc-agent-toolkit/skills` as the primary source; it is the generated marketplace package used by `codex plugin add`.
+
+Install repository Git hooks once so Codex marketplace packaging stays in sync automatically:
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+With the hooks installed, commits that stage `codex/skills` changes run `bash scripts/sync-codex-plugin.sh`, stage the generated `plugins/ywc-agent-toolkit` package, and then run `bash scripts/validate.sh`. Pushes that include Codex skill or package changes also run the stale-package check and validation.
+
+If hooks are not installed — or if `bash scripts/validate.sh` reports that `plugins/ywc-agent-toolkit/skills` is stale — run the same commands manually before committing:
+
+```bash
+bash scripts/sync-codex-plugin.sh
+bash scripts/validate.sh
+```
+
+The bash fallback (`bash scripts/install.sh --codex`) installs directly from `codex/skills`. The marketplace flow (`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`) installs from the generated `plugins/ywc-agent-toolkit` package.
+
 ---
 
 ## Skill authoring rules
