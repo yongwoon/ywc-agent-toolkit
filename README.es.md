@@ -1,260 +1,187 @@
 # ywc-agent-toolkit
 
-> Este documento está siendo traducido. Consulte la documentación completa en [English](README.md).
+> Este documento está en proceso de traducción. Para el contenido completo, consulte [English](README.md).
 >
 > Si desea contribuir con la traducción, cree un [Translation Issue](../../issues/new?template=translation.md).
 
 ---
 
-> 📖 **[Documentación y guía](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/)** — guías paso a paso para empezar, elegir la skill adecuada y ejecutar el flujo de trabajo completo.
+Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de desarrollo completo — desde la planificación y la redacción de especificaciones hasta la generación de código, la revisión y la publicación.
+
+[English](README.md) | [한국어](README.ko.md) | [中文](README.zh.md) | [日本語](README.ja.md)
+
+> 📖 **[Documentación y guía](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/)** — este README es el recorrido breve. Los prerrequisitos, la instalación, la referencia completa de skills y las guías paso a paso están en la guía.
+
+| Lo que busca | Página de la guía |
+| ------------ | ----------------- |
+| Entregar su primera función en 5 minutos | [03. Inicio rápido](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/03-quickstart/) |
+| Qué skill ejecutar y en qué orden | [17. Referencia completa de skills](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/14-skill-reference/) |
+| Prerrequisitos, rutas de instalación, variables de entorno | [18. Prerrequisitos e instalación](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/15-prerequisites-installation/) |
+| Cambio pequeño / multitarea / bucle autónomo | [04](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/04-general-cycle-small/) · [05](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/05-general-cycle-medium-large/) · [06](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/06-agentic-autonomous-loop/) |
+
+## Herramientas compatibles
+
+| Herramienta | Skills | Custom Agents | Ruta de instalación                      |
+| ----------- | ------ | ------------- | ---------------------------------------- |
+| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 52     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
-Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de trabajo de desarrollo completo — desde la planificación y escritura de especificaciones hasta la generación de código, revisión y lanzamiento.
+## Inicio rápido
 
-Actualmente incluye 42 skills para Claude Code, 52 skills para Codex, 12 agentes de Claude Code y 8 custom agents de Codex.
+### Claude Code
 
-`ywc-setup` es Codex-only y configura el artifact language default de Codex
-`ywc-*`: `ywc-setup --scope project --lang ko`, `ywc-setup --scope user --lang ja`.
-El orden de resolución es explicit `--lang` > project `.codex/ywc.json` >
-`AGENTS.md` / `CODEX.md` / `CLAUDE.md` > user `~/.codex/ywc.json` > preguntar
-al usuario. Session default no está soportado.
-
-## Prerrequisitos
-
-La instalación mediante marketplace de plugins y plugins de Codex **no tiene prerrequisitos** — la herramienta lo gestiona todo automáticamente.
-
-Para el **script bash fallback**, lo siguiente debe estar instalado antes de ejecutar `install.sh`:
-
-| Herramienta | Necesario para | Instalación |
-| ----------- | -------------- | ----------- |
-| `git` | Clonar el repositorio | Preinstalado en la mayoría de sistemas |
-| `bash ≥ 3.2` | Ejecutar `install.sh` | Preinstalado en macOS / Linux |
-| `jq` | Registro de hooks | `brew install jq` / `apt-get install jq` |
-
-En **tiempo de ejecución de skills** (no requerido para la instalación):
-
-| Herramienta | Utilizado por | Instalación |
-| ----------- | ------------- | ----------- |
-| `python3 ≥ 3.9` | Helpers de runtime de skills: `ywc-parallel-executor`, `ywc-finish-branch`, `ywc-merge-dependabot`; los hooks de Claude Code requieren Python ≥ 3.11 | Preinstalado en macOS 12.3+; `brew install python3` |
-| `gh` CLI | Skills/modos basados en PR y releases de GitHub: `ywc-handle-pr-reviews`, `ywc-spec-writer --from-pr/--from-prs`, `ywc-release-pr-list`, `ywc-create-pr`, modo PR de `ywc-finish-branch`, `ywc-merge-dependabot`, `ywc-sequential-executor`/`ywc-parallel-executor`, `ywc-gen-testcase` | `brew install gh` / [cli.github.com](https://cli.github.com) |
-
-Antes de usar skills basadas en PR, autentique GitHub CLI:
+Instale desde el marketplace de plugins — sin clonar y sin prerrequisitos:
 
 ```bash
-gh auth login
-gh auth setup-git
-gh auth status
+/plugin marketplace add yongwoon/ywc-agent-toolkit    # 1. registrar la fuente
+/plugin install ywc-agent-toolkit@ywc-agent-toolkit   # 2. instalar el plugin
 ```
 
-Recomendado para contribuidores y paridad con CI local:
+`marketplace add` solo registra la fuente: a continuación debe ejecutar `/plugin install` o instalarlo desde la pestaña **Marketplaces** de la interfaz de plugins. Reinicie Claude Code después para que aparezcan las skills.
 
-| Herramienta | Utilizado por | Instalación |
-| ----------- | ------------- | ----------- |
-| `uv` | Hooks Python de Claude Code | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| `ripgrep` (`rg`) | Escaneos rápidos del repositorio en onboarding, validation y reviews | `brew install ripgrep` / `apt-get install ripgrep` |
-| `node` / `npm` / `npx` | Markdown lint, Playwright setup, helpers de cleanup JS/TS | [nodejs.org](https://nodejs.org/) o un Node version manager |
-| `shellcheck` | Replica localmente el gate de lint de shell scripts de GitHub Actions | `brew install shellcheck` / `apt-get install shellcheck` |
-| `markdownlint-cli2` | Replica localmente el gate de Markdown lint de GitHub Actions | `npm install -g markdownlint-cli2` |
-
----
-
-## Instalación
-
-### Marketplace de plugins de Claude Code (recomendado)
+### Codex
 
 ```bash
-# 1. Añadir como fuente de marketplace (una sola vez)
-/plugin marketplace add yongwoon/ywc-agent-toolkit
-
-# 2. Instalar el plugin desde ese marketplace
-/plugin install ywc-agent-toolkit@ywc-agent-toolkit
+codex plugin marketplace add yongwoon/ywc-agent-toolkit   # 1. registrar la fuente
+codex plugin add ywc-agent-toolkit@ywc-agent-toolkit      # 2. instalar el plugin
 ```
 
-`marketplace add` solo registra la fuente — por sí solo no instala nada.
-Debe ejecutar además `/plugin install` (o abrir la pestaña **Marketplaces** en el Plugin UI e instalar **ywc-agent-toolkit** allí) para activarlo.
-Las skills se instalan automáticamente en `~/.claude/skills/` sin necesidad de clonar ni ejecutar bash; reinicie Claude Code después para que aparezcan.
+Si ya había añadido el marketplace, actualice antes su instantánea de Git con `codex plugin marketplace upgrade ywc-agent-toolkit`. También puede ejecutar `codex`, abrir `/plugins` e instalarlo desde la pestaña **YWC Agent Toolkit**.
 
-### Directorio de plugins de Codex CLI
+Si utiliza la **Codex App**, abra **Plugins** en la barra lateral, elija la fuente **YWC Agent Toolkit**, confirme que es `yongwoon/ywc-agent-toolkit` e instálelo desde la vista de detalles del plugin.
 
-Este repositorio sigue el mismo patrón de empaquetado multi-harness que proyectos como Superpowers: los metadatos de Claude Code viven en [`.claude-plugin/`](.claude-plugin/), mientras que los metadatos de Codex viven en [`.codex-plugin/`](.codex-plugin/). La fuente de verdad de Codex es [codex/skills](codex/skills). El catálogo de marketplace de Codex con alcance de repositorio en [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json) expone el paquete generado `plugins/ywc-agent-toolkit`; su directorio `skills/` se produce desde `codex/skills` con `bash scripts/sync-codex-plugin.sh` y se verifica con `bash scripts/validate.sh`.
+### Después, ejecute una skill
 
-Esto permite instalar `ywc-agent-toolkit` desde Codex después de añadir este repositorio como fuente de marketplace de plugins, pero no implica que esté listado en el marketplace oficial curado por OpenAI.
-
-Añada este repositorio como fuente de marketplace de plugins de Codex:
+Ambas herramientas exponen los mismos comandos:
 
 ```bash
-codex plugin marketplace add yongwoon/ywc-agent-toolkit
+/ywc-onboard-repo           # comprender un código desconocido en minutos
+/ywc-plan                   # convertir una idea vaga en un plan o una especificación
+/ywc-debug-rootcause        # rastrear un error hasta su causa raíz
+/ywc-impl-review            # revisar el código por especificación / seguridad / calidad
+/ywc-agentic                # ejecutar el pipeline completo de forma autónoma desde un objetivo
 ```
 
-Si el marketplace ya estaba añadido, actualice primero su snapshot de Git:
+→ Los prerrequisitos, el fallback por script bash, las rutas de instalación y las variables `CLAUDE_SKILLS_DIR` / `CLAUDE_AGENTS_DIR` / `CODEX_HOME` están documentados en [Prerrequisitos e instalación](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/15-prerequisites-installation/).
+
+### Opciones de instalación no cubiertas en la guía
 
 ```bash
-codex plugin marketplace upgrade ywc-agent-toolkit
+# Solo skills concretas
+bash scripts/install.sh --cc ywc-plan ywc-commit ywc-create-pr
+bash scripts/install.sh --codex ywc-plan ywc-commit ywc-ui-ux-review
+
+# Solo agentes seleccionados, o skills sin agentes
+bash scripts/install.sh --cc-agents ywc-backend-coder ywc-qa-engineer
+bash scripts/install.sh --cc --skip-agents
 ```
 
-Luego instale directamente desde el marketplace configurado:
+### Idioma de salida por defecto en Codex
+
+El comando `ywc-setup`, exclusivo de Codex, configura el idioma por defecto de los artefactos de las skills `ywc-*` de Codex:
 
 ```bash
-codex plugin add ywc-agent-toolkit@ywc-agent-toolkit
+ywc-setup --scope project --lang ko
+ywc-setup --scope user --lang ja
 ```
 
-O abra el directorio de plugins:
-
-```text
-codex
-/plugins
-```
-
-Dentro de la sesión interactiva de Codex, elija la pestaña de marketplace **YWC Agent Toolkit**, busque **ywc-agent-toolkit** y seleccione **Install plugin**.
-
-### Barra lateral Plugins de Codex App
-
-En Codex App, abra **Plugins** desde la barra lateral, elija la fuente **YWC Agent Toolkit**, busque o explore **ywc-agent-toolkit**, confirme que la fuente del plugin sea `yongwoon/ywc-agent-toolkit` e instálelo desde la vista de detalles del plugin.
-
-Si la instalación de fuentes de marketplace no está disponible en su entorno, use el fallback bash de abajo.
-
-### Flujo de mantenimiento para skills de Codex
-
-Edite las skills de Codex en [codex/skills](codex/skills). No edite `plugins/ywc-agent-toolkit/skills` como fuente primaria; es el generated marketplace package usado por `codex plugin add`.
-
-Instale una vez los Git hooks del repositorio para mantener sincronizado automáticamente el Codex marketplace package:
-
-```bash
-bash scripts/install-git-hooks.sh
-```
-
-Con los hooks instalados, los commits que tengan cambios staged en `codex/skills` ejecutan `bash scripts/sync-codex-plugin.sh`, stagean automáticamente el generated package `plugins/ywc-agent-toolkit` y luego ejecutan `bash scripts/validate.sh`. Los pushes que incluyan cambios de Codex skill/package también ejecutan el stale-package check y la validación.
-
-Si los hooks no están instalados, ejecute manualmente los mismos comandos antes del commit:
-
-```bash
-bash scripts/sync-codex-plugin.sh
-bash scripts/validate.sh
-```
-
-Si `bash scripts/validate.sh` informa que `plugins/ywc-agent-toolkit/skills` está stale, regenere primero el generated package:
-
-```bash
-bash scripts/sync-codex-plugin.sh
-bash scripts/validate.sh
-```
-
-El bash fallback (`bash scripts/install.sh --codex`) instala directamente desde `codex/skills`. El marketplace flow (`codex plugin add ywc-agent-toolkit@ywc-agent-toolkit`) instala desde el generated package `plugins/ywc-agent-toolkit`.
-
-### Script bash fallback
-
-```bash
-YWC_REF=<release-tag-or-reviewed-commit>
-git clone --branch "$YWC_REF" --depth 1 https://github.com/yongwoon/ywc-agent-toolkit.git
-cd ywc-agent-toolkit
-git remote get-url origin
-git rev-parse --verify HEAD
-
-# Claude Code
-bash scripts/install.sh --cc
-
-# Codex
-bash scripts/install.sh --codex
-
-# Ambos
-bash scripts/install.sh --all
-```
-
-Consulte [README.md](README.md) para más detalles.
+El orden de resolución es: `--lang` explícito > `.codex/ywc.json` del proyecto > guía del proyecto (`AGENTS.md` / `CODEX.md` / `CLAUDE.md`) > `~/.codex/ywc.json` del usuario > preguntar al usuario. No se admiten valores por defecto de sesión.
 
 ---
 
 ## Skills
 
-### Planificación y especificación
+La mayoría de las skills `ywc-*` están disponibles tanto para Claude Code como para Codex. El catálogo completo, agrupado por lo que desea hacer, está en la [Referencia completa de skills](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/14-skill-reference/). Empiece por aquí:
 
-| Skill | Descripción |
-| ----- | ----------- |
-| [`ywc-plan`](claude-code/skills/ywc-plan/README.md) | Convierte una idea inicial en `plan.md` (Small) o en un documento de especificación (Medium/Large) |
-| [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) | Escribe y actualiza documentos de especificación (`docs/specification/`) |
-| [`ywc-spec-validate`](claude-code/skills/ywc-spec-validate/README.md) | Valida la calidad de la especificación (Completeness / Consistency / Feasibility) |
-| [`ywc-tech-research`](claude-code/skills/ywc-tech-research/README.md) | Investiga librerías y compara enfoques técnicos |
-| [`ywc-ubiquitous-language`](claude-code/skills/ywc-ubiquitous-language/README.md) | Crea y mantiene un diccionario de ubiquitous language del dominio |
-| [`ywc-project-mission`](claude-code/skills/ywc-project-mission/README.md) | Persiste la Mission / Success Criteria / Out-of-Scope duradera del proyecto en `docs/project-mission.md` (ywc-plan lo lee para enmarcar la planificación) |
-| [`ywc-brainstorm`](claude-code/skills/ywc-brainstorm/README.md) | Da forma a ideas iniciales antes de escribir un plan o una especificación formal |
-| [`ywc-confidence-gate`](claude-code/skills/ywc-confidence-gate/README.md) | Comprueba preparación y riesgo antes de iniciar una implementación sustancial |
-| [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) | Genera contexto de onboarding para repositorios desconocidos |
-| [`ywc-spec-ready`](claude-code/skills/ywc-spec-ready/README.md) | Hace converger recursivamente una spec hasta ywc-spec-validate DONE (bucle validate ↔ ywc-plan --update-spec, máximo 5 iteraciones por defecto) |
+| Objetivo | Skills |
+| -------- | ------ |
+| Convertir una idea en un plan o especificación | [`ywc-plan`](claude-code/skills/ywc-plan/README.md) → [`ywc-spec-writer`](claude-code/skills/ywc-spec-writer/README.md) |
+| Comprender un código desconocido | [`ywc-onboard-repo`](claude-code/skills/ywc-onboard-repo/README.md) |
+| Dividir el trabajo en tareas sin conflictos de dependencia | [`ywc-task-generator`](claude-code/skills/ywc-task-generator/README.md) |
+| Implementar tareas de extremo a extremo | [`ywc-sequential-executor`](claude-code/skills/ywc-sequential-executor/README.md) / [`ywc-parallel-executor`](claude-code/skills/ywc-parallel-executor/README.md) |
+| Ejecutar el pipeline completo desde un objetivo | [`ywc-agentic`](claude-code/skills/ywc-agentic/README.md) |
+| Encontrar la causa raíz de un error | [`ywc-debug-rootcause`](claude-code/skills/ywc-debug-rootcause/README.md) |
+| Revisar calidad y seguridad del código | [`ywc-impl-review`](claude-code/skills/ywc-impl-review/README.md), [`ywc-security-audit`](claude-code/skills/ywc-security-audit/README.md) |
+| Abrir un PR y atender comentarios de revisión | [`ywc-create-pr`](claude-code/skills/ywc-create-pr/README.md) → [`ywc-handle-pr-reviews`](claude-code/skills/ywc-handle-pr-reviews/README.md) |
+| Generar una hoja de pruebas de QA | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
+| Redactar notas de versión | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
+| Crear una nueva skill `ywc-*` | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
 
----
+Puede explorar todos los directorios de skills en [`claude-code/skills/`](claude-code/skills) y [`codex/skills/`](codex/skills); cada uno tiene su propio README.
 
-## Modo de salida HTML para Review Skills
+**Cómo encajan:** `ywc-plan` → (Medium/Large) `ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`, que entrega cada tarea de extremo a extremo. Los cambios puntuales omiten el executor: `ywc-create-pr` y después `ywc-handle-pr-reviews`. Las [guías del pipeline principal](https://yongwoon.github.io/ywc-agent-toolkit-lp/es/guidebook/02-core-concepts/) recorren cada camino con sus comandos y flags.
 
-Nueve skills de revisión y reporte soportan un flag opt-in `--format html` que genera un informe HTML autocontenido y listo para el navegador, en lugar de Markdown.
+### Modo de salida HTML
 
-**Skills compatibles:** `ywc-impl-review`, `ywc-security-audit`, `ywc-spec-validate`, `ywc-tech-research`, `ywc-incident-postmortem`, `ywc-product-review`, `ywc-ui-ux-review`, `ywc-gen-testcase`, `ywc-design-renew`
-
-**Motivación:** Los documentos Markdown de más de ~100 líneas generados por IA raramente se leen de principio a fin — un informe que nadie lee no puede impulsar una decisión. HTML añade color, codificación de severidad, pestañas y controles interactivos (casillas, `Copy as Markdown`), para que quien lo recibe realmente lo lea y actúe en consecuencia.
+Nueve skills de revisión e informe aceptan `--format html` y producen un informe HTML autocontenido, listo para el navegador, en lugar de Markdown: color, codificación por severidad, pestañas y controles interactivos, para que la persona que lo recibe realmente lo lea y actúe.
 
 ```bash
 /ywc-impl-review --spec docs/spec.md --code src/ --format html
-/ywc-gen-testcase 250 --format html   # hoja de pruebas interactiva con sign-off en localStorage
+/ywc-gen-testcase 250 --format html   # hoja de pruebas interactiva con firma en localStorage
 ```
 
-> **⚠️ Coste en tokens** — La salida HTML consume 2-4× más tokens de salida que Markdown y tarda más en generarse. El valor predeterminado es `markdown`; active HTML solo para informes que un humano leerá en un navegador.
+> **⚠️ Coste en tokens** — la salida HTML consume entre 2 y 4 veces más tokens de salida que Markdown. El valor por defecto es `markdown`; actívelo solo para informes que una persona vaya a leer en el navegador.
+
+Skills compatibles y detalles: [`references/html-output.md`](claude-code/skills/references/html-output.md).
 
 ---
 
 ## Agentes personalizados
 
-Claude Code incluye **12 agentes** personalizados para worker, reviewer y specialist dispatch. Se instalan en `~/.claude/agents/` y están documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
+Claude Code incluye 12 agentes personalizados para despacho de tipo worker, reviewer y specialist, instalados en `~/.claude/agents/` y documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
 
-Codex incluye **8 agentes** especialistas de solo lectura que complementan los skills `ywc-*`. Se instalan en `~/.codex/agents/`.
+Codex incorpora siete agentes especialistas de solo lectura equivalentes, instalados en `~/.codex/agents/` (configurable con `CODEX_HOME`) como un archivo TOML por agente:
 
-| Agente | Propósito | Sandbox |
-|--------|-----------|---------|
-| `ywc-architect` | Asesor de decisiones arquitectónicas y trade-offs | `read-only` |
-| `ywc-security-engineer` | Revisión estática de seguridad y clasificación de threat model | `read-only` |
-| `ywc-root-cause-analyst` | Análisis de causa raíz e incidentes | `read-only` |
-| `ywc-performance-engineer` | Revisión de rendimiento y recomendaciones de profiling | `read-only` |
-| `ywc-typescript-reviewer` | Revisión específica de TypeScript / JavaScript | `read-only` |
-| `ywc-python-reviewer` | Revisión específica de Python | `read-only` |
-| `ywc-go-reviewer` | Revisión específica de Go | `read-only` |
+| Agente | Propósito |
+| ------ | --------- |
+| [`ywc-architect`](claude-code/agents/ywc-architect.md) | Asesor de decisiones arquitectónicas y compromisos de diseño |
+| [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | Revisión estática de seguridad y triaje de modelos de amenazas |
+| [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | Análisis de causa raíz y de incidentes |
+| [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | Revisión de rendimiento y recomendaciones de perfilado |
+| [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | Revisión específica de TypeScript / JavaScript |
+| [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Revisión específica de Python |
+| [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Revisión específica de Go |
 
-## Pipeline de desarrollo recomendado
+Todos los agentes de Codex son de solo lectura y nunca editan archivos. Devuelven un `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` estandarizado, un conjunto compacto de hallazgos y un `Next action:` cuando quien lo invoca debe aplicar o inspeccionar algo. El TOML fuente está en [`codex/agents/`](codex/agents/).
 
-Esta spine refleja cómo se invocan realmente los skills en el día a día, no el catálogo completo. Una pasada de planificación, una puerta de convergencia recursiva de spec (`ywc-spec-ready`), descomposición en tasks, y luego el executor como caballo de batalla — para cada task entrega de extremo a extremo mediante `ywc-finish-branch`, integrando la review de conformidad (`--review`), la creación de PR, el manejo de bot review y el merge como sub-pasos, de modo que rara vez se ejecutan de forma aislada en el flujo basado en tasks.
+---
 
-```mermaid
-flowchart TD
-    A["1. ywc-plan\nrough idea → plan.md"] --> B{Size?}
-    B -->|Small| D["3. ywc-task-generator\ndecompose into tasks"]
-    B -->|"Medium / Large"| C["2. ywc-spec-writer\nwrite / update spec"]
-    C --> CV["ywc-spec-ready\nrecursively converge to validate DONE\n(loops ywc-spec-validate ↔ ywc-plan --update-spec)"]
-    CV --> D
-    D --> E["4. ywc-sequential-executor\nor ywc-parallel-executor\nbranch → impl → verify → PR → merge"]
-    E --> F["5. ywc-gen-testcase pr N\nQA test sheet per PR"]
-```
+## Hooks de Claude Code
+
+Hooks de automatización que se ejecutan antes y después de las llamadas a herramientas de Claude Code. Se instalan en `~/.claude/hooks/` (global) o `./.claude/hooks/` (local al proyecto) y se registran automáticamente en `settings.json`. Requieren `jq` y `uv`.
 
 ```bash
-# Step 4 example — run a task range with full delivery:
-ywc-sequential-executor 000020-010..000025-010 --review --base-branch <feature>
-# common flags: --base-branch · --draft · --local-merge · --review · --per-task-pr
-# (ywc-parallel-executor is the worktree-isolated alternative)
+bash scripts/install.sh --hooks                    # todos los hooks, globalmente
+bash scripts/install.sh --hooks --local            # en el proyecto actual
+bash scripts/install.sh --hooks cost-tracker       # solo hooks concretos
+bash scripts/install.sh --list --hooks             # listar los disponibles
 ```
 
-**Los cambios ad-hoc / no basados en tasks** omiten el executor y se entregan manualmente: `ywc-create-pr` abre un draft PR, y luego `ywc-handle-pr-reviews` lleva la review de bot / humana hasta green. `ywc-handle-pr-reviews` es también lo que se vuelve a ejecutar cada vez que llegan nuevos review comments a un PR abierto — sea basado en tasks o no.
+| Hook                        | Evento                 | Descripción                                                             |
+| --------------------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `block-dangerous-commands`  | `PreToolUse`           | Bloquea comandos de shell peligrosos (niveles critical/high/strict)      |
+| `check-claude-md-freshness` | `PreToolUse`           | Verifica que CLAUDE.md esté actualizado antes de `git push`             |
+| `cost-tracker`              | `PostToolUse` + `Stop` | Registra estadísticas de llamadas y muestra un resumen al salir          |
+| `notify-permission`         | `Notification`         | Envía un aviso a Slack cuando Claude espera permiso (`CCH_SLA_WEBHOOK`)  |
+| `permission-request`        | `PermissionRequest`    | Aprueba automáticamente herramientas seguras (Read, Write, Edit)         |
+| `protect-secrets`           | `PreToolUse`           | Bloquea el acceso a `.env`, claves SSH y otros archivos secretos         |
+| `session-start`             | `SessionStart`         | Inyecta git status, `CONTEXT.md`, TODOs e issues de GitHub al iniciar    |
 
-También se usan en el trabajo real: `ywc-ubiquitous-language` (glosario de dominio, antes o durante la spec), y al momento del release `ywc-release-pr-list` + `ywc-changelog-release-notes`.
+Detalles de uso por hook: [`claude-code/hooks/README.md`](claude-code/hooks/README.md).
 
-Los skills restantes son situacionales, no forman parte de cada ejecución — `ywc-debug-rootcause` (falla un test o build y la causa no está clara), `ywc-tdd-ritual` (red-green-refactor estricto), `ywc-tech-research` (comparar enfoques antes de decidir), `ywc-impl-review` (review de conformidad independiente fuera del executor), `ywc-spec-validate` (una review de spec puntual fuera del loop de `ywc-spec-ready`), y otros en la tabla de [Skills](#skills) anterior.
+---
 
-### Other pipelines
+## Contribuir
 
-Más allá de la spine por task, algunos flujos multi-skill son secuencias diseñadas de primera clase:
+¡Las contribuciones son bienvenidas! Lea [CONTRIBUTING.md](CONTRIBUTING.md) antes de enviar un PR.
 
-**Autónomo — goal → code en un solo comando.** `ywc-agentic` convierte un único goal en code entregado, orquestando `ywc-plan → ywc-spec-validate → ywc-task-generator → executor → ywc-impl-review` en un loop Plan → Execute → Evaluate → Repeat. Replanifica ante un fallo de review y se detiene en un límite de iteraciones definido por el usuario — recúrralo en lugar de conducir la spine a mano.
+- **Informes de errores y mejoras de skills**: abra un issue o un PR
+- **Nuevas skills**: siga las pautas de [ywc-skill-author](claude-code/skills/ywc-skill-author/SKILL.md)
+- **Traducciones**: consulte la [guía de traducción](CONTRIBUTING.md#translations)
+- **Sincronización del paquete de Codex**: consulte [Maintainer workflow for Codex skills](CONTRIBUTING.md#maintainer-workflow-for-codex-skills)
 
-**Defect → causa raíz → prevención (harness-feedback loop).** Cuando aparece un bug o un test que falla, `ywc-debug-rootcause` lo lleva hasta la causa raíz; una clase de causa recurrente se ofrece entonces a `ywc-review-learnings`, que `ywc-impl-review` y `ywc-design-renew` leen en cada review posterior — de modo que un defect confirmado refuerza las reviews futuras. `ywc-incident-postmortem` alimenta el mismo loop tras un incidente en producción.
+## License
 
-**Persistencia de misión.** `ywc-brainstorm` da forma a una idea preliminar y ofrece persistir la intención duradera — Mission / Success Criteria / Out-of-Scope — mediante `ywc-project-mission`; `ywc-plan` lee ese archivo para enmarcar cada pasada de planificación posterior. La intención se captura una vez y se reutiliza entre features.
-
-**Configuración de codebase nuevo.** Para un proyecto greenfield, `ywc-project-scaffold` establece la estructura de directorios y `ywc-ubiquitous-language` siembra el glosario de dominio; para un repo existente desconocido, `ywc-onboard-repo` genera el contexto de onboarding antes del primer `ywc-plan`.
-
-Consulte [README.md](README.md) para más detalles.
+MIT
