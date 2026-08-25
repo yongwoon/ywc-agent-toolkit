@@ -1,5 +1,82 @@
 # Task Dependency Graph
 
+**Next PHASE (yw): 000008**
+
+## Phase yw-000001 — Configuration and parser foundation
+- `yw-000001-010-config-initials-writer` → (root)
+- `yw-000001-030-parser-prefixed-task-ids` → depends on `yw-000001-010-config-initials-writer`
+
+## Phase yw-000002 — Allocation and consumer compatibility
+- `yw-000002-010-task-generator-initials-allocation` → depends on `yw-000001-010-config-initials-writer`, `yw-000001-030-parser-prefixed-task-ids`
+- `yw-000002-020-consumer-legacy-compatibility` → depends on `yw-000002-010-task-generator-initials-allocation`
+
+## Phase yw-000003 — Bundle and validation hard gate
+- `yw-000003-010-eval-bundle-validation` → depends on `yw-000002-010-task-generator-initials-allocation`, `yw-000002-020-consumer-legacy-compatibility`
+
+## Parallel Execution Notes — Codex PR #217 collaborator initials
+- Initial ready set: `yw-000001-010-config-initials-writer`.
+- After config merges, `yw-000001-030` becomes runnable.
+- After config and parser compatibility merge, `yw-000002-010` becomes runnable.
+- `yw-000002-010` and `yw-000002-020` are serialized because the consumer task consumes the finalized allocation contract.
+- `yw-000003-010` is a final hard gate after both Phase `yw-000002` tasks merge.
+
+## Visual Dependency Graph — Codex PR #217 collaborator initials
+```mermaid
+graph LR
+  A[yw-000001-010-config-initials-writer] --> B[yw-000001-030-parser-prefixed-task-ids]
+  A --> C[yw-000002-010-task-generator-initials-allocation]
+  B --> C
+  C --> D[yw-000002-020-consumer-legacy-compatibility]
+  C --> E[yw-000003-010-eval-bundle-validation]
+  D --> E
+```
+
+## Phase yw-000004 — ID grammar contract and parsing side
+- `yw-000004-010-docs-initials-resolution-reference` → (root)
+- `yw-000004-020-infra-parser-optional-initials-prefix` → (root)
+
+## Phase yw-000005 — PHASE allocation and generator skill
+- `yw-000005-010-infra-next-task-number-initials-scan` → depends on `yw-000004-010-docs-initials-resolution-reference`, `yw-000004-020-infra-parser-optional-initials-prefix`
+- `yw-000005-020-docs-task-generator-skill-initials` → depends on `yw-000005-010-infra-next-task-number-initials-scan`
+
+## Phase yw-000006 — Documentation and locale sync
+- `yw-000006-010-docs-task-generator-artifacts-sync` → depends on `yw-000005-020-docs-task-generator-skill-initials`
+- `yw-000006-020-docs-executor-consumer-sync` → depends on `yw-000005-020-docs-task-generator-skill-initials`
+- `yw-000006-030-docs-branch-testcase-consumer-sync` → depends on `yw-000005-020-docs-task-generator-skill-initials`
+
+## Phase yw-000007 — Validation hard gate
+- `yw-000007-010-infra-validation-gate` → depends on `yw-000006-010-docs-task-generator-artifacts-sync`, `yw-000006-020-docs-executor-consumer-sync`, `yw-000006-030-docs-branch-testcase-consumer-sync`
+
+## Batch — Claude Code collaborator initials (spec 20260826-task-id-collaborator-initials)
+- Spec: `docs/ywc-plans/20260826-task-id-collaborator-initials.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw` (cached in `.codex/ywc.json`; matches every existing prefixed task in this repository)
+- Starting phase: `yw-000004` — the ledger line `**Next PHASE (yw): 000004**` was current (directory scan max for `yw-` was `yw-000003`).
+- Sibling spec: `docs/ywc-plans/20260826-codex-pr217-collaborator-initials.md` covers the `codex/` tree (phases `yw-000001`–`yw-000003`). The ID grammar is owned by the Claude Code spec; only the persistence location diverges.
+
+## Parallel Execution Notes — Claude Code collaborator initials
+- Initial ready set: `yw-000004-010-docs-initials-resolution-reference` and `yw-000004-020-infra-parser-optional-initials-prefix` run in parallel — disjoint ownership (documentation vs. three parser scripts).
+- Phase `yw-000004` is a hard gate: the allocator emits IDs that `scaffold-task-dir.sh` must already accept, so both the contract and the parsing side must land before allocation work starts.
+- `yw-000005-010` and `yw-000005-020` are serialized: the SKILL.md text quotes the script's final `[tasks-dir] [initials]` signature.
+- All three `yw-000006` tasks run in parallel after `yw-000005-020` merges — their file sets are disjoint (`ywc-task-generator` artifacts / three executor-family skills / `ywc-finish-branch` + `ywc-gen-testcase`).
+- `yw-000006-030` must never edit `ywc-finish-branch/scripts/build-pr-title.py`; that file is owned by `yw-000004-020`.
+- `yw-000007-010` is a terminal hard gate after all three `yw-000006` tasks merge.
+
+## Visual Dependency Graph — Claude Code collaborator initials
+```mermaid
+graph LR
+  A[yw-000004-010-docs-initials-resolution-reference] --> C[yw-000005-010-infra-next-task-number-initials-scan]
+  B[yw-000004-020-infra-parser-optional-initials-prefix] --> C
+  C --> D[yw-000005-020-docs-task-generator-skill-initials]
+  D --> E[yw-000006-010-docs-task-generator-artifacts-sync]
+  D --> F[yw-000006-020-docs-executor-consumer-sync]
+  D --> G[yw-000006-030-docs-branch-testcase-consumer-sync]
+  E --> H[yw-000007-010-infra-validation-gate]
+  F --> H
+  G --> H
+```
+
 ## Batch
 
 - Spec: `docs/ywc-plans/codex-toolkit-eval-improvements.md`
@@ -7,31 +84,11 @@
 - Starting phase: `000007`
 - Rationale: existing completed tasks go through phase `000006`, so this batch starts at `000007`.
 
-## Phase 000007 - Internal Evaluator Behavior
+## Phase 000007 — done
+- Completed: `000007-010-infra-score-cli-contract`, `000007-020-test-trigger-coverage`
 
-- `000007-010-infra-score-cli-contract` -> root
-- `000007-020-test-trigger-coverage` -> depends on `000007-010-infra-score-cli-contract`
-
-## Phase 000008 - Documentation Surface and Final Gate
-
-- `000008-010-infra-eval-surface-validation` -> depends on `000007-010-infra-score-cli-contract`, `000007-020-test-trigger-coverage`
-
-## Parallel Execution Notes
-
-- Initial ready set: `000007-010-infra-score-cli-contract`
-- After `000007-010-infra-score-cli-contract` merges: `000007-020-test-trigger-coverage` becomes runnable.
-- After all Phase `000007` tasks merge: `000008-010-infra-eval-surface-validation` becomes runnable.
-- `000007-010` and `000007-020` must not run in parallel because both may edit `tools/codex-internal/skills/ywc-codex-toolkit-eval/scripts/test_score.py`.
-- `000008-010` must wait for both predecessors because it documents and validates their final behavior.
-
-## Visual Dependency Graph
-
-```mermaid
-graph LR
-  A[000007-010-infra-score-cli-contract] --> B[000007-020-test-trigger-coverage]
-  A --> C[000008-010-infra-eval-surface-validation]
-  B --> C
-```
+## Phase 000008 — done
+- Completed: `000008-010-infra-eval-surface-validation`
 
 ## Batch 2 — ywc-toolkit-eval (Claude Code) Quality Improvements
 
@@ -178,24 +235,6 @@ graph LR
 | Task | Category | Depends On |
 | --- | --- | --- |
 | `000066-010-infra-eval-ci-workflow-docs` | infra | `000065-010`, `000065-020` |
-
-## Parallel Execution Notes — Codex Skill Eval Upgrade
-
-- Initial ready set: `000064-010-infra-evaluator-discovery-schema-registry`.
-- `000064-020` must wait for `000064-010`: the runner consumes the manifest and verifier registry rather than redefining them.
-- After all Phase `000064` tasks merge, `000065-010` and `000065-020` can run in parallel. The former owns evaluator result/aggregation modules; the latter owns four distributable skill fixture directories plus evaluator fixture data.
-- `000066-010` is a hard gate after all Phase `000065` tasks. Its workflow must consume, not recreate, the finalized result status/artifact contract and migrated fixture inventory.
-- `000064-010` and `000064-020` must not run in parallel. `000066-010` must not run in parallel with either Phase `000065` task.
-
-```mermaid
-graph LR
-  A[000064-010 discovery/schema/registry] --> B[000064-020 isolated runner/adapter]
-  B --> C[000065-010 results/artifacts/ablation]
-  B --> D[000065-020 V2 fixture migration]
-  A --> D
-  C --> E[000066-010 CI workflow/docs]
-  D --> E
-```
 
 ## Batch 5 — Claude Code Executor TDD / Deep Module / Gray Box Improvements
 
@@ -1160,40 +1199,6 @@ graph LR
 
 > **Phase 000059는 재작성되었다.** 초안은 `invocation:` tier(4개 task, 46개 파일에 frontmatter key 추가)였으나, 측정 결과 **`score.py:288`의 `A4_multilingual`과 정면 충돌**한다는 사실이 드러났다 — `callee-only` description에서 비-ASCII trigger를 제거하면 A4가 뒤집혀 `S2`가 5→4로 떨어지고 `score.py --ci`가 regression으로 build를 FAIL시킨다(AC13 위반). 게다가 tier가 평상 80단어 상한 대비 얻는 추가 절감은 **5–10 %p** 뿐이었다(상한만으로 17 %, 4,154 → 3,445 단어). tier는 별도 spec으로 유예되었고 사양도 그에 맞춰 수정되었다.
 
-## Parallel Execution Notes
-
-- **Initial ready set**: `000055-010`, `000055-020`, `000055-030`, `000055-040` — 파일 소유가 겹치지 않는다 (각각 `validate-skill.sh` / 신규 script 2개 / `ywc-skill-author` README 6개 / `ywc-parallel-executor`).
-- **000059의 task 순서가 안전장치다**: 재작성(`-010`) → validator(`-020`). validator를 먼저 켜면 29개 description이 아직 예산 밖이라 CI가 즉시 깨진다.
-- **`000059-010`은 A4를 깨뜨리면 안 된다**: `score.py:288`이 모든 description에 **한글 + 일본어 문자 존재**를 요구하며 46/46이 통과 중이다. 하나라도 뒤집히면 `S2`가 `round(9/10*5)`=4로 떨어져 `--ci`가 regression으로 FAIL한다. A4는 *존재* 검사이지 길이 검사가 아니므로, 다국어 trigger는 **압축하되 없애지 않는다**.
-- **`000059-020`은 두 validator의 A2/A3 불일치를 제거한다**: `validate-skill.sh`가 `score.py`보다 느슨해서(`Do not invoke` 허용, opener를 substring으로 검사) 재작성이 그 사각지대에 착지하면 로컬은 통과하고 CI가 깨진다. **`score.py`는 canonical이자 Critical Surface이므로 건드리지 않고, 로컬 validator를 그쪽으로 조인다.**
-- **Cross-spec 충돌**: 부모 task `000053-010`이 `ywc-skill-author/SKILL.md`와 `scripts/`를 편집한다. `000055-010`, `000055-020`, `000056-010`은 모두 `000053-010` merge 이후에만 시작한다.
-- **Critical Surface**: `000058-010`만이 `.claude/skills/ywc-toolkit-eval/**`(46개 skill 전체의 CI 게이트)를 건드린다. gray-box 위임 금지. `bash scripts/validate.sh`는 이 scorer를 **실행하지 않으므로**(`:691-694`는 codex용만), `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` 가 필수 증거다.
-- **Global invariants (모든 phase 이후 검증)**: AC1(두 번째 meta-skill 없음), AC2(RD 행 삭제 0건), AC13(`scripts/validate.sh` + `score.py --ci` + 46개 `validate-skill.sh` 전부 통과).
-- **비용**: `000057-020`이 480 dispatch(세션당 60 상한)로 약 8세션에 걸친다. append-only·keyed resume이므로 세션 경계는 restart가 아니라 resume point다.
-
-```mermaid
-graph LR
-  P1[000053-010 parent audit] --> A1[000055-010 extractor repair]
-  P1 --> A2[000055-020 rd-row scripts]
-  P1 --> A3[000055-030 readme drift]
-  P2[000054-010 parent validation] --> A4[000055-040 A8 line cap]
-  A2 --> B1[000056-010 deletion test rule]
-  B1 --> C1[000057-010 sample frame]
-  P2 --> C1
-  C1 --> C2[000057-020 dispatch + report]
-  C2 -->|GO| D1[000058-010 retire A7 quota]
-  C2 -->|NO-GO / INCONCLUSIVE| D2[000058-020 no-go closure]
-  D1 --> E1[000059-010 description-word-cap]
-  D2 --> E1
-  D1 --> E2[000059-020 description-cap-validator]
-  D2 --> E2
-  A1 --> E1
-  E1 --> E2
-  C2 --> E2
-  A3 --> E2
-```
-
-
 ## Open Questions (spec 저자에게 반환 — 비차단)
 
 - [ ] **사람이 진짜로 부르지 않는 skill이 몇 개인가?** 유예된 `invocation:` tier의 존재 근거가 이 수에 달려 있다. call-graph 참조 수는 *씨앗*이지 답이 아니다 — 많이 호출되는 `ywc-impl-review` / `ywc-spec-validate` / `ywc-verify-done` 은 사람도 직접 부른다. 이 수가 크면 tier는 영구 복잡도를 살 값어치가 있고, 4개라면 없다. **후속 spec의 첫 번째 일이다.**
@@ -1207,19 +1212,8 @@ graph LR
 
 > Generated by `ywc-task-generator` — mode `llm`, language `ko`. Single phase (000060). All tasks are skill-prompt-text edits; no DB migration or library introduction (Safety Invariants N/A). Highest prior task was `000059-020`, so this batch starts at PHASE `000060`.
 
-## Phase 000060 — SDLC v1.1 skill-text improvements
-- `000060-010-docs-tdd-ritual-red-phase-guards` → (root) — FR-1 + FR-2 (Seams 사전합의 + Tautological test guard)
-- `000060-020-docs-task-generator-wide-refactor` → (root) — FR-3 (Wide Refactor Exception)
-- `000060-030-docs-impl-review-spec-traceability` → (root) — FR-4 (Spec Traceability + `--spec` optional화)
-- `000060-040-docs-impl-review-smell-baseline` → (root) — FR-5 (Fowler 12-smell baseline)
-- `000060-050-docs-plan-spec-template-seam-pointer` → depends on `000060-010` — FR-6 (spec-template seam pointer)
-
-## Parallel Execution Notes
-- Initial ready set (병렬 안전): `000060-010`, `000060-020`, `000060-030`, `000060-040` — 모두 root이며 disjoint 파일을 편집한다.
-- `000060-030`과 `000060-040`은 같은 skill(`ywc-impl-review`)이나 disjoint 파일(SKILL.md ↔ references/*.md·agent 파일)이라 병렬 실행 가능(Conflicts With: none).
-- `000060-050`은 `000060-010` merge 이후에만 runnable — 확정된 `### Seams` 명칭을 pointer로 인용하기 때문(유일한 cross-task dependency).
-- Conflicts With: 전체 batch에서 `(None identified)` — 파일 Ownership이 서로 겹치지 않는다.
-- AC7(검증 게이트)은 별도 task가 아니라 각 task의 Verification 단계에서 `ywc-skill-author` Validation Checklist + `bash scripts/validate.sh`로 실행하는 cross-cutting gate다.
+## Phase 000060 — done
+- Completed: `000060-010-docs-tdd-ritual-red-phase-guards`, `000060-020-docs-task-generator-wide-refactor`, `000060-030-docs-impl-review-spec-traceability`, `000060-040-docs-impl-review-smell-baseline`, `000060-050-docs-plan-spec-template-seam-pointer`
 
 ## Open Questions (spec 저자에게 반환 — 비차단)
 
@@ -1229,85 +1223,14 @@ graph LR
 - [ ] `ywc-impl-review` Spec Traceability가 실제 리뷰 리포트 길이(토큰 비용)를 얼마나 늘리는지 — 초기 구현 후 1~2회 실측, 과도하면 `--profile chill`처럼 opt-in화 검토.
 - [ ] codex Amendment D의 bundle-wide 500-char description-limit validator를 claude-code `scripts/validate.sh`에도 적용할지 — 이 spec FR 범위 밖.
 
-## Visual Dependency Graph — Phase 000060
+## Phase 000061 — done
+- Completed: `000061-010-domain-auth-implement-skill`, `000061-020-test-auth-implement-routing-evals`, `000061-030-docs-auth-implement-catalogs`
 
-```mermaid
-graph LR
-  subgraph Phase 000060
-    T1[000060-010 tdd red-phase guards]
-    T2[000060-020 task-gen wide-refactor]
-    T3[000060-030 impl-review spec-traceability]
-    T4[000060-040 impl-review smell-baseline]
-    T5[000060-050 plan spec-template seam-pointer]
-    T1 --> T5
-  end
-```
+## Phase 000062 — done
+- Completed: `000062-010-infra-auth-implement-distribution-validation`
 
----
-
-# Batch: Codex `ywc-auth-implement` Skill
-
-> Generated by `ywc-task-generator` — mode `llm`, language `ko`. Highest prior phase across `tasks/dependency-graph.md` and `tasks/completed/` is `000060`; this batch starts at `000061`. No database migration or library introduction is introduced.
-
-## Phase 000061 — Source Skill Contract
-
-- `000061-010-domain-auth-implement-skill` → root — skill body, metadata, locale READMEs, focused references
-- `000061-020-test-auth-implement-routing-evals` → `000061-010` — deterministic routing/safety evals
-- `000061-030-docs-auth-implement-catalogs` → `000061-010` — source catalog and live README count records
-
-## Phase 000062 — Distribution and Final Validation
-
-- `000062-010-infra-auth-implement-distribution-validation` → `000061-010`, `000061-020`, `000061-030` — generated plugin sync, disposable install, validation
-
-## Parallel Execution Notes
-
-- Initial ready set: `000061-010` only.
-- After `000061-010` merges, `000061-020` and `000061-030` may run in parallel: the former owns `evals/**`, the latter owns catalog/root README files.
-- `000062-010` is blocked by the Phase 000061 hard gate and must not synchronize a partial source snapshot.
-- `000061-010` and `000061-020` conflict before merge because eval fixtures depend on final routing text; all Phase 000061 tasks conflict with generated-package sync until complete.
-
-## Visual Dependency Graph — Phases 000061–000062
-
-```mermaid
-graph LR
-  A[000061-010 domain auth skill] --> B[000061-020 routing evals]
-  A --> C[000061-030 catalogs]
-  A --> D[000062-010 distribution validation]
-  B --> D
-  C --> D
-```
-
----
-
-# Batch: Claude Code `ywc-auth-implement` Skill
-
-> Generated by `ywc-task-generator` — mode `llm`, language `en`. Highest prior phase across `tasks/dependency-graph.md`, `tasks/`, and `tasks/completed/` is `000062`; this batch starts at `000063`. No database migration or library introduction is introduced. Scale is Small (3 tasks) — a single phase is sufficient; the Planning Advisor (Opus) was not invoked per the Small-spec skip rule.
-
-Source spec: `docs/ywc-plans/claude_auth_implement_skill.md` — the Claude Code-native sibling of the already-generated Codex batch (Phases 000061–000062 above). Unlike that sibling, this batch has no generated-plugin-sync step (`claude-code/skills/` is not mirrored into `plugins/ywc-agent-toolkit`) and no catalog-registration task (`claude-code/skills/README.md` does not exist in this repository), so the scope is 3 tasks in one phase instead of 4 tasks across two phases.
-
-## Phase 000063 — Source Skill Contract
-
-- `000063-010-domain-auth-implement-skill` → (root) — `SKILL.md`, metadata, 5 focused references, 4 locale READMEs; FR-1–FR-9 core content including the §3.5 verbatim direct-dispatch prompts
-- `000063-020-test-auth-implement-evals` → `000063-010` — 5-scenario `evals/evals.json` fixing routing/safety behavior
-- `000063-030-docs-auth-implement-verification` → `000063-010`, `000063-020` — repository-wide `bash scripts/validate.sh`, §3.5 contract grep, spec `## Verification` block
-
-## Parallel Execution Notes
-
-- Initial ready set: `000063-010` only.
-- After `000063-010` merges, `000063-020` becomes runnable — eval fixtures depend on the final routing/policy/gate text in `SKILL.md`.
-- `000063-030` is blocked until both `000063-010` and `000063-020` merge; it validates the combined final tree and must not run against a partial snapshot.
-- `000063-010` and `000063-020` conflict before merge (evals depend on final skill text); `000063-030` conflicts with both until they merge.
-
-## Visual Dependency Graph — Phase 000063
-
-```mermaid
-graph LR
-  A[000063-010 domain auth skill] --> B[000063-020 evals]
-  A --> C[000063-030 verification]
-  B --> C
-```
-
----
+## Phase 000063 — done
+- Completed: `000063-010-domain-auth-implement-skill`, `000063-020-test-auth-implement-evals`, `000063-030-docs-auth-implement-verification`
 
 ## Batch — Claude Code Skill Eval Runner
 
@@ -1486,53 +1409,11 @@ Preview Approval Metadata:
 - No-AC requirements: none — FR-1…FR-7 all trace to AC1…AC17.
 - Safety invariants: no DB migration, no library introduction — no forced split.
 
-## Phase 000078 — Contract, Propagation, Agent Scope
+## Phase 000078 — done
+- Completed: `000078-010-docs-impl-review-bounded-payload-noninteractive`, `000078-020-docs-sequential-executor-noninteractive`, `000078-030-docs-parallel-executor-flag-compaction`, `000078-040-docs-code-gen-agentic-propagation`, `000078-050-docs-refactor-cleaner-write-scope`
 
-| Task | Category | Depends On |
-|---|---|---|
-| `000078-010-docs-impl-review-bounded-payload-noninteractive` | docs | (root) |
-| `000078-020-docs-sequential-executor-noninteractive` | docs | `000078-010` |
-| `000078-030-docs-parallel-executor-flag-compaction` | docs | `000078-010` |
-| `000078-040-docs-code-gen-agentic-propagation` | docs | `000078-010`, `000078-020` |
-| `000078-050-docs-refactor-cleaner-write-scope` | docs | (root) |
-
-## Phase 000079 — Validation Hard Gate
-
-| Task | Category | Depends On |
-|---|---|---|
-| `000079-010-infra-context-safety-validation` | infra | `000078-010`, `-020`, `-030`, `-040`, `-050` |
-
-## Parallel Execution Notes (Claude Code Agentic Context Safety)
-
-- Initial ready set: `000078-010` and `000078-050` — disjoint ownership (`ywc-impl-review/**` vs `claude-code/agents/ywc-refactor-cleaner.md`), parallel-safe from the start.
-- After `000078-010` merges: `000078-020` and `000078-030` become runnable and are parallel-safe with each other and with `000078-050` — each owns exactly one skill directory.
-- `000078-040` waits for both `000078-010` and `000078-020` because its `ywc-agentic` Step 5 forward references the sequential executor's newly defined flag.
-- Phase-gate placement: `000078-020` / `-030` / `-040` each depend on only *some* Phase 000078 tasks, so per the phase-gate rule they live in Phase 000078 ordered by `Depends On`, not a separate phase. Only `000079-010` depends on all five — it is the sole hard gate.
-- `000079-010` is verification-only and owns `history.mechanical.json` regeneration. It must not run alongside any Phase 000078 task: regenerating the baseline before every edit lands produces an incomplete baseline.
-- Ownership is disjoint across all five Phase 000078 tasks — no file is written by two tasks. `000078-030` reads `ywc-sequential-executor/SKILL.md:155` for the compaction 문형 but never edits it.
-- FR-7's 12 README locale files are **not** a separate task: each skill directory's READMEs belong to that skill's owner (`000078-010` for impl-review ×6, `000078-020` for sequential ×6). This keeps one owner per skill directory.
-- Recommended execution: `ywc-sequential-executor --local-merge` over 010→020→030→040→050→(079-010) on one branch, or parallel worktrees for {010, 050} then {020, 030} then {040}.
-- FR mapping: FR-1+FR-2+FR-7(impl-review)→`000078-010`; FR-3(2)+FR-4+FR-7(sequential)→`000078-020`; FR-3(2)+FR-6→`000078-030`; FR-3(3)+FR-4(agentic forward)→`000078-040`; FR-5→`000078-050`; AC16+AC17+구조적 AC grep→`000079-010`.
-
-```mermaid
-graph LR
-  A[000078-010 impl-review bounded payload + non-interactive] --> B[000078-020 sequential non-interactive]
-  A --> C[000078-030 parallel flag + compaction]
-  A --> D[000078-040 code-gen + agentic propagation]
-  B --> D
-  E[000078-050 refactor-cleaner Write scope]
-  A --> F[000079-010 context-safety validation]
-  B --> F
-  C --> F
-  D --> F
-  E --> F
-```
-
-### Open Questions (Claude Code Agentic Context Safety)
-
-- None. The spec's own `## Open Questions` section records `N/A — none identified`, and every emitted task traces to a Functional Requirement with a backing Acceptance Criterion.
-
----
+## Phase 000079 — done
+- Completed: `000079-010-infra-context-safety-validation`
 
 ## Batch — Codex Evaluation S5 Hardening
 
@@ -1547,23 +1428,11 @@ graph LR
 - Existing highest phase: `000079` across `tasks/dependency-graph.md`, `tasks/`, and `tasks/completed/`.
 - Advisor pass: used once; verdict `DONE_WITH_CONCERNS`, incorporated by splitting infrastructure fixtures into two tasks.
 
-## Phase 000080 — Deterministic Fixture Evidence
+## Phase 000080 — done
+- Completed: `000080-010-test-architecture-invariant-fixtures`, `000080-020-test-iac-design-safety-fixtures`, `000080-030-test-infra-routing-fixtures`
 
-- `000080-010-test-architecture-invariant-fixtures` → root
-- `000080-020-test-iac-design-safety-fixtures` → root
-- `000080-030-test-infra-routing-fixtures` → root
-
-## Phase 000081 — Regression, Scoring, and Reporting
-
-- `000081-010-infra-eval-rescore-report` → depends on `000080-010`, `000080-020`, `000080-030`
-
-## Parallel Execution Notes
-
-- Initial ready set: `000080-010`, `000080-020`, `000080-030`.
-- The three Phase `000080` tasks are parallel-safe while they remain within their fixture subtrees and named owning skill files.
-- Phase `000080` tasks must not concurrently modify shared validator, runner, verifier registry, or shared test files. If needed, stop and serialize that change through an explicit follow-up task.
-- After all Phase `000080` tasks merge, `000081-010` becomes runnable.
-- `000081-010` must not run in parallel with any task modifying `docs/skill-agent-eval/codex/**` or `evals/history.mechanical.json`.
+## Phase 000081 — done
+- Completed: `000081-010-infra-eval-rescore-report`
 
 ## Open Questions Retained from Spec
 
@@ -1631,4 +1500,3 @@ graph LR
   H --> I[000082-090 agents]
   I --> J[000083-010 coverage-rerun]
 ```
-
