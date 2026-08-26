@@ -36,6 +36,18 @@ Specification を渡して Task 生成を依頼します。
 
 Korean / Japanese / Chinese / Spanish で書く場合も、Technical terms は English のまま維持します。
 
+### Initials オプション
+
+Task ID は collaborator initials の接頭辞で namespace を分けます (`yk-000001-010-db-create-user-table`)。
+
+| Option | Example |
+|--------|---------|
+| Explicit | `--initials yk` |
+| Cached | project `CLAUDE.md` の `## Task Initials` section |
+| Derived | `git config user.email` から導出し 1 回確認 |
+
+指定がなければ Skill が導出値を提案して確認します。既存の接頭辞なし legacy task ID はそのまま有効で、振り直しはしません。
+
 ### Granularity Mode オプション
 
 この Skill は 2 種類の task granularity mode をサポートし、**常にどちらの mode で生成するかをユーザーに確認**します (silent default なし)。

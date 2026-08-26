@@ -36,6 +36,18 @@ If the user does not specify a language, the Skill asks.
 
 For Korean, Japanese, Chinese, and Spanish outputs, technical terms stay in English.
 
+### Initials Options
+
+Task IDs are namespaced by a collaborator initials prefix (`yk-000001-010-db-create-user-table`).
+
+| Option | Example |
+|--------|---------|
+| Explicit | `--initials yk` |
+| Cached | the `## Task Initials` section in the project `CLAUDE.md` |
+| Derived | derived from `git config user.email`, confirmed once |
+
+If none is given, the Skill proposes a derived value and asks once. Existing unprefixed legacy task IDs stay valid and are never renumbered.
+
 ### Granularity Mode Options
 
 The Skill supports two task granularity modes and **always asks which mode to apply** — there is no silent default.

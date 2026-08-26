@@ -44,6 +44,18 @@ For Korean, Japanese, Chinese, and Spanish outputs, technical terms remain in En
 Technical terms kept in English:
 > API, Backend, Frontend, Database, Cache, Service, Repository, Application, Component, Module, Framework, Library, Request, Response, Schema, Model, Controller, Test, Debug, Deploy, Build, Configuration, Docker, Container, Server, Client, Router, Middleware
 
+### Initials Options
+
+Task ID 는 collaborator initials 접두로 namespace 를 나눕니다 (`yk-000001-010-db-create-user-table`).
+
+| Option | Example |
+|--------|---------|
+| Explicit | `--initials yk` |
+| Cached | project `CLAUDE.md` 의 `## Task Initials` section |
+| Derived | `git config user.email` 에서 파생 후 확인 질문 1회 |
+
+지정하지 않으면 Skill 이 파생값을 제안하고 확인합니다. 기존 무접두 legacy task ID 는 그대로 유효하며 재번호화하지 않습니다.
+
 ### Granularity Mode Options
 
 Skill 은 두 가지 task granularity mode 를 지원하며, **항상 사용자에게 어떤 mode 로 생성할지 확인합니다** (silent default 없음).
