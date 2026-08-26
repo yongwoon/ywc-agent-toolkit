@@ -8,7 +8,7 @@ When a task is completed, move its directory to `tasks/completed/`:
 
 ```bash
 # Example
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 Purpose of this convention:
@@ -22,12 +22,12 @@ Purpose of this convention:
 tasks/
 ├── dependency-graph.md
 ├── completed/
-│   ├── 000001-010-db-create-user-table/
-│   └── 000001-020-lib-setup-bcrypt/
-├── 000001-030-domain-user-entity/
+│   ├── yk-000001-010-db-create-user-table/
+│   └── yk-000001-020-lib-setup-bcrypt/
+├── yk-000001-030-domain-user-entity/
 │   ├── README.md
 │   └── task.md
-└── 000002-010-api-user-registration/
+└── yk-000002-010-api-user-registration/
     ├── README.md
     └── task.md
 ```
@@ -37,3 +37,4 @@ tasks/
 - The `tasks/completed/` directory is created automatically when the first task is completed (not at task generation time)
 - `dependency-graph.md` is never moved — it always stays at the `tasks/` root
 - Do not modify the README.md or task.md of completed tasks (preserve execution history)
+- Legacy unprefixed task directories (`000001-010-db-create-user-table`) generated before initials namespacing are moved with exactly the same `mv` convention and are **never renamed** to add a prefix. Prefixed and unprefixed directories coexist under both `tasks/` and `tasks/completed/`

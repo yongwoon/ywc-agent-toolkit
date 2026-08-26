@@ -72,6 +72,12 @@
       "prompt": "Genera tasks en español para este spec. Usa --lang es y Granularity mode human. Los tasks podrán ejecutarse después en worktrees aislados.\n\n## Reporting Export\n- CSV export para informes mensuales\n- Job asíncrono para exports grandes\n- Notificación por Email cuando el export termina\n- Stack: Rails + Sidekiq + PostgreSQL",
       "expected_output": "Estructura tasks/ escrita en español, con Technical terms en English. `es`, `spanish`, `espanol` y `español` se aceptan como Spanish. Las tasks se organizan por Phase y dependency order, separando DB migration y Library introduction si aplican. Cada README.md incluye Ownership, Shared Surfaces, Conflicts With, Parallelizable After y Task Verify; cada task.md incluye Allowed Edit Scope, Stop Conditions y Task Verify; dependency-graph.md incluye Parallel Execution Notes. Command names, file paths, YAML/JSON keys, task IDs y code blocks permanecen en English o formato machine-readable.",
       "files": []
+    },
+    {
+      "id": 13,
+      "prompt": "기존 tasks/ directory 에 legacy 무접두 task (`000016-040-*`) 만 있고, 지금부터 신규 task 는 collaborator initials 접두 형식 (`<initials>-000017-010-*`) 으로 생성하고 싶어. `git config user.email` 은 `yongwoon.kim@example.com` 이야. `--initials` flag 는 주지 않을게. 다음 spec 을 한국어로 분해해줘. Granularity mode 는 human.\n\n기존 tasks:\n- tasks/completed/000016-030-db-create-orders-table/\n- tasks/000016-040-api-order-crud/\n\n새 기능:\n- 주문 배송 상태 tracking API\n- 배송 status 변경 시 Webhook 발송 (Svix)",
+      "expected_output": "Step 2 에서 initials 를 먼저 해석한다: `--initials` flag 가 없고 project CLAUDE.md 에 `## Task Initials` section 이 없으므로 `git config user.email` 의 local-part `yongwoon.kim` 을 `.` 기준으로 나눠 각 segment 첫 글자를 이어 `yk` 를 파생하고, `^[a-z0-9]{2,4}$` 검증 후 확인 질문 1회를 거쳐 project CLAUDE.md 에 `## Task Initials` section 을 정확히 1개만 create-or-replace 로 기록한다. 신규 task 는 `yk-000017-010-*` 형식으로 생성된다 — 해석된 namespace 에 접두 항목이 0건이고 legacy 항목이 존재하므로 legacy seed rule 에 따라 `legacy_max_phase(000016) + 1` 에서 시작하고, SEQUENCE 는 `010` 부터 10 단위로 증가한다. 기존 legacy task (`000016-030`, `000016-040`) 는 이름 그대로 Depends On 에 참조되며 접두를 붙여 renumbering 하지 않는다. dependency-graph.md 에는 `## Phase yk-000017` 헤딩과 legacy `000016` 항목이 공존하고, phase group 은 접두를 포함한 전체 key 로 구분된다. 새 library (Svix) 도입은 독립 task 로 분리되어 Safety Invariant 가 유지된다. 각 README.md 는 Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify 를 포함한다.",
+      "files": []
     }
   ]
 }

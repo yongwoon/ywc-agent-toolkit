@@ -61,11 +61,11 @@ Skill 은 두 가지 task granularity mode 를 지원하며, **항상 사용자�
 
 ```text
 tasks/
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
-├── 000001-020-api-user-registration/
+├── yk-000001-020-api-user-registration/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
@@ -74,19 +74,21 @@ tasks/
 ### Task Naming
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
+- `INITIALS`: 2–4자 lowercase alphanumeric (`^[a-z0-9]{2,4}$`) — collaborator initials. 생성 시 항상 붙습니다
 - `PHASE`: 6 digits, dependency stage (multi-year 프로젝트 확장을 고려한 headroom)
 - `SEQUENCE`: 3 digits, increments by 10
 - `CATEGORY`: `lib` | `db` | `api` | `domain` | `worker` | `ui` | `test` | `refactor` | `infra` | `config`
+- Legacy 무접두 ID (`000001-010-db-create-user-table`) 는 그대로 유효하며 parsing 시 함께 인식되고, 접두를 붙여 renumbering 하지 않습니다. 접두 ID 와 무접두 ID 는 한 repository 에서 공존합니다
 
 ### Task Completion
 
 After completion and merge:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Core Principles

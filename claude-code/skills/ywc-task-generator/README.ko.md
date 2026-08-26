@@ -53,11 +53,11 @@ Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, 
 
 ```text
 tasks/
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
-├── 000001-020-api-user-registration/
+├── yk-000001-020-api-user-registration/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
@@ -66,19 +66,21 @@ tasks/
 ### Task Naming
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
+- `INITIALS`: 2–4자 lowercase alphanumeric (`^[a-z0-9]{2,4}$`) — collaborator initials, 생성 시 항상 부여
 - `PHASE`: 6자리 dependency stage (multi-year 프로젝트 확장을 고려한 headroom)
 - `SEQUENCE`: 3자리, 10 단위 증가
 - `CATEGORY`: `lib` | `db` | `api` | `domain` | `worker` | `ui` | `test` | `refactor` | `infra`
+- Legacy 무접두 ID (`000001-010-db-create-user-table`) 는 그대로 유효하고 parsing 시에도 인식되며, 접두를 붙여 renumbering 하지 않습니다. 접두 ID 와 무접두 ID 는 같은 repository 에서 공존합니다
 
 ### Task 완료
 
 완료 후 merge 되면:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## 핵심 원칙
