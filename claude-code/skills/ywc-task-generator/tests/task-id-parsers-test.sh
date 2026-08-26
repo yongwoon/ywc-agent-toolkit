@@ -5,9 +5,11 @@
 # on a graph where legacy unprefixed and prefixed ids coexist. The compactor
 # rewrites dependency-graph.md in place, so a partial-match regression corrupts
 # data silently — these assertions are the loud version of that failure.
+# The fixtures embed literal backticked task ids; single quotes are deliberate.
+# shellcheck disable=SC2016
 set -euo pipefail
 
-skill_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+skill_dir="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 scaffold="$skill_dir/scripts/scaffold-task-dir.sh"
 compact="$skill_dir/scripts/compact-dependency-graph.py"
 tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/task-id-parsers-test.XXXXXX")"

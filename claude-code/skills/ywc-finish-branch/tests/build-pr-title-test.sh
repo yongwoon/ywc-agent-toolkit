@@ -5,7 +5,7 @@
 # produce exactly the output it produced before the prefix became parseable.
 set -euo pipefail
 
-skill_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+skill_dir="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 script="$skill_dir/scripts/build-pr-title.py"
 tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/build-pr-title-test.XXXXXX")"
 trap 'rm -rf "$tmpdir"' EXIT
@@ -44,6 +44,16 @@ expect_title 000001-010-db-create-users-table "[000001-010] Db Create Users Tabl
 expect_parts 001010-db-create-users-table 001010 "Db Create Users Table"
 expect_parts 1-010-slug 1-010 "Slug"
 expect_parts 001-slug 001 "Slug"
+
+# --- all-numeric prefixes must NOT be read as INITIALS (legacy byte-identity) -
+# INITIALS permits digits, so `1234-000001-010-x` is grammatically ambiguous
+# between "prefixed id" and the legacy flexible N-M form. Parsing resolves it to
+# legacy so that pre-change output is preserved exactly.
+expect_parts 1234-000001-010-db-x 1234-000001 "010 Db X"
+expect_parts 12-000123-slug 12-000123 "Slug"
+expect_parts 12-010-slug 12-010 "Slug"
+# ...while a prefix carrying at least one letter is still read as INITIALS.
+expect_parts y2-000001-010-db-x y2-000001-010 "Db X"
 
 # --- unrecognised names keep the exit-1 fallback contract --------------------
 set +e
