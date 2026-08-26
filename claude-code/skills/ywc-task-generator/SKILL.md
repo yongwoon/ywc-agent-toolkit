@@ -38,6 +38,8 @@ When tempted to bend a rule, check this table first:
 | `--lang <code>` | _(inferred or asked)_ | Output language for task documents: `ko` \| `ja` \| `en` \| `es` \| `zh` (default: `en`). Full language names (`korean`, `japanese`, `english`, `spanish`, `chinese`) are also accepted and map to these codes. |
 | `--mode <human\|llm>` | _(asked)_ | Canonical Granularity Mode for task decomposition (see Step 5). Alias: `--granularity`. When omitted, the skill always asks. If `--mode` and `--granularity` conflict, stop and ask the user to resolve it. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
+| `--initials <value>` | _(resolved or asked)_ | Collaborator initials used as the task-ID `[INITIALS]` segment. Validated against `^[a-z0-9]{2,4}$`. Takes **highest precedence** — it wins over a cached `## Task Initials` section in the project `CLAUDE.md` and suppresses derivation and the confirmation prompt. See Step 2. |
+| `--initials <value>` | _(resolved or asked)_ | Collaborator initials used as the task-ID `[INITIALS]` segment. Validated against `^[a-z0-9]{2,4}$`. Takes **highest precedence** — it wins over a cached `## Task Initials` section in the project `CLAUDE.md` and suppresses derivation. See Step 2. |
 
 ## Language Option
 
@@ -107,7 +109,15 @@ If the specification is unclear, ask specific questions to clarify the scope.
 
 ### Step 2: Collect Project Context
 
-Gather information about the project environment to generate realistic tasks. This information directly feeds into task.md verification commands, ownership paths, and category selection matching the tech stack.
+**Resolve collaborator initials first.** Run this **on every invocation**, regardless of whether any tasks already exist — Step 7 naming always requires the `[INITIALS]` segment, so a fresh repository needs the value just as much as one with a hundred archived tasks.
+
+> **Action required**: Read [../references/initials-resolution.md](../references/initials-resolution.md) — it defines the precedence chain (`--initials` flag → project `CLAUDE.md ## Task Initials` → derivation from git identity + one confirmation → absence is valid), the derivation algorithm, the `^[a-z0-9]{2,4}$` validation, the canonical section format, and the no-block invariant. Do not restate those rules here.
+
+- **Caching is create-or-replace.** Writing the resolved value updates the project `CLAUDE.md` `## Task Initials` section in place, leaving **exactly one** such section. Appending a second heading is forbidden; if duplicates already exist, update the first and remove the rest.
+- **The confirmation prompt carries the collision advisory.** Before confirming a derived value, present the disk-scanned list of initials already in use with their task counts. A match **warns without blocking** — the user may keep the value or override it.
+- A resolved value from `--initials` or an existing valid `## Task Initials` section suppresses both derivation and the confirmation prompt. Absence of every source never blocks generation.
+
+Then gather information about the project environment to generate realistic tasks. This information directly feeds into task.md verification commands, ownership paths, and category selection matching the tech stack.
 
 **Targets to collect:**
 - `CLAUDE.md`, `AGENTS.md`, `CODEX.md` — project rules, language policy, CI commands
@@ -120,7 +130,8 @@ Gather information about the project environment to generate realistic tasks. Th
 **When existing tasks are present:**
 - Determine the next starting number by scanning **both** `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`). Completed tasks are moved out of `<tasks-dir>/` into `<tasks-dir>/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning only the active root misses them and risks reusing a number that already exists. Take the highest PHASE across the union of the two directories; the new batch's first task starts at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it currently lives in `<tasks-dir>/` or in `<tasks-dir>/completed/` — the new batch starts at `000017-010`. If `<tasks-dir>/` is empty (every task already completed and archived), fall back to the highest number in `<tasks-dir>/completed/` and apply the same `+1 phase` rule.
 - **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
-- The task **directories are the single source of truth** for number allocation — `dependency-graph.md` is a derived artifact and must **not** override the directory scan. Running `scripts/next-task-number.sh [tasks-dir]` performs the scan above and, when `<tasks-dir>/dependency-graph.md` exists, additionally cross-checks the graph's highest full-ID PHASE against the directory result, emitting a **STDERR warning on mismatch** (the directory result still wins). A warning signals the graph has drifted from the actual task directories — reconcile the graph before generating the new batch, but never trust the graph's number over the directories.
+- **The scan is scoped to the resolved initials.** Only entries carrying the resolved `<initials>-` prefix are compared for the maximum PHASE; other collaborators' prefixes and legacy unprefixed entries are out of scope. The scan unions the current worktree with every linked worktree from `git worktree list`, applies the legacy seed rule when the resolved namespace is empty but legacy entries exist, and atomically reserves the chosen PHASE so two concurrent runs cannot claim the same number. The rule bodies live in [../references/initials-resolution.md](../references/initials-resolution.md) and the script's own comments — do not restate them here.
+- The task **directories are the single source of truth** for number allocation — `dependency-graph.md` is a derived artifact and must **not** override the directory scan. Running `scripts/next-task-number.sh [tasks-dir] [initials]` performs the scan above — passing `[initials]` enables the initials-scoped comparison, the worktree union, the legacy seed rule, and the atomic reservation; omitting it leaves the legacy unprefixed behavior byte-identical — and, when `<tasks-dir>/dependency-graph.md` exists, additionally cross-checks the graph's highest full-ID PHASE against the directory result, emitting a **STDERR warning on mismatch** (the directory result still wins). A warning signals the graph has drifted from the actual task directories — reconcile the graph before generating the new batch, but never trust the graph's number over the directories.
 - Identify dependency relationships with existing tasks and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -212,16 +223,18 @@ After receiving the verdict, the executor either continues to Step 7 (Task Namin
 Each task name follows this format:
 
 ```
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
-> Example: `000001-010-db-create-user-table` = PHASE `000001` + SEQUENCE `010` + category + description.
+> Example: `yk-000001-010-db-create-user-table` = INITIALS `yk` + PHASE `000001` + SEQUENCE `010` + category + description.
 
 **Numbering Rules:**
+- INITIALS: 2–4 lowercase alphanumeric characters (`^[a-z0-9]{2,4}$`) — the collaborator initials resolved in Step 2
 - PHASE: **6-digit** number (`000001`, `000002`, ...) — the wider width reserves headroom for multi-year project growth
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
 - **Starting PHASE for a new batch**: when any tasks already exist, scan both `<tasks-dir>/` and `<tasks-dir>/completed/` (default: `tasks/` and `tasks/completed/`), take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE `010` (see Step 2). A freshly generated batch never reuses a number that was already used and then archived into `<tasks-dir>/completed/`.
+- **Legacy IDs stay valid.** Unprefixed task IDs generated before initials namespacing (`000001-010-db-create-user-table`) remain valid, are parsed as-is, and are **never renumbered retroactively**. Prefixed and unprefixed IDs coexist in the same repository.
 
 **Category:**
 - `lib` — New library/framework introduction
@@ -250,10 +263,10 @@ Each task name follows this format:
 - Do not use "and" in task names — use a unifying noun instead (e.g., `user-auth` rather than `registration-and-login`)
 
 **Examples:**
-- `000001-010-db-create-user-table`
-- `000001-020-lib-setup-auth-library`
-- `000001-030-api-user-registration`
-- `000002-010-ui-login-form`
+- `yk-000001-010-db-create-user-table`
+- `yk-000001-020-lib-setup-auth-library`
+- `yk-000001-030-api-user-registration`
+- `yk-000002-010-ui-login-form`
 
 ### Step 8: Phase Organization
 
@@ -380,8 +393,10 @@ After generating all tasks, verify the following:
 - [ ] No numbering collisions with existing tasks (if any)
 
 **Naming & Size:**
-- [ ] Naming convention followed (`[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
+- [ ] Naming convention followed (`[INITIALS:2-4]-[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
 - [ ] PHASE is 6 digits, SEQUENCE is 3 digits, separated by hyphen
+- [ ] INITIALS matches the value resolved in Step 2 and the full segment widths are correct (2–4 lowercase alphanumerics, 6 digits, 3 digits)
+- [ ] Exactly one `## Task Initials` section exists in the project `CLAUDE.md` (`grep -c '^## Task Initials' CLAUDE.md` returns `1`)
 - [ ] No task name contains "and" (single concern check)
 - [ ] Each task fits within the selected Granularity Mode's size guideline
 - [ ] Selected Granularity Mode applied consistently (bundling, Implementation Steps depth, Ownership scope)
