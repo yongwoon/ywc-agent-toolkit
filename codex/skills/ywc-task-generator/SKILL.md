@@ -150,11 +150,11 @@ Gather project context for task verification commands, ownership paths, and cate
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Determine the next starting number by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Extract existing task IDs from the graph and from directory names, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it appears in `dependency-graph.md`, `tasks/`, or `tasks/completed/` — the new batch starts at `000017-010`. If the graph and directory scan disagree, continue with the union-based next PHASE and report the mismatch as a concern.
+- Determine the next initials-scoped PHASE by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`, plus corresponding linked-worktree sources. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. For resolved `yk`, only `yk-<six-digit-phase>-<sequence>-...` candidates contribute to the maximum; legacy and other-initials IDs remain readable but do not advance `yk`. An empty owned scope starts at `yk-000001-010`. If the graph and directory scan disagree, continue with the union-based next owned PHASE and report the mismatch as a concern.
 - **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
 - Enumerate `git worktree list --porcelain`; inspect the same relative path in graph, active, and completed sources, reporting inaccessible/mismatched paths.
-- Scope the union maximum to prefixed IDs matching validated initials; keep legacy IDs readable without claiming another namespace. Empty owned scope starts at `000001`, sequence `010`.
-- Before any artifact write, compare-and-create `refs/ywc/task-phase/<initials>/<phase>` in common Git using the zero object ID; collisions retry bounded candidates, retain refs, and report deterministic conflict without duplicate output.
+- Scope the union maximum to prefixed IDs matching validated initials; keep legacy IDs readable without claiming another namespace. Empty owned scope starts at `<initials>-000001-010`, with sequence `010`.
+- Hold one exclusive lock rooted in the repository common Git directory across scan, candidate selection, compare-and-create reservation, and complete task-artifact/dependency-graph writes. While holding it, compare-and-create `refs/ywc/task-phase/<initials>/<phase>` using the zero object ID; collisions retry bounded candidates, retain refs, and report deterministic conflict without duplicate output. Distinct reservation refs without this transaction-wide lock do not prevent graph lost updates.
 - Identify dependency relationships with existing tasks, preferring `dependency-graph.md` when present, and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -439,7 +439,7 @@ After generating all tasks, verify the following:
 
 **Naming & Size:**
 - [ ] Naming convention followed (`[INITIALS:2-4]-[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
-- [ ] A common-Git compare-and-create reservation succeeded before any task artifact write
+- [ ] A common-Git exclusive lock covered scan, candidate selection, reservation, and complete artifact/graph writes; compare-and-create succeeded before any task artifact write
 - [ ] PHASE is 6 digits, SEQUENCE is 3 digits, separated by hyphen
 - [ ] No task name contains "and" (single concern check)
 - [ ] Each task fits within the selected Granularity Mode's size guideline

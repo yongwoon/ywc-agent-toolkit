@@ -167,6 +167,15 @@
       "expected_downstream_calls": 0,
       "expected_output": "Names the missing initials and returns NEEDS_CONTEXT before graph compaction, linked-worktree scanning, Git reservation, preview creation, dependency-graph writes, or task-directory creation. The writable artifact locations remain unchanged.",
       "files": []
+    },
+    {
+      "id": 25,
+      "name": "initials-allocation-hardening-matrix",
+      "prompt": "Run the bounded task-generator initials contract fixture with malformed config tiers, an empty or invalid interactive derivation, a safe repository-relative tasks path, linked graph/active/completed sources, initials-scoped maxima, and two concurrent reservations.",
+      "expected_status": "DONE",
+      "expected_output": "The fixture proves explicit > project > user precedence, malformed tiers fall through without mutation, invalid or empty interactive derivation remains unresolved, absolute/escaping tasks paths are rejected, legacy and other-initials IDs do not advance the selected namespace, linked sources contribute to the owned maximum, collisions retry with consumed refs, and NEEDS_CONTEXT occurs before any artifact write.",
+      "expectations": ["The contract explicitly requires one common-Git exclusive lock from scan through complete graph/artifact writes", "The fixture does not claim a runtime generator implementation that is absent", "Concurrent distinct reservations are deterministic and bounded"],
+      "files": ["references/collaborator-initials.md", "scripts/test-initials-allocation.sh"]
     }
   ]
 }
