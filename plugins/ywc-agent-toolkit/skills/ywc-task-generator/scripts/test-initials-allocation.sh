@@ -6,7 +6,8 @@ set -euo pipefail
 # temporary Git repository proves the shared reservation primitive.
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 skill="$script_dir/../SKILL.md"
-reference="$script_dir/../references/collaborator-initials.md"
+skill_dir=$(dirname "$script_dir")
+reference="$skill_dir/references/collaborator-initials.md"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 must_have() { grep -Fq -- "$2" "$1" || fail "$3"; }
 
