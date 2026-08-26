@@ -418,15 +418,12 @@ Write structured scenario-based tests (Steps + Expected Result).
 - Library introduction tasks (import and basic operation verified via Verification)
 
 ### Step 10: Generate Dependency Graph
-
 After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
-
 This graph must be consistent with the Dependencies sections in individual README.md files.
 Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
-
 After generating all tasks, verify the following:
 
 **Dependency & Structure:**
@@ -436,7 +433,6 @@ After generating all tasks, verify the following:
 - [ ] Database migrations and library introductions separated into their own tasks (Safety Invariant in both modes)
 - [ ] No numbering collisions across the resolved graph, active/completed tasks, and every linked worktree source
 - [ ] Graph/directory numbering mismatches reported as concerns (if any)
-
 **Naming & Size:**
 - [ ] Naming convention followed (`[INITIALS:2-4]-[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
 - [ ] A common-Git exclusive lock covered scan, candidate selection, reservation, and complete artifact/graph writes; compare-and-create succeeded before any task artifact write
@@ -444,7 +440,6 @@ After generating all tasks, verify the following:
 - [ ] No task name contains "and" (single concern check)
 - [ ] Each task fits within the selected Granularity Mode's size guideline
 - [ ] Selected Granularity Mode applied consistently (bundling, Implementation Steps depth, Ownership scope)
-
 **README.md Quality:**
 - [ ] Both "Depends On" and "Depended By" included
 - [ ] Parallel Execution Metadata included (Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
