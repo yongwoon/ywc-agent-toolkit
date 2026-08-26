@@ -9,14 +9,14 @@ The worker payload carries an interface-first directive and a test-first-where-f
 ## Usage
 
 ```text
-/ywc-parallel-executor yk-000001-010-db-create-events           # Single Task
-/ywc-parallel-executor yk-000001-010..yk-000002-040                     # Range (parallel)
-/ywc-parallel-executor --all                              # Execute all
-/ywc-parallel-executor 000001-010..000002-040 --review            # Parallel + auto Review
-/ywc-parallel-executor 000001-010..000002-040 --local-merge       # Local merge without PR
-/ywc-parallel-executor 000001-010..000002-040 --draft             # Create Draft PR (human merges later)
-/ywc-parallel-executor 000001-010..000002-040 --per-task-pr       # Per Task: create PR, CI, review, merge
-/ywc-parallel-executor 000026-010..000026-030 --aggregate-pr --group-name payments --pr-lang ko  # One PR per group
+/ywc-parallel-executor yk-000001-010-db-create-events                                                  # Single Task
+/ywc-parallel-executor yk-000001-010..yk-000002-040                                                    # Range (parallel)
+/ywc-parallel-executor --all                                                                           # Execute all
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --review                                           # Parallel + auto Review
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --local-merge                                      # Local merge without PR
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --draft                                            # Create Draft PR (human merges later)
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --per-task-pr                                      # Per Task: create PR, CI, review, merge
+/ywc-parallel-executor yk-000026-010..yk-000026-030 --aggregate-pr --group-name payments --pr-lang ko  # One PR per group
 ```
 
 The `[INITIALS]` prefix is matched as a plain string prefix, and worktree and branch names carry the task name verbatim. Legacy unprefixed IDs (`000001-010-db-create-events`) keep working unchanged.

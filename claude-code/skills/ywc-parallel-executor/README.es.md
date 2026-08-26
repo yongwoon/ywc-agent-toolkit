@@ -9,12 +9,12 @@ Un Skill que ejecuta Tareas generadas por task-generator en paralelo usando Agen
 ## Uso
 
 ```text
-/ywc-parallel-executor yk-000001-010-db-create-events           # Tarea única
+/ywc-parallel-executor yk-000001-010-db-create-events              # Tarea única
 /ywc-parallel-executor yk-000001-010..yk-000002-040                # Rango (paralelo)
-/ywc-parallel-executor --all                                 # Ejecutar todo
-/ywc-parallel-executor 000001-010..000002-040 --review       # Paralelo + Revisión automática
-/ywc-parallel-executor 000001-010..000002-040 --local-merge  # Merge local sin PR
-/ywc-parallel-executor 000001-010..000002-040 --draft        # Crear PR Borrador
+/ywc-parallel-executor --all                                       # Ejecutar todo
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --review       # Paralelo + Revisión automática
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --local-merge  # Merge local sin PR
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --draft        # Crear PR Borrador
 ```
 
 El prefijo `[INITIALS]` del ID de tarea se compara como prefijo de cadena simple, y los nombres de worktree y rama reproducen el nombre de la tarea tal cual. Los IDs heredados sin prefijo (`000001-010-db-create-events`) siguen funcionando.

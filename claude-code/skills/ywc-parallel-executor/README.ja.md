@@ -9,14 +9,14 @@ worker payload に interface-first directive と test-first-where-feasible direc
 ## 使用方法
 
 ```text
-/ywc-parallel-executor yk-000001-010-db-create-events           # 単一 Task
-/ywc-parallel-executor yk-000001-010..yk-000002-040                     # 範囲指定 (並列)
-/ywc-parallel-executor --all                              # 全体実行
-/ywc-parallel-executor 000001-010..000002-040 --review            # 並列 + 自動 Review
-/ywc-parallel-executor 000001-010..000002-040 --local-merge       # PR なし Local merge
-/ywc-parallel-executor 000001-010..000002-040 --draft             # Draft PR 作成 (後で人が merge)
-/ywc-parallel-executor 000001-010..000002-040 --per-task-pr       # Task ごとに PR 作成・CI・review・merge
-/ywc-parallel-executor 000026-010..000026-030 --aggregate-pr --group-name payments --pr-lang ko  # Group 単位の単一 PR
+/ywc-parallel-executor yk-000001-010-db-create-events                                                  # 単一 Task
+/ywc-parallel-executor yk-000001-010..yk-000002-040                                                    # 範囲指定 (並列)
+/ywc-parallel-executor --all                                                                           # 全体実行
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --review                                           # 並列 + 自動 Review
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --local-merge                                      # PR なし Local merge
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --draft                                            # Draft PR 作成 (後で人が merge)
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --per-task-pr                                      # Task ごとに PR 作成・CI・review・merge
+/ywc-parallel-executor yk-000026-010..yk-000026-030 --aggregate-pr --group-name payments --pr-lang ko  # Group 単位の単一 PR
 ```
 
 Task ID の `[INITIALS]` 接頭辞は文字列 prefix として照合され、worktree と branch 名は Task 名をそのまま使います。legacy な接頭辞なし ID (`000001-010-db-create-events`) もそのまま動作します。
