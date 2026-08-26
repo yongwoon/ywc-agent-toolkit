@@ -127,7 +127,7 @@
     },
     {
       "id": 21,
-      "name": "mixed-task-id-range-compatibility",
+      "name": "mixed-taskid-range-compatibility",
       "prompt": "Use $ywc-sequential-executor yk-000001-010..000001-030 with tasks named yk-000001-010-new-task, 000001-020-existing-task, and 000001-030-legacy-compatible-task.",
       "expected_output": "Accepts the initials-prefixed range and resolves all matching phase/sequence tasks, including the unprefixed task, in phase/sequence order. It preserves each full task name for feature branches, completion moves, and Mark Complete semantics; it does not rename or migrate the existing unprefixed directory."
     }
