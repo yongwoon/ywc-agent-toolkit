@@ -149,6 +149,33 @@
       "expected_handoff": "task artifacts handed off only from the exactly matching approved preview; no handoff on any mismatch",
       "expected_output": "Per the Preview Approval Gate, exact preview identity match is required only on the --approve-preview path. Names the specific missing or mismatched identity field, never re-decomposes, never silently refreshes the preview, and writes no task artifacts on mismatch.",
       "files": []
+    },
+    {
+      "id": 23,
+      "name": "initials-allocation-contract",
+      "prompt": "Run non-interactive task generation with explicit --initials yk in a repository with yk and js tasks, completed tasks, dependency-graph entries, and linked worktrees.",
+      "expected_status": "DONE",
+      "expected_output": "Resolves and validates initials before any scan. New IDs use yk-000001-010-...; js IDs are ignored for yk allocation, while legacy numeric IDs remain readable. The maximum is taken from graph, active, completed, and corresponding linked-worktree task directories. The selected phase is compare-and-create reserved under refs/ywc/task-phase/yk/<phase> in the repository common Git directory before any artifact write.",
+      "expectations": ["Absolute or escaping --tasks-dir returns NEEDS_CONTEXT before writes", "Inaccessible or mismatched linked-worktree sources are reported", "A reservation collision retries the next phase and preserves the consumed ref", "Legacy directories are not renamed or counted as another namespace"],
+      "files": ["references/collaborator-initials.md", "scripts/test-initials-allocation.sh"]
+    },
+    {
+      "id": 24,
+      "name": "missing-initials-before-write",
+      "prompt": "Run non-interactive generation without --initials and without valid project or user cached initials, with a writable preview path and tasks directory.",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_downstream_calls": 0,
+      "expected_output": "Names the missing initials and returns NEEDS_CONTEXT before graph compaction, linked-worktree scanning, Git reservation, preview creation, dependency-graph writes, or task-directory creation. The writable artifact locations remain unchanged.",
+      "files": []
+    },
+    {
+      "id": 25,
+      "name": "initials-allocation-hardening-matrix",
+      "prompt": "Run the bounded task-generator initials contract fixture with malformed config tiers, an empty or invalid interactive derivation, a safe repository-relative tasks path, linked graph/active/completed sources, initials-scoped maxima, and two concurrent reservations.",
+      "expected_status": "DONE",
+      "expected_output": "The fixture proves explicit > project > user precedence, malformed tiers fall through without mutation, invalid or empty interactive derivation remains unresolved, absolute/escaping tasks paths are rejected, legacy and other-initials IDs do not advance the selected namespace, linked sources contribute to the owned maximum, collisions retry with consumed refs, and NEEDS_CONTEXT occurs before any artifact write.",
+      "expectations": ["The contract explicitly requires one common-Git exclusive lock from scan through complete graph/artifact writes", "The fixture does not claim a runtime generator implementation that is absent", "Concurrent distinct reservations are deterministic and bounded"],
+      "files": ["references/collaborator-initials.md", "scripts/test-initials-allocation.sh"]
     }
   ]
 }

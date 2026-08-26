@@ -73,7 +73,7 @@ detenerse con `NEEDS_CONTEXT`.
 ```text
 tasks/
 ├── docs/ywc-plans/billing.task-preview.md
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
@@ -100,7 +100,7 @@ Depends On: 000001-020-api-billing-contract
 ### Nomenclatura de Tareas
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
 - `PHASE`: 6 dígitos, etapa de dependencia (reserva margen para el crecimiento de proyectos plurianuales)
@@ -112,7 +112,7 @@ Depends On: 000001-020-api-billing-contract
 Tras la finalización y el merge:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Principios Fundamentales

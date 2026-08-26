@@ -42,9 +42,9 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |---|---|---|---|
 | `--mode` | `<mode>` | `--mode local-merge` | One of `normal-pr`, `local-merge`, `draft`, `skip-ci-wait`, `per-task-pr`. See [Modes](#modes). |
-| `--branch` | `feature/<task-name>` | `--branch feature/000001-010-db-create-users` | The feature branch to deliver. Must already exist locally. |
+| `--branch` | `feature/<task-name>` | `--branch feature/yk-000001-010-db-create-users` | The feature branch to deliver. Must already exist locally; prefixed, unprefixed, and legacy task names are carried unchanged. |
 | `--base-branch` | `<branch-name>` | `--base-branch develop` | Target branch. Default: auto-detect (`develop` > `main` > `master`). |
-| `--task-name` | `<task-name>` | `--task-name 000001-010-db-create-users` | Task directory name under `<tasks-dir>/`, used for the Mark Complete commit. |
+| `--task-name` | `<task-name>` | `--task-name yk-000001-010-db-create-users` | Task directory name under `<tasks-dir>/`, used for the Mark Complete commit. All supported ID forms remain valid. |
 | `--tasks-dir` | `<path>` | `--tasks-dir tasks/` | Tasks directory root. Default: `tasks/`. |
 | `--pr-lang` | `en` \| `ja` \| `ko` \| `zh` \| `es` \| `auto` | `--pr-lang ja` | PR title/description language. If omitted or `auto`, resolve through shared YWC language policy; if no tier resolves a language, ask the user before creating the PR. |
 | `--bot-action` | `sequential` \| `parallel` | `--bot-action sequential` | Post-bot polling behavior. Default: `sequential` (re-run CI after bot fixes). Use `parallel` when called from a wave loop where CI does not re-gate between bot iterations. |
@@ -166,7 +166,7 @@ python "$TITLE_SCRIPT" <task-name> --format title
 
 For other languages (`ja`, `ko`, `zh`, `es`), translate only `SLUG_EN` to `--pr-lang`, then compose: `[<TASK_NUMBER>] <translated-slug>`.
 
-The script supports both task-name formats (new `000001-010-slug` and legacy `001010-slug`). Examples of final titles: `[000001-010] Create users table` (en) · `[000001-010] ユーザーテーブル作成` (ja) · `[001010] DB 사용자 테이블 생성` (ko) · `[000001-010] 创建用户表` (zh) · `[000001-010] Crear tabla de usuarios` (es).
+The script supports initials-prefixed (`yk-000001-010-slug`), current unprefixed (`000001-010-slug`), and legacy (`001010-slug`) task names. Completion moves use the original full task name in every form.
 
 **Before calling `ywc-create-pr`**: verify the constructed title string starts with `[`. If it does not, stop — the `[TASK_NUMBER]` prefix was lost somewhere in the construction. Do not call `ywc-create-pr` without a valid title.
 

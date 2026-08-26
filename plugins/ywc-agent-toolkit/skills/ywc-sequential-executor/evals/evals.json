@@ -124,6 +124,12 @@
       "expected_downstream_calls": {"accepted": 1, "rejected": 0},
       "expected_handoff": "accepted only for matching validated state; otherwise reconstructed from checkpoint then task source or preserved prior cache",
       "expected_output": "No fixture emits a user prompt, mutates authoritative checkpoint state, or forwards prohibited content."
+    },
+    {
+      "id": 21,
+      "name": "mixed-task-id-range-compatibility",
+      "prompt": "Use $ywc-sequential-executor yk-000001-010..000001-030 with tasks named yk-000001-010-new-task, 000001-020-existing-task, and 000001-030-legacy-compatible-task.",
+      "expected_output": "Accepts the initials-prefixed range and resolves all matching phase/sequence tasks, including the unprefixed task, in phase/sequence order. It preserves each full task name for feature branches, completion moves, and Mark Complete semantics; it does not rename or migrate the existing unprefixed directory."
     }
   ]
 }
