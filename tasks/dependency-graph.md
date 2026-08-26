@@ -2,22 +2,8 @@
 
 **Next PHASE (yw): 000011**
 
-## Phase yw-000010 — CodeRabbit PR #223 Nitpick comment detection port
-- Spec: `docs/ywc-plans/20260826-claude-pr223-nitpick-comment-detection.md`
-- Granularity mode: `llm`
-- Output language: `en`
-- Initials: `yw` (already the sole prefix in use across every existing task in this repository; not re-derived, no `.ywc-config.json` cache existed yet — this run did not need to write one since the value was unambiguous)
-- Starting phase: `yw-000010` — ledger line `**Next PHASE (yw): 000010**` was current (directory + `completed/` scan max for `yw-` was `yw-000009`).
-- `yw-000010-010-domain-nitpick-parser` → (root)
-- `yw-000010-020-domain-nitpick-fetch-orchestrator` → depends on `yw-000010-010`
-- `yw-000010-030-docs-skill-nitpick-integration` → depends on `yw-000010-020`
-
-## Visual Dependency Graph — CodeRabbit PR #223 Nitpick comment detection
-```mermaid
-graph LR
-  A[yw-000010-010-domain-nitpick-parser] --> B[yw-000010-020-domain-nitpick-fetch-orchestrator]
-  B --> C[yw-000010-030-docs-skill-nitpick-integration]
-```
+## Phase yw-000010 — done
+- Completed: `yw-000010-010-domain-nitpick-parser`, `yw-000010-020-domain-nitpick-fetch-orchestrator`, `yw-000010-030-docs-skill-nitpick-integration`
 
 ## Phase yw-000001 — done
 - Completed: `yw-000001-010-config-initials-writer`, `yw-000001-030-parser-prefixed-task-ids`
