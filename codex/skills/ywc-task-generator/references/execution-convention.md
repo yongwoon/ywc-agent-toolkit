@@ -8,7 +8,7 @@ When a task is completed, move its directory to `tasks/completed/`:
 
 ```bash
 # Example
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 Purpose of this convention:
@@ -22,12 +22,12 @@ Purpose of this convention:
 tasks/
 ├── dependency-graph.md
 ├── completed/
-│   ├── 000001-010-db-create-user-table/
-│   └── 000001-020-lib-setup-bcrypt/
-├── 000001-030-domain-user-entity/
+│   ├── yk-000001-010-db-create-user-table/
+│   └── yk-000001-020-lib-setup-bcrypt/
+├── yk-000001-030-domain-user-entity/
 │   ├── README.md
 │   └── task.md
-└── 000002-010-api-user-registration/
+└── yk-000002-010-api-user-registration/
     ├── README.md
     └── task.md
 ```

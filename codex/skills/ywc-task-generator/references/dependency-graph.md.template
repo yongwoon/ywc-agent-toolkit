@@ -8,19 +8,19 @@ Preview Approval Metadata (when preview flow is used):
 - `Tasks Dir:` `tasks/`
 - `Mode:` `human` or `llm`
 
-## Phase 000001 — [Phase Name]
-- `000001-010-db-create-users-table` → (root)
-- `000001-020-domain-user-entity` → depends on `000001-010` | Refactor Phase: `phase-1` | Batch ID: `user-core-a`
-- `000001-030-api-user-registration` → depends on `000001-020`
+## Phase yk-000001 — [Phase Name]
+- `yk-000001-010-db-create-users-table` → (root)
+- `yk-000001-020-domain-user-entity` → depends on `yk-000001-010` | Refactor Phase: `phase-1` | Batch ID: `user-core-a`
+- `yk-000001-030-api-user-registration` → depends on `yk-000001-020`
 
-## Phase 000002 — [Phase Name]
-- `000002-010-lib-setup-redis` → (root)
-- `000002-020-domain-session-management` → depends on `000001-020`, `000002-010` | Refactor Phase: `phase-2` | Batch ID: `session-core-a`
+## Phase yk-000002 — [Phase Name]
+- `yk-000002-010-lib-setup-redis` → (root)
+- `yk-000002-020-domain-session-management` → depends on `yk-000001-020`, `yk-000002-010` | Refactor Phase: `phase-2` | Batch ID: `session-core-a`
 
 ## Parallel Execution Notes
-- Initial ready set: `000001-010-db-create-users-table`, `000002-010-lib-setup-redis`
-- After `000001-010-db-create-users-table` merges: `000001-020-domain-user-entity` becomes runnable
-- `000001-020-domain-user-entity` and `000002-020-domain-session-management` must not run together if they both modify `shared/types/**`
+- Initial ready set: `yk-000001-010-db-create-users-table`, `yk-000002-010-lib-setup-redis`
+- After `yk-000001-010-db-create-users-table` merges: `yk-000001-020-domain-user-entity` becomes runnable
+- `yk-000001-020-domain-user-entity` and `yk-000002-020-domain-session-management` must not run together if they both modify `shared/types/**`
 
 ## Visual Dependency Graph (Optional)
 
