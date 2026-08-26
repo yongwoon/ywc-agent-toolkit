@@ -1,51 +1,44 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): 000008**
+**Next PHASE (yw): 000011**
 
-## Phase yw-000001 — Configuration and parser foundation
-- `yw-000001-010-config-initials-writer` → (root)
-- `yw-000001-030-parser-prefixed-task-ids` → depends on `yw-000001-010-config-initials-writer`
+## Phase yw-000010 — CodeRabbit PR #223 Nitpick comment detection port
+- Spec: `docs/ywc-plans/20260826-claude-pr223-nitpick-comment-detection.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw` (already the sole prefix in use across every existing task in this repository; not re-derived, no `.ywc-config.json` cache existed yet — this run did not need to write one since the value was unambiguous)
+- Starting phase: `yw-000010` — ledger line `**Next PHASE (yw): 000010**` was current (directory + `completed/` scan max for `yw-` was `yw-000009`).
+- `yw-000010-010-domain-nitpick-parser` → (root)
+- `yw-000010-020-domain-nitpick-fetch-orchestrator` → depends on `yw-000010-010`
+- `yw-000010-030-docs-skill-nitpick-integration` → depends on `yw-000010-020`
 
-## Phase yw-000002 — Allocation and consumer compatibility
-- `yw-000002-010-task-generator-initials-allocation` → depends on `yw-000001-010-config-initials-writer`, `yw-000001-030-parser-prefixed-task-ids`
-- `yw-000002-020-consumer-legacy-compatibility` → depends on `yw-000002-010-task-generator-initials-allocation`
-
-## Phase yw-000003 — Bundle and validation hard gate
-- `yw-000003-010-eval-bundle-validation` → depends on `yw-000002-010-task-generator-initials-allocation`, `yw-000002-020-consumer-legacy-compatibility`
-
-## Parallel Execution Notes — Codex PR #217 collaborator initials
-- Initial ready set: `yw-000001-010-config-initials-writer`.
-- After config merges, `yw-000001-030` becomes runnable.
-- After config and parser compatibility merge, `yw-000002-010` becomes runnable.
-- `yw-000002-010` and `yw-000002-020` are serialized because the consumer task consumes the finalized allocation contract.
-- `yw-000003-010` is a final hard gate after both Phase `yw-000002` tasks merge.
-
-## Visual Dependency Graph — Codex PR #217 collaborator initials
+## Visual Dependency Graph — CodeRabbit PR #223 Nitpick comment detection
 ```mermaid
 graph LR
-  A[yw-000001-010-config-initials-writer] --> B[yw-000001-030-parser-prefixed-task-ids]
-  A --> C[yw-000002-010-task-generator-initials-allocation]
-  B --> C
-  C --> D[yw-000002-020-consumer-legacy-compatibility]
-  C --> E[yw-000003-010-eval-bundle-validation]
-  D --> E
+  A[yw-000010-010-domain-nitpick-parser] --> B[yw-000010-020-domain-nitpick-fetch-orchestrator]
+  B --> C[yw-000010-030-docs-skill-nitpick-integration]
 ```
 
-## Phase yw-000004 — ID grammar contract and parsing side
-- `yw-000004-010-docs-initials-resolution-reference` → (root)
-- `yw-000004-020-infra-parser-optional-initials-prefix` → (root)
+## Phase yw-000001 — done
+- Completed: `yw-000001-010-config-initials-writer`, `yw-000001-030-parser-prefixed-task-ids`
 
-## Phase yw-000005 — PHASE allocation and generator skill
-- `yw-000005-010-infra-next-task-number-initials-scan` → depends on `yw-000004-010-docs-initials-resolution-reference`, `yw-000004-020-infra-parser-optional-initials-prefix`
-- `yw-000005-020-docs-task-generator-skill-initials` → depends on `yw-000005-010-infra-next-task-number-initials-scan`
+## Phase yw-000002 — done
+- Completed: `yw-000002-010-task-generator-initials-allocation`, `yw-000002-020-consumer-legacy-compatibility`
 
-## Phase yw-000006 — Documentation and locale sync
-- `yw-000006-010-docs-task-generator-artifacts-sync` → depends on `yw-000005-020-docs-task-generator-skill-initials`
-- `yw-000006-020-docs-executor-consumer-sync` → depends on `yw-000005-020-docs-task-generator-skill-initials`
-- `yw-000006-030-docs-branch-testcase-consumer-sync` → depends on `yw-000005-020-docs-task-generator-skill-initials`
+## Phase yw-000003 — done
+- Completed: `yw-000003-010-eval-bundle-validation`
 
-## Phase yw-000007 — Validation hard gate
-- `yw-000007-010-infra-validation-gate` → depends on `yw-000006-010-docs-task-generator-artifacts-sync`, `yw-000006-020-docs-executor-consumer-sync`, `yw-000006-030-docs-branch-testcase-consumer-sync`
+## Phase yw-000004 — done
+- Completed: `yw-000004-010-docs-initials-resolution-reference`, `yw-000004-020-infra-parser-optional-initials-prefix`
+
+## Phase yw-000005 — done
+- Completed: `yw-000005-010-infra-next-task-number-initials-scan`, `yw-000005-020-docs-task-generator-skill-initials`
+
+## Phase yw-000006 — done
+- Completed: `yw-000006-010-docs-task-generator-artifacts-sync`, `yw-000006-020-docs-executor-consumer-sync`, `yw-000006-030-docs-branch-testcase-consumer-sync`
+
+## Phase yw-000007 — done
+- Completed: `yw-000007-010-infra-validation-gate`
 
 ## Batch — Claude Code collaborator initials (spec 20260826-task-id-collaborator-initials)
 - Spec: `docs/ywc-plans/20260826-task-id-collaborator-initials.md`
@@ -54,35 +47,6 @@ graph LR
 - Initials: `yw` (cached in `.codex/ywc.json`; matches every existing prefixed task in this repository)
 - Starting phase: `yw-000004` — the ledger line `**Next PHASE (yw): 000004**` was current (directory scan max for `yw-` was `yw-000003`).
 - Sibling spec: `docs/ywc-plans/20260826-codex-pr217-collaborator-initials.md` covers the `codex/` tree (phases `yw-000001`–`yw-000003`). The ID grammar is owned by the Claude Code spec; only the persistence location diverges.
-
-## Parallel Execution Notes — Claude Code collaborator initials
-- Initial ready set: `yw-000004-010-docs-initials-resolution-reference` and `yw-000004-020-infra-parser-optional-initials-prefix` run in parallel — disjoint ownership (documentation vs. three parser scripts).
-- Phase `yw-000004` is a hard gate: the allocator emits IDs that `scaffold-task-dir.sh` must already accept, so both the contract and the parsing side must land before allocation work starts.
-- `yw-000005-010` and `yw-000005-020` are serialized: the SKILL.md text quotes the script's final `[tasks-dir] [initials]` signature.
-- All three `yw-000006` tasks run in parallel after `yw-000005-020` merges — their file sets are disjoint (`ywc-task-generator` artifacts / three executor-family skills / `ywc-finish-branch` + `ywc-gen-testcase`).
-- `yw-000006-030` must never edit `ywc-finish-branch/scripts/build-pr-title.py`; that file is owned by `yw-000004-020`.
-- `yw-000007-010` is a terminal hard gate after all three `yw-000006` tasks merge.
-
-## Visual Dependency Graph — Claude Code collaborator initials
-```mermaid
-graph LR
-  A[yw-000004-010-docs-initials-resolution-reference] --> C[yw-000005-010-infra-next-task-number-initials-scan]
-  B[yw-000004-020-infra-parser-optional-initials-prefix] --> C
-  C --> D[yw-000005-020-docs-task-generator-skill-initials]
-  D --> E[yw-000006-010-docs-task-generator-artifacts-sync]
-  D --> F[yw-000006-020-docs-executor-consumer-sync]
-  D --> G[yw-000006-030-docs-branch-testcase-consumer-sync]
-  E --> H[yw-000007-010-infra-validation-gate]
-  F --> H
-  G --> H
-```
-
-## Batch
-
-- Spec: `docs/ywc-plans/codex-toolkit-eval-improvements.md`
-- Granularity mode: `llm`
-- Starting phase: `000007`
-- Rationale: existing completed tasks go through phase `000006`, so this batch starts at `000007`.
 
 ## Phase 000007 — done
 - Completed: `000007-010-infra-score-cli-contract`, `000007-020-test-trigger-coverage`
@@ -1447,6 +1411,34 @@ graph LR
 ```
 
 <!-- This graph is the execution-order source of truth for this batch. -->
+
+---
+
+## Batch — Codex PR #223 review artifact test hardening
+
+- Spec: `docs/ywc-plans/20260826-codex-pr223-review-artifact-test-hardening.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw` (cached in `.codex/ywc.json`)
+- Starting phase: `yw-000008` — the ledger value was current; no active `yw-` task directory existed and the highest completed conforming phase was `yw-000007`.
+- Advisor pass: used; bundled the shared source test harness/contract work and kept package sync as the Phase `yw-000009` hard gate.
+
+### Phase yw-000008 — Collector contract test
+- `yw-000008-010-test-collector-contract-harness` → (root)
+
+### Phase yw-000009 — Codex package sync hard gate
+- `yw-000009-010-infra-codex-package-sync` → depends on `yw-000008-010-test-collector-contract-harness`
+
+### Parallel Execution Notes — Codex PR #223 review artifact test hardening
+- Initial ready set: `yw-000008-010-test-collector-contract-harness`.
+- After `yw-000008-010` merges and its focused unittest passes, `yw-000009-010` becomes runnable.
+- The two tasks are serialized because the package task consumes the authoritative source test and owns generated plugin output.
+
+### Visual Dependency Graph
+```mermaid
+graph LR
+  A[yw-000008-010-test-collector-contract-harness] --> B[yw-000009-010-infra-codex-package-sync]
+```
 
 ---
 
