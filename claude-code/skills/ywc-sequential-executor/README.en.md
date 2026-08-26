@@ -15,21 +15,23 @@ Supports both single task execution and sequential range execution.
 Execute a single task:
 
 ```text
-/ywc-sequential-executor 000001-010-db-create-users-table
+/ywc-sequential-executor yk-000001-010-db-create-users-table
 ```
 
 You can also specify by phase+sequence prefix:
 
 ```text
-/ywc-sequential-executor 000001-010
+/ywc-sequential-executor yk-000001-010
 ```
+
+The `[INITIALS]` prefix is matched as a plain string prefix, so legacy unprefixed IDs (`000001-010-db-create-users-table`) keep working unchanged.
 
 ### Range Execution
 
 Execute consecutive tasks sequentially in a loop:
 
 ```text
-/ywc-sequential-executor 000001-010..000002-030
+/ywc-sequential-executor yk-000001-010..yk-000002-030
 ```
 
 ### Auto-detect Next Task

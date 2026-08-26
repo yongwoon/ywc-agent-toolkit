@@ -57,11 +57,11 @@ Las Invariantes de Seguridad (separación de migración de BD, separación de in
 
 ```text
 tasks/
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
-├── 000001-020-api-user-registration/
+├── yk-000001-020-api-user-registration/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
@@ -70,19 +70,21 @@ tasks/
 ### Nomenclatura de Tareas
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
+- `INITIALS`: 2–4 caracteres alfanuméricos en minúscula (`^[a-z0-9]{2,4}$`) — las collaborator initials, añadidas siempre al generar
 - `PHASE`: 6 dígitos, etapa de dependencia (reserva margen para el crecimiento de proyectos plurianuales)
 - `SEQUENCE`: 3 dígitos, se incrementa de 10 en 10
 - `CATEGORY`: `lib` | `db` | `api` | `domain` | `worker` | `ui` | `test` | `refactor` | `infra`
+- Los IDs legacy sin prefijo (`000001-010-db-create-user-table`) siguen siendo válidos, se parsean tal cual y nunca se renumeran con un prefijo. Los IDs con y sin prefijo coexisten en el mismo repository
 
 ### Finalización de Tareas
 
 Tras la finalización y el merge:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Principios Fundamentales

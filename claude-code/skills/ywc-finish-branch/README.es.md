@@ -23,8 +23,8 @@ Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequ
 ### Por defecto (basado en PR)
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop
+/ywc-finish-branch --mode normal-pr --branch feature/yk-000001-010-db-create-users \
+  --task-name yk-000001-010-db-create-users --base-branch develop
 ```
 
 ### Merge Local

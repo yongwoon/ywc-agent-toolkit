@@ -57,11 +57,11 @@ Skill 支持两种任务粒度模式，并**始终询问应用哪种模式** —
 
 ```text
 tasks/
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
-├── 000001-020-api-user-registration/
+├── yk-000001-020-api-user-registration/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
@@ -70,19 +70,21 @@ tasks/
 ### 任务命名
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
+- `INITIALS`：2–4 位 lowercase alphanumeric（`^[a-z0-9]{2,4}$`）—— collaborator initials，生成时始终添加
 - `PHASE`：6 位数字，依赖阶段（为多年项目增长预留空间）
 - `SEQUENCE`：3 位数字，以 10 为步长递增
 - `CATEGORY`：`lib` | `db` | `api` | `domain` | `worker` | `ui` | `test` | `refactor` | `infra`
+- Legacy 无前缀 ID（`000001-010-db-create-user-table`）仍然有效，parsing 时按原样识别，且不会加上前缀重新编号。带前缀与无前缀的 ID 在同一 repository 中共存
 
 ### 任务完成
 
 完成并合并后：
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## 核心原则

@@ -69,7 +69,7 @@ path traversal, symlink escape, non-Markdown preview path はすべて
 ```text
 tasks/
 ├── docs/ywc-plans/billing.task-preview.md
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
@@ -97,7 +97,7 @@ Depends On: 000001-020-api-billing-contract
 ### Task Naming
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
 - `PHASE`: 6 桁の dependency stage (multi-year な project 成長に備えた headroom)
@@ -109,7 +109,7 @@ Depends On: 000001-020-api-billing-contract
 完了して merge された後:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Core Principles

@@ -1,18 +1,23 @@
 # Task Dependency Graph
 
-## Phase 000001 — [Phase Name]
-- `000001-010-db-create-users-table` → (root)
-- `000001-020-domain-user-entity` → depends on `000001-010`
-- `000001-030-api-user-registration` → depends on `000001-020`
+<!-- Phase heading format: `## Phase <initials>-NNNNNN` — the resolved collaborator
+     initials, a hyphen, then the 6-digit PHASE. Legacy unprefixed headings
+     (`## Phase NNNNNN`) generated before initials namespacing remain valid and are
+     never renumbered; both forms may coexist in this file. -->
 
-## Phase 000002 — [Phase Name]
-- `000002-010-lib-setup-redis` → (root)
-- `000002-020-domain-session-management` → depends on `000001-020`, `000002-010`
+## Phase yk-000001 — [Phase Name]
+- `yk-000001-010-db-create-users-table` → (root)
+- `yk-000001-020-domain-user-entity` → depends on `yk-000001-010`
+- `yk-000001-030-api-user-registration` → depends on `yk-000001-020`
+
+## Phase yk-000002 — [Phase Name]
+- `yk-000002-010-lib-setup-redis` → (root)
+- `yk-000002-020-domain-session-management` → depends on `yk-000001-020`, `yk-000002-010`
 
 ## Parallel Execution Notes
-- Initial ready set: `000001-010-db-create-users-table`, `000002-010-lib-setup-redis`
-- After `000001-010-db-create-users-table` merges: `000001-020-domain-user-entity` becomes runnable
-- `000001-020-domain-user-entity` and `000002-020-domain-session-management` must not run together if they both modify `shared/types/**`
+- Initial ready set: `yk-000001-010-db-create-users-table`, `yk-000002-010-lib-setup-redis`
+- After `yk-000001-010-db-create-users-table` merges: `yk-000001-020-domain-user-entity` becomes runnable
+- `yk-000001-020-domain-user-entity` and `yk-000002-020-domain-session-management` must not run together if they both modify `shared/types/**`
 
 ## Visual Dependency Graph (Optional)
 
@@ -20,12 +25,12 @@ Task 수가 5개 이상이거나 cross-phase dependency가 복잡한 경우, Mer
 
 ```mermaid
 graph LR
-  subgraph Phase 000001
-    A[000001-010-db-create-users-table] --> B[000001-020-domain-user-entity]
-    B --> C[000001-030-api-user-registration]
+  subgraph Phase yk-000001
+    A[yk-000001-010-db-create-users-table] --> B[yk-000001-020-domain-user-entity]
+    B --> C[yk-000001-030-api-user-registration]
   end
-  subgraph Phase 000002
-    D[000002-010-lib-setup-redis] --> E[000002-020-domain-session-management]
+  subgraph Phase yk-000002
+    D[yk-000002-010-lib-setup-redis] --> E[yk-000002-020-domain-session-management]
     B --> E
   end
 ```
@@ -36,8 +41,11 @@ graph LR
      No special markup is needed for compaction: the shared completion marker
      runs claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py
      after every task completion, reading the Phase / Parallel Execution Notes /
-     Visual Dependency Graph headings directly. Once every task id under a Phase
-     heading exists in <tasks-dir>/completed/, that phase collapses to
-     "## Phase NNNNNN — done" and a "- Completed: ..." bullet; once every task
-     id referenced by a Notes/Mermaid section is completed, that whole section
-     is dropped. Do not hand-edit an already-compacted phase heading or bullet. -->
+     Visual Dependency Graph headings directly. The script matches both the prefixed
+     `## Phase <initials>-NNNNNN` form and the legacy unprefixed `## Phase NNNNNN`
+     form, grouping on the full prefixed key so two collaborators' identically
+     numbered phases never merge. Once every task id under a Phase heading exists in
+     <tasks-dir>/completed/, that phase collapses to "## Phase <initials>-NNNNNN — done"
+     and a "- Completed: ..." bullet; once every task id referenced by a Notes/Mermaid
+     section is completed, that whole section is dropped. Do not hand-edit an
+     already-compacted phase heading or bullet. -->

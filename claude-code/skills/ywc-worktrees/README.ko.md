@@ -16,6 +16,12 @@ lifecycle 관리 skill 의 한국어 요약본. 전체 문서는 [SKILL.md](./SK
   (prune 시 worktree 제거 + local branch 삭제, `--keep-branch` 시 worktree 만 제거하고
   branch 보존, 이전 `ywc-parallel-executor/scripts/` 에서 `git mv` 로 이전, history 보존)
 
+## Task 이름
+
+Task 이름과 branch 이름은 그대로 사용되므로 Task ID 의 `[INITIALS]` 접두가 투명하게 통과합니다.
+`--task-name yk-000001-010-db-create-users` 와 legacy 무접두 `--task-name 000001-010-db-create-users`
+가 모두 유효하며, `feature/yk-000001-010-db-create-users` 도 유효한 git ref 입니다.
+
 ## 호출 패턴
 
 - `ywc-parallel-executor`: Pre-flight audit / Step 4 per-task create /

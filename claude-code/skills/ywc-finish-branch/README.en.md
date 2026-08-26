@@ -19,8 +19,8 @@ A single-responsibility extraction of the delivery logic that `ywc-sequential-ex
 ### Default (PR-based)
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop
+/ywc-finish-branch --mode normal-pr --branch feature/yk-000001-010-db-create-users \
+  --task-name yk-000001-010-db-create-users --base-branch develop
 ```
 
 ### Local Merge

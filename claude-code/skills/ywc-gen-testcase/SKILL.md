@@ -37,7 +37,7 @@ Exactly one input mode must resolve. If more than one is given, stop and ask —
 | Input mode | How to specify | Primary source |
 |---|---|---|
 | **PR** | PR URL or PR number | `gh pr view`, `gh pr diff` |
-| **Task** | Task name or `<phase>-<sequence>` prefix | `<tasks-dir>/<task>/task.md` + `README.md` |
+| **Task** | Task name or `[<initials>-]<phase>-<sequence>` prefix | `<tasks-dir>/<task>/task.md` + `README.md` |
 | **Range** | Positional `<start>..<end>` (SHA / tag / branch / `HEAD~N`) or `--range <spec>` | `git log`, `git diff <start>..<end>` |
 | **Diff** | `--from-diff` flag | Current `git diff HEAD` |
 
@@ -50,7 +50,7 @@ Parse `$ARGUMENTS`.
 | Parameter | Format | Example | Description |
 |---|---|---|---|
 | PR identifier | URL or number | `250` | Fetches PR metadata + diff via `gh` |
-| Task specifier | name or prefix | `000001-010` | Prefix match against `<tasks-dir>` |
+| Task specifier | name or prefix | `yk-000001-010` | Prefix match against `<tasks-dir>` |
 | `--from-diff` | flag | | Use `git diff HEAD` |
 | `--range <spec>` | `<start>..<end>` | `--range v1.2..v1.3` | Explicit range form (equivalent to positional `A..B`). Two-dot only — three-dot `A...B` is rejected |
 | `--output-dir <path>` | path | `--output-dir ./docs/qa` | Override `docs/test-case/` |
@@ -64,6 +64,8 @@ Parse `$ARGUMENTS`.
 | `--no-toc` | flag | | Suppress TOC auto-insertion for M/L tier |
 | `--dry-run` | flag | | Show plan (tier, filenames, section counts) without writing |
 | `--format` | `markdown`\|`html` | `--format html` | Output format. Default `markdown`. With `html`, writes an interactive HTML testsheet (see Step 5). |
+
+**Task specifier forms**: both the prefixed task ID (`yk-000001-010-db-create-users-table`) and the legacy unprefixed ID (`000001-010-db-create-users-table`) are accepted. Matching is a plain string prefix match against the directory names under `<tasks-dir>`, so the initials segment needs no special handling.
 
 **Flag conflicts**: `--split` and `--force-single` cannot coexist — stop and ask. `--audience dev|qa` implies a single-audience file; `--split` in that combination is redundant and is silently ignored. **Range input** is mutually exclusive with PR, Task, and `--from-diff` — stop and ask if more than one is given. Range accepts only the two-dot `A..B` form; three-dot `A...B` is rejected because its merge-base semantics silently change scope and surprise the tester.
 
@@ -235,7 +237,7 @@ table below with an `.html` extension.
 | Input | Single file (default) | `--split` mode |
 |---|---|---|
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
-| Task | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Task | `task-[<initials>-]<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (tag names used verbatim when both endpoints are tags, e.g. `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 

@@ -27,7 +27,7 @@ Dentro del mismo repositorio, basta con el número de PR:
 ### Generación basada en tarea
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Generación por rango de Git
@@ -130,7 +130,7 @@ Paso 6: Validar e informar
 | Entrada | Archivo único (predeterminado) | `--split` |
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
-| Tarea | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Tarea | `task-[<initials>-]<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Rango | `range-<short-start>-<short-end>-<slug>.md` (se usan nombres de tag cuando ambos extremos son tags, p. ej. `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 

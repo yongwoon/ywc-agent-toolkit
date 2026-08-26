@@ -36,6 +36,18 @@ If the user does not specify a language, the Skill asks.
 
 For Korean, Japanese, Chinese, and Spanish outputs, technical terms stay in English.
 
+### Initials Options
+
+Task IDs are namespaced by a collaborator initials prefix (`yk-000001-010-db-create-user-table`).
+
+| Option | Example |
+|--------|---------|
+| Explicit | `--initials yk` |
+| Cached | the `## Task Initials` section in the project `CLAUDE.md` |
+| Derived | derived from `git config user.email`, confirmed once |
+
+If none is given, the Skill proposes a derived value and asks once. Existing unprefixed legacy task IDs stay valid and are never renumbered.
+
 ### Granularity Mode Options
 
 The Skill supports two task granularity modes and **always asks which mode to apply** — there is no silent default.
@@ -53,11 +65,11 @@ Safety Invariants (DB migration separation, Library introduction separation, Pha
 
 ```text
 tasks/
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
-├── 000001-020-api-user-registration/
+├── yk-000001-020-api-user-registration/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
@@ -66,19 +78,21 @@ tasks/
 ### Task Naming
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
+- `INITIALS`: 2–4 lowercase alphanumerics (`^[a-z0-9]{2,4}$`) — the collaborator initials, always prefixed on generation
 - `PHASE`: 6 digits, dependency stage (reserves headroom for multi-year project growth)
 - `SEQUENCE`: 3 digits, increments by 10
 - `CATEGORY`: `lib` | `db` | `api` | `domain` | `worker` | `ui` | `test` | `refactor` | `infra`
+- Legacy unprefixed IDs (`000001-010-db-create-user-table`) stay valid, are parsed as-is, and are never renumbered with a prefix. Prefixed and unprefixed IDs coexist in the same repository
 
 ### Task Completion
 
 After completion and merge:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Core Principles

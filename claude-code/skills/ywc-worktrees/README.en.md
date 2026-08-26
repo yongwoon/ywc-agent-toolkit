@@ -20,6 +20,13 @@ priority resolution (`.worktrees/` > CLAUDE.md `worktree_root` >
 For the full argument table and priority resolution chain, see
 [SKILL.md](./SKILL.md).
 
+## Task Names
+
+Task names and branch names are used verbatim, so the `[INITIALS]` segment of a task ID
+passes through transparently. Both `--task-name yk-000001-010-db-create-users` and the legacy
+unprefixed `--task-name 000001-010-db-create-users` are valid, and
+`feature/yk-000001-010-db-create-users` is a valid git ref.
+
 ## Bundled Scripts
 
 | Script | Purpose |

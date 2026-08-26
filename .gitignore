@@ -14,9 +14,6 @@ __pycache__/
 .claude/logs/
 .claude/skills/ywc-toolkit-eval/evals/
 
-
-docs/ywc-plans
-tasks/
 .ywc-run-state.json
 .ywc-architecture-invariants-evidence.json
 .codex/settings.local.json

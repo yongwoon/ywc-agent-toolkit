@@ -15,6 +15,13 @@ Skill de gestión del ciclo de vida de Git worktree. Fuente única de verdad par
 
 Para la tabla completa de argumentos y la cadena de resolución de prioridad, consulta [SKILL.md](./SKILL.md).
 
+## Nombres de Tarea
+
+Los nombres de tarea y de rama se usan tal cual, por lo que el segmento `[INITIALS]` del ID de
+tarea pasa de forma transparente. Tanto `--task-name yk-000001-010-db-create-users` como el
+heredado sin prefijo `--task-name 000001-010-db-create-users` son válidos, y
+`feature/yk-000001-010-db-create-users` es una referencia git válida.
+
 ## Scripts Incluidos
 
 | Script | Purpose |

@@ -1,7 +1,7 @@
 {
   "skill_name": "ywc-setup",
-  "description": "Regression scenarios for Codex YWC language configuration scope handling, language normalization, and session-scope rejection.",
-  "last_updated": "2026-07-06",
+  "description": "Regression scenarios for Codex YWC language and collaborator-initials configuration, locked preservation, scope handling, and session-scope rejection.",
+  "last_updated": "2026-08-26",
   "evals": [
     {
       "id": 1,
@@ -69,6 +69,51 @@
         "Silently defaulting to `en`.",
         "Inventing a new supported language code.",
         "Writing a partial or invalid JSON config while waiting for correction."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "project-scope-preserves-language-and-unknown-keys-for-initials",
+      "prompt": "Use ywc-setup --scope project --initials yk on a config containing lang ja and an unknown key.",
+      "expected_behavior": [
+        "Accepts exactly lowercase alphanumeric initials in the range 2–4 characters.",
+        "Preserves lang and all unknown keys while adding initials yk.",
+        "Uses a locked atomic read-modify-write and validates the resulting JSON."
+      ],
+      "anti_behavior": [
+        "Normalizing or accepting uppercase initials.",
+        "Replacing the object with only an initials key.",
+        "Using a fixed temporary filename or leaving truncated JSON."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "invalid-initials-and-missing-operands-are-rejected",
+      "prompt": "Use ywc-setup --scope project --initials YK, then retry with --initials without a value.",
+      "expected_behavior": [
+        "Rejects both requests as usage errors before replacing the config.",
+        "Reports the exact initials validation contract ^[a-z0-9]{2,4}$.",
+        "Does not raise an unbound-variable error under set -u."
+      ],
+      "anti_behavior": [
+        "Silently lowercasing YK.",
+        "Writing a partial config.",
+        "Treating the missing operand as an empty initials value."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "concurrent-language-and-initials-updates-retain-both",
+      "prompt": "Run concurrent project-scope updates for --lang ko and --initials yw.",
+      "expected_behavior": [
+        "The final file is valid JSON and contains both independent updates.",
+        "The complete read-modify-write is serialized by an exclusive lock.",
+        "The final replacement uses a unique same-directory temporary file."
+      ],
+      "anti_behavior": [
+        "Losing either update due to a stale read.",
+        "Leaving malformed or truncated JSON.",
+        "Creating a session configuration."
       ]
     }
   ]

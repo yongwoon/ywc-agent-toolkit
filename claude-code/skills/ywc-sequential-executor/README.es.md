@@ -15,21 +15,23 @@ Soporta tanto la ejecución de una sola tarea como la ejecución secuencial de r
 Ejecutar una sola tarea:
 
 ```text
-/ywc-sequential-executor 000001-010-db-create-users-table
+/ywc-sequential-executor yk-000001-010-db-create-users-table
 ```
 
 También se puede especificar por prefijo de fase+secuencia:
 
 ```text
-/ywc-sequential-executor 000001-010
+/ywc-sequential-executor yk-000001-010
 ```
+
+El prefijo `[INITIALS]` del ID de tarea se compara como prefijo de cadena simple, por lo que los IDs heredados sin prefijo (`000001-010-db-create-users-table`) siguen funcionando.
 
 ### Ejecución por Rango
 
 Ejecutar tareas consecutivas secuencialmente en un bucle:
 
 ```text
-/ywc-sequential-executor 000001-010..000002-030
+/ywc-sequential-executor yk-000001-010..yk-000002-030
 ```
 
 ### Detección Automática de la Siguiente Tarea

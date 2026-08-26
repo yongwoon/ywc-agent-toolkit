@@ -33,13 +33,13 @@ When tempted to bend a rule, check this table first:
 **Violating the letter of these rules is violating the spirit.** Safety invariants (DB migration separation, library introduction separation, phase hard gates) have no exceptions.
 
 ## Arguments
-
 | Argument | Default | Description |
 |---|---|---|
 | `--lang <language>` | _(resolved or asked)_ | Output language for task documents: `ko` \| `ja` \| `en` \| `es` \| `zh`. Backward-compatible aliases: `korean` \| `japanese` \| `english` \| `spanish` \| `chinese`. |
 | `--mode <mode>` | _(asked)_ | Canonical task granularity option: `human` \| `llm`. |
 | `--granularity <mode>` | _(alias)_ | Backward-compatible alias for `--mode`; accept `human` \| `llm`. If both flags are present and conflict, stop and ask the user to resolve the conflict. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
+| `--initials <value>` | _(resolved or asked)_ | Collaborator namespace for new task phases. Must match `^[a-z0-9]{2,4}$`; explicit invalid values are rejected. |
 | `--spec <path>` | _(required for preview/write gate)_ | Project-relative spec path for persisted preview and auditable task writes. Must stay under `docs/` unless the project defines another safe root explicitly. |
 | `--preview-only` | off | Write only the canonical preview artifact. Do not write task directories or `dependency-graph.md`. |
 | `--preview-path <path>` | `docs/ywc-plans/<slug>.task-preview.md` | Persisted preview artifact path. Must be repository-relative Markdown under a safe root. |
@@ -49,7 +49,6 @@ When tempted to bend a rule, check this table first:
 | `--architecture-evidence <path>` | off | Optional normalized evidence artifact; paired with `--manifest`, never raw evidence text. |
 
 ## Language Option
-
 When `--lang` is not specified, resolve task document language using the shared
 Codex YWC policy:
 [`../references/language-resolution.md`](../references/language-resolution.md).
@@ -60,14 +59,18 @@ This skill supports canonical language codes `ko` | `ja` | `en` | `es` | `zh`
 for task document output. It also accepts backward-compatible long aliases
 `korean` | `japanese` | `english` | `spanish` | `chinese`; treat `zh` /
 `chinese` as Simplified Chinese unless the user explicitly asks for another
-Chinese locale. There is no skill-level output-language default.
+Chinese locale. There is no skill-level output-language default; for non-English output rules, read [references/language-policy.md](references/language-policy.md).
 
-For the full language detection examples, language-specific writing rules (technical-term policy, Korean/Japanese/Chinese/Spanish examples), and the shared technical-term whitelist, **read [references/language-policy.md](references/language-policy.md)** when the user requests Korean, Japanese, Chinese, or Spanish output. English output does not require reading this reference.
+### Collaborator Initials Gate
+Read [references/collaborator-initials.md](references/collaborator-initials.md)
+and resolve validated initials before any scan, compaction, reservation, or
+artifact write. Use explicit value, project config, user config, then one
+interactive Git-identity confirmation; malformed tiers are skipped. Unresolved
+non-interactive generation returns `NEEDS_CONTEXT` without downstream work.
 
 ---
 
 ## Preview Approval Gate
-
 For persisted preview and auditable task writes, `--spec` is mandatory and must
 resolve to a project-relative path under `docs/`. `--preview-only` and
 `--approve-preview` are mutually exclusive. `--preview-only` may write only the
@@ -118,9 +121,7 @@ guarantee, **read
 ---
 
 ## Workflow
-
 ### Step 1: Verify Input Specification
-
 Receive the specification from the user. It may come in one of these forms:
 
 - Markdown document (file path or inline)
@@ -135,32 +136,29 @@ path-bound.
 
 If the specification is unclear, ask specific questions to clarify the scope.
 
-### Step 2: Collect Project Context
+### Step 2: Resolve Initials and Collect Project Context
 
-Gather information about the project environment to generate realistic tasks. This information directly feeds into task.md verification commands, ownership paths, and category selection matching the tech stack.
+Gather project context for task verification commands, ownership paths, and category selection.
 
 **Targets to collect:**
 - `AGENTS.md`, `CODEX.md`, `CLAUDE.md` — project rules, language policy, CI commands. Prefer Codex-native instructions (`AGENTS.md` / `CODEX.md`) when they conflict with Claude-only guidance.
 - `package.json`, `Makefile`, `pyproject.toml`, etc. — actual lint/test/build commands
 - Project directory structure — `src/` layout, monorepo status, existing module placement
-- Existing `tasks/` directory and `tasks/dependency-graph.md` — whether tasks already exist, numbering collision check
+- Resolve `--tasks-dir` as a repository-relative path; reject absolute, escaping, or symlink-escaping paths with `NEEDS_CONTEXT`.
+- Existing resolved `<tasks-dir>` and `<tasks-dir>/dependency-graph.md` — whether tasks already exist, numbering collision check
 - Docker environment — whether commands require a `docker exec` prefix
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
-- Determine the next starting number by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. Extract existing task IDs from the graph and from directory names, take the highest PHASE across the union, and start the new batch at `highest PHASE + 1` with SEQUENCE reset to `010`. Example: if the highest existing number is `000016-040` — whether it appears in `dependency-graph.md`, `tasks/`, or `tasks/completed/` — the new batch starts at `000017-010`. If the graph and directory scan disagree, continue with the union-based next PHASE and report the mismatch as a concern.
+- Determine the next initials-scoped PHASE by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`, plus corresponding linked-worktree sources. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. For resolved `yk`, only `yk-<six-digit-phase>-<sequence>-...` candidates contribute to the maximum; legacy and other-initials IDs remain readable but do not advance `yk`. An empty owned scope starts at `yk-000001-010`. If the graph and directory scan disagree, continue with the union-based next owned PHASE and report the mismatch as a concern.
 - **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
+- Enumerate `git worktree list --porcelain`; inspect the same relative path in graph, active, and completed sources, reporting inaccessible/mismatched paths.
+- Scope the union maximum to prefixed IDs matching validated initials; keep legacy IDs readable without claiming another namespace. Empty owned scope starts at `<initials>-000001-010`, with sequence `010`.
+- Hold one exclusive lock rooted in the repository common Git directory across scan, candidate selection, compare-and-create reservation, and complete task-artifact/dependency-graph writes. While holding it, compare-and-create `refs/ywc/task-phase/<initials>/<phase>` using the zero object ID; collisions retry bounded candidates, retain refs, and report deterministic conflict without duplicate output. Distinct reservation refs without this transaction-wide lock do not prevent graph lost updates.
 - Identify dependency relationships with existing tasks, preferring `dependency-graph.md` when present, and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
-
 Review the specification for completeness and verify that sufficient information exists for decomposition. The goal is not to demand a perfect spec, but to confirm that the key information needed to determine task boundaries is present.
-
-**Checklist:**
-- Are the boundaries of major features clear? (What is in scope for this spec?)
-- Is the tech stack specified? (Affects category selection and dependencies)
-- If there are external system integrations, is the scope defined? (Determines whether to split into separate tasks)
-- Are there implicitly assumed existing infrastructure or features?
 
 **When unclear areas are found:**
 - Ask the user specific questions before starting task decomposition
@@ -274,16 +272,16 @@ Ask the advisor for three things:
 After receiving the verdict, the executor either continues to Step 7 (Task Naming) with the adjusted plan, or surfaces the "reconsider" verdict to the user for refinement before proceeding.
 
 ### Step 7: Task Naming
-
-Each task name follows this format:
+Each new task name follows this format:
 
 ```
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
-> Example: `000001-010-db-create-user-table` = PHASE `000001` + SEQUENCE `010` + category + description.
+> Example: `yk-000001-010-db-create-user-table` = INITIALS `yk` + PHASE `000001` + SEQUENCE `010` + category + description.
 
 **Numbering Rules:**
 - PHASE: **6-digit** number (`000001`, `000002`, ...) — the wider width reserves headroom for multi-year project growth
+- INITIALS: validated **2–4 lowercase alphanumeric** characters resolved before allocation
 - SEQUENCE: 3-digit number (`010`, `020`, `030`, ...)
 - Sequence increments by 10 (allows inserting tasks later without renumbering)
 - Always use hyphen (`-`) to separate PHASE and SEQUENCE for readability
@@ -300,13 +298,6 @@ Each task name follows this format:
 - `infra` — CI/CD, deployment, configuration
 - `config` — Environment variables, feature flags, `.env` setup (distinct from infra: infra covers CI/CD pipelines and deployment, config covers application-level settings)
 
-**Category Selection Guidelines:**
-- When a task seems to fit multiple categories, choose based on the **primary nature of the change**
-- If creating an API endpoint also requires a DB migration → split into separate tasks (db + api), even in `llm` mode (Safety Invariant)
-- Tasks that only set environment variables use `config`; tasks modifying deployment pipelines use `infra`
-- Auth/security logic is not a category on its own — choose based on implementation location: `api` (endpoint), `domain` (logic), or `lib` (library introduction)
-- In `llm` mode, a single task may bundle `domain` + `api` for one feature — label it with the dominant category (usually `api` when an endpoint is exposed, otherwise `domain`)
-
 **Naming Quality Rules:**
 - Use only lowercase and hyphens
 - Keep names concise, descriptive, and filesystem-friendly
@@ -315,13 +306,16 @@ Each task name follows this format:
 - Do not use "and" in task names — use a unifying noun instead (e.g., `user-auth` rather than `registration-and-login`)
 
 **Examples:**
-- `000001-010-db-create-user-table`
-- `000001-020-lib-setup-auth-library`
-- `000001-030-api-user-registration`
-- `000002-010-ui-login-form`
+- `yk-000001-010-db-create-user-table`
+- `yk-000001-020-lib-setup-auth-library`
+- `yk-000001-030-api-user-registration`
+- `yk-000002-010-ui-login-form`
+
+Existing numeric and unprefixed task IDs remain valid in dependencies, graph
+parsing, compaction, executor ranges, and completion moves. Do not rename
+legacy directories or count them as another collaborator's prefixed namespace.
 
 ### Step 8: Phase Organization
-
 - PHASE represents a meaningful dependency stage (e.g., `000001` = foundation, `000002` = core features, `000003` = integration)
 - Do not create phases arbitrarily — a new phase means "all tasks in the previous phase must be complete before this phase can start"
 - Tasks within the same phase may have internal ordering via SEQUENCE, but conceptually belong to the same stage
@@ -333,7 +327,6 @@ Each task name follows this format:
 - Criterion for splitting phases: "Do all outputs from this stage need to be in place for the next stage's work to be meaningful?"
 
 ### Step 9: Directory and File Generation
-
 Use the path specified by the user for output. If not specified, default to `tasks/`.
 
 Generate the following structure for each task:
@@ -425,15 +418,12 @@ Write structured scenario-based tests (Steps + Expected Result).
 - Library introduction tasks (import and basic operation verified via Verification)
 
 ### Step 10: Generate Dependency Graph
-
 After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
-
 This graph must be consistent with the Dependencies sections in individual README.md files.
 Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
-
 After generating all tasks, verify the following:
 
 **Dependency & Structure:**
@@ -441,16 +431,15 @@ After generating all tasks, verify the following:
 - [ ] No circular dependencies
 - [ ] Phase boundaries correctly set as hard gates
 - [ ] Database migrations and library introductions separated into their own tasks (Safety Invariant in both modes)
-- [ ] No numbering collisions across `dependency-graph.md`, `tasks/`, and `tasks/completed/` (if any)
+- [ ] No numbering collisions across the resolved graph, active/completed tasks, and every linked worktree source
 - [ ] Graph/directory numbering mismatches reported as concerns (if any)
-
 **Naming & Size:**
-- [ ] Naming convention followed (`[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
+- [ ] Naming convention followed (`[INITIALS:2-4]-[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
+- [ ] A common-Git exclusive lock covered scan, candidate selection, reservation, and complete artifact/graph writes; compare-and-create succeeded before any task artifact write
 - [ ] PHASE is 6 digits, SEQUENCE is 3 digits, separated by hyphen
 - [ ] No task name contains "and" (single concern check)
 - [ ] Each task fits within the selected Granularity Mode's size guideline
 - [ ] Selected Granularity Mode applied consistently (bundling, Implementation Steps depth, Ownership scope)
-
 **README.md Quality:**
 - [ ] Both "Depends On" and "Depended By" included
 - [ ] Parallel Execution Metadata included (Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
@@ -477,16 +466,26 @@ After generating all tasks, verify the following:
 
 The final output includes:
 
-1. **Task list summary**: A table organizing all tasks by phase
-2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default - `tasks/`)
-3. **Dependency Graph**: `<tasks-dir>/dependency-graph.md` generated — single source of truth for execution order
-4. **Parallel Execution Notes**: Included in `<tasks-dir>/dependency-graph.md` when parallel worktree execution is expected
+1. **Task list summary** organized by phase
+2. **Directory generation** under `<tasks-dir>/`
+3. **Dependency Graph** at `<tasks-dir>/dependency-graph.md`, including Parallel Execution Notes when needed
 
 When parallel execution is expected, verify that each task is safe for isolated worktree or agent execution.
 
 ---
 
 ## Validation
+
+For allocation, run:
+
+```bash
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-task-generator/scripts/test-initials-allocation.sh"
+bash "${CODEX_HOME:-$HOME/.codex}/skills/ywc-task-generator/scripts/test-parser-ids.sh"
+```
+
+Task Verify must cover config precedence/malformed tiers, linked-worktree
+graph/active/completed sources, scoped empty-graph maxima, concurrent distinct
+reservations, and missing-initials `NEEDS_CONTEXT` before any write.
 
 Before returning `DONE`, verify:
 

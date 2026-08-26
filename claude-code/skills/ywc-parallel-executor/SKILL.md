@@ -46,7 +46,7 @@ When tempted to skip a step, check this table first:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| Task specifier | `<name>` or `<start>..<end>` | `000001-010..000002-040` | Single task or range. Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; range matching uses lexical order. |
+| Task specifier | `<name>` or `<start>..<end>` | `yk-000001-010..yk-000002-040` | Single task or range. Initials-prefixed (`yk-000001-010`), legacy unprefixed (`000001-010`), and legacy `001010` formats are all accepted; range matching uses lexical order. |
 | `--all` | flag | | Execute all tasks |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir tasks/` | Tasks directory (default: tasks/) |
 | `--pr-lang` | `--pr-lang <lang>` | `--pr-lang ko` | PR title/description language passed to PR creation (used by `--aggregate-pr`'s final `ywc-create-pr` call). Default: auto-detect from CLAUDE.md or AGENTS.md, fallback to the project's dominant language |
@@ -59,6 +59,8 @@ When tempted to skip a step, check this table first:
 | `--terse` | flag | | Compact Completion Report: task table + Completion Status only — no prose reminders, no worktree audit lines, no mode explanations |
 
 `--review` can be combined with other flags.
+
+**Task specifiers are matched as plain string prefixes**, so an `[INITIALS]` segment passes through unchanged, legacy unprefixed IDs continue to match, and per-task worktree and branch names (`../worktree-<task-name>`, `feature/<task-name>`) carry the task name verbatim — `yk-000001-010-db-create-events` and the legacy `000001-010-db-create-events` both work without special handling.
 
 **Flag conflicts**: `--local-merge`, `--draft`, `--per-task-pr`, and `--aggregate-pr` are mutually exclusive. If multiple are specified, ask for clarification before execution. `--group-name` is valid only with `--aggregate-pr`.
 

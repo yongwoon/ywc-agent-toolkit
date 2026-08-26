@@ -5,8 +5,12 @@ Heading-based, no markers required — this also retrofits files written
 before this script existed. `tasks/dependency-graph.md` is split on every
 top-level `## ` heading:
 
-- `## Phase NNNNNN — ...`: if every task id *owned by this phase* (its
-  bullets' own id, i.e. matching the heading's own `NNNNNN` prefix — a
+Task ids may carry an optional `<initials>-` prefix (`yk-000001-010-slug`);
+legacy unprefixed ids are equally accepted, and a prefixed phase is never
+grouped together with a legacy phase of the same number.
+
+- `## Phase [<initials>-]NNNNNN — ...`: if every task id *owned by this phase*
+  (its bullets' own id, i.e. matching the heading's own phase key — a
   bullet may also reference another phase's id as a dependency, which is
   deliberately excluded from this phase's own completeness check) exists
   under `<tasks-dir>/completed/`, the section collapses to a single
@@ -39,11 +43,30 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Task id grammar: [INITIALS-]PHASE-SEQUENCE-CATEGORY-SHORT-DESCRIPTION, where
+# INITIALS (^[a-z0-9]{2,4}$) is mandatory on generation and optional on parsing,
+# so legacy unprefixed ids keep working without migration.
+#
+# Boundaries are explicit lookbehind/lookahead rather than `\b`: `\b` holds on
+# both sides of a hyphen, so `\b(\d{6}-\d{3})\b` also matches the `000001-010`
+# *inside* `yk-000001-010`. That partial match would silently rewrite a prefixed
+# id down to its legacy form and merge two collaborators' rows.
 SECTION_SPLIT_RE = re.compile(r"(?m)^(?=## )")
-PHASE_HEADING_RE = re.compile(r"^##\s*Phase\s+(\d{6})\b(.*)$")
+PHASE_HEADING_RE = re.compile(r"^##\s*Phase\s+((?:[a-z0-9]{2,4}-)?\d{6})\b(.*)$")
 DROPPABLE_HEADING_RE = re.compile(r"^##\s*(Parallel Execution Notes|Visual Dependency Graph)\b")
-FULL_ID_RE = re.compile(r"\b(\d{6}-\d{3}-[A-Za-z0-9][A-Za-z0-9-]*)\b")
-SHORT_ID_RE = re.compile(r"\b(\d{6}-\d{3})\b")
+FULL_ID_RE = re.compile(r"(?<![A-Za-z0-9-])((?:[a-z0-9]{2,4}-)?\d{6}-\d{3}-[A-Za-z0-9][A-Za-z0-9-]*)")
+SHORT_ID_RE = re.compile(r"(?<![A-Za-z0-9-])((?:[a-z0-9]{2,4}-)?\d{6}-\d{3})(?![A-Za-z0-9-])")
+SHORT_OF_FULL_RE = re.compile(r"^((?:[a-z0-9]{2,4}-)?\d{6}-\d{3})")
+
+
+def _short_id(full_id: str) -> str:
+    """Reduce a full task id to its `[INITIALS-]PHASE-SEQUENCE` short form.
+
+    Splitting on "-" would mis-slice a prefixed id (`yk-000001-010-db-x` ->
+    `yk-000001`), so the short form is taken from the grammar itself.
+    """
+    match = SHORT_OF_FULL_RE.match(full_id)
+    return match.group(1) if match else full_id
 
 
 def _build_short_to_full(content: str, tasks_dir: Path) -> dict[str, str]:
@@ -53,16 +76,18 @@ def _build_short_to_full(content: str, tasks_dir: Path) -> dict[str, str]:
             continue
         for entry in base.iterdir():
             if entry.is_dir() and FULL_ID_RE.fullmatch(entry.name):
-                phase, seq = entry.name.split("-")[:2]
-                mapping.setdefault(f"{phase}-{seq}", entry.name)
+                mapping.setdefault(_short_id(entry.name), entry.name)
     for full_id in FULL_ID_RE.findall(content):
-        phase, seq = full_id.split("-")[:2]
-        mapping.setdefault(f"{phase}-{seq}", full_id)
+        mapping.setdefault(_short_id(full_id), full_id)
     return mapping
 
 
 def _resolve_ids(section_text: str, short_to_full: dict[str, str]) -> list[str] | None:
-    shorts = sorted(set(SHORT_ID_RE.findall(section_text)))
+    # SHORT_ID_RE's trailing lookahead deliberately refuses to match inside a
+    # full id, so the shorts of full ids are derived instead of re-scanned.
+    found = set(SHORT_ID_RE.findall(section_text))
+    found.update(_short_id(full_id) for full_id in FULL_ID_RE.findall(section_text))
+    shorts = sorted(found)
     if not shorts:
         return None
     fulls = []
@@ -90,14 +115,17 @@ def compact(content: str, tasks_dir: Path) -> tuple[str, int, int]:
         heading_line = block.split("\n", 1)[0]
         phase_match = PHASE_HEADING_RE.match(heading_line)
         if phase_match:
-            phase_num, rest = phase_match.groups()
+            # The group key carries the initials prefix (`yk-000001`, not
+            # `000001`): grouping on the bare digits would merge two
+            # collaborators' phases — and a legacy phase with a prefixed one.
+            phase_key, rest = phase_match.groups()
             if rest.strip().lower() == "— done":
                 kept.append(block)
                 continue
-            owned_ids = sorted({i for i in FULL_ID_RE.findall(block) if i.startswith(f"{phase_num}-")})
+            owned_ids = sorted({i for i in FULL_ID_RE.findall(block) if i.startswith(f"{phase_key}-")})
             if _all_completed(owned_ids, completed_dir):
                 id_list = ", ".join(f"`{i}`" for i in owned_ids)
-                kept.append(f"## Phase {phase_num} — done\n- Completed: {id_list}\n\n")
+                kept.append(f"## Phase {phase_key} — done\n- Completed: {id_list}\n\n")
                 compacted_phases += 1
             else:
                 kept.append(block)

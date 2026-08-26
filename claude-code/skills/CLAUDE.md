@@ -414,6 +414,33 @@ use. Resolution is performed in the main skill context where both `CLAUDE.md` fi
 auto-loaded; a subagent that must resolve independently reads them explicitly (see the
 reference).
 
+## Task Initials Resolution
+
+Task-ID generators that emit multiple tasks per project must namespace the `[INITIALS]`
+segment to prevent concurrent-execution allocation collisions. The single canonical
+procedure for resolving collaborator initials is defined in `references/initials-resolution.md`.
+Do not inline or approximate the precedence chain, derivation algorithm, or `## Task Initials`
+section format in a SKILL.md body — reference the file with an explicit
+`> **Action required**: Read [references/initials-resolution.md]` directive, the same way
+`language-resolution.md` is referenced.
+
+The reference is the canonical source of three things (do not restate them here or in any
+SKILL.md body):
+
+- The precedence chain (`--initials` flag → project `CLAUDE.md ## Task Initials` → derivation
+  from `git config user.email` / `user.name` + confirmation → cache).
+- The derivation algorithm (split email local-part on `.`/`_`/`-`, take first characters of
+  each segment, validate against `^[a-z0-9]{2,4}$`).
+- The canonical `## Task Initials` section format that consuming skills write.
+
+**Consuming skill**: `ywc-task-generator` (1 consumer, compared to 6 consumers of language
+resolution).
+
+**No-block invariant**: absence of a `## Task Initials` section never blocks, delays, or
+errors any consuming skill — when initials cannot be resolved (no flag, no section, derivation
+declined), the skill proceeds without an initials namespace and legacy unprefixed task IDs
+remain valid.
+
 ## Codex-skill: Maintained Independently
 
 `tools/codex-skill/skills/` and `tools/claude-code/skills/` are **no longer

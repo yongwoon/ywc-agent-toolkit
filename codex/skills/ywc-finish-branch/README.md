@@ -20,9 +20,11 @@ Feature Branch를 Base Branch에 전달(deliver)하는 Codex Skill입니다. Mar
 ### 기본 사용 (PR-based)
 
 ```
-$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop
+$ywc-finish-branch --mode normal-pr --branch feature/yk-000001-010-db-create-users \
+  --task-name yk-000001-010-db-create-users --base-branch develop
 ```
+
+기존 unprefixed(`000001-010-...`) 및 legacy numeric(`001010-...`) task name도 유효하며, 원래 전체 이름을 유지해 완료 이동합니다.
 
 ### Local Merge
 

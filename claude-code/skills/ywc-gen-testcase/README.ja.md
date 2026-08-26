@@ -23,7 +23,7 @@ PR URL から生成:
 ### Task ベース生成
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Git Range ベース生成
@@ -126,7 +126,7 @@ Step 6: Validate & Report
 | Input | Single file (default) | `--split` |
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
-| Task | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Task | `task-[<initials>-]<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (両端が tag なら `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 

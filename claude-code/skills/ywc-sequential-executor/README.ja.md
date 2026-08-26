@@ -15,21 +15,23 @@ behavior change は test-first です：bugfix は fix の前に失敗する reg
 単一 Task を実行します:
 
 ```text
-/ywc-sequential-executor 000001-010-db-create-users-table
+/ywc-sequential-executor yk-000001-010-db-create-users-table
 ```
 
 Phase+Sequence prefix でも指定できます:
 
 ```text
-/ywc-sequential-executor 000001-010
+/ywc-sequential-executor yk-000001-010
 ```
+
+Task ID の `[INITIALS]` 接頭辞は文字列 prefix として照合されるため、legacy な接頭辞なし ID (`000001-010-db-create-users-table`) もそのまま動作します。
 
 ### Range 実行
 
 連続した Task を順次繰り返し実行します:
 
 ```text
-/ywc-sequential-executor 000001-010..000002-030
+/ywc-sequential-executor yk-000001-010..yk-000002-030
 ```
 
 ### 次の Task を自動検出
