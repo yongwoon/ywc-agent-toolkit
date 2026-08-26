@@ -62,7 +62,7 @@ When both `--initials` flag and project `CLAUDE.md` policy are absent:
 | `user.email = alice_smith@example.com` | `as` (a from alice, s from smith) |
 | `user.email = j.doe@example.com` | `jd` (j from j, d from doe) |
 | `user.email = bob-jones@example.com` | `bj` (b from bob, j from jones) |
-| `user.name = Jane (first 4 chars)` | `jane` (< 5 chars total) |
+| `user.name = Jane` | `jane` (first-char join yields `j`, < 2 chars → fall back to first 2-4 alphanumerics) |
 | `user.email = a_b_c_d_e@…` | `abcde` → fails regex (5 chars), rejects; user specifies |
 
 ## Validation
@@ -104,13 +104,22 @@ When `ywc-task-generator` generates a new task-ID PHASE number:
 - **Initials-scoped matching:** Only task-ID entries carrying the resolved initials prefix
   (e.g., `yk-000001-010-…`) are compared to find the maximum PHASE. Entries with other
   initials and legacy unprefixed entries are excluded from this comparison.
-- **Worktree union:** The scan includes `tasks/` and `tasks/completed/` directories from:
-  - The current worktree (via `pwd`).
-  - All linked worktrees returned by `git worktree list --porcelain`.
-  - Paths without `tasks/` are silently skipped (no error).
-- **Legacy seed rule:** If no initials-prefixed entries exist (count = 0) and at least one
-  legacy unprefixed entry exists, seed the first PHASE of the new initials namespace with
-  `legacy_max_phase + 1`. This prevents the same `dependency-graph.md` from mixing
+- **Worktree union:** The scan includes `<tasks-dir>` and `<tasks-dir>/completed`
+  directories from:
+  - The current worktree.
+  - All linked worktrees returned by `git worktree list --porcelain`, joined as
+    `<worktree-path>/<tasks-dir>`.
+  - Paths that do not exist are silently skipped (no error).
+- **Path normalization:** Before joining `<worktree-path>/<tasks-dir>`, normalize
+  `<tasks-dir>` to a path relative to the current worktree root. If it was supplied as an
+  absolute path, strip the `git rev-parse --show-toplevel` prefix to relativize it. If the
+  path lies outside the repository, skip the union entirely and scan the current worktree
+  only.
+- **Legacy seed rule:** If no entries carrying the **resolved** `<initials>-` prefix exist
+  anywhere in the union (count = 0) and at least one legacy unprefixed entry exists, seed
+  the first PHASE of the new initials namespace with `legacy_max_phase + 1`. A single
+  entry bearing the resolved prefix disables this rule. Entries carrying a *different*
+  collaborator's prefix neither satisfy nor disable it — they are simply out of scope. This prevents the same `dependency-graph.md` from mixing
   `## Phase 000001` and `## Phase yk-000001` at identical numeric values, which would be
   ambiguous to humans reading the document.
 - **Mechanics:** The precise implementation of PHASE scanning, graph validation, and
@@ -120,7 +129,7 @@ When `ywc-task-generator` generates a new task-ID PHASE number:
 
 ## Caching
 
-Initials are cached to the project `CLAUDE.md` exactly once, on first resolution.
+At most one `## Task Initials` section is maintained in the project `CLAUDE.md`.
 
 - **Create-or-replace:** The first invocation with a resolved initials value writes a
   `## Task Initials` section. Subsequent invocations read it and skip re-derivation /
@@ -138,8 +147,9 @@ Initials are cached to the project `CLAUDE.md` exactly once, on first resolution
 
 Before confirming a derived initials value, the skill must:
 
-1. Scan the `tasks/` and `tasks/completed/` directories of the current worktree and all
-   linked worktrees (same union as [Numbering Scope](#numbering-scope)).
+1. Scan the `<tasks-dir>` and `<tasks-dir>/completed` directories of the current worktree
+   and all linked worktrees (same union, including the same path normalization, as
+   [Numbering Scope](#numbering-scope)).
 2. Collect all unique initials prefixes found in task-ID entries matching
    `^([a-z0-9]{2,4})-[0-9]{6}-[0-9]{3}-`.
 3. If the derived value already exists in the list:
@@ -172,8 +182,9 @@ any consuming skill.**
 - When a skill cannot resolve initials (no flag, no section, derivation declined / not run),
   it proceeds without allocating an initials namespace. Legacy unprefixed task IDs remain
   valid and supported.
-- This mirrors the no-block invariant of the language-resolution reference and follows the
+- This mirrors the no-block invariant of the Language Resolution section in
+  `claude-code/skills/CLAUDE.md` and follows the
   design principle that **configuration absence is a valid, predictable state**, not an
   error.
-- A project can use task-ID namespacing immediately (via `--initials flag` or one-time
+- A project can use task-ID namespacing immediately (via the `--initials` flag or one-time
   `CLAUDE.md` section creation) or never (legacy mode indefinitely). Both are correct.
