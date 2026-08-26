@@ -15,6 +15,7 @@ PR을 "대응"한다는 것은 단순히 Comment에 답변하는 것이 아니�
 - Reviewer가 사용한 언어에 맞춰 답변 작성
 - 이미 처리되었거나 답변된 Comment는 Skip
 - Comment 처리 후 CI 실패와 base Conflict를 확인하여 PR을 Mergeable 상태로 마감 (Comment가 0건이어도 두 Gate는 항상 실행)
+- CodeRabbit Review Body에 중첩된 Nitpick 등급 Comment도 별도 List로 Fetch하여 Actionable Comment와 함께 처리
 
 ## 사용 방법
 

@@ -15,6 +15,7 @@ PR을 "대응"한다는 것은 단순히 Comment에 답변하는 것이 아니�
 - **답변 언어 매칭**: Reviewer가 한국어로 작성하면 한국어로 답변
 - **중복 방지**: 이전에 처리한 Comment나 이미 답변이 달린 Comment는 Skip
 - **CI·Conflict까지 대응**: Comment 처리 후 CI 실패와 base Conflict를 확인하여 PR을 Mergeable 상태로 마감 (Comment가 0건이어도 두 Gate는 항상 실행)
+- **Nitpick 등급 감지**: CodeRabbit Review Body에 중첩된 Nitpick Comment도 별도 목록으로 Fetch하여 Actionable Comment와 함께 처리
 
 ## 사용 방법
 
