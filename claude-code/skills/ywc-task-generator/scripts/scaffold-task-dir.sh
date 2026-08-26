@@ -34,8 +34,22 @@ case "$TASK_NAME" in
   */*|*..*) echo "error: invalid task name (no '/' or '..'): $TASK_NAME" >&2; exit 2 ;;
 esac
 
-# Warn (do not block) when the name diverges from PHASE-SEQUENCE-category-desc.
-if ! [[ "$TASK_NAME" =~ ^[0-9]{6}-[0-9]{3}-[a-z]+-[a-z0-9-]+$ ]]; then
+# Grammar: [INITIALS-]PHASE-SEQUENCE-CATEGORY-SHORT-DESCRIPTION.
+# INITIALS (^[a-z0-9]{2,4}$) is mandatory on generation and optional on parsing,
+# so legacy unprefixed task names stay valid forever (no migration).
+#
+# An INITIALS segment that is present but malformed is a hard error: a name such
+# as TOOLONG-000001-010-db-x would otherwise be scaffolded under a directory the
+# initials-scoped numbering scan can never attribute to any collaborator. Names
+# with no initials-like segment keep the pre-existing warn-only behaviour.
+if [[ "$TASK_NAME" =~ ^[^-]+-[0-9]{6}-[0-9]{3}- ]] \
+  && ! [[ "$TASK_NAME" =~ ^[a-z0-9]{2,4}-[0-9]{6}-[0-9]{3}- ]]; then
+  echo "error: '$TASK_NAME' has an invalid initials prefix (expected ^[a-z0-9]{2,4}\$)" >&2
+  exit 1
+fi
+
+# Warn (do not block) when the name diverges from [INITIALS-]PHASE-SEQUENCE-category-desc.
+if ! [[ "$TASK_NAME" =~ ^([a-z0-9]{2,4}-)?[0-9]{6}-[0-9]{3}-[a-z]+-[a-z0-9-]+$ ]]; then
   echo "warning: '$TASK_NAME' does not match NNNNNN-NNN-category-description" >&2
 fi
 
