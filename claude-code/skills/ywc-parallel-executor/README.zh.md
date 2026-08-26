@@ -9,13 +9,15 @@
 ## 使用方法
 
 ```text
-/ywc-parallel-executor 000001-010-db-create-events           # 单个任务
-/ywc-parallel-executor 000001-010..000002-040                # 范围（并行）
-/ywc-parallel-executor --all                                 # 执行全部
-/ywc-parallel-executor 000001-010..000002-040 --review       # 并行 + 自动审查
-/ywc-parallel-executor 000001-010..000002-040 --local-merge  # 本地合并，无 PR
-/ywc-parallel-executor 000001-010..000002-040 --draft        # 创建草稿 PR
+/ywc-parallel-executor yk-000001-010-db-create-events              # 单个任务
+/ywc-parallel-executor yk-000001-010..yk-000002-040                # 范围（并行）
+/ywc-parallel-executor --all                                       # 执行全部
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --review       # 并行 + 自动审查
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --local-merge  # 本地合并，无 PR
+/ywc-parallel-executor yk-000001-010..yk-000002-040 --draft        # 创建草稿 PR
 ```
+
+Task ID 的 `[INITIALS]` 前缀按纯字符串前缀匹配，worktree 与 branch 名称原样沿用任务名。旧的无前缀 ID（`000001-010-db-create-events`）依然可用。
 
 ## 选项
 
