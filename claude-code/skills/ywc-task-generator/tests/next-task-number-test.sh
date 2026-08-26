@@ -11,7 +11,9 @@ set -euo pipefail
 skill_dir="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 script="$skill_dir/scripts/next-task-number.sh"
 tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/next-task-number-test.XXXXXX")"
-tmpdir="$(CDPATH='' cd -- "$tmpdir" && pwd -P)"
+# NOTE: deliberately NOT normalized with `pwd -P`. Doing so hid the symlinked-cwd
+# bug (the union silently switched off) from this entire suite, because macOS
+# $TMPDIR is itself a symlink. The symlink fixture at the end depends on this.
 trap 'rm -rf "$tmpdir"' EXIT
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
@@ -131,5 +133,39 @@ invalid_status=$?
 set -e
 [ "$invalid_status" -eq 1 ] || fail "invalid initials accepted (exit $invalid_status)"
 grep -q 'invalid initials' "$tmpdir/invalid.log" || fail "no invalid-initials error message"
+
+
+# --- Legacy seed with a FOREIGN prefix present (contract: neither satisfies ---
+# nor disables). Without this, AC4's fixture has no legacy entry, so the seed
+# rule could not have fired either way and its assertion is vacuous.
+repo="$(scratch_repo seed_foreign)"
+mkdir -p "$repo/tasks/000007-010-db-legacy" "$repo/tasks/ab-000050-010-db-x"
+out="$(cd "$repo" && bash "$script" tasks yk 2>/dev/null)"
+[ "$out" = "000008-010" ] \
+  || fail "foreign prefix broke the legacy seed: got '$out', expected 000008-010"
+
+# --- A symlinked cwd must not disable the worktree union --------------------
+# `git rev-parse --show-toplevel` is physical, so a logical `pwd` through a
+# symlink made the path compare as "outside the repository" and skipped the
+# union — returning a LOW number, i.e. failing open into the exact cross-worktree
+# collision this scan prevents. Each run reserves its phase, so the two probes
+# need independent repositories.
+repo="$(scratch_repo symlink_a)"
+mkdir -p "$repo/tasks"
+git -C "$repo" worktree add -q -b sym_a "$tmpdir/symlink-a-side" >/dev/null 2>&1
+mkdir -p "$tmpdir/symlink-a-side/tasks/yk-000012-010-db-x"
+direct="$(cd "$repo" && bash "$script" tasks yk 2>/dev/null)"
+
+repo="$(scratch_repo symlink_b)"
+mkdir -p "$repo/tasks"
+git -C "$repo" worktree add -q -b sym_b "$tmpdir/symlink-b-side" >/dev/null 2>&1
+mkdir -p "$tmpdir/symlink-b-side/tasks/yk-000012-010-db-x"
+ln -s symlink_b "$tmpdir/symlink-link"
+through="$(cd "$tmpdir/symlink-link" && bash "$script" tasks yk 2>/dev/null)"
+
+[ "$direct" = "000013-010" ] \
+  || fail "symlink baseline: direct run returned '$direct', expected 000013-010"
+[ "$through" = "$direct" ] \
+  || fail "symlinked cwd disabled the union: got '$through', expected '$direct'"
 
 echo "PASS: next-task-number.sh initials fixtures"

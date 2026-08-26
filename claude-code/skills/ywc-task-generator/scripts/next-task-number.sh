@@ -110,7 +110,13 @@ normalize_tasks_dir() {
   local parent abs
   REPO_TOP="$(git rev-parse --show-toplevel 2>/dev/null)" || return 0
   [ -n "$REPO_TOP" ] || return 0
-  parent="$(CDPATH='' cd -- "$(dirname -- "$TASKS_DIR")" 2>/dev/null && pwd)" || return 0
+  # `pwd -P` (physical) is required: `git rev-parse --show-toplevel` is physical,
+  # so a logical `pwd` through any symlinked path component fails the prefix test
+  # below, silently disabling the union and re-introducing the cross-worktree
+  # PHASE collision this scan exists to prevent. macOS $TMPDIR is symlinked.
+  # Only the parent is resolved; the final component must not be, or a symlinked
+  # <tasks-dir> would relativize to its target.
+  parent="$(CDPATH='' cd -- "$(dirname -- "$TASKS_DIR")" 2>/dev/null && pwd -P)" || return 0
   [ -n "$parent" ] || return 0
   abs="${parent%/}/$(basename -- "$TASKS_DIR")"
   if [ "$abs" = "$REPO_TOP" ]; then
@@ -187,6 +193,9 @@ scan() {
     name="$(basename "$entry")"
     if [[ "$name" =~ $TASK_RE ]]; then
       phase=$((10#${BASH_REMATCH[1]}))
+      # In no-initials mode TASK_RE *is* the legacy regex, so this tallies
+      # unprefixed entries. Safe only because its sole reader is guarded by
+      # [ -n "$INITIALS" ]; do not read it outside that guard.
       prefixed_count=$((prefixed_count + 1))
       # Use `if` (not `(( )) && ...`): under `set -e` a false `(( ))` returns 1
       # as the loop's last command, which would exit before the final printf.
@@ -231,7 +240,15 @@ if [ -f "$graph" ]; then
     graph_re="${INITIALS}-[0-9]{6}-[0-9]{3}-"
     graph_field=2
   else
-    graph_re='[0-9]{6}-[0-9]{3}-'
+    # Anchored on the left: unanchored, this matches the `000009-010-` INSIDE
+    # `yk-000009-010-db-x`, while the directory scan correctly ignores prefixed
+    # entries — producing a permanent spurious drift WARN once any prefixed id
+    # lands in the graph. Same substring hazard FR4 mandates guarding against.
+    graph_re='(^|[^A-Za-z0-9-])[0-9]{6}-[0-9]{3}-'
+    # grep -oE has no lookbehind on BSD grep, so the boundary character is part
+    # of the match; the `sed` in the pipeline below strips it back off. It only
+    # removes leading non-alphanumerics, so the `yk` of an initials match is
+    # never touched.
     graph_field=1
   fi
   while IFS= read -r phase; do
@@ -239,8 +256,12 @@ if [ -f "$graph" ]; then
     graph_hits=$((graph_hits + 1))
     phase=$((10#$phase))
     if (( phase > graph_max )); then graph_max=$phase; fi
-  done < <(grep -oE "$graph_re" "$graph" | cut -d- -f"$graph_field" | sort -u)
-  if [ -z "$INITIALS" ] || (( graph_hits > 0 )); then
+  done < <(grep -oE "$graph_re" "$graph" | sed 's/^[^A-Za-z0-9]*//' | cut -d- -f"$graph_field" | sort -u)
+  # Guard both modes: with zero id hits there is nothing to compare, and
+  # comparing a graph_max of 0 against a real directory max emits a meaningless
+  # "graph drifted" WARN. A graph holding only prefixed ids hits this in legacy
+  # mode. Graphs that do contain ids for the active mode are unaffected.
+  if (( graph_hits > 0 )); then
     if (( graph_max != max )); then
       printf 'WARN: dependency-graph.md highest PHASE (%06d) disagrees with task directories (%06d); directories win. Graph may have drifted — reconcile before generating.\n' \
         "$graph_max" "$max" >&2
@@ -253,6 +274,15 @@ next=$((max + 1))
 # Atomic reservation — see the ATOMIC PHASE RESERVATION block above.
 reserve() {
   local phase="$1" attempt=0 ref count
+  # `git update-ref <ref> HEAD ''` fails unconditionally when HEAD is unresolvable
+  # (unborn HEAD on a freshly-init'd repo, or no repo at all). Without this
+  # preflight the CAS loop cannot tell that apart from "ref exists" and burns
+  # every retry before reporting non-existent ledger corruption.
+  if ! git rev-parse --verify --quiet HEAD >/dev/null 2>&1; then
+    printf 'ERROR: cannot reserve a PHASE for initials %s: HEAD does not resolve (unborn HEAD or not a git repository). Commit once, then retry; or omit the initials argument to use legacy unprefixed numbering.\n' \
+      "$INITIALS" >&2
+    return 1
+  fi
   while :; do
     ref="$(printf 'refs/ywc/task-phase/%s/%06d' "$INITIALS" "$phase")"
     if git update-ref "$ref" HEAD '' 2>/dev/null; then
@@ -261,7 +291,7 @@ reserve() {
     fi
     attempt=$((attempt + 1))
     if (( attempt >= 100 )); then
-      count="$(git for-each-ref --format='%(refname)' "refs/ywc/task-phase/$INITIALS/" 2>/dev/null | wc -l | tr -d '[:space:]')"
+      count="$(git for-each-ref --format='%(refname)' "refs/ywc/task-phase/$INITIALS/" 2>/dev/null | wc -l | tr -d '[:space:]')" || count='?'
       printf 'ERROR: PHASE reservation exhausted %d retries for initials %s; refs/ywc/task-phase/%s/ holds %s ref(s). Reaching this cap implies ledger corruption — inspect it before retrying.\n' \
         "$attempt" "$INITIALS" "$INITIALS" "$count" >&2
       return 1
