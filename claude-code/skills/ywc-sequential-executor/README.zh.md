@@ -15,21 +15,23 @@
 执行单个任务：
 
 ```text
-/ywc-sequential-executor 000001-010-db-create-users-table
+/ywc-sequential-executor yk-000001-010-db-create-users-table
 ```
 
 也可以通过阶段+序列前缀指定：
 
 ```text
-/ywc-sequential-executor 000001-010
+/ywc-sequential-executor yk-000001-010
 ```
+
+Task ID 的 `[INITIALS]` 前缀按纯字符串前缀匹配，因此旧的无前缀 ID（`000001-010-db-create-users-table`）依然可用。
 
 ### 范围执行
 
 在循环中顺序执行连续任务：
 
 ```text
-/ywc-sequential-executor 000001-010..000002-030
+/ywc-sequential-executor yk-000001-010..yk-000002-030
 ```
 
 ### 自动检测下一个任务

@@ -15,6 +15,13 @@ Git worktree 生命周期管理 Skill。worktree 优先级解析（`.worktrees/`
 
 关于完整的参数表和优先级解析链，请参见 [SKILL.md](./SKILL.md)。
 
+## 任务名称
+
+任务名与分支名原样使用，因此任务 ID 的 `[INITIALS]` 前缀可透明通过。
+`--task-name yk-000001-010-db-create-users` 与旧的无前缀
+`--task-name 000001-010-db-create-users` 均有效，
+`feature/yk-000001-010-db-create-users` 也是有效的 git ref。
+
 ## 捆绑脚本
 
 | Script | Purpose |

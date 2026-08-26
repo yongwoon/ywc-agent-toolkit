@@ -17,6 +17,12 @@ lifecycle 관리 skill. Worktree priority resolution (`.worktrees/` > CLAUDE.md
 
 상세 argument table 과 priority chain 은 [SKILL.md](./SKILL.md) 를 참조하십시오.
 
+## Task 이름
+
+Task 이름과 branch 이름은 그대로 사용되므로 Task ID 의 `[INITIALS]` 접두가 투명하게 통과합니다.
+`--task-name yk-000001-010-db-create-users` 와 legacy 무접두 `--task-name 000001-010-db-create-users`
+가 모두 유효하며, `feature/yk-000001-010-db-create-users` 도 유효한 git ref 입니다.
+
 ## Bundled Scripts
 
 | Script | Purpose |

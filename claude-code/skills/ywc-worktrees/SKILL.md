@@ -46,13 +46,15 @@ When tempted to skip a step, check this table first:
 | Parameter | Format | Example | Description |
 |---|---|---|---|
 | `--mode` | `<mode>` | `--mode create` | One of `create`, `audit`, `prune`, `resolve`. See [Modes](#modes). |
-| `--task-name` | `<task-name>` | `--task-name 000001-010-db-create-users` | The task this worktree belongs to. Required for `create` and `prune`; optional for `audit`. |
-| `--branch` | `<branch-name>` | `--branch feature/000001-010-db-create-users` | The branch to associate with the worktree. Required for `create`; optional for `prune` (defaults to `feature/<task-name>`). |
+| `--task-name` | `<task-name>` | `--task-name yk-000001-010-db-create-users` | The task this worktree belongs to. Required for `create` and `prune`; optional for `audit`. |
+| `--branch` | `<branch-name>` | `--branch feature/yk-000001-010-db-create-users` | The branch to associate with the worktree. Required for `create`; optional for `prune` (defaults to `feature/<task-name>`). |
 | `--base-branch` | `<branch-name>` | `--base-branch develop` | The starting point for the new branch. Required for `create` (no default). |
 | `--root` | `<path>` | `--root .worktrees` | Fallback worktree root when the project has neither `.worktrees/` nor `CLAUDE.md` `worktree_root`. Project-level configuration wins over this value. |
-| `--expect` | `<task1,task2,...>` | `--expect 000001-010,000001-020` | (Audit only) Comma-separated list of task names that should currently have a worktree. Any extra or missing worktree fails the audit. |
+| `--expect` | `<task1,task2,...>` | `--expect yk-000001-010,yk-000001-020` | (Audit only) Comma-separated list of task names that should currently have a worktree. Any extra or missing worktree fails the audit. |
 | `--force` | flag | | (Prune only) Pass `--force` to `git worktree remove` even if the worktree is dirty. Use only when the caller has confirmed the worktree's contents are disposable. |
 | `--keep-branch` | flag | | (Prune only) Remove the worktree and prune stale metadata, but **skip** the local branch deletion (`git branch -d`) and its verification. Same semantics as `ywc-finish-branch --keep-branch`: use when the branch must survive the worktree teardown (e.g. an integration branch a caller will later raise a trunk PR from). |
+
+**Task and branch names are used verbatim**, so an `[INITIALS]` segment passes through unchanged: `yk-000001-010-db-create-users` and the legacy unprefixed `000001-010-db-create-users` are both valid `--task-name` values, and `feature/yk-000001-010-db-create-users` is a valid git ref requiring no special handling.
 
 ## Modes
 

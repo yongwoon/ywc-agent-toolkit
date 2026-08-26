@@ -46,7 +46,7 @@ Parse `$ARGUMENTS` for the following parameters:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| Task specifier | `<task-name>` or `<start>..<end>` | `000001-010-db-create-users` or `000001-010..000002-030` | Single task or range (phase+sequence prefix match). Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; prefix matching works with either. |
+| Task specifier | `<task-name>` or `<start>..<end>` | `yk-000001-010-db-create-users` or `yk-000001-010..yk-000002-030` | Single task or range (phase+sequence prefix match). Initials-prefixed (`yk-000001-010`), legacy unprefixed (`000001-010`), and legacy `001010` formats are all accepted; prefix matching works with any of them. |
 | `--pr-lang` | `--pr-lang <lang>` | `--pr-lang ja` | PR title/description language. Default: auto-detect from CLAUDE.md or AGENTS.md, fallback to project's dominant language |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir ./docs/tasks` | Tasks directory path. Default: `tasks/` |
 | `--skip-ci-wait` | flag | | Skip CI wait and auto-merge (create PR only) |
@@ -66,7 +66,7 @@ Parse `$ARGUMENTS` for the following parameters:
 
 Example:
 ```text
-/ywc-sequential-executor 000001-010 --local-merge --draft
+/ywc-sequential-executor yk-000001-010 --local-merge --draft
 # → Stop. Report: "--local-merge and --draft are mutually exclusive
 #   (local-merge produces no PR; draft requires one). Which mode did you want?"
 #   With --non-interactive: same stop point, no ask — Completion Status: NEEDS_CONTEXT
@@ -171,7 +171,7 @@ The executor writes `.ywc-run-state.json` in the project root after each major s
 
 ### Single Task
 
-Match the specifier against task directory names in the tasks directory. Accept both exact match and prefix match (e.g., `000001-010` matches `000001-010-db-create-users-table`; legacy `001010` format is still accepted during the transition period).
+Match the specifier against task directory names in the tasks directory. Accept both exact match and prefix match (e.g., `yk-000001-010` matches `yk-000001-010-db-create-users-table`; the legacy unprefixed `000001-010` and `001010` formats are still accepted). The specifier is matched as a plain string prefix, so the `[INITIALS]` segment passes through unchanged and legacy unprefixed IDs continue to match without any special handling.
 
 ### Range Execution
 
@@ -267,7 +267,7 @@ This solves the code-availability problem that Step 1's dependency-validation ex
 
 **`--aggregate-pr` mode:** create the `work/<name>` branch once before the loop (Section A of [references/aggregate-pr.md](./references/aggregate-pr.md)), then branch every task from the **work branch** (`git checkout work/<name> && git checkout -b feature/<task-name>`). Each task's Step 5 local-merges back into the work branch, so the next task sees all prior work — the same guarantee normal/local-merge mode gets from the base branch, but isolated on the work branch.
 
-Branch name format: `feature/<task-name>` (e.g., `feature/000001-010-db-create-users-table`)
+Branch name format: `feature/<task-name>` (e.g., `feature/yk-000001-010-db-create-users-table`, or `feature/000001-010-db-create-users-table` for a legacy unprefixed task)
 
 **Checkpoint**: Update `.ywc-run-state.json` — set `current_task` to `<task-name>`, `current_step` to `2`, `branch` to `feature/<task-name>`, and `last_checkpoint` to current UTC time.
 

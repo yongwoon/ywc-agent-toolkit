@@ -9,8 +9,8 @@ worker payload 에 interface-first directive 와 test-first-where-feasible direc
 ## 사용 방법
 
 ```text
-/ywc-parallel-executor 000001-010-db-create-events           # 단일 Task
-/ywc-parallel-executor 000001-010..000002-040                     # 범위 지정 (병렬)
+/ywc-parallel-executor yk-000001-010-db-create-events           # 단일 Task
+/ywc-parallel-executor yk-000001-010..yk-000002-040                     # 범위 지정 (병렬)
 /ywc-parallel-executor --all                              # 전체 실행
 /ywc-parallel-executor 000001-010..000002-040 --review            # 병렬 + 자동 Review
 /ywc-parallel-executor 000001-010..000002-040 --local-merge       # PR 없이 Local merge
@@ -18,6 +18,8 @@ worker payload 에 interface-first directive 와 test-first-where-feasible direc
 /ywc-parallel-executor 000001-010..000002-040 --per-task-pr       # Task 마다 PR 생성·CI·review·merge
 /ywc-parallel-executor 000026-010..000026-030 --aggregate-pr --group-name payments --pr-lang ko  # Group 단위 단일 PR
 ```
+
+Task ID 의 `[INITIALS]` 접두는 문자열 prefix 로 매칭되며, worktree 와 branch 이름은 Task 이름을 그대로 사용합니다. legacy 무접두 ID (`000001-010-db-create-events`) 도 그대로 동작합니다.
 
 ## Option
 
