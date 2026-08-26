@@ -37,7 +37,7 @@ Exactly one input mode must resolve. If more than one is given, stop and ask —
 | Input mode | How to specify | Primary source |
 |---|---|---|
 | **PR** | PR URL or PR number | `gh pr view`, `gh pr diff` |
-| **Task** | Task name or `<phase>-<sequence>` prefix | `<tasks-dir>/<task>/task.md` + `README.md` |
+| **Task** | Task name or `[<initials>-]<phase>-<sequence>` prefix | `<tasks-dir>/<task>/task.md` + `README.md` |
 | **Range** | Positional `<start>..<end>` (SHA / tag / branch / `HEAD~N`) or `--range <spec>` | `git log`, `git diff <start>..<end>` |
 | **Diff** | `--from-diff` flag | Current `git diff HEAD` |
 
@@ -237,7 +237,7 @@ table below with an `.html` extension.
 | Input | Single file (default) | `--split` mode |
 |---|---|---|
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
-| Task | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| Task | `task-[<initials>-]<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | Range | `range-<short-start>-<short-end>-<slug>.md` (tag names used verbatim when both endpoints are tags, e.g. `range-v1.2-v1.3-<slug>.md`) | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 

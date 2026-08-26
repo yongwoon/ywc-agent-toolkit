@@ -130,7 +130,7 @@
 | 输入 | 单文件（默认） | `--split` |
 | --- | --- | --- |
 | PR | `pr-<number>-<slug>.md` | `pr-<number>-<slug>-dev.md` + `...-qa.md` |
-| 任务 | `task-<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
+| 任务 | `task-[<initials>-]<phase>-<sequence>-<slug>.md` | `...-dev.md` + `...-qa.md` |
 | 范围 | `range-<short-start>-<short-end>-<slug>.md`（两端点均为标签时使用标签名，如 `range-v1.2-v1.3-<slug>.md`） | `...-dev.md` + `...-qa.md` |
 | Diff | `<yyyymmdd-HHMM>-<branch-slug>.md` | `...-dev.md` + `...-qa.md` |
 
