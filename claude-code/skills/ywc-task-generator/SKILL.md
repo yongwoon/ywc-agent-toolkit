@@ -39,7 +39,6 @@ When tempted to bend a rule, check this table first:
 | `--mode <human\|llm>` | _(asked)_ | Canonical Granularity Mode for task decomposition (see Step 5). Alias: `--granularity`. When omitted, the skill always asks. If `--mode` and `--granularity` conflict, stop and ask the user to resolve it. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 | `--initials <value>` | _(resolved or asked)_ | Collaborator initials used as the task-ID `[INITIALS]` segment. Validated against `^[a-z0-9]{2,4}$`. Takes **highest precedence** — it wins over a cached `## Task Initials` section in the project `CLAUDE.md` and suppresses derivation and the confirmation prompt. See Step 2. |
-| `--initials <value>` | _(resolved or asked)_ | Collaborator initials used as the task-ID `[INITIALS]` segment. Validated against `^[a-z0-9]{2,4}$`. Takes **highest precedence** — it wins over a cached `## Task Initials` section in the project `CLAUDE.md` and suppresses derivation. See Step 2. |
 
 ## Language Option
 
