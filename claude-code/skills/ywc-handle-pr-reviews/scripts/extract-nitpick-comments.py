@@ -216,7 +216,7 @@ class _NitpickParser(HTMLParser):
         raw = "".join(self._buffer)
         if _has_meaningful_text(raw):
             self.warnings.append(f"unclosed file block '{_sanitize_for_log(self._file_path or '')}'")
-            self.items.append(_fallback(self._file_path, raw.strip()))
+            self._split_items(self._file_path, raw)
         self._file_path = None
         self._file_depth = None
         self._buffer = []

@@ -115,6 +115,32 @@ class ExtractNitpickCommentsTests(unittest.TestCase):
         self.assertEqual(items[0]["path"], "src/example/f.ts")
         self.assertIn("닫는 태그", items[0]["body"])
 
+    def test_unclosed_block_preserves_earlier_marker_terminated_items(self) -> None:
+        # A file block with one properly marker-terminated item followed by a
+        # truncated, unclosed remainder must keep the first item as "ok" --
+        # not collapse the whole buffer into a single raw_fallback (would
+        # silently drop the first item's hash/line/title).
+        body = """
+<details>
+<summary>🧹 Nitpick comments (1)</summary><blockquote>
+<details>
+<summary>src/example/j.ts (2)</summary><blockquote>
+
+`10`: **First item is well-formed.**
+
+body one
+
+<!-- cr-comment:v1:deadbeef -->
+
+`20`: **Second item never closes."""
+        items = enc.extract(body)
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0]["parse_status"], "ok")
+        self.assertEqual(items[0]["hash"], "deadbeef")
+        self.assertEqual(items[0]["title"], "First item is well-formed.")
+        self.assertEqual(items[1]["parse_status"], "raw_fallback")
+        self.assertEqual(items[1]["path"], "src/example/j.ts")
+
     def test_malformed_file_summary_still_captures_content(self) -> None:
         # Per-file <summary> text that doesn't match "<path> (<count>)" must
         # still open a block -- a well-formed item inside it is not dropped.
