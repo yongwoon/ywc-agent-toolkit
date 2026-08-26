@@ -18,11 +18,11 @@ must_have "$skill" 'complete task-artifact/dependency-graph writes' \
   'lock does not cover complete graph writes'
 must_have "$reference" 'Malformed or unsupported config tiers are skipped' \
   'malformed config-tier fallback is missing'
-must_have "$reference" '1. Explicit `--initials <value>`' \
+must_have "$reference" "1. Explicit \`--initials <value>\`" \
   'explicit precedence tier is missing'
-must_have "$reference" '2. Project `.codex/ywc.json` `initials`' \
+must_have "$reference" "2. Project \`.codex/ywc.json\` \`initials\`" \
   'project precedence tier is missing'
-must_have "$reference" '3. User `~/.codex/ywc.json` `initials`' \
+must_have "$reference" "3. User \`~/.codex/ywc.json\` \`initials\`" \
   'user precedence tier is missing'
 must_have "$reference" 'Interactive derivation is only a proposal' \
   'invalid/empty interactive derivation contract is missing'
@@ -74,7 +74,8 @@ cat >"$root/linked/tasks/dependency-graph.md" <<'GRAPH'
 GRAPH
 
 # Safe repository-relative paths accept tasks and reject absolute/escaping paths.
-case tasks in /*|../*|*/../*|*/..|'') fail "safe relative path rejected" ;; esac
+tasks_path=tasks
+case "$tasks_path" in /*|../*|*/../*|*/..|'') fail "safe relative path rejected" ;; esac
 for unsafe in /tmp/tasks ../tasks tasks/../../outside; do
   case "$unsafe" in /*|../*|*/../*|*/..) : ;; *) fail "unsafe path accepted: $unsafe" ;; esac
 done
@@ -92,30 +93,106 @@ done < <(
 test "$max" = 000006 || fail "scoped maximum expected 000006, got $max"
 test "$((max + 1))" = 7 || fail "next scoped phase is not 7"
 
-# Two allocators race for 7. One wins; the other retries 8. Refs are retained.
-zero=0000000000000000000000000000000000000000
-value=$(git -C "$root" hash-object -w -t blob /dev/null)
-reserve() {
-  candidate=$1
-  while [ "$candidate" -le 8 ]; do
-    ref="refs/ywc/task-phase/yk/$(printf '%06d' "$candidate")"
-    if git -C "$root" update-ref "$ref" "$value" "$zero" 2>/dev/null; then
+# Missing non-interactive initials stop before any downstream write.
+context_root="$root/context"
+mkdir -p "$context_root"
+missing_initials_transaction() {
+  [ -n "${1:-}" ] || {
+    printf '%s\n' NEEDS_CONTEXT
+    return 0
+  }
+  return 1
+}
+test "$(missing_initials_transaction '')" = NEEDS_CONTEXT \
+  || fail "missing initials did not return NEEDS_CONTEXT"
+! find "$context_root" -mindepth 1 -print -quit | grep -q . \
+  || fail "NEEDS_CONTEXT created a downstream artifact"
+! git -C "$root" show-ref --verify --quiet refs/ywc/task-phase/yk/000007 \
+  || fail "NEEDS_CONTEXT created a reservation"
+
+# Invalid and empty interactive derivations use the same bounded, deterministic
+# replacement proposal; no identity normalization is performed implicitly.
+resolve_interactive() {
+  for candidate in "$@"; do
+    if [[ "$candidate" =~ ^[a-z0-9]{2,4}$ ]]; then
       printf '%s\n' "$candidate"
       return 0
     fi
-    candidate=$((candidate + 1))
   done
   return 1
 }
-reserve 7 >"$root/winner-a" & pid_a=$!
-reserve 7 >"$root/winner-b" & pid_b=$!
-wait "$pid_a"; wait "$pid_b"
-first=$(cat "$root/winner-a")
-second=$(cat "$root/winner-b")
-test "$first" != "$second" || fail "concurrent reservations selected the same phase"
-test -n "$(git -C "$root" show-ref --hash "refs/ywc/task-phase/yk/$(printf '%06d' "$first")")" \
-  || fail "first reservation was not durable"
-test -n "$(git -C "$root" show-ref --hash "refs/ywc/task-phase/yk/$(printf '%06d' "$second")")" \
-  || fail "retry reservation was not durable"
+empty_fallback=$(resolve_interactive '' yk) \
+  || fail "empty interactive derivation did not reach fallback"
+invalid_fallback=$(resolve_interactive 'Y K' yk) \
+  || fail "invalid interactive derivation did not reach fallback"
+test "$empty_fallback" = yk && test "$invalid_fallback" = yk \
+  || fail "interactive fallback was not deterministic"
 
-echo "PASS: initials allocation contract, bounded scan matrix, and concurrent retry"
+# Model two concurrent generator transactions. The common Git lock spans the
+# scan, selection, reservation, artifact write, and graph write. A holds the
+# lock briefly after its scan so B is concurrent but cannot observe a partial
+# transaction; A therefore deterministically owns 7 and B owns 8.
+zero=0000000000000000000000000000000000000000
+value=$(git -C "$root" hash-object -w -t blob /dev/null)
+common_git=$(git -C "$root" rev-parse --path-format=absolute --git-common-dir)
+lock="$common_git/ywc-task-generator.lock"
+scan_max() {
+  max=0
+  while IFS= read -r phase; do
+    [ "$phase" -gt "$max" ] && max=$phase
+  done < <(
+    find "$root/tasks" "$root/linked/tasks" -type d -print |
+      sed -nE 's#^.*/yk-([0-9]{6})-[0-9]{3}-.*$#\1#p'
+    sed -nE 's/^.*yk-([0-9]{6})-[0-9]{3}-.*$/\1/p' \
+      "$root/tasks/dependency-graph.md" "$root/linked/tasks/dependency-graph.md"
+  )
+  printf '%s\n' "$max"
+}
+transaction() {
+  id=$1
+  until mkdir "$lock" 2>/dev/null; do sleep 0.01; done
+  trap 'rm -f "$lock/$id-ready"; rmdir "$lock"' EXIT
+  : >"$lock/$id-ready"
+  [ "$id" = a ] && sleep 0.05
+  candidate=$(scan_max)
+  candidate=$((candidate + 1))
+  while :; do
+    ref="refs/ywc/task-phase/yk/$(printf '%06d' "$candidate")"
+    if git -C "$root" update-ref "$ref" "$value" "$zero" 2>/dev/null; then
+      break
+    fi
+    candidate=$((candidate + 1))
+  done
+  artifact="$root/output/$id-$(printf '%06d' "$candidate").md"
+  printf 'allocator=%s phase=yk-%06d\n' "$id" "$candidate" >"$artifact"
+  printf '%s\n' "- yk-$(printf '%06d' "$candidate")-010-$id" \
+    >>"$root/tasks/dependency-graph.md"
+  printf '%s\n' "$candidate"
+}
+mkdir -p "$root/output"
+transaction a >"$root/winner-a" & pid_a=$!
+until [ -f "$lock/a-ready" ]; do sleep 0.01; done
+transaction b >"$root/winner-b" & pid_b=$!
+wait "$pid_a"; wait "$pid_b"
+first=$(tr -d '\n' <"$root/winner-a")
+second=$(tr -d '\n' <"$root/winner-b")
+test "$first" = 7 && test "$second" = 8 \
+  || fail "concurrent transactions were not serialized as 7 then 8"
+for candidate in "$first" "$second"; do
+  ref="refs/ywc/task-phase/yk/$(printf '%06d' "$candidate")"
+  test -n "$(git -C "$root" show-ref --hash "$ref")" \
+    || fail "reservation $candidate was not retained"
+done
+grep -Fqx 'allocator=a phase=yk-000007' "$root/output/a-000007.md" \
+  || fail "allocator A artifact was not serialized"
+grep -Fqx 'allocator=b phase=yk-000008' "$root/output/b-000008.md" \
+  || fail "allocator B artifact was not serialized"
+grep -Fqx -- '- yk-000007-010-a' "$root/tasks/dependency-graph.md" \
+  || fail "allocator A graph output missing"
+grep -Fqx -- '- yk-000008-010-b' "$root/tasks/dependency-graph.md" \
+  || fail "allocator B graph output missing"
+test "$(grep -c '^-' "$root/tasks/dependency-graph.md")" = 5 \
+  || fail "graph output was lost or duplicated"
+[ ! -d "$lock" ] || fail "common Git lock was not released"
+
+echo "PASS: initials allocation contract, deterministic fallback, and serialized transactions"
