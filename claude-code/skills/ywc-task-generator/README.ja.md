@@ -36,6 +36,18 @@ Specification を渡して Task 生成を依頼します。
 
 Korean / Japanese / Chinese / Spanish で書く場合も、Technical terms は English のまま維持します。
 
+### Initials オプション
+
+Task ID は collaborator initials の接頭辞で namespace を分けます (`yk-000001-010-db-create-user-table`)。
+
+| Option | Example |
+|--------|---------|
+| Explicit | `--initials yk` |
+| Cached | project `CLAUDE.md` の `## Task Initials` section |
+| Derived | `git config user.email` から導出し 1 回確認 |
+
+指定がなければ Skill が導出値を提案して確認します。既存の接頭辞なし legacy task ID はそのまま有効で、振り直しはしません。
+
 ### Granularity Mode オプション
 
 この Skill は 2 種類の task granularity mode をサポートし、**常にどちらの mode で生成するかをユーザーに確認**します (silent default なし)。
@@ -53,11 +65,11 @@ Safety Invariants (DB migration 分離、Library 導入分離、Phase hard gate�
 
 ```text
 tasks/
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
-├── 000001-020-api-user-registration/
+├── yk-000001-020-api-user-registration/
 │   ├── README.md
 │   └── task.md
 └── dependency-graph.md
@@ -66,19 +78,21 @@ tasks/
 ### Task Naming
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
+- `INITIALS`: 2–4 文字の lowercase alphanumeric (`^[a-z0-9]{2,4}$`) — collaborator initials。生成時は常に付与されます
 - `PHASE`: 6 桁の dependency stage (multi-year な project 成長に備えた headroom)
 - `SEQUENCE`: 3 桁、10 刻み
 - `CATEGORY`: `lib` | `db` | `api` | `domain` | `worker` | `ui` | `test` | `refactor` | `infra`
+- Legacy な無 prefix ID (`000001-010-db-create-user-table`) はそのまま有効で、parsing 時も認識され、prefix を付けて renumbering されることはありません。prefix 付きと無 prefix の ID は同じ repository 内で共存します
 
 ### Task 完了
 
 完了して merge された後:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Core Principles
