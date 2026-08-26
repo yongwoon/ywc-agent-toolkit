@@ -198,6 +198,105 @@ body a
     def test_edge_case_empty_stdin_returns_empty_array(self) -> None:
         self.assertEqual(enc.extract(""), [])
 
+    def test_raw_fallback_hash_is_empty_when_no_marker(self) -> None:
+        # Amendment B: raw_fallback items with no cr-comment marker must carry
+        # hash: "" so they are never eligible for marker-based dedup/exclusion.
+        body = """
+<details>
+<summary>🧹 Nitpick comments (1)</summary><blockquote>
+<details>
+<summary>src/example/b.ts (1)</summary><blockquote>
+
+이 블록에는 줄 범위 prefix와 cr-comment 마커가 없습니다.
+
+</blockquote></details>
+</blockquote>
+</details>
+"""
+        items = enc.extract(body)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["hash"], "")
+
+    def test_marker_present_but_no_line_range_falls_back_with_hash(self) -> None:
+        # A marker exists but the leading `N`/`N-M` line-range prefix is
+        # missing -- raw_fallback, but the marker's hash must be preserved
+        # (not emptied), distinguishing this from the no-marker-at-all case.
+        body = """
+<details>
+<summary>🧹 Nitpick comments (1)</summary><blockquote>
+<details>
+<summary>src/example/g.ts (1)</summary><blockquote>
+
+**제목만 있고 줄 범위가 없습니다.**
+
+본문입니다.
+
+<!-- cr-comment:v1:deadbeef -->
+
+</blockquote></details>
+</blockquote>
+</details>
+"""
+        items = enc.extract(body)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["parse_status"], "raw_fallback")
+        self.assertEqual(items[0]["hash"], "deadbeef")
+        self.assertEqual(items[0]["line_start"], None)
+        self.assertEqual(items[0]["line_end"], None)
+
+    def test_marker_and_line_range_present_but_no_title_falls_back_with_hash(self) -> None:
+        # Marker + line-range prefix both present, but no leading **title**
+        # bold span -- raw_fallback, marker's hash must be preserved.
+        body = """
+<details>
+<summary>🧹 Nitpick comments (1)</summary><blockquote>
+<details>
+<summary>src/example/h.ts (1)</summary><blockquote>
+
+`3`: 제목이 굵게 표시되지 않았습니다.
+
+<!-- cr-comment:v1:cafef00d -->
+
+</blockquote></details>
+</blockquote>
+</details>
+"""
+        items = enc.extract(body)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["parse_status"], "raw_fallback")
+        self.assertEqual(items[0]["hash"], "cafef00d")
+
+    def test_trailing_content_after_final_marker_recovered_not_dropped(self) -> None:
+        # AC5: content appearing after the last cr-comment marker in a file
+        # block must never be silently dropped -- it surfaces as a trailing
+        # raw_fallback item.
+        body = """
+<details>
+<summary>🧹 Nitpick comments (1)</summary><blockquote>
+<details>
+<summary>src/example/i.ts (1)</summary><blockquote>
+
+`1`: **정상 항목입니다.**
+
+본문입니다.
+
+<!-- cr-comment:v1:aaa111 -->
+
+마지막 마커 뒤에 남은 트레일링 콘텐츠입니다.
+
+</blockquote></details>
+</blockquote>
+</details>
+"""
+        items = enc.extract(body)
+        self.assertEqual(len(items), 2)
+        ok_items = [item for item in items if item["parse_status"] == "ok"]
+        fallback_items = [item for item in items if item["parse_status"] == "raw_fallback"]
+        self.assertEqual(len(ok_items), 1)
+        self.assertEqual(len(fallback_items), 1)
+        self.assertIn("트레일링", fallback_items[0]["body"])
+        self.assertEqual(fallback_items[0]["hash"], "")
+
     def test_edge_case_multiple_items_same_file_not_merged(self) -> None:
         body = """
 <details>
@@ -266,10 +365,13 @@ body b
         self.assertTrue(any(count >= 2 for count in paths.values()))
         self.assertTrue(any(item["parse_status"] == "raw_fallback" for item in items))
         ok_items = [item for item in items if item["parse_status"] == "ok"]
+        fallback_items = [item for item in items if item["parse_status"] == "raw_fallback"]
         self.assertEqual(len(ok_items), 3)
         for item in ok_items:
             for field in ("hash", "path", "line_start", "line_end", "title", "body"):
                 self.assertNotIn(item[field], (None, ""), field)
+        for item in fallback_items:
+            self.assertEqual(item["hash"], "")
 
     def test_cli_empty_stdin_exits_zero_with_empty_array(self) -> None:
         proc = subprocess.run(

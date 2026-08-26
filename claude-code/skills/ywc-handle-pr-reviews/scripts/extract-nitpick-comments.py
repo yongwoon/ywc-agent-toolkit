@@ -282,7 +282,10 @@ def extract(body: str) -> list[dict]:
         parser.close()
         parser.flush_unclosed()
     except Exception as exc:  # noqa: BLE001 -- untrusted input must never exit 1
-        print(f"WARNING: parser raised on malformed input: {exc}", file=sys.stderr)
+        print(
+            f"WARNING: parser raised on malformed input: {_sanitize_for_log(str(exc))}",
+            file=sys.stderr,
+        )
         return [_fallback(None, body)]
     for warning in parser.warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
