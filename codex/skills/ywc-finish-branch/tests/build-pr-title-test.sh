@@ -12,15 +12,23 @@ SLUG_EN=$slug" ] || fail "$name output: $output"
 }
 expect yk-000001-010-db-create-users yk-000001-010 "Db Create Users"
 expect ab12-000042-030-infra-rotate-keys ab12-000042-030 "Infra Rotate Keys"
+expect 12-000001-010-db-create-users 12-000001-010 "Db Create Users"
+title=$(python3 "$script" 12-000001-010-db-create-users --format title)
+[ "$title" = "[12-000001-010] Db Create Users" ] || fail "numeric-only title output: $title"
 expect yk-001010-db-create-users yk-001010 "Db Create Users"
 expect 000001-010-db-create-users 000001-010 "Db Create Users"
 expect 001010-db-create-users 001010 "Db Create Users"
 expect 1-010-db-create-users 1-010 "Db Create Users"
-expect 1234-000001-010-db-x 1234-000001 "010 Db X"
+expect 1234-000001-010-db-x 1234-000001-010 "Db X"
 
 set +e
 python3 "$script" TOOLONG-000001-010-db-x > /dev/null 2>/dev/null
 status=$?
 set -e
 [ "$status" -eq 1 ] || fail "malformed initials accepted"
+set +e
+python3 "$script" YK-000001-010-db-x > /dev/null 2>/dev/null
+status=$?
+set -e
+[ "$status" -eq 1 ] || fail "uppercase initials accepted"
 echo "PASS: PR-title parser fixtures"

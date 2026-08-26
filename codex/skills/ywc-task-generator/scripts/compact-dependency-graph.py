@@ -55,7 +55,7 @@ SHORT_ID_RE = re.compile(
 def _short_id(full_id: str) -> str:
     """Return the phase/sequence portion, retaining an initials namespace."""
     parts = full_id.split("-")
-    if len(parts) >= 4 and not parts[0].isdigit():
+    if len(parts) >= 3 and re.fullmatch(r"[a-z0-9]{2,4}", parts[0]) and re.fullmatch(r"\d{6}", parts[1]):
         return "-".join(parts[:3])
     return "-".join(parts[:2])
 
