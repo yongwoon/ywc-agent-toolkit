@@ -19,6 +19,7 @@
 - 将回复语言与审查者的语言匹配
 - 跳过已处理或已回复的评论
 - 在处理评论后清理 CI 失败和 base 分支冲突，使 PR 保持 mergeable（即使零评论，两个 gate 也始终执行）
+- 检测嵌套在 CodeRabbit review body 中的 Nitpick 级别条目，将其作为独立列表 fetch，并与 Actionable 评论一起处理
 
 ## 使用方法
 

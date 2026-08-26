@@ -15,6 +15,7 @@ This Skill automates the repetitive work after a PR review arrives. Clear change
 - Matches the reply language to the reviewer's language
 - Skips comments that were already handled or already answered
 - Clears CI failures and base-branch conflicts after comments, leaving the PR mergeable (both gates always run, even with zero comments)
+- Detects Nitpick-tier items nested inside a CodeRabbit review body, fetching them as a separate list and handling them alongside Actionable comments
 
 ## Usage
 

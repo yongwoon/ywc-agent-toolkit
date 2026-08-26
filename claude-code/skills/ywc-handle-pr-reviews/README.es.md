@@ -19,6 +19,7 @@ Este Skill automatiza el trabajo repetitivo después de que llega una revisión 
 - Hace coincidir el idioma de respuesta con el idioma del revisor
 - Omite comentarios que ya fueron gestionados o ya respondidos
 - Limpia fallos de CI y conflictos con la rama base tras los comentarios, dejando el PR mergeable (ambos gates siempre se ejecutan, incluso con cero comentarios)
+- Detecta elementos de nivel Nitpick anidados dentro del body de una review de CodeRabbit, obteniéndolos como una lista separada y gestionándolos junto con los comentarios Actionable
 
 ## Uso
 
