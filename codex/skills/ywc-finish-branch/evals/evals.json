@@ -55,6 +55,12 @@
         "Requires poll-pr-reviews.sh --verify before merging",
         "Treats failed GitHub reads and a missing artifact as blocking, not as zero bot comments"
       ]
+    },
+    {
+      "id": 7,
+      "name": "prefixed-and-legacy-completion-compatibility",
+      "prompt": "Finish branch feature/yk-000001-010-db-create-users in local-merge mode for task yk-000001-010-db-create-users, then finish legacy task 001020-api-health-check.",
+      "expected_output": "The PR-title parser accepts both task names and preserves their task-number prefixes. Each completion flow moves the original task directory to <tasks-dir>/completed/<task-name>, verifies the move, and applies the same merge and cleanup gates without renaming either directory."
     }
   ]
 }

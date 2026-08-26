@@ -15,8 +15,9 @@ Output modes:
     For English PRs no further LLM work is needed.
 
 Supported task-name formats:
-  New:    000001-010-db-create-users-table  → TASK_NUMBER=000001-010, SLUG_EN=Db Create Users Table
-  Legacy: 001010-db-create-users-table     → TASK_NUMBER=001010,     SLUG_EN=Db Create Users Table
+  Prefixed: yk-000001-010-db-create-users-table → TASK_NUMBER=yk-000001-010, SLUG_EN=Db Create Users Table
+  New:      000001-010-db-create-users-table    → TASK_NUMBER=000001-010,     SLUG_EN=Db Create Users Table
+  Legacy:   001010-db-create-users-table        → TASK_NUMBER=001010,          SLUG_EN=Db Create Users Table
 
 Exit codes:
   0  Parsed successfully

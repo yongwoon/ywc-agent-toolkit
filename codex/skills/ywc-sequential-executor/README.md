@@ -11,7 +11,7 @@ ywc-task-generator Skill 로 생성된 Task 를 실행하는 Codex Skill 입니�
 단일 Task 를 실행합니다:
 
 ```text
-Use $ywc-sequential-executor to execute task 001010-db-create-users-table.
+Use $ywc-sequential-executor to execute task yk-000001-010-db-create-users-table.
 ```
 
 Phase+Sequence prefix 로도 지정할 수 있습니다:
@@ -25,7 +25,7 @@ Use $ywc-sequential-executor to execute task 001010.
 연속된 Task 를 순차적으로 반복 실행합니다:
 
 ```text
-Use $ywc-sequential-executor to run tasks 001010..002030.
+Use $ywc-sequential-executor to run tasks yk-000001-010..yk-000002-030.
 ```
 
 ### Aggregate PR 실행
@@ -33,7 +33,7 @@ Use $ywc-sequential-executor to run tasks 001010..002030.
 연속된 Task 를 하나의 work branch에 누적하고, 마지막에 work -> base PR 하나로 전달합니다:
 
 ```text
-Use $ywc-sequential-executor to run tasks 001010..003020 with --aggregate-pr --group-name billing-rollout.
+Use $ywc-sequential-executor to run tasks yk-000001-010..yk-000003-020 with --aggregate-pr --group-name billing-rollout.
 ```
 
 `--aggregate-pr` mode에서는 각 Task가 별도 feature branch에서 구현되지만, Step 5 delivery는 real base가 아니라 `work/<name>` branch로 local merge됩니다. 마지막 Task까지 누적된 뒤 final PR lifecycle이 실행되며, 해당 work -> base PR이 merge되기 전에는 real base branch가 변경되지 않습니다.
