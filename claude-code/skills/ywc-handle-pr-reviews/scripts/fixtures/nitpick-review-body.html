@@ -1,0 +1,50 @@
+<details>
+<summary>🧹 Nitpick comments (4)</summary><blockquote>
+
+<details>
+<summary>src/example/handler.ts (2)</summary><blockquote>
+
+`10-15`: **경계 조건에서 초 단위 내림 보정이 누락되었습니다.**
+
+이 함수는 초 단위 값이 60을 초과할 때 내림 보정을 수행하지 않습니다. 테스트 케이스를 추가해 이 동작을 검증해 주세요.
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+In src/example/handler.ts around lines 10 to 15, add a boundary test that
+asserts seconds values above 60 are floored correctly before use.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:triton:cheetah -->
+<!-- cr-comment:v1:9dd61764f7e5cfad48b73fc4 -->
+
+---
+
+`22`: **불필요한 optional chaining을 제거하세요.**
+
+`response`는 이 시점에서 항상 정의되어 있으므로 `?.`를 제거해도 안전합니다.
+
+<!-- cr-comment:v1:1a2b3c4d5e6f7a8b9c0d1e2f -->
+
+</blockquote></details>
+
+<details>
+<summary>src/example/utils.ts (2)</summary><blockquote>
+
+`5-8`: **함수 이름이 실제 동작을 정확히 설명하지 않습니다.**
+
+`normalizeValue`보다 `clampAndNormalizeValue`가 더 명확합니다.
+
+<!-- cr-comment:v1:aabbccddeeff00112233 -->
+
+---
+
+이 블록은 의도적으로 손상된 형식입니다 — 줄 범위 prefix와 cr-comment 마커가 없습니다. AC5의 raw_fallback 경로를 검증하기 위한 fixture입니다.
+
+</blockquote></details>
+
+</blockquote>
+</details>
