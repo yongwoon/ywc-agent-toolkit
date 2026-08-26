@@ -42,12 +42,13 @@ import argparse
 
 def parse_task_name(task_name: str) -> tuple[str, str]:
     """Return (task_number, slug). Falls back to ('', task_name) if unrecognised."""
-    # New format: 000001-010-<slug>
-    m = re.match(r'^(\d{6}-\d{3})-(.+)$', task_name)
+    # New format: [initials-]000001-010-<slug>. Initials may be numeric-only;
+    # parse this before the flexible numeric N-M fallback.
+    m = re.match(r'^((?:[a-z0-9]{2,4}-)?\d{6}-\d{3})-(.+)$', task_name)
     if m:
         return m.group(1), m.group(2)
-    # Legacy format: 001010-<slug>
-    m = re.match(r'^(\d{6})-(.+)$', task_name)
+    # Legacy format: [initials-]001010-<slug>
+    m = re.match(r'^((?:[a-z0-9]{2,4}-)?\d{6})-(.+)$', task_name)
     if m:
         return m.group(1), m.group(2)
     # Flexible N-M format: any digit counts for both segments (e.g., 1-010-slug, 000001-10-slug)
