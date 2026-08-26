@@ -4,11 +4,14 @@ This document covers rules that apply **after task generation**, during the task
 
 ## Task Completion Handling
 
-When a task is completed, move its directory to `tasks/completed/`:
+When a task is completed, move its directory to `tasks/completed/`. Preserve the full task name: initials-prefixed, current unprefixed, and legacy names use the same move contract:
 
 ```bash
 # Example
 mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
+# Existing forms remain valid:
+# mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+# mv tasks/001010-db-create-user-table tasks/completed/001010-db-create-user-table
 ```
 
 Purpose of this convention:

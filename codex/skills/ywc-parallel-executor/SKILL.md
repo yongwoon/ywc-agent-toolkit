@@ -43,7 +43,7 @@ When tempted to skip a step, check this table first:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| Task specifier | `<name>` or `<start>..<end>` | `000001-010..000002-040` | Single task or range. Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; range matching uses lexical order. |
+| Task specifier | `<name>` or `<start>..<end>` | `yk-000001-010..yk-000002-040` | Single task or range. Initials-prefixed, current unprefixed, and legacy numeric forms are accepted; range matching uses phase+sequence order and preserves full task names. |
 | `--all` | flag | | Execute all tasks |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir tasks/` | Tasks directory (default: tasks/) |
 | `--review` | flag | | Auto-run ywc-impl-review after each task |
@@ -150,7 +150,7 @@ Writes use a same-directory temporary sibling, `fsync`, rename, and parent-direc
 ### Step 1: Parse Dependency Graph
 
 Read `dependency-graph.md` to extract the TaskInfo list. Parse the following from each task:
-- Task ID (Phase + Sequence)
+- Task ID (optional initials + Phase + Sequence; legacy numeric IDs remain valid)
 - Task Name (full directory name)
 - Category (`db`, `api`, `ui`, `test`, etc.)
 - Depends On (predecessor task list)

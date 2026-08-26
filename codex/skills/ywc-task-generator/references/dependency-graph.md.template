@@ -1,5 +1,10 @@
 # Task Dependency Graph
 
+Task references accept the generated initials-prefixed form (`yk-000001-010`),
+the current unprefixed form (`000001-010`), and legacy numeric IDs (`001010`).
+Do not rename existing task directories or rewrite legacy dependency edges during
+the transition; consumers retain the full task name for completion moves.
+
 Preview Approval Metadata (when preview flow is used):
 - `Preview Path:` `docs/ywc-plans/<slug>.task-preview.md`
 - `Preview Revision:` `rev-001`

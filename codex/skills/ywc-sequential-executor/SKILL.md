@@ -46,7 +46,7 @@ Parse `$ARGUMENTS` for the following parameters:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| Task specifier | `<task-name>` or `<start>..<end>` | `000001-010-db-create-users` or `000001-010..000002-030` | Single task or range (phase+sequence prefix match). Both `001010` (legacy) and `000001-010` (new 6-digit PHASE) formats are accepted; prefix matching works with either. |
+| Task specifier | `<task-name>` or `<start>..<end>` | `yk-000001-010-db-create-users` or `000001-010..000002-030` | Single task or range (phase+sequence prefix match). Initials-prefixed, current unprefixed, and legacy numeric forms are all accepted; prefix matching works with each form. |
 | `--pr-lang` | `--pr-lang <en\|ja\|ko\|zh\|es>` | `--pr-lang zh` | PR title/description language; pass unchanged downstream. If omitted or `auto`, resolve through [language-resolution.md](../references/language-resolution.md); if no tier resolves a language, ask the user before invoking the executor. |
 | `--tasks-dir` | `--tasks-dir <path>` | `--tasks-dir ./docs/tasks` | Tasks directory path. Default: `tasks/` |
 | `--skip-ci-wait` | flag | | Skip CI wait and auto-merge (create PR only) |
@@ -156,11 +156,11 @@ With `--worktree`, state lives at `$WT/.ywc-run-state.json`; root state remains 
 
 ### Single Task
 
-Match the specifier against task directory names in the tasks directory. Accept both exact match and prefix match (e.g., `000001-010` matches `000001-010-db-create-users-table`; legacy `001010` format is still accepted during the transition period).
+Match the specifier against task directory names in the tasks directory. Accept exact and prefix matches for initials-prefixed names (e.g., `yk-000001-010` matches `yk-000001-010-db-create-users-table`), current unprefixed names, and legacy numeric names (e.g., `001010`).
 
 ### Range Execution
 
-For `<start>..<end>` format, collect all tasks whose phase+sequence falls within the range (inclusive). Sort by phase then sequence. Execute sequentially, repeating the full cycle for each task.
+For `<start>..<end>` format, collect all tasks whose phase+sequence falls within the range (inclusive), regardless of ID form. Sort by phase then sequence, retaining each full task name for branch and completion operations. Execute sequentially, repeating the full cycle for each task.
 
 ### Auto-detect Next Task
 
@@ -272,7 +272,7 @@ git checkout -b feature/<task-name>
 
 This solves the code-availability problem that Step 1's dependency-validation exception alone cannot address: the exception lets the dependency check pass, but without chain branching the implementation code from the previous task would be missing.
 
-Branch name format: `feature/<task-name>` (e.g., `feature/000001-010-db-create-users-table`)
+Branch name format: `feature/<task-name>` (e.g., `feature/yk-000001-010-db-create-users-table`); preserve the full task name for unprefixed and legacy directories.
 
 **Checkpoint**: Update `.ywc-run-state.json` — set `current_task` to `<task-name>`, `current_step` to `2`, `branch` to `feature/<task-name>`, and `last_checkpoint` to current UTC time.
 
@@ -479,7 +479,7 @@ The final output is the Completion Report. In normal verbosity it includes the f
 ```text
 | Task | Status | PR URL or merge SHA |
 |---|---|---|
-| 000001-010-example | merged | <sha-or-url> |
+| yk-000001-010-example | merged | <sha-or-url> |
 
 Completion Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 ```

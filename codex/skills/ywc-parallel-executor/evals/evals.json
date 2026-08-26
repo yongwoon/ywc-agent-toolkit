@@ -88,6 +88,12 @@
       "expected_downstream_calls": {"accepted": 1, "rejected": 0},
       "expected_handoff": "accepts only one root aggregate; otherwise reconstructs from checkpoint then task source and preserves prior cache on write failure",
       "expected_output": "No worker-local authority, peer conclusion, prompt, raw output, or authoritative state mutation is accepted."
+    },
+    {
+      "id": 25,
+      "name": "mixed-task-id-wave-compatibility",
+      "prompt": "Use $ywc-parallel-executor yk-000001-010..000001-030 --local-merge for a dependency graph containing yk-000001-010-root, 000001-020-legacy-task, and 001030-old-task.",
+      "expected_output": "Parses prefixed, current unprefixed, and legacy task IDs into the same phase/sequence wave model. It preserves dependency ordering, separate worktrees, delivery, completion moves, and cleanup semantics without renaming existing task directories."
     }
   ]
 }

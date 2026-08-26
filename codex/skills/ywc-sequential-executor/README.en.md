@@ -37,8 +37,10 @@ Use `ywc-implement` for one approved spec or ticket; this executor remains the l
 For behavior-changing tasks, the executor records changed public contracts and critical internals before implementation, then requires a failing test or contract assertion first. Docs-only, config-only, mechanical, and no-harness cases are reported as explicit TDD exceptions. Completion reports include changed contracts, contract tests, critical internals, non-obvious `Implementation Notes`, and exceptions.
 
 ```bash
-$ywc-sequential-executor 001010..003020 --aggregate-pr --group-name billing-rollout
+$ywc-sequential-executor yk-000001-010..yk-000003-020 --aggregate-pr --group-name billing-rollout
 ```
+
+Ranges and task selectors also accept existing unprefixed (`000001-010`) and legacy numeric (`001010`) IDs; the executor keeps each full directory name for branch and completion operations.
 
 ```bash
 $ywc-sequential-executor 001010..003020 --worktree --pr-lang zh
