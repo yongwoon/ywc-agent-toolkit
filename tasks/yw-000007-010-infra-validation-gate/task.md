@@ -44,3 +44,39 @@
 - [ ] typecheck passes (N/A — no typed source in this repository)
 - [ ] unit tests pass (toolkit-eval mechanical gate)
 - [ ] app builds without error (N/A — documentation/tooling repository)
+
+## Implementation Notes
+
+Gate run on `feature/collaborator-initials` with all seven preceding tasks merged.
+No behavioral change was required — every gate passed as found, so this task's diff
+is limited to this evidence record.
+
+| AC9 gate | Result |
+|---|---|
+| `bash scripts/validate.sh` | exit 0 — `58 items, no mechanical regression. PASS` |
+| `bash scripts/install.sh --list` | exit 0 |
+| `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` | exit 0 — `61 items, no mechanical regression. PASS` |
+| markdownlint (CI config + CI globs, 570 files) | exit 0 — `0 issues in 0 files` |
+| `shellcheck` on each changed shell file (5 files) | exit 0 on all five |
+
+| Feature harness | Result |
+|---|---|
+| `tests/next-task-number-test.sh` | PASS |
+| `tests/task-id-parsers-test.sh` | PASS |
+| `tests/build-pr-title-test.sh` | PASS |
+
+AC2 spot check: `scaffold-task-dir.sh yk-000042-010-api-send-invite` produced
+`yk-000042-010-api-send-invite`, matching `^[a-z0-9]{2,4}-[0-9]{6}-[0-9]{3}-[a-z]+-[a-z0-9-]+$`.
+
+**Baseline regeneration was NOT required.** The toolkit-eval mechanical gate reported no
+regression despite this feature editing several SKILL.md files, so the committed baseline
+still holds. It was deliberately not regenerated — doing so without a measured drop would
+have masked future movement rather than recording it. The `--ci` run also notes 1 of 61
+items below the coverage minimum; that is pre-existing and unrelated to this feature.
+
+**Escalated, not fixed here (out of scope — "any behavioral change"):** nothing in CI or
+`scripts/validate.sh` executes the three test harnesses this feature added, and
+`.github/workflows/validate.yml` limits shellcheck to `scandir: ./scripts`, so the five
+changed shell files under `claude-code/skills/**` are not covered by CI either. Both gaps
+were verified locally here, but they will silently rot without a CI owner. Route to a
+follow-up task.
