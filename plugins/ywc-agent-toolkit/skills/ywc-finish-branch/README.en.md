@@ -20,9 +20,11 @@ A single-responsibility extraction of the delivery logic that `ywc-sequential-ex
 ### Default (PR-based)
 
 ```
-$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop
+$ywc-finish-branch --mode normal-pr --branch feature/yk-000001-010-db-create-users \
+  --task-name yk-000001-010-db-create-users --base-branch develop
 ```
+
+Existing unprefixed (`000001-010-...`) and legacy numeric (`001010-...`) task names remain valid and are moved using their original full names.
 
 ### Local Merge
 

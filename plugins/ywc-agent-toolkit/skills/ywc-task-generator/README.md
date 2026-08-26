@@ -77,7 +77,7 @@ missing spec, path traversal, symlink escape, non-Markdown preview path 는
 ```text
 tasks/
 ├── docs/ywc-plans/billing.task-preview.md
-├── 000001-010-db-create-user-table/
+├── yk-000001-010-db-create-user-table/
 │   ├── README.md
 │   ├── task.md
 │   └── test.md
@@ -105,7 +105,7 @@ Depends On: 000001-020-api-billing-contract
 ### Task Naming
 
 ```text
-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
+[INITIALS]-[PHASE]-[SEQUENCE]-[CATEGORY]-[SHORT-DESCRIPTION]
 ```
 
 - `PHASE`: 6 digits, dependency stage (multi-year 프로젝트 확장을 고려한 headroom)
@@ -117,7 +117,7 @@ Depends On: 000001-020-api-billing-contract
 After completion and merge:
 
 ```text
-mv tasks/000001-010-db-create-user-table tasks/completed/000001-010-db-create-user-table
+mv tasks/yk-000001-010-db-create-user-table tasks/completed/yk-000001-010-db-create-user-table
 ```
 
 ## Core Principles
