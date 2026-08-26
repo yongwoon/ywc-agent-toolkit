@@ -23,7 +23,7 @@ PR URL から生成:
 ### Task ベース生成
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Git Range ベース生成

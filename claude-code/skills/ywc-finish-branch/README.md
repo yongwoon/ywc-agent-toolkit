@@ -19,8 +19,8 @@ Feature Branch를 Base Branch에 전달(deliver)하는 Claude Code Skill입니�
 ### 기본 사용 (PR-based)
 
 ```
-/ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop
+/ywc-finish-branch --mode normal-pr --branch feature/yk-000001-010-db-create-users \
+  --task-name yk-000001-010-db-create-users --base-branch develop
 ```
 
 ### Local Merge

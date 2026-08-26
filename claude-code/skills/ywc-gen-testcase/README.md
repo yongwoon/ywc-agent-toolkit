@@ -23,7 +23,7 @@ PR URL 로 Testsheet 를 생성합니다:
 ### Task 기반 생성
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Git Range 기반 생성

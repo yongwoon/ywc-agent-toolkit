@@ -27,7 +27,7 @@ Dentro del mismo repositorio, basta con el número de PR:
 ### Generación basada en tarea
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Generación por rango de Git

@@ -27,7 +27,7 @@
 ### 基于任务的生成
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Git 范围生成

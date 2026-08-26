@@ -23,7 +23,7 @@ Within the same repository, a PR number is sufficient:
 ### Task-based generation
 
 ```text
-/ywc-gen-testcase 000001-010-db-create-users-table
+/ywc-gen-testcase yk-000001-010-db-create-users-table
 ```
 
 ### Git Range generation
