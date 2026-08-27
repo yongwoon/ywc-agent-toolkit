@@ -28,6 +28,7 @@ When tempted to skip a step, check this table first:
 | "CI is green and comments are addressed — the PR is mergeable" | While the review was in progress the base branch may have advanced and the PR may now be `CONFLICTING`. Handling a PR means leaving it mergeable, which requires checking `gh pr view --json mergeable,mergeStateStatus`, not just CI. A conflicting PR is blocked from merge regardless of how many comments were resolved. |
 | "The PR conflicts with base — rebase the branch to clear it" | Rebasing rewrites SHAs and orphans the very review threads you are replying to. Merge the base *into* the feature branch (`git merge --no-ff origin/<base>`) instead. See `references/pr-conflict-resolution.md`. |
 | "No unresolved comments — nothing to handle, the PR is done" | Zero comments clears only the first of three gates. CI may be red and the base may have advanced into a conflict regardless of whether anyone commented. The CI gate (Step 7) and merge-readiness gate (Step 8) are **mandatory on every invocation** — never report done from an empty comment array without running both. |
+| "Nitpick items have no thread to reply to, so I'll just fix them silently without posting anything" | Nitpick items still need a consolidated PR-level reply. Skipping it leaves no `nitpick-addressed` marker, so the fetch script's dedup never excludes them and the same items resurface on every future run. |
 
 **Violating the letter of these rules is violating the spirit.** Code review is a conversation, not a checklist.
 
@@ -37,7 +38,7 @@ Handling a PR means leaving it **mergeable**, which requires clearing **three in
 
 | # | Gate | Cleared when | Step |
 |---|---|---|---|
-| 1 | **Review comments** | Every unresolved thread is fixed-or-answered and replied to | Steps 2–5 |
+| 1 | **Review comments** | Every unresolved thread and every unaddressed Nitpick item is fixed-or-answered and replied to (via the thread-reply API or the consolidated PR-level comment, respectively) | Steps 2–5 |
 | 2 | **CI status** | `gh pr checks` is green (or failures triaged to the user) | Step 7 |
 | 3 | **Merge-readiness** | `gh pr view --json mergeable` is `MERGEABLE` / `CLEAN` (or a real conflict surfaced) | Step 8 |
 
@@ -68,7 +69,9 @@ gh repo view --json nameWithOwner --jq .nameWithOwner
 
 ### Step 2: Retrieve and Filter Comments
 
-Retrieve all PR review comments and filter out those that don't need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
+Retrieve all PR review feedback across two tiers and filter out what doesn't need action. This prevents duplicate work and keeps the process focused on genuinely unresolved feedback.
+
+**Actionable** (thread-level review comments — each has an `id` you can reply to directly):
 
 ```bash
 bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
@@ -79,20 +82,34 @@ bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.
 
 The script fetches paginated comments, groups them into threads, and applies the skip conditions automatically: threads containing `<!-- <review_comment_addressed> -->` are dropped, and threads where your reply is newer than the latest reviewer comment are dropped. The output JSON array contains only actionable threads — each element has `id`, `body`, `path`, `line`, `user`, `created_at`, and `thread_comment_count`.
 
-**If the array is `[]`** (no comments to fix): skip Steps 3–5, but you **must still run Step 7 (CI gate) and Step 8 (Merge-Readiness gate)** before the Final Summary. Zero comments does not mean the PR is mergeable — CI can be red and the base can have advanced into a conflict regardless of whether anyone commented. **Never jump straight to the summary on an empty comment array** — that is the exact path that leaves red CI and conflicts unhandled.
+**Nitpick** (CodeRabbit's advisory-tier items nested inside a single review body — no `id`/thread to reply to individually):
+
+```bash
+bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-nitpick-comments.sh \
+  {owner}/{repo} {pr_number}
+# exit 0 → JSON array of Nitpick items on stdout (may be [])
+# exit 1 → gh CLI error (not authenticated or PR not found)
+# exit 2 → usage error (invalid <owner>/<repo> or <pr-number>)
+```
+
+The script fetches all `coderabbitai[bot]` reviews, parses each body's `Nitpick comments (N)` section, dedups by hash across reviews (keeping the most recent), and excludes items already marked addressed via a `<!-- nitpick-addressed:<hash> -->` PR-level comment authored by the current user. Each element has `hash`, `path`, `line_start`, `line_end`, `title`, `body`, `severity: "nitpick"`, and `parse_status` (`"ok"` or `"raw_fallback"` for a segment the parser could not confidently attribute).
+
+**If both arrays are `[]`** (no Actionable comments and no Nitpick items): skip Steps 3–5, but you **must still run Step 7 (CI gate) and Step 8 (Merge-Readiness gate)** before the Final Summary. A PR with 0 Actionable but nonzero Nitpick items (or vice versa) must still proceed to Step 3 — only skip when **both** arrays are empty. Zero comments does not mean the PR is mergeable — CI can be red and the base can have advanced into a conflict regardless of whether anyone commented. **Never jump straight to the summary on two empty arrays** — that is the exact path that leaves red CI and conflicts unhandled.
 
 ### Step 3: Group and Analyze Comments
 
-Before fixing anything, group all remaining comments by file. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth.
+Before fixing anything, group all remaining comments, from both labeled lists, by target file path. Processing file-by-file is more efficient — you read each file once, apply all related fixes together, and create one coherent commit per file instead of jumping back and forth.
 
 **Processing strategy:**
 
-1. Collect all unresolved comments and group by target file path
+1. Collect all unresolved comments from both the Actionable and Nitpick lists, and group by target file path
 2. For each file, read the file once and analyze all related comments together
 3. Apply fixes for that file and commit as a unit
 4. Move to the next file
 
 ### Step 4: Classify and Fix Comments
+
+Nitpick items go through this same four-category classification as Actionable comments. "Question only" and "Approval" rarely apply, since Nitpicks are advisory by definition — but no separate classification logic is introduced for them.
 
 For each comment, classify it into one of four categories:
 
@@ -147,6 +164,18 @@ REPLY_BODY
 - **No fix needed:** Reply explaining the reasoning (e.g., intentional design choice, already handled elsewhere)
 - **Outdated comment:** `This code has been updated since the review. The concern no longer applies because [reason].`
 
+**Nitpick items — consolidated PR-level reply (not a thread reply):**
+
+Nitpick items have no `in_reply_to_id`, so they cannot use the thread-reply API above. Instead, after processing all Nitpick items in this run, post **one** PR-level comment listing every processed item:
+
+```bash
+gh pr comment {pr_number} --body-file - <<'NITPICK_REPLY'
+...
+NITPICK_REPLY
+```
+
+For every processed **non-`raw_fallback`** item, include a `<!-- nitpick-addressed:<hash> --> ` marker line so `fetch-nitpick-comments.sh`'s dedup-exclusion step (FR-2 stage 5) can find it on the next run. `raw_fallback` items (`hash: ""`) are still described in the reply body for visibility, but **never** get a marker line — they will always resurface on the next run by design (Amendment B), since the parser could not confidently attribute them to a stable identity. Both reply paths coexist: the thread-reply API above for Actionable comments, this one consolidated comment for Nitpick items.
+
 ### Step 6: Error Handling
 
 Things can go wrong during the process. Handle these gracefully:
@@ -157,6 +186,7 @@ Things can go wrong during the process. Handle these gracefully:
 | Push fails (non-fast-forward, remote feature branch advanced) | `git pull --rebase origin <feature-branch>` (rebase on the feature branch you own is safe), then re-push. Don't force-push without approval. See `references/pr-conflict-resolution.md` |
 | Comment reply API returns 403/404     | Log the error, skip that reply, and report it in the final summary                      |
 | Referenced file no longer exists      | Reply to the comment explaining the file was removed, and skip the fix                  |
+| `gh pr comment` (Nitpick consolidated reply) returns non-zero/403/404 | Log the error with the PR number and affected item count. Do **not** write any `nitpick-addressed` marker for that batch, so the excluded-by-marker filter in `fetch-nitpick-comments.sh` correctly re-surfaces them next run. Report the failure and affected item count in Step 9's Final Summary. |
 
 ### Step 7: CI Status Gate — run on EVERY invocation
 
@@ -208,6 +238,7 @@ gh pr view $PR_NUMBER --json mergeable,mergeStateStatus --jq '{mergeable, mergeS
 Report the results so the user has a clear picture of what happened. **Report the status of all three Definition-of-Done gates**, not just comments:
 
 - **Comments**: total processed vs skipped; applied fixes with file paths and commit hashes; any comments deferred to the user (with links)
+- **Nitpick**: total Nitpick items processed (Fixed/Deferred/No fix needed) vs any that failed to post (the `gh pr comment` error case from Step 6)
 - **CI (Step 7)**: final check status — `green`, or the failing check names + outcome (`DONE_WITH_CONCERNS`)
 - **Merge-readiness (Step 8)**: `MERGEABLE`, or the conflicting files surfaced + outcome (`BLOCKED`)
 - Any errors encountered during the process
