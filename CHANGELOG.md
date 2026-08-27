@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.35.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.34.1...v1.35.0) (2026-08-27)
+
+
+### Added
+
+* add CodeRabbit Nitpick comment detection to ywc-handle-pr-reviews ([#171](https://github.com/yongwoon/ywc-agent-toolkit/issues/171)) ([8735955](https://github.com/yongwoon/ywc-agent-toolkit/commit/87359558b7e1615ab5e86fa1c0878dd123ed2761))
+* add collaborator-initials namespace to task IDs ([#169](https://github.com/yongwoon/ywc-agent-toolkit/issues/169)) ([8384c67](https://github.com/yongwoon/ywc-agent-toolkit/commit/8384c6706fab7bb8d82540476a4517920b9e54b0))
+
 ## [1.34.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.34.0...v1.34.1) (2026-08-21)
 
 
