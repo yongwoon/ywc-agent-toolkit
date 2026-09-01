@@ -29,10 +29,6 @@
 ## Phase yw-000011 — done
 - Completed: `yw-000011-010-refactor-skill-author-activation-router`
 
-## Parallel Execution Notes — yw-000011
-- Initial ready set: `yw-000011-010-refactor-skill-author-activation-router` (solo).
-- It owns the source router, its evidence, and the generated plugin mirror; do not run another skill-author or plugin-sync task concurrently.
-
 ## Phase yw-000010 — done
 - Completed: `yw-000010-010-domain-nitpick-parser`, `yw-000010-020-domain-nitpick-fetch-orchestrator`, `yw-000010-030-docs-skill-nitpick-integration`
 
