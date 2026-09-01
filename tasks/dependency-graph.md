@@ -26,8 +26,8 @@
 - `yw-000014-020-test-token-efficiency-after-measurement` reads the before-baseline recorded in
   `tasks/completed/yw-000012-010-.../task.md` — must not start before that task is archived there.
 
-## Phase yw-000011 — Codex skill-author activation router
-- `yw-000011-010-refactor-skill-author-activation-router` → (root)
+## Phase yw-000011 — done
+- Completed: `yw-000011-010-refactor-skill-author-activation-router`
 
 ## Parallel Execution Notes — yw-000011
 - Initial ready set: `yw-000011-010-refactor-skill-author-activation-router` (solo).
