@@ -137,6 +137,8 @@ Before presenting the design, run one explicit pass against the four quadrants o
 | Unknown Knowns | "What is so obvious to the user they never said it?" (implicit convention, house style, taste) | Surface as a one-line confirmation question before Step 5. |
 | Unknown Unknowns | "What has nobody considered at all?" | Name the risk in the design's Failure Modes. |
 
+When the design depends on a claim of the form "the system / server / DB knows, stores, or can determine X", confirm X's storage location and scope (tenant / project / session / none) against the actual schema or model definitions before treating it as known — this shape of assumption has no identifier to grep because the field it depends on may not exist, so it survives even a thorough Step 1 codebase read unless checked explicitly. Carry the result into Step 5's Load-bearing premises table.
+
 Ask at most 1–2 confirmation questions for the highest-risk Unknown Knowns. Resolve any uncertainty that could change scope, an interface, data shape, permissions, or Done When before Step 5; record only non-blocking risks as Failure Modes. See [references/question-cookbook.md](references/question-cookbook.md) "Blind spots" for question shapes.
 
 ### Step 5: Present the design and get approval
@@ -147,9 +149,12 @@ Present the design in sections sized to their complexity. Cover at minimum:
 - **Where it lives** (concrete file paths, modules, or services touched)
 - **Data shape** (if any) — entity / DTO / contract, just enough to disambiguate the approach
 - **Failure modes** (what can go wrong, what we do about each)
+- **Load-bearing premises** — every fact the design assumes but does not itself establish (distinct from Failure modes above, which are things that go wrong once the design runs — a premise is a fact the design stands on), as a table: `Premise | Evidence (file:line + quoted snippet) | Status`. `Status` is exactly one of `VERIFIED` (the cited line was read and its snippet reproduced in the table) or `UNVERIFIED` (not yet checked) — no other value is valid. A bare `file:line` citation without the quoted snippet does not count as `VERIFIED`. Typically 3–5 premises.
 - **Out of Scope** (verbatim from Step 3)
 
 After each section, confirm understanding: "Does that match what you have in mind?"
+
+Every row in the Load-bearing premises table must read `VERIFIED` with its snippet quoted before the handoff question is asked — resolve any `UNVERIFIED` row by reading the cited source and quoting the evidence directly. Asking the user does not itself satisfy `VERIFIED`; if the premise cannot be confirmed from the repository, leave it `UNVERIFIED` and record the risk as a Failure Mode or move it to Out of Scope instead of proceeding to handoff.
 
 After the last section, ask explicitly: "Should I hand this off to `ywc-plan` to produce the full plan / spec?"
 
@@ -218,6 +223,7 @@ Before handing off, verify:
 - [ ] For a design-heavy request, Step 4 generated ≥2 divergent HTML mockups (in `_brainstorm-<slug>/prototypes/`) and the user reacted before Step 5
 - [ ] Step 4.5 blind-spot pass ran — Unknown Knowns surfaced as confirmation questions, Unknown Unknowns recorded as Failure Modes
 - [ ] Step 5 surfaced the design in sections and received explicit per-section confirmation
+- [ ] Step 5's Load-bearing premises table was presented with every row marked `VERIFIED` (no `UNVERIFIED` or other status value), each with its evidence snippet quoted rather than just cited, before the handoff question was asked
 - [ ] Step 5.5 self-review passed — placeholder scan, internal consistency, scope check, and ambiguity check all clear before the handoff was drafted
 - [ ] The user said "yes" (or equivalent) to the handoff prompt, not just to the recommendation
 - [ ] The handoff message includes the four anchors verbatim, not summarized

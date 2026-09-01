@@ -14,7 +14,7 @@
 2. **Step 2 — Detect "too big for one design"** — 여러 subsystem 이 섞여 있으면 STOP 하고 decomposition 협의
 3. **Step 3 — Ask clarifying questions one at a time** — What / Why / Out of Scope / Done When 4개 anchor 를 한 번에 한 질문씩 surface
 4. **Step 4 — Propose 2–3 approaches with trade-offs** — 추천 1안 + 대안 1~2안, 각각의 trade-off 명시. 추천 전 blind-spot pass 로 검증이 필요한 가정을 짧게 surface
-5. **Step 5 — Present the design and get approval** — section 별 confirm, 마지막에 명시적 handoff 승인
+5. **Step 5 — Present the design and get approval** — section 별 confirm. design 이 Repository 사실에 의존하면 인용한 `file:line` evidence 가 있는 Load-bearing premises table 을 제시하고, `UNVERIFIED` 행이 남아 있는 동안 handoff 를 묻지 않음
 6. **Step 6 — Handoff to ywc-plan** — 4개 anchor 와 chosen approach 를 `ywc-plan` 에게 명시적 input 으로 전달
 
 이 skill 은 절대로 `ywc-code-gen`, `ywc-spec-writer`, `ywc-task-generator`, executor 로 직접 분기하지 않습니다 — terminal state 는 항상 `ywc-plan` 호출입니다.

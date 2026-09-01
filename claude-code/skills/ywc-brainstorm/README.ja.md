@@ -15,7 +15,7 @@
 3. **Step 3 — Ask clarifying questions one at a time** — What / Why / Out of Scope / Done When の 4 anchor を 1 メッセージ 1 質問で surface
 4. **Step 4 — Propose 2–3 approaches with trade-offs** — 推奨案 1 + 代替案 1〜2、それぞれの trade-off を明示。Design 中心の要求では 2〜4 個の divergent HTML mockup を追加生成し、ユーザーの視覚的な好み(Unknown Knowns)を surface
 5. **Step 4.5 — Blind-spot pass (Unknown Matrix)** — design 提示前に Unknown Knowns / Unknown Unknowns を明示的に点検
-6. **Step 5 — Present the design and get approval** — Section ごとに確認、最後に明示的な handoff 承認
+6. **Step 5 — Present the design and get approval** — Section ごとに確認。design が Repository の事実に依存する場合は、引用した `file:line` evidence 付きの Load-bearing premises table を示し、`UNVERIFIED` 行が残る間は handoff を尋ねない
 7. **Step 6 — Handoff to `ywc-plan`** — 4 anchor と選択した approach を `ywc-plan` の入力として渡す
 
 この skill は `ywc-code-gen`、`ywc-spec-writer`、`ywc-task-generator`、executor へ直接分岐しません — terminal state は常に `ywc-plan` の呼び出しです。
