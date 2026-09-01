@@ -2,7 +2,7 @@
      Community review and corrections are welcome.
      Source: README.en.md | Language: Chinese (Simplified) -->
 
-# ywc-braystorm
+# ywc-brainstorm
 
 一种苏格拉底对话式技能，将粗略的想法转化为获得批准的设计，然后再开始任何实现工作。
 
