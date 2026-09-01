@@ -48,7 +48,7 @@ Ask all 9 categories in one focused round: sign-in method + OAuth provider readi
 Application-facing question and output language follows the target project's resolved language, not a hardcoded assumption.
 
 > Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
-> A resolved `ko|ja|en|es|zh` sets the question/output language; `UNRESOLVED` means ask the user rather than hardcode one.
+> A resolved code sets the question/output language; `UNRESOLVED` means ask the user rather than hardcode one.
 
 ## Dynamic Recommendation
 
