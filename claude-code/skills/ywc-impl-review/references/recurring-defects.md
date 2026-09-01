@@ -24,6 +24,26 @@ a finding to satisfy the catalog.
 Phase 1 / Phase 2 escalation rules.** The catalog tells you *what to look for*;
 the agent prompt tells you *how confident you must be before escalating*.
 
+## Applying this catalog to large diffs
+
+When a diff touches **3 or more** schema / component / model files of the
+same structural shape (e.g. several ORM/DDL model definitions in one
+migration, several sibling UI components implementing the same pattern), do
+not "consider the catalog generally" against the diff as a whole — that
+produces a single aggregate judgment that silently skips some of the changed
+files. Instead, **enumerate every changed file of that shape and record a
+per-file pass/fail against the applicable catalog item(s)**, the same way the
+Step 2 trigger #4 complement-grep works in `ywc-plan`: list the full candidate
+set, then classify each one, rather than confirming the pattern once and
+generalizing.
+
+This is not a hypothetical failure mode: a checklist item from this catalog
+(most often an ownership/access-boundary item from §1) gets correctly applied
+to one changed file in a large diff and silently skipped on a structurally
+identical sibling file in the very same diff — same reviewer, same PR, same
+catalog item, applied to one file and not the other. Per-file enumeration is
+what catches it; a single pass over the diff as a whole does not.
+
 ## Table of contents
 
 1. [Data-layer access-boundary & integrity](#1-data-layer-access-boundary--integrity) — Architecture + Security
@@ -31,6 +51,7 @@ the agent prompt tells you *how confident you must be before escalating*.
 3. [Contract, status & validation](#3-contract-status--validation) — Design
 4. [Security specifics](#4-security-specifics) — Security
 5. [Test fidelity](#5-test-fidelity) — QA
+6. [Frontend reactive-effect & stale-response hygiene](#6-frontend-reactive-effect--stale-response-hygiene) — Architecture + Devex
 
 ---
 
@@ -225,3 +246,35 @@ it manufactures false confidence. These are the recurring ways tests lie:
 Severity guide: mock drift / stale assertion that masks a real regression →
 High. Isolation leak that makes the suite order-dependent → High. Placement /
 strictness → Medium.
+
+## 6. Frontend reactive-effect & stale-response hygiene
+
+Any UI layer with a reactive-effect or watcher mechanism (React's `useEffect`,
+Vue's `watch`, Svelte's reactive statement, or a manually re-triggered fetch on
+route/param change) can key an async fetch off an id read from
+props/route/context — a stand-in for whatever identifying value the system
+under review uses (an entity id, a resource slug, a selected-record key). If
+the id changes again before the in-flight request resolves — a fast user
+switching between entities, a rapid navigation — the resolved response is
+applied to state (component state, a store, a ref) without first checking that
+the response still corresponds to the *current* id. The UI then renders, or
+acts on, the previous id's data as if it were the current id's data. The class
+recurs because the happy-path test always waits for one fetch to settle before
+switching ids, so the missing "is this still current?" guard is never
+exercised. Apply the *why* — any reactive effect whose identity depends on a
+value that can change before its async work resolves needs to re-validate that
+identity before committing the result — not just the specific
+framework/hook shown here; skip this item entirely for stacks with no
+reactive-effect/watcher layer (note the skip).
+
+**Scan cue:** grep for the stack's reactive-effect/watcher construct (whatever
+it is — `useEffect`, `watch`, an RxJS subscription, a manually re-triggered
+fetch) whose trigger includes an id-like value, and confirm the resolved
+response is compared against the *current* id (read fresh at resolution time,
+not the id captured in the closure at fetch-start) before being applied to
+state. A trigger keyed on an id with no such comparison at the point the async
+result is applied is a finding.
+
+**Severity guide:** the stale response drives a user-facing data-corruption or
+wrong-target action (e.g. provisioning, deploying, or submitting against the
+wrong entity) → High; display-only stale render with no side effect → Medium.
