@@ -137,9 +137,34 @@ Against the spec's own Purpose-section prose estimate (~23,000 tokens), the afte
 again here), that prose estimate never matched the traced reality even at the before-measurement
 point (~18,169 tokens traced vs. ~23,000 claimed), so a pass against the prose figure is not
 evidence of AC12 being satisfied. Using the correct authoritative baseline (the traced 72677-byte
-composite), **AC12 is a genuine FAIL**, caused by a doc-wording change elsewhere in this spec batch
-(`yw-000013-020`), not by this task. This is reported honestly per the task's explicit
-instruction not to fabricate a PASS.
+composite), **AC12 was a genuine FAIL at the time this task first ran**, caused by a doc-wording
+change elsewhere in this spec batch (`yw-000013-020`), not by this task. This was reported honestly
+per the task's explicit instruction not to fabricate a PASS.
+
+**Orchestrator follow-up fix (post-report, same run)**: since this was a small, well-understood,
+root-caused regression with a precise byte-level fix, the orchestrator applied a targeted
+correction directly to `claude-code/skills/ywc-sequential-executor/SKILL.md:126` (commit
+`3b69c76`, merged into this branch as `5327dc8`) rather than leaving AC12 permanently failing.
+Fix: moved the qualifying word from the header (`> **Action required before Pre-flight step 5**:`)
+into the already-redundant "Read it at Pre-flight" clause later in the same sentence (`at` →
+`before`), and dropped the now-redundant "and follow it" — the line still satisfies AC7's
+`when|before|if|only` regex (verified: whole-catalog count stays `0`), and the sentence still
+reads correctly. Net change vs. the true `yw-000012-010` original baseline: **-10 bytes** (not
+merely reverting `yw-000013-020`'s +25, which would only return to the original 72677 baseline —
+not "strictly lower").
+
+**Re-verified after the fix**:
+
+| Component | Bytes (before → after fix) |
+|---|---|
+| `SKILL.md` (body) | 66361→66351 |
+| `references/external-url-policy.md` | 6316→6316 (unchanged) |
+| **Composite total** | **72677→72667** |
+
+Composite tokens (bytes/4): ~18169 before → **~18167 after fix**.
+
+**AC12: PASS.** 72667 < 72677 — strictly lower than the traced before-baseline, as required.
+AC7 re-verified: `grep -rh 'Action required' claude-code/skills/*/SKILL.md | grep -vcE '\b(when|before|if|only)\b'` still returns `0`.
 
 ### 3. Behavioral tier (AC11) — all 5 named skills recorded `(read-only)`, known gap confirmed
 
@@ -256,7 +281,7 @@ no regressions and wrote back an identical baseline (`git status --short` clean,
 | AC | Status | Evidence |
 |---|---|---|
 | AC10 (mechanical, no skill regressed) | **PASS** | All 12 skills hold S2/S4/S5 = 5/5/5, identical to before-baseline |
-| AC12 (`ywc-sequential-executor` default-path composite, strictly lower) | **FAIL** | 72677→72702 bytes (~18169→~18176 tokens), +25 bytes/+7 tokens — higher, not lower, against the traced authoritative baseline. Cause: `yw-000013-020`'s wording-only clarification of the one unconditionally-read directive gate. Still well under the spec's (already-flagged-as-inaccurate) ~23,000-token prose estimate. |
+| AC12 (`ywc-sequential-executor` default-path composite, strictly lower) | **PASS (after orchestrator fix)** | Initially FAILed: 72677→72702 bytes, +25/+7 tokens, caused by `yw-000013-020`'s wording-only directive clarification. Fixed same-run (commit `3b69c76`): moved the qualifying word into an already-redundant clause and dropped redundant text, net -10 bytes vs. original baseline. Re-verified: 72677→72667 bytes (~18169→~18167 tokens), strictly lower. AC7 unaffected (still `0`). |
 | AC11 (behavioral tier, 5 fixture-backed skills) | **PASS via documented fallback** | All 5 named skills confirmed to lack runner-consumable v2 fixtures (only legacy `evals/evals.json`); recorded `(read-only)` per the spec's own degradation clause, not fabricated as `s3_source: "runner"` |
 | AC8 (`scripts/validate.sh` exits 0) | **FAIL — confirmed pre-existing, out of batch scope** | `codex/skills/ywc-skill-author S5: 4 -> 2`, present before this batch, `codex/` not in this batch's scope |
 | AC9 (`validate-skill.sh` per 12 skills) | **11/12 PASS, 1 FAIL — confirmed pre-existing, out of batch scope** | `ywc-sequential-executor` at 502 lines (> 500 cap), present before this batch |
@@ -273,8 +298,11 @@ no regressions and wrote back an identical baseline (`git status --short` clean,
 2. **`ywc-sequential-executor` SKILL.md line-count cap (502 > 500)** — causes
    `validate-skill.sh claude-code/skills/ywc-sequential-executor` to exit 1. Confirmed present
    before this batch (independently verified against the run's first commit). **Not fixed here**
-   — the file is already at the line cap and any further AC10/AC12 remediation (e.g. extracting
-   more content to `references/`) would need its own task; out of this read-only task's scope.
+   — the file is already at the line cap (unaffected by the AC12 byte-level fix below, which
+   changed text within an existing line, not the line count) and shrinking it further (e.g.
+   extracting content to `references/`) would need its own task; out of this read-only task's
+   scope. (This is a separate concern from AC12's composite-byte-size regression, which the
+   orchestrator did fix — see AC12 above.)
 
 ### Newly-surfaced finding (not pre-declared in the task brief)
 
@@ -288,3 +316,10 @@ no regressions and wrote back an identical baseline (`git status --short` clean,
    orchestrator update this task's own Task Verify line (and any other caller) to drop `--target`
    when combined with `--ci`, or treat "removed (outside target)" as a non-fatal notice in
    `ci_gate()` — a scope decision for a future task, not made here.
+
+### Final status (after orchestrator's AC12 fix)
+
+AC10 PASS · AC12 PASS (fixed same-run) · AC11 PASS via documented fallback · AC14 PASS. AC8 and
+one of AC9's 12 skills FAIL on the two confirmed pre-existing, out-of-batch-scope issues above —
+neither caused by this batch, neither fixed here, both tracked as separate follow-ups. Every
+acceptance criterion that this spec batch's own work could affect is now satisfied.
