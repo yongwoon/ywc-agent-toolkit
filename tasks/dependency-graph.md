@@ -6,9 +6,8 @@
 - `yw-000014-010-docs-skill-claude-md-policy-amendment` → depends on `yw-000013-010`, `yw-000013-020`
 - `yw-000014-020-test-token-efficiency-after-measurement` → depends on `yw-000014-010`
 
-## Phase yw-000013 — Claude skill token efficiency: consumer wiring
-- `yw-000013-010-docs-consumer-script-invocation` → depends on `yw-000012-020`, `yw-000012-030`
-- `yw-000013-020-docs-condition-gate-directives` → depends on `yw-000012-020`, `yw-000012-030`
+## Phase yw-000013 — done
+- Completed: `yw-000013-010-docs-consumer-script-invocation`, `yw-000013-020-docs-condition-gate-directives`
 
 ## Phase yw-000012 — done
 - Completed: `yw-000012-010-test-token-baseline-measurement`, `yw-000012-020-infra-resolve-language-script`, `yw-000012-030-infra-resolve-initials-script`, `yw-000012-040-infra-shellcheck-workflow-scandir`
