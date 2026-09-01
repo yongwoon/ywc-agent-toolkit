@@ -110,9 +110,10 @@ values in skill bodies):
 - **Merge condition**: `BOT_COUNT == 0` **with the `WINDOW=complete` marker** → proceed; `BOT_COUNT > 0` → invoke `ywc-handle-pr-reviews`; missing marker or `WINDOW=degraded` → re-run the poll, never merge
 - **Bash call**: pass `timeout: 600000` — the default 120 s kills the 360 s window mid-run, and a killed poll is not evidence of zero bots
 
-Skills must reference the file with an explicit `> **Action required**: Read
-[references/pr-bot-polling.md]` directive, not a bare hyperlink, so the LLM
-actually reads the canonical parameters rather than inferring them.
+Skills must reference the file with an explicit `> **Action required on
+entering the branch that needs it**: Read [references/pr-bot-polling.md]`
+directive, not a bare hyperlink, so the LLM actually reads the canonical
+parameters rather than inferring them.
 
 **Execution shape (enforced in the reference file)**: The polling loop must run
 as a **single Bash call** using the `until` pattern — never split into per-iteration
@@ -127,8 +128,9 @@ Skills that create, update, or merge a PR (`ywc-create-pr`, `ywc-handle-pr-revie
 `ywc-finish-branch`, `ywc-parallel-executor`) must use the canonical conflict
 procedure defined in `references/pr-conflict-resolution.md`. Do not inline or
 approximate this logic in a SKILL.md body — reference it with an explicit
-`> **Action required**: Read [references/pr-conflict-resolution.md]` directive
-the same way `pr-bot-polling.md` is referenced.
+`> **Action required on entering the branch that needs it**: Read
+[references/pr-conflict-resolution.md]` directive the same way
+`pr-bot-polling.md` is referenced.
 
 The reference codifies two facts that are easy to miss:
 
@@ -302,6 +304,8 @@ them instead of inlining equivalent logic in SKILL.md bodies.
 | Script | Skill | Purpose |
 |---|---|---|
 | `scripts/poll-pr-reviews.sh <pr>` | shared | Bot-polling loop; exit 0 = bots found, exit 1 = no bots |
+| `scripts/resolve-language.sh [--lang <code>] \| --emit-section <code>` | shared | Deterministic output-language resolution; precedence `--lang` flag → project `CLAUDE.md` → user `CLAUDE.md` → `UNRESOLVED`; prints the resolved code (or, with `--emit-section`, the canonical `## Language Policy` block); always exits 0 |
+| `ywc-task-generator/scripts/resolve-initials.sh [--initials <s>]` | ywc-task-generator | Collaborator-initials resolution; `--initials` flag → derive from `git config user.email`/`user.name`; prints `RESOLVED <s>` \| `NEEDS_CONFIRM <candidate>` \| `NONE`; always exits 0 |
 | `ywc-create-pr/scripts/scan-secrets.sh --staged \| --committed <base>` | ywc-create-pr | 3-phase secret scan; exit 0 = clean, exit 1 = found |
 | `ywc-finish-branch/scripts/build-pr-title.py <task> [--format parts\|title]` | ywc-finish-branch | task-name → TASK_NUMBER + SLUG_EN; 4 regex patterns incl. flexible N-M and single-prefix fallbacks |
 | `ywc-sequential-executor/scripts/verify-transition.sh <base> <task> [dir]` | ywc-sequential-executor | 4-condition pre-transition check; exit 0 = PASS |
@@ -318,7 +322,6 @@ them instead of inlining equivalent logic in SKILL.md bodies.
 | `ywc-merge-dependabot/scripts/group-by-ecosystem.py <pr> [<pr> ...]` | ywc-merge-dependabot | Classify Dependabot PRs by lockfile ecosystem (npm / github-actions / python / go / cargo / maven / gradle / docker / mixed); JSON output; powers parallel-auto mode grouping |
 | `ywc-merge-dependabot/scripts/detect-major-bump.py --title <t> \| (stdin)` | ywc-merge-dependabot | Deterministic "leftmost non-zero segment" semver major-bump gate; NDJSON output; `major_bump: true\|false\|null` (null = undecidable, LLM falls back) |
 | `ywc-release-pr-list/scripts/extract-merged-prs.sh [--exclude <pr>]` | ywc-release-pr-list | Pure-text extraction of merged PR numbers from commit headlines (2 anchored patterns only); dedup + ascending sort; no network |
-| `ywc-confidence-gate/scripts/score-gate.py --scope N --architecture N --evidence N --reuse N --root-cause N` | ywc-confidence-gate | Weighted aggregate + band (PROCEED/REVIEW/STOP) + single-dim ≤50 override; JSON output |
 | `ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` | ywc-task-generator | Collapse fully completed phases in `dependency-graph.md` to `## Phase NNNNNN — done`; drop fully completed Notes/Mermaid sections; invoked by `scripts/mark-complete.sh` and by the Step 2 >300-line gate |
 
 All paths are relative to the repository root. When authoring a new `ywc-*`
@@ -394,9 +397,12 @@ Language-aware skills that emit user-facing output (`ywc-task-generator`,
 language** of the documents, PR text, and commit messages they produce through the single
 canonical procedure defined in `references/language-resolution.md`. Do not inline or
 approximate the precedence chain, code list, or `## Language Policy` section format in a
-SKILL.md body — reference the file with an explicit
-`> **Action required**: Read [references/language-resolution.md]` directive, the same way
-`pr-bot-polling.md` is referenced.
+SKILL.md body. The canonical mechanism is running the script — invoke
+`bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]` on entering the branch
+that needs the output language, not reading the reference file inline and not a bare
+hyperlink. `references/language-resolution.md` remains the human-maintained source of truth:
+it is not deprecated or removed — it defines exactly what the script implements, and is the
+file to update when that logic changes.
 
 The reference is the canonical source of three things (do not restate them here or in any
 SKILL.md body):
@@ -421,9 +427,12 @@ Task-ID generators that emit multiple tasks per project must namespace the `[INI
 segment to prevent concurrent-execution allocation collisions. The single canonical
 procedure for resolving collaborator initials is defined in `references/initials-resolution.md`.
 Do not inline or approximate the precedence chain, derivation algorithm, or `## Task Initials`
-section format in a SKILL.md body — reference the file with an explicit
-`> **Action required**: Read [references/initials-resolution.md]` directive, the same way
-`language-resolution.md` is referenced.
+section format in a SKILL.md body. The canonical mechanism is running the script — invoke
+`bash claude-code/skills/ywc-task-generator/scripts/resolve-initials.sh [--initials <s>]` on
+entering the branch that needs collaborator initials, not reading the reference file inline
+and not a bare hyperlink. `references/initials-resolution.md` remains the human-maintained
+source of truth: it is not deprecated or removed — it defines exactly what the script
+implements, and is the file to update when that logic changes.
 
 The reference is the canonical source of three things (do not restate them here or in any
 SKILL.md body):
