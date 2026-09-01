@@ -26,7 +26,11 @@ INITIALS_FLAG=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --initials) INITIALS_FLAG="${2:-}"; shift 2 ;;
+    --initials)
+      INITIALS_FLAG="${2:-}"
+      shift
+      [ $# -gt 0 ] && shift
+      ;;
     *) shift ;;
   esac
 done
@@ -61,8 +65,10 @@ LOCAL_PART="${SOURCE%%@*}"
 CANDIDATE=""
 OLDIFS="$IFS"
 IFS='._-'
+set -o noglob
 # shellcheck disable=SC2086 # intentional word-splitting on the IFS set above
 set -- $LOCAL_PART
+set +o noglob
 IFS="$OLDIFS"
 for segment in "$@"; do
   [ -n "$segment" ] || continue
