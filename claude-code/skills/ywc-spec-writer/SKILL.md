@@ -89,7 +89,8 @@ Before collecting context and writing, right-size the run and confirm intent. Th
 
 If `--lang` is not specified, resolve the output language via the shared resolution reference.
 
-> **Action required**: Read [../references/language-resolution.md] — it defines the precedence chain (`--lang` flag → project `CLAUDE.md ## Language Policy` → user `~/.claude/CLAUDE.md ## Language Policy` → this skill's existing fallback), so the user-global CLAUDE.md is checked and project-over-user precedence is honored.
+> Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
+> Resolved code → use it directly. `UNRESOLVED` → fall through to this skill's own fallback below.
 
 This skill's terminal fallback is unchanged (AC10): when no canonical `## Language Policy` is configured, honor a project CLAUDE.md's declared primary documentation language if present, otherwise default to Korean (`ko`). Ask the user only when they explicitly ask to choose a language or the project guidance conflicts.
 
