@@ -132,7 +132,8 @@ Read `git log --oneline -30` and match the project's **exact** style.
 
 Resolve the output language for the commit message **description** (the `<summary>` text and `<body>` prose) via the shared resolution reference.
 
-> **Action required**: Read [../references/language-resolution.md](../references/language-resolution.md) — it defines how a configured policy is resolved. When a policy resolves, write the summary and body in that language (AC7). With no policy, keep the repository's current implicit behavior (match the style of recent commits) — absence never blocks (NFR1).
+> Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
+> Resolved code → write the summary and body in that language (AC7). `UNRESOLVED` → keep the repository's current implicit behavior (match recent commits) — never blocks (NFR1).
 
 Always keep in English regardless of the resolved language: the conventional-commit `type:` prefix (`feat:`, `fix:`, …), the `(<scope>)` token, and whitelisted technical terms. Resolution is read-only and idempotent, so a delegating chain (`ywc-finish-branch` → `ywc-create-pr` → `ywc-commit`) resolves the same language with no extra prompt — there is no prompt (EC7).
 

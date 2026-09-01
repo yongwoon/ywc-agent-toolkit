@@ -53,7 +53,8 @@ Follow the steps below to commit and create a PR.
 
 1. **Title**: Check `$ARGUMENTS` for `--title "<value>"`. If present, store it as the PR title — it will be used verbatim in Step 7 (skip self-generated title).
 2. **Language**: Check `$ARGUMENTS` for a language hint (e.g., `--lang ja`, `--language korean`). If a `--lang` flag is present, use it. Otherwise resolve the output language via the shared resolution reference **before** prompting.
-   > **Action required**: Read [../references/language-resolution.md](../references/language-resolution.md) — it defines how a configured policy is resolved. If a policy resolves, write the PR title and body in that language and **skip** the language prompt entirely (AC6).
+   > Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
+   > Resolved code → write the PR title and body in that language and skip the language prompt entirely (AC6). `UNRESOLVED` → continue to the prompt below.
 
    Only when resolution yields nothing (no `--lang`, no policy) **and** no `--title` was provided, use the `AskUserQuestion` tool to ask: "What language should the PR title and description be written in?" with the full option set English / Japanese / Korean / Spanish / Chinese (`en | ja | ko | es | zh`) — then **immediately continue to Step 0.5 in the same turn**; do not end the turn or wait for further input after receiving the answer. If `--title` was provided, it is used verbatim in Step 7 and a resolved policy governs only the **body** language (EC4); with no policy, infer the body language from the title or default to English — do not prompt. The title's `[task-id]` / conventional prefix always stays English.
 3. Apply the chosen language consistently when writing the PR description in Step 7.

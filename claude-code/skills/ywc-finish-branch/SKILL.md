@@ -193,7 +193,7 @@ Run the CI wait + fix loop and the bot review polling per [../references/pr-bot-
 
 CI green is necessary but not sufficient — the base may have advanced into a conflict while CI ran. Before Step 5's `gh pr merge`, confirm the PR can actually merge:
 
-> **Action required**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) — it defines the `mergeable` / `mergeStateStatus` table and the merge-not-rebase update procedure.
+> **Action required before Step 5's `gh pr merge`**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) — it defines the `mergeable` / `mergeStateStatus` table and the merge-not-rebase update procedure.
 
 ```bash
 gh pr view <pr-number> --json mergeable,mergeStateStatus --jq '{mergeable, mergeStateStatus}'

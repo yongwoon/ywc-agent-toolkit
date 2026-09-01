@@ -1,6 +1,18 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): 000011**
+**Next PHASE (yw): 000015**
+
+## Phase yw-000014 — done
+- Completed: `yw-000014-010-docs-skill-claude-md-policy-amendment`, `yw-000014-020-test-token-efficiency-after-measurement`
+
+## Phase yw-000013 — done
+- Completed: `yw-000013-010-docs-consumer-script-invocation`, `yw-000013-020-docs-condition-gate-directives`
+
+## Phase yw-000012 — done
+- Completed: `yw-000012-010-test-token-baseline-measurement`, `yw-000012-020-infra-resolve-language-script`, `yw-000012-030-infra-resolve-initials-script`, `yw-000012-040-infra-shellcheck-workflow-scandir`
+
+## Phase yw-000011 — done
+- Completed: `yw-000011-010-refactor-skill-author-activation-router`
 
 ## Phase yw-000010 — done
 - Completed: `yw-000010-010-domain-nitpick-parser`, `yw-000010-020-domain-nitpick-fetch-orchestrator`, `yw-000010-030-docs-skill-nitpick-integration`

@@ -45,7 +45,8 @@ When tempted to bend a rule, check this table first:
 
 When `--lang` is not specified, resolve the output language via the shared resolution reference.
 
-> **Action required**: Read [../references/language-resolution.md] — it defines the precedence chain (`--lang` flag → project `CLAUDE.md ## Language Policy` → user `~/.claude/CLAUDE.md ## Language Policy` → this skill's existing fallback), so the user-global CLAUDE.md is checked and project-over-user precedence is honored.
+> Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
+> Resolved code → use it directly. `UNRESOLVED` → fall through to this skill's own fallback below.
 
 This skill's terminal fallback is unchanged (AC10, no regression): when no canonical `## Language Policy` is configured, infer from the project CLAUDE.md's older cue (Language Policy section or Documentation Writing Guidelines) and, only if that fails, ask the user — defaulting to `en`. Resolution runs in the **main skill context**; because this skill fans out subagents, resolve the language once in the main context and pass the resolved code in each subagent payload — subagents must not rely on an auto-loaded user-global CLAUDE.md (EC8).
 
@@ -111,7 +112,16 @@ If the specification is unclear, ask specific questions to clarify the scope.
 
 **Resolve collaborator initials first.** Run this **on every invocation**, regardless of whether any tasks already exist — Step 7 naming always requires the `[INITIALS]` segment, so a fresh repository needs the value just as much as one with a hundred archived tasks.
 
-> **Action required**: Read [../references/initials-resolution.md](../references/initials-resolution.md) — it defines the precedence chain (`--initials` flag → project `CLAUDE.md ## Task Initials` → derivation from git identity + one confirmation → absence is valid), the derivation algorithm, the `^[a-z0-9]{2,4}$` validation, the canonical section format, and the no-block invariant. Do not restate those rules here.
+> If `--initials <s>` was **not** supplied, check the project `CLAUDE.md` for an existing valid
+> `## Task Initials` section first (rung 2 of `references/initials-resolution.md`'s precedence
+> chain — the script below deliberately never reads project files, so this caller-side check is
+> what makes rung 2 real). A valid cached value wins outright: use it, no confirmation, no
+> script call needed.
+> Otherwise (an explicit `--initials` was supplied, or no cached section exists) run
+> `bash claude-code/skills/ywc-task-generator/scripts/resolve-initials.sh [--initials <s>]`
+> (handles rung 1, the flag, and rung 3, derivation — an explicit flag always wins outright).
+> `RESOLVED <s>` → use it, no confirmation. `NONE` → proceed without initials (legacy numbering; never blocks).
+> `NEEDS_CONFIRM <candidate>` → show the collision advisory below, then confirm once before use — the script never confirms or caches.
 
 - **Caching is create-or-replace.** Writing the resolved value updates the project `CLAUDE.md` `## Task Initials` section in place, leaving **exactly one** such section. Appending a second heading is forbidden; if duplicates already exist, update the first and remove the rest.
 - **The confirmation prompt carries the collision advisory.** Before confirming a derived value, present the disk-scanned list of initials already in use with their task counts. Obtain it with `bash claude-code/skills/ywc-task-generator/scripts/next-task-number.sh <tasks-dir> --list-initials`, which prints one `<initials> <count>` line per distinct prefix across the same worktree union (empty output, exit 0, means none are in use). Do not hand-roll the scan. A match **warns without blocking** — the user may keep the value or override it.
