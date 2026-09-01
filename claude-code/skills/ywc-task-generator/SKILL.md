@@ -112,12 +112,14 @@ If the specification is unclear, ask specific questions to clarify the scope.
 
 **Resolve collaborator initials first.** Run this **on every invocation**, regardless of whether any tasks already exist — Step 7 naming always requires the `[INITIALS]` segment, so a fresh repository needs the value just as much as one with a hundred archived tasks.
 
-> Check the project `CLAUDE.md` for an existing valid `## Task Initials` section first (rung 2
-> of `references/initials-resolution.md`'s precedence chain — the script below deliberately
-> never reads project files, so this caller-side check is what makes rung 2 real). A valid
-> cached value wins outright: use it, no confirmation, no script call needed.
-> Otherwise run `bash claude-code/skills/ywc-task-generator/scripts/resolve-initials.sh [--initials <s>]`
-> (rungs 1/3 only).
+> If `--initials <s>` was **not** supplied, check the project `CLAUDE.md` for an existing valid
+> `## Task Initials` section first (rung 2 of `references/initials-resolution.md`'s precedence
+> chain — the script below deliberately never reads project files, so this caller-side check is
+> what makes rung 2 real). A valid cached value wins outright: use it, no confirmation, no
+> script call needed.
+> Otherwise (an explicit `--initials` was supplied, or no cached section exists) run
+> `bash claude-code/skills/ywc-task-generator/scripts/resolve-initials.sh [--initials <s>]`
+> (handles rung 1, the flag, and rung 3, derivation — an explicit flag always wins outright).
 > `RESOLVED <s>` → use it, no confirmation. `NONE` → proceed without initials (legacy numbering; never blocks).
 > `NEEDS_CONFIRM <candidate>` → show the collision advisory below, then confirm once before use — the script never confirms or caches.
 
