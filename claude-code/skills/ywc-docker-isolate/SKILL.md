@@ -100,6 +100,6 @@ One-line pointers only (no inline prose in the executor body):
 
 ## References
 
-> **Action required**: Read [references/port-allocation.md](references/port-allocation.md) for the hash formula, `var_index` sort rule, salt chain, modulo bias, and the AC2 determinism guarantee.
+> **Action required before running `setup`**: Read [references/port-allocation.md](references/port-allocation.md) for the hash formula, `var_index` sort rule, salt chain, modulo bias, and the AC2 determinism guarantee.
 
-> **Action required**: Read [references/preconditions.md](references/preconditions.md) for compose detection, env-var mapping limits (short vs long syntax), the YAML parser priority, the platform port-check tool table, and the env-file vs shell-export precedence.
+> **Action required before running `setup`**: Read [references/preconditions.md](references/preconditions.md) for compose detection, env-var mapping limits (short vs long syntax), the YAML parser priority, the platform port-check tool table, and the env-file vs shell-export precedence.

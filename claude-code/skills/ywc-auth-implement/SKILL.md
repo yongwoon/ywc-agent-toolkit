@@ -54,13 +54,13 @@ Application-facing question and output language follows the target project's res
 
 Recommend battle-tested libraries or managed services using only stack evidence plus approved (or explicitly risk-accepted) policy answers — never a fixed "supported stack" list. When evidence is insufficient, fall back to real-time research (GitHub search, Context7/vendor docs, package registries) and route to `ywc-tech-research`. A new stack playbook becomes cache-eligible only after this skill's own `ywc-security-audit` pass finds zero Critical/High and the policy-conditional E2E in FR-8 below passes.
 
-> **Action required**: Read [references/generic-fallback.md](references/generic-fallback.md) for the fallback research procedure and playbook-caching mechanics.
+> **Action required when stack evidence is insufficient for a direct recommendation**: Read [references/generic-fallback.md](references/generic-fallback.md) for the fallback research procedure and playbook-caching mechanics.
 
 ## Implementation Dispatch
 
 Dispatch, do not implement. Each direct-dispatch prompt below instructs the agent to follow the `ywc-tdd-ritual` cycle and to run `ywc-verify-done` before claiming completion. `ywc-tdd-ritual` is a discipline the dispatched agent follows, not a nested dispatcher this skill calls.
 
-> **Action required**: Read [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — every dispatch below must apply its §3.5 Return-payload contract verbatim.
+> **Action required before dispatching any subagent below**: Read [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — every dispatch below must apply its §3.5 Return-payload contract verbatim.
 
 ### Backend implementation — `Task(subagent_type: ywc-backend-coder)`
 
@@ -140,7 +140,7 @@ After implementation, run `ywc-security-audit --code <auth-diff-path>`. `ywc-sec
 
 E2E covers only interview-approved items (sign-up/sign-in/reset only if email/password was chosen, account deletion only if enabled, one flow per configured OAuth provider, and MFA enrollment/verification only if MFA was approved and not deferred). Check `playwright.config.*` first: absent → run `ywc-e2e-test-strategy --init` once and inspect the generated flows; present → run `--audit` for current coverage. Either way, run `--flow <name>` only for the approved flows still missing — flow generation is never itself a pass. Run the project's actual E2E command fresh and capture `ywc-verify-done`-style evidence (command, exit code, key output) before claiming a pass. Missing provider credentials or test environment is `DONE_WITH_CONCERNS` only when it is non-security and the user explicitly deferred it; otherwise `BLOCKED`. Only after these gates pass, propose `ywc-create-pr` non-blockingly — never invoke it automatically.
 
-> **Action required**: Read [references/security-checklist.md](references/security-checklist.md) for the full security posture checklist and the detailed E2E policy-branch execution steps.
+> **Action required before running the security audit**: Read [references/security-checklist.md](references/security-checklist.md) for the full security posture checklist and the detailed E2E policy-branch execution steps.
 
 ## Output Format
 

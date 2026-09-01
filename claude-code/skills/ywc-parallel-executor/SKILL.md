@@ -416,7 +416,7 @@ command sequences live in [references/aggregate-pr.md](references/aggregate-pr.m
   completion-marker commits ride into base through this single merge — do not re-Mark
   Complete. Capture the merged PR URL for the report.
 
-> **Action required**: Read [references/aggregate-pr.md](references/aggregate-pr.md) before
+> **Action required when `--draft` or `--aggregate-pr` is set**: Read [references/aggregate-pr.md](references/aggregate-pr.md) before
 > executing either path — it carries the exact branch names, the CI/bot/merge-readiness
 > gates (reusing `pr-bot-polling.md` and `pr-conflict-resolution.md`), and the §C
 > multi-group concurrency rules.
