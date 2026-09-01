@@ -46,19 +46,20 @@ fi
 # Rung 3: derive from git config. `git config` exits non-zero when a key is
 # unset; swallow that under `set -e` and treat it as empty.
 EMAIL="$(git config user.email 2>/dev/null || true)"
-SOURCE="$EMAIL"
-if [ -z "$SOURCE" ]; then
-  SOURCE="$(git config user.name 2>/dev/null || true)"
+if [ -n "$EMAIL" ]; then
+  # Local-part before '@'.
+  LOCAL_PART="${EMAIL%%@*}"
+else
+  # user.name fallback: use the raw value untouched. '@' is not a separator
+  # here -- trimming it would silently drop real name characters (e.g. a
+  # user.name of "a@b" must stay "a@b", not become "a").
+  LOCAL_PART="$(git config user.name 2>/dev/null || true)"
 fi
 
-if [ -z "$SOURCE" ]; then
+if [ -z "$LOCAL_PART" ]; then
   echo "NONE"
   exit 0
 fi
-
-# Local-part before '@' when SOURCE is an email; the full string otherwise
-# (covers the user.name fallback, which never has an '@').
-LOCAL_PART="${SOURCE%%@*}"
 
 # Split on '.', '_', '-' and join each segment's lowercased first character
 # (e.g. "yongwoon.kim" -> "yk").

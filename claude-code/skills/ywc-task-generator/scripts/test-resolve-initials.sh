@@ -115,6 +115,13 @@ assert_case_name() {
 assert_case_name "E5: derive from user.name when email unset" \
   "NEEDS_CONFIRM as" "alice.smith"
 
+# Regression: user.name containing '@' must NOT be truncated at '@' -- '@' is
+# only a separator on the email path. "a@b" keeps its full value and falls
+# back to the alnum-prefix rule ("a@b" -> "ab"), not the single-char "a" the
+# old code produced (which failed the 2-4 char length check and returned NONE).
+assert_case_name "regression: user.name with '@' is not truncated" \
+  "NEEDS_CONFIRM ab" "a@b"
+
 if [ "$FAILURES" -gt 0 ]; then
   echo "$FAILURES case(s) failed" >&2
   exit 1
