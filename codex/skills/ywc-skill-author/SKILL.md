@@ -72,6 +72,16 @@ for defenses, [references/cross-skill-graph.md](references/cross-skill-graph.md)
 for integration/side effects, and [references/skill-template.md](references/skill-template.md)
 only when that detail is needed.
 
+## Output Format
+
+Create/restructure: the edited skill files in place (`SKILL.md`, `references/`,
+`evals/`, `agents/openai.yaml` as needed).
+Audit: a report-only verdict, no file edits.
+
+```text
+Status: retain | investigate | exception
+```
+
 ## Completion Checks
 
 - Create/restructure: rules remain reachable, focused validation passes, and
