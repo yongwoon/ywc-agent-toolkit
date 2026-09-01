@@ -113,7 +113,7 @@ If the user has a strong preference already, still present the alternatives — 
 
 Ask which approach to use as the basis for the detailed design. Do not begin Step 5 until the user confirms it.
 
-After the user confirms the approach, run a short blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md). Resolve any uncertainty that could change scope, an interface, data shape, permissions, or Done When before Step 5; record only non-blocking risks and follow-ups in the Step 6 handoff. Keep the matrix term internal.
+After the user confirms the approach, run a short blind-spot pass with [../references/unknown-matrix.md](../references/unknown-matrix.md). Resolve any uncertainty that could change scope, an interface, data shape, permissions, or Done When before Step 5; record only non-blocking risks and follow-ups in the Step 6 handoff. When the design depends on a claim that the system, server, or DB knows, stores, or can determine X, confirm X's storage location and scope (tenant, project, session, or none) against the schema or model before treating it as known; a missing field cannot be found by identifier grep. Carry that evidence into Step 5. Keep the matrix term internal.
 
 ### Step 5: Present the design and get approval
 
@@ -123,9 +123,12 @@ Present the design in sections sized to their complexity. Cover at minimum:
 - **Where it lives** (concrete file paths, modules, or services touched)
 - **Data shape** (if any) — entity / DTO / contract, just enough to disambiguate the approach
 - **Failure modes** (what can go wrong, what we do about each)
+- **Load-bearing premises** (only when the design relies on repository facts it does not establish) — a table: `Premise | Evidence (file:line + quoted snippet) | Status`. Status is exactly `VERIFIED` (the cited line was read and its snippet reproduced) or `UNVERIFIED` (not yet checked); a bare citation is not verification.
 - **Out of Scope** (verbatim from Step 3)
 
 After each section, confirm understanding: "Does that match what you have in mind?"
+
+When the table is required, resolve every `UNVERIFIED` row by reading the source or asking the user before asking the handoff question.
 
 After the last section, ask explicitly: "Should I hand this off to `ywc-plan` to produce the full plan / spec?"
 
@@ -183,6 +186,7 @@ Before handing off, verify:
 - [ ] Step 4 presented at least 2 alternative approaches with explicit trade-offs — not just the recommended one
 - [ ] Step 4 surfaced blind-spot assumptions worth validating before handoff
 - [ ] Step 5 surfaced the design in sections and received explicit per-section confirmation
+- [ ] When required, Step 5's Load-bearing premises table had only `VERIFIED` rows with quoted evidence before the handoff question
 - [ ] Step 5.5 self-review passed — placeholder scan, internal consistency, scope check, and ambiguity check all clear before the handoff was drafted
 - [ ] The user said "yes" (or equivalent) to the handoff prompt, not just to the recommendation
 - [ ] The handoff message includes the four anchors verbatim, not summarized
