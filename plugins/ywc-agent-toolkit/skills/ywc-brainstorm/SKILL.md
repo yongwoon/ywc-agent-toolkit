@@ -128,7 +128,7 @@ Present the design in sections sized to their complexity. Cover at minimum:
 
 After each section, confirm understanding: "Does that match what you have in mind?"
 
-When the table is required, resolve every `UNVERIFIED` row by reading the source or asking the user before asking the handoff question.
+When the table is required, resolve every `UNVERIFIED` row by reading the cited source and quoting the evidence. Asking the user does not itself satisfy `VERIFIED`; if the premise cannot be confirmed from the repository, leave the row `UNVERIFIED` and record the risk as a Failure Mode or Out of Scope item instead of proceeding to handoff.
 
 After the last section, ask explicitly: "Should I hand this off to `ywc-plan` to produce the full plan / spec?"
 
