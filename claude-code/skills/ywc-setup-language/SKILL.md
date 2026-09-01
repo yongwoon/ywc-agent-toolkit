@@ -21,10 +21,8 @@ no per-call prompt. Reading the policy back is a separate `--show` mode.
 This skill only **writes** the policy. How consuming skills **read and resolve** it (the
 precedence chain, code list, and section format) is defined once elsewhere:
 
-> **Action required**: Read [../references/language-resolution.md] before writing or
-> inspecting a policy — it is the single source of truth for the canonical `## Language
-> Policy` section format, the supported code list, full-name normalization, and the
-> precedence chain. Do not restate that content in this skill body.
+> After normalizing the input (below), run `bash claude-code/skills/scripts/resolve-language.sh --emit-section <code>`.
+> It prints the canonical `## Language Policy` section body (with `<code>` substituted) — write it verbatim into the target `CLAUDE.md`.
 
 ## Rationalization Defense
 
