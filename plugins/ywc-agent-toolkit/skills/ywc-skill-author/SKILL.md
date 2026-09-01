@@ -74,8 +74,8 @@ only when that detail is needed.
 
 ## Output Format
 
-Create/restructure: the edited skill files in place (`SKILL.md`, `references/`,
-`evals/`, `agents/openai.yaml` as needed).
+Create/restructure: the edited skill files in place (`SKILL.md`, `agents/openai.yaml`
+kept synchronized per A11-A16, and `references/`/`evals/` as needed).
 Audit: a report-only verdict, no file edits.
 
 ```text
