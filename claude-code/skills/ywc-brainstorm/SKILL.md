@@ -149,12 +149,12 @@ Present the design in sections sized to their complexity. Cover at minimum:
 - **Where it lives** (concrete file paths, modules, or services touched)
 - **Data shape** (if any) — entity / DTO / contract, just enough to disambiguate the approach
 - **Failure modes** (what can go wrong, what we do about each)
-- **Load-bearing premises** — every fact the design assumes but does not itself establish (distinct from Failure modes above, which are things that go wrong once the design runs — a premise is a fact the design stands on), as a table: `Premise | Evidence (file:line + quoted snippet) | Status`. `Status` is exactly one of `VERIFIED` (the cited line was read and its snippet reproduced in the table) or `UNVERIFIED` (not yet checked) — no other value is valid. A bare `file:line` citation without the quoted snippet does not count as `VERIFIED`. Typically 3–5 premises; skip one already stated verbatim in "What we're building" or "Where it lives".
+- **Load-bearing premises** — every fact the design assumes but does not itself establish (distinct from Failure modes above, which are things that go wrong once the design runs — a premise is a fact the design stands on), as a table: `Premise | Evidence (file:line + quoted snippet) | Status`. `Status` is exactly one of `VERIFIED` (the cited line was read and its snippet reproduced in the table) or `UNVERIFIED` (not yet checked) — no other value is valid. A bare `file:line` citation without the quoted snippet does not count as `VERIFIED`. Typically 3–5 premises.
 - **Out of Scope** (verbatim from Step 3)
 
 After each section, confirm understanding: "Does that match what you have in mind?"
 
-Every row in the Load-bearing premises table must read `VERIFIED` with its snippet quoted before the handoff question is asked — resolve any `UNVERIFIED` row (read the code, or ask the user directly) first.
+Every row in the Load-bearing premises table must read `VERIFIED` with its snippet quoted before the handoff question is asked — resolve any `UNVERIFIED` row by reading the cited source and quoting the evidence directly. Asking the user does not itself satisfy `VERIFIED`; if the premise cannot be confirmed from the repository, leave it `UNVERIFIED` and record the risk as a Failure Mode or move it to Out of Scope instead of proceeding to handoff.
 
 After the last section, ask explicitly: "Should I hand this off to `ywc-plan` to produce the full plan / spec?"
 
