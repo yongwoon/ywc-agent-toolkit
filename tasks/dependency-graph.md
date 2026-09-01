@@ -10,11 +10,8 @@
 - `yw-000013-010-docs-consumer-script-invocation` → depends on `yw-000012-020`, `yw-000012-030`
 - `yw-000013-020-docs-condition-gate-directives` → depends on `yw-000012-020`, `yw-000012-030`
 
-## Phase yw-000012 — Claude skill token efficiency: foundation scripts
-- `yw-000012-010-test-token-baseline-measurement` → (root)
-- `yw-000012-020-infra-resolve-language-script` → depends on `yw-000012-010`
-- `yw-000012-030-infra-resolve-initials-script` → depends on `yw-000012-010`
-- `yw-000012-040-infra-shellcheck-workflow-scandir` → depends on `yw-000012-020`, `yw-000012-030`
+## Phase yw-000012 — done
+- Completed: `yw-000012-010-test-token-baseline-measurement`, `yw-000012-020-infra-resolve-language-script`, `yw-000012-030-infra-resolve-initials-script`, `yw-000012-040-infra-shellcheck-workflow-scandir`
 
 ## Parallel Execution Notes — yw-000012..yw-000014
 - Spec: `docs/ywc-plans/20260901-claude-skill-token-efficiency.md`
