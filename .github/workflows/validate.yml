@@ -17,10 +17,33 @@ jobs:
         run: |
           bash scripts/validate.sh
 
-      - name: ShellCheck
+      - name: ShellCheck (scripts/)
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: ./scripts
+
+      # claude-code/skills scandir added by yw-000012-040 (spec Amendment A1.1, FR12/AC15) so
+      # resolve-language.sh, resolve-initials.sh, and the shared claude-code/skills/scripts/*.sh
+      # scripts are actually linted in CI. ignore_paths below carves out 10 files, by exact path
+      # (not directory or whole-scandir), that already had pre-existing shellcheck findings
+      # before this scandir was added and are outside this task's edit scope — every other file
+      # under claude-code/skills, including future additions, stays linted. Tracked for a
+      # follow-up cleanup task to fix or suppress those 10 findings and drop this list.
+      - name: ShellCheck (claude-code/skills)
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: claude-code/skills
+          ignore_paths: >-
+            claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh
+            claude-code/skills/ywc-docker-isolate/scripts/_lib.sh
+            claude-code/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh
+            claude-code/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh
+            claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh
+            claude-code/skills/ywc-onboard-repo/scripts/recon.sh
+            claude-code/skills/ywc-skill-author/scripts/build-variant.sh
+            claude-code/skills/ywc-skill-author/scripts/validate-skill.sh
+            claude-code/skills/ywc-skill-author/tests/audit-skills-test.sh
+            claude-code/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
 
       - name: Test install script (dry run)
         run: |
