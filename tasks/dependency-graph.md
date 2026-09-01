@@ -1,6 +1,37 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): 000011**
+**Next PHASE (yw): 000015**
+
+## Phase yw-000014 — Claude skill token efficiency: policy amendment + verification
+- `yw-000014-010-docs-skill-claude-md-policy-amendment` → depends on `yw-000013-010`, `yw-000013-020`
+- `yw-000014-020-test-token-efficiency-after-measurement` → depends on `yw-000014-010`
+
+## Phase yw-000013 — Claude skill token efficiency: consumer wiring
+- `yw-000013-010-docs-consumer-script-invocation` → depends on `yw-000012-020`, `yw-000012-030`
+- `yw-000013-020-docs-condition-gate-directives` → depends on `yw-000012-020`, `yw-000012-030`
+
+## Phase yw-000012 — Claude skill token efficiency: foundation scripts
+- `yw-000012-010-test-token-baseline-measurement` → (root)
+- `yw-000012-020-infra-resolve-language-script` → depends on `yw-000012-010`
+- `yw-000012-030-infra-resolve-initials-script` → depends on `yw-000012-010`
+- `yw-000012-040-infra-shellcheck-workflow-scandir` → depends on `yw-000012-020`, `yw-000012-030`
+
+## Parallel Execution Notes — yw-000012..yw-000014
+- Spec: `docs/ywc-plans/20260901-claude-skill-token-efficiency.md`
+- Initial ready set: `yw-000012-010-test-token-baseline-measurement` (solo root).
+- After `yw-000012-010` merges: `yw-000012-020-infra-resolve-language-script` and
+  `yw-000012-030-infra-resolve-initials-script` become runnable together — no shared files.
+- `yw-000013-010-docs-consumer-script-invocation` and `yw-000013-020-docs-condition-gate-directives`
+  must not run together — both edit `ywc-auth-implement/SKILL.md` and `ywc-create-pr/SKILL.md`.
+- `yw-000014-020-test-token-efficiency-after-measurement` reads the before-baseline recorded in
+  `tasks/completed/yw-000012-010-.../task.md` — must not start before that task is archived there.
+
+## Phase yw-000011 — Codex skill-author activation router
+- `yw-000011-010-refactor-skill-author-activation-router` → (root)
+
+## Parallel Execution Notes — yw-000011
+- Initial ready set: `yw-000011-010-refactor-skill-author-activation-router` (solo).
+- It owns the source router, its evidence, and the generated plugin mirror; do not run another skill-author or plugin-sync task concurrently.
 
 ## Phase yw-000010 — done
 - Completed: `yw-000010-010-domain-nitpick-parser`, `yw-000010-020-domain-nitpick-fetch-orchestrator`, `yw-000010-030-docs-skill-nitpick-integration`
