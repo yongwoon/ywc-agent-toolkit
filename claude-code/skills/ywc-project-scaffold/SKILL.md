@@ -27,6 +27,8 @@ When tempted to skip a step, check this table first:
 | "Generate actual files instead of a Markdown plan" | This skill is for plan only. File generation belongs to ywc-code-gen. |
 | "Project scale guessed at 'medium', do not ask" | Scale (small / medium / large / monorepo) changes the structure significantly. Always ask. |
 | "Add every conceivable directory for completeness" | Over-scaffolding creates empty noise. Include only directories with a current purpose. |
+| "Reference file is good enough, skip the trend check for a large-scale request" | `references/*.md` are hand-maintained and can lag current practice. Large scale or a contested Architecture choice warrants a lightweight `/ywc-tech-research` check before finalizing (see Trend check in step 2). |
+| "User wants a reference file updated, just edit it directly" | Reference-file review/refresh requests propose an additive diff for approval first (see Reference Refresh, step 6). Silent edits change every future scaffold call using that language. |
 
 **Violating the letter of these rules is violating the spirit.** A scaffold that does not match the user's actual stack becomes immediate technical debt.
 
@@ -36,6 +38,7 @@ When tempted to skip a step, check this table first:
 - Directory structure design for language + framework + protocol combinations
 - Project restructuring or refactoring of folder layout
 - "Create a project structure with this stack", "scaffold a FastAPI project"
+- Reference file audit/refresh request — "review go.md", "refresh the python reference with current trends", "re-audit this reference against recent practice"
 
 ## Usage
 
@@ -92,6 +95,13 @@ If the Protocol is not REST, also refer to `references/protocols.md`.
 
 **Compound condition handling**: Combine multiple References. For example, for "FastAPI + GraphQL", refer to both `python.md` and `protocols.md` to generate an integrated structure.
 
+**Trend check (conditional)**: The loaded reference is a fast, curated baseline, not a permanent verdict — it is hand-maintained and can lag current practice. When Scale is `large`, or the user explicitly contests/questions the Architecture choice, pause and delegate to `/ywc-tech-research "<language>/<framework> project structure conventions" --depth 25` before finalizing the tree. Compare its findings against the loaded reference:
+
+- If findings confirm the reference, proceed without comment.
+- If a material delta exists (a convention the reference is missing, or one that has since shifted), surface it as a labeled callout in step 5 (Extras) — do not silently substitute it into the tree, and do not edit the reference file from this step (that is Reference Refresh, step 6, below).
+
+Skip this sub-step for `small`/`medium` scale with an uncontested Architecture — the static reference is sufficient and the research overhead is not justified for a fast baseline case.
+
 ### 3. Generate - Create Directory Structure
 
 Generate Markdown in the following format:
@@ -146,6 +156,16 @@ Provide useful additional information based on the project domain or scale:
 - Framework-specific convention notes
 - Structural changes to consider when scaling up
 
+### 6. Reference Refresh - Optional Mode
+
+Triggered when the user asks to review, refresh, or audit a `references/<language>.md` file itself, rather than generate a project plan. This mode never edits silently — it produces a proposal for the user to approve, then stops.
+
+1. **Identify target(s)** — the `references/<language>.md` file(s) named or implied by the request. Language is inferred from the matched file path, not asked for separately; Framework and Scale (required elsewhere in this skill) do not apply to this mode.
+2. **Gather evidence**: if the user supplies a real-world repository or documentation path to cross-check, read/grep it directly and compare its actual structure against the reference. Otherwise, delegate to `/ywc-tech-research "<language> project structure best practices"` (or `"<language>/<framework> project structure best practices"` when Framework is known), with `--depth 25`.
+3. **Diff against the current reference** — identify genuinely new or divergent patterns, not just rephrasing of what is already documented.
+4. **Propose additively** — a new variant section alongside existing ones, or new rows in an existing Conventions/Key Points table. Never delete or silently overwrite an existing documented pattern; an older pattern may still be a valid alternative for a different context (see how `Go Large (DDD)` and `Go Large (Layered, Connect RPC)` coexist as sibling variants in `references/go.md`).
+5. **Present the diff and stop** — show the proposed addition to the user and wait for approval before editing. After approval, apply the edit and run the project's Markdown lint check on the touched file(s) before reporting done.
+
 ## Output Rules
 
 - Use `├──`, `└──`, `│` characters for tree format
@@ -162,8 +182,12 @@ Provide useful additional information based on the project domain or scale:
 - Explain the role and rationale behind each Directory
 - Reflect structural differences based on Scale
 - Support compound conditions (e.g., FastAPI + GraphQL + DDD)
+- Audit/refresh a `references/<language>.md` file against real-world evidence or `/ywc-tech-research` findings, proposing an additive diff for approval (Reference Refresh, step 6)
 
 **Will Not:**
 - Generate actual Code file contents (only provides structure)
 - Generate Boilerplate Code (use `/sc:implement` for implementation)
 - Configure Docker, CI/CD, or Monorepo setup (provide guidance upon separate request)
+- Move, rename, or edit files in the user's target project (this skill is plan-only there) — the sole exception is Reference Refresh (step 6) editing this skill's own `references/<language>.md` file, and only after the user approves the proposed diff
+- Auto-apply a reference-file edit without user confirmation
+- Remove or overwrite an existing documented variant during Reference Refresh — that mode stays additive-only
