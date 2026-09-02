@@ -2,15 +2,12 @@
 name: ywc-project-scaffold
 description: >-
   (ywc) Use when designing a new project's directory structure or architecture
-  skeleton before files are generated. Triggers: "project structure",
-  "scaffold a new project", "folder layout", "프로젝트 구조", "디렉토리 구조",
-  "プロジェクト構成", "フォルダ構成", "review/refresh this skill's
-  references/<language>.md". Do not use for generic documentation review or
-  documentation writing (use ywc-project-docs), modifying an existing repo
-  structure, generating
-  individual files (use ywc-code-gen), creating implementation tasks (use
-  ywc-task-generator), or repo onboarding/AGENTS.md generation (use
-  ywc-onboard-repo).
+  skeleton before files are generated. Triggers: "project structure", "scaffold
+  a new project", "folder layout", "프로젝트 구조", "디렉토리 구조", "プロジェクト構成",
+  "フォルダ構成", or reviewing this skill's `references/<language>.md`. Do not
+  use for generic documentation review, existing repo changes, file generation
+  (use ywc-code-gen), task creation (use ywc-task-generator), or onboarding
+  (use ywc-onboard-repo).
 ---
 
 # Project Scaffold - Directory Structure Generator
