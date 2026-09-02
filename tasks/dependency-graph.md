@@ -2,9 +2,8 @@
 
 **Next PHASE (yw): 000018**
 
-## Phase yw-000015 — Scaffold behavior and reference baseline
-- `yw-000015-010-domain-scaffold-routing` → (root)
-- `yw-000015-020-refactor-scaffold-reference-enrichment` → (root)
+## Phase yw-000015 — done
+- Completed: `yw-000015-010-domain-scaffold-routing`, `yw-000015-020-refactor-scaffold-reference-enrichment`
 
 ## Phase yw-000016 — Contract coverage
 - `yw-000016-010-test-scaffold-contract-evals` → depends on `yw-000015-010`, `yw-000015-020`
