@@ -226,14 +226,16 @@ Provide useful additional information based on the project domain or scale:
 Return the scaffold recommendation as a structured report:
 
 ```text
-Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT | AWAITING_APPROVAL>
 Mode: <scaffold | reference-refresh>
 Scaffold: <tree or named structure>
 Rationale: <language / framework / architecture decisions>
 Boundaries: <what is intentionally excluded>
 Validation: <checks against requested stack and constraints>
-Next action: <implementation handoff or "none">
+Next action: <implementation handoff | approval required | "none">
 ```
+
+`reference-refresh` returns `Status: AWAITING_APPROVAL` and `Next action: approval required` after step 4's proposal — never `DONE` before the user has approved the edit.
 
 ## Common Mistakes
 
