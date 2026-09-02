@@ -5,8 +5,8 @@
 ## Phase yw-000015 — done
 - Completed: `yw-000015-010-domain-scaffold-routing`, `yw-000015-020-refactor-scaffold-reference-enrichment`
 
-## Phase yw-000016 — Contract coverage
-- `yw-000016-010-test-scaffold-contract-evals` → depends on `yw-000015-010`, `yw-000015-020`
+## Phase yw-000016 — done
+- Completed: `yw-000016-010-test-scaffold-contract-evals`
 
 ## Phase yw-000017 — Packaging validation
 - `yw-000017-010-infra-scaffold-sync-validation` → depends on `yw-000016-010`
