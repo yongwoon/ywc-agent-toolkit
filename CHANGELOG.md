@@ -11,6 +11,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.36.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.35.0...v1.36.0) (2026-09-02)
+
+
+### Added
+
+* token-optimization batch — resolvers, condition-gating, CI hardening ([#172](https://github.com/yongwoon/ywc-agent-toolkit/issues/172)) ([a58cade](https://github.com/yongwoon/ywc-agent-toolkit/commit/a58cade95acd458ef53b43dbcb6a5fdb4074fdfe))
+* **ywc-brainstorm:** port premises gate to Codex skill and sync translations ([#174](https://github.com/yongwoon/ywc-agent-toolkit/issues/174)) ([047d7d2](https://github.com/yongwoon/ywc-agent-toolkit/commit/047d7d23c2c9805c7eaf324874b4c17b594484b4))
+* **ywc-create-pr:** port Alternatives/Trade-offs design-context excerpt (PR [#225](https://github.com/yongwoon/ywc-agent-toolkit/issues/225)) ([#177](https://github.com/yongwoon/ywc-agent-toolkit/issues/177)) ([834766a](https://github.com/yongwoon/ywc-agent-toolkit/commit/834766a6ad1741f4648305c498ee3168f71ba7e2))
+* **ywc-project-scaffold:** port PR [#220](https://github.com/yongwoon/ywc-agent-toolkit/issues/220) enrichments from develop-with-llm ([#176](https://github.com/yongwoon/ywc-agent-toolkit/issues/176)) ([a1f4f0b](https://github.com/yongwoon/ywc-agent-toolkit/commit/a1f4f0bd10cc511bc47d54791e1b68bfa0bfe13a))
+
+
+### Fixed
+
+* port ywc-impl-review CodeRabbit catalog gaps from develop-with-llm[#221](https://github.com/yongwoon/ywc-agent-toolkit/issues/221) ([#175](https://github.com/yongwoon/ywc-agent-toolkit/issues/175)) ([93a8470](https://github.com/yongwoon/ywc-agent-toolkit/commit/93a847048e1c94fd074ee6a641fc5247c91f6d9b))
+
 ## [1.35.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.34.1...v1.35.0) (2026-08-27)
 
 
