@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       - name: HOL Plugin Scanner
-        uses: hashgraph-online/ai-plugin-scanner-action@b7d8b3299327f03f6e0a4a1eccbc5e3ee748151d # v1
+        uses: hashgraph-online/ai-plugin-scanner-action@d22a55ba3fb23749c159982f2b6b452cf07b55ce # v1.2.572
         with:
           plugin_dir: "plugins/ywc-agent-toolkit"
           mode: scan
@@ -26,3 +26,4 @@ jobs:
           fail_on_severity: high
           format: sarif
           upload_sarif: true
+          trust_repository_policy: "true"

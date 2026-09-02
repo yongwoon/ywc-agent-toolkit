@@ -1,0 +1,7 @@
+# HOL Plugin Scanner 저장소 소유 설정.
+# FILE_MAGIC_MISMATCH만 좁게 억제한다 — skills/ywc-security-audit/agents/openai.yaml에 대한
+# Magika(ML 파일타입 분류기) 오탐으로, 구조가 동일한 다른 openai.yaml 파일들은 flag되지 않는다.
+# 2026-06-25부터 main에 존재했고 과거 PR #144~#174 30개 이상에서 동일 재현됨.
+# 다른 rule을 이 목록에 추가하기 전에 반드시 실제 오탐임을 근거로 확인할 것.
+[rules]
+disabled = ["FILE_MAGIC_MISMATCH"]
