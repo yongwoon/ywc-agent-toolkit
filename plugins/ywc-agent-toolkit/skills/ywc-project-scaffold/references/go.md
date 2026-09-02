@@ -8,6 +8,7 @@
     - [Go Small](#go-small)
     - [Go Medium](#go-medium)
     - [Go Large (DDD)](#go-large-ddd)
+    - [Go Large (Layered, Connect RPC)](#go-large-layered-connect-rpc)
   - [Gin / Echo Framework](#gin--echo-framework)
     - [Gin Medium](#gin-medium)
   - [Go Kit / Microservice](#go-kit--microservice)
@@ -23,7 +24,7 @@ Go does not have an official standard layout, but there is a widely adopted comm
 
 Single service, CLI tool, simple API.
 
-```
+```text
 project-root/
 ├── main.go                        # Entry point
 ├── handler.go                     # HTTP handlers
@@ -49,7 +50,7 @@ project-root/
 
 Modularized service, typical production API.
 
-```
+```text
 project-root/
 ├── cmd/
 │   └── server/
@@ -171,6 +172,66 @@ project-root/
 - Inter-context communication: Domain events or shared interfaces
 - Multiple binaries in `cmd/`: Separate API server and background worker
 
+### Go Large (Layered, Connect RPC)
+
+Large-scale single-service backend where every domain shares the same infrastructure (one Postgres, one deploy unit) instead of splitting into Bounded Contexts. Tier-first: each layer is one top-level package holding every domain's files together, rather than one package per domain.
+
+```
+project-root/
+├── cmd/
+│   ├── api/
+│   │   └── main.go                # API server
+│   └── worker/
+│       └── main.go                # Background worker
+├── internal/
+│   ├── domain/                    # Framework-independent core, no external deps
+│   │   ├── entity/                # Domain entities (all domains together)
+│   │   ├── values/                # Value objects
+│   │   ├── aggregation/           # Aggregate roots + their repository interfaces
+│   │   │   └── order/
+│   │   │       ├── aggregate.go
+│   │   │       └── repository.go
+│   │   └── query/                 # Read-model query types
+│   ├── usecase/                   # Business logic orchestration
+│   │   ├── port/                  # Interfaces the usecase layer depends on (repository/service contracts)
+│   │   ├── service/                # Domain services shared across usecases
+│   │   ├── types/                 # Usecase-facing DTOs
+│   │   └── mock/                  # Generated mocks for port/ interfaces
+│   ├── repository/                # port/ implementations (e.g. GORM)
+│   │   ├── converter/             # DB model <-> domain entity mapping
+│   │   └── mock/
+│   ├── handler/                   # Connect RPC / HTTP handlers
+│   │   ├── converter/             # Proto <-> domain entity mapping
+│   │   └── common/                # Shared auth/context helpers
+│   ├── infrastructure/            # External integrations
+│   │   ├── db/                    # DB connection, TransactionManager
+│   │   ├── queue/                 # Job queue client
+│   │   └── api/                   # External API clients
+│   ├── worker/                    # Background job consumers
+│   ├── middleware/
+│   ├── errors/
+│   ├── injector/                  # DI wiring (dig/wire provider sets)
+│   └── tests/                     # Shared integration test infra
+│       ├── fixture/
+│       ├── integration/
+│       └── factory/
+├── gen/                            # Generated code (protobuf/Connect-RPC stubs)
+│   └── <service>/
+├── migrations/
+├── go.mod
+└── README.md
+```
+
+**Key Points:**
+
+- Unlike Go Large (DDD) above, domains are not split into separate top-level packages — each layer package (`domain/`, `usecase/`, `repository/`, `handler/`) holds every domain's files, grouped by sub-purpose (`entity/`, `converter/`, `port/`)
+- `usecase/port/`: interfaces the usecase layer needs from repository/infrastructure, still defined on the consumer side per Go convention, just given a named home. `domain/aggregation/<name>/repository.go` is also a port — its contract is scoped to that one aggregate and colocated with it, whereas `usecase/port/` holds ports for everything else (external services, non-aggregate-scoped repositories). Never define the same contract in both places
+- `usecase/types/`: request/response shapes for usecases whose input/output is too complex for plain arguments — not a mandatory intermediate boundary every call must pass through. `handler/converter/` and `repository/converter/` both map directly to `domain/entity`; either may skip `usecase/types/` for simple CRUD usecases
+- `injector/`: DI container wiring (e.g. `go.uber.org/dig` or `google/wire`) — one provider-set file per layer, wired at startup
+- `handler/converter/` and `repository/converter/`: dedicated entity↔proto and entity↔DB-model mapping, kept out of business logic
+- Choose this over Go Large (DDD) when the service is one deployable with many CRUD-shaped domains sharing infrastructure; choose Bounded Context DDD when domains genuinely diverge and may split into separate services later
+- Typical fit: gRPC/Connect-RPC backend with generated stubs (`gen/`), GORM-based repositories, single Postgres instance
+
 ---
 
 ## Gin / Echo Framework
@@ -269,3 +330,6 @@ Structural conventions to follow in Go projects:
 | Package naming     | Singular, lowercase, short (`user` not `users`, `models`)     |
 | `_test.go` suffix  | Test files are located in the same directory                  |
 | `testdata/`        | Directory for test fixture data                               |
+| `injector/`        | Dependency wiring; optional for small/medium projects           |
+| `gen/`             | Generated protobuf/Connect stubs; never hand-edit               |
+| `converter/`       | Maps transport or persistence values to domain entities         |
