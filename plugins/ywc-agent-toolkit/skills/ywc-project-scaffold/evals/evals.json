@@ -24,6 +24,18 @@
       "prompt": "Scaffold a Rust Axum REST API using Layered Architecture.",
       "expected_output": "Returns a Rust + Axum scaffold for a REST API with Layered Architecture language, separates handlers/application/domain/infrastructure boundaries, and includes validation and next-action notes.",
       "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Design a large Go project structure using DDD, and compare the architecture with current project-structure conventions.",
+      "expected_output": "Runs a conditional Trend Check through ywc-tech-research --depth 25, retains the loaded baseline, reports only a sourced material delta in a labelled Extras callout, and never silently edits the tree or references.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Refresh the scaffold skill reference at references/go.md.",
+      "expected_output": "Returns Mode: reference-refresh, infers Go from the target path, uses language-only research when no framework is supplied, proposes only additive changes with a displayed diff, preserves existing variants, and stops for explicit approval without editing.",
+      "files": []
     }
   ]
 }
