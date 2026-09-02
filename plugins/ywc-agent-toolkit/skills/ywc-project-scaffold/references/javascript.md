@@ -74,6 +74,12 @@ project-root/
 └── README.md
 ```
 
+**Key Points:**
+
+- Apply the shared [Naming Convention](#naming-convention) and
+  [Component Logic Colocation](#component-logic-colocation) guidance while
+  preserving App Router special-file names.
+
 ---
 
 ### Next.js Medium
