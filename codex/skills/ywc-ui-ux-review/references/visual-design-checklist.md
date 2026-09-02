@@ -1,6 +1,6 @@
 # Visual Design Checklist
 
-Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "✗" item becomes a report finding; severity is decided in Phase 5 using `severity-rubric.md`.
+Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "x" (fail) item becomes a report finding; severity is decided in Phase 5 using `severity-rubric.md`.
 
 ## Table of Contents
 
@@ -20,21 +20,21 @@ Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "✗" item become
 
 - [ ] No more than 2 type families in production (display + body, or single)
 - [ ] Type scale is documented (e.g., 12 / 14 / 16 / 20 / 24 / 32 / 48) and adhered to
-- [ ] Body copy size ≥16px on mobile, ≥14px on dense desktop tables
-- [ ] Line-height: ~1.4–1.6 for body, tighter (~1.1–1.2) for headlines
-- [ ] Line-length: 50–75 characters for readable body copy
+- [ ] Body copy size >=16px on mobile, >=14px on dense desktop tables
+- [ ] Line-height: ~1.4-1.6 for body, tighter (~1.1-1.2) for headlines
+- [ ] Line-length: 50-75 characters for readable body copy
 - [ ] No more than 3 weights in active use within a single screen
-- [ ] All-caps reserved for labels ≤24 characters; not for sentences
+- [ ] All-caps reserved for labels <=24 characters; not for sentences
 
 **Code signals**: design tokens, CSS custom properties, Tailwind theme keys, Material `Typography` roles.
 
 ## 2. Color System and Contrast
 
-- [ ] Tokenized palette — no hex / rgb literals scattered through components
+- [ ] Tokenized palette - no hex / rgb literals scattered through components
 - [ ] Semantic tokens exist for: `surface`, `text`, `accent`, `success`, `warning`, `danger`, `border`, `muted`
-- [ ] **WCAG 2.2 AA — text contrast ≥4.5:1** for body, ≥3:1 for large text (≥18.66px regular OR ≥14px bold)
-- [ ] **Non-text contrast ≥3:1** for UI components and graphical objects (WCAG SC 1.4.11)
-- [ ] Focus indicator contrast ≥3:1 against adjacent colors (WCAG SC 2.4.11 / 2.4.13)
+- [ ] **WCAG 2.2 AA - text contrast >=4.5:1** for body, >=3:1 for large text (>=18.66px regular OR >=14px bold)
+- [ ] **Non-text contrast >=3:1** for UI components and graphical objects (WCAG SC 1.4.11)
+- [ ] Focus indicator contrast >=3:1 against adjacent colors (WCAG SC 2.4.11 / 2.4.13)
 - [ ] State colors (hover / active / disabled / focus) are derivable from the base, not arbitrary
 - [ ] Color is never the sole carrier of meaning (icon + label + color, not color alone) (WCAG SC 1.4.1)
 - [ ] Dark mode (if shipped) uses an inverted *intent* mapping, not a naive color flip
@@ -44,16 +44,16 @@ Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "✗" item become
 ## 3. Spacing and Rhythm
 
 - [ ] Spacing scale is tokenized (e.g., 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64)
-- [ ] Multiples of the base unit are used everywhere — no `padding: 13px`
+- [ ] Multiples of the base unit are used everywhere - no `padding: 13px`
 - [ ] Vertical rhythm between sections is consistent
-- [ ] Touch targets ≥24×24 CSS pixels (WCAG 2.2 SC 2.5.8 minimum); prefer ≥44×44 on mobile
+- [ ] Touch targets >=24x24 CSS pixels (WCAG 2.2 SC 2.5.8 minimum); prefer >=44x44 on mobile
 - [ ] Spacing scales appropriately across breakpoints (not fixed pixel margins everywhere)
 - [ ] No "orphaned" white space that isolates an element from its meaning group
 
 ## 4. Visual Hierarchy
 
 - [ ] Each screen has one clear primary focus, supported by scale / weight / color
-- [ ] Importance maps to size, then weight, then color — not arbitrary emphasis
+- [ ] Importance maps to size, then weight, then color - not arbitrary emphasis
 - [ ] Decorative elements never out-weigh interactive elements
 - [ ] First viewport answers "What is this and what can I do here?"
 
@@ -66,16 +66,16 @@ Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "✗" item become
 ## 6. Component Consistency
 
 - [ ] Same UX pattern uses the same component everywhere (one Modal, not three custom dialogs)
-- [ ] Variant proliferation is bounded (e.g., Button has size × intent matrix, not ad-hoc props)
+- [ ] Variant proliferation is bounded (e.g., Button has size x intent matrix, not ad-hoc props)
 - [ ] States exist for: default, hover, focus, active, disabled, loading, error, success
-- [ ] Disabled state is not a faded clone of default — it must be visually distinct
+- [ ] Disabled state is not a faded clone of default - it must be visually distinct
 
 ## 7. Iconography
 
-- [ ] Single icon set (or visually compatible set) — no mixing line + filled + duotone arbitrarily
+- [ ] Single icon set (or visually compatible set) - no mixing line + filled + duotone arbitrarily
 - [ ] Icons paired with labels for primary actions (icon-only only when the metaphor is unambiguous)
-- [ ] Icon size aligned with adjacent text size (typically 1× to 1.25× cap-height)
-- [ ] Icons that act like buttons have ≥24×24 hit area (preferably ≥44×44 on mobile)
+- [ ] Icon size aligned with adjacent text size (typically 1x to 1.25x cap-height)
+- [ ] Icons that act like buttons have >=24x24 hit area (preferably >=44x44 on mobile)
 
 ## 8. Imagery and Media
 
@@ -86,9 +86,9 @@ Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "✗" item become
 
 ## 9. Motion (Visual Subset)
 
-- [ ] Transitions ≤300ms for state changes; ≤500ms for entrance
+- [ ] Transitions <=300ms for state changes; <=500ms for entrance
 - [ ] Easing is consistent (a defined curve set, not ad-hoc cubic-bezier values)
-- [ ] `prefers-reduced-motion` is honored — non-essential motion is removed or reduced
+- [ ] `prefers-reduced-motion` is honored - non-essential motion is removed or reduced
 - [ ] No motion that competes with primary content for attention
 
 ## 10. Responsive Visual Integrity
@@ -96,14 +96,14 @@ Use this checklist during Phase 4 of `ywc-ui-ux-review`. Every "✗" item become
 - [ ] Layout integrity verified at 360 / 768 / 1280 / 1920 (use `resize_page` + `take_screenshot`)
 - [ ] No horizontal scroll at any tested width
 - [ ] Touch targets meet size requirements at the smallest breakpoint
-- [ ] Content prioritization adapts (key info first on small screens — not just a squeeze)
+- [ ] Content prioritization adapts (key info first on small screens - not just a squeeze)
 - [ ] Sticky elements do not occlude critical content on small viewports
 
 ## 11. Anti-Generic Design Patterns (AI Tell Detection)
 
-Detect AI-generated template aesthetics that signal absent design intent. These patterns are acceptable in a scaffold but unacceptable in a shipped product. Flag any ✗ as **Medium** severity minimum; three or more ✗ items within the same group signals a systemic issue — escalate to **High**.
+Detect AI-generated template aesthetics that signal absent design intent. These patterns are acceptable in a scaffold but unacceptable in a shipped product. Flag any x as **Medium** severity minimum; three or more x items within the same group signals a systemic issue - escalate to **High**.
 
-**Evidence requirement per ✗**: screenshot at 1280px + the specific component path (`file:line` or browser selector). Generic patterns are invisible at component level but obvious at full-page scale — always run `take_screenshot` at 1280px before this checklist.
+**Evidence requirement per x**: screenshot at 1280px + the specific component path (`file:line` or browser selector). Generic patterns are invisible at component level but obvious at full-page scale - always run `take_screenshot` at 1280px before this checklist.
 
 ### Layout Tells
 
@@ -117,28 +117,28 @@ Detect AI-generated template aesthetics that signal absent design intent. These 
 
 - [ ] Not using only Inter or Roboto (system sans default) with no pairing rationale
 - [ ] Heading and body are not the same font at different weights (no typographic voice)
-- [ ] H1 is not exactly 2× body size with no intermediate scale steps
+- [ ] H1 is not exactly 2x body size with no intermediate scale steps
 - [ ] At least one typographic element uses deliberate weight contrast (e.g., light + bold pairing, or a display cut)
 
 ### Color Tells
 
 - [ ] Palette is not exactly `{white background, dark text, one blue/purple accent}` with no variation
-- [ ] Gradient usage (if any) is directional and purposeful — not a generic purple-to-blue diagonal blob
+- [ ] Gradient usage (if any) is directional and purposeful - not a generic purple-to-blue diagonal blob
 - [ ] Accent color appears on more than one element type (not CTAs only)
-- [ ] Dark mode (if present) has a considered palette — not `#000000` background with inverted text
+- [ ] Dark mode (if present) has a considered palette - not `#000000` background with inverted text
 
 ### Motion and State Tells
 
-- [ ] Interactive elements have ≥2 visually distinct states (not only `opacity: 0.7` for disabled)
+- [ ] Interactive elements have >=2 visually distinct states (not only `opacity: 0.7` for disabled)
 - [ ] Hover transitions are not all uniform `opacity` fades at 200ms
 - [ ] At least one entry animation differentiates content sections (not the same `fade-in translateY` on every block)
-- [ ] Loading states provide skeleton or contextual indication — not only a centered spinner
+- [ ] Loading states provide skeleton or contextual indication - not only a centered spinner
 
 ### Content Quality Tells
 
 - [ ] No lorem ipsum or obvious placeholder text in shipped code
 - [ ] CTA copy is specific to the product ("Start free trial" not "Learn More" / "Get Started" as the only variation)
-- [ ] Section headings are product-specific — generic structure ("How it works" / "Features" / "Pricing" with zero product language) is a tell
+- [ ] Section headings are product-specific - generic structure ("How it works" / "Features" / "Pricing" with zero product language) is a tell
 - [ ] No unresolved `https://via.placeholder.com/` URLs or stock photo placeholder `src` values
 
 ### Component Tells
@@ -150,7 +150,7 @@ Detect AI-generated template aesthetics that signal absent design intent. These 
 
 ## How to Capture Evidence
 
-For every "✗" item:
+For every "x" item:
 
 - Screenshot at the failing breakpoint
 - Computed style excerpt (font-size, color pair, spacing) when relevant
