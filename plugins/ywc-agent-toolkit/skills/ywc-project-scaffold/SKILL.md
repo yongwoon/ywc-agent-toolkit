@@ -235,7 +235,7 @@ Validation: <checks against requested stack and constraints>
 Next action: <implementation handoff | approval required | "none">
 ```
 
-`reference-refresh` returns `Status: AWAITING_APPROVAL` and `Next action: approval required` after step 4's proposal — never `DONE` before the user has approved the edit.
+`reference-refresh` returns `Status: AWAITING_APPROVAL` and `Next action: approval required` after step 3's proposal — never `DONE` before the user has approved the edit.
 
 ## Common Mistakes
 
