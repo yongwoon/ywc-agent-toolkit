@@ -37,6 +37,12 @@ Step 2 trigger #4 complement-grep works in `ywc-plan`: list the full candidate
 set, then classify each one, rather than confirming the pattern once and
 generalizing.
 
+**Output contract:** record the enumeration as one row per file —
+`파일 | 적용 항목 | pass/fail 또는 skip | 근거` — inline in the aspect
+agent's findings output, directly above the aggregate verdict for that
+catalog item. An aggregate-only result (no per-file rows) does not satisfy
+this procedure, even when the aggregate verdict happens to be correct.
+
 This is not a hypothetical failure mode: a checklist item from this catalog
 (most often an ownership/access-boundary item from §1) gets correctly applied
 to one changed file in a large diff and silently skipped on a structurally
@@ -269,11 +275,14 @@ reactive-effect/watcher layer (note the skip).
 
 **Scan cue:** grep for the stack's reactive-effect/watcher construct (whatever
 it is — `useEffect`, `watch`, an RxJS subscription, a manually re-triggered
-fetch) whose trigger includes an id-like value, and confirm the resolved
-response is compared against the *current* id (read fresh at resolution time,
-not the id captured in the closure at fetch-start) before being applied to
-state. A trigger keyed on an id with no such comparison at the point the async
-result is applied is a finding.
+fetch) whose trigger includes an id-like value, and confirm the stale result is
+blocked from reaching state by *either* comparing the resolved response
+against the *current* id (read fresh at resolution time, not the id captured
+in the closure at fetch-start) *or* an equivalent cancellation/generation guard
+— an effect cleanup flag, `AbortController` cancellation, a request-generation
+token, or subscription teardown — that prevents a superseded result from being
+applied at all. A trigger keyed on an id with none of these protections at the
+point the async result is applied is a finding.
 
 **Severity guide:** the stale response drives a user-facing data-corruption or
 wrong-target action (e.g. provisioning, deploying, or submitting against the
