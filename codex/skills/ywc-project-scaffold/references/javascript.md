@@ -28,8 +28,13 @@
   for utility and configuration files.
 - Preserve framework-owned Next App Router special files such as `page.tsx`,
   `layout.tsx`, and `route.ts`; these names are intentional exceptions.
-- Informal layout partials and UI-kit CLI-generated files may also retain their
-  tool-defined names. Do not mechanically rename valid framework examples.
+- Informal layout partials, UI-kit CLI-generated files, and Astro `.astro`
+  component files may also retain their tool-defined lowercase/kebab-case
+  names. Do not mechanically rename valid framework examples.
+- This is the standard for new component files. The directory trees below
+  predate this convention and keep their original lowercase/kebab-case
+  component filenames (e.g. `login-form.tsx`, `stats-card.tsx`) as
+  illustrative examples — treat them as legacy, not a naming precedent.
 
 ## Component Logic Colocation
 
