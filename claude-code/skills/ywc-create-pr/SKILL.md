@@ -234,7 +234,7 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
    - **Zero** → stop here silently; no design-background section is added.
    - **One** → hold `{source: "plan", plan_path}` and continue to sub-step 6.
    - **Two or more** → do not guess. Print one line to the conversation (not the PR body): `Found N candidate plan documents for this branch, none confidently distinct: <path1>, <path2>, ... Re-run with --plan-doc <path> to cite one explicitly.` Then proceed to Step 7 with no design-background result.
-6. **Excerpt extraction (`source: "plan"` or `--plan-doc` override only).** Bound the read before it happens — a large plan file would otherwise burn the context this PR still needs. Bound it on **bytes**, not lines — a 120-line cap still admits a single multi-megabyte line. Take the excerpt source from `head -c 8192 <plan_path>` (first 8 KB, truncated mid-line if needed), never a full-file Read. Within that window, take the content under its `## Goal` heading (Small-path template) or `## Purpose` heading (Medium/Large spec template) — whichever is present — up to the next `##` heading, capped at 5 lines / ~500 characters. If neither heading exists (custom or older plan format), take the first paragraph after the title instead, same cap. Never forward the full file. Hold `{source: "plan", plan_path, excerpt}`.
+6. **Excerpt extraction (`source: "plan"` or `--plan-doc` override only).** Bound the read before it happens — a large plan file would otherwise burn the context this PR still needs. Bound it on **bytes**, not lines — a 120-line cap still admits a single multi-megabyte line. Take the excerpt source from `head -c 8192 <plan_path>` (first 8 KB, truncated mid-line if needed), never a full-file Read. Within that window, take the content under its `## Goal` heading (Small-path template) or `## Purpose` heading (Medium/Large spec template) — whichever is present — up to the next `##` heading, capped at 5 lines / ~500 characters. If neither heading exists (custom or older plan format), take the first paragraph after the title instead, same cap. Never forward the full file. Also look, within that same bounded window, for a `## Alternatives Considered` or `## Trade-offs` heading (whichever appears first), take the content under that heading up to the next `##` heading, and apply the same 5-line / ~500-character cap — this is opportunistic: no current plan template guarantees the section exists, so its absence is the normal case and produces no finding, not a gap to fill by inventing content. Hold `{source: "plan", plan_path, excerpt, alternatives_excerpt?, alternatives_heading_kind?}` — `alternatives_excerpt` and `alternatives_heading_kind` (`"alternatives"` or `"trade-offs"`, recording which of the two source headings was actually found) are present only when that heading was found. Step 7 uses `alternatives_heading_kind` to pick the matching localized sub-heading — never hardcode "Alternatives Considered" regardless of which heading the source file used.
 
    (Skip this sub-step for `source: "task"` — the `summary` already extracted in Path A sub-step 2 is used as-is, with no redundant re-fetch.)
 7. **Untracked-source confirmation gate.** Whatever the source, if the document git does not track it (`git ls-files --error-unmatch <path>` exits non-zero — the normal case for a `.gitignore`d `docs/ywc-plans/`), its text has never passed review and may hold local secrets or PII that this step would publish verbatim to a remote PR. Show the user the path and the exact excerpt, and ask for explicit confirmation before citing it. On decline, continue to Step 7 with no design-background result. Tracked documents skip this gate.
@@ -294,7 +294,23 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
   <excerpt text, verbatim>
   ```
 
-  The quoted `summary`/`excerpt` text itself stays verbatim (it is a quotation, not translated). If Step 6.6 held no result, omit this section entirely — do not add an empty or placeholder Design Background block.
+  **Alternatives Considered / Trade-offs (optional, `source: "plan"` only)**: if Step 6.6 held an `alternatives_excerpt`, append one further sub-block after the excerpt above, using the localized sub-heading that matches `alternatives_heading_kind` — pick the `"alternatives"` column when the source file's heading was `## Alternatives Considered`, or the `"trade-offs"` column when it was `## Trade-offs`. Never default to the `"alternatives"` column when `alternatives_heading_kind` is `"trade-offs"` — the label must match what the source document actually said. Omit the whole sub-block entirely when `alternatives_excerpt` is absent — most plan documents will not have one, and that is the normal case, not a gap:
+
+  | Language | Sub-heading (`alternatives_heading_kind: "alternatives"`) | Sub-heading (`alternatives_heading_kind: "trade-offs"`) |
+  |---|---|---|
+  | en | `### Alternatives Considered` | `### Trade-offs` |
+  | ko | `### 검토했던 대안 (Alternatives Considered)` | `### 트레이드오프 (Trade-offs)` |
+  | ja | `### 検討した代替案 (Alternatives Considered)` | `### トレードオフ (Trade-offs)` |
+  | zh | `### 已考虑的替代方案 (Alternatives Considered)` | `### 权衡取舍 (Trade-offs)` |
+  | es | `### Alternativas consideradas (Alternatives Considered)` | `### Compensaciones (Trade-offs)` |
+
+  ```markdown
+  <localized sub-heading matching alternatives_heading_kind>
+
+  <alternatives_excerpt text, verbatim>
+  ```
+
+  The quoted `summary`/`excerpt`/`alternatives_excerpt` text itself stays verbatim (it is a quotation, not translated). If Step 6.6 held no result, omit this section entirely — do not add an empty or placeholder Design Background block.
 - **PR title**: if `--title` was provided in Step 0, use it verbatim. Otherwise, generate a title from the commit history in the language chosen in Step 0.
 - Write all description content in the language chosen in Step 0
 - If there are no UI changes, write "N/A" in the screenshot section (if the template has one)
