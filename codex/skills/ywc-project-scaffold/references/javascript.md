@@ -4,6 +4,8 @@
 
 - [JavaScript / TypeScript Directory Structure References](#javascript--typescript-directory-structure-references)
   - [Table of Contents](#table-of-contents)
+  - [Naming Convention](#naming-convention)
+  - [Component Logic Colocation](#component-logic-colocation)
   - [Next.js](#nextjs)
     - [Next.js Small](#nextjs-small)
     - [Next.js Medium](#nextjs-medium)
@@ -17,6 +19,26 @@
     - [Astro Medium](#astro-medium)
   - [Express.js](#expressjs)
     - [Express Medium](#express-medium)
+
+---
+
+## Naming Convention
+
+- Use kebab-case for directories, PascalCase for component files, and camelCase
+  for utility and configuration files.
+- Preserve framework-owned Next App Router special files such as `page.tsx`,
+  `layout.tsx`, and `route.ts`; these names are intentional exceptions.
+- Informal layout partials and UI-kit CLI-generated files may also retain their
+  tool-defined names. Do not mechanically rename valid framework examples.
+
+## Component Logic Colocation
+
+- Keep component-private `hooks/` and `functions/` beside the component that
+  owns them.
+- Promote reuse in stages: first to the feature, then to an app-shared location
+  only when it crosses feature boundaries.
+- For Astro, this guidance applies to interactive islands (React/Vue/etc.), not
+  normally to static `.astro` components.
 
 ---
 
@@ -51,6 +73,12 @@ project-root/
 ├── package.json
 └── README.md
 ```
+
+**Key Points:**
+
+- Apply the shared [Naming Convention](#naming-convention) and
+  [Component Logic Colocation](#component-logic-colocation) guidance while
+  preserving App Router special-file names.
 
 ---
 
@@ -109,6 +137,10 @@ project-root/
 ```
 
 **Key Points:**
+
+- Apply the shared [Naming Convention](#naming-convention) and
+  [Component Logic Colocation](#component-logic-colocation) guidance while
+  preserving App Router special-file names.
 
 - Route Groups `(auth)`, `(dashboard)`: Share layouts without affecting the URL
 - `components/ui/`: Structure compatible with shadcn/ui
@@ -169,6 +201,9 @@ project-root/
 ```
 
 **Key Points:**
+
+- Apply the shared [Naming Convention](#naming-convention) and
+  [Component Logic Colocation](#component-logic-colocation) guidance.
 
 - `features/`: Each feature has its own components, hooks, actions, and types
 - `app/`: Handles only routing and layout, no business logic
@@ -427,6 +462,9 @@ project-root/
 ```
 
 **Key Points:**
+
+- Apply the shared [Naming Convention](#naming-convention) and
+  [Component Logic Colocation](#component-logic-colocation) guidance.
 
 - `components/`: Subdirectories per framework (astro/, react/, vue/)
 - Islands architecture: Mostly static, only interactive parts use React/Vue islands

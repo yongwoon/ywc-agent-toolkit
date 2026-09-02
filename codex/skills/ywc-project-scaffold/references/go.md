@@ -8,6 +8,7 @@
     - [Go Small](#go-small)
     - [Go Medium](#go-medium)
     - [Go Large (DDD)](#go-large-ddd)
+    - [Go Large (Layered, Connect RPC)](#go-large-layered-connect-rpc)
   - [Gin / Echo Framework](#gin--echo-framework)
     - [Gin Medium](#gin-medium)
   - [Go Kit / Microservice](#go-kit--microservice)
@@ -23,7 +24,7 @@ Go does not have an official standard layout, but there is a widely adopted comm
 
 Single service, CLI tool, simple API.
 
-```
+```text
 project-root/
 ├── main.go                        # Entry point
 ├── handler.go                     # HTTP handlers
@@ -49,7 +50,7 @@ project-root/
 
 Modularized service, typical production API.
 
-```
+```text
 project-root/
 ├── cmd/
 │   └── server/
@@ -171,6 +172,39 @@ project-root/
 - Inter-context communication: Domain events or shared interfaces
 - Multiple binaries in `cmd/`: Separate API server and background worker
 
+### Go Large (Layered, Connect RPC)
+
+Choose this sibling large-service variant for a single deployable with shared
+infrastructure and CRUD-shaped domains. Keep the DDD variant above when domains
+have genuinely diverging bounded contexts and independent invariants.
+
+```text
+project-root/
+├── cmd/
+│   └── server/main.go             # Composition root
+├── internal/
+│   ├── handler/                   # Connect RPC handlers
+│   ├── usecase/                   # Application services and ports
+│   │   └── types/                 # Optional complex usecase input/output
+│   ├── domain/                    # Shared domain entities and rules
+│   ├── repository/                # Persistence adapters
+│   ├── converter/                 # Handler/repository mappings
+│   └── config/
+├── gen/                           # Generated protobuf/Connect stubs only
+├── migrations/
+├── test/integration/              # Test infrastructure
+├── proto/
+├── go.mod
+└── README.md
+```
+
+Aggregate-local repository contracts stay with their aggregate. Consumer-side
+external or non-aggregate contracts belong in `usecase/port`; never define the
+same contract in both locations. `usecase/types` is optional for complex
+usecase I/O, while simple CRUD converters may map directly to domain entities.
+Top-level `gen/` contains only generated protobuf/Connect stubs and is never
+hand-edited; database generation belongs under its own database package.
+
 ---
 
 ## Gin / Echo Framework
@@ -269,3 +303,6 @@ Structural conventions to follow in Go projects:
 | Package naming     | Singular, lowercase, short (`user` not `users`, `models`)     |
 | `_test.go` suffix  | Test files are located in the same directory                  |
 | `testdata/`        | Directory for test fixture data                               |
+| `injector/`        | Dependency wiring; optional for small/medium projects           |
+| `gen/`             | Generated protobuf/Connect stubs; never hand-edit               |
+| `converter/`       | Maps transport or persistence values to domain entities         |
