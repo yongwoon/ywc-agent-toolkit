@@ -1,6 +1,29 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): 000015**
+**Next PHASE (yw): 000018**
+
+## Phase yw-000015 — Scaffold behavior and reference baseline
+- `yw-000015-010-domain-scaffold-routing` → (root)
+- `yw-000015-020-refactor-scaffold-reference-enrichment` → (root)
+
+## Phase yw-000016 — Contract coverage
+- `yw-000016-010-test-scaffold-contract-evals` → depends on `yw-000015-010`, `yw-000015-020`
+
+## Phase yw-000017 — Packaging validation
+- `yw-000017-010-infra-scaffold-sync-validation` → depends on `yw-000016-010`
+
+## Parallel Execution Notes
+- Initial ready set: `yw-000015-010-domain-scaffold-routing`, `yw-000015-020-refactor-scaffold-reference-enrichment`.
+- These Phase 000015 tasks may run in parallel because their Ownership boundaries are disjoint; both must merge before eval fixtures start.
+- `yw-000016-010-test-scaffold-contract-evals` becomes runnable after both Phase 000015 tasks merge and owns only the eval fixture.
+- `yw-000017-010-infra-scaffold-sync-validation` is the final serial gate; it syncs generated marketplace content and runs repository validation.
+
+```mermaid
+graph LR
+  A[yw-000015-010-domain-scaffold-routing] --> C[yw-000016-010-test-scaffold-contract-evals]
+  B[yw-000015-020-refactor-scaffold-reference-enrichment] --> C
+  C --> D[yw-000017-010-infra-scaffold-sync-validation]
+```
 
 ## Phase yw-000014 — done
 - Completed: `yw-000014-010-docs-skill-claude-md-policy-amendment`, `yw-000014-020-test-token-efficiency-after-measurement`
