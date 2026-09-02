@@ -4,8 +4,10 @@ description: >-
   (ywc) Use when designing a new project's directory structure or architecture
   skeleton before files are generated. Triggers: "project structure",
   "scaffold a new project", "folder layout", "프로젝트 구조", "디렉토리 구조",
-  "プロジェクト構成", "フォルダ構成". Do not use for documentation writing (use
-  ywc-project-docs), modifying an existing repo structure, generating
+  "プロジェクト構成", "フォルダ構成", "review/refresh this skill's
+  references/<language>.md". Do not use for generic documentation review or
+  documentation writing (use ywc-project-docs), modifying an existing repo
+  structure, generating
   individual files (use ywc-code-gen), creating implementation tasks (use
   ywc-task-generator), or repo onboarding/AGENTS.md generation (use
   ywc-onboard-repo).
@@ -29,6 +31,8 @@ When tempted to skip a step, check this table first:
 | "Generate actual files instead of a Markdown plan" | This skill is for plan only. File generation belongs to ywc-code-gen. |
 | "Project scale guessed at 'medium', do not ask" | Scale (small / medium / large / monorepo) changes the structure significantly. Always ask. |
 | "Add every conceivable directory for completeness" | Over-scaffolding creates empty noise. Include only directories with a current purpose. |
+| "Run a Trend Check for every scaffold" | Trend Check is conditional: run it only for large or explicitly contested architecture requests. |
+| "Refresh a shared reference in place" | Reference refresh is proposal-first. Show an additive diff and wait for explicit approval before editing the skill-owned reference. |
 
 **Violating the letter of these rules is violating the spirit.** A scaffold that does not match the user's actual stack becomes immediate technical debt.
 
@@ -72,6 +76,34 @@ Identify the following elements from user input. Ask a focused clarification whe
 - **Medium**: Modularized service, mid-size team (3-8 members), typical production
 - **Large**: Multi-module/Monorepo consideration, large team (8+ members), enterprise-grade
 
+## Modes
+
+### `reference-refresh`
+
+Use this separate mode only when the user asks to review, refresh, or audit one
+or more of this skill's own `references/<language>.md` files. Do not route generic
+documentation review here. Identify each target path and infer its language from
+the filename. If no target can be resolved, return `NEEDS_CONTEXT`.
+
+1. Read the current target reference and use any supplied repository or official
+   documentation evidence directly. If no real-world evidence is supplied,
+   delegate a focused `ywc-tech-research --depth 25` check. Use a language-only
+   topic when the framework is unknown; include the framework only when it is
+   known.
+2. Compare the evidence with the current reference. Exclude rephrasing and
+   patterns already documented. Keep existing alternatives and valid variants.
+3. Produce an additive proposal: a sibling variant or entries in an existing
+   conventions/key-points section. Display the proposed diff and return it in
+   `Mode: reference-refresh`.
+4. Stop after the proposal for the current turn and wait for explicit user
+   approval. Only a later approved turn may edit these skill-owned reference
+   files, followed by Markdown lint and structural validation.
+
+This is the only write exception to the normal project boundary, and it applies
+only to this skill's own references after approval. It never edits the user's
+target project, silently rewrites a reference, removes a valid variant, or
+creates project files.
+
 ## Behavioral Flow
 
 ### 1. Analyze - Parse and Confirm Input
@@ -93,6 +125,23 @@ If the Protocol is not REST, also refer to `references/protocols.md`.
 **Fallback (no matching reference)**: if the requested language or framework has no matching reference file above, proceed using general project-structure principles and confirm the stack assumptions with the user before generating.
 
 **Compound condition handling**: Combine multiple References. For example, for "FastAPI + GraphQL", refer to both `python.md` and `protocols.md` to generate an integrated structure.
+
+### 2.5 Trend Check - Conditional Current-Practice Comparison
+
+After loading the relevant references and before finalizing the tree, run a
+focused Trend Check when either the requested scale is `large` or the user
+explicitly questions or contests the requested/selected architecture. Delegate
+the topic (for example, `<language>/<framework> project structure conventions`)
+to `ywc-tech-research --depth 25`.
+
+- If the findings confirm the loaded baseline, continue without extra prose.
+- If they show a material delta, retain the loaded baseline and add a clearly
+  labelled `Extras` callout describing the delta and its source.
+- If research is unavailable or inconclusive, retain the baseline and report
+  `DONE_WITH_CONCERNS` with the evidence gap; do not invent a trend.
+
+Never silently substitute research findings into the tree or edit a reference.
+Explicitly skip this branch for uncontested small and medium requests.
 
 ### 3. Generate - Create Directory Structure
 
@@ -156,6 +205,9 @@ Provide useful additional information based on the project domain or scale:
 - Avoid unnecessarily deep nesting (4+ levels); show detail only when necessary
 - Prioritize official language/Framework conventions when they exist (e.g., Rails `app/`, Go `cmd/`)
 - Do not generate Docker, CI/CD, Kubernetes, or Deployment-related Directories (`Dockerfile`, `docker-compose`, `.github/`, `deployments/`, `k8s/`, etc.). Focus only on Application Source Code structure
+- In `reference-refresh` mode, return the additive proposal and displayed diff
+  with `Mode: reference-refresh`; the approval stop is terminal for the current
+  turn and is not a completed edit.
 
 ## Boundaries
 
@@ -169,6 +221,8 @@ Provide useful additional information based on the project domain or scale:
 - Generate actual Code file contents (only provides structure)
 - Generate Boilerplate Code (use `ywc-code-gen` for implementation)
 - Configure Docker, CI/CD, or Monorepo setup (provide guidance upon separate request)
+- Silently apply Trend Check findings, edit references without approval, remove
+  existing reference variants, or route generic documentation review
 
 ## Output Format
 
@@ -176,6 +230,7 @@ Return the scaffold recommendation as a structured report:
 
 ```text
 Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Mode: <scaffold | reference-refresh>
 Scaffold: <tree or named structure>
 Rationale: <language / framework / architecture decisions>
 Boundaries: <what is intentionally excluded>
@@ -183,6 +238,18 @@ Validation: <checks against requested stack and constraints>
 Next action: <implementation handoff or "none">
 ```
 
+## Common Mistakes
+
+- Running Trend Check for every request instead of only for large or explicitly
+  contested architecture decisions.
+- Treating current-practice research as permission to rewrite the loaded
+  baseline or silently alter the generated tree.
+- Editing a shared reference during `reference-refresh` before the user approves
+  the additive proposal and displayed diff.
+
 ## Validation
 
 Before finalizing, verify that the scaffold matches the requested language, framework, protocol, architecture, and scale; contains no generated code or deployment assets; avoids unnecessary depth; and explains each major directory's role and dependency direction.
+For `reference-refresh`, also verify that targets are skill-owned, the proposal
+is additive, existing valid variants remain intact, and the current turn stops
+after displaying the diff until explicit approval.
