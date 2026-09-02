@@ -8,8 +8,8 @@
 ## Phase yw-000016 — done
 - Completed: `yw-000016-010-test-scaffold-contract-evals`
 
-## Phase yw-000017 — Packaging validation
-- `yw-000017-010-infra-scaffold-sync-validation` → depends on `yw-000016-010`
+## Phase yw-000017 — done
+- Completed: `yw-000017-010-infra-scaffold-sync-validation`
 
 ## Parallel Execution Notes
 - Initial ready set: `yw-000015-010-domain-scaffold-routing`, `yw-000015-020-refactor-scaffold-reference-enrichment`.
