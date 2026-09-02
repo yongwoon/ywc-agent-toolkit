@@ -63,7 +63,30 @@ Verify config decisions do not trap the deploying engineer.
 - Do default config values reflect production-safe choices (e.g., DEBUG=false, secure cookies on)?
 - Are config values type-checked (boolean parsed as boolean, not the string "false" treated as truthy)?
 
-### 7. Surgical Changes — Devex Aspect
+### 7. Convention & Language-Policy Consistency
+
+Verify every newly-added or changed code comment and every newly-added or
+changed user-facing string complies with the project's language policy (read
+from `CLAUDE.md` / `AGENTS.md` in SKILL.md Step 1 — typically "code comments =
+English" and "user-facing strings = i18n-externalized", but always defer to the
+project's own stated policy).
+
+- Is every newly-added or changed code comment in the policy's designated
+  language (commonly English)?
+- Is every newly-added or changed user-facing string externalized to the
+  project's i18n mechanism, not a hardcoded literal?
+
+**Report every violation found in the diff, not a sampled subset.** This
+dimension exists specifically because the same convention violation
+historically recurs several times within one PR (a comment translated in one
+file but not its sibling, a string externalized in one component but not the
+next) — a partial or sampled report defeats the purpose; each occurrence is
+its own finding.
+
+Scope is limited to newly-added or changed lines in this diff — pre-existing
+violations outside the diff are out of scope for this dimension.
+
+### 8. Surgical Changes — Devex Aspect
 
 Verify only necessary readability / log / doc changes were made for THIS task.
 
@@ -75,7 +98,7 @@ Verify only necessary readability / log / doc changes were made for THIS task.
 | Severity | Criteria |
 |----------|----------|
 | Critical | Sensitive data leak in logs or error messages; required env var fails silently; error message gives the operator no actionable signal during incidents |
-| Warning | Function / file size exceeds heuristic threshold (>50 / >800); log level mis-assigned (INFO on hot path); doc/comment for non-obvious decision is absent |
+| Warning | Function / file size exceeds heuristic threshold (>50 / >800); log level mis-assigned (INFO on hot path); doc/comment for non-obvious decision is absent; Convention/Language-Policy violation on a newly-added or changed comment/string |
 | Suggestion | Readability refactor that would help future readers; naming polish on internal identifiers; comment that would explain a borderline choice |
 
 **Review Depth Prioritization (Gray Box principle):** Allocate review depth by operator impact. Code paths that an on-call engineer reads under pressure (error surfaces, log streams, config validators) warrant Critical/Warning scrutiny. Internal helpers that satisfy a clean interface warrant Suggestion-level scrutiny at most, unless they touch a critical execution path (payment, auth, data migration).
@@ -86,7 +109,7 @@ Verify only necessary readability / log / doc changes were made for THIS task.
 ### Devex Findings
 
 [severity] {file}:{line} — {description}
-  Category: Readability | Error Messages | Logging | Documentation | Debuggability | Config UX | Surgical Changes
+  Category: Readability | Error Messages | Logging | Documentation | Debuggability | Config UX | Convention & Language-Policy Consistency | Surgical Changes
   Recommendation: {suggested fix}
 ```
 
@@ -99,6 +122,7 @@ Before finalizing, run the resilience items from [`recurring-defects.md` §2 (Er
 - **No swallowing catch** — an empty `catch {}`, `catch(() => undefined)`, or `.catch(() => null)` erases the failure and makes the incident un-debuggable; require at least a `warn` with the operation name and triggering identifier, unless the swallow is deliberate and commented.
 - **External calls need timeout + bounded retry** — an unguarded `fetch` / SDK call to a third-party API on a hot or user-facing path hangs on a stalled socket and fails under `429`/`5xx`; require a timeout and bounded backoff.
 - **Resource lifecycle** — a client/connection created (e.g. a fresh ORM instance per call) must be closed/disconnected on every exit path, including error paths, or the pool exhausts.
+- **Convention & Language-Policy exhaustiveness** — run dimension 7 (above) against every newly-added or changed comment and user-facing string in the diff and report every violation found, not a sample. This is the recurring bot-review pattern this check exists to catch before the PR opens: the identical convention violation (e.g. a non-English comment, or a hardcoded string that should be externalized) recurring across several sibling files within one PR, each flagged separately by a bot reviewer instead of caught once locally.
 
 Skip any item that does not apply and say so — do not invent a finding to satisfy the list. Severity follows this file's rubric.
 

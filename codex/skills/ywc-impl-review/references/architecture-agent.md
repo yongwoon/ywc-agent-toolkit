@@ -81,6 +81,8 @@ Prioritize structural-spec-conformance issues over pattern-style issues. A worki
 
 Before finalizing, run the structural items from [`recurring-defects.md` §1 (Data-layer access-boundary & integrity)](./recurring-defects.md#1-data-layer-access-boundary--integrity) against the diff. These are the architecture-aspect defects that production bot reviewers flag most often, and they are easy to miss because they live in schema/migration files rather than in the obvious "logic" files. The examples use `tenantId`, but apply them to whatever ownership/partition column the system uses (`org_id` / `user_id` / `workspace_id`):
 
+When the diff meets the large-diff trigger, run the enumeration procedure in [`recurring-defects.md`'s "Applying this catalog to large diffs"](./recurring-defects.md#applying-this-catalog-to-large-diffs) — a per-file pass/fail against §1 for every changed schema/model file, not a single aggregate judgment across the diff. Record that per-file table using the output contract defined there, placed directly above the Architecture worker's findings output block.
+
 - **Ownership-scoped foreign keys** — a child carrying its own owner key (`tenantId` / `orgId`) but referencing a parent by `id` alone lets the DB accept cross-boundary references; prefer a composite `(ownerKey, id)` FK, especially under `onDelete: Cascade`. This is a structural (not just data) decision — it is your lane.
 - **Composite index lead column** — indexes on ownership-scoped tables should lead with the owner key.
 - **Migration & referential integrity** — additive over destructive; no model that can persist a contradictory parent graph.
