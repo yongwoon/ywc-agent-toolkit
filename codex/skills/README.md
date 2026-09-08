@@ -37,6 +37,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | `ywc-code-gen` | `ywc-code-gen` | "plan대로 code generation 해줘" | Backend / Frontend / QA 병렬 Code 생성 |
 | `ywc-impl-review` | `ywc-impl-review` | "구현 결과 review 해줘" | 구현 Review 및 specialist agent routing |
 | `ywc-review-learnings` | `ywc-review-learnings` | "review learnings 학습해줘" | Project별 review 선호를 `docs/review-learnings.md`에 누적 |
+| `ywc-mine-review-history` | `ywc-mine-review-history` | "merged PR review history를 batch mine 해줘" | 여러 Merge PR의 Bot Comment를 조사해 반복 결함 학습 후보 제안 |
 | `ywc-spec-validate` | `ywc-spec-validate` | "spec 품질 검증해줘" | Specification 품질 Review |
 | `ywc-spec-ready` | `ywc-spec-ready` | "spec을 task 생성 가능 상태로 수렴시켜줘" | spec readiness loop, advisor budget 기반 validate/update 반복 후 task-generator handoff |
 | `ywc-spec-writer` | `ywc-spec-writer` | "specification을 갱신해줘" | Specification 작성·갱신 |
@@ -90,6 +91,7 @@ PR을 생성, 수정, merge하는 skill(`ywc-create-pr`, `ywc-handle-pr-reviews`
 | 전체 코드 생성 (API + UI + Test) | `ywc-code-gen` | 신규 Feature 풀스택 생성 |
 | 구현 결과 검증 | `ywc-impl-review` | Executor 완료 후 또는 `--review` 플래그 |
 | Review learning 누적 / 조회 | `ywc-review-learnings` | false positive, 반복 finding, project별 review 선호 저장 |
+| Merge PR review history batch 조사 | `ywc-mine-review-history` | 여러 merged PR의 반복 결함 조사; 단일 PR은 `ywc-review-learnings` / `ywc-handle-pr-reviews` |
 | 보안 감사 | `ywc-security-audit` | OWASP Top 10, PR 머지 전 |
 | UI/UX 검토 | `ywc-ui-ux-review` | IA + Visual + WCAG 2.2 AA |
 | 디자인 리뉴얼 / AI-slop 점검 | `ywc-design-renew` | 평범한·LLM-티 나는 디자인 개선 + slop gate |
