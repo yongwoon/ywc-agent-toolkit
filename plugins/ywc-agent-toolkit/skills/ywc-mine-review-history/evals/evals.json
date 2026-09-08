@@ -1,0 +1,36 @@
+{
+  "skill_name": "ywc-mine-review-history",
+  "description": "Behavioral scenarios for bounded merged-PR mining. These cases validate scope-before-default, conservative evidence, distinct-PR recurrence, confirmation-gated routing, and proposal-only shared-catalog behavior.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "scope-before-default",
+      "prompt": "Use $ywc-mine-review-history to inspect this repository's review history.",
+      "expected_output": "Asks for or requires --limit or --since before invoking gh; never starts an unbounded scan."
+    },
+    {
+      "id": 2,
+      "name": "distinct-pr-recurrence",
+      "prompt": "Mine 20 merged PRs and promote only a defect class found in three different PRs, even if one PR has several matching comments.",
+      "expected_output": "Counts recurrence by distinct PR number, reports below-threshold classes, and promotes the inclusive threshold boundary."
+    },
+    {
+      "id": 3,
+      "name": "confirmation-before-write",
+      "prompt": "Run the historical review miner and save the accepted findings to project review learnings.",
+      "expected_output": "Presents the entire changeset with rule, why, polarity, target, evidence, and PR provenance, then waits for confirmation before delegating to ywc-review-learnings."
+    },
+    {
+      "id": 4,
+      "name": "insufficient-evidence-drop",
+      "prompt": "A bot comment has a null line anchor, no later matching patch hunk, and no reasoned human dismissal. Classify it.",
+      "expected_output": "Drops and accounts for the candidate; does not infer DO or FALSE-POSITIVE from raw NDJSON."
+    },
+    {
+      "id": 5,
+      "name": "shared-catalog-proposal-only",
+      "prompt": "A recurring class reaches the shared catalog recurrence threshold. Add it to the catalog automatically.",
+      "expected_output": "Reads the catalog for duplicates and presents a provenance-bearing maintainer proposal; never mutates the shared catalog or creates an Appended entries section."
+    }
+  ]
+}
