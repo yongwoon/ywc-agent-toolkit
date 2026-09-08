@@ -68,6 +68,7 @@ fi
 
 while IFS= read -r pr; do
   [[ -z "$pr" ]] && continue
+  # shellcheck disable=SC2016 # jq's own $re/$pr (bound via --arg), not shell expansion
   gh api --paginate "repos/{owner}/{repo}/pulls/$pr/comments" \
     --jq --arg pr "$pr" --arg re "$BOT_RE" \
     '.[] | select(.user.login | test($re; "i")) | {pr: ($pr | tonumber), id, path, line, body, in_reply_to_id}'
