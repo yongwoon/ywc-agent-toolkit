@@ -25,7 +25,7 @@ A `ywc-impl-review` run just finished. Promote findings worth catching earlier.
 
 ## `--source pr` (bot-comment harvest)
 
-Distill an existing bot review (CodeRabbit / Codex Review) on a PR into learnings. Optional convenience — the skill works with no bot present.
+Distill an existing bot review (CodeRabbit / Codex Review) on a PR into learnings. Optional convenience — the skill works with no bot present. For a batch/retrospective sweep across many already-merged PRs instead of a single PR, use `ywc-mine-review-history` — it feeds this same path with aggregated evidence from recurring defect classes.
 
 ### Fetch
 
