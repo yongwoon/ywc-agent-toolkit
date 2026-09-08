@@ -111,7 +111,7 @@ Print the active learnings (optionally filtered by `--target` glob or category).
 | `debug` | A confirmed root cause from a `ywc-debug-rootcause` session worth preventing in review | Map the root-cause statement to the `Why`; classify polarity (usually `DO-NOT` — forbid the pattern that produced the bug, occasionally `DO` — require the guard that would have caught it); scope to the narrowest glob covering the defect class; record provenance `debug <symptom>` |
 | `incident` | A recurrence-preventing item from a `ywc-incident-postmortem` action list | Map the prevention item to the `Why` (the failure mode it stops from recurring); classify polarity (`DO` for a required safeguard, `DO-NOT` for a forbidden pattern); scope to the affected paths; record provenance `incident <id>` |
 
-The detailed harvest procedure for `--source pr` / `debug` / `incident` (the `gh` query, the accept-vs-dismiss classification, and the root-cause/prevention-item mapping) is in [references/capture-sources.md](references/capture-sources.md).
+The detailed harvest procedure for `--source pr` / `debug` / `incident` (the `gh` query, the accept-vs-dismiss classification, and the root-cause/prevention-item mapping) is in [references/capture-sources.md](references/capture-sources.md). `--source pr` is a single-PR, on-demand harvest; for a batch/retrospective sweep across many already-merged PRs, use `ywc-mine-review-history` instead — it feeds this same `--source pr` path with aggregated evidence from recurring defect classes.
 
 ## Output Format
 
