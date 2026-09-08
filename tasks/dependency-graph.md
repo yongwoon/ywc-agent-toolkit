@@ -26,18 +26,8 @@ graph LR
   D --> E[yw-000020-020-infra-final-validation]
 ```
 
-## Phase yw-000018 — ywc-mine-review-history port
-- `yw-000018-010-domain-mine-review-history-skill` → (root)
-- `yw-000018-020-docs-review-learnings-cross-reference` → depends on `yw-000018-010`
-
-## Parallel Execution Notes (Phase yw-000018)
-- Initial ready set: `yw-000018-010-domain-mine-review-history-skill`.
-- `yw-000018-020-docs-review-learnings-cross-reference` becomes runnable only after `yw-000018-010` merges — sequential, not parallel (2-task Small-scale set, no worktree parallelism benefit).
-
-```mermaid
-graph LR
-  A[yw-000018-010-domain-mine-review-history-skill] --> B[yw-000018-020-docs-review-learnings-cross-reference]
-```
+## Phase yw-000018 — done
+- Completed: `yw-000018-010-domain-mine-review-history-skill`, `yw-000018-020-docs-review-learnings-cross-reference`
 
 ## Phase yw-000015 — done
 - Completed: `yw-000015-010-domain-scaffold-routing`, `yw-000015-020-refactor-scaffold-reference-enrichment`
