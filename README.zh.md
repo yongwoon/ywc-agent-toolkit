@@ -24,7 +24,7 @@
 | 工具        | Skills | Custom Agents | 安装路径                                  |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 52     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 53     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 

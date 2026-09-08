@@ -24,7 +24,7 @@ Claude Code および Codex 向けの開発ワークフロー自動化スキル�
 | ツール      | Skills | Custom Agents | インストール先                            |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 52     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 53     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
