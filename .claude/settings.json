@@ -113,7 +113,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v tracepilot >/dev/null 2>&1 || npm install -g tracepilot@latest; tracepilot hook"
+            "command": "command -v tracepilot >/dev/null 2>&1 || npm install -g tracepilot@latest; tracepilot hook",
+            "commandWindows": "(where tracepilot >nul 2>&1 || npm install -g tracepilot@latest) && tracepilot hook"
           }
         ]
       }
@@ -124,7 +125,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tracepilot hook"
+            "command": "tracepilot hook",
+            "commandWindows": "tracepilot hook"
           }
         ]
       },
@@ -148,7 +150,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tracepilot hook"
+            "command": "tracepilot hook",
+            "commandWindows": "tracepilot hook"
           }
         ]
       },
@@ -168,7 +171,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tracepilot hook"
+            "command": "tracepilot hook",
+            "commandWindows": "tracepilot hook"
           }
         ]
       }
@@ -179,7 +183,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tracepilot hook"
+            "command": "tracepilot hook",
+            "commandWindows": "tracepilot hook"
           }
         ]
       }
