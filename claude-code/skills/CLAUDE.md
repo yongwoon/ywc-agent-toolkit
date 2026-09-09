@@ -308,8 +308,9 @@ notifications were mixed up left a finished task mistaken for pending.
 Key parameters (canonical source is the reference file — do not hardcode
 these values in skill bodies):
 
-- **Threshold table**: 2–4 concurrent subagents → 480s soft-check / 900s
-  hard escalation; 5+ concurrent subagents → 300s soft-check / 600s hard
+- **Threshold table**: 1 (single bounded dispatch, e.g. an Opus advisor
+  call) and 2–4 concurrent subagents → 480s soft-check / 900s hard
+  escalation; 5+ concurrent subagents → 300s soft-check / 600s hard
   escalation
 - **Stall consequence**: batch-level equivalent of `BLOCKED` per
   `references/subagent-status-actions.md`, naming the unaccounted-for

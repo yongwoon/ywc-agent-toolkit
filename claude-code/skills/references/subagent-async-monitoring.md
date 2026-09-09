@@ -14,10 +14,11 @@ Reconciliation must be safe to invoke repeatedly against the same state: a dupli
 
 ## Mandatory Fallback Wakeup
 
-After dispatching a batch of 2+ concurrent subagents, the orchestrator sets an explicit bounded wait/check point — the orchestrating session's scheduled-recheck capability, where the runtime provides one, or otherwise a manual "check back after N seconds" discipline it holds itself to — rather than passively waiting on notifications alone.
+After dispatching any batch — including a single bounded dispatch such as `ywc-sequential-executor`'s Opus advisor call — the orchestrator sets an explicit bounded wait/check point — the orchestrating session's scheduled-recheck capability, where the runtime provides one, or otherwise a manual "check back after N seconds" discipline it holds itself to — rather than passively waiting on notifications alone.
 
 | Batch size | Soft-check interval | Hard escalation threshold |
 |---|---|---|
+| 1 (single bounded dispatch, e.g. one Opus advisor call) | 480s | 900s |
 | 2–4 concurrent subagents | 480s | 900s |
 | 5+ concurrent subagents (e.g. impl-review Phase 1, Step 4.5) | 300s | 600s |
 
