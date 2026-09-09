@@ -65,10 +65,8 @@ graph LR
 ## Phase yw-000023 — done
 - Completed: `yw-000023-010-docs-subagent-async-monitoring-contract`
 
-## Phase yw-000024 — Consumer monitoring gates
-- `yw-000024-010-domain-parallel-monitor-gate` → depends on `yw-000023-010`
-- `yw-000024-020-domain-sequential-advisor-monitor` → depends on `yw-000023-010`
-- `yw-000024-030-domain-review-monitor-output` → depends on `yw-000023-010`
+## Phase yw-000024 — done
+- Completed: `yw-000024-010-domain-parallel-monitor-gate`, `yw-000024-020-domain-sequential-advisor-monitor`, `yw-000024-030-domain-review-monitor-output`
 
 ## Phase yw-000025 — Package validation
 - `yw-000025-010-infra-codex-package-validation` → depends on `yw-000024-010`, `yw-000024-020`, `yw-000024-030`
