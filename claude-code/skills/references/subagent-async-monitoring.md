@@ -1,6 +1,6 @@
 # Subagent Async Monitoring Contract
 
-Use this when an orchestrating skill dispatches a **concurrent batch** of subagents (a wave in `ywc-parallel-executor`, the 5-way Phase 1 fan-out or the 20-way Step 4.5 verifier fan-out in `ywc-impl-review`, or a bounded single Opus advisor dispatch). This contract exists because a concurrently-dispatched subagent's completion notification can arrive out of order or late — treating notification order or count alone as a proxy for completion has previously caused a completed subagent to be mistaken for still-pending.
+Use this when an orchestrating skill dispatches a **concurrent batch** of subagents via the `Agent` tool (a wave in `ywc-parallel-executor`, the 5-way Phase 1 fan-out or the 20-way Step 4.5 verifier fan-out in `ywc-impl-review`, or a bounded single Opus advisor dispatch). This contract exists because a concurrently-dispatched subagent's completion notification can arrive out of order or late — treating notification order or count alone as a proxy for completion has previously caused a completed subagent to be mistaken for still-pending.
 
 ## Unique Dispatch Labeling
 
