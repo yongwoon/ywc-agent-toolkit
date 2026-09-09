@@ -1,0 +1,4 @@
+interface:
+  display_name: "YWC Mine Review History"
+  short_description: "Batch-mine merged PR bot reviews for recurring defects"
+  default_prompt: "Use $ywc-mine-review-history to scan a bounded merged-PR window, classify evidence conservatively, and present confirmation-gated review-learning proposals."

@@ -53,3 +53,24 @@ This mirrors CodeRabbit's own loop: it records a learning from an accepted sugge
 ### Generalize
 
 Bot comments are line-specific. Lift each to its class before writing (a `users.ts:42` SQL-injection comment becomes a `**/*.ts` or `**/*.sql` `DO` learning about parameterized queries), then run the same user-confirmation CHANGESET as every other source — never write harvested learnings without confirmation.
+
+## `--source mining` (batch-miner handoff)
+
+`ywc-mine-review-history` may propose candidates, but it does not write this
+file. It hands over one complete, confirmed changeset to this skill so the
+existing confirmation and duplicate/modify rules remain the write boundary.
+
+Each mining candidate must contain all of the following:
+
+- a generalized `Rule`, rationale `Why`, exact `Polarity`, and narrow `Scope`;
+- representative comment and later-fix or dismissal evidence sufficient to
+  explain the classification; and
+- the distinct merged PR numbers supporting recurrence, with each PR counted at
+  most once even when it contains multiple matching comments.
+
+Drop and account for candidates with missing, ambiguous, or non-representative
+evidence. Do not infer a `DO` or `FALSE-POSITIVE` from raw NDJSON alone, and do
+not accept an unconfirmed changeset. Below the shared-catalog threshold, apply
+the confirmed entries through this skill's normal `update` flow; a threshold-
+reaching candidate may be recorded as provenance-bearing maintainer proposal
+data, but this runtime never mutates a shared catalog.

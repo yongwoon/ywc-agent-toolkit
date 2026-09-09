@@ -29,6 +29,13 @@
       "prompt": "PR #128 에 CodeRabbit 코멘트가 여러 개 달렸는데, 우리가 받아들인 것들은 다음 리뷰부터 미리 잡도록 학습으로 남기고 싶어.",
       "expected_output": "Enters update mode, --source pr --pr 128. Uses gh to fetch line-anchored review-bot comments. Classifies only resolved/accepted comments as DO learnings and explicitly-dismissed ones as FALSE-POSITIVE (with the dismissal reason); skips open/unreacted comments. Generalizes each line-specific comment to its class and scope, then presents a CHANGESET for confirmation before writing.",
       "files": []
+    },
+    {
+      "id": 5,
+      "name": "accept-mining-handoff-with-distinct-pr-provenance",
+      "prompt": "ywc-mine-review-history 가 확인된 mining changeset 을 넘겼어. src/api/** 에 적용할 DO 규칙, why, 대표 evidence, 그리고 PR #101, #104, #109 의 distinct recurrence 가 있어. 다음 단계로 반영해줘.",
+      "expected_output": "Uses update mode with --source mining. Requires the complete confirmed changeset, including rule, why, polarity, target scope, representative evidence, and the distinct PR list; counts each PR once. Presents the same ADD/MODIFY/DEPRECATE confirmation before writing and delegates the confirmed project-local update through this skill's normal owner path. It does not write or mutate a shared catalog directly.",
+      "files": []
     }
   ]
 }
