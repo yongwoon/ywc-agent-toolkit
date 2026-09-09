@@ -17,6 +17,11 @@ description: >-
 
 Implementation conformance review skill. Runs five parallel Codex review workers (Phase 1) and escalates only ambiguous findings to a short higher-capability advisor pass (Phase 2). The four code-review aspects (architecture / design / devex / security) stay separate so each worker has a bounded review surface. QA stays as a separate axis because coverage analysis is mostly mechanical. See [Advisor Pattern](../references/advisor-pattern.md) for why this shape is used.
 
+Before Phase 1, the selected target passes a deterministic scope guardrail. After
+Phase 1 aggregation, every eligible Critical or High finding is independently
+verified by a blind reviewer. Independent verifier calls are separate from the
+Phase 2 advisor budget and never reduce it.
+
 ## Rationalization Defense
 
 When tempted to skip a step, check this table first:
@@ -29,6 +34,8 @@ When tempted to skip a step, check this table first:
 | "Severity feels somewhere between High and Medium" | Pick based on impact, not feeling. If truly between, that is a Phase 2 candidate. |
 | "`--no-advisor` saves time on this review" | Skip Phase 2 only on throwaway/prototype code. Production review needs ambiguity escalation. |
 | "Reviewer workers agree, so the finding is correct" | Multiple workers drawing the same wrong conclusion is still wrong. Escalate when stakes are high. |
+| "A Phase 1 Critical/High finding is enough to report as fact" | Every eligible high-severity finding must pass the blind independent-verification step first. |
+| "The verifier needs the original rationale to be useful" | The verifier is intentionally blind: send only `file:line` and claimed severity so it derives the defect independently. |
 | "User wants a quick review, severity ratings are optional" | Without severity, the user cannot triage. Always rate Critical / High / Medium / Low. |
 | "Surface every nitpick to be thorough" | A review that buries one real bug under ten style nits trains the reader to ignore all of them. `chill` is the default: suppress the Style/Docs/polish tail unless `--profile assertive`. |
 | "This finding is plausible, surface it with a 'might be'" | Verify-before-surface: a finding without primary evidence (file:line, traced symbol, command output) is dropped, not hedged. |
@@ -57,7 +64,7 @@ When tempted to skip a step, check this table first:
 
 This skill uses **Pattern B (Two-Phase Review)** from [advisor-pattern.md](../references/advisor-pattern.md). The rationale: review findings range from mechanical (hardcoded secret, missing null check, trivial OWASP match) to genuinely ambiguous (architectural judgment call, severity debate between two OWASP categories, spec-conformance question with more than one reasonable reading). Running every reviewer at maximum reasoning depth wastes advisor capacity on the mechanical cases; running every reviewer at ordinary depth undersells the ambiguous ones. Phase 1 handles the mechanical cases with bounded Codex workers; Phase 2 escalates only the ambiguous ones to a higher-capability advisor with tightly bounded context.
 
-Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls per invocation, shared across all categories. Use fewer when possible. Never forward full files or full project context to the Phase 2 advisor — only the finding text, a bounded snippet, and the relevant spec excerpt.
+Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls per invocation, shared across all categories. Use fewer when possible. Independent verifier calls are not advisor calls and do not consume this budget. Never forward full files or full project context to the Phase 2 advisor — only the finding text, a bounded snippet, and the relevant spec excerpt.
 
 ## Execution Steps
 
@@ -89,7 +96,27 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 advisor calls p
    final contents would let it slip past the gate unseen. This context stays
    with the parent; do not forward it wholesale to Phase 2.
 
-2.5. **Architecture Contract Packet** — If `--manifest` or
+2.5. **Review Scope Guardrail** — Apply this gate after target resolution and
+before any Phase 1 worker dispatch. If the selected target contains no
+reviewable source files, return `NEEDS_CONTEXT` with an action to narrow or
+correct the target. Count unique reviewable files after the existing ignore and
+generated-path filtering rules have been applied.
+
+   - Every target mode is limited to **200 files**. A count above 200 returns
+     `NEEDS_CONTEXT` and reports the exact count plus the five largest files by
+     reviewable size.
+   - For `--base`, `--git-range`, and `--working-tree`, also calculate the
+     exact added-plus-removed line count from the selected diff. A count above
+     **5,000 changed lines** returns `NEEDS_CONTEXT` and reports the exact
+     count plus the five files with the largest changed-line counts.
+   - `--code` has no intrinsic diff line count. Enforce only the 200-file
+     limit and report `changed lines: N/A — path-only target`; never fabricate
+     a line metric from file size or guessed history.
+   - Exactly 200 files and exactly 5,000 changed lines are permitted. The
+     guardrail is a refusal gate, not a sampling or truncation mechanism, so
+     no Phase 1 dispatch occurs after a failed check.
+
+2.6. **Architecture Contract Packet** — If `--manifest` or
 `--architecture-evidence` is supplied, resolve the pair through the shared
 `../scripts/architecture-invariants.py` helper after the bounded changed-file
 list is known and before worker dispatch. A supplied manifest is
@@ -169,6 +196,37 @@ merge authority.
    - Cap the total at `--advisor-budget` (default 5). If candidates exceed the cap, prioritize: Critical > High > Medium, and within the same severity prefer Security > Architecture > Design > Devex > QA. (Architecture / Design / Devex order reflects irreversibility — structural decisions are hardest to walk back, then contracts, then operator UX.)
    - Log the candidates that were dropped due to the cap in the final report so the user can see what was not escalated.
 
+4.5. **Independent Verification Pass** — Before presenting a Phase 1
+**Confirmed** Critical or High finding as fact, dispatch one independent Codex
+reviewer for that finding. The verifier receives only a blind packet containing
+the cited `file:line` and claimed severity. Do not forward the original finding
+description, rationale, full worker transcript, or full diff; the verifier must
+derive the defect independently.
+
+   - Dispatch at most **20** findings per invocation. Order Critical findings
+     before High findings, preserving Phase 1 discovery order within each tier.
+     Items beyond the cap remain in the report as `cap-unverified`; they are
+     never emitted as plain Confirmed findings.
+   - A verifier that independently reproduces the defect returns `reproduced`;
+     retain its evidence and mark the finding `✅ Verified`.
+   - A verifier that runs successfully but cannot reproduce the defect returns
+     `verification-failed`. Keep the finding, but add it to the Phase 2
+     candidate pool ahead of ordinary candidates at the same severity.
+   - A timeout, tool error, malformed response, or missing result returns
+     `verification-error`, a distinct outcome from `verification-failed`. Route
+     it into the same prioritized Phase 2 candidate pool when the advisor is
+     enabled.
+   - Re-apply the existing Phase 2 priority and budget selection after failed
+     or error outcomes are added. Verifier calls do not consume or reduce
+     `--advisor-budget`. Under `--no-advisor`, failed, error, and cap-skipped
+     findings remain explicitly unverified with the reason
+     `Phase 2 disabled via --no-advisor`; they are not silently dropped or
+     presented as confirmed.
+   - The report must count `reproduced`, `verification-failed`,
+     `verification-error`, and `cap-unverified` separately. A verification
+     result is an additional trust dimension and does not replace `[P1]` /
+     `[P2]` provenance or the severity symbol.
+
 5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, run a short higher-capability advisor pass:
    - **Context payload**: only the candidate's finding text, the bounded snippet, the spec excerpt, and the category-specific severity rubric from the matching reference file. Do **not** forward the full spec, the full file, or the Phase 1 transcripts.
    - **Expected output**: a short verdict (≤200 words) containing: confirmed severity, a one-line rationale, and either "confirmed" or "adjusted" (with the adjustment if any). The 200-word cap is tighter than [advisor-pattern.md §3](../references/advisor-pattern.md)'s observed ceiling of "typically <500 words" — 200 is an operational choice for this skill. If a genuinely complex candidate needs more room, invoke the §6 override: exceed the cap and justify the overrun in the final report's `Advisor Budget Report` section.
@@ -188,28 +246,34 @@ For `--base`, include `Supplied base: <ref>` and
 
 ### Summary
 - Phase 1 findings: Architecture A, Design D, Devex V, Security M, QA K
+- Independent verification: R reproduced, F verification-failed, E verification-error, U cap-unverified (of Y eligible Critical/High findings)
 - Phase 2 advisor calls: X of Y budget used
 - Phase 2 adjustments: N confirmed as-is, M severity-adjusted
 
 ### Architecture
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
+   (if Critical/High) Verification: {✅ Reproduced independently at {file}:{line} | ❌ verification-failed — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — cap-unverified | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Design
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
+   (if Critical/High) Verification: {✅ Reproduced independently at {file}:{line} | ❌ verification-failed — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — cap-unverified | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Developer Experience (Devex)
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
+   (if Critical/High) Verification: {✅ Reproduced independently at {file}:{line} | ❌ verification-failed — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — cap-unverified | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Security
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
+   (if Critical/High) Verification: {✅ Reproduced independently at {file}:{line} | ❌ verification-failed — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — cap-unverified | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Testing (QA)
 1. [severity] [P1|P2] — Description
    (if P2) Advisor verdict: {one-line rationale}
+   (if Critical/High) Verification: {✅ Reproduced independently at {file}:{line} | ❌ verification-failed — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — cap-unverified | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Fix Priority
 1. (Sorted by Critical first, with [P1|P2] markers preserved)
