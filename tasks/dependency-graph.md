@@ -1,6 +1,93 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): 000023**
+**Next PHASE (yw): `000031`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+
+## Batch — Claude Code subagent async monitoring contract port
+
+- Spec: `docs/ywc-plans/20260909-subagent-async-monitoring-contract-port.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000028` (ledger current at allocation time; sibling Codex batch below occupies `yw-000023`–`yw-000025`)
+- Scope: `claude-code/skills/**` only. The Codex port is out of scope for this pass (deferred follow-up) — the sibling "Batch — Codex subagent async monitoring and review-worker output" below is that deferred follow-up's own already-decomposed spec.
+- Advisor pass: skipped — phase boundaries are fixed by the spec's own Existing Constraints (one shared reference must land before any of the three independent consumer citations; one validation gate after). No DB migration or library introduction competes for Phase 1, and Open Questions is N/A in the spec.
+- No-AC requirements: none — every FR (FR1–FR8) has a backing Acceptance Criterion (AC1–AC7).
+
+### Phase yw-000028 — Shared contract + CLAUDE.md registration
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000028-010-docs-subagent-async-monitoring-contract` | docs | (root) |
+
+### Phase yw-000029 — Consumer citation wiring (parallel)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000029-010-domain-parallel-executor-monitor-gate` | domain | `yw-000028-010` |
+| `yw-000029-020-domain-sequential-executor-advisor-monitor` | domain | `yw-000028-010` |
+| `yw-000029-030-domain-impl-review-monitor-citation` | domain | `yw-000028-010` |
+
+### Phase yw-000030 — Validation hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000030-010-infra-async-monitoring-validation` | infra | `yw-000029-010`, `yw-000029-020`, `yw-000029-030` |
+
+### Parallel Execution Notes (Claude Code async-monitoring batch)
+
+- Initial ready set: `yw-000028-010-docs-subagent-async-monitoring-contract` (solo root — creates the reference file and registers it in `CLAUDE.md`).
+- After `yw-000028-010` merges: `yw-000029-010`, `yw-000029-020`, and `yw-000029-030` are parallel-safe — each owns a disjoint `SKILL.md` (`ywc-parallel-executor`, `ywc-sequential-executor`, `ywc-impl-review` respectively).
+- `yw-000029-020` carries a hard line-count invariant: `ywc-sequential-executor/SKILL.md` must remain exactly 502 total lines after its 3 edits (+1 Rationalization Defense row, +0 inline citation append, −1 blank-line trim). No other task in this batch may also edit that file.
+- `yw-000030-010` is a hard gate: waits for all three Phase `yw-000029` tasks, then runs `bash scripts/validate.sh` + `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci` (regenerating `history.mechanical.json`) + the line-count and citation `rg` checks.
+- Hard boundary: no `codex/**` edits in this batch — the Codex side is the separate, already-decomposed batch below.
+- FR mapping: FR1+FR8→`yw-000028-010`; FR2+FR3→`yw-000029-010`; FR4+FR5+FR6→`yw-000029-020`; FR7→`yw-000029-030`; AC7 final confirmation→`yw-000030-010`.
+
+```mermaid
+graph LR
+  A[yw-000028-010-docs-subagent-async-monitoring-contract] --> B[yw-000029-010-domain-parallel-executor-monitor-gate]
+  A --> C[yw-000029-020-domain-sequential-executor-advisor-monitor]
+  A --> D[yw-000029-030-domain-impl-review-monitor-citation]
+  B --> E[yw-000030-010-infra-async-monitoring-validation]
+  C --> E
+  D --> E
+```
+
+---
+
+## Batch — Codex subagent async monitoring and review-worker output
+
+- Spec: `docs/ywc-plans/20260909-codex-subagent-async-monitoring-and-review-output.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000023` (ledger was current; no existing active `yw-000023` task directory)
+
+## Phase yw-000023 — Shared monitoring contract
+- `yw-000023-010-docs-subagent-async-monitoring-contract` → (root)
+
+## Phase yw-000024 — Consumer monitoring gates
+- `yw-000024-010-domain-parallel-monitor-gate` → depends on `yw-000023-010`
+- `yw-000024-020-domain-sequential-advisor-monitor` → depends on `yw-000023-010`
+- `yw-000024-030-domain-review-monitor-output` → depends on `yw-000023-010`
+
+## Phase yw-000025 — Package validation
+- `yw-000025-010-infra-codex-package-validation` → depends on `yw-000024-010`, `yw-000024-020`, `yw-000024-030`
+
+## Parallel Execution Notes
+- Initial ready set: `yw-000023-010-docs-subagent-async-monitoring-contract` (solo root).
+- After Phase 1 merges, `yw-000024-010`, `yw-000024-020`, and `yw-000024-030` may run in parallel; their source Ownership is disjoint.
+- `yw-000024-030` must update `subagent-status-actions.md` before its `ywc-impl-review` consumer changes.
+- `yw-000025-010` waits for all Phase 2 tasks and is verification/generated-mirror-only; validation failures reopen the owning source task.
+
+```mermaid
+graph LR
+  A[yw-000023-010-docs-subagent-async-monitoring-contract] --> B[yw-000024-010-domain-parallel-monitor-gate]
+  A --> C[yw-000024-020-domain-sequential-advisor-monitor]
+  A --> D[yw-000024-030-domain-review-monitor-output]
+  B --> E[yw-000025-010-infra-codex-package-validation]
+  C --> E
+  D --> E
+```
 
 ## Phase yw-000021 — done
 - Completed: `yw-000021-010-domain-impl-review-verification-contract`, `yw-000021-020-test-impl-review-verification-evals`, `yw-000021-030-docs-impl-review-localized-flow`
