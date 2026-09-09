@@ -105,6 +105,60 @@
       "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --working-tree --manifest architecture-invariants.json --architecture-evidence forbidden-edge.json where aggregate_verdict is VIOLATED.",
       "expected_output": "Reports an Architecture finding with invariant_verdict VIOLATED, affected rule IDs, and sanitized evidence paths, while keeping the packet advisory and not escalating reviewer or merge authority.",
       "files": []
+    },
+    {
+      "id": 13,
+      "name": "scope-guardrail-refusal",
+      "prompt": "Use $ywc-impl-review with an empty --git-range, an empty --code path, and an otherwise empty selected target.",
+      "expected_output": "Returns NEEDS_CONTEXT before Phase 1 dispatch and explains how to narrow or correct the target.",
+      "expectations": [
+        "Rejects empty targets for every target mode.",
+        "Does not emit an all-clear report when no reviewable source files exist."
+      ]
+    },
+    {
+      "id": 14,
+      "name": "scope-guardrail-limits",
+      "prompt": "Review targets above 200 files and above 5,000 added-plus-removed lines, then review a --code target above 200 files.",
+      "expected_output": "Returns NEEDS_CONTEXT before worker dispatch with exact file and changed-line counts plus the five largest files for diff targets; --code reports changed lines as N/A rather than fabricating a metric.",
+      "expectations": [
+        "Allows exactly 200 files and exactly 5,000 changed lines.",
+        "Applies the changed-line limit to --base, --git-range, and --working-tree only.",
+        "Does not fabricate changed-line counts for --code."
+      ]
+    },
+    {
+      "id": 15,
+      "name": "blind-verification-order-and-cap",
+      "prompt": "Inspect independent verification for Phase 1 Critical and High confirmed findings, including more than 20 eligible findings.",
+      "expected_output": "Dispatches blind verifier packets containing only file:line and claimed severity, orders Critical before High while preserving discovery order within a tier, and marks findings beyond the 20-call cap as cap-unverified.",
+      "expectations": [
+        "The packet excludes the original finding rationale and full worker transcript.",
+        "Verifier calls are separate from --advisor-budget.",
+        "Cap-skipped findings are never reported as plain Confirmed."
+      ]
+    },
+    {
+      "id": 16,
+      "name": "verification-outcome-routing",
+      "prompt": "Exercise reproduced, verification-failed, and verification-error outcomes for eligible Critical and High findings with and without Phase 2 advisor enabled.",
+      "expected_output": "Reports reproduced evidence, routes verification-failed and verification-error findings into the prioritized Phase 2 candidate pool, and keeps every non-reproduced result explicitly unverified when --no-advisor is used.",
+      "expectations": [
+        "verification-failed means the verifier ran and could not reproduce the defect.",
+        "verification-error covers timeout, tool error, malformed response, or missing result.",
+        "The report counts reproduced, verification-failed, verification-error, and cap-unverified separately."
+      ]
+    },
+    {
+      "id": 17,
+      "name": "verification-report-provenance",
+      "prompt": "Review a result containing Phase 1 and Phase 2 findings plus independent verification outcomes under --no-advisor.",
+      "expected_output": "Preserves [P1] and [P2] provenance and severity symbols while adding per-finding verification status and aggregate verification counts; no failed, error, or cap-skipped item is silently confirmed.",
+      "expectations": [
+        "Independent verifier calls do not reduce the configured --advisor-budget.",
+        "Phase 2 disabled output says why a non-reproduced finding is unverified.",
+        "Verification status is an additional trust dimension rather than a replacement for phase provenance."
+      ]
     }
   ]
 }
