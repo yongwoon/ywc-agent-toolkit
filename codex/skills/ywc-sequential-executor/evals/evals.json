@@ -130,6 +130,24 @@
       "name": "mixed-taskid-range-compatibility",
       "prompt": "Use $ywc-sequential-executor yk-000001-010..000001-030 with tasks named yk-000001-010-new-task, 000001-020-existing-task, and 000001-030-legacy-compatible-task.",
       "expected_output": "Accepts the initials-prefixed range and resolves all matching phase/sequence tasks, including the unprefixed task, in phase/sequence order. It preserves each full task name for feature branches, completion moves, and Mark Complete semantics; it does not rename or migrate the existing unprefixed directory."
+    },
+    {
+      "id": 22,
+      "name": "advisor-unavailable-fallback",
+      "prompt": "A sequential advisor is successfully dispatched but remains silent through the bounded 300-second monitor; the condition is a spec conflict.",
+      "expected_output": "Monitors the returned advisor target with the bounded request/interrupt/reconciliation sequence, consumes the existing advisor slot, and returns NEEDS_CONTEXT with bounded conflict evidence. It does not make a fourth advisor call, redispatch, mutate task or worktree ownership, or proceed to implementation."
+    },
+    {
+      "id": 23,
+      "name": "advisor-terminal-during-escalation",
+      "prompt": "A sequential advisor becomes terminal during the bounded escalation after an interrupt was considered.",
+      "expected_output": "Uses the attributable terminal advisor result, does not apply the unavailable fallback, and does not issue another advisor call or change the three-call budget."
+    },
+    {
+      "id": 24,
+      "name": "advisor-fallback-no-lifecycle-mutation",
+      "prompt": "The Pattern C plan advisor is unavailable after bounded monitoring and quiescence is proven.",
+      "expected_output": "Returns NEEDS_CONTEXT with bounded plan evidence, preserves task-state and worktree ownership, and does not redispatch, start the range, or report DONE."
     }
   ]
 }
