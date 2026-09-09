@@ -4,7 +4,11 @@
 
 # ywc-impl-review
 
-一个 Skill，在实现完成后创建 PR 前执行全面的实现合规性验证。并行运行 Phase 1 的 5 个 Agent（Architecture / Design / Devex / Security / QA — 其中 4 个使用 Sonnet，1 个使用 Haiku），并将存在歧义的 finding 上报至 Phase 2 Opus Advisor。
+一个 Skill，在实现完成后创建 PR 前执行全面的实现合规性验证。并行运行 Phase 1 的 5 个 Agent（Architecture / Design / Devex / Security / QA），并将存在歧义的 finding 上报至 Phase 2 Advisor。
+
+在 worker 扇出之前，空目标或超过 200 个文件的目标会被拒绝。对于 `--base`、`--git-range` 和 `--working-tree` 这类 diff 目标，新增与删除行总数超过 5,000 也会被拒绝；`--code` 是仅路径目标，因此只限制文件数。拒绝时会报告精确计数和最大的文件。
+
+Phase 1 之后，每个符合条件的 Critical/High finding 都会进行 blind 独立验证，只传递 `file:line` 和声明的严重性。报告区分 `reproduced`、`verification-failed`、`verification-error` 和 `cap-unverified`。这些验证调用不消耗 Phase 2 Advisor budget，`[P1]`/`[P2]` provenance 与验证状态保持为不同维度。
 
 ## 使用方法
 
@@ -20,13 +24,13 @@
 
 | Agent | 验证范围 |
 | --------------------- | ----------------------------------------------------------------------- |
-| Architecture (sonnet) | Module 边界、Layering、Dependency 方向、结构性规范符合性 |
-| Design (sonnet) | API/Interface 设计、Naming、Signature、Error Model、Contract 规范符合性 |
-| Devex (sonnet) | 可读性、Error Message、Logging、Documentation、Debuggability |
-| Security (sonnet) | OWASP Top 10 分析 |
-| QA (haiku) | Test Coverage 缺口、缺失的 Test Case |
+| Architecture | Module 边界、Layering、Dependency 方向、结构性规范符合性 |
+| Design | API/Interface 设计、Naming、Signature、Error Model、Contract 规范符合性 |
+| Devex | 可读性、Error Message、Logging、Documentation、Debuggability |
+| Security | OWASP Top 10 分析 |
+| QA | Test Coverage 缺口、缺失的 Test Case |
 
-Phase 2（opus）——仅对上述 5 个 Agent 中存在歧义的 finding 进行升级复审（Budget：默认 5 次，可通过 `--advisor-budget` 调整，共享）。
+Phase 2 Advisor——仅对上述 5 个 Agent 中存在歧义的 finding 进行升级复审（Budget：默认 5 次，可通过 `--advisor-budget` 调整，共享）。独立验证调用不计入此 budget。
 
 ## 输出格式
 

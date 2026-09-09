@@ -1,6 +1,10 @@
 # ywc-impl-review
 
-구현 완료 후 PR 작성 전에 사양 적합성을 종합 검증하는 Skill 입니다. Phase 1 에서 5개 Agent (Architecture / Design / Devex / Security / QA — Sonnet 4개, Haiku 1개) 를 병렬로 실행하고, 애매한 finding 은 Phase 2 Opus Advisor 로 확대합니다.
+구현 완료 후 PR 작성 전에 사양 적합성을 종합 검증하는 Skill 입니다. Phase 1 에서 5개 Agent (Architecture / Design / Devex / Security / QA) 를 병렬로 실행하고, 애매한 finding 은 Phase 2 Advisor 로 확대합니다.
+
+Worker 실행 전에 빈 대상 또는 200개를 초과하는 파일 대상은 거부합니다. `--base`, `--git-range`, `--working-tree`처럼 diff가 있는 대상은 추가·삭제 라인 합계가 5,000개를 초과해도 거부하며, `--code`는 경로 전용이므로 파일 수만 제한합니다. 거부 시 정확한 수와 가장 큰 파일을 보고합니다.
+
+Phase 1 이후 Critical/High finding은 `file:line`과 주장된 심각도만 전달하는 blind 독립 검증을 거칩니다. 결과는 `reproduced`, `verification-failed`, `verification-error`, `cap-unverified`로 구분하며, 이 검증 호출은 Phase 2 Advisor budget을 줄이지 않습니다. `[P1]`/`[P2]` provenance와 검증 상태는 별도 차원입니다.
 
 ## 사용 방법
 
@@ -17,13 +21,13 @@
 
 | Agent | 검증 내용 |
 |-------|----------|
-| Architecture (sonnet) | Module 경계, Layering, Dependency 방향, 구조적 사양 적합성 |
-| Design (sonnet) | API/Interface 설계, Naming, Signature, Error Model, Contract 사양 적합성 |
-| Devex (sonnet) | 가독성, Error Message, Logging, Documentation, Debuggability |
-| Security (sonnet) | OWASP Top 10 분석 |
-| QA (haiku) | Test Coverage 격차, 누락된 Test Case |
+| Architecture | Module 경계, Layering, Dependency 방향, 구조적 사양 적합성 |
+| Design | API/Interface 설계, Naming, Signature, Error Model, Contract 사양 적합성 |
+| Devex | 가독성, Error Message, Logging, Documentation, Debuggability |
+| Security | OWASP Top 10 분석 |
+| QA | Test Coverage 격차, 누락된 Test Case |
 
-Phase 2 (opus) — 위 5개 Agent 중 애매한 finding 만 선별하여 확대 검토합니다 (Budget: 기본 5회, `--advisor-budget` 로 조정 가능, 공유).
+Phase 2 Advisor — 위 5개 Agent 중 애매한 finding 만 선별하여 확대 검토합니다 (Budget: 기본 5회, `--advisor-budget` 로 조정 가능, 공유). 독립 검증 호출은 이 budget에 포함되지 않습니다.
 
 ## 출력 형식
 
