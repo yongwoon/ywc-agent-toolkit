@@ -159,6 +159,30 @@
         "Phase 2 disabled output says why a non-reproduced finding is unverified.",
         "Verification status is an additional trust dimension rather than a replacement for phase provenance."
       ]
+    },
+    {
+      "id": 18,
+      "name": "phase1-reviewer-unavailable",
+      "prompt": "A Phase 1 reviewer is successfully dispatched but is quiescent and unavailable after the bounded monitor.",
+      "expected_output": "Returns DONE_WITH_CONCERNS with bounded raw evidence, does not redispatch the lane, and does not permit Phase 2 aggregation to treat the unavailable reviewer as a clean result."
+    },
+    {
+      "id": 19,
+      "name": "phase1-reviewer-possibly-live",
+      "prompt": "A Phase 1 reviewer has no attributable terminal output and the final roster is partial, so liveness cannot be disproved.",
+      "expected_output": "Returns BLOCKED before Phase 2 or aggregation; it preserves the lane identity and does not write files, mutate artifacts, or report DONE."
+    },
+    {
+      "id": 20,
+      "name": "phase1-reviewer-malformed-output",
+      "prompt": "A Phase 1 reviewer returns malformed, status-less, ambiguous, or non-attributable output.",
+      "expected_output": "Treats the output as non-terminal, retains bounded raw evidence, and routes through monitor precedence rather than silently aggregating it or redispatching."
+    },
+    {
+      "id": 21,
+      "name": "phase1-clean-lanes-compatibility",
+      "prompt": "All Phase 1 reviewer lanes return attributable terminal payloads within the bounded monitor.",
+      "expected_output": "Preserves the existing Phase 2 candidate selection, confidence gate, aggregation, and report flow without changing terminal-status semantics."
     }
   ]
 }
