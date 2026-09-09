@@ -2,10 +2,8 @@
 
 **Next PHASE (yw): 000023**
 
-## Phase yw-000021 — Independent verification source contract
-- `yw-000021-010-domain-impl-review-verification-contract` → (root)
-- `yw-000021-020-test-impl-review-verification-evals` → depends on `yw-000021-010`
-- `yw-000021-030-docs-impl-review-localized-flow` → depends on `yw-000021-010`
+## Phase yw-000021 — done
+- Completed: `yw-000021-010-domain-impl-review-verification-contract`, `yw-000021-020-test-impl-review-verification-evals`, `yw-000021-030-docs-impl-review-localized-flow`
 
 ## Phase yw-000022 — Generated package verification
 - `yw-000022-010-infra-impl-review-package-validation` → depends on `yw-000021-010`, `yw-000021-020`, `yw-000021-030`
