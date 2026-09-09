@@ -53,7 +53,9 @@ fi
 
 # Anchored bot-login allowlist (^(...)$-equivalent via test(), not a bare
 # substring match) — carried over from the upstream fix in commit 93129bd.
-BOT_RE='^(coderabbitai|coderabbit|codex|claude|anthropic|github-actions)$'
+# GitHub bot accounts carry a literal "[bot]" suffix in user.login, so the
+# regex must match it explicitly or every real bot comment is dropped.
+BOT_RE='^(coderabbitai|coderabbit|codex|claude|anthropic|github-actions)\[bot\]$'
 
 SEARCH="is:merged"
 [[ -n "$SINCE" ]] && SEARCH="$SEARCH merged:>=$SINCE"
@@ -69,7 +71,7 @@ fi
 while IFS= read -r pr; do
   [[ -z "$pr" ]] && continue
   # shellcheck disable=SC2016 # jq's own $re/$pr (bound via --arg), not shell expansion
-  gh api --paginate "repos/{owner}/{repo}/pulls/$pr/comments" \
-    --jq --arg pr "$pr" --arg re "$BOT_RE" \
-    '.[] | select(.user.login | test($re; "i")) | {pr: ($pr | tonumber), id, path, line, body, in_reply_to_id}'
+  gh api --paginate "repos/{owner}/{repo}/pulls/$pr/comments" |
+    jq -c --arg pr "$pr" --arg re "$BOT_RE" \
+      '.[] | select(.user.login | test($re; "i")) | {pr: ($pr | tonumber), id, path, line, body, in_reply_to_id}'
 done <<< "$PR_NUMBERS"

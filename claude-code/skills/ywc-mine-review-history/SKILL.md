@@ -110,7 +110,7 @@ Always emit, regardless of what was found (auditability parity with `ywc-impl-re
 | Category | Requirement |
 |---|---|
 | Performance | The batch fetch must respect a caller-supplied bound (`--limit` or `--since`) — no default unbounded scan (FR-1). |
-| Security | The bot-login allowlist regex is anchored (`^(coderabbitai\|coderabbit\|codex\|claude\|anthropic\|github-actions)$`-equivalent), not a bare substring match. |
+| Security | The bot-login allowlist regex is anchored (`^(coderabbitai\|coderabbit\|codex\|claude\|anthropic\|github-actions)\[bot\]$`-equivalent), not a bare substring match. |
 | Reliability | `gh api` failures propagate (non-zero exit) — never swallowed with `\|\| true`. |
 | Auditability | The report surface (Step 6 / FR-6) is never omitted, even when a section is empty. |
 
