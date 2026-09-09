@@ -25,7 +25,7 @@ source task name -> returned canonical task_name
 Use the returned canonical target for `list_agents`, `wait_agent`,
 `send_message`, and `interrupt_agent`. Never invent a target from an agent ID,
 requested label, array position, or a missing response. A successful spawn with
-no usable canonical target is outside the active roster and follows the
+no usable canonical target is outside the active roster.
 
 If the spawn response suggests that an agent may have been created but provides
 no usable canonical target, the caller must preserve the raw response and use
