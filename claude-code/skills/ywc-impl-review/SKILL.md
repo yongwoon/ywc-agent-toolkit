@@ -136,34 +136,34 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
 
 ### Summary
 - Phase 1 findings (Sonnet/Haiku executor for Architecture/Design/Devex/QA, Opus for Security): Architecture A, Design D, Devex V, Security M, QA K
-- Step 4.5 verification: X of Y Critical/High Confirmed findings independently reproduced; Z escalated to Phase 2 due to failed reproduction
+- Step 4.5 verification: X of Y Critical/High Confirmed findings independently reproduced; Z escalated to Phase 2 due to failed reproduction; E verification-error; U dispatch-cap unverified; S Security findings unverified with no Phase 2 escalation path
 - Phase 2 advisor calls (Opus): X of Y budget used
 - Phase 2 adjustments: N confirmed as-is, M severity-adjusted
 
 ### Architecture
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
-   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
+   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — verifier dispatch cap reached | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Design
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
-   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
+   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — verifier dispatch cap reached | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Developer Experience (Devex)
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
-   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
+   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — verifier dispatch cap reached | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Security
 1. [severity] [P1|P2] {file}:{line} — Description
    (if P2) Advisor verdict: {one-line rationale}
-   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
+   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ⚠️ Unverified — could not independently reproduce, no Phase 2 escalation path for Security | ⚠️ Unverified — verifier execution failed, no Phase 2 escalation path for Security | ⚠️ Unverified — verifier dispatch cap reached}
 
 ### Testing (QA)
 1. [severity] [P1|P2] — Description
    (if P2) Advisor verdict: {one-line rationale}
-   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
+   (if Critical/High Confirmed, Step 4.5 ran) Verification: {✅ Reproduced independently at {file}:{line} | ❌ Could not independently reproduce — escalated to Phase 2 | ⚠️ verification-error — escalated to Phase 2 | ⚠️ Unverified — verifier dispatch cap reached | ⚠️ Unverified — Phase 2 disabled via --no-advisor}
 
 ### Spec Traceability
 (Only when `--spec` is supplied and readable. `--spec` omitted → emit only `No spec available — Spec Traceability skipped`, no criterion rows. `--spec` supplied but missing/unreadable → do not emit this section; return BLOCKED per the Completion Status rules.)
