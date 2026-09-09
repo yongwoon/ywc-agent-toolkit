@@ -68,24 +68,8 @@ graph LR
 ## Phase yw-000024 — done
 - Completed: `yw-000024-010-domain-parallel-monitor-gate`, `yw-000024-020-domain-sequential-advisor-monitor`, `yw-000024-030-domain-review-monitor-output`
 
-## Phase yw-000025 — Package validation
-- `yw-000025-010-infra-codex-package-validation` → depends on `yw-000024-010`, `yw-000024-020`, `yw-000024-030`
-
-## Parallel Execution Notes
-- Initial ready set: `yw-000023-010-docs-subagent-async-monitoring-contract` (solo root).
-- After Phase 1 merges, `yw-000024-010`, `yw-000024-020`, and `yw-000024-030` may run in parallel; their source Ownership is disjoint.
-- `yw-000024-030` must update `subagent-status-actions.md` before its `ywc-impl-review` consumer changes.
-- `yw-000025-010` waits for all Phase 2 tasks and is verification/generated-mirror-only; validation failures reopen the owning source task.
-
-```mermaid
-graph LR
-  A[yw-000023-010-docs-subagent-async-monitoring-contract] --> B[yw-000024-010-domain-parallel-monitor-gate]
-  A --> C[yw-000024-020-domain-sequential-advisor-monitor]
-  A --> D[yw-000024-030-domain-review-monitor-output]
-  B --> E[yw-000025-010-infra-codex-package-validation]
-  C --> E
-  D --> E
-```
+## Phase yw-000025 — done
+- Completed: `yw-000025-010-infra-codex-package-validation`
 
 ## Phase yw-000021 — done
 - Completed: `yw-000021-010-domain-impl-review-verification-contract`, `yw-000021-020-test-impl-review-verification-evals`, `yw-000021-030-docs-impl-review-localized-flow`
