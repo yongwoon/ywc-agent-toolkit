@@ -19,9 +19,9 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-mine-review-history skill to batch-mine bot review comments across merged PRs and surface recurring defect classes."
 
-This skill fetches bot review comments (CodeRabbit / Codex Review / Claude Review) across N already-merged PRs, classifies each comment accept-vs-dismiss using the same rule `ywc-review-learnings --source pr` already applies to a single PR, clusters classified comments into defect classes, and offers classes that recur across `--min-recurrence` distinct PRs to `ywc-review-learnings --mode update --source pr` as promotion candidates. It closes the gap between `ywc-review-learnings` (single PR, on demand) and `ywc-incident-postmortem` (single incident) — neither covers a batch sweep of PR history that predates either skill's adoption.
+This skill fetches bot review comments (CodeRabbit / Codex Review / Claude Review) across N already-merged PRs, classifies each comment accept-vs-dismiss using the same rule `ywc-review-learnings --source pr` already applies to a single PR, clusters classified comments into defect classes, and offers classes that recur across `--min-recurrence` distinct PRs to `ywc-review-learnings --mode update --source mining` as a promotion-candidate changeset (rule, why, polarity, target scope, representative evidence, distinct PR numbers). It closes the gap between `ywc-review-learnings` (single PR, on demand) and `ywc-incident-postmortem` (single incident) — neither covers a batch sweep of PR history that predates either skill's adoption.
 
-This skill never writes `docs/review-learnings.md` or `references/recurring-defects.md` directly. Its only write path is delegating to `ywc-review-learnings --mode update --source pr`, which applies its own confirmation-gated CHANGESET before any write. `references/recurring-defects.md`-style cross-project append infrastructure is out of scope — that reference stays read-only in this repository.
+This skill never writes `docs/review-learnings.md` or `references/recurring-defects.md` directly. Its only write path is delegating to `ywc-review-learnings --mode update --source mining`, which applies its own confirmation-gated CHANGESET before any write. `references/recurring-defects.md`-style cross-project append infrastructure is out of scope — that reference stays read-only in this repository.
 
 ## Rationalization Defense
 
@@ -32,7 +32,7 @@ When tempted to bypass a rule, check this table first:
 | "Skip --limit/--since, just scan everything" | Unbounded scans risk `gh api` rate-limit exhaustion on large repos (NFR: Performance). FR-1 requires at least one bound — the fetch script refuses to run with neither. |
 | "This defect class only hit 2 PRs, promote it anyway since it looks important" | The `--min-recurrence` gate (default 3, `count >= threshold`) exists precisely to separate real recurring patterns from noise. Below-threshold classes are still reported, never silently dropped — but never auto-promoted either. |
 | "Count raw comment occurrences toward recurrence, more comments = more signal" | FR-4 counts **distinct PRs**, not comments — two comments in one PR count once. Counting raw comments inflates a false recurrence signal. |
-| "Write the promoted learnings straight to docs/review-learnings.md, skip the confirmation gate" | This skill never writes `docs/review-learnings.md` directly (AC5) — every promotion candidate goes through `ywc-review-learnings --mode update --source pr`'s own confirmation-gated CHANGESET, no exceptions even for a high-recurrence class. |
+| "Write the promoted learnings straight to docs/review-learnings.md, skip the confirmation gate" | This skill never writes `docs/review-learnings.md` directly (AC5) — every promotion candidate goes through `ywc-review-learnings --mode update --source mining`'s own confirmation-gated CHANGESET, no exceptions even for a high-recurrence class. |
 | "A gh api call failed mid-sweep, treat it as zero comments for that PR and continue" | Swallowing a failed `gh api` call as an empty result silently understates the mined evidence set (NFR: Reliability). The fetch script propagates the failure (non-zero exit) — never `\|\| true` it. |
 | "Use the narrower capture-sources.md bot regex, it's the existing convention there" | The Bot-login allowlist decision deliberately widens to the shared executor regex (`coderabbitai\|coderabbit\|codex\|claude\|anthropic\|github-actions`) — under-detecting a bot login in a batch sweep silently shrinks the mined evidence set; false positives are already absorbed by the accept/dismiss classification step. |
 | "This is a batch retrospective task like ywc-incident-postmortem, treat it the same way" | `ywc-incident-postmortem` covers one incident with one root cause. This skill covers a corpus of N merged PRs with no single triggering incident — different scope, different report shape, different promotion source. |
@@ -82,7 +82,7 @@ Cluster classified (`DO` / `FALSE-POSITIVE`) comments into defect classes by jud
 
 For each defect class with distinct-PR count `>= --min-recurrence`:
 
-- Offer it to `ywc-review-learnings --mode update --source pr` as a promotion candidate, with the aggregated evidence (contributing PR numbers, one representative comment body per PR) as context.
+- Offer it to `ywc-review-learnings --mode update --source mining` as a promotion-candidate changeset, including the generalized rule, why, polarity, target scope, one representative comment body per contributing PR, and the list of distinct PR numbers supporting the recurrence.
 - `ywc-review-learnings` applies its own confirmation-gated CHANGESET before writing anything to `docs/review-learnings.md` — this skill never bypasses that gate and never writes the file itself.
 
 Classes below the threshold are listed in this skill's own report (Step 6) only — never silently dropped, never auto-promoted.
@@ -119,4 +119,3 @@ Always emit, regardless of what was found (auditability parity with `ywc-impl-re
 - Cross-project `recurring-defects.md` append infrastructure (a `source: mining` provenance line, an append-only-sink schema) — `references/recurring-defects.md` stays read-only in this repository.
 - Porting to `codex/skills/`.
 - Any change to `claude-code/agents/`.
-- A new `--source mining` value on `ywc-review-learnings` — the existing `--source pr` classification rule is reused verbatim.

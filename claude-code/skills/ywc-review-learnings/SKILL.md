@@ -44,7 +44,7 @@ When tempted to bypass a rule, check this table first:
 |-----------|--------|---------|-------------|
 | `--mode` | `--mode read\|update\|list\|curate` | auto-detect | Force a specific mode (see Mode Detection below) |
 | `--target` | `--target <glob\|path...>` | changed files | Review-target paths/globs whose applicable learnings should be loaded (`read`) or attributed (`update`) |
-| `--source` | `--source feedback\|review\|pr\|debug\|incident` | `feedback` | Where a new learning comes from in `update` mode (see Capture Sources) |
+| `--source` | `--source feedback\|review\|pr\|debug\|incident\|mining` | `feedback` | Where a new learning comes from in `update` mode (see Capture Sources) |
 | `--pr` | `--pr <number>` | — | With `--source pr`, harvest bot (CodeRabbit / Codex) review comments from this PR via `gh` and distill them into learnings. Optional convenience — never required |
 | `--output` | `--output <path>` | `docs/review-learnings.md` | Learnings file path |
 | `--dry-run` | flag | off | Show the proposed CHANGESET without writing to disk |
@@ -110,8 +110,9 @@ Print the active learnings (optionally filtered by `--target` glob or category).
 | `pr` | Bot review comments (CodeRabbit / Codex) on a specific PR | `--pr <n>`; fetch via `gh`, keep only **accepted / resolved-by-fix** comments as `DO` learnings and **explicitly dismissed** ones (with the dismissal reason) as `FALSE-POSITIVE` learnings. A comment that was neither accepted nor dismissed is not yet a learning |
 | `debug` | A confirmed root cause from a `ywc-debug-rootcause` session worth preventing in review | Map the root-cause statement to the `Why`; classify polarity (usually `DO-NOT` — forbid the pattern that produced the bug, occasionally `DO` — require the guard that would have caught it); scope to the narrowest glob covering the defect class; record provenance `debug <symptom>` |
 | `incident` | A recurrence-preventing item from a `ywc-incident-postmortem` action list | Map the prevention item to the `Why` (the failure mode it stops from recurring); classify polarity (`DO` for a required safeguard, `DO-NOT` for a forbidden pattern); scope to the affected paths; record provenance `incident <id>` |
+| `mining` | A complete, user-confirmed changeset handed off from `ywc-mine-review-history`'s batch sweep across many already-merged PRs | Accept only a complete changeset: each cluster must include its generalized rule, why, polarity, target scope, representative evidence, and a list of distinct PR numbers supporting the recurrence. The miner is a producer with no durable write authority — this skill remains the sole owner of project-local writes |
 
-The detailed harvest procedure for `--source pr` / `debug` / `incident` (the `gh` query, the accept-vs-dismiss classification, and the root-cause/prevention-item mapping) is in [references/capture-sources.md](references/capture-sources.md). `--source pr` is a single-PR, on-demand harvest; for a batch/retrospective sweep across many already-merged PRs, use `ywc-mine-review-history` instead — it feeds this same `--source pr` path with aggregated evidence from recurring defect classes.
+The detailed harvest procedure for `--source pr` / `debug` / `incident` (the `gh` query, the accept-vs-dismiss classification, and the root-cause/prevention-item mapping) is in [references/capture-sources.md](references/capture-sources.md). For a batch/retrospective sweep across many already-merged PRs instead of a single PR, use `ywc-mine-review-history` — it delegates confirmed findings back to this skill via `--source mining`.
 
 ## Output Format
 

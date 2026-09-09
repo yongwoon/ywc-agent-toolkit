@@ -25,7 +25,7 @@ A `ywc-impl-review` run just finished. Promote findings worth catching earlier.
 
 ## `--source pr` (bot-comment harvest)
 
-Distill an existing bot review (CodeRabbit / Codex Review) on a PR into learnings. Optional convenience — the skill works with no bot present. For a batch/retrospective sweep across many already-merged PRs instead of a single PR, use `ywc-mine-review-history` — it feeds this same path with aggregated evidence from recurring defect classes.
+Distill an existing bot review (CodeRabbit / Codex Review) on a PR into learnings. Optional convenience — the skill works with no bot present. For a batch/retrospective sweep across many already-merged PRs instead of a single PR, use `ywc-mine-review-history` — it delegates confirmed findings back here via `--source mining` (see below), not `--source pr`.
 
 ### Fetch
 
@@ -77,3 +77,11 @@ A `ywc-incident-postmortem` produced a recurrence-prevention action item whose *
 4. Scope to the affected paths identified in the postmortem; generalize to the class, not the single file that failed.
 5. Record provenance as `incident <id>` — the incident identifier links the learning back to its postmortem.
 6. Run the same CHANGESET confirmation as every other source.
+
+## `--source mining` (batch-miner handoff)
+
+`ywc-mine-review-history` may propose candidates, but it does not write this file. It hands over one complete, confirmed changeset to this skill so the existing confirmation and duplicate/modify rules remain the write boundary.
+
+1. Accept only a complete changeset: each cluster must include its generalized rule, why, polarity, target scope, representative evidence, and a list of distinct PR numbers supporting the recurrence.
+2. Treat the miner strictly as a producer — it has no durable write authority. This skill remains the sole owner of `docs/review-learnings.md` writes.
+3. Run the same CHANGESET confirmation as every other source before writing anything.
