@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "command -v tracepilot >/dev/null 2>&1 || npm install -g tracepilot@latest; tracepilot hook --provider codex",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       }
@@ -17,7 +17,7 @@
           {
             "type": "command",
             "command": "tracepilot hook --provider codex",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       }
@@ -28,7 +28,7 @@
           {
             "type": "command",
             "command": "tracepilot hook --provider codex",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       }
@@ -39,7 +39,7 @@
           {
             "type": "command",
             "command": "tracepilot hook --provider codex",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       }
@@ -50,7 +50,7 @@
           {
             "type": "command",
             "command": "tracepilot hook --provider codex",
-            "timeout": 10000
+            "timeout": 10
           }
         ]
       }
