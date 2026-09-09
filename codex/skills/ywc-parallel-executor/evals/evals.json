@@ -94,6 +94,27 @@
       "name": "mixed-task-id-wave-compatibility",
       "prompt": "Use $ywc-parallel-executor yk-000001-010..000001-030 --local-merge for a dependency graph containing yk-000001-010-root, 000001-020-legacy-task, and 001030-old-task.",
       "expected_output": "Parses prefixed, current unprefixed, and legacy task IDs into the same phase/sequence wave model. It preserves dependency ordering, separate worktrees, delivery, completion moves, and cleanup semantics without renaming existing task directories."
+    },
+    {
+      "id": 26,
+      "name": "async-worker-silent-stall",
+      "prompt": "A successfully spawned parallel worker returns canonical task_name worker-010 but produces no attributable terminal payload for 600 seconds.",
+      "expected_output": "Records source task -> returned canonical target, monitors the returned target, sends at most one status request and one conditional interrupt at the next <=60-second heartbeat, then reconciles once more. It preserves failure only after proven quiescence; if possibly live, it blocks cleanup, next-wave dispatch, reports, and DONE.",
+      "files": ["SKILL.md", "../references/subagent-async-monitoring.md"]
+    },
+    {
+      "id": 27,
+      "name": "async-worker-terminal-during-escalation",
+      "prompt": "A parallel worker emits an attributable terminal payload during the 600-second escalation sequence.",
+      "expected_output": "Processes the delivered terminal payload before roster state, does not preserve failure, and performs no duplicate request or interrupt for the immutable dispatch identity.",
+      "files": ["SKILL.md", "../references/subagent-async-monitoring.md"]
+    },
+    {
+      "id": 28,
+      "name": "async-worker-failed-identity",
+      "prompt": "A parallel worker spawn succeeds without a usable returned canonical task_name, or returns an unparseable target.",
+      "expected_output": "Does not invent identity from the agent ID or requested label and does not add the worker to the active roster. It uses existing failed-dispatch handling and remains non-terminal if the response may represent a live worker.",
+      "files": ["SKILL.md", "../references/subagent-async-monitoring.md"]
     }
   ]
 }
