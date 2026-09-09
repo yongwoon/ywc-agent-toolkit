@@ -62,8 +62,8 @@ graph LR
 - Initials: `yw`
 - Starting phase: `yw-000023` (ledger was current; no existing active `yw-000023` task directory)
 
-## Phase yw-000023 — Shared monitoring contract
-- `yw-000023-010-docs-subagent-async-monitoring-contract` → (root)
+## Phase yw-000023 — done
+- Completed: `yw-000023-010-docs-subagent-async-monitoring-contract`
 
 ## Phase yw-000024 — Consumer monitoring gates
 - `yw-000024-010-domain-parallel-monitor-gate` → depends on `yw-000023-010`
