@@ -233,6 +233,8 @@ for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktre
 
   > If this task changes observable behavior, author the test first and confirm it fails (RED) for the intended reason before implementing, then make it pass (GREEN) — do not weaken or delete a test to go green. Don't outrun your headlights: feedback speed is your speed limit. Docs/config/mechanical tasks may skip the RED state but must state the reason; never fabricate an empty/passing test for an untestable change. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2.
 
+**4b-monitor (mechanical gate — do not skip)**: before treating the wave as complete, the orchestrator must reconcile the full expected roster (every task name dispatched in this wave) against the set of task names it has received a terminal status for, per the Unique Dispatch Labeling and Full-Roster Reconciliation rules in [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) — never treat the wave complete without one terminal status per dispatched task name.
+
 **Handling each subagent's status return**: each subagent ends with `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular: `NEEDS_CONTEXT` → provide the missing context and re-dispatch the same subagent at the same model class (context is the cheapest fix); `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report). Do not silently retry the same subagent on the same input — change the input or the model class between attempts.
 
 ## Status Routing
@@ -245,6 +247,7 @@ The named worker subagents return payloads per [../references/subagent-status-ac
 | `DONE_WITH_CONCERNS` | Observation-level concerns → carry forward to the Completion Report; correctness-level concerns → fix and re-dispatch the same subagent before merging |
 | `BLOCKED` | Run the four-step triage (context → reasoning → scope → plan), preserve the task's branch and worktree (skip Step 4g for this task), record for the Completion Report — see **Wave-specific amplification** below |
 | `NEEDS_CONTEXT` | Provide the missing context and re-dispatch the same subagent at the same model class — do not silently infer from neighboring tasks |
+| No completion notification received within the escalation threshold | Run the four-step triage (context → reasoning → scope → plan), preserve the task's branch and worktree (skip Step 4g for this task), record for the Completion Report |
 | Status absent or unparseable | Treat as implicit `BLOCKED`; preserve the worktree, surface the raw payload to the user without retry |
 
 ### Wave-specific amplification
