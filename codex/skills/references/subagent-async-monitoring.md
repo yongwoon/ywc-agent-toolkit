@@ -8,7 +8,8 @@ meaning, task-state ownership, worktree ownership, or delivery policy.
 
 Terminal status interpretation remains owned by
 [`subagent-status-actions.md`](./subagent-status-actions.md). Consumers must
-cite this document rather than copy its algorithm.
+cite `subagent-status-actions.md` for terminal-status interpretation rather than
+copying that algorithm.
 
 ## 1. Identity and dispatch capture
 
@@ -25,7 +26,20 @@ Use the returned canonical target for `list_agents`, `wait_agent`,
 `send_message`, and `interrupt_agent`. Never invent a target from an agent ID,
 requested label, array position, or a missing response. A successful spawn with
 no usable canonical target is outside the active roster and follows the
-caller's existing failed-dispatch path.
+
+If the spawn response suggests that an agent may have been created but provides
+no usable canonical target, the caller must preserve the raw response and use
+its existing failed-dispatch handling as a non-terminal `BLOCKED` outcome. It
+must not clean up, report `DONE`, or proceed to a lifecycle transition while
+the unknown target could still be live; callers must use any separately
+available attributable evidence to prove quiescence.
+
+For this contract, a target is **parseable** when the collaboration response
+contains a non-empty string `task_name` in the platform's canonical task-name
+field. It is **attributable** when that exact returned string is the value
+stored for one source dispatch and the terminal payload names the same returned
+string; an agent ID, requested label, position, or coincidental text match is
+not attribution.
 
 ## 2. Event-first, full-roster reconciliation
 
@@ -49,6 +63,11 @@ does not silently reverse the source-task transition.
 Heartbeats are no longer than 60 seconds. Every target receives at most one
 status request and one interrupt during escalation. There is no automatic
 redispatch.
+
+Escalation state is keyed by the immutable dispatch identity: the source
+dispatch record plus its exact returned canonical target (or an explicit
+target-less dispatch record). Retries and recovery observations reuse that
+state; they must not issue a second request or interrupt for the same identity.
 
 ### Implementation and review workers
 
@@ -78,6 +97,14 @@ worktree ownership.
 evidence and with sufficient evidence that the target is quiescent. It is not a
 success result. The caller must surface the lane/target, elapsed time, roster
 state, and raw-evidence category and apply the consumer's degraded outcome.
+
+The minimum quiescence proof is a successful final reconciliation that (a)
+returned a complete roster for the monitored collaboration scope, (b) reported
+the canonical target as absent or explicitly non-running, (c) processed all
+delivered events through that reconciliation, and (d) recorded no monitoring
+API error for the proof interval. A timeout, missing roster entry, partial
+roster, unknown target state, or failed reconciliation is not quiescence; it is
+possibly-live.
 
 If a monitoring API call fails, process already delivered events, retain raw
 evidence, and interrupt each known live target at most once. Do not claim
