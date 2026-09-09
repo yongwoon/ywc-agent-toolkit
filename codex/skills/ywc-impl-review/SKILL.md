@@ -165,7 +165,7 @@ rule and evidence paths; `N/A` and `MAINTAINED` do not block the existing
 review. This packet is advisory evidence only and cannot escalate reviewer or
 merge authority.
 
-3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five read-only review workers in parallel. Each successful dispatch must use the returned canonical target with [`subagent-async-monitoring.md`](../references/subagent-async-monitoring.md); do not pass Claude Code-only `model` fields. Each worker receives its role from the prompt and matching reference file:
+3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five read-only review workers in parallel. Each successful dispatch must use the returned canonical target with [`subagent-async-monitoring.md`](../references/subagent-async-monitoring.md); do not pass Claude Code-only `model` fields. When a dispatch succeeds but returns no usable canonical target, exclude it from the active roster, do not infer a target to call `status`/`interrupt` on, and treat it as a non-terminal `BLOCKED` outcome per the reference's failed-dispatch handling — never as a success or a skip. Each worker receives its role from the prompt and matching reference file:
    - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status and multi-tenant scope gaps as one-line cross-references to the Security worker rather than duplicating them.
    - **Design worker** — API/interface design, naming, signatures, error models, return shapes, public-surface discipline, contract spec conformance. Reference: `references/design-agent.md`.
    - **Devex worker** — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
@@ -174,7 +174,7 @@ merge authority.
 
    **Inject the Step 0 learnings** into each worker prompt, filtered to that aspect's category. **Apply the `--profile` dial**: in `chill` (default), suppress Style/Docs/Devex-polish `Low`/`Info` nits and surface only correctness/security/logic/runtime-risk findings; `assertive` emits the tail too. **Verify before surfacing** ([coderabbit-methodology.md §2](./references/coderabbit-methodology.md)): every finding must cite primary evidence — exact `file:line`, a traced symbol, or fresh command output — and a finding that cannot be substantiated is dropped, not hedged. Where the project ships linters/scanners, run them and feed output to the relevant worker as evidence to triage, not as the verdict ([§4](./references/coderabbit-methodology.md)).
 
-   Each worker must return two artifacts:
+   Each worker must return two inline result sets — bounded per the Phase 1 read-only exception in [`subagent-status-actions.md`](../references/subagent-status-actions.md) (0–5 confirmed findings, 0–2 advisor candidates), never written to a file:
    - **Confirmed findings** — issues the executor is confident about (Phase 1 complete, no escalation needed).
    - **Advisor candidates** — findings the executor flags for Phase 2 review. Each candidate must include: the finding text, a bounded code snippet (≤100 lines), the relevant spec excerpt (if any), and a one-sentence reason the executor wants a second opinion.
 
@@ -230,7 +230,7 @@ derive the defect independently.
      result is an additional trust dimension and does not replace `[P1]` /
      `[P2]` provenance or the severity symbol.
 
-**Phase 1 monitor/output precedence:** a possibly-live lane returns `BLOCKED` and prevents Phase 2 or aggregation; a quiescent unavailable lane returns `DONE_WITH_CONCERNS` with bounded raw evidence; only clean attributable terminal outputs enter the existing aggregation and Phase 2 flow. Unavailable lanes may use a generic read-only reviewer fallback only when explicitly selected by the executor; never redispatch the same lane or allow Phase 1 writes.
+**Phase 1 monitor/output precedence:** a possibly-live lane returns `BLOCKED` and is a non-terminal blocker for the entire downstream lifecycle — cleanup, next-wave dispatch, normal reporting, review aggregation, the Completion Report, and `DONE` — until terminal evidence or proven quiescence is established; a quiescent unavailable lane returns `DONE_WITH_CONCERNS` with bounded raw evidence; only clean attributable terminal outputs enter the existing aggregation and Phase 2 flow. Unavailable lanes may use a generic read-only reviewer fallback only when explicitly selected by the executor; never redispatch the same lane or allow Phase 1 writes.
 
 5. **Phase 2 — Advisor Pass** (skip entirely if `--no-advisor`) — For each surviving candidate, run a short higher-capability advisor pass:
    - **Context payload**: only the candidate's finding text, the bounded snippet, the spec excerpt, and the category-specific severity rubric from the matching reference file. Do **not** forward the full spec, the full file, or the Phase 1 transcripts.
