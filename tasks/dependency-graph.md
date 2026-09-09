@@ -5,22 +5,8 @@
 ## Phase yw-000021 — done
 - Completed: `yw-000021-010-domain-impl-review-verification-contract`, `yw-000021-020-test-impl-review-verification-evals`, `yw-000021-030-docs-impl-review-localized-flow`
 
-## Phase yw-000022 — Generated package verification
-- `yw-000022-010-infra-impl-review-package-validation` → depends on `yw-000021-010`, `yw-000021-020`, `yw-000021-030`
-
-## Parallel Execution Notes (Phase yw-000021–000022)
-- Initial ready set: `yw-000021-010-domain-impl-review-verification-contract` only.
-- After `yw-000021-010` merges, `yw-000021-020` and `yw-000021-030` may run in parallel because they own disjoint eval and README surfaces.
-- `yw-000022-010` is a hard gate after all Phase `yw-000021` tasks complete; it alone owns generated-plugin synchronization and final parity evidence.
-
-```mermaid
-graph LR
-  A[yw-000021-010-domain-impl-review-verification-contract] --> B[yw-000021-020-test-impl-review-verification-evals]
-  A --> C[yw-000021-030-docs-impl-review-localized-flow]
-  A --> D[yw-000022-010-infra-impl-review-package-validation]
-  B --> D
-  C --> D
-```
+## Phase yw-000022 — done
+- Completed: `yw-000022-010-infra-impl-review-package-validation`
 
 ## Phase yw-000019 — done
 - Completed: `yw-000019-010-domain-review-learnings-mining-contract`, `yw-000019-020-domain-mine-review-history-skill`, `yw-000019-030-test-mine-review-history-contract`
