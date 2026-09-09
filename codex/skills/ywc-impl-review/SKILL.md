@@ -218,10 +218,13 @@ derive the defect independently.
      enabled.
    - Re-apply the existing Phase 2 priority and budget selection after failed
      or error outcomes are added. Verifier calls do not consume or reduce
-     `--advisor-budget`. Under `--no-advisor`, failed, error, and cap-skipped
-     findings remain explicitly unverified with the reason
-     `Phase 2 disabled via --no-advisor`; they are not silently dropped or
-     presented as confirmed.
+     `--advisor-budget`. Under `--no-advisor`, `verification-failed` and
+     `verification-error` findings remain explicitly unverified with the
+     reason `Phase 2 disabled via --no-advisor`; they are not silently
+     dropped or presented as confirmed. Cap-skipped findings always keep the
+     `cap-unverified` status regardless of `--no-advisor` — the cap is a
+     dispatch-time limit independent of whether Phase 2 is enabled, so the
+     `--no-advisor` reason never overwrites it.
    - The report must count `reproduced`, `verification-failed`,
      `verification-error`, and `cap-unverified` separately. A verification
      result is an additional trust dimension and does not replace `[P1]` /
