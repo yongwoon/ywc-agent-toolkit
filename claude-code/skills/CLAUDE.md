@@ -295,6 +295,33 @@ as a bare halt. Generic "halted, awaiting input" surfaces are a regression.
 New fan-out skills must link `references/subagent-status-actions.md` and
 inject the §3.5 directive verbatim into each subagent prompt.
 
+## Subagent Async Monitoring Contract
+
+Skills that dispatch a **concurrent batch** of subagents (a wave in
+`ywc-parallel-executor`, the fan-outs in `ywc-impl-review`, or a bounded
+Opus advisor dispatch in `ywc-sequential-executor`) must use the canonical
+monitoring contract defined in `references/subagent-async-monitoring.md`.
+This exists because a concurrently-dispatched subagent's completion
+notification can arrive out of order or late — an incident where two
+notifications were mixed up left a finished task mistaken for pending.
+
+Key parameters (canonical source is the reference file — do not hardcode
+these values in skill bodies):
+
+- **Threshold table**: 1 (single bounded dispatch, e.g. an Opus advisor
+  call) and 2–4 concurrent subagents → 480s soft-check / 900s hard
+  escalation; 5+ concurrent subagents → 300s soft-check / 600s hard
+  escalation
+- **Stall consequence**: batch-level equivalent of `BLOCKED` per
+  `references/subagent-status-actions.md`, naming the unaccounted-for
+  subagent(s) — never silent re-dispatch
+
+> **Action required on entering the branch that needs it**: Read
+> [references/subagent-async-monitoring.md]
+
+Consumers: `ywc-parallel-executor`, `ywc-sequential-executor`,
+`ywc-impl-review`.
+
 ## Bundled Execution Scripts
 
 Several `ywc-*` skills ship bundled scripts for deterministic or repetitive

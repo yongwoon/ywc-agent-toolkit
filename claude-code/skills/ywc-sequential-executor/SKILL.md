@@ -37,6 +37,7 @@ When tempted to skip a step, check this table first:
 | "I'll add tests after the implementation is working" | For behavior changes, the failing test comes **first** — a bugfix needs a regression test that fails on the old code, a feature needs a failing unit/integration test before implementation. Without test feedback gating each step you outrun your headlights and the code crashes at runtime. Docs/config/mechanical tasks are the only exception (record it). See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §2. |
 | "This task only changes internals, no contract to write down" | If the change alters a public contract (exported function, endpoint, event, DTO, schema, props, CLI flag), design and write the interface **before** the body, and report it. Shallow single-use wrappers around cohesive behavior are the maze AI gets lost in later. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §3. |
 | "I reviewed the whole implementation line by line" | Default review is gray-box — verify the contract, delegate internals. The exception is **critical paths** (auth, payment, crypto, PII, external input): those get internal review **and** `/ywc-security-audit`, forced even without `--review`. Uniform-depth review wastes effort on safe code and under-scrutinizes dangerous code. See [../references/tdd-deep-module-gray-box.md](../references/tdd-deep-module-gray-box.md) §4. |
+| "Task is slow, I'll fork a background agent to check on something while I wait" | This skill's Pattern A bounded-Opus-dispatch model (`../references/advisor-pattern.md`) does not admit ad-hoc concurrent forks — an unplanned background dispatch has no unique dispatch label and no full-roster reconciliation per `../references/subagent-async-monitoring.md`, so its completion can be silently lost. |
 
 **Violating the letter of these rules is violating the spirit.** Sequential execution exists because each task's correctness depends on the previous task's stable state.
 
@@ -210,7 +211,7 @@ The unit for this skill is **task**. Sequential-specific Allowed Stop Reasons: d
 
 This skill follows **Pattern A** from [../references/advisor-pattern.md](../references/advisor-pattern.md): a single inherited-model executor with bounded Opus escalation. **Budget**: up to **3 Opus calls per invocation** (single-task or range alike); exceeding requires explicit justification in the Completion Report. **Context payload rule**: forward only the decision point (≤100 lines), never the full task README, spec, repo state, or prior Execution Cycle turns; advisor returns a ≤200-word verdict.
 
-The escalation conditions remaining in this skill's scope — Spec Reference conflict (Step 1b), verification first failure with unclear cause (Step 4), Stop Condition borderline (Step 3) — are defined in [references/advisor-escalation.md](./references/advisor-escalation.md). Merge conflict and CI first-failure escalations (originally conditions 3 and 4 in that reference) move to `ywc-finish-branch`'s scope at Step 5; finish-branch consumes its own `advisor_budget: 1` for those escalations independently of this skill's budget of 3.
+The escalation conditions remaining in this skill's scope — Spec Reference conflict (Step 1b), verification first failure with unclear cause (Step 4), Stop Condition borderline (Step 3) — are defined in [references/advisor-escalation.md](./references/advisor-escalation.md). Merge conflict and CI first-failure escalations (originally conditions 3 and 4 in that reference) move to `ywc-finish-branch`'s scope at Step 5; finish-branch consumes its own `advisor_budget: 1` for those escalations independently of this skill's budget of 3. For the async monitoring contract this bounded single Opus advisor dispatch must follow, see [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md).
 
 ### Step 1: Dependency Validation and Spec Loading
 
@@ -481,7 +482,6 @@ Example task table row:
 rm -f .ywc-run-state.json
 test ! -f .ywc-run-state.json && echo "OK: state cleaned" || echo "WARNING: state file still present"
 ```
-
 If the verification line prints `WARNING`, the run is `DONE_WITH_CONCERNS`, not `DONE` — surface the leftover file path in the Completion Report.
 
 ## PR Language Detection

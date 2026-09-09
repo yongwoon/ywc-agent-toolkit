@@ -11,6 +11,8 @@ Use this when an orchestrating skill receives `DONE`, `DONE_WITH_CONCERNS`, `BLO
 | `NEEDS_CONTEXT` | Provide the missing context and re-dispatch the same subagent with the same model class. Context is the cheapest fix. |
 | `BLOCKED` | Apply the triage below before surfacing to the user. |
 
+Phase 1 review workers are a narrow read-only inline exception: they may return only `Status`, a one-line `Summary`, 0–5 confirmed findings, and 0–2 advisor candidates; they may not write files or mutate artifacts. Validate the returned canonical target before applying these actions; malformed, status-less, ambiguous, or non-attributable output is non-terminal and follows review monitor precedence.
+
 ## Return Payload Contract
 
 When a subagent emits its status, the **payload returned to the orchestrator must be lean**. The orchestrator's main context is finite and is shared across the entire skill chain; a verbose return from a single fan-out subagent can push the main context past its budget within one or two waves.
