@@ -6,6 +6,7 @@
           {
             "type": "command",
             "command": "command -v tracepilot >/dev/null 2>&1 || npm install -g tracepilot@latest; tracepilot hook --provider codex",
+            "commandWindows": "(where tracepilot >nul 2>&1 || npm install -g tracepilot@latest) && tracepilot hook --provider codex",
             "timeout": 10
           }
         ]
