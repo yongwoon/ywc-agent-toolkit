@@ -17,6 +17,36 @@ markers are already committed during the waves, the aggregate PR carries **both 
 implementation code and the `tasks/completed/` moves** — there is no separate Mark Complete
 at the end.
 
+**Un-promoted-integration-branch guard (required before every `git reset --hard
+origin/<base-branch>` below).** A wave that created `wave-int/<N>` ([wave-integration-branch.md](wave-integration-branch.md))
+accumulates onto that integration branch, not directly onto local `<base-branch>`, until
+its Hardener-gated promotion (4e.6) fast-forwards base. If any wave finished this run with
+`integration_branch` non-`None` and `status != completed` (i.e. promotion never landed),
+the local base does **not** yet hold that wave's work — resetting it to `origin/<base-branch>`
+at this point would not lose committed work (nothing of that wave is on local base to lose),
+but carving the aggregate/draft branch from local base *now* would silently exclude that
+wave's changes from the group PR while leaving `wave-int/<N>` orphaned. Before either
+Section A step 2 or step B1's `git reset --hard`, check:
+
+```bash
+python3 -c "
+import json
+state = json.load(open('.ywc-run-state.json'))
+unpromoted = [w['wave'] for w in state.get('waves', [])
+              if w.get('integration_branch') and w.get('status') != 'completed']
+if unpromoted:
+    print(f'BLOCKED: wave(s) {unpromoted} have an un-promoted wave-int/<N> — refusing reset')
+    raise SystemExit(1)
+print('OK: no un-promoted integration branch')
+"
+```
+
+Exit 1 → refuse the reset, return `BLOCKED` with the offending wave number(s) and each
+wave's preserved `wave-int/<N>` branch name — the user must resolve promotion (resume per
+[checkpoint-resume.md](checkpoint-resume.md)'s `hardener_verdict` branching) before the
+aggregate/draft branch can be safely carved. Do not auto-retry promotion from inside this
+guard; it exists only to prevent a silent scope gap in the group PR, not to drive recovery.
+
 ---
 
 ## Section A — `--draft`: Aggregate Draft PR
