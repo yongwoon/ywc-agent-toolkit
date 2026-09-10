@@ -1,0 +1,65 @@
+{
+  "surface": "codex-agents",
+  "contract_reference": "codex/skills/references/quality-gates.md",
+  "evals": [
+    {
+      "name": "cleaner-missing-packet",
+      "agent": "ywc-complexity-cleaner",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Dispatch without a complete packet or exact production Ownership.",
+      "expectations": ["No edit", "No fabricated command", "No worker dispatch after missing context"]
+    },
+    {
+      "name": "cleaner-scope-boundary",
+      "agent": "ywc-complexity-cleaner",
+      "expected_status": "NEEDS_CONTEXT",
+      "contract_state": "advisory",
+      "requested_path_class": "test-fixture",
+      "prompt": "With a complete advisory packet, request an edit to a test or fixture path.",
+      "expectations": ["Production-only boundary", "No edit", "NEEDS_CONTEXT"]
+    },
+    {
+      "name": "cleaner-unavailable-advisory",
+      "agent": "ywc-complexity-cleaner",
+      "contract_state": "advisory",
+      "expected_status": "DONE_WITH_CONCERNS",
+      "unavailable_tool": true,
+      "prompt": "With a complete advisory packet, make the approved complexity tool unavailable.",
+      "expectations": ["State-specific unavailable-tool result", "No mutation"]
+    },
+    {
+      "name": "cleaner-unavailable-enforced",
+      "agent": "ywc-complexity-cleaner",
+      "contract_state": "enforced",
+      "expected_status": "BLOCKED",
+      "unavailable_tool": true,
+      "prompt": "With a complete enforced packet, make the approved complexity tool unavailable.",
+      "expectations": ["State-specific unavailable-tool result", "No mutation"]
+    },
+    {
+      "name": "hardener-residual-cap",
+      "agent": "ywc-test-hardener",
+      "contract_state": "advisory",
+      "expected_status": "DONE_WITH_CONCERNS",
+      "prompt": "Provide three approved hardening attempts with residual mutation survivors.",
+      "expectations": ["Test/fixture-only boundary", "At most three attempts", "Every residual reported", "No equivalence claim"]
+    },
+    {
+      "name": "hardener-scope-and-status",
+      "agent": "ywc-test-hardener",
+      "contract_state": "enforced",
+      "expected_status": "NEEDS_CONTEXT",
+      "requested_path_class": "production",
+      "prompt": "With a complete enforced packet, request a production edit.",
+      "expectations": ["No edit", "Canonical status", "No later DONE masking"]
+    },
+    {
+      "name": "no-contract-compatibility",
+      "agent": null,
+      "contract_state": "N/A — no quality gate contract",
+      "expected_dispatch": "none",
+      "prompt": "Provide the exact no-contract sentinel.",
+      "expectations": ["Neither worker is selected", "Existing workflow remains unchanged", "No placeholder packet", "Not a worker terminal status"]
+    }
+  ]
+}
