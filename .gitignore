@@ -16,6 +16,7 @@ __pycache__/
 
 .ywc-run-state.json
 context-handoff.json
+.ywc-learnings.jsonl
 .ywc-architecture-invariants-evidence.json
 .codex/settings.local.json
 .ywc-learnings.jsonl
