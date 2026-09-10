@@ -224,7 +224,7 @@ transcripts, full diffs, or inferred edges into task artifacts. Propagate
 `NEEDS_CONTEXT` before writing any preview or task directory. Surface
 `VIOLATED` as a task-generation finding; `N/A` and `MAINTAINED` permit the
 existing decomposition. The packet does not elevate task-generator authority
-or authorize execution.
+or authorize execution. For the conditional task-owned quality packet, read [references/task-metadata-rules.md](references/task-metadata-rules.md) and apply its exact Ownership, required IDs/digests, bounded evidence paths, redaction, omission, and `NEEDS_CONTEXT` rules; Task Verify remains separate.
 
 ### Step 6: Task Decomposition
 

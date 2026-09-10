@@ -176,6 +176,42 @@
       "expected_output": "The fixture proves explicit > project > user precedence, malformed tiers fall through without mutation, invalid or empty interactive derivation remains unresolved, absolute/escaping tasks paths are rejected, legacy and other-initials IDs do not advance the selected namespace, linked sources contribute to the owned maximum, collisions retry with consumed refs, and NEEDS_CONTEXT occurs before any artifact write.",
       "expectations": ["The contract explicitly requires one common-Git exclusive lock from scan through complete graph/artifact writes", "The fixture does not claim a runtime generator implementation that is absent", "Concurrent distinct reservations are deterministic and bounded"],
       "files": ["references/collaborator-initials.md", "scripts/test-initials-allocation.sh"]
+    },
+    {
+      "id": 26,
+      "name": "quality-gate-packet-positive",
+      "prompt": "Generate a task from a complete advisory Quality Gate Contract declaration with exact production/test Ownership, opaque approved command IDs and matching digests, bounded sanitized evidence paths, thresholds, attempt_cap 3, and residual survivor handling.",
+      "expected_status": "DONE",
+      "expected_output": "Emits the conditional Quality Gate Contract/Owned Interface section in README.md and task.md with only the sanitized per-task packet and exact task Ownership.",
+      "expectations": ["Preserves all required packet fields", "Does not emit executable command text, raw output, transcripts, secrets, full diffs, or placeholders", "Keeps Task Verify commands separate from packet command identities"],
+      "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
+    },
+    {
+      "id": 27,
+      "name": "quality-gate-packet-absent",
+      "prompt": "Generate a task whose specification contains the exact sentinel N/A — no quality gate contract.",
+      "expected_status": "DONE",
+      "expected_output": "Preserves the existing workflow and omits the entire Quality Gate Contract section from generated README.md and task.md.",
+      "expectations": ["No worker is selected", "No packet heading or packet field is emitted", "No placeholder packet is emitted"],
+      "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
+    },
+    {
+      "id": 28,
+      "name": "quality-gate-packet-incomplete",
+      "prompt": "Generate a task from a declaration missing an approved command digest, a changed-function Ownership boundary, or a sanitized evidence destination.",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_output": "Returns NEEDS_CONTEXT before preview or task-artifact writes and does not infer or fill the missing field.",
+      "expectations": ["No downstream handoff", "No packet is written", "No fabricated digest, threshold, path, or symbol appears in output"],
+      "files": ["references/task-metadata-rules.md"]
+    },
+    {
+      "id": 29,
+      "name": "quality-gate-packet-raw-command-rejection",
+      "prompt": "Generate a task from a declaration containing raw executable command text, raw output, a transcript, a full diff, or placeholder packet values.",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_output": "Rejects the declaration before writing and never copies or exposes the raw command-like content.",
+      "expectations": ["No raw command/output/transcript/secret/full diff is emitted", "No placeholder value is emitted", "Task Verify remains independent of packet authorization"],
+      "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
     }
   ]
 }
