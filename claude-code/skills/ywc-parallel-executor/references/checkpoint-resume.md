@@ -77,8 +77,21 @@ Initialize after Pre-flight passes. Always update `last_checkpoint` to the curre
 | Pre-flight passes | Initialize file; `started_at`, `mode`, `tasks_dir`, all waves as `planned` |
 | Step 4a complete (wave start) | Set wave `status` to `in_progress`; populate `pending` with all wave tasks |
 | Step 4e per-task delivery complete (DONE — finish-branch for `--local-merge`/`--draft`, inline `gh pr merge` + Mark Complete for `--per-task-pr`) | Move task from `pending` to `merged` in the wave entry |
-| Step 4e wave loop complete (all tasks delivered or BLOCKED) | Set wave `status` to `completed`; `current_wave` to next wave number |
+| Step 4e.5 Hardener dispatch exit (contract-bearing wave, `--local-merge`/`--draft`/`--aggregate-pr` only) | `hardener-verdict <N> <absent\|PASS\|BLOCKED>` — written **before** promotion is attempted |
+| Step 4e.6 promotion succeeds | Set wave `status` to `completed`; `current_wave` to next wave number — **this replaces the old "wave loop complete" trigger below for a wave that created `wave-int/<N>`** |
+| Step 4e wave loop complete, wave never created `wave-int/<N>` (contract-less, or `--per-task-pr`) | Set wave `status` to `completed`; `current_wave` to next wave number — unchanged from today |
+| Step 4e.6 promotion-conflict base-merge retried | `promotion-retry <N>` — capped at 2; exceeding marks the wave `BLOCKED` with reason `promotion-churn` |
 | All waves done | `rm -f .ywc-run-state.json` |
+
+### Resume with `wave-int/<N>`
+
+For a wave that created `wave-int/<N>` (`integration_branch` non-`None`), the checkpoint table above changes what "`wave-complete` not yet stamped" means on resume. Three distinct cases, in resume-check order:
+
+1. **Partial-merge** (`pending` non-empty, `wave-int/<N>` already exists) — resume by reusing the existing branch and merging the remaining `pending` tasks onto it, per the idempotent-creation rule in [wave-integration-branch.md](wave-integration-branch.md). Only once `pending` is empty does the wave enter case 2 or 3 below.
+2. **Fully-merged-not-promoted, `hardener_verdict` absent or `PASS`** (`pending` empty, `status != completed`) — the common transient case: interrupted before Hardener ran, or Hardener passed but the run died before promotion. Resume **auto-retries** Hardener + promotion with no prompt; Hardener is a measurement gate, so re-running against unchanged input is a safe no-op.
+3. **Fully-merged-not-promoted, `hardener_verdict == BLOCKED`** (`pending` empty, `status != completed`) — a deliberate, unresolved gate failure. Resume **stops and prints the recorded blocking findings**, then requires explicit user confirmation before re-running Hardener — matching the human-in-the-loop convention used for every other `BLOCKED` condition in this skill (merge conflict, circular dependency, base-refresh conflict). Idempotency makes the re-run *safe*, not *informative*; silently re-deriving an unresolved `BLOCKED` days later would train the user to ignore the gate.
+
+A fully contract-less wave (`integration_branch` was `None` from init) never entered this branch of the resume logic — it keeps today's resume behavior unchanged.
 
 ### Manual Inspection
 
