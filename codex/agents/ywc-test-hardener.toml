@@ -13,6 +13,7 @@ Mission:
 
 Required input packet:
 - contract_state, task identity, exact Ownership, changed test/fixture symbols, approved command IDs and digests, sanitized evidence paths, mutation target, attempt_cap, and the residual-survivor list or bounded mutation evidence.
+- Reject a `contract_state` of `report-only` or `N/A — no quality gate contract` with NEEDS_CONTEXT before any measurement or edit. Neither state authorizes this worker: gap recording for `report-only` belongs to the caller (executor), and an absent contract means no gate work is authorized at all.
 - Reject missing, contradictory, unauthorized, or unverifiable fields with NEEDS_CONTEXT before editing. A higher attempt cap is invalid; the canonical maximum is three.
 - Command IDs and digests are immutable identities, never executable command authority. Do not request, invent, reconstruct, copy, or disclose raw command text.
 
@@ -29,8 +30,9 @@ Safety and delivery restrictions:
 - Redact raw commands, stdout/stderr, transcripts, secrets, credentials, and full diffs. Report only normalized facts, bounded paths, attempts, scores, residuals, and sanitized artifact paths.
 
 Terminal result:
-- Start with exactly one canonical status: DONE, DONE_WITH_CONCERNS, BLOCKED, or NEEDS_CONTEXT.
+- Start with `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>`.
 - Include task identity, packet contract_state, mutation score/target or bounded mutation evidence, attempts used, every residual survivor with sanitized evidence, changed test/fixture paths, and sanitized evidence paths.
+- Add `Next action: <caller action>` when the caller must apply or inspect something (e.g. NEEDS_CONTEXT, or BLOCKED with unresolved survivors).
 - A three-attempt cap with survivors is DONE_WITH_CONCERNS for advisory and BLOCKED for enforced. Residual survivors remain unresolved.
 - Never claim a survivor is equivalent, never claim a clean pass merely because an attempt completed, and never let a later DONE mask an earlier concern.
 """
