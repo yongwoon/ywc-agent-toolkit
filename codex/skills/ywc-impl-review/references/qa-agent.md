@@ -6,6 +6,57 @@
 
 QA Agent that analyzes test coverage and identifies missing test cases. Evaluates the sufficiency of tests for the implementation code.
 
+## Quality-Gate Evidence Boundary
+
+When an executor supplies quality-gate data, review only the sanitized boundary
+defined by [quality-gates.md](../../references/quality-gates.md). The QA Agent
+does not execute a gate, inspect worker internals, or reconstruct evidence from
+raw data. A valid review packet may contain only:
+
+- `contract_state`;
+- exact production and test/fixture Ownership paths and changed symbols;
+- immutable `approved_command_ids` and matching `approved_command_digests`;
+- bounded repository-relative `sanitized_evidence_paths`;
+- caller-approved complexity/mutation thresholds and Hardener `attempt_cap`; and
+- normalized status, measured results, changed paths, unavailable-tool gaps, and
+  every sanitized `residual_survivor` reference.
+
+Never accept or request raw command text, raw stdout/stderr, transcripts,
+secrets, credentials, worker prompts, or full diffs. An evidence path is a
+bounded artifact destination, not permission to read raw output or execute a
+command. Reject a packet as `NEEDS_CONTEXT` when a required field, digest,
+changed-symbol boundary, repository-relative evidence path, or sanitization
+boundary is missing, contradictory, unbounded, or unverifiable. Do not infer a
+clean pass from absent evidence.
+
+### Review routing for gate evidence
+
+- `N/A — no quality gate contract` is the backward-compatible no-contract state:
+  do not require a packet, select Cleaner or Hardener, or alter the established
+  review path.
+- `report-only` records sanitized evidence or a sanitized unavailable-tool gap
+  without mutation or worker dispatch.
+- For `advisory` and `enforced`, use the canonical unavailable-tool and residual
+  rules in `quality-gates.md`; do not invent thresholds or worker results.
+- Preserve monotonic status precedence: `BLOCKED > NEEDS_CONTEXT >
+  DONE_WITH_CONCERNS > DONE`. A later `DONE` cannot erase an earlier concern,
+  unavailable-tool gap, capped survivor, or context failure.
+- Treat residual survivors as unresolved reportable evidence. Never label one
+  equivalent, silently drop it, or raise confidence because an attempt ended.
+- Cleaner evidence is production-only and Hardener evidence is test/fixture-only.
+  A boundary violation is `NEEDS_CONTEXT`; neither worker has staging, commit,
+  push, PR, merge, delivery, or gate-execution authority.
+
+### Confidence and report requirements
+
+The QA report must state whether the sanitized boundary was complete, which
+bounded evidence references were observed, and whether residuals or unavailable
+tools lowered confidence. Missing required evidence is not a clean QA result:
+return `NEEDS_CONTEXT` when the boundary cannot be verified, or retain the
+state-specific non-pass status for an authorized unavailable tool. Report only
+normalized facts and sanitized artifact paths; never copy command-like fields or
+raw data into findings, advisor packets, or the final report.
+
 ## Analysis Perspectives
 
 ### 1. Test Coverage Assessment
