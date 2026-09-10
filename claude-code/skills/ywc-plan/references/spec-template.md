@@ -54,6 +54,26 @@ This section exists because Code Compatibility is the largest source of `ywc-spe
 
 Use `N/A — no interaction with existing constrained infrastructure` only after **active consideration** — i.e., you've grepped for global middleware in the new code path and confirmed nothing intercepts it.
 
+## Quality Gate Contract
+
+<Declare the quality gates that the implementation of this spec's requirements must meet: either concrete CRAP Complexity (6–8 per method) and Mutation Score (≥90% for new code paths) thresholds that each module must achieve, or the sentinel value if this spec does not introduce measurable code.>
+
+> **Action required**: Read [../../references/quality-gates.md](../../references/quality-gates.md) for the full gate definitions, thresholds, diff-only principle, 3-round loop cap, equivalent-mutant rule, and contract-absent fallback.
+
+Use one of these forms:
+
+- Concrete gates: `CRAP Complexity: 6–8 per method; Mutation Score: ≥90% for new code paths`
+- No contract: `N/A — no quality gate contract`
+
+## Module Boundaries
+
+<If this spec introduces a new code module, declare its public interface (exported functions, types, API routes, scheduled jobs, event subscriptions, database entities) and explicitly forbidden edges (architectural restrictions: e.g., callers may not access internal tables, bypass middleware, or trigger side effects outside the declared contract). If no module is introduced, use the sentinel.>
+
+Use one of these forms:
+
+- With module: `**Public interface**: [list of exported symbols]; **Forbidden edges**: [list of architectural restrictions]`
+- No module: `N/A — no code module introduced`
+
 ## Acceptance Criteria
 
 <Observable, testable conditions that prove the feature is complete. Each AC must be **declarative and verifiable** — written so a tester (human or automated) knows exactly what to send, what to observe, and how to decide pass/fail.>
