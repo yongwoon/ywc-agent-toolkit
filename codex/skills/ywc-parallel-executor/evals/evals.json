@@ -56,6 +56,83 @@
             "files": []
         },
     {
+      "id": 10,
+      "name": "parallel-quality-gate-no-contract",
+      "prompt": "A parallel task has contract_state `N/A — no quality gate contract`, and another task uses report-only.",
+      "expected_output": "Preserves the existing verification, rerouting, worktree, and wave-delivery lifecycle. Emits no placeholder packet and dispatches neither Cleaner nor Hardener; report-only records only sanitized evidence or a gap.",
+      "files": ["SKILL.md", "README.ko.md"]
+    },
+    {
+      "id": 11,
+      "name": "parallel-cleaner-before-delivery",
+      "prompt": "A completed parallel task has a valid advisory or enforced packet whose measured complexity exceeds its approved threshold.",
+      "expected_output": "After Task Verify and before Wave Delivery, dispatches exactly one task-local Cleaner with the unchanged bounded packet. Cleaner can edit only owned production paths and symbols and has no delivery authority.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 12,
+      "name": "parallel-hardener-wave-boundary",
+      "prompt": "Two tasks in one wave produce sanitized mutation evidence after their Cleaner decisions.",
+      "expected_output": "Waits until the safe wave boundary, then dispatches Hardener only for tasks with remaining mutation work and a permitted Cleaner result or a legitimate threshold skip. Hardener is test/fixture-only and capped at three attempts.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 13,
+      "name": "parallel-cleaner-blocks-hardener",
+      "prompt": "A task's Cleaner returns BLOCKED or NEEDS_CONTEXT while mutation survivors remain.",
+      "expected_output": "Does not dispatch Hardener for that task, preserves its worktree and branch, and applies existing rerouting and triage behavior.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 14,
+      "name": "parallel-unavailable-tool-status",
+      "prompt": "An authorized quality-gate tool is unavailable for report-only, advisory, and enforced parallel contracts.",
+      "expected_output": "Report-only records a sanitized gap without mutation; advisory returns DONE_WITH_CONCERNS; enforced returns BLOCKED. No raw command, output, transcript, secret, or full diff crosses the boundary.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 15,
+      "name": "parallel-residual-survivor-cap",
+      "prompt": "Hardener reaches the canonical three-attempt cap with mutation survivors.",
+      "expected_output": "Retains every sanitized survivor and evidence reference. Advisory aggregates DONE_WITH_CONCERNS and enforced aggregates BLOCKED; no worker labels a survivor equivalent or claims success merely because an attempt completed.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 16,
+      "name": "parallel-status-precedence",
+      "prompt": "One task has DONE_WITH_CONCERNS or BLOCKED quality-gate evidence and a later task returns DONE.",
+      "expected_output": "Wave aggregation is monotonic: BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE. The later DONE cannot erase the earlier status or sanitized concerns.",
+      "files": ["SKILL.md", "README.ko.md"]
+    },
+    {
+      "id": 17,
+      "name": "parallel-ownership-and-evidence-rejection",
+      "prompt": "A packet crosses production/test Ownership, lacks changed symbols, has an invalid evidence path, or has a missing/mismatched command digest.",
+      "expected_output": "Returns NEEDS_CONTEXT before any worker edit or dispatch; it never broadens paths/symbols or invents authorization.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 18,
+      "name": "parallel-retry-idempotency-preservation",
+      "prompt": "A parallel Cleaner or Hardener dispatch encounters a recoverable tool error twice.",
+      "expected_output": "Changes bounded context or model class for recovery, never silently repeats the same dispatch identity, then stops after two failed recovery attempts as BLOCKED while preserving the task worktree and branch.",
+      "files": ["SKILL.md", "README.ko.md"]
+    },
+    {
+      "id": 19,
+      "name": "parallel-no-delivery-authority",
+      "prompt": "A quality-gate worker or wave aggregate reports a clean result.",
+      "expected_output": "The result contains sanitized evidence and status only. It does not stage, commit, push, create or merge a PR, deliver changes, or authorize work outside task Ownership.",
+      "files": ["SKILL.md"]
+    },
+    {
+      "id": 29,
+      "name": "parallel-out-of-ownership-path-symbol-rejection",
+      "prompt": "A Cleaner requests a production path or symbol outside the task packet's exact production Ownership, or a Hardener requests a test/fixture path or symbol outside its exact Ownership.",
+      "expected_output": "Rejects the request as NEEDS_CONTEXT before any worker dispatch or edit, does not broaden paths or symbols, and preserves the task worktree and branch under the existing failure handling.",
+      "files": ["SKILL.md"]
+    },
+    {
       "id": 20,
       "prompt": "Non-interactive parallel resume has a checkpoint whose scope differs and no --resume-disposition.",
       "expected_output": "Returns bounded NEEDS_CONTEXT naming --resume-disposition, invokes no executor, emits no prompt, and leaves checkpoint state unchanged.",
