@@ -317,7 +317,7 @@ For the full procedure, dispatch conditions, and how Cleaner results affect subs
 
 ### Step 3.6: Hardener (Mutation gate)
 
-If Cleaner returned `DONE` or `DONE_WITH_CONCERNS` (not `BLOCKED`), dispatch to `ywc-qa-engineer` via the Task tool to measure and improve mutation score in the diff's test and fixture code.
+Dispatch to `ywc-qa-engineer` via the Task tool to measure and improve mutation score in the diff's test and fixture code, unless Cleaner's `gate_state` is `"fail — severity enforced"` (`BLOCKED`). This includes the `gate_state: "pass"` path — where Cleaner's CRAP measurement already met the threshold and no worker was dispatched — since Hardener's mutation check is independent of Cleaner's outcome.
 
 **Dispatch instruction**: Pass the current branch, task name, and target mutation score from the spec. The Hardener operates on test and fixture code only, makes up to three approved attempts, and returns `DONE`, `DONE_WITH_CONCERNS`, or `BLOCKED` depending on whether surviving mutants remain after the third attempt and the contract severity.
 
