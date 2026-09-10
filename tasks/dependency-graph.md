@@ -27,27 +27,6 @@
 | `yw-000035-080-domain-impl-review-quality-evidence` | domain | `yw-000035-010` |
 | `yw-000035-090-domain-quality-gate-codex-gaps` | domain | `yw-000032-010`, `yw-000032-020` |
 
-## Parallel Execution Notes (Quality Gate Contract Port — claude-code additions)
-
-- Initial ready set: `yw-000035-010`, `yw-000035-020`, `yw-000035-030`, `yw-000035-040`, `yw-000035-050` — all five are root tasks with no shared files, fully parallel.
-- After `yw-000035-010` merges, `yw-000035-060`, `yw-000035-070`, and `yw-000035-080` become ready — also mutually parallel, since each owns a separate skill directory (`ywc-sequential-executor`, `ywc-parallel-executor`, `ywc-impl-review` respectively).
-- `yw-000035-090` is cross-batch: it depends on `yw-000032-010` and `yw-000032-020` from the **Codex Quality Gate Contract** batch below, not on anything in this batch — it becomes ready once those two codex tasks merge, independent of `yw-000035`'s own internal sequencing. It owns only two specific headings in files `yw-000032-010`/`yw-000032-020` also touch, so it must not run concurrently with either (see Conflicts With in its README).
-- Single phase, not split into `yw-000035`/`yw-000036`: per the Task Design Principles' Phase Boundary Rules, only `yw-000035-010` gates `060`/`070`/`080` — `020`/`030`/`040`/`050` have no gating dependency at all. Splitting into a second phase would force `060`/`070`/`080` to wait for `020`/`030`/`040`/`050` too, which is an artificial hard gate the dependency table does not require.
-- No task in this batch may modify another task's Ownership; `yw-000035-060`/`070`/`080` all read (never write) `claude-code/skills/references/quality-gates.md`.
-
-```mermaid
-graph LR
-  A[yw-000035-010-docs-quality-gate-contract-claude] --> F[yw-000035-060-domain-sequential-executor-quality-gate]
-  A --> G[yw-000035-070-domain-parallel-executor-quality-gate]
-  A --> H[yw-000035-080-domain-impl-review-quality-evidence]
-  B[yw-000035-020-domain-quality-gate-spec-template]
-  C[yw-000035-030-infra-scaffold-invariants-seed]
-  D[yw-000035-040-domain-task-generator-owned-interface]
-  E[yw-000035-050-refactor-cleaner-boundary-note]
-  I[yw-000032-010-domain-plan-scaffold-quality-declaration] --> J[yw-000035-090-domain-quality-gate-codex-gaps]
-  K[yw-000032-020-domain-task-quality-gate-packet] --> J
-```
-
 ## Batch — Codex Quality Gate Contract
 
 - Spec: `docs/ywc-plans/20260910-codex-quality-gate-contract.md`
