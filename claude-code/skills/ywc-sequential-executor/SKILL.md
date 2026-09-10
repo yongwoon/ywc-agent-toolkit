@@ -326,6 +326,30 @@ If any stub patterns appear in implementation files, complete the implementation
 git diff --name-only HEAD   # every path must match the README Ownership globs
 ```
 
+### Step 3.5: Cleaner (CRAP gate)
+
+If the task declares a quality gate contract with `severity: enforced` or `severity: advisory`, dispatch to `ywc-refactor-cleaner` via the Task tool to measure and reduce complexity (CRAP score) in the diff's production code.
+
+**Dispatch instruction**: Pass the current branch, task name, and threshold from the spec. The Cleaner operates on production code only and returns `DONE`, `DONE_WITH_CONCERNS`, or `BLOCKED` depending on whether the measured CRAP exceeds the threshold and the contract severity.
+
+**If task has no quality gate contract** (the sentinel `N/A — no quality gate contract`): Skip this step entirely and proceed directly to Step 3.6.
+
+For the full procedure, dispatch conditions, and how Cleaner results affect subsequent steps, see [references/quality-gate-steps.md](./references/quality-gate-steps.md).
+
+### Step 3.6: Hardener (Mutation gate)
+
+If Cleaner returned `DONE` or `DONE_WITH_CONCERNS` (not `BLOCKED`), dispatch to `ywc-qa-engineer` via the Task tool to measure and improve mutation score in the diff's test and fixture code.
+
+**Dispatch instruction**: Pass the current branch, task name, and target mutation score from the spec. The Hardener operates on test and fixture code only, makes up to three approved attempts, and returns `DONE`, `DONE_WITH_CONCERNS`, or `BLOCKED` depending on whether surviving mutants remain after the third attempt and the contract severity.
+
+**Survivor forwarding**: If after three attempts survivors remain, forward all survivors unchanged to Step 4.5 (Implementation Review). The reviewer, not this step, decides whether survivors are acceptable.
+
+**If task has no quality gate contract** (the sentinel `N/A — no quality gate contract`): Skip this step entirely and proceed directly to Step 4.
+
+**If Cleaner returned `BLOCKED`**: Skip this step entirely (do not dispatch Hardener) and route to Step 4 verification failure.
+
+For the full procedure, 3-round loop cap, survivor forwarding, and dispatch-failure handling, see [references/quality-gate-steps.md](./references/quality-gate-steps.md).
+
 ### Step 4: Task Verification
 
 Run verification in three layers, from narrowest to broadest. Each layer must pass before moving on.
