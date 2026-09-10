@@ -211,6 +211,29 @@ Provide useful additional information based on the project domain or scale:
 - Framework-specific convention notes
 - Structural changes to consider when scaling up
 
+### 6. Architecture Invariants Seed (codex only, `new-project-plan` mode)
+
+**Conditional**: this step applies only to `new-project-plan` mode. Skip entirely for `reference-refresh` mode.
+
+After delivering the tree and key directory descriptions (steps 3–4), offer an optional draft of an Architecture Invariants manifest from the proposed layer structure. This captures recommended boundary rules for the new project — layer dependencies, forbidden edges, and enforcement policy — as advisory metadata that may later be committed to the project's own `architecture-invariants.json`.
+
+Offer the following command (do not run it automatically):
+
+```
+ywc-architecture-invariants --mode draft --proposal <path> --output <path> --approve-write
+```
+
+- `--proposal <path>`: path to the proposed scaffold tree (e.g., the markdown document or in-memory structure; clarify with the user if ambiguous)
+- `--output <path>`: where the draft manifest will be written (e.g., `architecture-invariants.json` at the project root)
+- `--approve-write`: request that the manifest be persisted; always require explicit user approval before executing this flag
+
+**Important guarantees**:
+- The generated manifest is **never written to disk without explicit user approval** — the offer is informational only.
+- The manifest declares `enforcement: advisory` always — it will never block CI or task execution if the project chooses to adopt it; enforcement upgrades (if any) belong to the adopting project's own gate setup.
+- This step is **skipped entirely** (no manifest offered, no command shown) when the proposed structure yields no forbidden edges — no manifest is needed for a structure with zero dependency violations.
+
+When a user accepts the offer, they may run the shown command in their own shell or ask for help executing it outside this skill. The manifest becomes an input to their own downstream Quality Gate setup.
+
 ## Output Rules
 
 - Use `├──`, `└──`, `│` characters for tree format
