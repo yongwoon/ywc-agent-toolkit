@@ -86,34 +86,6 @@ graph LR
 |---|---|---|
 | `yw-000034-010-infra-quality-gate-distribution-validation` | infra | all Phase `yw-000033` tasks |
 
-## Parallel Execution Notes (Codex Quality Gate Contract)
-
-- Initial ready set: `yw-000031-010-docs-quality-gate-contract`.
-- After Phase `yw-000031` merges, `yw-000032-010` and `yw-000032-030` can start together; `yw-000032-020` starts after `yw-000032-010` because it consumes the producer declaration shape.
-- After all Phase `yw-000032` tasks merge, the three Phase `yw-000033` tasks can run in parallel because they own separate skill directories.
-- `yw-000034-010` is the final hard gate and must wait for all Phase `yw-000033` tasks.
-- No task in this batch may modify `claude-code/**`; generated package output is owned only by `yw-000034-010`.
-
-```mermaid
-graph LR
-  A[yw-000031-010-docs-quality-gate-contract] --> B[yw-000032-010-domain-plan-scaffold-quality-declaration]
-  A --> C[yw-000032-030-infra-quality-gate-workers]
-  B --> D[yw-000032-020-domain-task-quality-gate-packet]
-  A --> D
-  B --> E[yw-000033-010-domain-sequential-quality-gate]
-  C --> E
-  D --> E
-  B --> F[yw-000033-020-domain-parallel-quality-gate]
-  C --> F
-  D --> F
-  B --> G[yw-000033-030-domain-review-quality-evidence]
-  C --> G
-  D --> G
-  E --> H[yw-000034-010-infra-quality-gate-distribution-validation]
-  F --> H
-  G --> H
-```
-
 ## Batch — Claude Code subagent async monitoring contract port
 
 - Spec: `docs/ywc-plans/20260909-subagent-async-monitoring-contract-port.md`
