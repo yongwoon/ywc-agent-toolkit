@@ -111,3 +111,14 @@ grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.j
 ```
 
 If the user has a stricter ignore policy, point it there instead — but the rule stands: this file is per-machine state.
+
+## State Cleanup (mandatory, unconditional, every mode)
+
+After displaying the Completion Report, delete the checkpoint file. This step runs **for every successful run regardless of mode** (`normal-pr` / `local-merge` / `draft` / `skip-ci-wait`), **regardless of how many tasks ran** (single-task or range), and **regardless of whether mid-flight checkpoint updates were actually written**. Skipping it leaves a stale `.ywc-run-state.json` whose `current_task` / `current_step` / `completed` fields no longer reflect reality, and the next invocation's Resume Detection will pick it up and offer to resume — silently re-executing or short-circuiting tasks that already finished. The most common failure mode is single-task `normal-pr` runs where intermediate checkpoint writes did not fire (because the path is short) and the LLM perceives the cleanup as superfluous; treat it as part of the run, not an optional post-script.
+
+```bash
+rm -f .ywc-run-state.json
+test ! -f .ywc-run-state.json && echo "OK: state cleaned" || echo "WARNING: state file still present"
+```
+
+If the verification line prints `WARNING`, the run is `DONE_WITH_CONCERNS`, not `DONE` — surface the leftover file path in the Completion Report.

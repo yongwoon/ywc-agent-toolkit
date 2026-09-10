@@ -303,28 +303,7 @@ Commit guidelines:
 - Add a `Co-Authored-By` trailer when Claude generated the changes. Use the format specified in the project's CLAUDE.md or commit convention; if none is specified, default to `Co-Authored-By: Claude <noreply@anthropic.com>`
 - Stage specific files by name (never `git add -A` or `git add .`)
 
-**Completeness Gate (required before first commit):** Before creating the first commit for this task, run a stub-pattern check on all modified files:
-
-```bash
-files="$(git ls-files -co --exclude-standard | grep -vE '(^|/)(test|tests|spec|__tests__)/|\.test\.' || true)"
-if [ -n "$files" ]; then
-  printf '%s\n' "$files" | xargs grep -lnE \
-    "TODO|FIXME|XXX|HACK|raise NotImplementedError|throw new Error\(.*[Nn]ot [Ii]mplemented" \
-    2>/dev/null || echo "OK: no stub patterns found"
-else
-  echo "OK: no files to scan"
-fi
-```
-
-If any stub patterns appear in implementation files, complete the implementation before committing. Stubs committed here become Step 4 verification failures; catching them before the first commit saves the entire retry cycle.
-
-**Exception**: `TODO` comments in *test* files (e.g., `// TODO: add edge case for overflow`) are permitted. `TODO` in implementation files are not.
-
-**Ownership-scope Gate (required before first commit):** mechanize the prose Surgical-changes rule. Run `git diff --name-only HEAD` and confirm every changed path falls within the task's declared Ownership from `README.md`. Any file outside Ownership is a scope-creep signal — either it is a genuine dependency the task missed (stop and report `BLOCKED`) or a drive-by edit (revert it). Do not commit out-of-Ownership files with an unexplained justification.
-
-```bash
-git diff --name-only HEAD   # every path must match the README Ownership globs
-```
+**Pre-commit gates (required before first commit):** run the Completeness Gate (stub-pattern check) and the Ownership-scope Gate (diff-vs-Ownership check) from [references/pre-commit-gates.md](./references/pre-commit-gates.md) before creating the first commit for this task.
 
 ### Step 3.5: Cleaner (CRAP gate)
 
@@ -500,13 +479,7 @@ Example task table row:
 
 **Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-sequential-executor","project":"<basename>","learning":"<one sentence>"}`). Add the file to `.gitignore` if absent. Record only project-specific facts (package manager quirks, CI timing, build-step ordering, branch-protection rules) — skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
 
-**State cleanup (mandatory, unconditional, every mode)**: After displaying the report, delete the checkpoint file. This step runs **for every successful run regardless of mode** (`normal-pr` / `local-merge` / `draft` / `skip-ci-wait`), **regardless of how many tasks ran** (single-task or range), and **regardless of whether mid-flight checkpoint updates were actually written**. Skipping it leaves a stale `.ywc-run-state.json` whose `current_task` / `current_step` / `completed` fields no longer reflect reality, and the next invocation's Resume Detection will pick it up and offer to resume — silently re-executing or short-circuiting tasks that already finished. The most common failure mode is single-task `normal-pr` runs where intermediate checkpoint writes did not fire (because the path is short) and the LLM perceives the cleanup as superfluous; treat it as part of the run, not an optional post-script.
-
-```bash
-rm -f .ywc-run-state.json
-test ! -f .ywc-run-state.json && echo "OK: state cleaned" || echo "WARNING: state file still present"
-```
-If the verification line prints `WARNING`, the run is `DONE_WITH_CONCERNS`, not `DONE` — surface the leftover file path in the Completion Report.
+**State cleanup (mandatory, unconditional, every mode)**: after displaying the report, delete the checkpoint file — see [State Cleanup](./references/checkpoint-resume.md#state-cleanup-mandatory-unconditional-every-mode) for the exact command and the `WARNING` handling.
 
 ## PR Language Detection
 
