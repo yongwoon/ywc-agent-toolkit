@@ -176,13 +176,13 @@ For the payload, the three advisor questions, budget, and output format of this 
 
 ### Step 3: Assign Agents by Task Category
 
-| Category | `subagent_type` | Description |
-|----------|-----------|-------------|
-| `db`, `api`, `domain`, `lib`, `worker` | `ywc-backend-coder` | Server-side code generation/modification (Tier-1 named worker; persona at [`claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md)) |
-| `ui` | `ywc-frontend-coder` | UI component, page generation/modification ([`ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md)) |
-| `test` | `ywc-qa-engineer` | Test strategy + test code generation ([`ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md)) |
-| `infra` | (inline implementer) | CI/CD, deployment configuration — no named Tier-1 agent yet; dispatch via `general-purpose` with focused prompt |
-| `refactor` | (inline implementer) | Code structure improvement — no named Tier-1 agent yet; dispatch via `general-purpose` with focused prompt |
+| Category | `subagent_type` | Description | Cleaner | Hardener |
+|----------|-----------|-------------|---------|----------|
+| `db`, `api`, `domain`, `lib`, `worker` | `ywc-backend-coder` | Server-side code generation/modification (Tier-1 named worker; persona at [`claude-code/agents/ywc-backend-coder.md`](../../agents/ywc-backend-coder.md)) | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
+| `ui` | `ywc-frontend-coder` | UI component, page generation/modification ([`ywc-frontend-coder.md`](../../agents/ywc-frontend-coder.md)) | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
+| `test` | `ywc-qa-engineer` | Test strategy + test code generation ([`ywc-qa-engineer.md`](../../agents/ywc-qa-engineer.md)) | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
+| `infra` | (inline implementer) | CI/CD, deployment configuration — no named Tier-1 agent yet; dispatch via `general-purpose` with focused prompt | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
+| `refactor` | (inline implementer) | Code structure improvement — no named Tier-1 agent yet; dispatch via `general-purpose` with focused prompt | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
 
 If an Agent Hint is specified in the task's README.md, it overrides the mapping above. Category coverage: 5 of 7 categories map to named Tier-1 worker agents; `infra` and `refactor` follow up in a later PR (Iteration 1 §B3 deferred coverage).
 
@@ -258,6 +258,16 @@ The named worker subagents return payloads per [../references/subagent-status-ac
 
 - **Regression layer (closes the depth asymmetry with `ywc-sequential-executor` Step 4 layer 3).** Task Verify alone proves the task's own behavior, not that it left shared code intact. After Task Verify passes, run the **full project test suite** (or, when a full run is impractical inside the worktree, the impacted-scope subset — and document why the scope was narrowed). A wave task can pass its own Task Verify and still regress shared state / types / schema / runtime wiring; without this layer that regression reaches the base branch (and in `--local-merge` is never caught at all). Long suites may run in the background.
 - **Ownership-scope gate.** Run `git -C "$WT" diff --name-only` and confirm every changed path is within the task's declared Ownership. An out-of-Ownership file is a scope-creep signal — a missed dependency (return `BLOCKED`) or a drive-by edit (revert it), never a silent merge.
+
+**4c.5. Cleaner (CRAP gate, per-task)** — Runs per-task (parallel-safe) and dispatches to `ywc-refactor-cleaner` via the Task tool if the task declares a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the per-task subagent return payload — never in `.ywc-run-state.json`. 
+
+> **Action required**: Read [../references/quality-gates.md](../references/quality-gates.md) for thresholds, dispatch conditions, and resolution policies. Do not restate gate rules inline.
+
+For tasks without a quality gate contract, the gate behavior is:
+
+```
+gate_state: N/A — no quality gate contract
+```
 
 **4d. Review (optional + forced for critical paths)** — If `--review` is set, auto-invoke `/ywc-impl-review` on the task's worktree branch after Task Verify (4c) passes and **before** the Wave Delivery (4e). Running the review while the code is still isolated in its worktree means any issue it surfaces is fixed before the change reaches the base branch. For `--local-merge` and `--draft`, this is the last quality gate where no remote bot review has run yet. For `--per-task-pr`, a remote bot review also runs after PR creation (Step 4e (a)), so here `--review` acts as a pre-PR gate that reduces the number of bot round-trips rather than being the only gate.
 
@@ -359,6 +369,16 @@ This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves 
 Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never moves them. Record those tasks for the Completion Report.
 
 **Checkpoint** (after the entire wave loop finishes): `bash claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
+
+**4e.5. Hardener (Mutation gate, wave boundary)** — Runs once against the wave's merged diff (cross-task interaction gaps only surface post-merge) and dispatches to `ywc-qa-engineer` via the Task tool if the wave's accumulated tasks declare a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the wave-level Completion Report — never in `.ywc-run-state.json`.
+
+> **Action required**: Read [../references/quality-gates.md](../references/quality-gates.md) for thresholds, dispatch conditions, mutation score loop cap, and resolution policies. Do not restate gate rules inline.
+
+For waves without a quality gate contract, the gate behavior is:
+
+```
+gate_state: N/A — no quality gate contract
+```
 
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 
