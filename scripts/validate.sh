@@ -597,6 +597,17 @@ check_codex_agents() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  for worker in ywc-complexity-cleaner ywc-test-hardener; do
+    if [ ! -f "$dir/$worker.toml" ]; then
+      echo "ERROR: codex/agents is missing bounded worker: $worker.toml"
+      ERRORS=$((ERRORS + 1))
+    fi
+    if ! grep -Fq "\`$worker\`" "$dir/README.md"; then
+      echo "ERROR: codex/agents/README.md does not catalog bounded worker: $worker"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
   local file
   for file in "$dir"/ywc-*.toml; do
     [ -f "$file" ] || continue

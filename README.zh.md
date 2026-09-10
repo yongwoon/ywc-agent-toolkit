@@ -24,7 +24,7 @@
 | 工具        | Skills | Custom Agents | 安装路径                                  |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -132,7 +132,7 @@ ywc-setup --scope user --lang ja
 
 Claude Code 提供 12 个用于 worker、reviewer 与 specialist dispatch 的 custom agent，安装至 `~/.claude/agents/`，详见 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
 
-Codex 提供与之对应的 7 个只读 specialist agent，安装至 `~/.codex/agents/`（可用 `CODEX_HOME` 覆盖），每个 agent 一个 TOML 文件:
+Codex 提供 8 个只读 specialist agent 和 2 个质量门控 bounded worker，安装至 `~/.codex/agents/`（可用 `CODEX_HOME` 覆盖），每个 agent 一个 TOML 文件:
 
 | Agent | 用途 |
 | ----- | ---- |
@@ -143,8 +143,10 @@ Codex 提供与之对应的 7 个只读 specialist agent，安装至 `~/.codex/a
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 语言专项评审 |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 语言专项评审 |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 语言专项评审 |
+| [`ywc-complexity-cleaner`](codex/agents/ywc-complexity-cleaner.toml) | task-owned production complexity reduction (`workspace-write`) |
+| [`ywc-test-hardener`](codex/agents/ywc-test-hardener.toml) | task-owned test/fixture assertion hardening (`workspace-write`) |
 
-所有 Codex agent 均为只读，绝不修改文件。它们返回标准化的 `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`、精简的 finding 集合，以及当调用方需要应用或查看时的 `Next action:`。源 TOML 位于 [`codex/agents/`](codex/agents/)。
+只读 agent 绝不修改文件。两个 bounded worker 只能修改 packet 所拥有的 production 或 test/fixture 路径，且没有交付权限。所有 Codex agent 都返回标准化的 `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`、精简的 finding 集合，以及当调用方需要应用或查看时的 `Next action:`。源 TOML 位于 [`codex/agents/`](codex/agents/)。
 
 ---
 
