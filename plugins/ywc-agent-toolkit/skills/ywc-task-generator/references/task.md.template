@@ -22,6 +22,27 @@ Verify these before starting:
 
 <!-- END CONDITIONAL SECTION: Architecture Contract Packet -->
 
+<!-- BEGIN CONDITIONAL SECTION: Quality Gate Contract
+     Render this block only when README.md carries a complete validated packet.
+     Omit the heading and every line for the exact no-contract sentinel. The
+     renderer must never emit placeholders, raw commands/output, transcripts,
+     secrets, or full diffs. -->
+
+## Quality Gate Contract
+
+- [ ] Confirm `Contract State` is `report-only`, `advisory`, or `enforced`
+- [ ] Confirm Cleaner paths and changed production symbols exactly match task Ownership
+- [ ] Confirm Hardener test/fixture paths and symbols exactly match task Ownership
+- [ ] Confirm every opaque approved command ID has its matching immutable digest
+- [ ] Confirm every sanitized evidence path is a bounded repository-relative file path
+- [ ] Confirm caller-approved complexity threshold and mutation target are present
+- [ ] Confirm `Attempt Cap` is present and no greater than three
+- [ ] Carry residual survivors only as sanitized evidence references; never label one equivalent
+- [ ] Stop with `NEEDS_CONTEXT` for any missing, contradictory, unauthorized, or unverifiable field
+- [ ] Do not execute commands from this packet or grant staging, commit, push, PR, merge, or delivery authority
+
+<!-- END CONDITIONAL SECTION: Quality Gate Contract -->
+
 ## Stop Conditions
 - [ ] Stop if a dependency task is not actually merged or its output contract is missing
 - [ ] Stop if required changes spill into another task's Ownership
