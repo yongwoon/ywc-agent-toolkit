@@ -36,6 +36,26 @@
       "prompt": "Refresh the scaffold skill reference at references/go.md.",
       "expected_output": "Returns Mode: reference-refresh, infers Go from the target path, uses language-only research when no framework is supplied, proposes only additive changes with a displayed diff, preserves existing variants, and stops for explicit approval without editing.",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Scaffold a medium TypeScript service without requesting quality gates.",
+      "expected_output": "Preserves the normal Markdown-only scaffold behavior and records the exact Quality Gate Contract sentinel, N/A — no quality gate contract, without selecting a worker or creating a project file.",
+      "anti_behavior": [
+        "Adding an empty quality-gate packet.",
+        "Inventing commands, thresholds, digests, or evidence paths."
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Scaffold a large Go service and explicitly request an advisory Quality Gate Contract seed.",
+      "expected_output": "Provides advisory metadata as a clearly labelled proposal only, using caller-provided ownership and thresholds where available, and asks for missing command IDs/digests and sanitized evidence paths instead of inventing them.",
+      "anti_behavior": [
+        "Emitting raw executable commands as approved identities.",
+        "Creating project files or treating the advisory seed as a complete executable packet without explicit caller details."
+      ],
+      "files": []
     }
   ]
 }

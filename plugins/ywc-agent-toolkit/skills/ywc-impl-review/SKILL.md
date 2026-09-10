@@ -165,12 +165,12 @@ rule and evidence paths; `N/A` and `MAINTAINED` do not block the existing
 review. This packet is advisory evidence only and cannot escalate reviewer or
 merge authority.
 
-3. **Phase 1 — Parallel Executor Review** — Use Codex subagent delegation to run five read-only review workers in parallel. Each successful dispatch must use the returned canonical target with [`subagent-async-monitoring.md`](../references/subagent-async-monitoring.md); do not pass Claude Code-only `model` fields. When a dispatch succeeds but returns no usable canonical target, exclude it from the active roster, do not infer a target to call `status`/`interrupt` on, and treat it as a non-terminal `BLOCKED` outcome per the reference's failed-dispatch handling — never as a success or a skip. Each worker receives its role from the prompt and matching reference file:
+3. **Phase 1 — Parallel Executor Review** — When a quality-gate packet is present, validate it in this parent skill **before dispatching any of the five Phase 1 workers**: reject a packet with a missing/contradictory required field, an unverifiable digest, a changed-symbol boundary violation, a non-repository-relative evidence path, or a sanitization failure as `NEEDS_CONTEXT`, and halt all Phase 1 dispatch — do not let Architecture/Design/Devex/Security start while the packet is still unvalidated. Only a packet that passes this check is forwarded (in its bounded, sanitized form) to the QA worker below. Use Codex subagent delegation to run five read-only review workers in parallel. Each successful dispatch must use the returned canonical target with [`subagent-async-monitoring.md`](../references/subagent-async-monitoring.md); do not pass Claude Code-only `model` fields. When a dispatch succeeds but returns no usable canonical target, exclude it from the active roster, do not infer a target to call `status`/`interrupt` on, and treat it as a non-terminal `BLOCKED` outcome per the reference's failed-dispatch handling — never as a success or a skip. Each worker receives its role from the prompt and matching reference file:
    - **Architecture worker** — Module boundaries, layering, structural patterns, dependency direction, simplicity / over-abstraction, structural spec conformance. Reference: `references/architecture-agent.md`. When the diff touches DB schema or migrations, also apply the shared schema review checklist ([../references/schema/core.md](../references/schema/core.md) Part C); raise cascade ↔ API status and multi-tenant scope gaps as one-line cross-references to the Security worker rather than duplicating them.
    - **Design worker** — API/interface design, naming, signatures, error models, return shapes, public-surface discipline, contract spec conformance. Reference: `references/design-agent.md`.
    - **Devex worker** — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
    - **Security worker** — OWASP Top 10 analysis. Reference: `references/security-agent.md`.
-   - **QA worker** — Test coverage gaps and missing test cases. Reference: `references/qa-agent.md`. Coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration), so keep the prompt narrow and evidence-based.
+   - **QA worker** — Test coverage gaps, missing test cases, and sanitized quality-gate evidence. Reference: `references/qa-agent.md`. Coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration), so keep the prompt narrow and evidence-based. When a quality-gate packet is present, pass only its bounded contract state, Ownership symbols, approved command IDs/digests, sanitized evidence paths, normalized results, unavailable-tool gaps, and residual survivors; never pass raw commands, output, secrets, transcripts, or full diffs.
 
    **Inject the Step 0 learnings** into each worker prompt, filtered to that aspect's category. **Apply the `--profile` dial**: in `chill` (default), suppress Style/Docs/Devex-polish `Low`/`Info` nits and surface only correctness/security/logic/runtime-risk findings; `assertive` emits the tail too. **Verify before surfacing** ([coderabbit-methodology.md §2](./references/coderabbit-methodology.md)): every finding must cite primary evidence — exact `file:line`, a traced symbol, or fresh command output — and a finding that cannot be substantiated is dropped, not hedged. Where the project ships linters/scanners, run them and feed output to the relevant worker as evidence to triage, not as the verdict ([§4](./references/coderabbit-methodology.md)).
 
@@ -345,11 +345,30 @@ If a reference file does not yet contain an "Advisor Candidate Criteria" section
 
 This skill applies the [Confidence Gate](../references/confidence-gate.md) to the aggregated review output before emitting the final report. The gate sits between Phase 2 advisor consolidation and report emission.
 
+**Quality-gate evidence boundary** — When review receives an executor
+quality-gate packet, the QA lane applies [`references/qa-agent.md`](./references/qa-agent.md)
+and the canonical [`../references/quality-gates.md`](../references/quality-gates.md).
+It consumes only sanitized contract state, exact changed-symbol Ownership,
+approved command identities/digests, bounded sanitized artifact paths,
+normalized gate results, and residual/unavailable evidence. The reviewer does
+not execute Cleaner, Hardener, or any gate and cannot authorize staging,
+commit, push, PR, merge, delivery, or delegation. `N/A — no quality gate
+contract` preserves the existing no-contract path; `report-only` records
+bounded evidence without dispatch. Missing or contradictory packet fields,
+invalid digests, out-of-Ownership paths/symbols, raw-data fields, or
+unverifiable evidence boundaries produce `NEEDS_CONTEXT` and never an inferred
+pass. Apply the canonical `BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE`
+precedence so later clean results cannot mask earlier concerns, unavailable
+tools, or residual survivors. Every survivor remains reportable and unresolved;
+no equivalence judgment is allowed. An unavailable authorized tool follows the
+packet state-specific rule, while missing required evidence downgrades the
+report confidence/status according to the canonical contract.
+
 In addition, when the report's gate band lands in **PROCEED** and findings include a `DONE` (or `DONE_WITH_CONCERNS`) completion claim against the implementation, the surface must follow `ywc-verify-done`: the verification block (command, output excerpt, exit code) appears before the status line, no `should` / `probably` / `seems` wording appears in the conclusion, and any "this finding's fix was verified" claim cites the fresh command output that proves it. A report that reads "all clear, looks good" without an evidence block is not a Confidence-Gate PROCEED — downgrade to REVIEW until the evidence is attached.
 
 **Required dimensions** (must each score ≥ 70):
 
-- **Evidence quality** — Every finding must cite a verified source: file path, line number, or test output. Findings phrased as "this *might* be wrong" without primary evidence reduce the score even if the finding itself is plausible.
+- **Evidence quality** — Every finding must cite a verified source: file path, line number, or sanitized artifact path. Findings phrased as "this *might* be wrong" without primary evidence reduce the score even if the finding itself is plausible. For quality-gate evidence, approved command identity/digest and normalized result facts are acceptable; raw command text, raw output, secrets, transcripts, and full diffs are never acceptable evidence.
 - **Root cause identified** — A finding that names only the symptom ("test fails") without identifying the underlying cause ("test fixture is shared across cases") cannot be remediated correctly. The reviewer must reach root cause before recording the finding.
 
 **Band-to-status mapping** for this skill:
@@ -365,6 +384,13 @@ The gate score must appear in the report header. Per-finding `[P1]` / `[P2]` mar
 ## Validation
 
 Before returning the report, verify that every finding includes source evidence, Phase 2 advisor usage is counted against the budget, the Confidence Gate band maps to the final status, and any "verified" claim includes the fresh command output required by `ywc-verify-done`.
+
+When a quality-gate packet is present, also verify that the report includes the
+sanitized boundary outcome, preserves all residual survivors and unavailable-tool
+gaps, applies monotonic status precedence, and contains no gate execution or
+delivery claim. A missing required evidence field must lower confidence and
+return `NEEDS_CONTEXT` when the boundary is unverifiable; it must never become a
+clean pass through inference.
 
 ## Integration
 

@@ -45,9 +45,42 @@ When tempted to bypass a rule, check this table first:
 | "I grepped and found the one writer/reader, so that's the only one" | A forward grep that confirms **one** instance is not evidence of a **closed set**. Closure claims ("only / sole / 唯一 / no other / all / exhaustive") and liveness claims ("dead / @deprecated / 呼び出し元ゼロ / still active") are the single largest source of *false-but-confident* spec assertions: the planner confirms the instance it already had in mind and never runs the *complement* grep that enumerates the rest. The most expensive Critical in the LP column-drop plan was exactly this — "injectAndSaveGtmSnippet is the 唯一の generatedHtml writer", but `markDone` also wrote it, and dropping the column would have broken the build. Before writing any closure or liveness word, run the complement grep (`grep -rn "<identifier>" <module>`, classify every hit live/dead) and transcribe the full set. |
 | "While I'm reading this code anyway, I'll fold in the adjacent cleanup/refactor" | Thoroughness in *investigation* must not become expansion of the *change scope*. A plan that enumerates a related site (a parameter, a sibling method, a rename opportunity) and then proposes changing it — when the request did not ask for it — adds surface that becomes new Critical findings. The measured regression: a `generatedHtml`-drop plan proactively proposed a `composeHtml` refactor and shipped a build-break Critical the narrower plan never risked. Enumerate everything; change only what the request requires; record the rest as "no change needed" under Existing Constraints Touched. |
 | "AC and the API Contract probably agree, I won't cross-check" | Cross-section drift between AC, FR, Data Model, and API Contract is the #2 source of Critical findings (after Code Compatibility). Step 4b.5 is mandatory for Medium/Large precisely because authors trust their own consistency and reviewers find it broken. Run the cross-check; the cost is ~5 minutes, the cost of skipping it is one full re-plan iteration. |
+| "The quality gate can infer the missing command or boundary" | A Quality Gate Contract is opt-in and caller-bound. For Medium/Large specs, declare the complete bounded metadata or the exact `N/A — no quality gate contract` sentinel. Missing ownership, command IDs/digests, thresholds, or sanitized evidence paths returns `NEEDS_CONTEXT`; never invent a command, digest, threshold, path, or pass. |
 | "Validation came back DONE_WITH_CONCERNS, I'll rewrite the spec from scratch and re-run" | Use **Re-plan Mode** (`--update-spec <path> --failure-context "<findings>"`) instead. Re-plan appends an `## Iteration N Amendments` section that addresses only the failing items, preserving the rest of the spec verbatim. Rewriting from scratch loses the validated portions and produces cosmetic diffs that reviewers must re-validate. |
 
 **Violating the letter of these rules is violating the spirit.** Safety Invariants (DB migration separation, library introduction separation, mandatory spec review for Medium/Large) have no exceptions, regardless of urgency.
+
+## Quality Gate Contract (Medium/Large only)
+
+Every Medium/Large spec must include either a complete `Quality Gate Contract`
+declaration or the exact compatibility sentinel `N/A — no quality gate contract`.
+The declaration is bounded metadata for the downstream task-generator packet; it
+is not permission to execute a command. Cite the canonical rules in
+[../references/quality-gates.md](../references/quality-gates.md) rather than
+copying or redefining its state semantics.
+
+A declared contract must provide all of the following, using caller-approved
+values and exact task boundaries:
+
+- `contract_state`: `report-only`, `advisory`, or `enforced`;
+- `ownership.production_paths` and `ownership.production_symbols` for Cleaner;
+- `ownership.test_fixture_paths` and `ownership.test_fixture_symbols` for Hardener;
+- immutable `approved_command_ids` and matching `approved_command_digests`;
+- bounded repository-relative `sanitized_evidence_paths`;
+- caller-approved `complexity_threshold`, `mutation_target`, and `attempt_cap` (at most three); and
+- `residual_survivors` handling, without declaring survivors equivalent.
+
+Do not include raw executable command text, raw output, transcripts, secrets, or
+full diffs. Do not broaden module boundaries or fill missing fields from project
+conventions. An incomplete, contradictory, unauthorized, or unbounded
+declaration is `NEEDS_CONTEXT` and must not be handed off as a valid packet. The
+exact no-contract sentinel preserves the existing planning and downstream
+workflow; it emits no placeholder packet and selects no quality-gate worker.
+
+For Medium/Large specs, `Module Boundaries` must identify each affected module's
+owner, consumers, and responsibility, including the producer declaration and
+the downstream task-generator consumer. A boundary that is not exact enough to
+bind changed production symbols and test/fixture symbols is incomplete.
 
 ## Workflow
 
@@ -377,6 +410,7 @@ Before declaring the skill's task complete, verify:
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly
 - [ ] If scale = Small, none of the hard-disqualifiers apply (re-check DB / library / API contract / cross-cutting)
 - [ ] If scale = Medium/Large, the spec includes an **Existing Constraints Touched** section with `file:line` citations for every inherited behavior
+- [ ] If scale = Medium/Large, the spec includes a complete **Quality Gate Contract** declaration or the exact `N/A — no quality gate contract` sentinel, plus explicit `Module Boundaries`; incomplete fields return `NEEDS_CONTEXT` and no raw commands are invented
 - [ ] If scale = Medium/Large, **Step 4b.5 Self-Consistency Pass** ran (all three passes A/B/C) and every row resolved to a concrete pointer
 - [ ] If Re-plan Mode (Step 4c) ran, **Step 4b.5 was re-run on the whole spec** (original + amendment) before handoff
 - [ ] If this run was an **in-place append** (追補 / follow-up) to an existing plan/spec, Step 4b.5 (≥ Pass B + C) ran on the appended content

@@ -18,7 +18,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -126,7 +126,7 @@ Supported skills and details: [`references/html-output.md`](../../claude-code/sk
 
 Claude Code ships 12 custom agents for worker, reviewer, and specialist dispatch, installed to `~/.claude/agents/` and documented in [`claude-code/agents/README.md`](../../claude-code/agents/README.md).
 
-Codex gets seven read-only specialist counterparts, installed to `~/.codex/agents/` (override with `CODEX_HOME`) as one TOML file per agent:
+Codex gets eight read-only specialist agents plus two bounded quality-gate workers, installed to `~/.codex/agents/` (override with `CODEX_HOME`) as one TOML file per agent:
 
 | Agent | Purpose |
 | ----- | ------- |
@@ -137,8 +137,12 @@ Codex gets seven read-only specialist counterparts, installed to `~/.codex/agent
 | [`ywc-typescript-reviewer`](../../claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript language-specific review |
 | [`ywc-python-reviewer`](../../claude-code/agents/ywc-python-reviewer.md) | Python language-specific review |
 | [`ywc-go-reviewer`](../../claude-code/agents/ywc-go-reviewer.md) | Go language-specific review |
+| [`ywc-complexity-cleaner`](../../codex/agents/ywc-complexity-cleaner.toml) | Task-owned production complexity reduction (`workspace-write`) |
+| [`ywc-test-hardener`](../../codex/agents/ywc-test-hardener.toml) | Task-owned test/fixture assertion hardening (`workspace-write`) |
 
-All Codex agents are read-only and never edit files. They return a standardized `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`, a compact finding set, and a `Next action:` when the caller should apply or inspect something. Source TOML lives under [`codex/agents/`](../../codex/agents/).
+Read-only agents never edit files. The two bounded workers may edit only their packet-owned production or test/fixture paths, respectively; neither has delivery authority. All Codex agents return a standardized `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`, a compact finding set, and a `Next action:` when the caller should apply or inspect something. Source TOML lives under [`codex/agents/`](../../codex/agents/).
+
+The Codex marketplace package is generated from `codex/skills/`; do not edit `plugins/ywc-agent-toolkit/skills/` directly. After source changes, run `bash scripts/sync-codex-plugin.sh`, then `bash scripts/validate.sh`. Validation rebuilds a temporary package and compares it with the checked-in package so repeated syncs remain deterministic.
 
 ---
 

@@ -89,6 +89,38 @@ projection fields are `NEEDS_CONTEXT`.
 
 <!-- END CONDITIONAL SECTION: Architecture Contract Packet -->
 
+<!-- BEGIN CONDITIONAL SECTION: Quality Gate Contract
+     Render this block only when the producer declaration is complete and
+     validated. Omit the heading, fields, and all instructional comments when
+     the exact no-contract sentinel applies. A renderer must substitute only
+     sanitized declaration values; never emit these labels with placeholder
+     values, raw commands, output, transcripts, secrets, or full diffs. -->
+
+## Quality Gate Contract
+
+### Owned Interface
+
+- `Contract State:` (validated declaration state: `report-only`, `advisory`, or `enforced`)
+- `Cleaner Production Paths:` (exact task-owned paths)
+- `Cleaner Production Symbols:` (exact changed symbols within those paths)
+- `Hardener Test/Fixture Paths:` (exact task-owned test/fixture paths)
+- `Hardener Test/Fixture Symbols:` (exact changed symbols within those paths)
+- `Approved Command IDs:` (opaque baseline, complexity, and mutation identities)
+- `Approved Command Digests:` (matching immutable digests for those identities)
+- `Sanitized Evidence Paths:` (bounded repository-relative artifact paths only)
+- `Complexity Threshold:` (caller-approved maximum CRAP value)
+- `Mutation Target:` (caller-approved minimum mutation score)
+- `Attempt Cap:` (validated value, no greater than three)
+- `Residual Survivors:` (sanitized survivor references, or the declared empty result)
+
+This packet is metadata only. It does not authorize command execution, worker
+dispatch beyond the executor contract, or staging, commit, push, PR, merge, or
+delivery actions. A renderer must return `NEEDS_CONTEXT` before writing when a
+required field is missing, contradictory, unbounded, or unverifiable. The exact
+`N/A — no quality gate contract` sentinel renders no packet at all.
+
+<!-- END CONDITIONAL SECTION: Quality Gate Contract -->
+
 ## Preview Approval Metadata
 When this task set comes from a persisted preview approval flow, copy the
 canonical preview identity and any wide-refactor invalidation fields here.

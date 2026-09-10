@@ -24,7 +24,7 @@ Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de
 | Herramienta | Skills | Custom Agents | Ruta de instalación                      |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -132,7 +132,7 @@ Skills compatibles y detalles: [`references/html-output.md`](claude-code/skills/
 
 Claude Code incluye 12 agentes personalizados para despacho de tipo worker, reviewer y specialist, instalados en `~/.claude/agents/` y documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
 
-Codex incorpora siete agentes especialistas de solo lectura equivalentes, instalados en `~/.codex/agents/` (configurable con `CODEX_HOME`) como un archivo TOML por agente:
+Codex incorpora ocho agentes especialistas de solo lectura y dos bounded workers de quality gate, instalados en `~/.codex/agents/` (configurable con `CODEX_HOME`) como un archivo TOML por agente:
 
 | Agente | Propósito |
 | ------ | --------- |
@@ -143,8 +143,10 @@ Codex incorpora siete agentes especialistas de solo lectura equivalentes, instal
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | Revisión específica de TypeScript / JavaScript |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Revisión específica de Python |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Revisión específica de Go |
+| [`ywc-complexity-cleaner`](codex/agents/ywc-complexity-cleaner.toml) | Reducción de complejidad en producción propiedad de la tarea (`workspace-write`) |
+| [`ywc-test-hardener`](codex/agents/ywc-test-hardener.toml) | Refuerzo de aserciones de tests/fixtures propiedad de la tarea (`workspace-write`) |
 
-Todos los agentes de Codex son de solo lectura y nunca editan archivos. Devuelven un `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` estandarizado, un conjunto compacto de hallazgos y un `Next action:` cuando quien lo invoca debe aplicar o inspeccionar algo. El TOML fuente está en [`codex/agents/`](codex/agents/).
+Los agentes de solo lectura nunca editan archivos. Los dos bounded workers solo pueden editar las rutas de producción o tests/fixtures propiedad del packet y no tienen autoridad de entrega. Todos los agentes de Codex devuelven un `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT` estandarizado, un conjunto compacto de hallazgos y un `Next action:` cuando quien lo invoca debe aplicar o inspeccionar algo. El TOML fuente está en [`codex/agents/`](codex/agents/).
 
 ---
 

@@ -20,10 +20,20 @@ install_with_version() {
   PATH="$fake_bin:$PATH" CODEX_HOME="$codex_home" bash "$REPO_ROOT/scripts/install.sh" --codex-agents >/dev/null
   grep -q "^model = \"$expected_model\"$" "$codex_home/agents/ywc-architect.toml"
   grep -q "^model = \"$expected_model\"$" "$codex_home/agents/ywc-typescript-reviewer.toml"
+  grep -q "^model = \"$expected_model\"$" "$codex_home/agents/ywc-complexity-cleaner.toml"
+  grep -q "^model = \"$expected_model\"$" "$codex_home/agents/ywc-test-hardener.toml"
+  grep -q '^sandbox_mode = "workspace-write"$' "$codex_home/agents/ywc-complexity-cleaner.toml"
+  grep -q '^sandbox_mode = "workspace-write"$' "$codex_home/agents/ywc-test-hardener.toml"
+  test -f "$codex_home/agents/ywc-complexity-cleaner.toml"
+  test -f "$codex_home/agents/ywc-test-hardener.toml"
 }
 
 install_with_version "0.143.9" "gpt-5.4" "unsupported"
 install_with_version "0.144.0" "gpt-5.6-terra" "supported"
 install_with_version "0.144.4" "gpt-5.6-terra" "current"
+
+test -f "$REPO_ROOT/codex/agents/evals/evals.json"
+command -v jq >/dev/null 2>&1
+bash "$REPO_ROOT/scripts/check-codex-agent-evals.sh" >/dev/null
 
 echo "PASS: Codex agent model selection honors the GPT-5.6 CLI version threshold"

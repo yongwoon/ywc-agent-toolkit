@@ -24,7 +24,7 @@ Claude Code および Codex 向けの開発ワークフロー自動化スキル�
 | ツール      | Skills | Custom Agents | インストール先                            |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 8             | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -132,7 +132,7 @@ ywc-setup --scope user --lang ja
 
 Claude Code には worker、reviewer、specialist dispatch 用の 12 個の custom agent が含まれます。`~/.claude/agents/` にインストールされ、詳細は [`claude-code/agents/README.md`](claude-code/agents/README.md) を参照してください。
 
-Codex にはこれに対応する read-only の specialist agent が 7 個あり、`~/.codex/agents/`（`CODEX_HOME` で上書き可能）に agent ごとに 1 つの TOML ファイルとしてインストールされます:
+Codex には read-only の specialist agent 8 個と、品質ゲート用の bounded worker 2 個があり、`~/.codex/agents/`（`CODEX_HOME` で上書き可能）に agent ごとに 1 つの TOML ファイルとしてインストールされます:
 
 | Agent | 用途 |
 | ----- | ---- |
@@ -143,8 +143,10 @@ Codex にはこれに対応する read-only の specialist agent が 7 個あり
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 言語別レビュー |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 言語別レビュー |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 言語別レビュー |
+| [`ywc-complexity-cleaner`](codex/agents/ywc-complexity-cleaner.toml) | task-owned production の complexity reduction (`workspace-write`) |
+| [`ywc-test-hardener`](codex/agents/ywc-test-hardener.toml) | task-owned test/fixture の assertion hardening (`workspace-write`) |
 
-すべての Codex agent は read-only でファイルを編集しません。標準化された `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`、簡潔な finding、そして呼び出し側が適用または確認すべき場合の `Next action:` を返します。ソース TOML は [`codex/agents/`](codex/agents/) にあります。
+read-only agent はファイルを編集しません。2 つの bounded worker は packet が所有する production または test/fixture path だけを編集でき、delivery 権限はありません。すべての Codex agent は標準化された `Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT`、簡潔な finding、そして呼び出し側が適用または確認すべき場合の `Next action:` を返します。ソース TOML は [`codex/agents/`](codex/agents/) にあります。
 
 ---
 

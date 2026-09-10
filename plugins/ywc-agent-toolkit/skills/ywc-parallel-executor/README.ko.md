@@ -32,6 +32,8 @@ Docker Compose를 사용하는 task worktree에서는 executor가 `ywc-docker-is
 
 Wave planning은 shared public contract를 단순 file path가 아닌 Shared Surfaces로 취급합니다. Worker payload는 Changed Public Contracts, Critical Internals, Cross-Module Impact, test evidence, non-obvious `Implementation Notes` 를 요구하며, 동작 변경 task가 authored/executed tests 없이 끝나려면 명시적인 TDD exception이 필요합니다.
 
+Quality Gate Contract가 있으면 Task Verify 직후 task별 Cleaner를 한 번만 실행하고, wave boundary에서만 mutation evidence를 합산한 뒤 조건을 만족한 task에 Hardener를 한 번만 실행합니다. `N/A — no quality gate contract`와 `report-only`는 기존 workflow와 worker 선택을 변경하지 않습니다. 재시도는 task identity와 gate 종류에 묶인 idempotency guard를 유지하고, 동일 입력을 조용히 반복하지 않으며, 두 번의 복구 실패 후에는 task worktree/branch를 보존하고 `BLOCKED`로 기록합니다. wave aggregate는 `BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE` 순서를 사용하며, 뒤의 `DONE`이 앞선 concern이나 residual survivor를 지우지 못합니다.
+
 ## Delivery Modes
 
 | Mode | 동작 |

@@ -567,10 +567,20 @@ check_codex_agent_file() {
     ERRORS=$((ERRORS + 1))
   fi
 
-  if ! grep -q '^sandbox_mode = "read-only"$' "$file"; then
-    echo "ERROR: codex/agents/$base.toml must keep sandbox_mode = \"read-only\""
-    ERRORS=$((ERRORS + 1))
-  fi
+  case "$base" in
+    ywc-complexity-cleaner|ywc-test-hardener)
+      if ! grep -q '^sandbox_mode = "workspace-write"$' "$file"; then
+        echo "ERROR: codex/agents/$base.toml must use sandbox_mode = \"workspace-write\""
+        ERRORS=$((ERRORS + 1))
+      fi
+      ;;
+    *)
+      if ! grep -q '^sandbox_mode = "read-only"$' "$file"; then
+        echo "ERROR: codex/agents/$base.toml must keep sandbox_mode = \"read-only\""
+        ERRORS=$((ERRORS + 1))
+      fi
+      ;;
+  esac
 
   if grep -Eq '^(tools|permissionMode)[[:space:]]*=' "$file" || grep -q 'Task(subagent_type=' "$file"; then
     echo "ERROR: codex/agents/$base.toml contains Claude Code-only agent fields"
@@ -587,11 +597,32 @@ check_codex_agents() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  for worker in ywc-complexity-cleaner ywc-test-hardener; do
+    if [ ! -f "$dir/$worker.toml" ]; then
+      echo "ERROR: codex/agents is missing bounded worker: $worker.toml"
+      ERRORS=$((ERRORS + 1))
+    fi
+    if ! grep -Fq "\`$worker\`" "$dir/README.md"; then
+      echo "ERROR: codex/agents/README.md does not catalog bounded worker: $worker"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
   local file
   for file in "$dir"/ywc-*.toml; do
     [ -f "$file" ] || continue
     check_codex_agent_file "$file"
   done
+}
+
+check_codex_agent_evals() {
+  local eval_runner="scripts/check-codex-agent-evals.sh"
+  if [ ! -x "$eval_runner" ]; then
+    echo "ERROR: $eval_runner is missing or not executable"
+    ERRORS=$((ERRORS + 1))
+    return
+  fi
+  bash "$eval_runner" || ERRORS=$((ERRORS + 1))
 }
 
 check_local_codex_toolkit_eval() {
@@ -758,6 +789,7 @@ check_release_versions
 
 echo "==> Validating codex agents..."
 check_codex_agents
+check_codex_agent_evals
 
 echo "==> Validating local Codex evaluator skill..."
 check_local_codex_toolkit_eval

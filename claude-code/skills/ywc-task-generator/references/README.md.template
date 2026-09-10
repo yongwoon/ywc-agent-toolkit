@@ -63,6 +63,11 @@ Files, directories, modules, or contracts this task is allowed to modify.
      - `llm` mode: feature/module subtree (e.g., `src/features/auth/**`)
      See references/granularity-modes.md for full rules. -->
 
+### Owned Interface
+Public interface this task confirms and owns; other tasks trust this signature and do not read the implementation.
+<!-- NOTE: distinct from Ownership above — Ownership lists files/modules this task may edit; Owned Interface is the specific public signature (function/type/API shape) downstream tasks depend on without reading this task's implementation. -->
+(None — no public interface owned)
+
 ### Shared Surfaces
 Shared boundaries this task touches and may conflict on.
 - `Database schema: example_table`

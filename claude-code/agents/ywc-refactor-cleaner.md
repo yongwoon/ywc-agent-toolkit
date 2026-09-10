@@ -68,6 +68,8 @@ Execute the SAFE-tier deletion worklist handed down by `ywc-refactor-clean` Step
   a legitimate need to `Write` a production or out-of-scope file arises,
   return `DONE_WITH_CONCERNS` to the parent instead of writing it directly
 
+May also perform read-only complexity measurement (e.g. CRAP-gate greps via Bash) and report findings; deletion authority remains SAFE-tier only.
+
 ## Success Criteria
 
 - [ ] Every deletion is its own commit with shape `chore(cleanup): remove

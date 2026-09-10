@@ -1,6 +1,69 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000031`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000036`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+
+## Batch — Quality Gate Contract Port (claude-code additions)
+
+- Spec: `docs/ywc-plans/20260910-quality-gate-contract-port.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000035` (ledger current at allocation time)
+- Advisor pass: skipped — the FR landing-order (FR-1 before FR-3/FR-4/FR-5; FR-2/FR-6/FR-7/FR-8 independent) is already explicit in the spec's own Edge Cases section, not ambiguous; single-phase structure follows directly, no frontier judgment call needed.
+- No-AC requirements: FR-8 (`ywc-refactor-cleaner.md` Boundaries amendment) has no dedicated AC in the spec but is not speculative — it is the spec author's own iteration-1 correction with clear Opus-advisor-verified justification, not gold-plating, so it was implemented normally rather than routed to Open Questions. Flagged as a residual spec-completeness gap for the user's awareness, not a task-generator defect.
+- Scope note: this batch covers only the claude-code-side FRs of the port spec plus the codex-only FR-6 (Architecture Invariants Seed) that the prior `yw-000031`–`034` batch did not cover. The codex halves of FR-1, FR-3, FR-4, FR-5, FR-9, FR-10 were already delivered by that prior batch. Investigation during this batch's generation found the codex halves of **FR-2** (`## Quality Gate Contract`/`## Module Boundaries` headings in `codex/skills/ywc-plan/references/spec-template.md`) and **FR-7** (`Owned Interface` in `codex/skills/ywc-task-generator/references/README.md.template`) are still absent despite the prior batch's task descriptions implying coverage — closed by `yw-000035-090`, added to this batch on user request after the gaps were reported.
+
+### Phase yw-000035 — Claude-code quality gate insertions (single phase)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000035-010-docs-quality-gate-contract-claude` | docs | (root) |
+| `yw-000035-020-domain-quality-gate-spec-template` | domain | (root) |
+| `yw-000035-030-infra-scaffold-invariants-seed` | infra | (root) |
+| `yw-000035-040-domain-task-generator-owned-interface` | domain | (root) |
+| `yw-000035-050-refactor-cleaner-boundary-note` | refactor | (root) |
+| `yw-000035-060-domain-sequential-executor-quality-gate` | domain | `yw-000035-010` |
+| `yw-000035-070-domain-parallel-executor-quality-gate` | domain | `yw-000035-010` |
+| `yw-000035-080-domain-impl-review-quality-evidence` | domain | `yw-000035-010` |
+| `yw-000035-090-domain-quality-gate-codex-gaps` | domain | `yw-000032-010`, `yw-000032-020` |
+
+## Batch — Codex Quality Gate Contract
+
+- Spec: `docs/ywc-plans/20260910-codex-quality-gate-contract.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000031` (ledger current at allocation time)
+- Advisor pass: unavailable — no subagent delegation tool was exposed; bounded decomposition was checked against the spec's module boundaries and hard gates.
+- No-AC requirements: none — the spec marks Open Questions N/A and gives AC coverage for all scoped requirements.
+
+### Phase yw-000031 — Canonical contract
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000031-010-docs-quality-gate-contract` | docs | (root) |
+
+### Phase yw-000032 — Producers, task handoff, and workers (parallel)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000032-010-domain-plan-scaffold-quality-declaration` | domain | `yw-000031-010` |
+| `yw-000032-020-domain-task-quality-gate-packet` | domain | `yw-000031-010`, `yw-000032-010` |
+| `yw-000032-030-infra-quality-gate-workers` | infra | `yw-000031-010` |
+
+### Phase yw-000033 — Consumers (parallel)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000033-010-domain-sequential-quality-gate` | domain | all Phase `yw-000032` tasks |
+| `yw-000033-020-domain-parallel-quality-gate` | domain | all Phase `yw-000032` tasks |
+| `yw-000033-030-domain-review-quality-evidence` | domain | all Phase `yw-000032` tasks |
+
+### Phase yw-000034 — Distribution validation hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000034-010-infra-quality-gate-distribution-validation` | infra | all Phase `yw-000033` tasks |
 
 ## Batch — Claude Code subagent async monitoring contract port
 

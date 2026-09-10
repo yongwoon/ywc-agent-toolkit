@@ -54,6 +54,59 @@ This section exists because Code Compatibility is the largest source of `ywc-spe
 
 Use `N/A — no interaction with existing constrained infrastructure` only after **active consideration** — i.e., you've grepped for global middleware in the new code path and confirmed nothing intercepts it.
 
+## Quality Gate Contract
+
+For Medium/Large specs, choose exactly one:
+
+1. `N/A — no quality gate contract` — preserves the current planning, task,
+   verification, review, and delivery workflow. Do not emit placeholder fields
+   or select a quality-gate worker.
+2. A complete bounded declaration, following the canonical semantics in
+   [../../references/quality-gates.md](../../references/quality-gates.md):
+
+```yaml
+contract_state: report-only | advisory | enforced
+ownership:
+  production_paths: [<exact task-owned paths>]
+  production_symbols: [<exact changed production symbols>]
+  test_fixture_paths: [<exact task-owned test/fixture paths>]
+  test_fixture_symbols: [<exact changed test/fixture symbols>]
+approved_command_ids:
+  baseline: <opaque caller-approved identity>
+  complexity: <opaque caller-approved identity>
+  mutation: <opaque caller-approved identity>
+approved_command_digests:
+  baseline: <digest bound to baseline>
+  complexity: <digest bound to complexity>
+  mutation: <digest bound to mutation>
+sanitized_evidence_paths:
+  baseline: <one bounded repository-relative file path>
+  complexity: <one bounded repository-relative file path>
+  mutation: <one bounded repository-relative file path>
+complexity_threshold: <caller-approved maximum CRAP value>
+mutation_target: <caller-approved minimum mutation score>
+attempt_cap: 3
+residual_survivors: <sanitized list and bounded evidence references, or none>
+```
+
+The declaration must also include a `Module Boundaries` section identifying each
+affected module's owner, consumers, and responsibility. Do not put raw
+executable commands, raw output, transcripts, secrets, full diffs, globs, or
+directory authorities in this section. Do not invent command IDs, digests,
+thresholds, paths, or symbols. Missing, contradictory, unauthorized, or
+unbounded metadata is `NEEDS_CONTEXT`, not an inferred pass; cite the producer →
+task-generator interface and keep downstream consumers from inferring fields.
+
+## Module Boundaries
+
+For Medium/Large specs, identify every affected module's owner, consumers, and
+responsibility. Include the producer declaration and downstream task-generator
+consumer when a Quality Gate Contract is present.
+
+| Module | Owner | Consumers | Responsibility |
+|---|---|---|---|
+| `<module or boundary>` | `<owner>` | `<consumer>` | `<bounded responsibility>` |
+
 ## Acceptance Criteria
 
 <Observable, testable conditions that prove the feature is complete. Each AC must be **declarative and verifiable** — written so a tester (human or automated) knows exactly what to send, what to observe, and how to decide pass/fail.>
