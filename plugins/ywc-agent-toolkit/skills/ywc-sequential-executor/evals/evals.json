@@ -148,6 +148,36 @@
       "name": "advisor-fallback-no-lifecycle-mutation",
       "prompt": "The Pattern C plan advisor is unavailable after bounded monitoring and quiescence is proven.",
       "expected_output": "Returns NEEDS_CONTEXT with bounded plan evidence, preserves task-state and worktree ownership, and does not redispatch, start the range, or report DONE."
+    },
+    {
+      "id": 25,
+      "name": "quality-gate-no-contract-and-report-only",
+      "prompt": "A sequential task has no Quality Gate Contract, or has contract_state report-only, after normal Step 4 verification.",
+      "expected_output": "No-contract records exactly `N/A — no quality gate contract`, omits the packet, invokes neither Cleaner nor Hardener, and preserves the existing review/delivery path. report-only records only sanitized evidence and gaps and also dispatches neither write-enabled worker."
+    },
+    {
+      "id": 26,
+      "name": "quality-gate-packet-validation-and-unavailable-tool",
+      "prompt": "An advisory or enforced sequential task packet is missing an ownership symbol, approved command digest, or bounded sanitized evidence path; another eligible packet has an unavailable authorized tool.",
+      "expected_output": "Missing, contradictory, unauthorized, or unbounded packet data returns NEEDS_CONTEXT with no edit or worker dispatch. An unavailable tool maps to DONE_WITH_CONCERNS for advisory and BLOCKED for enforced, while retaining only sanitized gap evidence and never fabricating a pass."
+    },
+    {
+      "id": 27,
+      "name": "quality-gate-cleaner-hardener-order-and-boundary",
+      "prompt": "Eligible complexity evidence exceeds threshold and sanitized mutation survivors remain. Exercise Cleaner recovery, then Hardener dispatch, including a Cleaner BLOCKED result and a three-attempt Hardener cap.",
+      "expected_output": "Dispatches at most one Cleaner before Hardener. Cleaner is production-only and Hardener is test/fixture-only; Cleaner BLOCKED or NEEDS_CONTEXT forbids Hardener. A permitted Cleaner result or legitimate skip may allow one Hardener dispatch, capped at three approved attempts, with every residual survivor forwarded without an equivalence claim. Neither worker stages, commits, pushes, creates PRs, merges, delivers, or delegates delivery."
+    },
+    {
+      "id": 28,
+      "name": "quality-gate-monotonic-status-and-idempotency",
+      "prompt": "Cleaner returns DONE_WITH_CONCERNS and Hardener later returns DONE; separately, a worker recovery is requested after a completed dispatch.",
+      "expected_output": "Aggregates monotonically as `BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE`, retains the earlier concern, sanitized evidence, and residual survivors, and never lets later DONE mask it. Recovery revalidates the same immutable packet and exact Ownership, does not replay a completed worker, broaden scope, replace command IDs/digests, or bypass Cleaner-before-Hardener ordering."
+    },
+    {
+      "id": 29,
+      "name": "quality-gate-status-routing-before-delivery",
+      "prompt": "A sequential quality gate returns BLOCKED or NEEDS_CONTEXT before optional review/delivery; another returns DONE_WITH_CONCERNS with correctness and observation concerns.",
+      "expected_output": "BLOCKED and NEEDS_CONTEXT prevent review and ywc-finish-branch delivery while preserving the task branch, in-progress merge state, recovery checkpoint, and sanitized evidence. DONE_WITH_CONCERNS resolves correctness/scope concerns before proceeding and carries observation concerns into the Completion Report; only DONE is delivery-eligible."
     }
   ]
 }

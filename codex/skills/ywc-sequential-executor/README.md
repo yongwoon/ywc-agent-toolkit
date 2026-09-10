@@ -71,6 +71,18 @@ Use $ywc-sequential-executor to pick the next ready task from tasks/.
 
 동작 변경 task는 구현 전에 changed public contracts와 critical internals를 기록하고, failing test 또는 contract assertion을 먼저 확인합니다. docs-only, config-only, mechanical, no-harness 경우는 명시적인 TDD exception으로 보고합니다. Completion report에는 changed contracts, contract tests, critical internals, non-obvious `Implementation Notes`, exceptions가 포함됩니다.
 
+## Quality Gate (opt-in)
+
+Step 4 verification is followed by the conditional Quality Gate Contract stage, before optional review or delivery. The canonical rules live in [`../references/quality-gates.md`](../references/quality-gates.md); the sequential handoff is [`references/quality-gate-steps.md`](./references/quality-gate-steps.md).
+
+- No declaration records exactly `N/A — no quality gate contract`, dispatches neither worker, and preserves the existing lifecycle. `report-only` records sanitized evidence only.
+- A valid `advisory` or `enforced` packet dispatches Cleaner first only when complexity exceeds its approved threshold. Hardener is conditional on a permitted Cleaner result or a legitimate Cleaner skip and remaining mutation evidence.
+- Cleaner is restricted to owned production paths; Hardener is restricted to owned test/fixture paths. Neither has delivery authority. Missing packet data, invalid evidence paths, or ownership ambiguity returns `NEEDS_CONTEXT`.
+- Aggregate status is monotonic: `BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE`. Carry sanitized evidence and every residual survivor into the Completion Report; a later `DONE` cannot erase an earlier concern.
+- Before review or delivery, `BLOCKED`/`NEEDS_CONTEXT` halt and preserve the task branch plus recovery checkpoint; `DONE_WITH_CONCERNS` follows contract concern handling, and only `DONE` is delivery-eligible.
+
+Retries are idempotency-bounded: one Cleaner dispatch and one conditional Hardener dispatch per task, with at most three Hardener attempts. Recovery revalidates the same packet and exact Ownership and never replays a completed worker or broadens scope.
+
 ## Execution Cycle
 
 각 Task 에 대해 다음 Step 을 순서대로 실행합니다. Range mode 에서는 Task 마다 전체 Cycle 을 반복합니다.
