@@ -32,6 +32,10 @@ For task worktrees that use Docker Compose, the executor delegates port isolatio
 
 Wave planning treats shared public contracts as Shared Surfaces, not just file paths. Worker payloads require Changed Public Contracts, Critical Internals, Cross-Module Impact, test evidence, and non-obvious `Implementation Notes`; behavior-changing tasks without authored/executed tests must provide an explicit TDD exception or remain blocked/with concerns.
 
+With a valid Quality Gate Contract, dispatch exactly one task-local Cleaner after Task Verify and before wave delivery. Only a Cleaner `DONE` or `DONE_WITH_CONCERNS`, or a legitimate complexity-threshold skip, permits Hardener work at the wave boundary; Hardener is test/fixture-only and may use at most the canonical three attempts. Aggregate mutation evidence and every residual survivor only at that safe boundary. `N/A — no quality gate contract` and `report-only` preserve the existing workflow and select no write-enabled worker. Requests outside production/test path or symbol Ownership, missing or mismatched digests, and invalid evidence paths are rejected as `NEEDS_CONTEXT` before dispatch or edits.
+
+Retries use an idempotency guard keyed by task identity and gate kind. Never silently repeat the same dispatch identity; recovery must change bounded context or model class while remaining within the Cleaner/Hardener dispatch guard. After two failed recoveries from a recoverable tool error, preserve the task worktree and branch and record `BLOCKED`. Wave aggregation is monotonic with `BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE`; a later `DONE` cannot erase an earlier concern, unavailable-tool gap, or residual survivor.
+
 ## Delivery Modes
 
 | Mode | Behavior |
