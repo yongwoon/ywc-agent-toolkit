@@ -25,26 +25,6 @@
 | `yw-000036-050-docs-quality-gates-enforcement-eligibility` | docs | (root) |
 | `yw-000036-060-docs-adr-hardener-isolation` | docs | `yw-000036-030`, `yw-000036-040` |
 
-## Parallel Execution Notes — Phase yw-000036
-- Initial ready set: `yw-000036-010`, `yw-000036-050` (both root tasks, disjoint files, safe together).
-- After `yw-000036-010` merges: `yw-000036-020` and `yw-000036-030` both become runnable in parallel (disjoint files: codex script vs. claude-code SKILL.md/references).
-- After `yw-000036-020` and `yw-000036-030` both merge: `yw-000036-040` becomes runnable.
-- After `yw-000036-030` and `yw-000036-040` both merge: `yw-000036-060` becomes runnable.
-- `yw-000036-050` has no dependency edge to any other task in this phase and may run at any point; it is listed as depended-upon by `-030`/`-040` only in the sense that their body text links its rule (`Shared Surfaces`, read-only) — it does not gate their start.
-
-```mermaid
-graph LR
-  subgraph Phase yw-000036
-    A[yw-000036-010-state-schema] --> B[yw-000036-020-codex-state-schema]
-    A --> C[yw-000036-030-hardener-isolation-claude]
-    B --> D[yw-000036-040-hardener-isolation-codex]
-    C --> D
-    C --> E[yw-000036-060-adr]
-    D --> E
-    F[yw-000036-050-quality-gates-enforcement-eligibility]
-  end
-```
-
 ## Batch — Quality Gate Contract Port (claude-code additions)
 
 - Spec: `docs/ywc-plans/20260910-quality-gate-contract-port.md`
