@@ -350,9 +350,11 @@ This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves 
 
 Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never moves them. Record those tasks for the Completion Report.
 
-**Checkpoint** (after the entire wave loop finishes): `bash claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
+**Checkpoint** (after the entire wave loop finishes, **contract-less waves and `--per-task-pr` only** — a wave that created `wave-int/<N>` does not stamp this here; see 4e.6): `bash claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
 
 **4e.5. Hardener (Mutation gate, wave boundary)** — Runs once against the wave's merged diff (cross-task interaction gaps only surface post-merge) and dispatches to `ywc-qa-engineer` via the Task tool if the wave's accumulated tasks declare a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the wave-level Completion Report — never in `.ywc-run-state.json`.
+
+**Checkpoint** (contract-bearing wave under `--local-merge`/`--draft`/`--aggregate-pr` only — i.e. `integration_branch` is non-`None`): immediately after 4e.5 exits, before attempting promotion, run `bash claude-code/skills/scripts/update-state.py hardener-verdict <N> <absent|PASS|BLOCKED>` — `absent` if no contract applied, `PASS` if Hardener ran and did not return an `enforced`-tier `BLOCKED` (a dispatch failure counts as `PASS` here per the no-block rule above), `BLOCKED` only on an `enforced`-tier `BLOCKED`. 4e.6 below reads this value to decide promotion.
 
 > **Action required**: Read [../references/quality-gates.md](../references/quality-gates.md) for thresholds, dispatch conditions, mutation score loop cap, and resolution policies. Do not restate gate rules inline.
 
@@ -368,7 +370,7 @@ gate_state: N/A — no quality gate contract
 
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 
-For each task whose Step 4e delivery completed (DONE), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-only loop, a BLOCKED-preserved task (whose 4g is skipped) is never torn down (AC6):
+For each task whose Step 4e delivery completed (DONE) **and whose wave is not `Hardener-BLOCKED`** (i.e. the wave created no `wave-int/<N>`, or its `hardener_verdict` is not `BLOCKED` — check `.ywc-run-state.json`), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-and-not-Hardener-BLOCKED loop, a BLOCKED-preserved task and a task whose wave is `Hardener-BLOCKED` (whose 4g is skipped, per [references/wave-integration-branch.md](references/wave-integration-branch.md)) are never torn down (AC6):
 
 ```bash
 bash claude-code/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>

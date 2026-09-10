@@ -60,8 +60,21 @@ Initialize after Pre-flight passes. Always update `last_checkpoint` to the curre
 | Pre-flight passes | Initialize file; `started_at`, `mode`, `tasks_dir`, all waves as `planned` |
 | Step 4a complete (wave start) | Set wave `status` to `in_progress`; populate `pending` with all wave tasks |
 | Step 4e per-task delivery complete (`ywc-finish-branch` returned `DONE` for `--local-merge` / `--draft` / `--aggregate-pr`, or the inline `--per-task-pr` PR merge + Mark Complete path succeeded) | Move task from `pending` to `merged` in the wave entry |
-| Step 4e wave loop complete (all tasks delivered or `BLOCKED`) | Set wave `status` to `completed`; `current_wave` to next wave number |
+| Step 4e.5 Hardener/aggregate exit (contract-bearing wave, `--local-merge`/`--draft`/`--aggregate-pr` only) | `hardener-verdict <N> <absent\|PASS\|BLOCKED>` — written **before** promotion is attempted |
+| Step 4e.6 promotion succeeds | Set wave `status` to `completed`; `current_wave` to next wave number — **this replaces the row below for a wave that created `wave-int/<N>`** |
+| Step 4e wave loop complete, wave never created `wave-int/<N>` (contract-less, or `--per-task-pr`) | Set wave `status` to `completed`; `current_wave` to next wave number — unchanged from today |
+| Step 4e.6 promotion-conflict base-merge retried | `promotion-retry <N>` — capped at 2; exceeding marks the wave `BLOCKED` with reason `promotion-churn` |
 | All waves done | `rm -f .ywc-run-state.json` |
+
+### Resume with `wave-int/<N>`
+
+For a wave that created `wave-int/<N>` (`integration_branch` non-`None`), "`wave-complete` not yet stamped" on resume means one of:
+
+1. **Partial-merge** (`pending` non-empty, `wave-int/<N>` already exists) — resume by reusing the existing branch and merging the remaining `pending` tasks onto it, per the idempotent-creation rule in [wave-integration-branch.md](wave-integration-branch.md).
+2. **Fully-merged-not-promoted, `hardener_verdict` absent or `PASS`** (`pending` empty, `status != completed`) — resume auto-retries the wave-boundary aggregate + promotion with no prompt.
+3. **Fully-merged-not-promoted, `hardener_verdict == BLOCKED`** (`pending` empty, `status != completed`) — resume stops and prints the recorded blocking findings, then requires explicit user confirmation before re-running the gate.
+
+A fully contract-less wave (`integration_branch` was `None` from init) keeps today's resume behavior unchanged.
 
 ## Parallel aggregate transition cache
 
