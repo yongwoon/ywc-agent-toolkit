@@ -108,6 +108,8 @@ A quality gate's state at any step must be exactly one of these values. These st
 
 Every field or report that includes a gate state must use one of these exact strings, never paraphrased, free-text descriptions, or abbreviations.
 
+**Enforcement-eligibility rule**: a delivery mode whose point-of-no-return precedes a gate may not declare `enforced` at that gate — an isolation mechanism can only protect state whose point-of-no-return sits after the gate runs. Under `--per-task-pr` (`ywc-parallel-executor`), each task's point-of-no-return (`gh pr merge --delete-branch`) lands inside the wave, before the wave-boundary check completes, so that check cannot enforce there regardless of the declared contract tier. The wave-boundary cross-task-interaction check still **runs** under `--per-task-pr` — it is reporting-only — but its result is a plain descriptive note in the wave's Completion Report and is **never** assigned to `gate_state`.
+
 ## 10. Tooling Exclusion
 
 This document defines the **contract and routing logic only**. It does not and must not define:
