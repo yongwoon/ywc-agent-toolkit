@@ -22,3 +22,4 @@ __pycache__/
 tasks-codex-sdlc-v11
 docs/skill-agent-eval/*/runs/
 docs/skill-agent-eval/codex/runs/
+.ywc-run-state.json
