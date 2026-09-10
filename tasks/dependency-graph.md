@@ -1,6 +1,49 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000036`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000037`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+
+## Batch — Wave Hardener Delivery Isolation (ywc-parallel-executor)
+
+- Spec: `docs/ywc-plans/20260910-parallel-executor-hardener-delivery-isolation.md`
+- Architecture verdict: `docs/ywc-plans/20260910-parallel-executor-hardener-delivery-isolation.architecture-verdict.md` (`ywc-architect`, `DONE_WITH_CONCERNS`)
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000036` (allocated via `allocate-phase.sh`, source `ledger`)
+- Advisor pass: skipped — phase boundary is obvious (state-schema foundation before skill prose that cites it; `quality-gates.md` and the schema tasks have no cross-dependency), no competing DB migration or library introduction, and the two-root duplication is one feature area, not multiple concurrent ones.
+- No-AC requirements: none found — every FR (FR-1 through FR-12) maps to a backing AC (AC1–AC14); the spec's own three amendment iterations already closed prior completeness/consistency gaps via `ywc-spec-ready`.
+- Open questions carried into tasks (not blocking): the spec's two open items (promotion-step label `4e.6` vs. reusing `4f`; `wave-int/<N>`'s exact form/namespacing for concurrent runs) are resolved as implementer decisions inside `yw-000036-030`, mirrored by `yw-000036-040`/`-010`/`-020`, and recorded as-decided by `yw-000036-060`'s ADR.
+
+### Phase yw-000036 — Wave-integration-branch state schema, skill prose, and ADR (single phase)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000036-010-domain-parallel-executor-state-schema` | domain | (root) |
+| `yw-000036-020-domain-parallel-executor-codex-state-schema` | domain | `yw-000036-010` |
+| `yw-000036-030-domain-parallel-executor-hardener-isolation-claude` | domain | `yw-000036-010` |
+| `yw-000036-040-domain-parallel-executor-hardener-isolation-codex` | domain | `yw-000036-020`, `yw-000036-030` |
+| `yw-000036-050-docs-quality-gates-enforcement-eligibility` | docs | (root) |
+| `yw-000036-060-docs-adr-hardener-isolation` | docs | `yw-000036-030`, `yw-000036-040` |
+
+## Parallel Execution Notes — Phase yw-000036
+- Initial ready set: `yw-000036-010`, `yw-000036-050` (both root tasks, disjoint files, safe together).
+- After `yw-000036-010` merges: `yw-000036-020` and `yw-000036-030` both become runnable in parallel (disjoint files: codex script vs. claude-code SKILL.md/references).
+- After `yw-000036-020` and `yw-000036-030` both merge: `yw-000036-040` becomes runnable.
+- After `yw-000036-030` and `yw-000036-040` both merge: `yw-000036-060` becomes runnable.
+- `yw-000036-050` has no dependency edge to any other task in this phase and may run at any point; it is listed as depended-upon by `-030`/`-040` only in the sense that their body text links its rule (`Shared Surfaces`, read-only) — it does not gate their start.
+
+```mermaid
+graph LR
+  subgraph Phase yw-000036
+    A[yw-000036-010-state-schema] --> B[yw-000036-020-codex-state-schema]
+    A --> C[yw-000036-030-hardener-isolation-claude]
+    B --> D[yw-000036-040-hardener-isolation-codex]
+    C --> D
+    C --> E[yw-000036-060-adr]
+    D --> E
+    F[yw-000036-050-quality-gates-enforcement-eligibility]
+  end
+```
 
 ## Batch — Quality Gate Contract Port (claude-code additions)
 
