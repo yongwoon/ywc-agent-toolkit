@@ -22,6 +22,8 @@ This reference defines metadata and routing decisions only. It never grants auth
 
 The exact no-contract sentinel is `N/A — no quality gate contract` (including capitalization, spacing, and em dash). It is a valid compatibility state, not a failure.
 
+**Enforcement-eligibility rule**: a delivery mode whose point-of-no-return precedes a gate may not declare `enforced` at that gate — an isolation mechanism can only protect state whose point-of-no-return sits after the gate runs. Under `--per-task-pr` (`ywc-parallel-executor`), each task's point-of-no-return (`gh pr merge --delete-branch`) lands inside the wave, before the wave-boundary check completes, so that check cannot enforce there regardless of the declared `contract_state`. The wave-boundary cross-task-interaction check still **runs** under `--per-task-pr` — it is reporting-only — but its result is **never** promoted into `contract_state`; it is recorded outside that field's contract, as a plain descriptive note in the wave's Completion Report.
+
 ## 3. Canonical bounded packet
 
 A present packet contains only the following bounded metadata. Producers must omit the conditional packet entirely when the exact no-contract sentinel applies.
