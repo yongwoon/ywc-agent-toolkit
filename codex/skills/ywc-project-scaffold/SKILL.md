@@ -30,6 +30,7 @@ When tempted to skip a step, check this table first:
 | "Add every conceivable directory for completeness" | Over-scaffolding creates empty noise. Include only directories with a current purpose. |
 | "Run a Trend Check for every scaffold" | Trend Check is conditional: run it only for large or explicitly contested architecture requests. |
 | "Refresh a shared reference in place" | Reference refresh is proposal-first. Show an additive diff and wait for explicit approval before editing the skill-owned reference. |
+| "The scaffold can fill in quality-gate commands from the stack" | A Quality Gate Contract is opt-in. Seed advisory metadata only when the user explicitly requests it; use only caller-provided ownership, thresholds, command IDs/digests, and evidence paths. Never invent executable commands, digests, or project files. |
 
 **Violating the letter of these rules is violating the spirit.** A scaffold that does not match the user's actual stack becomes immediate technical debt.
 
@@ -177,6 +178,22 @@ rules without any Framework or external dependencies.
 ...
 ```
 
+### Optional Quality Gate Contract seed
+
+Only when the user explicitly requests quality gates, add a clearly labelled
+advisory seed to the scaffold report. It is metadata for a later task-generator
+handoff, not an executable packet or a project-file instruction. Include only
+caller-provided exact ownership paths/symbols, thresholds, immutable command
+IDs/digests, and bounded sanitized evidence paths; ask for or return
+`NEEDS_CONTEXT` when any required field is missing. Never infer a command from
+the selected language/framework and never create a project file.
+
+Every normal scaffold report must include a Quality Gate Contract line. When the
+user does not request a quality gate, its value must be exactly
+`N/A — no quality gate contract`; omit the conditional metadata, and preserve
+the normal scaffold output and handoff. A reference-refresh proposal remains
+the only mode that does not produce a normal scaffold report.
+
 ### 4. Explain - Describe the Structure
 
 Explain the following for each major Directory:
@@ -213,6 +230,7 @@ Provide useful additional information based on the project domain or scale:
 - Explain the role and rationale behind each Directory
 - Reflect structural differences based on Scale
 - Support compound conditions (e.g., FastAPI + GraphQL + DDD)
+- Carry an explicitly requested advisory Quality Gate Contract seed as bounded metadata only
 
 **Will Not:**
 - Generate actual Code file contents (only provides structure)
@@ -220,6 +238,8 @@ Provide useful additional information based on the project domain or scale:
 - Configure Docker, CI/CD, or Monorepo setup (provide guidance upon separate request)
 - Silently apply Trend Check findings, edit references without approval, remove
   existing reference variants, or route generic documentation review
+- Invent quality-gate commands, command IDs/digests, thresholds, ownership, or evidence paths
+- Create project files or treat a scaffold seed as a complete executable contract
 
 ## Output Format
 
@@ -232,6 +252,7 @@ Scaffold: <tree or named structure>
 Rationale: <language / framework / architecture decisions>
 Boundaries: <what is intentionally excluded>
 Validation: <checks against requested stack and constraints>
+Quality Gate Contract: N/A — no quality gate contract | <explicitly requested advisory seed>
 Next action: <implementation handoff | approval required | "none">
 ```
 

@@ -105,6 +105,58 @@
       "expected_downstream_calls": {"accepted": 1, "rejected": 0},
       "expected_handoff": "accepted only for the exact complete in-root Markdown Result; rejected otherwise",
       "expected_output": "Reports bounded parser failure details without storing response text or selecting a fallback path."
+    },
+    {
+      "id": 8,
+      "name": "medium-spec-no-quality-contract",
+      "prompt": "Use ywc-plan to draft a Medium spec for an internal reporting change with no quality-gate request.",
+      "expected_behavior": [
+        "Includes the exact Quality Gate Contract sentinel: N/A — no quality gate contract.",
+        "Preserves the existing planning, validation, and handoff behavior without selecting a quality-gate worker."
+      ],
+      "anti_behavior": [
+        "Emitting an empty or placeholder quality-gate packet.",
+        "Inventing thresholds, command identities, digests, or executable commands."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "medium-spec-valid-quality-contract",
+      "prompt": "Use ywc-plan to draft a Large spec with an explicitly requested advisory Quality Gate Contract.",
+      "expected_behavior": [
+        "Declares the contract state, exact production and test/fixture ownership paths and symbols, caller-approved command IDs and digests, sanitized evidence paths, complexity threshold, mutation target, attempt cap, and residual-survivor handling.",
+        "Keeps the declaration bounded metadata and cites the shared quality-gates reference; it contains no raw command text."
+      ],
+      "anti_behavior": [
+        "Treating an incomplete declaration as an executable contract.",
+        "Broadening module boundaries or allowing downstream consumers to infer missing fields."
+      ]
+    },
+    {
+      "id": 10,
+      "name": "quality-contract-missing-field-needs-context",
+      "prompt": "Use ywc-plan for a Medium spec whose requested advisory Quality Gate Contract has ownership paths but no approved command digests or evidence destinations.",
+      "expected_behavior": [
+        "Returns NEEDS_CONTEXT for the incomplete declaration.",
+        "Does not invent command identities, digests, thresholds, paths, or a passing result."
+      ],
+      "anti_behavior": [
+        "Filling missing fields with defaults or placeholders.",
+        "Handing off an incomplete packet as valid."
+      ]
+    },
+    {
+      "id": 11,
+      "name": "quality-contract-no-fabricated-command",
+      "prompt": "Use ywc-plan to draft a Medium spec with an opt-in Quality Gate Contract when the user has not supplied any approved command identity or digest.",
+      "expected_behavior": [
+        "Requests the missing approved command metadata or returns NEEDS_CONTEXT.",
+        "Uses only immutable command IDs and digests when supplied; never writes raw executable command text into the declaration."
+      ],
+      "anti_behavior": [
+        "Guessing npm, pytest, cargo, or other project commands.",
+        "Treating a tool name or prose instruction as an approved command identity."
+      ]
     }
   ]
 }
