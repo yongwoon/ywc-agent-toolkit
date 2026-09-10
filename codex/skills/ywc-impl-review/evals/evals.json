@@ -183,6 +183,103 @@
       "name": "phase1-clean-lanes-compatibility",
       "prompt": "All Phase 1 reviewer lanes return attributable terminal payloads within the bounded monitor.",
       "expected_output": "Preserves the existing Phase 2 candidate selection, confidence gate, aggregation, and report flow without changing terminal-status semantics."
+    },
+    {
+      "id": 22,
+      "name": "quality-gate-valid-sanitized-boundary",
+      "prompt": "Review an implementation with a valid advisory Quality Gate Contract packet containing contract state, exact changed production/test symbols, approved command IDs and digests, sanitized evidence paths, normalized Cleaner/Hardener results, and residual evidence.",
+      "expected_output": "QA consumes only the sanitized boundary, reports normalized evidence and every residual survivor, and performs no gate execution or delivery action.",
+      "expectations": [
+        "Requires contract_state, approved_command_ids, approved_command_digests, sanitized_evidence_paths, and exact Ownership symbols.",
+        "Keeps Cleaner production-only and Hardener test/fixture-only.",
+        "Does not accept raw command text, raw output, secrets, transcripts, or full diffs."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+    },
+    {
+      "id": 23,
+      "name": "quality-gate-no-contract-report-only",
+      "prompt": "Review a task with contract_state `N/A — no quality gate contract`, then a report-only packet with sanitized evidence and an unavailable authorized tool.",
+      "expected_output": "No-contract preserves the existing review path and dispatches neither worker; report-only records the sanitized gap without mutation or worker dispatch.",
+      "expectations": [
+        "Treats the exact no-contract sentinel as compatibility, not failure.",
+        "Never creates placeholder packet fields or invents a gate result.",
+        "Does not execute a gate for report-only evidence."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md"]
+    },
+    {
+      "id": 24,
+      "name": "quality-gate-missing-boundary-downgrade",
+      "prompt": "Review a quality-gate packet missing an approved digest, changed-symbol Ownership, or sanitized evidence path.",
+      "expected_output": "Returns NEEDS_CONTEXT or the canonical non-pass status, downgrades confidence, and does not infer a clean pass or dispatch a worker.",
+      "expectations": [
+        "Rejects missing or mismatched digests and unverifiable evidence boundaries.",
+        "Rejects missing exact production/test fixture symbols and unbounded evidence paths.",
+        "Does not recover missing evidence from raw worker output."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+    },
+    {
+      "id": 25,
+      "name": "quality-gate-raw-data-rejection",
+      "prompt": "Review a packet that includes raw command text, stdout/stderr, a transcript, a secret, or a full diff instead of sanitized evidence.",
+      "expected_output": "Rejects the packet as NEEDS_CONTEXT and excludes the raw data from findings, advisor context, and the final report.",
+      "expectations": [
+        "Never executes or quotes a raw command.",
+        "Never forwards raw output, secrets, transcripts, or full diffs.",
+        "Treats an artifact path as bounded metadata rather than read or execution authority."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md"]
+    },
+    {
+      "id": 26,
+      "name": "quality-gate-residual-and-unavailable",
+      "prompt": "Review advisory and enforced packets where the authorized tool is unavailable and Hardener reaches its attempt cap with mutation survivors.",
+      "expected_output": "Preserves sanitized gaps and every residual survivor; advisory reports DONE_WITH_CONCERNS and enforced reports BLOCKED without labeling survivors equivalent.",
+      "expectations": [
+        "Retains residual survivors as unresolved reportable evidence.",
+        "Applies state-specific unavailable-tool handling and the three-attempt cap.",
+        "Does not treat completed attempts as proof of success."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+    },
+    {
+      "id": 27,
+      "name": "quality-gate-monotonic-status",
+      "prompt": "Aggregate sanitized gate results in which Cleaner is DONE_WITH_CONCERNS or BLOCKED/NEEDS_CONTEXT and a later Hardener result is DONE.",
+      "expected_output": "Uses BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE and never lets the later DONE mask an earlier concern or stop status; Hardener is not dispatched after a disallowed Cleaner result.",
+      "expectations": [
+        "Status aggregation is monotonic.",
+        "Cleaner BLOCKED or NEEDS_CONTEXT prevents Hardener dispatch.",
+        "Only sanitized statuses, evidence references, and residuals appear in the aggregate report."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+    },
+    {
+      "id": 28,
+      "name": "quality-gate-no-delivery-authority",
+      "prompt": "Review valid Cleaner and Hardener evidence and a request to stage, commit, push, create a PR, merge, deliver, or execute a quality gate.",
+      "expected_output": "Keeps the review report-only and refuses all gate execution and delivery authority while preserving bounded evidence.",
+      "expectations": [
+        "Neither worker nor reviewer may stage, commit, push, create a PR, merge, or deliver.",
+        "The reviewer never executes Cleaner, Hardener, or an approved command.",
+        "The final report contains no delivery claim beyond sanitized status/evidence."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md"]
+    },
+    {
+      "id": 29,
+      "name": "quality-gate-ownership-and-sanitized-boundary-rejection",
+      "prompt": "Review an advisory Quality Gate Contract packet whose Cleaner changed a production path and symbol outside the exact task Ownership, whose Hardener changed a test/fixture path and symbol outside its exact Ownership or crossed into production, and whose evidence includes absolute, parent-relative, wildcard, directory, symlink-escaping, and secret-bearing artifact paths alongside one bounded repository-relative sanitized path.",
+      "expected_output": "Returns NEEDS_CONTEXT before worker dispatch for every out-of-Ownership path or symbol and every invalid sanitized evidence destination; accepts only the exact review Ownership and the bounded sanitized path, without normalizing invalid paths or recovering raw data.",
+      "expectations": [
+        "Rejects production paths and changed production symbols outside the packet's exact production Ownership.",
+        "Rejects test/fixture paths and symbols outside the packet's exact test/fixture Ownership and rejects any production/test boundary crossing.",
+        "Validates sanitized evidence paths as bounded repository-relative non-secret artifact metadata: no absolute, ./, .., wildcard, directory, symlink escape, or secret-bearing destination is accepted.",
+        "Keeps the valid sanitized boundary limited to normalized facts, approved command IDs/digests, exact Ownership symbols, residuals, unavailable-tool gaps, and bounded evidence references; never reads or reconstructs raw commands, output, transcripts, secrets, or full diffs."
+      ],
+      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
     }
   ]
 }
