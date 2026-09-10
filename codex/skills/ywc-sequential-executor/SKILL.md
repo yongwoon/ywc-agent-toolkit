@@ -337,20 +337,19 @@ If any layer fails: **fix the code, never the test** — no `skip`/`xit`/`.only`
 **Checkpoint**: Update `.ywc-run-state.json` — set `current_step` to `4`, `last_checkpoint` to current UTC time.
 
 **`--run-tests-locally` gate (applies only when `--run-tests-locally` is set AND `--local-merge` is active)**: After all four verification layers pass, detect the project's test command from CLAUDE.md or `package.json` (scripts field). Run it before proceeding to Step 5 (merge). On failure: mark the task FAIL and do not merge — surface the test output to the user and stop. If no test command can be detected: emit a warning and proceed to Step 5 without blocking.
-
-### Step 4.5: Implementation Review (optional)
-
+### Step 4.5: Quality Gate (opt-in)
+After normal Step 4 verification, resolve the task's conditional Quality Gate Contract before optional review or delivery. Follow [references/quality-gate-steps.md](./references/quality-gate-steps.md) and the canonical [../references/quality-gates.md](../references/quality-gates.md), which owns packet fields, redaction, thresholds, retry caps, and status semantics. The local procedure requires exact `N/A — no quality gate contract` compatibility, report-only no-dispatch behavior, complete packet/Ownership validation, Cleaner-before-Hardener ordering, production/test boundaries, no delivery authority, and sanitized evidence only. It also requires monotonic `BLOCKED > NEEDS_CONTEXT > DONE_WITH_CONCERNS > DONE` aggregation with residual retention; a later `DONE` cannot mask an earlier concern.
+**Checkpoint**: Update `.ywc-run-state.json` — set `current_step` to `4.5`, `last_checkpoint` to current UTC time, and retain the aggregate quality-gate status/evidence boundary for resume.
+**Quality-gate status routing before delivery**: Route the aggregate status before Step 4.6 or Step 5. `BLOCKED` and `NEEDS_CONTEXT` prevent optional review and `ywc-finish-branch` delivery; preserve the task branch, any in-progress merge state, the Step 4.5 checkpoint, and sanitized blocker/missing-context evidence so recovery can revalidate the same immutable packet and exact Ownership. `DONE_WITH_CONCERNS` follows the canonical contract concern handling: resolve correctness or scope concerns and re-dispatch the affected gate before proceeding, while observation-level concerns may proceed only when carried into the Completion Report with sanitized evidence and residuals retained. Only `DONE` may continue to optional review and delivery.
+### Step 4.6: Implementation Review (optional)
 If `--review` is set, invoke `ywc-impl-review` on the current feature branch after all verification layers in Step 4 pass. The review runs before PR creation (Step 5) or local merge (Step 6a), so any issues it surfaces can be fixed while still on the feature branch.
-
 This is optional — it adds time and tokens but catches design issues, naming problems, and patterns that automated tests miss. It pairs especially well with `--local-merge`, where no remote CI runs and this review becomes the last quality gate before code reaches the base branch.
 
 The review applies the `ywc-impl-review` recurring real-world defects catalog — the classes (data-layer access-boundary / ownership isolation, data-integrity / `NULL` handling, error-swallow, external-call resilience, validation / fail-fast, HTTP status, test fidelity) that PR-review bots such as CodeRabbit flag most. In PR-based modes (`normal-pr`, `--draft`, `--skip-ci-wait`), catching these *before* the PR opens directly reduces the bot-review round-trips handled later by `ywc-handle-pr-reviews`.
 
 **Handling the review's status return**: `ywc-impl-review` emits one of `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — in particular, `BLOCKED` triggers the four-step triage (context → reasoning → scope → plan) before surfacing to the user, and `DONE_WITH_CONCERNS` requires reading the concerns to decide whether they are correctness-level (fix and re-review) or observation-level (carry forward to the Completion Report).
-
 ### Step 5: Delivery (delegated to `ywc-finish-branch`)
-
-After Step 4 verification (and optional Step 4.5 review) passes, the rest of the task — PR creation, CI wait, bot polling, merge (PR or local), post-merge verification, Mark Task Complete, and local branch cleanup — is delivered by `ywc-finish-branch`. This skill does not duplicate that logic.
+After Step 4 verification, the opt-in Step 4.5 quality gate, and optional Step 4.6 review pass, the rest of the task — PR creation, CI wait, bot polling, merge (PR or local), post-merge verification, Mark Task Complete, and local branch cleanup — is delivered by `ywc-finish-branch`. This skill does not duplicate that logic.
 
 **Mode mapping** (this skill's flag → finish-branch `--mode`):
 
@@ -443,6 +442,7 @@ After all tasks are executed, display:
 - Total tasks executed: N
 - Each task: name, PR URL, PR status (draft / open / merged) — or `local-merge` with the merge commit SHA when `--local-merge` is used
 - Contract report per task: Changed Public Contracts, contract/behavior tests that first failed and then passed, Critical Internals reviewed, Implementation Notes for non-obvious decisions, and TDD Exceptions (or `N/A`)
+- Quality-gate report per task: contract state, aggregate status, sanitized evidence paths, worker statuses, and every residual survivor (or the exact no-contract sentinel); never include raw commands, output, transcripts, secrets, or full diffs
 - Any tasks that were skipped or failed (with reason)
 - Current branch and sync status
 - If in worktree mode: run worktree path, integration branch, state cleanup, and preserved branch/recovery command when applicable
