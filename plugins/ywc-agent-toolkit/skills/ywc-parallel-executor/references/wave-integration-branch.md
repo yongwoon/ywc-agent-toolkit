@@ -70,7 +70,7 @@ No new concurrency mechanism is needed: the per-task delivery loop is already se
 
 ## Promotion (step `4e.6`, after the wave-boundary aggregate, before Clean Up)
 
-After the wave-boundary Hardener aggregation returns for a wave that created `wave-int/<N>`, promote it into the base branch **only** when the aggregate outcome under an `enforced` contract is not `BLOCKED`. A fully contract-less wave never created `wave-int/<N>` and is unaffected — it already delivered direct to base at Step 4e. Under `report-only` or `advisory`, the aggregate never returns `BLOCKED` against promotion (per their existing tier semantics) — promotion proceeds regardless of `DONE_WITH_CONCERNS`.
+After the wave-boundary Hardener aggregation returns for a wave that created `wave-int/<N>`, promote it into the base branch **only** when the aggregate outcome under an `enforced` contract is neither `BLOCKED` nor `NEEDS_CONTEXT`. A fully contract-less wave never created `wave-int/<N>` and is unaffected — it already delivered direct to base at Step 4e. Under `report-only` or `advisory`, the aggregate never returns `BLOCKED` against promotion (per their existing tier semantics) — promotion proceeds regardless of `DONE_WITH_CONCERNS`.
 
 **On a non-blocking aggregate outcome:**
 
@@ -98,8 +98,8 @@ git merge --ff-only refs/heads/wave-int/<N>
    - Worst case: 3 dispatches × 3 mutation attempts = 9 total attempts per wave, then `BLOCKED`.
 4. A **real textual conflict** on the base-merge (step 1) marks the wave `BLOCKED`, preserves the integration branch and every task worktree, and surfaces the conflicting files — no auto-resolution, no force-push.
 
-**On a blocking outcome (`enforced` + `BLOCKED`)**: base is left untouched, `wave-complete` is not stamped, the integration branch is preserved, and Step 4g cleanup is skipped for every task in the wave — matching the existing preserved-failure convention.
+**On a blocking outcome (`enforced` + `BLOCKED` or `NEEDS_CONTEXT`)**: base is left untouched, `wave-complete` is not stamped, the integration branch is preserved, and Step 4g cleanup is skipped for every task in the wave — matching the existing preserved-failure convention, for both values alike.
 
-## Step 4i third bucket: tasks-succeeded-but-wave-Hardener-BLOCKED
+## Step 4i third bucket: tasks-succeeded-but-wave-Hardener-blocking-verdict (`BLOCKED` or `NEEDS_CONTEXT`)
 
-Step 4i's terminal-state audit classifies run outcome into two buckets today (success / preserved failure). Add a third: a wave whose tasks all individually succeeded (`DONE`, already moved to `completed/`) but whose `wave-int/<N>` promotion is `Hardener-BLOCKED`. This bucket must be distinguishable from a fully completed wave — the underlying task directories look identical (all in `completed/`, since Mark Complete runs before the wave-boundary gate) — so key off the wave's `status` / `hardener_verdict` / `integration_branch` state (`.ywc-run-state.json`), never task-directory location alone.
+Step 4i's terminal-state audit classifies run outcome into two buckets today (success / preserved failure). Add a third: a wave whose tasks all individually succeeded (`DONE`, already moved to `completed/`) but whose `wave-int/<N>` promotion has a blocking Hardener verdict — `hardener_verdict` of `BLOCKED` or `NEEDS_CONTEXT`. `hardener_verdict` is written as one of these two literal values **only** for an `enforced`-tier outcome (see the Step 4e.5 checkpoint-write restriction) — a `report-only`/`advisory`-tier wave never reaches this bucket, so no separate tier check is needed here. This bucket must be distinguishable from a fully completed wave — the underlying task directories look identical (all in `completed/`, since Mark Complete runs before the wave-boundary gate) — so key off the wave's `status` / `hardener_verdict` / `integration_branch` state (`.ywc-run-state.json`), never task-directory location alone.

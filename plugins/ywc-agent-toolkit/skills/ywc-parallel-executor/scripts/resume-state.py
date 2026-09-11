@@ -22,6 +22,24 @@ JSON schema (exit 0):
     "warnings": ["<warning text>", ...]
   }
 
+JSON schema (exit 1, fully-merged-not-promoted with a blocking hardener_verdict):
+  {
+    "status": "blocked" | "needs_context",
+    "resume_wave": <wave number>,
+    "mode": "local-merge|draft|per-task-pr",
+    "tasks_dir": "<tasks dir>",
+    "reason": "<present only if the wave carries a reason>",
+    "blocked_detail": "<present only if the wave carries a blocked_detail>"
+  }
+  Distinct from the "error" shape below — this is a deliberate gate stop, not a script error.
+
+JSON schema (exit 1, error):
+  {
+    "status": "error",
+    "reason": "<error message>",
+    "hint": "<optional remediation hint>"
+  }
+
 Run from the project root (same directory as .ywc-run-state.json).
 """
 import json
@@ -132,6 +150,53 @@ def fail(msg: str, as_json: bool, hint: str = "") -> None:
     sys.exit(1)
 
 
+def blocked_stop(
+    verdict: str,
+    wave: dict,
+    resume_wave: int,
+    mode: str,
+    tasks_dir: str,
+    as_json: bool,
+) -> None:
+    """Non-error resume stop for a blocking hardener_verdict (BLOCKED / NEEDS_CONTEXT).
+
+    Distinct from fail()'s status: "error" shape — this is a deliberate gate
+    stop, not a script error.
+    """
+    status = "blocked" if verdict == "BLOCKED" else "needs_context"
+    hint = (
+        "Review the recorded blocking findings, then re-run the gate only after explicit confirmation."
+        if verdict == "BLOCKED"
+        else "Supply the missing context (e.g. fix the Baseline), then re-run the gate — a bare confirmation is not enough."
+    )
+    result: dict = {
+        "status": status,
+        "resume_wave": resume_wave,
+        "mode": mode,
+        "tasks_dir": tasks_dir,
+        "hint": hint,
+    }
+    if "reason" in wave:
+        result["reason"] = wave["reason"]
+    if "blocked_detail" in wave:
+        result["blocked_detail"] = wave["blocked_detail"]
+    if "hardener_detail" in wave:
+        result["hardener_detail"] = wave["hardener_detail"]
+
+    if as_json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        print(f"CANNOT RESUME: wave {resume_wave} hardener_verdict is {verdict}")
+        if "reason" in wave:
+            print(f"  reason: {wave['reason']}")
+        if "blocked_detail" in wave:
+            print(f"  blocked_detail: {wave['blocked_detail']}")
+        if "hardener_detail" in wave:
+            print(f"  hardener_detail: {wave['hardener_detail']}")
+        print(f"  → {hint}")
+    sys.exit(1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Validate ywc-parallel-executor checkpoint for safe resume"
@@ -184,6 +249,28 @@ def main() -> None:
                 warnings.append(
                     f"Worktree for '{task}' not found at {wt_path}. "
                     f"May need to recreate worktree (Step 4a) before resuming this task."
+                )
+
+        # Fully-merged-not-promoted with a blocking hardener_verdict is a
+        # deliberate resume stop, not the "valid" happy path below. Only
+        # meaningful for a promotion-eligible wave (contract-bearing,
+        # local-merge/draft/aggregate-pr) — a per-task-pr wave's Hardener
+        # dispatch is reporting-only and never gates its (already-complete)
+        # delivery, so a stray hardener_verdict there must not block resume.
+        if (
+            not pending
+            and in_progress.get("integration_branch")
+            and state.get("mode") in ("local-merge", "draft", "aggregate-pr")
+        ):
+            verdict = in_progress.get("hardener_verdict")
+            if verdict in ("BLOCKED", "NEEDS_CONTEXT"):
+                blocked_stop(
+                    verdict,
+                    in_progress,
+                    resume_wave,
+                    state.get("mode", "unknown"),
+                    tasks_dir,
+                    args.as_json,
                 )
     else:
         # Find the next planned wave
