@@ -122,14 +122,18 @@ Verify the following conditions before starting:
 
    Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash claude-code/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
 
+**Contract-bearing wave scan (before State Init, `--local-merge`/`--draft`/`--aggregate-pr` only)**: for each wave, OR its member tasks' declared `quality_gate_contract` field against the `N/A — no quality gate contract` sentinel to compute a per-wave `has_contract` boolean, feeding it into the `--waves` entry below. A missing field, malformed field, or absent task directory stops Pre-flight with `NEEDS_CONTEXT` — never a silent `false`.
+
+> **Action required**: Read [references/wave-integration-branch.md](references/wave-integration-branch.md) now for the exact scan procedure, the `wave-int/<N>` creation/promotion lifecycle, and promotion-conflict handling. Do not restate its content inline.
+
 **State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
 bash claude-code/skills/scripts/update-state.py init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
-  --waves '[{"wave":1,"tasks":["t-a","t-b"]},{"wave":2,"tasks":["t-c"]}]'
+  --waves '[{"wave":1,"tasks":["t-a","t-b"],"has_contract":true},{"wave":2,"tasks":["t-c"],"has_contract":false}]'
 ```
-The `--waves` array is the wave plan from Step 3 — one entry per wave, `tasks` listing that wave's task-directory names. See the schema in [Checkpoint and Resume](#checkpoint-and-resume).
+The `--waves` array is the wave plan from Step 3 — one entry per wave, `tasks` listing that wave's task-directory names, `has_contract` from the scan above. See the schema in [Checkpoint and Resume](#checkpoint-and-resume).
 
 ## Pre-authorizing Tool Permissions (required for multi-wave execution)
 
@@ -261,7 +265,7 @@ Invoke against the worktree so the review reads the right tree. `--spec` is requ
 
 **Handling the review's status return**: `/ywc-impl-review` emits `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. Apply [../references/subagent-status-actions.md](../references/subagent-status-actions.md): correctness-level concerns (Critical/High) are fixed on the worktree branch and re-reviewed before 4e merges the task; observation-level concerns carry forward to the Completion Report. A `BLOCKED` review preserves the task's worktree (skip 4g for it) exactly like a `BLOCKED` implementation.
 
-**4e. Wave Delivery + Mark Complete** — After all tasks in the wave complete their implementation, deliver successful tasks into the base branch sequentially and mark each one complete. Delivery into the base branch is required for **every** mode because downstream waves branch from it. For `--local-merge` and `--draft`, the per-task `git merge --no-ff` + post-merge verification + Mark Task Complete + push (or defer) is delegated to [ywc-finish-branch](../ywc-finish-branch/SKILL.md). For `--per-task-pr`, this skill runs the full PR lifecycle (create → CI → bot → `gh pr merge` → base sync) and an inline Mark Complete, because the worktree model is incompatible with finish-branch's `normal-pr` mode (which assumes the feature branch is the current checkout and runs a local `git checkout <base>` that cannot execute from a worktree).
+**4e. Wave Delivery + Mark Complete** — After all tasks in the wave complete their implementation, deliver successful tasks sequentially and mark each one complete. Delivery is required for **every** mode because downstream waves branch from the base. For `--local-merge`, `--draft`, and `--aggregate-pr`, a wave with at least one contract-bearing task delivers onto `wave-int/<N>` instead of directly onto base — see [references/wave-integration-branch.md](references/wave-integration-branch.md); post-promotion base content is identical to the integration branch, so "the base branch" below still means the branch the next wave assumes when it starts, only the per-wave merge target during 4e differs for those three modes. A fully contract-less wave (or any wave under `--per-task-pr`) delivers direct to base exactly as today. For `--local-merge` and `--draft`, the per-task `git merge --no-ff` + post-merge verification + Mark Task Complete + push (or defer) is delegated to [ywc-finish-branch](../ywc-finish-branch/SKILL.md). For `--per-task-pr`, this skill runs the full PR lifecycle (create → CI → bot → `gh pr merge` → base sync) and an inline Mark Complete, because the worktree model is incompatible with finish-branch's `normal-pr` mode (which assumes the feature branch is the current checkout and runs a local `git checkout <base>` that cannot execute from a worktree).
 
 **⚠️ DO NOT SKIP DELIVERY FOR THE LAST TASK IN THE LAST WAVE.** There is no exception. Even when there are no remaining waves and no downstream task waiting, Step 4e (a)+(b) must run for every task. For `--local-merge` and `--draft`, `ywc-finish-branch` performs the local merge, completion-marker commit, and (for local-merge) the push. For `--per-task-pr`, (a) merges the PR via `gh pr merge --delete-branch` and (b) commits and pushes the completion marker. Skipping delivery leaves implementation code on an orphaned branch and `tasks/completed/` out of sync.
 
@@ -307,19 +311,19 @@ For each task in the wave **sequentially** (topological order within the wave) �
 
 | parallel-executor `--mode` | finish-branch invocation |
 |---|---|
-| `--local-merge` | `--mode local-merge --keep-branch` (push every task immediately) |
-| `--draft` | `--mode local-merge --keep-branch --defer-push` (push deferred to end of all waves; a single draft PR is created in Step 5) |
-| `--aggregate-pr` | `--mode local-merge --keep-branch --defer-push` (**identical to `--draft` per wave**; Step 5 lifts the accumulated state onto one branch and runs the full merge lifecycle per [references/aggregate-pr.md](references/aggregate-pr.md) §B) |
+| `--local-merge` | `--mode local-merge --keep-branch` (push every task immediately) — `--base-branch wave-int/<N>` when the wave is contract-bearing, else the real base |
+| `--draft` | `--mode local-merge --keep-branch --defer-push` (push deferred to end of all waves; a single draft PR is created in Step 5) — `--base-branch wave-int/<N>` when the wave is contract-bearing, else the real base |
+| `--aggregate-pr` | `--mode local-merge --keep-branch --defer-push` (**identical to `--draft` per wave**; Step 5 lifts the accumulated state onto one branch and runs the full merge lifecycle per [references/aggregate-pr.md](references/aggregate-pr.md) §B) — `--base-branch wave-int/<N>` when the wave is contract-bearing, else the real base |
 
 ```bash
 /ywc-finish-branch \
   --mode local-merge \
   --branch feature/<task-name> \
-  --base-branch <base-branch> \
+  --base-branch <base-branch or wave-int/<N> — see references/wave-integration-branch.md> \
   --task-name <task-name> \
   --tasks-dir <tasks-dir> \
   --keep-branch \
-  [--defer-push only when parallel mode is --draft — controls only the Mark-Complete commit push, never the merge or any earlier step]
+  [--defer-push only when parallel mode is --draft or --aggregate-pr — controls only the Mark-Complete commit push, never the merge or any earlier step]
 ```
 
 `--keep-branch` is required: the branch is checked out in `../worktree-<task-name>`, so `git branch -d` would fail until Step 4g releases the worktree.
@@ -346,9 +350,11 @@ This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves 
 
 Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never moves them. Record those tasks for the Completion Report.
 
-**Checkpoint** (after the entire wave loop finishes): `bash claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
+**Checkpoint** (after the entire wave loop finishes, **contract-less waves and `--per-task-pr` only** — a wave that created `wave-int/<N>` does not stamp this here; see 4e.6): `bash claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
 
 **4e.5. Hardener (Mutation gate, wave boundary)** — Runs once against the wave's merged diff (cross-task interaction gaps only surface post-merge) and dispatches to `ywc-qa-engineer` via the Task tool if the wave's accumulated tasks declare a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the wave-level Completion Report — never in `.ywc-run-state.json`.
+
+**Checkpoint** (contract-bearing wave under `--local-merge`/`--draft`/`--aggregate-pr` only — i.e. `integration_branch` is non-`None`): immediately after 4e.5 exits, before attempting promotion, run `bash claude-code/skills/scripts/update-state.py hardener-verdict <N> <absent|PASS|BLOCKED>` — `absent` if no contract applied, `PASS` if Hardener ran and did not return an `enforced`-tier `BLOCKED` (a dispatch failure counts as `PASS` here per the no-block rule above), `BLOCKED` only on an `enforced`-tier `BLOCKED`. 4e.6 below reads this value to decide promotion.
 
 > **Action required**: Read [../references/quality-gates.md](../references/quality-gates.md) for thresholds, dispatch conditions, mutation score loop cap, and resolution policies. Do not restate gate rules inline.
 
@@ -358,9 +364,13 @@ For waves without a quality gate contract, the gate behavior is:
 gate_state: N/A — no quality gate contract
 ```
 
+**The carve-out rule**: an isolation branch can only protect state whose point-of-no-return sits after the gate. `--per-task-pr` reaches its point-of-no-return (`gh pr merge --delete-branch`) once per task, inside the wave — no branch topology can move it behind the wave boundary. So under `--per-task-pr` this Hardener dispatch is reporting-only and may not return `BLOCKED` even under an `enforced` contract; blocking authority for that mode lives entirely at Step 4c.5. See [references/wave-integration-branch.md](references/wave-integration-branch.md) for the full rationale and the `gate_state`/report-only handling.
+
+**4e.6. Promotion (gated on Hardener, `--local-merge`/`--draft`/`--aggregate-pr` only)** — For a wave that created `wave-int/<N>` (i.e. its `integration_branch` is non-`None`), promote it into base only on a non-blocking Hardener verdict (`absent`, `PASS`, or a dispatch failure — never on `BLOCKED`); `wave-complete` is stamped only after a successful promotion. A fully contract-less wave, or any `--per-task-pr` wave, already delivered direct to base at 4e and is unaffected. Fast-forward failure, promotion-conflict handling (merge-base-in-and-re-Hardener, the two-counter attempt bound), and the blocked-wave preservation behavior are in [references/wave-integration-branch.md](references/wave-integration-branch.md) — do not reimplement the sequence here.
+
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 
-For each task whose Step 4e delivery completed (DONE), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-only loop, a BLOCKED-preserved task (whose 4g is skipped) is never torn down (AC6):
+For each task whose Step 4e delivery completed (DONE) **and whose wave is not `Hardener-BLOCKED`** (i.e. the wave created no `wave-int/<N>`, or its `hardener_verdict` is not `BLOCKED` — check `.ywc-run-state.json`), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-and-not-Hardener-BLOCKED loop, a BLOCKED-preserved task and a task whose wave is `Hardener-BLOCKED` (whose 4g is skipped, per [references/wave-integration-branch.md](references/wave-integration-branch.md)) are never torn down (AC6):
 
 ```bash
 bash claude-code/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>
@@ -397,6 +407,7 @@ done
 
 - Success → directory in `<tasks-dir>/completed/`, worktree removed, branch deleted
 - Preserved failure → directory still in `<tasks-dir>/<task-name>`, worktree and branch retained for recovery
+- `Hardener-BLOCKED` **wave** (third bucket, `--local-merge`/`--draft`/`--aggregate-pr` only) — every task in the wave individually succeeded (`DONE`, already under `completed/`) but the wave's `wave-int/<N>` promotion at 4e.6 has `hardener_verdict == "BLOCKED"`. Task-directory location alone cannot distinguish this from a fully completed wave, since Mark Complete already ran before the wave-boundary gate — key off `.ywc-run-state.json`'s `status`/`hardener_verdict`/`integration_branch` instead. See [references/wave-integration-branch.md](references/wave-integration-branch.md).
 
 No task should be in an in-between state (e.g. moved to `completed/` but branch still alive, or worktree removed but directory not moved). If the audit reports `LEAKED` or `DRIFT`, **do not transition** — surface the offending task name to the user; transitioning forward with a missing Mark-Complete silently corrupts dependency resolution for every downstream wave.
 

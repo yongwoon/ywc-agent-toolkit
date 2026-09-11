@@ -19,6 +19,8 @@ Subcommands:
   wave-complete    N
   task-step        TASK STEP [--branch B]
   task-complete    TASK
+  hardener-verdict WAVE VERDICT
+  promotion-retry  WAVE
 """
 from __future__ import annotations
 
@@ -102,6 +104,9 @@ def cmd_init_parallel(args: argparse.Namespace) -> None:
         wave.setdefault("status", "planned")
         wave.setdefault("merged", [])
         wave.setdefault("pending", list(wave["tasks"]))
+        if "has_contract" not in wave or not isinstance(wave["has_contract"], bool):
+            die(f'wave {wave.get("wave")}: "has_contract" must be a boolean, got {wave.get("has_contract")!r}')
+        wave.setdefault("integration_branch", f"wave-int/{wave['wave']}" if wave["has_contract"] else None)
     save({
         "executor": "parallel",
         "mode": args.mode,
@@ -196,6 +201,37 @@ def cmd_task_complete(args: argparse.Namespace) -> None:
     print(f"'{args.task}' completed ({len(completed)} done, {len(remaining)} remaining)")
 
 
+VALID_HARDENER_VERDICTS = {"absent", "PASS", "BLOCKED"}
+
+
+def cmd_hardener_verdict(args: argparse.Namespace) -> None:
+    if args.verdict not in VALID_HARDENER_VERDICTS:
+        die(f"verdict must be one of {sorted(VALID_HARDENER_VERDICTS)}, got '{args.verdict}'")
+    state = load()
+    require_executor(state, "parallel", "hardener-verdict")
+    wave = find_wave(state, args.wave)
+    wave["hardener_verdict"] = args.verdict
+    save(state)
+    print(f"wave {args.wave}: hardener_verdict -> {args.verdict}")
+
+
+PROMOTION_RETRY_CAP = 2
+
+
+def cmd_promotion_retry(args: argparse.Namespace) -> None:
+    state = load()
+    require_executor(state, "parallel", "promotion-retry")
+    wave = find_wave(state, args.wave)
+    if wave.get("promotion_retry_count", 0) >= PROMOTION_RETRY_CAP:
+        wave["status"] = "BLOCKED"
+        wave["reason"] = "promotion-churn"
+        save(state)
+        die(f"wave {args.wave}: promotion_retry_count already at cap ({PROMOTION_RETRY_CAP}) — marked BLOCKED (promotion-churn)")
+    wave["promotion_retry_count"] = wave.get("promotion_retry_count", 0) + 1
+    save(state)
+    print(f"wave {args.wave}: promotion_retry_count -> {wave['promotion_retry_count']}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -236,6 +272,15 @@ def build_parser() -> argparse.ArgumentParser:
     tc = sub.add_parser("task-complete")
     tc.add_argument("task")
     tc.set_defaults(func=cmd_task_complete)
+
+    hv = sub.add_parser("hardener-verdict")
+    hv.add_argument("wave", type=int)
+    hv.add_argument("verdict")
+    hv.set_defaults(func=cmd_hardener_verdict)
+
+    pr = sub.add_parser("promotion-retry")
+    pr.add_argument("wave", type=int)
+    pr.set_defaults(func=cmd_promotion_retry)
 
     return p
 
