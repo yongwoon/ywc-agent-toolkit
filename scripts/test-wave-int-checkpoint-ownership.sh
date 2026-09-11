@@ -16,6 +16,15 @@ DEFAULT_ROOTS=(
   "codex/skills/scripts/update-state.py"
 )
 
+# resume-state.py lives at a structurally different path than update-state.py
+# and is a different script — it cannot reuse the ROOTS loop above. It never
+# shells out to git, so its scenarios need only a hand-written state-file
+# fixture, not a disposable repo.
+RESUME_STATE_ROOTS=(
+  "claude-code/skills/ywc-parallel-executor/scripts/resume-state.py"
+  "codex/skills/ywc-parallel-executor/scripts/resume-state.py"
+)
+
 PASS_COUNT=0
 FAIL_COUNT=0
 
@@ -75,8 +84,63 @@ read_state_field() {
   python3 -c "import json,sys; s=json.load(open('$wd/.ywc-run-state.json')); print($expr)"
 }
 
+# Extracts a field from a JSON string without tripping `set -e` on malformed
+# input — mirrors run_capture's guard so a bad payload surfaces as a labeled
+# FAIL line, not a raw traceback that aborts the whole suite.
+json_field() {
+  local json="$1" expr="$2"
+  set +e
+  local val; val=$(printf '%s' "$json" | python3 -c "import json,sys; print($expr)" 2>&1)
+  local rc=$?
+  set -e
+  if [ "$rc" -ne 0 ]; then
+    echo "__JSON_PARSE_ERROR__: $val"
+  else
+    echo "$val"
+  fi
+}
+
 new_workdir() {
   mktemp -d
+}
+
+# Writes a minimal valid .ywc-run-state.json for resume-state.py with one
+# in_progress wave carrying the given pending/hardener_verdict/reason/
+# blocked_detail. Empty string for verdict/reason/detail omits that key
+# entirely (never writes null) — mirrors resume-state.py's own absent-key
+# convention. last_checkpoint is stamped "now" so the 48h staleness check
+# in resume-state.py never rejects the fixture.
+make_resume_fixture() {
+  local pending_json="$1" verdict="$2" reason="$3" detail="$4" out_file="$5"
+  python3 - "$pending_json" "$verdict" "$reason" "$detail" "$out_file" <<'PYEOF'
+import datetime
+import json
+import sys
+
+pending_json, verdict, reason, detail, out_file = sys.argv[1:6]
+pending = json.loads(pending_json)
+wave = {"wave": 0, "tasks": ["t1"], "status": "in_progress", "merged": [], "pending": pending}
+if verdict:
+    wave["hardener_verdict"] = verdict
+if reason:
+    wave["reason"] = reason
+if detail:
+    wave["blocked_detail"] = detail
+
+now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+state = {
+    "executor": "parallel",
+    "mode": "local-merge",
+    "tasks_dir": "tasks/",
+    "run_id": "abcdef12",
+    "current_wave": 0,
+    "waves": [wave],
+    "started_at": now,
+    "last_checkpoint": now,
+}
+with open(out_file, "w") as f:
+    json.dump(state, f)
+PYEOF
 }
 
 # Classifies an exit code as "zero" or "nonzero" — git's failure exit codes
@@ -179,6 +243,20 @@ run_unit_scenarios() {
   run_capture "$wd" "$abs_root" wave-int-status 0
   assert_eq "0" "$RC" "wave-int-status success exit ($root)"
   assert_eq "abcdef12 deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" "$OUT" "wave-int-status success print format ($root)"
+
+  # AC1 (yw-000038): hardener-verdict accepts NEEDS_CONTEXT and writes it.
+  write_state "$wd" '{"executor":"parallel","run_id":"abcdef12","waves":[{"wave":0}]}'
+  run_capture "$wd" "$abs_root" hardener-verdict 0 NEEDS_CONTEXT
+  assert_eq "0" "$RC" "hardener-verdict NEEDS_CONTEXT accepted exit ($root)"
+  local verdict0; verdict0=$(read_state_field "$wd" "s['waves'][0]['hardener_verdict']")
+  assert_eq "NEEDS_CONTEXT" "$verdict0" "hardener-verdict NEEDS_CONTEXT field written ($root)"
+
+  # AC2 (yw-000038): an invalid verdict is rejected with the exact sorted
+  # 4-value die() message.
+  run_capture "$wd" "$abs_root" hardener-verdict 0 BOGUS
+  assert_eq "1" "$RC" "hardener-verdict BOGUS rejected exit ($root)"
+  assert_contains "$OUT" "verdict must be one of ['BLOCKED', 'NEEDS_CONTEXT', 'PASS', 'absent'], got 'BOGUS'" \
+    "hardener-verdict BOGUS die() message ($root)"
 
   rm -rf "$wd"
   trap - EXIT
@@ -398,6 +476,61 @@ print(flipped)
   trap - EXIT
 }
 
+# --- resume-state.py scenarios (yw-000038: NEEDS_CONTEXT gating) ------------
+
+run_resume_state_scenarios() {
+  local root="$1" abs_root="$2"
+  local wd; wd=$(new_workdir)
+  trap 'rm -rf "$wd"' EXIT
+
+  # AC5: pending empty, hardener_verdict NEEDS_CONTEXT -> needs_context.
+  make_resume_fixture '[]' "NEEDS_CONTEXT" "some-reason" "some-detail" "$wd/.ywc-run-state.json"
+  run_capture "$wd" "$abs_root" --json
+  local status; status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
+  assert_eq "needs_context" "$status" "resume-state NEEDS_CONTEXT status ($root)"
+
+  # AC5: pending empty, hardener_verdict BLOCKED -> blocked.
+  make_resume_fixture '[]' "BLOCKED" "" "" "$wd/.ywc-run-state.json"
+  run_capture "$wd" "$abs_root" --json
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
+  assert_eq "blocked" "$status" "resume-state BLOCKED status ($root)"
+
+  # AC6: pending empty, hardener_verdict absent -> valid (non-regression).
+  make_resume_fixture '[]' "" "" "" "$wd/.ywc-run-state.json"
+  run_capture "$wd" "$abs_root" --json
+  assert_eq "0" "$RC" "resume-state absent-verdict valid exit ($root)"
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
+  assert_eq "valid" "$status" "resume-state absent-verdict status ($root)"
+
+  # AC6: pending empty, hardener_verdict PASS -> valid (non-regression).
+  make_resume_fixture '[]' "PASS" "" "" "$wd/.ywc-run-state.json"
+  run_capture "$wd" "$abs_root" --json
+  assert_eq "0" "$RC" "resume-state PASS valid exit ($root)"
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
+  assert_eq "valid" "$status" "resume-state PASS status ($root)"
+
+  # AC6: non-empty pending + NEEDS_CONTEXT -> valid (case-1 partial-merge
+  # precedence per spec Edge Cases — the case most likely to be silently
+  # broken by an incorrectly-ordered `if`).
+  make_resume_fixture '["task-a"]' "NEEDS_CONTEXT" "" "" "$wd/.ywc-run-state.json"
+  run_capture "$wd" "$abs_root" --json
+  assert_eq "0" "$RC" "resume-state non-empty-pending NEEDS_CONTEXT valid exit ($root)"
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
+  assert_eq "valid" "$status" "resume-state non-empty-pending precedence ($root)"
+
+  # Edge case: NEEDS_CONTEXT with no reason/blocked_detail set -> JSON output
+  # omits both keys entirely, never emits null.
+  make_resume_fixture '[]' "NEEDS_CONTEXT" "" "" "$wd/.ywc-run-state.json"
+  run_capture "$wd" "$abs_root" --json
+  local has_reason; has_reason=$(json_field "$OUT" "'yes' if 'reason' in json.load(sys.stdin) else 'no'")
+  assert_eq "no" "$has_reason" "resume-state NEEDS_CONTEXT omits absent reason key ($root)"
+  local has_detail; has_detail=$(json_field "$OUT" "'yes' if 'blocked_detail' in json.load(sys.stdin) else 'no'")
+  assert_eq "no" "$has_detail" "resume-state NEEDS_CONTEXT omits absent blocked_detail key ($root)"
+
+  rm -rf "$wd"
+  trap - EXIT
+}
+
 # --- main --------------------------------------------------------------------
 
 for root in "${ROOTS[@]}"; do
@@ -409,6 +542,16 @@ for root in "${ROOTS[@]}"; do
   fi
   run_unit_scenarios "$root" "$abs_root"
   run_integration_scenarios "$root" "$abs_root"
+done
+
+for root in "${RESUME_STATE_ROOTS[@]}"; do
+  abs_root="$REPO_ROOT/$root"
+  if [ ! -f "$abs_root" ]; then
+    echo "FAIL - script not found: $abs_root" >&2
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    continue
+  fi
+  run_resume_state_scenarios "$root" "$abs_root"
 done
 
 echo "$PASS_COUNT passed, $FAIL_COUNT failed"
