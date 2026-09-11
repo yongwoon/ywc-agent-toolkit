@@ -207,7 +207,7 @@ def cmd_task_complete(args: argparse.Namespace) -> None:
     print(f"'{args.task}' completed ({len(completed)} done, {len(remaining)} remaining)")
 
 
-VALID_HARDENER_VERDICTS = {"absent", "PASS", "BLOCKED"}
+VALID_HARDENER_VERDICTS = {"absent", "PASS", "BLOCKED", "NEEDS_CONTEXT"}
 
 
 def cmd_hardener_verdict(args: argparse.Namespace) -> None:
