@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
 import uuid
@@ -244,7 +245,12 @@ def require_run_id(state: dict) -> str:
     return run_id
 
 
+TIP_SHA_RE = re.compile(r"^[0-9a-fA-F]{40}$")
+
+
 def cmd_wave_int_owner(args: argparse.Namespace) -> None:
+    if not TIP_SHA_RE.match(args.tip_sha):
+        die(f"--tip-sha must be a 40-character hex SHA, got: {args.tip_sha!r}")
     state = load()
     require_executor(state, "parallel", "wave-int-owner")
     run_id = require_run_id(state)
@@ -264,6 +270,8 @@ def cmd_wave_int_blocked(args: argparse.Namespace) -> None:
     wave["reason"] = args.reason
     if args.detail is not None:
         wave["blocked_detail"] = args.detail
+    else:
+        wave.pop("blocked_detail", None)
     save(state)
     if args.detail is not None:
         print(f"wave {args.n}: status -> BLOCKED ({args.reason}) — {args.detail}")
