@@ -247,7 +247,7 @@ def require_run_id(state: dict) -> str:
 def cmd_wave_int_owner(args: argparse.Namespace) -> None:
     state = load()
     require_executor(state, "parallel", "wave-int-owner")
-    run_id = require_run_id(state, "wave-int-owner")
+    run_id = require_run_id(state)
     wave = find_wave(state, args.n)
     wave["integration_branch_owner"] = run_id
     wave["integration_branch_tip_sha"] = args.tip_sha
@@ -258,7 +258,7 @@ def cmd_wave_int_owner(args: argparse.Namespace) -> None:
 def cmd_wave_int_blocked(args: argparse.Namespace) -> None:
     state = load()
     require_executor(state, "parallel", "wave-int-blocked")
-    require_run_id(state, "wave-int-blocked")
+    require_run_id(state)
     wave = find_wave(state, args.n)
     wave["status"] = "BLOCKED"
     wave["reason"] = args.reason
