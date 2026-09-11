@@ -114,12 +114,12 @@ It is **not** called after each per-task merge onto `wave-int/<N>` during normal
 
 Added per `ywc-sequential-executor` Plan Critical Review (2026-09-11): `-010` (claude-code) and `-020` (codex) each independently implement this contract in their own root's `update-state.py`. This table — not either root's finished file — is the tiebreaker `yw-000037-030`'s regression suite asserts against when the two roots disagree, and is what `-020` copies verbatim per its task.md Step 0.
 
-| Subcommand | Args | Preconditions | stdout on success | Exit code | State mutation |
+| Subcommand | Args | Preconditions (else `die(...)`, non-zero exit, no write) | stdout on success | Exit code | State mutation |
 |---|---|---|---|---|---|
 | `init-parallel` (existing, extended) | (unchanged) | (unchanged) | (unchanged) | 0 | adds top-level `run_id: str` (`uuid.uuid4().hex[:8]`), immutable for the run |
-| `wave-int-owner <N> --tip-sha <sha>` | `N` (wave number), `--tip-sha` (string) | state file must have `run_id` set | (none — silent on success) | 0 | sets `waves[N].integration_branch_owner = run_id`, `waves[N].integration_branch_tip_sha = <sha>`, stamps `last_checkpoint` |
-| `wave-int-blocked <N> --reason <reason> [--detail <text>]` | `N`, `--reason` (string), `--detail` (optional string) | state file must have `run_id` set | (none — silent on success) | 0 | sets `waves[N].status = "BLOCKED"`, `waves[N].reason = <reason>`, `waves[N].blocked_detail = <text>` if given, stamps `last_checkpoint` |
-| `wave-int-status <N>` | `N` | **none** — no `run_id` precondition, read-only | `<owner-or-"unset"> <tip-sha-or-"unset">` (two space-separated tokens, one line) | 0 | none |
+| `wave-int-owner <N> --tip-sha <sha>` | `N` (wave number), `--tip-sha` (string) | `executor == "parallel"`; `state["run_id"]` set; wave `N` exists | `f"wave {n}: integration_branch_owner -> {owner}, tip_sha -> {sha}"` | 0 | sets `waves[N].integration_branch_owner = run_id`, `waves[N].integration_branch_tip_sha = <sha>`, calls `save()` |
+| `wave-int-blocked <N> --reason <reason> [--detail <text>]` | `N`, `--reason` (string), `--detail` (optional string) | `executor == "parallel"`; `state["run_id"]` set; wave `N` exists | `f"wave {n}: status -> BLOCKED ({reason}) — {detail}"` if `--detail` given, else `f"wave {n}: status -> BLOCKED ({reason})"` | 0 | sets `waves[N].status = "BLOCKED"`, `waves[N].reason = <reason>`, `waves[N].blocked_detail = <text>` if given, calls `save()` |
+| `wave-int-status <N>` | `N` | `executor == "parallel"`; wave `N` exists — **no `run_id` precondition**, read-only | `<owner-or-"unset"> <tip-sha-or-"unset">` (two space-separated tokens, one line) | 0 | none — does not call `save()` |
 
 Both roots' `--help` output must list identical subcommand names and flags (verified by each task's own Task Verify `diff <(--help) <(--help)` check, and re-asserted by `-030`).
 
