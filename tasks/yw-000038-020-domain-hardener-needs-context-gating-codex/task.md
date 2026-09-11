@@ -45,4 +45,4 @@ and do not touch any claude-code-root file.
 - [ ] `python3 -c "import ast; ast.parse(open('codex/skills/ywc-parallel-executor/scripts/resume-state.py').read())"` — no syntax error.
 
 ## Implementation Notes
-(Populated during execution — not authored at generation time.)
+- Task Verify's `diff <(python3 codex/skills/scripts/update-state.py --help) <(python3 claude-code/skills/scripts/update-state.py --help)` shows one pre-existing line-12 docstring wording difference ("read-only inspection / resume helpers" vs "read-only ``save-state.py`` / ``resume-state.py``") unrelated to this task's edit — confirmed via `git diff HEAD -- codex/skills/scripts/update-state.py`, which shows only the `VALID_HARDENER_VERDICTS` line changed. This divergence pre-dates this task and is outside its declared Ownership (module docstring, not the `hardener-verdict` region); the subcommand list itself (the AC8 concern) is otherwise identical. Not fixed here — flagged for awareness.

@@ -70,7 +70,7 @@ No new concurrency mechanism is needed: the per-task delivery loop is already se
 
 ## Promotion (step `4e.6`, after the wave-boundary aggregate, before Clean Up)
 
-After the wave-boundary Hardener aggregation returns for a wave that created `wave-int/<N>`, promote it into the base branch **only** when the aggregate outcome under an `enforced` contract is not `BLOCKED`. A fully contract-less wave never created `wave-int/<N>` and is unaffected — it already delivered direct to base at Step 4e. Under `report-only` or `advisory`, the aggregate never returns `BLOCKED` against promotion (per their existing tier semantics) — promotion proceeds regardless of `DONE_WITH_CONCERNS`.
+After the wave-boundary Hardener aggregation returns for a wave that created `wave-int/<N>`, promote it into the base branch **only** when the aggregate outcome under an `enforced` contract is neither `BLOCKED` nor `NEEDS_CONTEXT`. A fully contract-less wave never created `wave-int/<N>` and is unaffected — it already delivered direct to base at Step 4e. Under `report-only` or `advisory`, the aggregate never returns `BLOCKED` against promotion (per their existing tier semantics) — promotion proceeds regardless of `DONE_WITH_CONCERNS`.
 
 **On a non-blocking aggregate outcome:**
 
