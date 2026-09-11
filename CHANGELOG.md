@@ -11,6 +11,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.37.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.36.0...v1.37.0) (2026-09-11)
+
+
+### Added
+
+* port Quality Gate Contract across Codex and Claude Code skills ([#184](https://github.com/yongwoon/ywc-agent-toolkit/issues/184)) ([2fa0822](https://github.com/yongwoon/ywc-agent-toolkit/commit/2fa08225bca83fccb534d41c1b8bf9733344dba9))
+* **ywc-parallel-executor:** wave hardener delivery isolation ([#186](https://github.com/yongwoon/ywc-agent-toolkit/issues/186)) ([035a6e0](https://github.com/yongwoon/ywc-agent-toolkit/commit/035a6e0b8468dc21b3d4e7fd5a57ef0775430d2e))
+* **ywc-parallel-executor:** wave-int checkpoint ownership + tip-SHA verification ([#189](https://github.com/yongwoon/ywc-agent-toolkit/issues/189)) ([e879d01](https://github.com/yongwoon/ywc-agent-toolkit/commit/e879d01612d772347f87ad8d60a2277609c539d3))
+
+
+### Fixed
+
+* **ywc-parallel-executor:** gate wave promotion and resume on Hardener NEEDS_CONTEXT ([#190](https://github.com/yongwoon/ywc-agent-toolkit/issues/190)) ([293345f](https://github.com/yongwoon/ywc-agent-toolkit/commit/293345f28d2960a0b5961e6ad4718d0987a23a15))
+
 ## [1.36.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.35.0...v1.36.0) (2026-09-09)
 
 
