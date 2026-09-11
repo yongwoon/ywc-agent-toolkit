@@ -1,7 +1,7 @@
 # yw-000037-020-domain-wave-int-checkpoint-ownership-codex — Implementation Checklist
 
 ## Prerequisites
-- [ ] None — this is a root task (parallel-safe against `yw-000037-010`; touches disjoint files).
+- [ ] `yw-000037-010` merged (soft dependency — files are disjoint, but this task mirrors `-010`'s finished contract verbatim; see Depends On in README.md).
 
 ## Allowed Edit Scope
 - [ ] Stay within declared Ownership: `codex/skills/scripts/update-state.py`, `codex/skills/ywc-parallel-executor/references/wave-integration-branch.md`, `codex/skills/ywc-parallel-executor/references/checkpoint-resume.md`, plus the regenerated `plugins/ywc-agent-toolkit/skills/ywc-parallel-executor/**` and `plugins/ywc-agent-toolkit/skills/scripts/update-state.py` (via sync script only).
@@ -13,6 +13,10 @@
 - [ ] Stop if the codex `wave-integration-branch.md` or `update-state.py` have already diverged in unrelated ways from the claude-code copy such that the line-for-line mirroring assumption in this task's Notes does not hold — report the divergence and ask before applying the edit blind.
 
 ## Implementation Steps
+
+### Step 0 — Read the finished contract (mandatory, per Plan Critical Review)
+- [ ] Read the finished `claude-code/skills/scripts/update-state.py` diff from `yw-000037-010` in full before writing any codex-root code.
+- [ ] Copy subcommand names, flag names, JSON field names, and exit codes exactly as `-010` implemented them — do not re-derive the logic independently from prose. Any intentional divergence from `-010`'s finished behavior is a Stop Condition, not a judgment call for this task to make.
 
 ### `update-state.py` — FR-1/FR-2 (mirror of `yw-000037-010`)
 - [ ] Add `import uuid` to the top-level imports.

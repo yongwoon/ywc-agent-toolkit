@@ -1689,17 +1689,20 @@ graph LR
 | Task | Category | Depends On |
 |---|---|---|
 | `yw-000037-010-domain-wave-int-checkpoint-ownership-claude` | domain | (root) |
-| `yw-000037-020-domain-wave-int-checkpoint-ownership-codex` | domain | (root, parallel-safe with `-010`) |
+| `yw-000037-020-domain-wave-int-checkpoint-ownership-codex` | domain | `yw-000037-010` (soft — see Amendment below) |
 | `yw-000037-030-test-wave-int-checkpoint-ownership-regression` | test | `yw-000037-010`, `yw-000037-020` |
 
 ### Parallel Execution Notes (Batch 20)
 
-- Initial ready set: `yw-000037-010-domain-wave-int-checkpoint-ownership-claude` and `yw-000037-020-domain-wave-int-checkpoint-ownership-codex` — disjoint file ownership (`claude-code/skills/**` vs. `codex/skills/**` + `plugins/ywc-agent-toolkit/**`), safe to run concurrently in separate worktrees.
+- Initial ready set: `yw-000037-010-domain-wave-int-checkpoint-ownership-claude` and `yw-000037-020-domain-wave-int-checkpoint-ownership-codex` — disjoint file ownership (`claude-code/skills/**` vs. `codex/skills/**` + `plugins/ywc-agent-toolkit/**`); still parallel-safe for worktree isolation purposes, but `-020` implements `-010`'s *finished* contract verbatim (see Amendment) rather than deriving it independently from prose, so in sequential execution `-020` runs strictly after `-010` merges.
 - `yw-000037-030` is a hard gate on both roots: it exercises the actual finished subcommand behavior of each, so it cannot start until both are merged.
-- Shared surface: `.ywc-run-state.json` schema — both `-010` and `-020` independently implement an identical field/subcommand contract (AC8); no file-level conflict since each edits its own root only.
+- Shared surface: `.ywc-run-state.json` schema — both `-010` and `-020` implement an identical field/subcommand contract (AC8); no file-level conflict since each edits its own root only.
+
+**Amendment (2026-09-11, `ywc-sequential-executor` Plan Critical Review):** Opus advisor flagged an order risk — `-010` and `-020` independently implementing the *same* field names/argument shapes/exit codes is a shared-schema coupling that "parallel-safe on files" does not remove; a mismatch would only surface at `-030`, after both are merged. Refinement applied: `-020` now formally depends on `-010` and its task.md adds a mandatory first step to read `-010`'s finished diff and copy the contract verbatim. See `docs/ywc-plans/20260911-wave-int-checkpoint-ownership.md#normative-subcommand-contract` for the pinned contract table `-030` asserts against.
 
 ```mermaid
 graph LR
-  A[yw-000037-010 claude] --> C[yw-000037-030 regression test]
-  B[yw-000037-020 codex] --> C
+  A[yw-000037-010 claude] --> B[yw-000037-020 codex]
+  A --> C[yw-000037-030 regression test]
+  B --> C
 ```

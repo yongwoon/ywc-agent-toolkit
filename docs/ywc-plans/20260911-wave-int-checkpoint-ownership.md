@@ -110,6 +110,19 @@ This must run whether or not ownership/tip verification has already passed for a
 
 It is **not** called after each per-task merge onto `wave-int/<N>` during normal per-task delivery (`ywc-finish-branch`'s own push, not a `wave-integration-branch.md`-owned push) — recording ownership at every intermediate per-task commit would require threading the subcommand call through `ywc-finish-branch`'s internals, which FR-3's verification does not need: the tip-SHA check only has to detect divergence introduced **outside** this run's own delivery sequence (a different run, or manual tampering), and this run's own per-task pushes are exactly the content this run's tip-SHA record is expected to have advanced past by the time promotion runs. The two recorded checkpoints (creation, post-base-merge) bracket the only two points where the branch's identity — as opposed to its accumulating content — is established or could have shifted.
 
+## Normative Subcommand Contract
+
+Added per `ywc-sequential-executor` Plan Critical Review (2026-09-11): `-010` (claude-code) and `-020` (codex) each independently implement this contract in their own root's `update-state.py`. This table — not either root's finished file — is the tiebreaker `yw-000037-030`'s regression suite asserts against when the two roots disagree, and is what `-020` copies verbatim per its task.md Step 0.
+
+| Subcommand | Args | Preconditions | stdout on success | Exit code | State mutation |
+|---|---|---|---|---|---|
+| `init-parallel` (existing, extended) | (unchanged) | (unchanged) | (unchanged) | 0 | adds top-level `run_id: str` (`uuid.uuid4().hex[:8]`), immutable for the run |
+| `wave-int-owner <N> --tip-sha <sha>` | `N` (wave number), `--tip-sha` (string) | state file must have `run_id` set | (none — silent on success) | 0 | sets `waves[N].integration_branch_owner = run_id`, `waves[N].integration_branch_tip_sha = <sha>`, stamps `last_checkpoint` |
+| `wave-int-blocked <N> --reason <reason> [--detail <text>]` | `N`, `--reason` (string), `--detail` (optional string) | state file must have `run_id` set | (none — silent on success) | 0 | sets `waves[N].status = "BLOCKED"`, `waves[N].reason = <reason>`, `waves[N].blocked_detail = <text>` if given, stamps `last_checkpoint` |
+| `wave-int-status <N>` | `N` | **none** — no `run_id` precondition, read-only | `<owner-or-"unset"> <tip-sha-or-"unset">` (two space-separated tokens, one line) | 0 | none |
+
+Both roots' `--help` output must list identical subcommand names and flags (verified by each task's own Task Verify `diff <(--help) <(--help)` check, and re-asserted by `-030`).
+
 ## Quality Gate Contract
 
 N/A — no quality gate contract (this project does not currently declare CRAP/Mutation thresholds for skill-authoring changes; the existing `update-state.py` codebase has no measured baseline either).

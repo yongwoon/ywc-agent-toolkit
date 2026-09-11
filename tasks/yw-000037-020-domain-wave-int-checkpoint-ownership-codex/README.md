@@ -35,7 +35,7 @@ This task mirrors `yw-000037-010`'s claude-code change onto the codex root, per 
 ## Dependencies
 
 ### Depends On
-- (None — parallel-safe against `yw-000037-010` since the two touch disjoint files: `codex/skills/**` vs. `claude-code/skills/**`)
+- `yw-000037-010-domain-wave-int-checkpoint-ownership-claude` — soft dependency (files are disjoint, but this task mirrors `-010`'s *finished* subcommand names, flags, JSON fields, and exit codes verbatim per AC8's shared-schema contract; added per Plan Critical Review order-risk finding, 2026-09-11).
 
 ### Depended By
 - `yw-000037-030-test-wave-int-checkpoint-ownership-regression` — the regression test exercises this task's three subcommands and rewritten reuse procedure against the codex root, and verifies the plugin-mirror sync output.
