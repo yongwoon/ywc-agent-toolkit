@@ -106,18 +106,21 @@ new_workdir() {
 
 # Writes a minimal valid .ywc-run-state.json for resume-state.py with one
 # in_progress wave carrying the given pending/hardener_verdict/reason/
-# blocked_detail. Empty string for verdict/reason/detail omits that key
-# entirely (never writes null) — mirrors resume-state.py's own absent-key
-# convention. last_checkpoint is stamped "now" so the 48h staleness check
-# in resume-state.py never rejects the fixture.
+# blocked_detail/hardener_detail. Empty string for verdict/reason/detail/
+# hardener_detail omits that key entirely (never writes null) — mirrors
+# resume-state.py's own absent-key convention. blocked_detail and
+# hardener_detail are distinct fields (see checkpoint-resume.md): the
+# former is wave-int-blocked's, the latter is hardener-verdict's own
+# NEEDS_CONTEXT diagnostic. last_checkpoint is stamped "now" so the 48h
+# staleness check in resume-state.py never rejects the fixture.
 make_resume_fixture() {
-  local pending_json="$1" verdict="$2" reason="$3" detail="$4" out_file="$5"
-  python3 - "$pending_json" "$verdict" "$reason" "$detail" "$out_file" <<'PYEOF'
+  local pending_json="$1" verdict="$2" reason="$3" detail="$4" out_file="$5" hardener_detail="${6:-}"
+  python3 - "$pending_json" "$verdict" "$reason" "$detail" "$out_file" "$hardener_detail" <<'PYEOF'
 import datetime
 import json
 import sys
 
-pending_json, verdict, reason, detail, out_file = sys.argv[1:6]
+pending_json, verdict, reason, detail, out_file, hardener_detail = sys.argv[1:7]
 pending = json.loads(pending_json)
 wave = {
     "wave": 0,
@@ -133,6 +136,8 @@ if reason:
     wave["reason"] = reason
 if detail:
     wave["blocked_detail"] = detail
+if hardener_detail:
+    wave["hardener_detail"] = hardener_detail
 
 now = datetime.datetime.now(datetime.timezone.utc).isoformat()
 state = {
@@ -504,11 +509,15 @@ run_resume_state_scenarios() {
   trap 'rm -rf "$wd"' EXIT
 
   # AC5: pending empty, hardener_verdict NEEDS_CONTEXT -> needs_context.
-  make_resume_fixture '[]' "NEEDS_CONTEXT" "some-reason" "some-detail" "$wd/.ywc-run-state.json"
+  # hardener_detail (not blocked_detail) is the field a real NEEDS_CONTEXT
+  # checkpoint carries — verify resume-state.py surfaces it.
+  make_resume_fixture '[]' "NEEDS_CONTEXT" "some-reason" "some-detail" "$wd/.ywc-run-state.json" "Baseline artifact missing"
   run_capture "$wd" "$abs_root" --json
   assert_eq "1" "$RC" "resume-state NEEDS_CONTEXT exit code ($root)"
   local status; status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "needs_context" "$status" "resume-state NEEDS_CONTEXT status ($root)"
+  local hardener_detail_out; hardener_detail_out=$(json_field "$OUT" "json.load(sys.stdin)['hardener_detail']")
+  assert_eq "Baseline artifact missing" "$hardener_detail_out" "resume-state NEEDS_CONTEXT hardener_detail field ($root)"
 
   # AC5: pending empty, hardener_verdict BLOCKED -> blocked.
   make_resume_fixture '[]' "BLOCKED" "" "" "$wd/.ywc-run-state.json"
