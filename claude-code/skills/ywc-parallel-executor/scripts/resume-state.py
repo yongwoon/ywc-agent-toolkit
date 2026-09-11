@@ -20,6 +20,24 @@ JSON schema (exit 0):
     "warnings": ["<warning text>", ...]
   }
 
+JSON schema (exit 1, fully-merged-not-promoted with a blocking hardener_verdict):
+  {
+    "status": "blocked" | "needs_context",
+    "resume_wave": <wave number>,
+    "mode": "local-merge|draft|per-task-pr",
+    "tasks_dir": "<tasks dir>",
+    "reason": "<present only if the wave carries a reason>",
+    "blocked_detail": "<present only if the wave carries a blocked_detail>"
+  }
+  Distinct from the "error" shape below — this is a deliberate gate stop, not a script error.
+
+JSON schema (exit 1, error):
+  {
+    "status": "error",
+    "reason": "<error message>",
+    "hint": "<optional remediation hint>"
+  }
+
 Run from the project root (same directory as .ywc-run-state.json).
 """
 import json
@@ -80,11 +98,17 @@ def blocked_stop(
     stop, not a script error.
     """
     status = "blocked" if verdict == "BLOCKED" else "needs_context"
+    hint = (
+        "Review the recorded blocking findings, then re-run Hardener only after explicit confirmation."
+        if verdict == "BLOCKED"
+        else "Supply the missing context (e.g. fix the Baseline), then re-run Hardener — a bare confirmation is not enough."
+    )
     result: dict = {
         "status": status,
         "resume_wave": resume_wave,
         "mode": mode,
         "tasks_dir": tasks_dir,
+        "hint": hint,
     }
     if "reason" in wave:
         result["reason"] = wave["reason"]
@@ -99,6 +123,7 @@ def blocked_stop(
             print(f"  reason: {wave['reason']}")
         if "blocked_detail" in wave:
             print(f"  blocked_detail: {wave['blocked_detail']}")
+        print(f"  → {hint}")
     sys.exit(1)
 
 

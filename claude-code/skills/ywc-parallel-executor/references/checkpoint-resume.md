@@ -65,6 +65,7 @@ Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
       "integration_branch": "wave-int/0",
       "integration_branch_owner": "<run_id of the run that created/last advanced this branch — absent until first write>",
       "integration_branch_tip_sha": "<40-char sha, last-known-good checkpoint — absent until first write>",
+      "hardener_verdict": "<absent|PASS|BLOCKED|NEEDS_CONTEXT — present only for a contract-bearing wave once Step 4e.5 has run>",
       "reason": "<blocking reason — present only when status is BLOCKED>",
       "blocked_detail": "<expected/actual diagnostic text — absent when wave-int-blocked ran without --detail>"
     }
