@@ -114,6 +114,8 @@ def blocked_stop(
         result["reason"] = wave["reason"]
     if "blocked_detail" in wave:
         result["blocked_detail"] = wave["blocked_detail"]
+    if "hardener_detail" in wave:
+        result["hardener_detail"] = wave["hardener_detail"]
 
     if as_json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
@@ -123,6 +125,8 @@ def blocked_stop(
             print(f"  reason: {wave['reason']}")
         if "blocked_detail" in wave:
             print(f"  blocked_detail: {wave['blocked_detail']}")
+        if "hardener_detail" in wave:
+            print(f"  hardener_detail: {wave['hardener_detail']}")
         print(f"  → {hint}")
     sys.exit(1)
 
@@ -181,8 +185,16 @@ def main() -> None:
                 )
 
         # Fully-merged-not-promoted with a blocking hardener_verdict is a
-        # deliberate resume stop, not the "valid" happy path below.
-        if not pending:
+        # deliberate resume stop, not the "valid" happy path below. Only
+        # meaningful for a promotion-eligible wave (contract-bearing,
+        # local-merge/draft/aggregate-pr) — a per-task-pr wave's Hardener
+        # dispatch is reporting-only and never gates its (already-complete)
+        # delivery, so a stray hardener_verdict there must not block resume.
+        if (
+            not pending
+            and in_progress.get("integration_branch")
+            and state.get("mode") in ("local-merge", "draft", "aggregate-pr")
+        ):
             verdict = in_progress.get("hardener_verdict")
             if verdict in ("BLOCKED", "NEEDS_CONTEXT"):
                 blocked_stop(
