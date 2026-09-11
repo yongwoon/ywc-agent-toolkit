@@ -98,7 +98,7 @@ git merge --ff-only refs/heads/wave-int/<N>
    - Worst case: 3 dispatches × 3 mutation attempts = 9 total Hardener attempts per wave, then `BLOCKED`.
 4. A **real textual conflict** on the base-merge (step 1) marks the wave `BLOCKED`, preserves the integration branch and every task worktree, and surfaces the conflicting files to the user — no auto-resolution, no force-push.
 
-**On a blocking Hardener verdict** (after exhausting the above, or an immediate `BLOCKED` with no base-advance): base is left untouched, `wave-complete` is not stamped, the integration branch is preserved, and Step 4g cleanup is skipped for every task in the wave — matching the existing preserved-failure convention.
+**On a blocking Hardener verdict** (`hardener_verdict` of `BLOCKED` or `NEEDS_CONTEXT` — after exhausting the above, or an immediate `BLOCKED`/`NEEDS_CONTEXT` with no base-advance): base is left untouched, `wave-complete` is not stamped, the integration branch is preserved, and Step 4g cleanup is skipped for every task in the wave — matching the existing preserved-failure convention, for both values alike.
 
 ## `--per-task-pr` carve-out (advisory-only wave-boundary check)
 

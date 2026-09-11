@@ -66,6 +66,42 @@ def fail(msg: str, as_json: bool, hint: str = "") -> None:
     sys.exit(1)
 
 
+def blocked_stop(
+    verdict: str,
+    wave: dict,
+    resume_wave: int,
+    mode: str,
+    tasks_dir: str,
+    as_json: bool,
+) -> None:
+    """Non-error resume stop for a blocking hardener_verdict (BLOCKED / NEEDS_CONTEXT).
+
+    Distinct from fail()'s status: "error" shape — this is a deliberate gate
+    stop, not a script error.
+    """
+    status = "blocked" if verdict == "BLOCKED" else "needs_context"
+    result: dict = {
+        "status": status,
+        "resume_wave": resume_wave,
+        "mode": mode,
+        "tasks_dir": tasks_dir,
+    }
+    if "reason" in wave:
+        result["reason"] = wave["reason"]
+    if "blocked_detail" in wave:
+        result["blocked_detail"] = wave["blocked_detail"]
+
+    if as_json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        print(f"CANNOT RESUME: wave {resume_wave} hardener_verdict is {verdict}")
+        if "reason" in wave:
+            print(f"  reason: {wave['reason']}")
+        if "blocked_detail" in wave:
+            print(f"  blocked_detail: {wave['blocked_detail']}")
+    sys.exit(1)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Validate ywc-parallel-executor checkpoint for safe resume"
@@ -117,6 +153,20 @@ def main() -> None:
                 warnings.append(
                     f"Worktree for '{task}' not found at {wt_path}. "
                     f"May need to recreate worktree (Step 4a) before resuming this task."
+                )
+
+        # Fully-merged-not-promoted with a blocking hardener_verdict is a
+        # deliberate resume stop, not the "valid" happy path below.
+        if not pending:
+            verdict = in_progress.get("hardener_verdict")
+            if verdict in ("BLOCKED", "NEEDS_CONTEXT"):
+                blocked_stop(
+                    verdict,
+                    in_progress,
+                    resume_wave,
+                    state.get("mode", "unknown"),
+                    tasks_dir,
+                    args.as_json,
                 )
     else:
         # Find the next planned wave
