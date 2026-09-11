@@ -1,6 +1,6 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000037`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000038`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 ## Batch — Wave Hardener Delivery Isolation (ywc-parallel-executor)
 
@@ -1668,4 +1668,38 @@ graph LR
   G --> H[000082-080 testing-misc]
   H --> I[000082-090 agents]
   I --> J[000083-010 coverage-rerun]
+```
+
+---
+
+## Batch 20 — Wave Integration Branch Checkpoint Ownership
+
+- Spec: `docs/ywc-plans/20260911-wave-int-checkpoint-ownership.md` (Iteration 3, `DONE_WITH_CONCERNS` 1/0/0 resolved)
+- Granularity mode: `llm` · Language: `en`
+- Initials: `yw` (existing usage confirmed via `tasks/completed/`)
+- Starting phase: `yw-000037` — allocated via `allocate-phase.sh --initials yw --tasks-dir tasks` (`source=ledger`).
+- Preview approval: interactive approval received after preview (option: "Approve as-is").
+- Advisor pass: skipped — 3-task decomposition is Small scale in `llm` mode (skill Step 6 exempts Small specs).
+- Scale note: task count settled at 3 by bundling each root's `update-state.py` + `wave-integration-branch.md` + `checkpoint-resume.md` edit into one vertical-slice task per root (deep-module precedent: `yw-000036-030` bundled SKILL.md + 3 reference docs identically), plus one shared cross-root regression test task per AC8's "new regression test running against both copies."
+- No-AC requirements: none — every `## Scope` bullet traces to AC1–AC10; spec's own `## Open Questions` is N/A.
+- Safety invariants: no DB migration, no library introduction, no critical surface — no forced split.
+
+### Phase yw-000037 — Checkpoint ownership + tip-SHA verification (single phase, internal DAG via Depends On)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000037-010-domain-wave-int-checkpoint-ownership-claude` | domain | (root) |
+| `yw-000037-020-domain-wave-int-checkpoint-ownership-codex` | domain | (root, parallel-safe with `-010`) |
+| `yw-000037-030-test-wave-int-checkpoint-ownership-regression` | test | `yw-000037-010`, `yw-000037-020` |
+
+### Parallel Execution Notes (Batch 20)
+
+- Initial ready set: `yw-000037-010-domain-wave-int-checkpoint-ownership-claude` and `yw-000037-020-domain-wave-int-checkpoint-ownership-codex` — disjoint file ownership (`claude-code/skills/**` vs. `codex/skills/**` + `plugins/ywc-agent-toolkit/**`), safe to run concurrently in separate worktrees.
+- `yw-000037-030` is a hard gate on both roots: it exercises the actual finished subcommand behavior of each, so it cannot start until both are merged.
+- Shared surface: `.ywc-run-state.json` schema — both `-010` and `-020` independently implement an identical field/subcommand contract (AC8); no file-level conflict since each edits its own root only.
+
+```mermaid
+graph LR
+  A[yw-000037-010 claude] --> C[yw-000037-030 regression test]
+  B[yw-000037-020 codex] --> C
 ```
