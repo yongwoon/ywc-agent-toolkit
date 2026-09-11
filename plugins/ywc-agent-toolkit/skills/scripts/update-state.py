@@ -21,6 +21,9 @@ Subcommands:
   task-complete    TASK
   hardener-verdict WAVE VERDICT
   promotion-retry  WAVE
+  wave-int-owner   N --tip-sha SHA
+  wave-int-blocked N --reason REASON [--detail TEXT]
+  wave-int-status  N
 """
 from __future__ import annotations
 
@@ -29,6 +32,7 @@ import json
 import os
 import sys
 import tempfile
+import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -111,6 +115,7 @@ def cmd_init_parallel(args: argparse.Namespace) -> None:
         "executor": "parallel",
         "mode": args.mode,
         "tasks_dir": args.tasks_dir,
+        "run_id": uuid.uuid4().hex[:8],
         "started_at": now_iso(),
         "current_wave": 0,
         "waves": waves,
@@ -232,6 +237,49 @@ def cmd_promotion_retry(args: argparse.Namespace) -> None:
     print(f"wave {args.wave}: promotion_retry_count -> {wave['promotion_retry_count']}")
 
 
+def require_run_id(state: dict) -> str:
+    run_id = state.get("run_id")
+    if not run_id:
+        die("state has no run_id — re-run init-parallel (state predates wave-int ownership tracking)")
+    return run_id
+
+
+def cmd_wave_int_owner(args: argparse.Namespace) -> None:
+    state = load()
+    require_executor(state, "parallel", "wave-int-owner")
+    run_id = require_run_id(state)
+    wave = find_wave(state, args.n)
+    wave["integration_branch_owner"] = run_id
+    wave["integration_branch_tip_sha"] = args.tip_sha
+    save(state)
+    print(f"wave {args.n}: integration_branch_owner -> {run_id}, tip_sha -> {args.tip_sha}")
+
+
+def cmd_wave_int_blocked(args: argparse.Namespace) -> None:
+    state = load()
+    require_executor(state, "parallel", "wave-int-blocked")
+    require_run_id(state)
+    wave = find_wave(state, args.n)
+    wave["status"] = "BLOCKED"
+    wave["reason"] = args.reason
+    if args.detail is not None:
+        wave["blocked_detail"] = args.detail
+    save(state)
+    if args.detail is not None:
+        print(f"wave {args.n}: status -> BLOCKED ({args.reason}) — {args.detail}")
+    else:
+        print(f"wave {args.n}: status -> BLOCKED ({args.reason})")
+
+
+def cmd_wave_int_status(args: argparse.Namespace) -> None:
+    state = load()
+    require_executor(state, "parallel", "wave-int-status")
+    wave = find_wave(state, args.n)
+    owner = wave.get("integration_branch_owner") or "unset"
+    tip_sha = wave.get("integration_branch_tip_sha") or "unset"
+    print(f"{owner} {tip_sha}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -281,6 +329,21 @@ def build_parser() -> argparse.ArgumentParser:
     pr = sub.add_parser("promotion-retry")
     pr.add_argument("wave", type=int)
     pr.set_defaults(func=cmd_promotion_retry)
+
+    wio = sub.add_parser("wave-int-owner")
+    wio.add_argument("n", type=int)
+    wio.add_argument("--tip-sha", required=True)
+    wio.set_defaults(func=cmd_wave_int_owner)
+
+    wib = sub.add_parser("wave-int-blocked")
+    wib.add_argument("n", type=int)
+    wib.add_argument("--reason", required=True)
+    wib.add_argument("--detail", default=None)
+    wib.set_defaults(func=cmd_wave_int_blocked)
+
+    wis = sub.add_parser("wave-int-status")
+    wis.add_argument("n", type=int)
+    wis.set_defaults(func=cmd_wave_int_status)
 
     return p
 
