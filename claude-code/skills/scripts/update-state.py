@@ -237,7 +237,7 @@ def cmd_promotion_retry(args: argparse.Namespace) -> None:
     print(f"wave {args.wave}: promotion_retry_count -> {wave['promotion_retry_count']}")
 
 
-def require_run_id(state: dict, sub: str) -> str:
+def require_run_id(state: dict) -> str:
     run_id = state.get("run_id")
     if not run_id:
         die("state has no run_id — re-run init-parallel (state predates wave-int ownership tracking)")
