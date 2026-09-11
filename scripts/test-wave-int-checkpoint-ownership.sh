@@ -45,6 +45,10 @@ assert_contains() {
 
 ROOTS=("${DEFAULT_ROOTS[@]}")
 if [ "${1:-}" = "--root" ]; then
+  if [ $# -lt 2 ]; then
+    echo "usage: $0 [--root <path-to-update-state.py>]" >&2
+    exit 2
+  fi
   ROOTS=("$2")
 fi
 
@@ -105,17 +109,17 @@ run_unit_scenarios() {
   wd=$(new_workdir)
   trap 'rm -rf "$wd"' EXIT
   write_state "$wd" '{"executor":"sequential","run_id":"aaaaaaaa","waves":[{"wave":0}]}'
-  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha abc
+  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
   assert_eq "1" "$RC" "wave-int-owner executor-mismatch exit ($root)"
   assert_contains "$OUT" "requires executor='parallel'" "wave-int-owner executor-mismatch message ($root)"
 
   write_state "$wd" '{"executor":"parallel","waves":[{"wave":0}]}'
-  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha abc
+  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
   assert_eq "1" "$RC" "wave-int-owner run_id-unset exit ($root)"
   assert_contains "$OUT" "re-run init-parallel" "wave-int-owner run_id-unset message ($root)"
 
   write_state "$wd" '{"executor":"parallel","run_id":"aaaaaaaa","waves":[]}'
-  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha abc
+  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
   assert_eq "1" "$RC" "wave-int-owner wave-not-found exit ($root)"
   assert_contains "$OUT" "wave 0 not found in state" "wave-int-owner wave-not-found message ($root)"
 
@@ -154,9 +158,9 @@ run_unit_scenarios() {
 
   # Success-path print-format assertions, matching the API Contract exactly.
   write_state "$wd" '{"executor":"parallel","run_id":"abcdef12","waves":[{"wave":0}]}'
-  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeef
+  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
   assert_eq "0" "$RC" "wave-int-owner success exit ($root)"
-  assert_eq "wave 0: integration_branch_owner -> abcdef12, tip_sha -> deadbeef" "$OUT" \
+  assert_eq "wave 0: integration_branch_owner -> abcdef12, tip_sha -> deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" "$OUT" \
     "wave-int-owner success print format ($root)"
 
   run_capture "$wd" "$abs_root" wave-int-blocked 0 --reason wave-int-tip-mismatch --detail "some detail"
@@ -171,10 +175,10 @@ run_unit_scenarios() {
     "wave-int-blocked success print format without detail ($root)"
 
   write_state "$wd" '{"executor":"parallel","run_id":"abcdef12","waves":[{"wave":0}]}'
-  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeef
+  run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha deadbeefdeadbeefdeadbeefdeadbeefdeadbeef
   run_capture "$wd" "$abs_root" wave-int-status 0
   assert_eq "0" "$RC" "wave-int-status success exit ($root)"
-  assert_eq "abcdef12 deadbeef" "$OUT" "wave-int-status success print format ($root)"
+  assert_eq "abcdef12 deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" "$OUT" "wave-int-status success print format ($root)"
 
   rm -rf "$wd"
   trap - EXIT
