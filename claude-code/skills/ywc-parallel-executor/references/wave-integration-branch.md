@@ -26,9 +26,9 @@ Step 4e creates `wave-int/<N>` **if and only if** that wave's `integration_branc
 **Reuse verification (checkpoint ownership + tip-SHA).** Before creating or reusing `wave-int/<N>`, verify ownership rather than reusing unconditionally — a checkpoint claiming ownership of a branch that no longer exists must never be silently treated as a fresh creation, and a different run's stale `BLOCKED` branch must never be silently promoted. The procedure:
 
 1. Run `python3 claude-code/skills/scripts/update-state.py wave-int-status <N>` to read `integration_branch_owner` / `integration_branch_tip_sha`. This succeeds even against a pre-this-spec checkpoint with no `run_id` at all (prints `unset unset`), so the procedure always reaches step 5 below.
-2. Check whether `wave-int/<N>` exists (local or `origin`):
+2. Check whether `wave-int/<N>` exists (local or `origin`) — verify against `refs/heads/wave-int/<N>` explicitly rather than the bare short name, since Git resolves ambiguous names by checking `refs/tags/` before `refs/heads/`; a same-named tag would otherwise make `rev-parse --verify` succeed against the wrong ref and skip the remote check entirely:
    ```bash
-   git rev-parse --verify wave-int/<N> 2>/dev/null || git ls-remote --exit-code --heads origin wave-int/<N> >/dev/null 2>&1
+   git rev-parse --verify refs/heads/wave-int/<N> 2>/dev/null || git ls-remote --exit-code --heads origin wave-int/<N> >/dev/null 2>&1
    ```
 3. **Owner recorded, branch missing** (`integration_branch_owner` is set but neither a local nor an `origin` `wave-int/<N>` exists) → call `python3 claude-code/skills/scripts/update-state.py wave-int-blocked <N> --reason wave-int-branch-missing --detail "branch=wave-int/<N> recorded-owner=<owner> recorded-tip=<tip-sha>"`. Do not create a fresh branch under this wave number without operator intervention.
 4. **Branch does not exist, no owner recorded** → branch it from the current base:
@@ -38,10 +38,10 @@ Step 4e creates `wave-int/<N>` **if and only if** that wave's `integration_branc
    git checkout -b wave-int/<N>
    git push origin wave-int/<N>
    ```
-   then immediately call `python3 claude-code/skills/scripts/update-state.py wave-int-owner <N> --tip-sha "$(git rev-parse wave-int/<N>)"`.
+   then immediately call `python3 claude-code/skills/scripts/update-state.py wave-int-owner <N> --tip-sha "$(git rev-parse refs/heads/wave-int/<N>)"`.
 5. **Branch exists** → verify before reuse:
    1. If `integration_branch_owner` is unset, or is set but does not equal the current run's `run_id` (read from `.ywc-run-state.json`) → call `python3 claude-code/skills/scripts/update-state.py wave-int-blocked <N> --reason wave-int-ownership-mismatch --detail "branch=wave-int/<N> owner=<recorded-owner-or-none> current-run=<run_id>"`. Do not merge, promote, or delete the branch.
-   2. If owner matches, materialize the local ref if needed (see FR-4 below), then run `git cat-file -e <recorded-tip-sha>`. If this fails (object unreachable), call `wave-int-blocked <N> --reason wave-int-materialize-failed --detail "branch=wave-int/<N> recorded-sha=<recorded-sha> unreachable: <raw git error>"` — never `wave-int-tip-mismatch` for a git-internal failure. Otherwise check `git merge-base --is-ancestor <recorded-tip-sha> wave-int/<N>`: exit `0` (the checkpoint's last-known-good tip is an ancestor of, or equal to, the branch's current tip) → reuse it, merge the wave's remaining `pending` tasks onto it exactly as if the run had never stopped (this is what makes a partial-merge interruption safe to resume — see `checkpoint-resume.md`'s partial-merge case). Non-zero exit (history diverged from what this run last recorded) → call `wave-int-blocked <N> --reason wave-int-tip-mismatch --detail "branch=wave-int/<N> recorded=<recorded-sha> actual=<actual-tip-sha>"`.
+   2. If owner matches, materialize the local ref if needed (see FR-4 below), then run `git cat-file -e <recorded-tip-sha>`. If this fails (object unreachable), call `wave-int-blocked <N> --reason wave-int-materialize-failed --detail "branch=wave-int/<N> recorded-sha=<recorded-sha> unreachable: <raw git error>"` — never `wave-int-tip-mismatch` for a git-internal failure. Otherwise check `git merge-base --is-ancestor <recorded-tip-sha> refs/heads/wave-int/<N>`: exit `0` (the checkpoint's last-known-good tip is an ancestor of, or equal to, the branch's current tip) → reuse it, merge the wave's remaining `pending` tasks onto it exactly as if the run had never stopped (this is what makes a partial-merge interruption safe to resume — see `checkpoint-resume.md`'s partial-merge case). Non-zero exit (history diverged from what this run last recorded) → call `wave-int-blocked <N> --reason wave-int-tip-mismatch --detail "branch=wave-int/<N> recorded=<recorded-sha> actual=<actual-tip-sha>"`.
 
 This ancestor-check (rather than exact SHA equality) is what makes the ordinary resume case above satisfiable: ownership is recorded only at creation and post-base-merge (see below), so a legitimate in-progress wave's actual branch tip routinely runs ahead of the last recorded `integration_branch_tip_sha` — an equality check would misclassify that gap as a divergence on every ordinary resume.
 
@@ -50,7 +50,7 @@ This ancestor-check (rather than exact SHA equality) is what makes the ordinary 
 **Origin-only branch materialization (FR-4).** Before the ancestor-check comparison in step 5.2 above, if `git rev-parse --verify wave-int/<N>` fails locally but `git ls-remote --exit-code --heads origin wave-int/<N>` succeeds, fetch and create the local tracking branch:
 
 ```bash
-git fetch origin wave-int/<N>:wave-int/<N>
+git fetch origin refs/heads/wave-int/<N>:refs/heads/wave-int/<N>
 ```
 
 This must run whether or not ownership/tip verification has already passed for a prior materialization within the same run (idempotent — a second fetch when the local ref already matches origin is a no-op fast-forward). This also satisfies `ywc-finish-branch/SKILL.md:91`'s local-ref `--base-branch` precondition when the branch previously existed only on `origin`.
@@ -76,7 +76,7 @@ After Step 4e.5's Hardener returns for a wave that created `wave-int/<N>`, promo
 
 ```bash
 git checkout <base-branch>
-git merge --ff-only wave-int/<N>
+git merge --ff-only refs/heads/wave-int/<N>
 ```
 
 - Succeeds → push (`--local-merge`, immediate) or defer (`--draft` / `--aggregate-pr`, accumulate locally). Stamp `wave-complete` only **after** this succeeds — its existing "refuses while any task is pending" guard in `update-state.py:162-163` is retained unchanged as the promotion precondition.
@@ -86,11 +86,11 @@ git merge --ff-only wave-int/<N>
 
 1. Merge base **into** `wave-int/<N>` — never rebase, per `../../references/pr-conflict-resolution.md`:
    ```bash
-   git checkout wave-int/<N>
+   git checkout refs/heads/wave-int/<N>
    git merge --no-ff <base-branch> -m "Merge <base-branch> into wave-int/<N>"
    git push origin wave-int/<N>
    ```
-   then immediately call `python3 claude-code/skills/scripts/update-state.py wave-int-owner <N> --tip-sha "$(git rev-parse wave-int/<N>)"` (FR-5's second checkpoint — the branch's identity could have shifted here, not just its accumulating content).
+   then immediately call `python3 claude-code/skills/scripts/update-state.py wave-int-owner <N> --tip-sha "$(git rev-parse refs/heads/wave-int/<N>)"` (FR-5's second checkpoint — the branch's identity could have shifted here, not just its accumulating content).
 2. **Re-run Hardener** against the merged result before retrying promotion. This is a second wave-boundary Hardener dispatch and gets its **own fresh 3 approved Mutation Loop Cap attempts** (`../../references/quality-gates.md` §"Mutation Loop Cap") — a base-merge produces genuinely new content the prior dispatch never measured; giving the re-run 0 attempts left would silently downgrade "re-run Hardener" to inspection-only.
 3. **Two-counter attempt bound** — the re-run's mutation attempts and the live-lock retry count are bounded separately:
    - **Mutation Loop Cap**: fresh 3 attempts per dispatch (see above).
