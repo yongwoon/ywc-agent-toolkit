@@ -119,7 +119,14 @@ import sys
 
 pending_json, verdict, reason, detail, out_file = sys.argv[1:6]
 pending = json.loads(pending_json)
-wave = {"wave": 0, "tasks": ["t1"], "status": "in_progress", "merged": [], "pending": pending}
+wave = {
+    "wave": 0,
+    "tasks": ["t1"],
+    "status": "in_progress",
+    "merged": [],
+    "pending": pending,
+    "integration_branch": "wave-int/0",
+}
 if verdict:
     wave["hardener_verdict"] = verdict
 if reason:
@@ -250,6 +257,19 @@ run_unit_scenarios() {
   assert_eq "0" "$RC" "hardener-verdict NEEDS_CONTEXT accepted exit ($root)"
   local verdict0; verdict0=$(read_state_field "$wd" "s['waves'][0]['hardener_verdict']")
   assert_eq "NEEDS_CONTEXT" "$verdict0" "hardener-verdict NEEDS_CONTEXT field written ($root)"
+
+  # Regression (PR #190 CodeRabbit finding): --detail writes a dedicated
+  # hardener_detail field, distinct from wave-int-blocked's blocked_detail.
+  run_capture "$wd" "$abs_root" hardener-verdict 0 NEEDS_CONTEXT --detail "Baseline artifact missing"
+  assert_eq "0" "$RC" "hardener-verdict --detail accepted exit ($root)"
+  local hardener_detail0; hardener_detail0=$(read_state_field "$wd" "s['waves'][0]['hardener_detail']")
+  assert_eq "Baseline artifact missing" "$hardener_detail0" "hardener-verdict --detail field written ($root)"
+
+  # A subsequent call without --detail removes the field (key omitted, never null).
+  run_capture "$wd" "$abs_root" hardener-verdict 0 PASS
+  assert_eq "0" "$RC" "hardener-verdict without --detail accepted exit ($root)"
+  local has_hardener_detail; has_hardener_detail=$(read_state_field "$wd" "'yes' if 'hardener_detail' in s['waves'][0] else 'no'")
+  assert_eq "no" "$has_hardener_detail" "hardener-verdict without --detail removes hardener_detail ($root)"
 
   # AC2 (yw-000038): an invalid verdict is rejected with the exact sorted
   # 4-value die() message.
@@ -486,12 +506,14 @@ run_resume_state_scenarios() {
   # AC5: pending empty, hardener_verdict NEEDS_CONTEXT -> needs_context.
   make_resume_fixture '[]' "NEEDS_CONTEXT" "some-reason" "some-detail" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
+  assert_eq "1" "$RC" "resume-state NEEDS_CONTEXT exit code ($root)"
   local status; status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "needs_context" "$status" "resume-state NEEDS_CONTEXT status ($root)"
 
   # AC5: pending empty, hardener_verdict BLOCKED -> blocked.
   make_resume_fixture '[]' "BLOCKED" "" "" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
+  assert_eq "1" "$RC" "resume-state BLOCKED exit code ($root)"
   status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "blocked" "$status" "resume-state BLOCKED status ($root)"
 
@@ -526,6 +548,45 @@ run_resume_state_scenarios() {
   assert_eq "no" "$has_reason" "resume-state NEEDS_CONTEXT omits absent reason key ($root)"
   local has_detail; has_detail=$(json_field "$OUT" "'yes' if 'blocked_detail' in json.load(sys.stdin) else 'no'")
   assert_eq "no" "$has_detail" "resume-state NEEDS_CONTEXT omits absent blocked_detail key ($root)"
+
+  # Regression (PR #190 CodeRabbit finding): hardener_verdict only gates
+  # resume for a promotion-eligible wave (contract-bearing,
+  # local-merge/draft/aggregate-pr). A per-task-pr wave's Hardener dispatch
+  # is reporting-only — a stray BLOCKED/NEEDS_CONTEXT verdict there must not
+  # block resume of an already-delivered wave.
+  python3 - "$wd/.ywc-run-state.json" <<'PYEOF'
+import datetime
+import json
+import sys
+
+out_file = sys.argv[1]
+now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+state = {
+    "executor": "parallel",
+    "mode": "per-task-pr",
+    "tasks_dir": "tasks/",
+    "run_id": "abcdef12",
+    "current_wave": 0,
+    "waves": [
+        {
+            "wave": 0,
+            "tasks": ["t1"],
+            "status": "in_progress",
+            "merged": ["t1"],
+            "pending": [],
+            "hardener_verdict": "BLOCKED",
+        }
+    ],
+    "started_at": now,
+    "last_checkpoint": now,
+}
+with open(out_file, "w") as f:
+    json.dump(state, f)
+PYEOF
+  run_capture "$wd" "$abs_root" --json
+  assert_eq "0" "$RC" "resume-state per-task-pr stray verdict valid exit ($root)"
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
+  assert_eq "valid" "$status" "resume-state per-task-pr stray verdict ignored ($root)"
 
   rm -rf "$wd"
   trap - EXIT
