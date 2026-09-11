@@ -1,6 +1,6 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000038`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000039`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 ## Batch — Wave Hardener Delivery Isolation (ywc-parallel-executor)
 
@@ -1705,4 +1705,39 @@ graph LR
   A[yw-000037-010 claude] --> B[yw-000037-020 codex]
   A --> C[yw-000037-030 regression test]
   B --> C
+```
+
+---
+
+## Batch 21 — Hardener NEEDS_CONTEXT Gating for Wave Promotion and Resume
+
+- Spec: `docs/ywc-plans/20260911-hardener-needs-context-gating.md` (Iteration 1, `DONE_WITH_CONCERNS` 1/2/4 resolved)
+- Granularity mode: `llm` · Language: `en`
+- Initials: `yw` (cached to `.ywc-config.json` this run, confirmed against existing `tasks/completed/` usage)
+- Starting phase: `yw-000038` — allocated via `allocate-phase.sh --initials yw --tasks-dir tasks/` (`source=ledger`).
+- Compaction gate: `dependency-graph.md` at 1708 lines (>300) — `compact-dependency-graph.py tasks/` run, reported "nothing to compact" (no phase is fully archived to `tasks/completed/` yet as a *whole* unit under the compactor's current scan).
+- Preview approval: interactive approval received after preview (option: "Approve").
+- Advisor pass: skipped — 3-task decomposition is Small scale in `llm` mode (skill Step 6 exempts Small specs).
+- Scale note: mirrors Batch 20's bundling precedent exactly — one vertical-slice task per root (`update-state.py` + `SKILL.md` + `wave-integration-branch.md` + `checkpoint-resume.md` + `resume-state.py`, 5 files, mostly small text/logic edits), plus one shared cross-root regression test task extending the same harness AC8 established. Unlike Batch 20, the two root tasks are file-disjoint with no cross-task contract-derivation risk (no new subcommand/schema introduced — only extending an existing enum and an existing script's branch logic per already-pinned spec wording), so no forced sequential dependency between `-010` and `-020`.
+- No-AC requirements: none — every `## Scope` bullet traces to AC1–AC9; spec's own `## Open Questions` (label naming, exit code) are non-blocking and resolved in-task (see `yw-000038-010`/`-020` Notes: two distinct labels `Hardener-BLOCKED`/`Hardener-NEEDS_CONTEXT`; exit 1).
+- Safety invariants: no DB migration, no library introduction, no critical surface — no forced split.
+
+### Phase yw-000038 — Hardener NEEDS_CONTEXT checkpoint gating (single phase, internal DAG via Depends On)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000038-010-domain-hardener-needs-context-gating-claude` | domain | (root) |
+| `yw-000038-020-domain-hardener-needs-context-gating-codex` | domain | (root — file-disjoint from `-010`) |
+| `yw-000038-030-test-hardener-needs-context-gating-regression` | test | `yw-000038-010`, `yw-000038-020` |
+
+### Parallel Execution Notes (Batch 21)
+
+- Initial ready set: `yw-000038-010-domain-hardener-needs-context-gating-claude` and `yw-000038-020-domain-hardener-needs-context-gating-codex` — fully disjoint file ownership (`claude-code/skills/**` vs. `codex/skills/**` + `plugins/ywc-agent-toolkit/**`), and (unlike Batch 20) no shared-schema-derivation risk since both roots extend an already-pinned value domain (`NEEDS_CONTEXT`) and already-pinned wording from the spec's `## Existing Constraints Touched` table rather than inventing a new contract independently — genuinely worktree-parallel-safe.
+- `yw-000038-030` is a hard gate on both roots: its `RESUME_STATE_ROOTS` and `ROOTS` assertions exercise the actual finished behavior of each, so it cannot start until both are merged.
+- Shared surface: `.ywc-run-state.json` `hardener_verdict`/`resume-state.py` `status` value domains — both `-010` and `-020` extend to the identical value set (AC8); no file-level conflict since each edits its own root only.
+
+```mermaid
+graph LR
+  A[yw-000038-010 claude] --> C[yw-000038-030 regression test]
+  B[yw-000038-020 codex] --> C
 ```
