@@ -807,6 +807,11 @@ if [ -f .codex/skills/ywc-codex-toolkit-eval/scripts/score.py ]; then
   python3 .codex/skills/ywc-codex-toolkit-eval/scripts/score.py --ci || ERRORS=$((ERRORS + 1))
 fi
 
+if [ -f scripts/test-wave-int-checkpoint-ownership.sh ]; then
+  echo "==> Running wave-int checkpoint ownership regression suite..."
+  bash scripts/test-wave-int-checkpoint-ownership.sh || ERRORS=$((ERRORS + 1))
+fi
+
 if [ "$ERRORS" -gt 0 ]; then
   echo ""
   echo "Validation failed: $ERRORS error(s) found."
