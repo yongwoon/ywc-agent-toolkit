@@ -89,6 +89,7 @@ run_unit_scenarios() {
 
   # AC7: init-parallel writes a top-level run_id, 8 hex chars.
   local wd; wd=$(new_workdir)
+  trap 'rm -rf "$wd"' EXIT
   run_capture "$wd" "$abs_root" init-parallel --mode local-merge --tasks-dir tasks/ \
     --waves '[{"wave":0,"tasks":["t"],"has_contract":true}]'
   local run_id; run_id=$(read_state_field "$wd" "s['run_id']")
@@ -98,9 +99,11 @@ run_unit_scenarios() {
     assert_eq "8 hex chars" "$run_id" "AC7 run_id format ($root)"
   fi
   rm -rf "$wd"
+  trap - EXIT
 
   # AC10 / wave-int-owner: executor-mismatch, run_id-unset, wave-not-found.
   wd=$(new_workdir)
+  trap 'rm -rf "$wd"' EXIT
   write_state "$wd" '{"executor":"sequential","run_id":"aaaaaaaa","waves":[{"wave":0}]}'
   run_capture "$wd" "$abs_root" wave-int-owner 0 --tip-sha abc
   assert_eq "1" "$RC" "wave-int-owner executor-mismatch exit ($root)"
@@ -174,6 +177,7 @@ run_unit_scenarios() {
   assert_eq "abcdef12 deadbeef" "$OUT" "wave-int-status success print format ($root)"
 
   rm -rf "$wd"
+  trap - EXIT
 }
 
 # --- integration-boundary scenarios (disposable git repo) -------------------
@@ -199,6 +203,7 @@ setup_git_repo() {
 run_integration_scenarios() {
   local root="$1" abs_root="$2"
   local wd; wd=$(new_workdir)
+  trap 'rm -rf "$wd"' EXIT
   setup_git_repo "$wd"
   local work="$wd/work"
 
@@ -255,11 +260,26 @@ run_integration_scenarios() {
   local tip2; tip2=$(cd "$work" && git rev-parse wave-int/2)
   run_capture "$work" "$abs_root" wave-int-owner 2 --tip-sha "$tip2"
   local recorded_owner2; recorded_owner2=$(read_state_field "$work" "s['waves'][2]['integration_branch_owner']")
-  local other_run_id="ffffffff"
-  assert_eq "1" "$([ "$recorded_owner2" != "$other_run_id" ] && echo 1 || echo 0)" \
-    "AC2 owner-mismatch: recorded owner differs from a different run's run_id ($root)"
+  assert_eq "$run_id" "$recorded_owner2" "AC2 owner-mismatch: wave-int-owner recorded the current run's own run_id ($root)"
+
+  # Simulate a second run observing this checkpoint: hand-write a copy of the
+  # state file with a different run_id (task's own Notes), then confirm the
+  # mismatch holds from that second run's perspective — not against an
+  # arbitrary hardcoded literal.
+  local second_run_id
+  second_run_id=$(python3 -c "
+import json
+s = json.load(open('$work/.ywc-run-state.json'))
+flipped = ''.join('0' if c != '0' else '1' for c in s['run_id'][:1]) + s['run_id'][1:]
+s2 = dict(s)
+s2['run_id'] = flipped
+json.dump(s2, open('$work/.ywc-run-state.second-run.json', 'w'))
+print(flipped)
+")
+  assert_eq "1" "$([ "$recorded_owner2" != "$second_run_id" ] && echo 1 || echo 0)" \
+    "AC2 owner-mismatch: recorded owner differs from a hand-simulated second run's run_id ($root)"
   run_capture "$work" "$abs_root" wave-int-blocked 2 --reason wave-int-ownership-mismatch \
-    --detail "branch=wave-int/2 owner=$recorded_owner2 current-run=$other_run_id"
+    --detail "branch=wave-int/2 owner=$recorded_owner2 current-run=$second_run_id"
   local status2; status2=$(read_state_field "$work" "s['waves'][2]['status']")
   assert_eq "BLOCKED" "$status2" "AC2 owner-mismatch wave marked BLOCKED ($root)"
 
@@ -371,6 +391,7 @@ run_integration_scenarios() {
   assert_eq "wave-int-branch-missing" "$reason6" "AC9 branch-missing reason recorded ($root)"
 
   rm -rf "$wd"
+  trap - EXIT
 }
 
 # --- main --------------------------------------------------------------------
