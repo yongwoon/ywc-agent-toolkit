@@ -84,6 +84,22 @@ read_state_field() {
   python3 -c "import json,sys; s=json.load(open('$wd/.ywc-run-state.json')); print($expr)"
 }
 
+# Extracts a field from a JSON string without tripping `set -e` on malformed
+# input — mirrors run_capture's guard so a bad payload surfaces as a labeled
+# FAIL line, not a raw traceback that aborts the whole suite.
+json_field() {
+  local json="$1" expr="$2"
+  set +e
+  local val; val=$(printf '%s' "$json" | python3 -c "import json,sys; print($expr)" 2>&1)
+  local rc=$?
+  set -e
+  if [ "$rc" -ne 0 ]; then
+    echo "__JSON_PARSE_ERROR__: $val"
+  else
+    echo "$val"
+  fi
+}
+
 new_workdir() {
   mktemp -d
 }
@@ -470,27 +486,27 @@ run_resume_state_scenarios() {
   # AC5: pending empty, hardener_verdict NEEDS_CONTEXT -> needs_context.
   make_resume_fixture '[]' "NEEDS_CONTEXT" "some-reason" "some-detail" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
-  local status; status=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+  local status; status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "needs_context" "$status" "resume-state NEEDS_CONTEXT status ($root)"
 
   # AC5: pending empty, hardener_verdict BLOCKED -> blocked.
   make_resume_fixture '[]' "BLOCKED" "" "" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
-  status=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "blocked" "$status" "resume-state BLOCKED status ($root)"
 
   # AC6: pending empty, hardener_verdict absent -> valid (non-regression).
   make_resume_fixture '[]' "" "" "" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
   assert_eq "0" "$RC" "resume-state absent-verdict valid exit ($root)"
-  status=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "valid" "$status" "resume-state absent-verdict status ($root)"
 
   # AC6: pending empty, hardener_verdict PASS -> valid (non-regression).
   make_resume_fixture '[]' "PASS" "" "" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
   assert_eq "0" "$RC" "resume-state PASS valid exit ($root)"
-  status=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "valid" "$status" "resume-state PASS status ($root)"
 
   # AC6: non-empty pending + NEEDS_CONTEXT -> valid (case-1 partial-merge
@@ -499,16 +515,16 @@ run_resume_state_scenarios() {
   make_resume_fixture '["task-a"]' "NEEDS_CONTEXT" "" "" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
   assert_eq "0" "$RC" "resume-state non-empty-pending NEEDS_CONTEXT valid exit ($root)"
-  status=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin)['status'])")
+  status=$(json_field "$OUT" "json.load(sys.stdin)['status']")
   assert_eq "valid" "$status" "resume-state non-empty-pending precedence ($root)"
 
   # Edge case: NEEDS_CONTEXT with no reason/blocked_detail set -> JSON output
   # omits both keys entirely, never emits null.
   make_resume_fixture '[]' "NEEDS_CONTEXT" "" "" "$wd/.ywc-run-state.json"
   run_capture "$wd" "$abs_root" --json
-  local has_reason; has_reason=$(echo "$OUT" | python3 -c "import json,sys; print('yes' if 'reason' in json.load(sys.stdin) else 'no')")
+  local has_reason; has_reason=$(json_field "$OUT" "'yes' if 'reason' in json.load(sys.stdin) else 'no'")
   assert_eq "no" "$has_reason" "resume-state NEEDS_CONTEXT omits absent reason key ($root)"
-  local has_detail; has_detail=$(echo "$OUT" | python3 -c "import json,sys; print('yes' if 'blocked_detail' in json.load(sys.stdin) else 'no')")
+  local has_detail; has_detail=$(json_field "$OUT" "'yes' if 'blocked_detail' in json.load(sys.stdin) else 'no'")
   assert_eq "no" "$has_detail" "resume-state NEEDS_CONTEXT omits absent blocked_detail key ($root)"
 
   rm -rf "$wd"
