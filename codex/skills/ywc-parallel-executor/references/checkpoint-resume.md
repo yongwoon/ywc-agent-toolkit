@@ -49,6 +49,7 @@ Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
       "integration_branch_owner": "<run_id of the run that created/last advanced this branch — absent until first write>",
       "integration_branch_tip_sha": "<40-char sha, last-known-good checkpoint — absent until first write>",
       "hardener_verdict": "<absent|PASS|BLOCKED|NEEDS_CONTEXT — present only for a contract-bearing wave once Step 4e.5 has run>",
+      "hardener_detail": "<Hardener's own diagnostic text for the current hardener_verdict — absent when hardener-verdict ran without --detail>",
       "reason": "<blocking reason — present only when status is BLOCKED>",
       "blocked_detail": "<expected/actual diagnostic text — absent when wave-int-blocked ran without --detail>"
     }
@@ -58,7 +59,7 @@ Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
 }
 ```
 
-`run_id` is generated once by `init-parallel` and never modified afterward, including across a resume (the resumed run reads the same file, so the same `run_id`). `integration_branch_owner` / `integration_branch_tip_sha` are absent — key omitted entirely, never `null` — for a wave whose `integration_branch` is `None`, and remain absent for a contract-bearing wave until its first `wave-int-owner` call. `reason` is written whenever a wave's `status` becomes `BLOCKED` — by `wave-int-blocked` (reuse-verification failure) or by `promotion-retry` hitting its cap (`promotion-churn`) — and persists even after `promotion_retry_count` exceeds the cap. `blocked_detail` is written only alongside `wave-int-blocked --detail` and is removed (key omitted, never `null`) on a subsequent `wave-int-blocked` call made without `--detail`.
+`run_id` is generated once by `init-parallel` and never modified afterward, including across a resume (the resumed run reads the same file, so the same `run_id`). `integration_branch_owner` / `integration_branch_tip_sha` are absent — key omitted entirely, never `null` — for a wave whose `integration_branch` is `None`, and remain absent for a contract-bearing wave until its first `wave-int-owner` call. `reason` is written whenever a wave's `status` becomes `BLOCKED` — by `wave-int-blocked` (reuse-verification failure) or by `promotion-retry` hitting its cap (`promotion-churn`) — and persists even after `promotion_retry_count` exceeds the cap. `blocked_detail` is written only alongside `wave-int-blocked --detail` and is removed (key omitted, never `null`) on a subsequent `wave-int-blocked` call made without `--detail`. `hardener_detail` is a distinct field owned by `hardener-verdict --detail` — never conflate it with `blocked_detail`, which is exclusively the reuse-verification path's field; it is removed (key omitted, never `null`) on a subsequent `hardener-verdict` call made without `--detail`.
 
 Initialize after Pre-flight passes. Always update `last_checkpoint` to the current UTC time when writing.
 
@@ -71,7 +72,7 @@ Initialize after Pre-flight passes. Always update `last_checkpoint` to the curre
 | `wave-int/<N>` created or its base-merge pushed (contract-bearing wave only) | `wave-int-owner <N> --tip-sha <sha>` — records checkpoint ownership + last-known-good tip; verified before any reuse per [wave-integration-branch.md](wave-integration-branch.md) |
 | Reuse verification blocks (branch missing / ownership mismatch / tip divergence / materialize failure) | `wave-int-blocked <N> --reason <reason> --detail <text>` — wave `status` → `BLOCKED`, never a bare prose instruction or hand-edit |
 | Step 4e per-task delivery complete (`ywc-finish-branch` returned `DONE` for `--local-merge` / `--draft` / `--aggregate-pr`, or the inline `--per-task-pr` PR merge + Mark Complete path succeeded) | Move task from `pending` to `merged` in the wave entry |
-| Step 4e.5 Hardener/aggregate exit (contract-bearing wave, `--local-merge`/`--draft`/`--aggregate-pr` only) | `hardener-verdict <N> <absent\|PASS\|BLOCKED\|NEEDS_CONTEXT>` — written **before** promotion is attempted |
+| Step 4e.5 Hardener/aggregate exit (contract-bearing wave, `--local-merge`/`--draft`/`--aggregate-pr` only) | `hardener-verdict <N> <absent\|PASS\|BLOCKED\|NEEDS_CONTEXT> [--detail <text>]` — written **before** promotion is attempted; pass `--detail` with Hardener's own diagnostic text whenever the verdict is `NEEDS_CONTEXT` |
 | Step 4e.6 promotion succeeds | Set wave `status` to `completed`; `current_wave` to next wave number — **this replaces the row below for a wave that created `wave-int/<N>`** |
 | Step 4e wave loop complete, wave never created `wave-int/<N>` (contract-less, or `--per-task-pr`) | Set wave `status` to `completed`; `current_wave` to next wave number — unchanged from today |
 | Step 4e.6 promotion-conflict base-merge retried | `promotion-retry <N>` — capped at 2; exceeding marks the wave `BLOCKED` with reason `promotion-churn` |
@@ -84,7 +85,7 @@ For a wave that created `wave-int/<N>` (`integration_branch` non-`None`), "`wave
 1. **Partial-merge** (`pending` non-empty, `wave-int/<N>` already exists) — resume by first running the reuse-verification procedure in [wave-integration-branch.md](wave-integration-branch.md): a same-run resume passes trivially since `run_id` and the prior `integration_branch_tip_sha` are already in this run's own state file (the ancestor-check tolerates the branch having advanced past the last checkpoint). Only after ownership verifies does resume merge the remaining `pending` tasks onto the branch.
 2. **Fully-merged-not-promoted, `hardener_verdict` absent or `PASS`** (`pending` empty, `status != completed`) — resume auto-retries the wave-boundary aggregate + promotion with no prompt.
 3. **Fully-merged-not-promoted, `hardener_verdict == BLOCKED`** (`pending` empty, `status != completed`) — resume stops and prints the recorded blocking findings, then requires explicit user confirmation before re-running the gate.
-4. **Fully-merged-not-promoted, `hardener_verdict == NEEDS_CONTEXT`** (`pending` empty, `status != completed`) — resume stops and prints the recorded missing-context detail, then requires the missing context to be supplied — not a bare confirmation — before re-running the gate.
+4. **Fully-merged-not-promoted, `hardener_verdict == NEEDS_CONTEXT`** (`pending` empty, `status != completed`) — resume stops and prints the recorded `hardener_detail` (Hardener's own missing-context diagnostic, distinct from `blocked_detail`), then requires the missing context to be supplied — not a bare confirmation — before re-running the gate.
 
 A fully contract-less wave (`integration_branch` was `None` from init) keeps today's resume behavior unchanged.
 

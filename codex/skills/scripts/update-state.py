@@ -217,8 +217,15 @@ def cmd_hardener_verdict(args: argparse.Namespace) -> None:
     require_executor(state, "parallel", "hardener-verdict")
     wave = find_wave(state, args.wave)
     wave["hardener_verdict"] = args.verdict
+    if args.detail is not None:
+        wave["hardener_detail"] = args.detail
+    else:
+        wave.pop("hardener_detail", None)
     save(state)
-    print(f"wave {args.wave}: hardener_verdict -> {args.verdict}")
+    if args.detail is not None:
+        print(f"wave {args.wave}: hardener_verdict -> {args.verdict} — {args.detail}")
+    else:
+        print(f"wave {args.wave}: hardener_verdict -> {args.verdict}")
 
 
 PROMOTION_RETRY_CAP = 2
@@ -332,6 +339,7 @@ def build_parser() -> argparse.ArgumentParser:
     hv = sub.add_parser("hardener-verdict")
     hv.add_argument("wave", type=int)
     hv.add_argument("verdict")
+    hv.add_argument("--detail", default=None)
     hv.set_defaults(func=cmd_hardener_verdict)
 
     pr = sub.add_parser("promotion-retry")
