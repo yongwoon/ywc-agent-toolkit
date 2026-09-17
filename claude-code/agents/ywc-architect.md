@@ -121,7 +121,8 @@ Full analysis (trade-off matrix, prior-art references, cost estimates) returns
 inline, bounded, per the read-only review-worker exception in
 [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
 §3.5; only status, 1-line summary, verdict/findings, and severity counts
-return.
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
