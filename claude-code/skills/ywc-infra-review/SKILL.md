@@ -52,7 +52,7 @@ When tempted to bypass a rule, check this table first:
 
 Identify the Terraform files/modules under review: a staged or committed diff, the `terraform plan` output if the caller already has one, or the full IaC tree when `--scope` is omitted. Record the scope so all three lens dispatches review the identical surface — a lens reviewing a narrower scope than another produces findings that cannot be cross-checked.
 
-> **Fan-out return contract**: this skill dispatches three subagents. Each lens dispatch (Steps 2–4) MUST inject the §3.5 return-payload directive from [`../references/subagent-status-actions.md`](../references/subagent-status-actions.md) — every lens returns `Status | 1-line summary | artifact path | Concerns (≤10 lines)`, with full findings written to a file whose path is returned. Three verbose lens dumps would otherwise saturate this skill's context before aggregation (Step 5).
+> **Fan-out return contract**: this skill dispatches three subagents. Each lens dispatch (Steps 2–4) MUST inject the §3.5 return-payload directive from [`../references/subagent-status-actions.md`](../references/subagent-status-actions.md) — every lens returns `Status | 1-line summary | Concerns (≤10 lines)`, plus `artifact path` only from the Write-capable reliability lens (`ywc-cloud-engineer`). The Write-less security (`ywc-security-engineer`) and cost (`ywc-performance-engineer`) lenses have no file to point to — per the §3.5 exception, their full findings return inline instead, never as a promised artifact path. Three verbose lens dumps would otherwise saturate this skill's context before aggregation (Step 5).
 
 ### Step 2: Security lens
 
