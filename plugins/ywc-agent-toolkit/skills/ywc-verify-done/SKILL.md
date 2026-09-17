@@ -141,6 +141,10 @@ If verification fails, do not claim done and do not silently retry. Classify the
 
 ## Integration
 
+The optional Gate Ledger grammar and checker contract are defined in
+[references/gate-ledger.md](references/gate-ledger.md); use it only as an
+additive escalation to the normal verification workflow.
+
 - **Upstream callers (must invoke before their own completion / handoff step):** `ywc-code-gen` (Step 7 verification gate), `ywc-impl-review` (Phase 1 / Phase 2 boundary), `ywc-sequential-executor` (per-task completion), `ywc-parallel-executor` (per-wave completion), `ywc-commit` (pre-commit), `ywc-create-pr` (pre-PR), `ywc-finish-branch` (pre-merge), `ywc-task-generator` (per-task validation block).
 - **Pairs with:** `ywc-debug-rootcause` (when verification fails ≥2 times), `ywc-impl-review` (when downstream review needs the verification evidence as input).
 - **Downstream effects:** None. This skill never modifies code or executes the next skill — it only gates the claim.
