@@ -329,6 +329,7 @@ def execute(path: Path, lines: list[str], gates: list[Gate], reverify: bool) -> 
         if not reverify and cached_pass(gate):
             print(f"{gate.gate_id}: PASS (cached)")
             continue
+        output_bytes = b""
         try:
             exit_code, output_bytes = run_check(gate.check or "")
             output = output_bytes.decode("utf-8", errors="replace")
@@ -339,7 +340,7 @@ def execute(path: Path, lines: list[str], gates: list[Gate], reverify: bool) -> 
             print(f"{gate.gate_id}: {'PASS' if matched else 'FAIL'}")
             failed = failed or not matched
         except LedgerError as exc:
-            updates[gate.gate_id] = evidence_line(gate, 1, str(exc).encode("utf-8"), False)
+            updates[gate.gate_id] = evidence_line(gate, 1, output_bytes, False)
             print(f"{gate.gate_id}: FAIL ({exc})")
             failed = True
     if updates:
