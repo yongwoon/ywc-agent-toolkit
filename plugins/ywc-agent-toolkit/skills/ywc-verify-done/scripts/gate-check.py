@@ -9,6 +9,7 @@ import json
 import multiprocessing
 import os
 import re
+import selectors
 import signal
 import subprocess
 import sys
@@ -22,7 +23,7 @@ CHECK_TIMEOUT_SECONDS = 120
 OUTPUT_LIMIT_BYTES = 64 * 1024
 EXPECT_TIMEOUT_SECONDS = 5
 
-HEADER_RE = re.compile(r"^\s*-\s*\[[^\]]\]\s*(.+)$")
+HEADER_RE = re.compile(r"^-\s*\[[^\]]\]\s*(.+)$")
 FIELD_RE = re.compile(r"^\s*(CHECK|EXPECT|EVIDENCE):( ?)(.*)$")
 CACHE_RE = re.compile(
     r"^PASS; exit=0; fingerprint=sha256:([0-9a-f]{64}); decisive=(.+)$"
@@ -166,13 +167,13 @@ def _kill_group(process: subprocess.Popen[bytes]) -> None:
             os.killpg(process.pid, signal.SIGTERM)
             time.sleep(0.05)
             os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        except (PermissionError, ProcessLookupError):
+            process.kill()
     else:
         process.kill()
 
 
-def run_check(command: str) -> tuple[int, str]:
+def run_check(command: str) -> tuple[int, bytes]:
     kwargs: dict[str, object] = {
         "shell": True,
         "stdout": subprocess.PIPE,
@@ -181,17 +182,45 @@ def run_check(command: str) -> tuple[int, str]:
     if os.name == "posix":
         kwargs["start_new_session"] = True
     process = subprocess.Popen(command, **kwargs)  # type: ignore[arg-type]
+    output = bytearray()
+    stream = process.stdout
+    if stream is None:
+        return process.wait(), b""
+    selector = selectors.DefaultSelector()
+    selector.register(stream, selectors.EVENT_READ)
+    deadline = time.monotonic() + CHECK_TIMEOUT_SECONDS
     try:
-        output, _ = process.communicate(timeout=CHECK_TIMEOUT_SECONDS)
-    except subprocess.TimeoutExpired:
-        _kill_group(process)
-        process.communicate()
-        return 124, "CHECK timed out after 120 seconds"
-    if len(output) > OUTPUT_LIMIT_BYTES:
-        _kill_group(process)
-        process.communicate()
-        return 125, "CHECK output exceeded 65536 bytes"
-    return process.returncode, output.decode("utf-8", errors="replace")
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                _kill_group(process)
+                process.wait()
+                return 124, bytes(output)
+            events = selector.select(min(remaining, 0.1))
+            for key, _ in events:
+                chunk = os.read(key.fd, 4096)
+                if not chunk:
+                    selector.unregister(stream)
+                    stream.close()
+                    stream = None
+                    break
+                remaining_capacity = OUTPUT_LIMIT_BYTES - len(output)
+                if len(chunk) > remaining_capacity:
+                    output.extend(chunk[:remaining_capacity])
+                    _kill_group(process)
+                    process.wait()
+                    return 125, bytes(output)
+                output.extend(chunk)
+            if process.poll() is not None and stream is None:
+                break
+        return process.returncode or 0, bytes(output)
+    finally:
+        selector.close()
+        if stream is not None:
+            stream.close()
+        if process.poll() is None:
+            _kill_group(process)
+            process.wait()
 
 
 def _regex_worker(pattern: str, flags: int, output: str, connection) -> None:
@@ -232,8 +261,12 @@ def matches_expect(expect: str, output: str) -> bool:
         process.join()
 
 
-def evidence_line(gate: Gate, exit_code: int, output: str, passed: bool) -> str:
-    decisive = output if output else ("EXPECT matched" if passed else "EXPECT did not match")
+def evidence_line(gate: Gate, exit_code: int, output: bytes, passed: bool) -> str:
+    output_digest = hashlib.sha256(output).hexdigest()
+    decisive = (
+        f"exit={exit_code}; matched={str(passed).lower()}; "
+        f"output_sha256=sha256:{output_digest}"
+    )
     encoded = json.dumps(decisive, ensure_ascii=False)
     if passed:
         return f"PASS; exit=0; fingerprint=sha256:{fingerprint(gate.check or '', gate.expect or '')}; decisive={encoded}"
@@ -253,10 +286,18 @@ def rewrite_evidence(path: Path, lines: list[str], gates: list[Gate], updates: d
             operations.append((gate.fields["EXPECT"].line_index + 1, None, f"  EVIDENCE: {value}{newline}"))
     for index, replacement, payload in sorted(operations, reverse=True):
         if replacement is not None:
-            ending = "\r\n" if lines[index].endswith("\r\n") else "\n"
+            if lines[index].endswith("\r\n"):
+                ending = "\r\n"
+            elif lines[index].endswith("\n"):
+                ending = "\n"
+            else:
+                ending = ""
             prefix = lines[index][: len(lines[index]) - len(lines[index].lstrip())]
             lines[index] = prefix + "EVIDENCE: " + replacement + ending
         else:
+            previous = index - 1
+            if previous >= 0 and not lines[previous].endswith(("\n", "\r\n")):
+                lines[previous] += newline
             lines.insert(index, payload)
     path.write_text("".join(lines), encoding="utf-8", newline="")
 
@@ -289,15 +330,16 @@ def execute(path: Path, lines: list[str], gates: list[Gate], reverify: bool) -> 
             print(f"{gate.gate_id}: PASS (cached)")
             continue
         try:
-            exit_code, output = run_check(gate.check or "")
+            exit_code, output_bytes = run_check(gate.check or "")
+            output = output_bytes.decode("utf-8", errors="replace")
             matched = exit_code == 0 and matches_expect(gate.expect or "", output)
             if exit_code == 0 and not matched:
                 exit_code = 1
-            updates[gate.gate_id] = evidence_line(gate, exit_code, output, matched)
+            updates[gate.gate_id] = evidence_line(gate, exit_code, output_bytes, matched)
             print(f"{gate.gate_id}: {'PASS' if matched else 'FAIL'}")
             failed = failed or not matched
         except LedgerError as exc:
-            updates[gate.gate_id] = evidence_line(gate, 1, str(exc), False)
+            updates[gate.gate_id] = evidence_line(gate, 1, str(exc).encode("utf-8"), False)
             print(f"{gate.gate_id}: FAIL ({exc})")
             failed = True
     if updates:

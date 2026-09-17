@@ -35,6 +35,6 @@ The cache fingerprint is SHA-256 over UTF-8 `CHECK` bytes, one NUL byte, then UT
 PASS; exit=0; fingerprint=sha256:<64 lowercase hex>; decisive=<JSON string>
 ```
 
-Executed gates replace the final effective `EVIDENCE` field. If it is absent, evidence is inserted immediately after the final effective `EXPECT` field. LF and CRLF are retained. FAIL evidence uses `FAIL; exit=<integer|124|125>; decisive=<JSON string>`. Exit `124` means timeout and `125` means the combined 64-KiB output cap was exceeded. Manual gates are never rewritten.
+The decisive JSON string is a bounded summary containing the exit code, match result, and SHA-256 digest of captured combined-output bytes; raw command output is never persisted into the ledger. Executed gates replace the final effective `EVIDENCE` field. If it is absent, evidence is inserted immediately after the final effective `EXPECT` field. LF and CRLF are retained. FAIL evidence uses `FAIL; exit=<integer|124|125>; decisive=<JSON string>`. Exit `124` means timeout and `125` means the combined 64-KiB output cap was exceeded. Manual gates are never rewritten.
 
 Each `CHECK` has a 120-second deadline, a combined stdout/stderr cap of 64 KiB, and POSIX process-group cleanup. Regex matching has a separate five-second deadline. For a PR-ready claim, this ledger is at most one evidence component: the existing 600-second poll, `--verify` head-SHA check, CI, and PR-health proof remain separate and fresh.
