@@ -1,6 +1,43 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000044`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000048`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+
+## Batch — Codex read-only agent inline return contract
+
+- Spec: `docs/ywc-plans/20260917-codex-readonly-agent-inline-contract.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000045` (ledger reservation at generation time)
+- Advisor pass: used — one up-front planning advisor recommended three hard-gated phases: source contract, parallel validator/install checks, then distribution sync.
+- No-AC requirements: none found — all six acceptance criteria map to FR-1 through FR-5 and the stated outcome oracle.
+- Architecture contract: N/A — no manifest supplied and no architecture contract applies to this bounded docs/validation change.
+
+### Phase yw-000045 — source contract
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000045-010-docs-readonly-inline-contract-source` | docs | (root) |
+
+### Phase yw-000046 — validation and installed parity (parallel)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000046-020-infra-readonly-contract-validator` | infra | `yw-000045-010` |
+| `yw-000046-030-test-installed-readonly-contract` | test | `yw-000045-010` |
+
+### Phase yw-000047 — distribution hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000047-040-infra-readonly-contract-distribution` | infra | `yw-000046-020`, `yw-000046-030` |
+
+### Parallel Execution Notes (Codex read-only inline contract batch)
+
+- Initial ready set: `yw-000045-010-docs-readonly-inline-contract-source`.
+- After it merges: `yw-000046-020-infra-readonly-contract-validator` and `yw-000046-030-test-installed-readonly-contract` are parallel-safe because they own separate scripts; both consume the finalized source contract.
+- `yw-000047-040-infra-readonly-contract-distribution` is blocked until both Phase `yw-000046` tasks pass and must run source-first synchronization before final validation.
+- The two `workspace-write` agents remain explicit negative cases and are not subject to the read-only qualifier requirement.
 
 ## Batch — Wave Hardener Delivery Isolation (ywc-parallel-executor)
 
@@ -1816,4 +1853,37 @@ graph LR
 ```mermaid
 graph LR
   A[yw-000043-010 port-gate-ledger-script] --> B[yw-000043-020 document-gate-ledger-escalation]
+```
+
+## Batch 24 — Read-Only Agent Inline-Return Contract Fix
+
+- Spec: `docs/ywc-plans/20260917-readonly-agent-inline-return.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000044` (allocated via `next-task-number.sh tasks yw`)
+- Compaction gate: 1,819 lines before, `nothing to compact` (active/planned work accounts for the size).
+- Preview approval: interactive approval received (`approve`).
+- Advisor pass: skipped — Small scale (3 tasks), single clear phase, no competing DB migration or library introduction, no phase-boundary ambiguity.
+- No-AC requirements: none — every FR (FR-1 through FR-3) maps to a backing AC (AC1–AC4); Open Questions is N/A.
+- Safety invariants: no database migration, no new library introduced; all 3 tasks are documentation/prompt-body/CI-script edits with no critical surface.
+
+### Phase yw-000044 — Read-only agent return-contract fix + validator
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000044-010-docs-fix-readonly-agent-return-contract` | docs | (root) |
+| `yw-000044-020-docs-add-readonly-exception-section` | docs | (root) |
+| `yw-000044-030-test-add-readonly-return-contract-validator` | test | `yw-000044-010` |
+
+### Parallel Execution Notes (Batch 24)
+
+- Initial ready set: `yw-000044-010-docs-fix-readonly-agent-return-contract`, `yw-000044-020-docs-add-readonly-exception-section` — disjoint files (7 agent `.md` files vs. `subagent-status-actions.md`), safe to run concurrently.
+- `yw-000044-030` needs `yw-000044-010`'s fixed tree to verify `bash scripts/validate.sh` exits 0 post-fix and to prove the new check catches a reintroduced regression; it does not need `yw-000044-020`.
+- No task touches `scripts/validate.sh` except `yw-000044-030`; no overlap between any of the 3 tasks' Ownership.
+
+```mermaid
+graph LR
+  A[yw-000044-010 fix-agent-return-contract] --> C[yw-000044-030 add-return-contract-validator]
+  B[yw-000044-020 add-readonly-exception-section]
 ```
