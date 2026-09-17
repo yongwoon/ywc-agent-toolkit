@@ -10,8 +10,20 @@ install_with_version() {
   local version="$1"
   local expected_model="$2"
   local name="$3"
+  local readonly_qualifier
+  local readonly_agents=(
+    ywc-architect
+    ywc-cloud-engineer
+    ywc-go-reviewer
+    ywc-performance-engineer
+    ywc-python-reviewer
+    ywc-root-cause-analyst
+    ywc-security-engineer
+    ywc-typescript-reviewer
+  )
   local fake_bin="$TEMP_ROOT/$name/bin"
   local codex_home="$TEMP_ROOT/$name/codex-home"
+  readonly_qualifier='Read-only inline/no-artifact contract: You have no write capability. Return bounded findings/advice inline; do not promise or wait for an artifact file. Omit Artifacts: unless a write-enabled caller separately produced an artifact.'
 
   mkdir -p "$fake_bin"
   printf '#!/usr/bin/env bash\nprintf "codex-cli %%s\\n" "%s"\n' "$version" > "$fake_bin/codex"
@@ -24,6 +36,10 @@ install_with_version() {
   grep -q "^model = \"$expected_model\"$" "$codex_home/agents/ywc-test-hardener.toml"
   grep -q '^sandbox_mode = "workspace-write"$' "$codex_home/agents/ywc-complexity-cleaner.toml"
   grep -q '^sandbox_mode = "workspace-write"$' "$codex_home/agents/ywc-test-hardener.toml"
+  for agent in "${readonly_agents[@]}"; do
+    grep -Fq "$readonly_qualifier" "$codex_home/agents/$agent.toml"
+    grep -q '^sandbox_mode = "read-only"$' "$codex_home/agents/$agent.toml"
+  done
   test -f "$codex_home/agents/ywc-complexity-cleaner.toml"
   test -f "$codex_home/agents/ywc-test-hardener.toml"
 }
