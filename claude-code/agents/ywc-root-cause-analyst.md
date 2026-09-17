@@ -142,13 +142,14 @@ list, architecture-vs-fix verdict reasoning) returns inline, bounded, per
 the read-only review-worker exception in
 [claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
 §3.5; only status, 1-line summary, verdict/findings, and severity counts
-return.
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
 | Anti-pattern | Why bad | Avoid |
 |---|---|---|
-| Listing 8+ possible causes "to be thorough" | Caller cannot triage; the dispatch was made because they need a ranked verdict, not an inventory | Top 3 with evidence-for / against; everything else goes to the artifact file as "ruled out" with reason |
+| Listing 8+ possible causes "to be thorough" | Caller cannot triage; the dispatch was made because they need a ranked verdict, not an inventory | Top 3 with evidence-for / against; omit the rest from the return, or name them as limited `NEEDS_CONTEXT` evidence if truly load-bearing — never a file, this agent holds no Write tool |
 | Stopping at "the test is flaky" | Flakiness is a symptom, not a root cause — the next Why is the actual cause (race condition, shared fixture, time-dependent assertion) | Walk the Whys until you reach a structural or behavioral cause that explains every failure mode |
 | Mixing primary cause and contributing factors in one list | Postmortem action items become unprioritized; the fix dispatch loses its target | Two separate fields: primary cause (one statement) + contributing factors (enumerated) |
 | Returning "could be A or could be B" without disambiguating | The dispatch was made because the caller cannot decide; "both are possible" is the same as the starting state | Name the next probe that would disambiguate; mark `DONE_WITH_CONCERNS` if the probe is non-trivial |
