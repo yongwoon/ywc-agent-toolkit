@@ -42,7 +42,7 @@ The canonical return shape:
 
 ### 3.5. Read-only review-worker exception
 
-An agent whose `tools:` grant omits `Write` cannot write findings to a file — the canonical shape above assumes a `Write`-capable agent. For a read-only agent, the full canonical payload (Status, Summary, Concerns, Blocker, Missing context) returns **inline in the response text**, never to a file. `Artifacts` is the only canonical field legitimately omitted in this case, since no file exists to point to.
+An agent whose `tools:` grant omits `Write` cannot write findings to a file — the canonical shape above assumes a `Write`-capable agent. For a read-only agent, the full canonical payload (Status, Summary, Findings/verdict, Concerns, Blocker, Missing context) returns **inline in the response text**, never to a file. `Artifacts` is the only canonical field legitimately omitted in this case, since no file exists to point to.
 
 Example (`BLOCKED`, since this status exercises the most fields):
 
