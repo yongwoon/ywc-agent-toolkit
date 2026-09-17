@@ -582,6 +582,16 @@ check_codex_agent_file() {
       ;;
   esac
 
+  local readonly_qualifier developer_instructions_body
+  readonly_qualifier='Read-only inline/no-artifact contract: You have no write capability. Return bounded findings/advice inline; do not promise or wait for an artifact file. Omit Artifacts: unless a write-enabled caller separately produced an artifact.'
+  if grep -q '^sandbox_mode = "read-only"$' "$file"; then
+    developer_instructions_body="$(sed -n '/^developer_instructions = """$/,/^"""$/p' "$file")"
+    if ! grep -Fq "$readonly_qualifier" <<<"$developer_instructions_body"; then
+      echo "ERROR: codex/agents/$base.toml read-only developer_instructions is missing the inline/no-artifact contract"
+      ERRORS=$((ERRORS + 1))
+    fi
+  fi
+
   if grep -Eq '^(tools|permissionMode)[[:space:]]*=' "$file" || grep -q 'Task(subagent_type=' "$file"; then
     echo "ERROR: codex/agents/$base.toml contains Claude Code-only agent fields"
     ERRORS=$((ERRORS + 1))
