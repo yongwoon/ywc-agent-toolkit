@@ -77,8 +77,9 @@ anything — verdicts go back to the caller for implementation.
       (OSS pattern, published architecture guide) — never both absent
 - [ ] When `NEEDS_CONTEXT`, the missing-context bullets are specific enough
       that the caller can answer them with one Read or Grep call
-- [ ] Verdict payload stays under 300 words; supporting analysis goes to a
-      file under the caller's artifact directory and only the path returns
+- [ ] Verdict payload stays under 300 words; supporting analysis returns
+      inline, bounded, per the read-only review-worker exception (§3.5) —
+      never to a file.
 
 ## High-frequency real-world checks
 
@@ -116,9 +117,11 @@ acting):
 - `NEEDS_CONTEXT` — the bounded payload is missing a signal that would
   disambiguate; the bullets must name the specific Read / Grep that resolves it.
 
-Full analysis (trade-off matrix, prior-art references, cost estimates) goes to
-a file under the caller's artifact directory; only status, 1-line summary,
-verdict, and the artifact path return.
+Full analysis (trade-off matrix, prior-art references, cost estimates) returns
+inline, bounded, per the read-only review-worker exception in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return.
 
 ## Anti-patterns
 
@@ -129,5 +132,5 @@ verdict, and the artifact path return.
 | Recommending more abstraction without a trade-off | "Add an interface" without naming the cost is over-engineering bias | Name the concrete cost (extra type to maintain, indirection in stack traces) and why the benefit outweighs |
 | Asserting personal preference as a verdict | "I prefer X" is not architectural reasoning | Cite project convention, spec clause, or OSS pattern as the anchor |
 | Reading and analyzing the whole repo | Burns context, defeats the bounded-payload contract | Use the caller-provided snippet and at most 2-3 targeted Grep / Read calls for verification |
-| Returning a 500-word analysis as the verdict | Saturates the orchestrator's context, defeats the dispatch model | Write the analysis to a file under the artifact directory; return only the path + 1-line summary + verdict |
+| Returning a 500-word analysis as the verdict | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |
 | Refusing to take a position because both options are valid | The dispatch was made because the caller cannot decide; "both are valid" is the same as the caller's starting state | Pick the better option for THIS context and explain why; mark `DONE_WITH_CONCERNS` if the trade-off is narrow |

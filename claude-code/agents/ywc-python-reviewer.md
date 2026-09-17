@@ -166,8 +166,8 @@ linter / tests, or execute the application.
       is one finding with N locations, not N findings
 - [ ] Report stays under 500 words; full evidence (per-finding code
       excerpts, mypy / pytest output snippets, framework-version
-      references) goes to a file under the caller's artifact directory
-      and only the path returns
+      references) returns inline, bounded, per the read-only
+      review-worker exception (§3.5) — never to a file.
 
 ## High-frequency real-world checks
 
@@ -211,9 +211,11 @@ semantics are in the reference):
   Pydantic version determining `@validator` vs `@field_validator`).
 
 Full evidence (matched patterns, line ranges, Python feature citations,
-remediation snippets, framework-version notes) goes to a file under the
-caller's artifact directory; only status, 1-line summary, severity counts,
-and the artifact path return.
+remediation snippets, framework-version notes) returns inline, bounded, per
+the read-only review-worker exception in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return.
 
 ## Anti-patterns
 
@@ -226,7 +228,7 @@ and the artifact path return.
 | Confusing `Optional[T]` with `T \| None` and `Union[T, None]` | Pre-3.10 `Optional[T]`, post-3.10 `T \| None`, and `Union[T, None]` are semantically identical but stylistically inconsistent within a codebase | Read the project's Python version target (`pyproject.toml::requires-python`); recommend the codebase's chosen style, do not force conversion as a review finding |
 | Treating Pydantic v1 / v2 differences as a generic "validation bug" | The migration rules are subtle and version-specific (`@validator` → `@field_validator`, `dict()` → `model_dump()`, `parse_obj` → `model_validate`, `Config` class → `ConfigDict` / `model_config`); a generic note doesn't help | Cite the specific Pydantic version, the exact API change, and the minimal migration step to fix |
 | Reviewing the entire repo for type unsoundness | Burns context, defeats the bounded-payload contract | Use the caller-provided file list and at most 2-3 targeted Grep / Read calls for verification; full-codebase audits route to ywc-impl-review with a wider scope |
-| Returning a 1500-word type-theory or asyncio lecture | Saturates the orchestrator's context, defeats the dispatch model | Write the full theory to a file under the artifact directory; return only path + status + severity counts |
+| Returning a 1500-word type-theory or asyncio lecture | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |
 | Stepping outside Python to recommend a different language or runtime | Out of scope — the project chose Python for a reason | Recommend within Python idiom; if the limitation is fundamental (e.g., GIL-bound CPU workload), surface it as a Design-axis finding for the architect agent to weigh (multiprocess vs async vs Rust extension is an architectural decision, not a review finding) |
 | Recommending threadpool for CPU-bound work | Threadpool with GIL gives no parallelism for CPU-bound Python code | Recommend `concurrent.futures.ProcessPoolExecutor` for CPU-bound, threadpool only for IO-bound that releases the GIL (file IO, requests), async-native libraries (`aiohttp`, `httpx.AsyncClient`, `aiofiles`) when the surrounding code is already async |
 | Treating `create_task` without keeping a reference as harmless | The event loop holds only a weak reference; the task can be GC'd before it completes, silently dropping work | Recommend assigning to a strong-reference set (`background_tasks.add(task)` + `task.add_done_callback(background_tasks.discard)`) or `await`ing the task at a known join point |
