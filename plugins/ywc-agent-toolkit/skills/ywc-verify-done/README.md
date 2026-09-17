@@ -32,6 +32,10 @@
 
 상세 규칙·Output Format·Rationalization Defense 는 [SKILL.md](./SKILL.md) 를 참조합니다. 원본 process 규율은 `superpowers:verification-before-completion` 에서 차용했습니다.
 
+## 선택 사항: Gate Ledger
+
+여러 명령이나 subagent 산출물을 하나의 주장으로 묶을 때만 추가로 사용합니다. 설치된 checker의 `--status`는 subprocess를 실행하지 않고 파일을 바꾸지 않으며, bare 실행은 정확히 일치하는 cached `PASS`가 없는 gate만 재개하고 `--reverify`는 모든 실행 가능한 gate를 새로 실행합니다. `MANUAL` gate는 건너뜁니다. `CHECK`는 임의의 shell이므로 실행 전에 반드시 검토하고, 부재를 주장할 때는 sentinel을 만드는 positive control을 사용하세요. PR-ready 주장에는 별도의 600초 review poll, `--verify` head-SHA, CI, PR-health 증거가 계속 필요합니다. 자세한 문법은 [gate-ledger.md](./references/gate-ledger.md)를 참조하세요.
+
 ## Localized Versions
 
 - [English](./README.en.md)

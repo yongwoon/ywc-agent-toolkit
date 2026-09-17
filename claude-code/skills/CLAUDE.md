@@ -350,6 +350,7 @@ them instead of inlining equivalent logic in SKILL.md bodies.
 | `ywc-merge-dependabot/scripts/detect-major-bump.py --title <t> \| (stdin)` | ywc-merge-dependabot | Deterministic "leftmost non-zero segment" semver major-bump gate; NDJSON output; `major_bump: true\|false\|null` (null = undecidable, LLM falls back) |
 | `ywc-release-pr-list/scripts/extract-merged-prs.sh [--exclude <pr>]` | ywc-release-pr-list | Pure-text extraction of merged PR numbers from commit headlines (2 anchored patterns only); dedup + ascending sort; no network |
 | `ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` | ywc-task-generator | Collapse fully completed phases in `dependency-graph.md` to `## Phase NNNNNN — done`; drop fully completed Notes/Mermaid sections; invoked by `scripts/mark-complete.sh` and by the Step 2 >300-line gate |
+| `ywc-verify-done/scripts/gate-check.py [--status\|--reverify] <ledger>` | ywc-verify-done | Deterministic Executable Gate Ledger checker for the optional high-stakes completion-claim escalation; `--status` parses/reports only (executes nothing), default mode executes unmet runnable gates, `--reverify` forces re-execution of all; exit 0 = all runnable gates met / well-formed ledger on `--status`, exit 1 = >=1 unmet gate or malformed/missing ledger |
 
 All paths are relative to the repository root. When authoring a new `ywc-*`
 skill that needs deterministic parsing or a bounded wait loop, add a script

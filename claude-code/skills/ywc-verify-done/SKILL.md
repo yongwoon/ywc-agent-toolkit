@@ -143,6 +143,24 @@ If verification fails, do not claim done and do not silently retry. Classify the
 | Subagent delivered wrong artifact | Re-dispatch with corrected prompt; do not patch the artifact in the orchestrator |
 | Environment / infra issue (DB down, network out) | State the blocker, surface to user with proposed action — never claim done with "ignored env issue" |
 
+## Optional Escalation: Executable Gate Ledger
+
+For the highest-stakes completion claims — multi-command verification, PR-ready claims, or subagent-delivered artifacts about to be accepted into the base branch — the prose-based Gate Function above can be escalated to a deterministic, machine-checked ledger via the bundled `gate-check.py` script. This is **optional**: Steps 1–6 above remain the unchanged default path for single-command claims.
+
+**When to reach for it:** a claim spans multiple commands whose combined pass/fail state is easy to misstate by hand; a PR-ready claim (CI green + bot review clear); or a subagent-delivered artifact about to be merged without the orchestrator re-running every check itself.
+
+**Invoking `gate-check.py`** (three modes, against a caller-supplied ledger file):
+
+```bash
+python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py --status <ledger.md>    # parse + report only; executes nothing
+python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py <ledger.md>              # execute every unmet runnable gate
+python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py --reverify <ledger.md>   # force re-execute every runnable gate
+```
+
+Exit 0 = all runnable gates met (well-formed on `--status`); exit 1 = at least one unmet gate, or a malformed/missing ledger. **`gate-check.py` only judges runnable gates.** A manual gate (neither `CHECK:` nor `EXPECT:`) is always reported `manual (skipped)` and never blocks exit 0 — this holds even under `--reverify`, and even for a ledger containing only manual gates. If a high-stakes claim depends on a manual gate, verify its human evidence separately before surfacing the claim; do not treat `gate-check.py`'s exit 0 as covering it.
+
+**Security:** `CHECK:` lines execute arbitrary shell commands with the invoking user's own permissions. Read every `CHECK:` line before running a ledger you did not author yourself. See [references/gate-ledger.md](references/gate-ledger.md) for the full ledger format spec.
+
 ## Integration
 
 - **Upstream callers (must invoke before their own completion / handoff step):** `ywc-code-gen` (Step 7 verification gate), `ywc-impl-review` (Phase 1 / Phase 2 boundary), `ywc-sequential-executor` (per-task completion), `ywc-parallel-executor` (per-wave completion), `ywc-commit` (pre-commit), `ywc-create-pr` (pre-PR), `ywc-finish-branch` (pre-merge), `ywc-task-generator` (per-task validation block).
@@ -171,6 +189,8 @@ Before stating that any work is "done", verify:
 - **Treating a single red-green cycle as a regression test.** A regression test must also fail when the fix is reverted (red-green-red). Without the red-green-red cycle, the test may be passing for unrelated reasons.
 - **Skipping the gate for "trivial" changes.** There is no size threshold. The smaller the change, the cheaper the verification — there is no reason to skip.
 - **Inferring `--skip-post-ci-check` skipped verification entirely.** The flag suppresses the **caller's** repeated CI poll, not the gate itself. `ywc-verify-done` still applies; the verification is just performed once by the upstream caller (e.g., `ywc-finish-branch` Step 4) instead of twice.
+- **Trusting an absence check without a positive control.** An absence-only check ("no error in the output", "grep found nothing") that was never exercised against a known-failing fixture can be vacuously true — a wrong pattern or a wrong file path looks identical to "no error" until tested against a case that should fail.
+- **Copying a supplied number into the claim instead of recomputing it.** When a count or metric is asserted ("0 failures", "80% coverage"), the number must come from the tool's own output produced in this message — never transcribed from an earlier claim, a task description, or a prior turn's output.
 
 ## References
 
@@ -178,5 +198,6 @@ Before stating that any work is "done", verify:
 |---|---|
 | [references/forbidden-vocabulary.md](references/forbidden-vocabulary.md) | Auditing a draft message for unverified-assertion language |
 | [references/verification-block-examples.md](references/verification-block-examples.md) | Picking the right block shape for a multi-command claim |
+| [references/gate-ledger.md](references/gate-ledger.md) | Authoring a gate ledger for the optional Executable Gate Ledger escalation, or invoking `gate-check.py` |
 | [../references/subagent-status-actions.md](../references/subagent-status-actions.md) | Verifying subagent return payloads (§3.5) and routing BLOCKED status |
 | [../references/pr-bot-polling.md](../references/pr-bot-polling.md) | PR-ready claims that depend on bot-review polling outcomes |

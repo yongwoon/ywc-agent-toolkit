@@ -139,7 +139,42 @@ If verification fails, do not claim done and do not silently retry. Classify the
 | Subagent delivered wrong artifact | Re-dispatch with corrected prompt; do not patch the artifact in the orchestrator |
 | Environment / infra issue (DB down, network out) | State the blocker, surface to user with proposed action — never claim done with "ignored env issue" |
 
+## Gate Ledger Escalation (Optional)
+
+Use the Gate Ledger only as an additive escalation when a claim combines several
+commands or accepted subagent artifacts. It does not replace Steps 1–6, normal
+CI/PR-health evidence, or the separate `poll-pr-reviews.sh --verify` proof.
+
+Run the installed checker with the same ledger file in each mode:
+
+```sh
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.py" --status <ledger.md>
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.py" <ledger.md>
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.py" --reverify <ledger.md>
+```
+
+`--status` is read-only: it parses, reports `PASS`, `FAIL`, `PENDING`, or
+`MANUAL`, starts no subprocess, and leaves ledger bytes unchanged. Bare mode
+resumes only runnable gates without an exact cached `PASS` fingerprint;
+`--reverify` is the only mode that supplies fresh runnable-ledger evidence; it
+executes every runnable gate afresh. A gate with neither `CHECK`
+nor `EXPECT` is `MANUAL` and is never executed or rewritten. Treat every
+`CHECK` as untrusted arbitrary shell: inspect it before running, and use a
+positive control (for example, a command that creates a sentinel) when proving
+that an absence condition is real. Do not recompute or substitute supplied
+counts or artifacts without recording the independent command that produced
+them.
+
+The checker has bounded CHECK output/time and bounded regex matching, but it is
+not a sandbox. For PR-ready claims, ledger evidence remains only one component:
+also run the independent 600-second review poll, `--verify` head-SHA check, CI,
+and PR-health proof against the current head.
+
 ## Integration
+
+The optional Gate Ledger grammar and checker contract are defined in
+[references/gate-ledger.md](references/gate-ledger.md); use it only as an
+additive escalation to the normal verification workflow.
 
 - **Upstream callers (must invoke before their own completion / handoff step):** `ywc-code-gen` (Step 7 verification gate), `ywc-impl-review` (Phase 1 / Phase 2 boundary), `ywc-sequential-executor` (per-task completion), `ywc-parallel-executor` (per-wave completion), `ywc-commit` (pre-commit), `ywc-create-pr` (pre-PR), `ywc-finish-branch` (pre-merge), `ywc-task-generator` (per-task validation block).
 - **Pairs with:** `ywc-debug-rootcause` (when verification fails ≥2 times), `ywc-impl-review` (when downstream review needs the verification evidence as input).
@@ -167,6 +202,8 @@ Before stating that any work is "done", verify:
 - **Treating a single red-green cycle as a regression test.** A regression test must also fail when the fix is reverted (red-green-red). Without the red-green-red cycle, the test may be passing for unrelated reasons.
 - **Skipping the gate for "trivial" changes.** There is no size threshold. The smaller the change, the cheaper the verification — there is no reason to skip.
 - **Inferring `--skip-post-ci-check` skipped verification entirely.** The flag suppresses the **caller's** repeated CI poll, not the gate itself. `ywc-verify-done` still applies; the verification is just performed once by the upstream caller (e.g., `ywc-finish-branch` Step 4) instead of twice.
+- **Claiming an absence without a positive control.** A missing file or output may mean the CHECK never ran; use a sentinel-producing control to prove the command path was exercised.
+- **Recomputing a supplied count or artifact from memory.** Preserve the supplied value and record the independent command that produced any replacement evidence.
 
 ## References
 
