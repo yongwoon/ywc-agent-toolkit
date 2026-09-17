@@ -39,10 +39,12 @@ The canonical return shape:
 **Enforcement**: every fan-out skill must inject the following directive **verbatim** into each subagent prompt (alongside the existing Completeness and Tool-Error-Recovery directives):
 
 > **Return-payload contract**: Reply with `Status | 1-line summary | artifact paths | (Concerns ≤ 10 lines | Blocker ≤ 5 lines | Missing-context bullets)`. Do not return generated code, full findings, full diffs, restated prompt content, or chain-of-thought. Write those to files and return the paths. The orchestrator will read the files only when it needs to.
+>
+> This directive assumes a `Write`-capable agent. For an agent whose `tools:` grant omits `Write`, §3.5 below overrides the "write to files" instruction — the same field limits apply, but the payload returns inline instead of to a file.
 
 ### 3.5. Read-only review-worker exception
 
-An agent whose `tools:` grant omits `Write` cannot write findings to a file — the canonical shape above assumes a `Write`-capable agent. For a read-only agent, the full canonical payload (Status, Summary, Findings/verdict, Concerns, Blocker, Missing context) returns **inline in the response text**, never to a file. `Artifacts` is the only canonical field legitimately omitted in this case, since no file exists to point to.
+An agent whose `tools:` grant omits `Write` cannot write findings to a file — the canonical shape above assumes a `Write`-capable agent. For a read-only agent, the full canonical payload (Status, Summary, Findings/verdict, Concerns, Blocker, Missing context) returns **inline in the response text**, never to a file, with the same status-conditional field requirements as the canonical shape (e.g. `Concerns` when `DONE_WITH_CONCERNS`, `Blocker` when `BLOCKED`, `Missing context` when `NEEDS_CONTEXT`). `Artifacts` is the only canonical field legitimately omitted in this case, since no file exists to point to.
 
 Example (`BLOCKED`, since this status exercises the most fields):
 
