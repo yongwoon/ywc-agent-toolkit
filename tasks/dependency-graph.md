@@ -1,6 +1,6 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000039`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000044`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 ## Batch — Wave Hardener Delivery Isolation (ywc-parallel-executor)
 
@@ -1740,4 +1740,80 @@ graph LR
 graph LR
   A[yw-000038-010 claude] --> C[yw-000038-030 regression test]
   B[yw-000038-020 codex] --> C
+```
+
+## Batch 22 — Codex Verify-Done Gate Ledger Port
+
+- Spec: `docs/ywc-plans/20260917-codex-verify-done-gate-ledger-port.md` (spec-ready `DONE`, 0 Critical, 0 Warning)
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000040` (current ledger reservation; no later conforming directory found)
+- Compaction gate: 1,743 lines before and after; active compactor reported `nothing to compact`.
+- Preview approval: interactive approval received (`approve`).
+- Advisor pass: used — checker/reference/tests in Phase `000040`, docs in `000041`, source-first sync in `000042`.
+- No-AC requirements: none — scoped requirements map to AC1–AC9; Open Questions is N/A.
+- Safety invariants: no database migration or library introduction; checker execution is critical and requires full review.
+
+### Phase yw-000040 — Gate Ledger checker contract and hermetic tests
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000040-010-domain-gate-ledger-checker` | domain | (root) |
+| `yw-000040-020-test-gate-ledger-checker` | test | `yw-000040-010` |
+
+### Phase yw-000041 — Verify-done documentation and eval contract
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000041-010-docs-verify-done-ledger` | docs | all Phase `yw-000040` tasks |
+
+### Phase yw-000042 — Generated marketplace distribution and validation
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000042-010-infra-verify-done-package-sync` | infra | `yw-000041-010` |
+
+### Parallel Execution Notes (Batch 22)
+
+- Initial ready set: `yw-000040-010-domain-gate-ledger-checker` only; grammar and checker are one shared contract.
+- Tests gate all documentation work; docs/eval/locales are a single-writer task.
+- Package sync is generated-only and must run last; no source edits are allowed after synchronization.
+
+```mermaid
+graph LR
+  A[yw-000040-010 checker] --> B[yw-000040-020 tests]
+  B --> C[yw-000041-010 docs-eval-locales]
+  C --> D[yw-000042-010 package-sync-validation]
+```
+
+## Batch 23 — Claude Code Verify-Done Gate Ledger Port
+
+- Spec: `docs/ywc-plans/20260917-verify-done-gate-ledger-port.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000043` (per user instruction — another session had already written tasks through `yw-000042`)
+- Compaction gate: 1,743 lines before, `nothing to compact` (active/planned work accounts for the size).
+- Preview approval: interactive approval received (`approve`).
+- Advisor pass: skipped — 2-task decomposition (Small scale despite the spec's own "Medium" self-label; single skill directory, no phase-boundary ambiguity).
+- No-AC requirements: none — every Scope item is backed by at least one FR (FR-1 through FR-7); Open Questions is N/A.
+- Safety invariants: no database migration, no new library introduced (stdlib-only port); `CHECK:` shell execution is a critical surface inherited unchanged from the already-hardened upstream implementation.
+
+### Phase yw-000043 — Executable Gate Ledger port + escalation docs
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000043-010-infra-port-gate-ledger-script` | infra | (root) |
+| `yw-000043-020-docs-document-gate-ledger-escalation` | docs | `yw-000043-010` |
+
+### Parallel Execution Notes (Batch 23)
+
+- Initial ready set: `yw-000043-010-infra-port-gate-ledger-script` only.
+- `yw-000043-020` needs `references/gate-ledger.md` (created by `-010`) for its new SKILL.md References row and prose pointers — strictly sequential, not parallelizable.
+- Both tasks are confined to `claude-code/skills/ywc-verify-done/**` plus one row each in `claude-code/skills/CLAUDE.md`'s Bundled Execution Scripts table (`-010` only) — no overlap with the concurrent Codex-side Batch 22 (`codex/skills/ywc-verify-done/**`, out of scope for this batch).
+
+```mermaid
+graph LR
+  A[yw-000043-010 port-gate-ledger-script] --> B[yw-000043-020 document-gate-ledger-escalation]
 ```
