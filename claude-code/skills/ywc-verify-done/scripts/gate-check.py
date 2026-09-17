@@ -46,6 +46,7 @@ import re
 import selectors
 import signal
 import multiprocessing
+import queue as queue_mod
 import subprocess
 import sys
 import time
@@ -214,12 +215,14 @@ def matches_expect(expect: str, output: str) -> tuple[bool, str]:
             target=_regex_search_worker, args=(pattern, output, flags, queue), daemon=True
         )
         worker.start()
-        worker.join(EXPECT_TIMEOUT_SECONDS)
-        if worker.is_alive():
-            worker.terminate()
+        try:
+            matched = queue.get(timeout=EXPECT_TIMEOUT_SECONDS)
+        except queue_mod.Empty:
+            matched = None
+        finally:
+            if worker.is_alive():
+                worker.terminate()
             worker.join()
-            return (False, "")
-        matched = queue.get() if not queue.empty() else None
         return (matched is not None, matched or "")
     return (expect in output, expect if expect in output else "")
 
@@ -231,9 +234,12 @@ def stop_process_group(process: subprocess.Popen[bytes]) -> None:
     backgrounded grandchild that ignores SIGTERM, the wait succeeds while
     that grandchild is still alive in the group. SIGKILL is therefore sent
     to the group unconditionally after the grace period, not only on a
-    wait() timeout.
+    wait() timeout. On POSIX this must run even when the top-level shell
+    has already been reaped (process.poll() is not None) — a descendant can
+    still hold the stdout pipe open in that case, and skipping the signal
+    would leave it running past the deadline.
     """
-    if process.poll() is not None:
+    if os.name != "posix" and process.poll() is not None:
         return
     try:
         if os.name == "posix":
@@ -280,9 +286,10 @@ def run_check(gate: Gate) -> tuple[int | str, bool, str]:
     deadline = time.monotonic() + TIMEOUT_SECONDS
     try:
         while True:
-            if time.monotonic() >= deadline and process.poll() is None:
+            if not timed_out and time.monotonic() >= deadline:
                 timed_out = True
                 stop_process_group(process)
+                break
             events = selector.select(timeout=0.05)
             for key, _ in events:
                 chunk = key.fileobj.read1(4096)  # type: ignore[attr-defined]
@@ -335,7 +342,7 @@ def write_evidence(path: Path, lines: list[str], edits: list[tuple[str, int, str
         else:  # insert_after
             term = split_line(lines[idx])[1] or "\n"
             lines.insert(idx + 1, new_body + term)
-    with open(path, "w", newline="") as f:
+    with open(path, "w", encoding="utf-8", newline="") as f:
         f.write("".join(lines))
 
 
@@ -407,7 +414,7 @@ def main(argv: list[str]) -> int:
         print(f"gate-check.py: file not found: {args.ledger}", file=sys.stderr)
         return 1
 
-    with open(path, "r", newline="") as f:
+    with open(path, "r", encoding="utf-8", newline="") as f:
         content = f.read()
     lines = content.splitlines(keepends=True)
 
