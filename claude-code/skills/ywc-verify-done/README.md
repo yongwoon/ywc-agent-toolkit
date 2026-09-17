@@ -16,7 +16,7 @@
 
 ## Optional: Executable Gate Ledger
 
-Multi-command 검증, PR-ready 주장, base branch 에 반영될 subagent 산출물처럼 최고위험 완료 주장에 한해, 위 5단계 prose Gate 를 `gate-check.py` 기반의 결정론적 gate-ledger 로 escalation 할 수 있습니다 — Steps 1~6 은 그대로 default 로 유지되는 선택적(optional) 확장입니다. `gate-check.py --status|--reverify <ledger>` 3-mode 호출법과 ledger 포맷 전체 규격은 [SKILL.md](./SKILL.md#optional-escalation-executable-gate-ledger) 와 [references/gate-ledger.md](./references/gate-ledger.md) 를 참조합니다. `CHECK:` line 은 invoking user 권한으로 임의 shell command 를 실행하므로, 직접 작성하지 않은 ledger 를 실행하기 전에는 반드시 내용을 확인해야 합니다.
+Multi-command 검증, PR-ready 주장, base branch 에 반영될 subagent 산출물처럼 최고위험 완료 주장에 한해, 위 5단계 prose Gate 를 `gate-check.py` 기반의 결정론적 gate-ledger 로 escalation 할 수 있습니다 — 위 Gate Function 은 그대로 default 로 유지되는 선택적(optional) 확장입니다. `gate-check.py --status|--reverify <ledger>` 3-mode 호출법과 ledger 포맷 전체 규격은 [SKILL.md](./SKILL.md#optional-escalation-executable-gate-ledger) 와 [references/gate-ledger.md](./references/gate-ledger.md) 를 참조합니다. `CHECK:` line 은 invoking user 권한으로 임의 shell command 를 실행하므로, 직접 작성하지 않은 ledger 를 실행하기 전에는 반드시 내용을 확인해야 합니다.
 
 ## 언제 trigger 되나요
 
