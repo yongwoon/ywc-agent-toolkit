@@ -748,6 +748,30 @@ check_cc_support_dirs() {
   done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
 }
 
+check_agent_readonly_return_contract() {
+  local file="$1"
+  local base
+  base="$(basename "$file" .md)"
+
+  local tools_line
+  tools_line="$(sed -n 's/^tools:[[:space:]]*//p' "$file" | head -n 1)"
+  [ -n "$tools_line" ] || return 0
+  [[ "$tools_line" == \[*\] ]] || return 0
+
+  # Word-boundary match so a future Rewrite/WriteXyz-named tool never
+  # falsely counts as this agent holding Write.
+  if grep -Eq '\bWrite\b' <<<"$tools_line"; then
+    return 0
+  fi
+
+  local contract_body
+  contract_body="$(sed -n '/^## Return Contract$/,/^## /p' "$file")"
+  if ! grep -Eq 'returns? inline|read-only review-worker exception' <<<"$contract_body"; then
+    echo "ERROR: agents/$base.md is a read-only agent (no Write tool) but its Return Contract section does not carry the inline-return qualifier"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
 check_cc_agents() {
   local dir=claude-code/agents
   [ -d "$dir" ] || return 0
@@ -765,6 +789,7 @@ check_cc_agents() {
   for file in "$dir"/ywc-*.md; do
     [ -f "$file" ] || continue
     check_agent_file "$file"
+    check_agent_readonly_return_contract "$file"
   done
 }
 
