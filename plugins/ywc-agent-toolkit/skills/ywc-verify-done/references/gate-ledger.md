@@ -15,7 +15,7 @@ A gate header is a hyphen, optional whitespace, one character in brackets, optio
 
 Triple-backtick fences, including tagged fences, toggle documentation skipping. An unterminated fence remains documentation through end of file. A fenced example is never executed.
 
-`EXPECT: text` is a literal substring match. `/pattern/flags` is a regular expression and accepts only `i`, `m`, and `s` flags. Regex matching is isolated and bounded by the checker.
+`EXPECT: text` is a literal substring match. A value starting with `/` and containing another `/` is instead parsed as `/pattern/flags`, a regular expression accepting only `i`, `m`, and `s` flags; the last `/` in the value is the closing delimiter, so the pattern itself need not end with `/`. A literal substring that begins with `/` and contains another `/` (e.g. a path such as `/usr/bin/tool not found`) is misparsed as a regex — avoid a leading `/` in plain-substring `EXPECT:` values. Regex matching is isolated and bounded by the checker.
 
 A gate with neither `CHECK` nor `EXPECT` is `MANUAL`; manual gates are reported and skipped, and the checker never writes their evidence. A runnable gate must have both fields and non-empty values. The checker is not a sandbox: inspect every inherited `CHECK` before running it because checks execute through the caller's shell.
 

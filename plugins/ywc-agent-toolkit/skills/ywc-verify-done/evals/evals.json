@@ -22,7 +22,7 @@
     {
       "id": 4,
       "prompt": "Use the optional Gate Ledger to verify a multi-command claim.",
-      "expected_output": "Explains that --status is read-only, bare mode resumes only exact cached PASS gates, and --reverify runs every runnable gate. Treats MANUAL gates as skipped, warns that CHECK is arbitrary shell, requires positive controls for absence claims, and keeps independent PR polling, head-SHA, CI, and PR-health evidence separate.",
+      "expected_output": "Explains that --status is read-only, bare mode executes runnable gates that do not have an exact cached PASS fingerprint while skipping matching cached PASS gates, and --reverify runs every runnable gate. Treats MANUAL gates as skipped, warns that CHECK is arbitrary shell, requires positive controls for absence claims, and keeps independent PR polling, head-SHA, CI, and PR-health evidence separate.",
       "files": []
     }
   ]
