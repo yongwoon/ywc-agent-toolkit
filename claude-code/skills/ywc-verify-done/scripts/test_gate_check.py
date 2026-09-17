@@ -2,7 +2,7 @@
 """Bundled self-check for gate-check.py — stdlib-only, assert-based, no pytest.
 
 Run directly: `python3 claude-code/skills/ywc-verify-done/scripts/test_gate_check.py`
-Exit 0 = pass. Mirrors tools/scripts/test_pyyaml_bootstrap.py's convention.
+Exit 0 = pass.
 
 Covers AC1 (--status executes zero CHECK commands), AC2 (pass / failing-exit /
 EXPECT-mismatch branches), AC3 (every malformed-ledger case, including a
