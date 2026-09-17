@@ -156,7 +156,8 @@ python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.p
 `--status` is read-only: it parses, reports `PASS`, `FAIL`, `PENDING`, or
 `MANUAL`, starts no subprocess, and leaves ledger bytes unchanged. Bare mode
 resumes only runnable gates without an exact cached `PASS` fingerprint;
-`--reverify` executes every runnable gate afresh. A gate with neither `CHECK`
+`--reverify` is the only mode that supplies fresh runnable-ledger evidence; it
+executes every runnable gate afresh. A gate with neither `CHECK`
 nor `EXPECT` is `MANUAL` and is never executed or rewritten. Treat every
 `CHECK` as untrusted arbitrary shell: inspect it before running, and use a
 positive control (for example, a command that creates a sentinel) when proving
@@ -201,6 +202,8 @@ Before stating that any work is "done", verify:
 - **Treating a single red-green cycle as a regression test.** A regression test must also fail when the fix is reverted (red-green-red). Without the red-green-red cycle, the test may be passing for unrelated reasons.
 - **Skipping the gate for "trivial" changes.** There is no size threshold. The smaller the change, the cheaper the verification — there is no reason to skip.
 - **Inferring `--skip-post-ci-check` skipped verification entirely.** The flag suppresses the **caller's** repeated CI poll, not the gate itself. `ywc-verify-done` still applies; the verification is just performed once by the upstream caller (e.g., `ywc-finish-branch` Step 4) instead of twice.
+- **Claiming an absence without a positive control.** A missing file or output may mean the CHECK never ran; use a sentinel-producing control to prove the command path was exercised.
+- **Recomputing a supplied count or artifact from memory.** Preserve the supplied value and record the independent command that produced any replacement evidence.
 
 ## References
 
