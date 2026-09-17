@@ -139,6 +139,36 @@ If verification fails, do not claim done and do not silently retry. Classify the
 | Subagent delivered wrong artifact | Re-dispatch with corrected prompt; do not patch the artifact in the orchestrator |
 | Environment / infra issue (DB down, network out) | State the blocker, surface to user with proposed action — never claim done with "ignored env issue" |
 
+## Gate Ledger Escalation (Optional)
+
+Use the Gate Ledger only as an additive escalation when a claim combines several
+commands or accepted subagent artifacts. It does not replace Steps 1–6, normal
+CI/PR-health evidence, or the separate `poll-pr-reviews.sh --verify` proof.
+
+Run the installed checker with the same ledger file in each mode:
+
+```sh
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.py" --status <ledger.md>
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.py" <ledger.md>
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/ywc-verify-done/scripts/gate-check.py" --reverify <ledger.md>
+```
+
+`--status` is read-only: it parses, reports `PASS`, `FAIL`, `PENDING`, or
+`MANUAL`, starts no subprocess, and leaves ledger bytes unchanged. Bare mode
+resumes only runnable gates without an exact cached `PASS` fingerprint;
+`--reverify` executes every runnable gate afresh. A gate with neither `CHECK`
+nor `EXPECT` is `MANUAL` and is never executed or rewritten. Treat every
+`CHECK` as untrusted arbitrary shell: inspect it before running, and use a
+positive control (for example, a command that creates a sentinel) when proving
+that an absence condition is real. Do not recompute or substitute supplied
+counts or artifacts without recording the independent command that produced
+them.
+
+The checker has bounded CHECK output/time and bounded regex matching, but it is
+not a sandbox. For PR-ready claims, ledger evidence remains only one component:
+also run the independent 600-second review poll, `--verify` head-SHA check, CI,
+and PR-health proof against the current head.
+
 ## Integration
 
 The optional Gate Ledger grammar and checker contract are defined in

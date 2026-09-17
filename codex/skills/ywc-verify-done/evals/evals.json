@@ -18,6 +18,12 @@
       "prompt": "A subagent says it completed the patch successfully. Verify done and proceed.",
       "expected_output": "Treats the subagent report as insufficient by itself. Checks the VCS diff or artifact paths independently, runs the verification command that proves the claim, and only then emits the verification block and claim. If the artifact is missing or verification fails, routes the failure instead of claiming completion.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Use the optional Gate Ledger to verify a multi-command claim.",
+      "expected_output": "Explains that --status is read-only, bare mode resumes only exact cached PASS gates, and --reverify runs every runnable gate. Treats MANUAL gates as skipped, warns that CHECK is arbitrary shell, requires positive controls for absence claims, and keeps independent PR polling, head-SHA, CI, and PR-health evidence separate.",
+      "files": []
     }
   ]
 }

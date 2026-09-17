@@ -32,6 +32,10 @@ Unverified-assertion vocabulary ("should", "probably", "seems") is blocked.
 
 For the full ruleset, output format, and Rationalization Defense, see [SKILL.md](./SKILL.md). The underlying discipline is adapted from `superpowers:verification-before-completion`.
 
+## Optional Gate Ledger
+
+Use the Gate Ledger only as an additive escalation for multi-command or accepted-subagent claims. The installed checker’s `--status` starts no subprocess and preserves bytes; bare mode resumes only gates without an exact cached `PASS`, while `--reverify` runs every runnable gate fresh. `MANUAL` gates are skipped. `CHECK` is arbitrary shell, so inspect it before execution and use a positive control when proving absence. PR-ready claims still require independent 600-second review polling, `--verify` head-SHA evidence, CI, and PR-health proof. See [gate-ledger.md](./references/gate-ledger.md) for the grammar.
+
 ## Localized Versions
 
 - [한국어 (default)](./README.md)

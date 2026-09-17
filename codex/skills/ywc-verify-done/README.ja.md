@@ -32,6 +32,10 @@
 
 詳細な rule・Output Format・Rationalization Defense は [SKILL.md](./SKILL.md) を参照してください。元の process discipline は `superpowers:verification-before-completion` を参考にしています。
 
+## オプション: Gate Ledger
+
+複数の command や accepted subagent artifact を一つの主張にまとめる場合だけ、追加の escalation として使います。インストール済み checker の `--status` は subprocess を起動せず bytes を変更しません。bare mode は完全一致する cached `PASS` がない gate だけを再開し、`--reverify` はすべての runnable gate を fresh に実行します。`MANUAL` gate は skip されます。`CHECK` は任意の shell なので実行前に必ず確認し、absence を示すときは positive control を使ってください。PR-ready の主張には独立した 600 秒 review poll、`--verify` head-SHA、CI、PR-health の証拠も必要です。文法は [gate-ledger.md](./references/gate-ledger.md) を参照してください。
+
 ## Localized Versions
 
 - [한국어 (default)](./README.md)
