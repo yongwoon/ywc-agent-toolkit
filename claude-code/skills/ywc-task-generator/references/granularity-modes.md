@@ -16,7 +16,7 @@ This document specifies the two Granularity Modes supported by `ywc-task-generat
 | Axis | `human` mode | `llm` mode |
 |---|---|---|
 | Primary executor | Human developer reviewing each PR | LLM agent in an isolated worktree |
-| Size guideline | ~10 files / ~300 LOC | ~25 files / ~800 LOC |
+| Size guideline | ~12-15 files / ~400-500 LOC | ~30 files / ~1,000 LOC |
 | Internal bundling | One primary concern per task; strict category split | Vertical slice permitted — a single feature may bundle `domain` + `api`, provided Safety Invariants hold |
 | Category splitting | `db`, `lib`, `api`, `domain`, `ui`, `worker` strictly separated | Feature-level bundling allowed for non-invariant categories; invariants remain separate |
 | Ownership scope | Narrow path globs (file-level or small directory) | Feature-level module subtree |
@@ -24,6 +24,8 @@ This document specifies the two Granularity Modes supported by `ywc-task-generat
 | test.md inclusion | UI / external-integration / browser-dependent tasks | More inclusive — add feature-level integration scenarios alongside the same UI / external-integration criteria |
 | Typical phase count | 2–3 phases for a medium spec | 1–2 phases for the same spec (tasks absorb more scope) |
 | Review cadence | Per-task PR review | Post-completion aggregate review across the feature slice |
+
+The numbers above are guidelines, not hard caps — they approximate a fixed qualitative criterion: `human` means "reviewable in a single PR within a ~1 hour review budget"; `llm` means "one feature vertical slice, completable and build+test-verified in one worktree session on the project's current baseline model (Sonnet 5)." A future model upgrade is not by itself grounds to re-raise these numbers — re-evaluate deliberately, against observed task-generation outcomes, not automatically.
 
 ## Safety Invariants (Both Modes)
 
@@ -55,7 +57,7 @@ Use `llm` mode when:
 - Throughput and single-session context coherence matter more than per-PR reviewability
 
 Vertical bundling rules:
-- A task may cover one feature across `domain` + `api` if the scope stays within ~25 files / ~800 LOC
+- A task may cover one feature across `domain` + `api` if the scope stays within ~30 files / ~1,000 LOC
 - `ui` may be bundled with its directly-coupled `api` only when the UI and API share exclusive ownership (no cross-feature reuse)
 - Never bundle a Safety Invariant (DB migration, Library introduction) with other work
 
