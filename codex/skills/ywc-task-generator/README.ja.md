@@ -42,10 +42,10 @@ Korean / Japanese / Chinese / Spanish で書く場合も、Technical terms は E
 
 | Mode   | Size guideline         | 最適化対象                                          |
 |--------|------------------------|-----------------------------------------------------|
-| human  | ~10 files / ~300 LOC   | PR 単位の human review                              |
-| llm    | ~25 files / ~800 LOC   | 単一 LLM agent session (isolated worktree) 実行単位 |
+| human  | ~15 files / ~500 LOC (advisory) | PR 単位の human review                         |
+| llm    | ~35 files / ~1,200 LOC (advisory) | 単一 LLM agent session (isolated worktree) 実行単位 |
 
-Safety Invariants (DB migration 分離、Library 導入分離、Phase hard gate、完了時 buildable) は両 mode で同一です。詳細は [references/granularity-modes.md](./references/granularity-modes.md) を参照してください。
+数値は reviewability の advisory であり、自動的な bundling 許可ではありません。LLM bundling は 1 つの feature、exclusive Ownership、明示的な Shared Surfaces の範囲に限ります。Safety Invariants (DB migration 分離、Library 導入分離、Phase hard gate、single phase per task、完了時 buildable) は両 mode で同一で、数値内でも feature / Ownership 境界を越える場合は分割します。詳細は [references/granularity-modes.md](./references/granularity-modes.md) を参照してください。
 
 ## Preview Approval Workflow
 
