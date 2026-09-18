@@ -52,10 +52,10 @@ If none is given, the Skill proposes a derived value and asks once. Existing unp
 
 The Skill supports two task granularity modes and **always asks which mode to apply** — there is no silent default.
 
-| Mode   | Size guideline         | Optimized for                                       |
-|--------|------------------------|-----------------------------------------------------|
-| human  | ~10 files / ~300 LOC   | Per-PR human review                                 |
-| llm    | ~25 files / ~800 LOC   | Single LLM agent session in an isolated worktree    |
+| Mode   | Size guideline               | Optimized for                                                |
+|--------|-------------------------------|---------------------------------------------------------------|
+| human  | ~12-15 files / ~400-500 LOC  | Per-PR human review (~1 hour review budget)                  |
+| llm    | ~30 files / ~1,000 LOC       | Single LLM agent session (baseline: Sonnet 5) in an isolated worktree |
 
 Safety Invariants (DB migration separation, Library introduction separation, Phase hard gate, post-task buildability) apply identically in both modes. See [references/granularity-modes.md](./references/granularity-modes.md) for the full specification.
 

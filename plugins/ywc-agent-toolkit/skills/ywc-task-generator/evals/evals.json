@@ -212,6 +212,55 @@
       "expected_output": "Rejects the declaration before writing and never copies or exposes the raw command-like content.",
       "expectations": ["No raw command/output/transcript/secret/full diff is emitted", "No placeholder value is emitted", "Task Verify remains independent of packet authorization"],
       "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
+    },
+    {
+      "id": 30,
+      "name": "llm-accepted-one-feature-vertical-slice",
+      "prompt": "Use --mode llm for one profile feature whose domain, API, and directly-coupled UI changes remain within ~35 files / ~1,200 LOC.",
+      "expected_output": "Keeps the vertical slice together only when it has exclusive Ownership and explicitly declared Shared Surfaces. Treats ~35 files / ~1,200 LOC as advisory guidance, not automatic bundling permission.",
+      "expectations": [
+        "Names one feature rather than unrelated feature areas",
+        "Requires exclusive Ownership and explicit Shared Surfaces",
+        "Uses the llm guideline ~35 files / ~1,200 LOC",
+        "Preserves DB migration, Library introduction, Phase hard gate, post-task buildability, and single-phase invariants"
+      ],
+      "files": ["SKILL.md", "references/granularity-modes.md"]
+    },
+    {
+      "id": 31,
+      "name": "llm-cross-feature-bundle-rejected",
+      "prompt": "Use --mode llm for two unrelated features that fit under ~35 files / ~1,200 LOC together.",
+      "expected_output": "Splits the unrelated features despite fitting within the numeric guideline because numeric limits are advisory and one-feature, Ownership, and Shared Surface boundaries control bundling.",
+      "expectations": [
+        "Rejects cross-feature bundling even when the numeric limit is met",
+        "Treats unsafe or shared boundaries as split reasons",
+        "Does not reintroduce the superseded ~25 files / ~800 LOC rule"
+      ],
+      "files": ["SKILL.md", "references/granularity-modes.md"]
+    },
+    {
+      "id": 32,
+      "name": "human-category-splitting-preserved",
+      "prompt": "Use --mode human for a candidate spanning Database, API, and UI changes within ~15 files / ~500 LOC.",
+      "expected_output": "Splits Database, API, and UI categories by default for separate reviewable tasks. The human guideline is ~15 files / ~500 LOC and does not override category or safety boundaries.",
+      "expectations": [
+        "Preserves human category splitting across db, api, and ui",
+        "Uses the human guideline ~15 files / ~500 LOC",
+        "Does not reintroduce the superseded ~10 files / ~300 LOC rule"
+      ],
+      "files": ["SKILL.md", "references/granularity-modes.md"]
+    },
+    {
+      "id": 33,
+      "name": "planning-advisor-mode-aware-guideline",
+      "prompt": "Run the optional Planning Advisor for a medium specification with --mode llm, then repeat with --mode human.",
+      "expected_output": "Sends the selected mode and exactly its matching guideline: llm uses ~35 files / ~1,200 LOC, human uses ~15 files / ~500 LOC. The advisor still evaluates feature, Ownership, Shared Surface, invariant, phase, and buildability boundaries.",
+      "expectations": [
+        "Advisor payload names the selected mode",
+        "Advisor evaluates exactly the matching guideline rather than both thresholds",
+        "Advisor retains boundary-based split reasons and the one-advisor budget"
+      ],
+      "files": ["SKILL.md"]
     }
   ]
 }

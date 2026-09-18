@@ -1,6 +1,38 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000048`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000050`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+
+## Batch — Codex task-generator granularity expansion
+
+- Spec: `docs/ywc-plans/20260918-codex-task-generator-granularity-expansion.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000048` (ledger reservation)
+- Advisor pass: used — inline bounded advisor checklist because no delegation tool was exposed; recommended source-contract, public-documentation/eval, then distribution hard gates.
+- No-AC requirements: none found — all scoped requirements map to AC1–AC5 and the quality-gate contract.
+- Architecture contract: N/A — no manifest supplied and no architecture contract applies to this bounded docs/evaluation/distribution change.
+
+### Phase yw-000048 — source contract and regression evidence
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000048-010-docs-granularity-contract` | docs | (root) |
+| `yw-000048-020-docs-granularity-readmes` | docs | `yw-000048-010` |
+| `yw-000048-030-test-granularity-evals` | test | `yw-000048-010` |
+
+### Phase yw-000049 — distribution hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000049-010-infra-granularity-distribution` | infra | `yw-000048-010`, `yw-000048-020`, `yw-000048-030` |
+
+### Parallel Execution Notes (Codex task-generator granularity expansion)
+
+- Initial ready set: `yw-000048-010-docs-granularity-contract`.
+- After it merges: `yw-000048-020-docs-granularity-readmes` and `yw-000048-030-test-granularity-evals` may run in parallel because they own separate documentation and evaluation surfaces.
+- `yw-000049-010-infra-granularity-distribution` is blocked until all Phase `yw-000048` tasks pass; it owns the generated marketplace mirror and final validation gate.
+- No task modifies `codex/agents/ywc-architect.toml`; advisor policy remains owned by the task-generator contract.
 
 ## Batch — Codex read-only agent inline return contract
 

@@ -60,10 +60,10 @@ Task ID 는 collaborator initials 접두로 namespace 를 나눕니다 (`yk-0000
 
 Skill 은 두 가지 task granularity mode 를 지원하며, **항상 사용자에게 어떤 mode 로 생성할지 확인합니다** (silent default 없음).
 
-| Mode   | Size guideline         | 최적화 대상                                          |
-|--------|------------------------|------------------------------------------------------|
-| human  | ~10 files / ~300 LOC   | Per-PR 단위의 human review                           |
-| llm    | ~25 files / ~800 LOC   | 단일 LLM agent 세션 (isolated worktree) 실행 단위     |
+| Mode   | Size guideline              | 최적화 대상                                                |
+|--------|------------------------------|-------------------------------------------------------------|
+| human  | ~12-15 files / ~400-500 LOC | Per-PR 단위의 human review (~1시간 review budget)          |
+| llm    | ~30 files / ~1,000 LOC      | 단일 LLM agent(baseline: Sonnet 5) session(isolated worktree) 실행 단위 |
 
 두 mode 모두 Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, 완료 시 buildable) 는 동일하게 유지됩니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
 

@@ -50,10 +50,10 @@ Skill 은 두 가지 task granularity mode 를 지원합니다. 표준 option �
 
 | Mode   | Size guideline         | 최적화 대상                                          |
 |--------|------------------------|------------------------------------------------------|
-| human  | ~10 files / ~300 LOC   | Per-PR 단위의 human review                           |
-| llm    | ~25 files / ~800 LOC   | 단일 LLM agent 세션 (isolated worktree) 실행 단위     |
+| human  | ~15 files / ~500 LOC (advisory) | Per-PR 단위의 human review                       |
+| llm    | ~35 files / ~1,200 LOC (advisory) | 단일 LLM agent 세션 (isolated worktree) 실행 단위 |
 
-두 mode 모두 Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, 완료 시 buildable) 는 동일하게 유지됩니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
+숫자 기준은 reviewability advisory일 뿐 자동 bundling 허가가 아닙니다. `llm` mode bundling은 하나의 feature, exclusive Ownership, 명시적인 Shared Surfaces 안에서만 허용됩니다. 두 mode 모두 Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, single phase per task, 완료 시 buildable) 를 동일하게 유지하며, feature/Ownership 경계를 넘으면 숫자 안에 들어와도 분리합니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
 
 ## Preview Approval Workflow
 

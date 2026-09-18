@@ -48,10 +48,10 @@ Skill 支持两种任务粒度模式。标准 option 是 `--mode human|llm`；`-
 
 | 模式   | 大小指南               | 优化目标                                            |
 |--------|------------------------|-----------------------------------------------------|
-| human  | 约 10 个文件 / 约 300 行代码   | 每 PR 人工审查                                 |
-| llm    | 约 25 个文件 / 约 800 行代码   | 在隔离 worktree 中的单 LLM 代理会话    |
+| human  | 约 15 个文件 / 约 500 行代码（advisory） | 每 PR 人工审查                         |
+| llm    | 约 35 个文件 / 约 1,200 行代码（advisory） | 在隔离 worktree 中的单 LLM 代理会话 |
 
-安全不变量（DB 迁移分离、库引入分离、阶段硬门控、任务后可构建性）在两种模式下均相同适用。完整规范请参见 [references/granularity-modes.md](./references/granularity-modes.md)。
+数字限制只是 reviewability 指南，不是自动 bundling 授权。LLM bundling 仅限于单一 feature，并且必须具有 exclusive Ownership 和明确的 Shared Surfaces。安全不变量（DB 迁移分离、库引入分离、阶段硬门控、single phase per task、任务后可构建性）在两种模式下均相同适用；即使未超过数字限制，只要跨越 feature 或 Ownership 边界也必须拆分。完整规范请参见 [references/granularity-modes.md](./references/granularity-modes.md)。
 
 ## Preview Approval Workflow
 

@@ -42,10 +42,10 @@ Korean, Japanese, Chinese, Spanish 출력에서는 Technical 용어를 English �
 
 | Mode   | Size guideline         | 최적화 대상                                          |
 |--------|------------------------|------------------------------------------------------|
-| human  | ~10 files / ~300 LOC   | Per-PR human review                                  |
-| llm    | ~25 files / ~800 LOC   | 단일 LLM agent session (isolated worktree) 실행 단위 |
+| human  | ~15 files / ~500 LOC (advisory) | Per-PR human review                            |
+| llm    | ~35 files / ~1,200 LOC (advisory) | 단일 LLM agent session (isolated worktree) 실행 단위 |
 
-Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, 완료 시 buildable) 는 두 mode 모두 동일하게 유지됩니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
+숫자 기준은 reviewability advisory일 뿐 자동 bundling 허가가 아닙니다. LLM bundling은 하나의 feature, exclusive Ownership, 명시적인 Shared Surfaces 안에서만 허용됩니다. Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, single phase per task, 완료 시 buildable)는 두 mode 모두 동일하며, 숫자 안에 들어와도 feature/Ownership 경계를 넘으면 분리합니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
 
 ## Preview Approval Workflow
 

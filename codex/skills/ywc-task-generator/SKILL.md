@@ -94,11 +94,11 @@ guarantee, **read
 ### 1. Reviewability
 - Each task should be small enough for the intended executor to hold the full context in one session
 - Size guideline depends on the selected **Granularity Mode** (see Step 5):
-  - `human` mode: ~10 files / ~300 LOC (optimized for single-reviewer PR)
-  - `llm` mode: ~25 files / ~800 LOC (optimized for an LLM agent completing a vertical slice in one run)
+  - `human` mode: ~15 files / ~500 LOC (optimized for a single-reviewer PR)
+  - `llm` mode: ~35 files / ~1,200 LOC (optimized for an LLM agent completing a vertical slice in one run)
 - See [references/granularity-modes.md](references/granularity-modes.md) for the full rule set
-- Split tasks that significantly exceed the mode's guideline
-- Do not bundle more than one major concern in a single task
+- Treat these numeric limits as advisory reviewability guidance, never as automatic authorization to bundle work; split tasks that significantly exceed the selected mode's guideline or cross a safety, feature, ownership, or phase boundary
+- In `llm` mode, bundling is limited to one feature with exclusive Ownership and explicitly declared Shared Surfaces
 - Prefer self-contained change units that leave the codebase buildable on completion
 
 ### 2. Dependency Safety
@@ -181,14 +181,14 @@ If `--mode` is provided, use it and skip this confirmation. If `--granularity` i
 If neither flag is provided, **always ask** the user which granularity mode to apply. Do not silently default — the correct mode depends on who will execute the tasks.
 
 > "Which mode should the tasks be generated in?
-> - `human` — small, single-PR reviewable units (~10 files / ~300 LOC)
-> - `llm` — larger vertical slices optimized for a single LLM agent run (~25 files / ~800 LOC)"
+> - `human` — reviewable units (~15 files / ~500 LOC)
+> - `llm` — larger vertical slices optimized for a single LLM agent run (~35 files / ~1,200 LOC)"
 
 **Mode selection criteria** (share with the user if they are unsure):
 - Choose `human` when a person will implement and code-review each task in sequence
 - Choose `llm` when tasks will be executed autonomously by an LLM agent (Codex, etc.) in isolated worktrees, and reviewed in aggregate after completion
 
-Safety invariants — DB migration separation, Library introduction separation, Phase hard gate, post-task buildability — apply in **both modes**. Only size and internal bundling differ.
+Safety invariants — DB migration separation, Library introduction separation, Phase hard gate, post-task buildability, and single phase per task — apply in **both modes**. Only advisory size and safe internal bundling differ; mode selection never authorizes cross-feature or invariant bundling.
 
 See [references/granularity-modes.md](references/granularity-modes.md) for the full mode specification.
 
@@ -250,13 +250,14 @@ This skill applies **Pattern C** from [advisor-pattern.md](../references/advisor
 
 - **Spec summary** — ≤20 lines distilled from your Spec Review in Step 3 (not the full spec).
 - **First-pass task list** — task name + one-line description for each candidate task from your Step 6 decomposition.
+- **Selected mode and matching guideline** — the selected `human` or `llm` mode and exactly one corresponding advisory: `human` → ~15 files / ~500 LOC; `llm` → ~35 files / ~1,200 LOC. Do not evaluate a task against the other mode's guideline.
 - **Known conflicts / shared surfaces** — any Ownership overlaps or Shared Surfaces you identified.
 - **Project context essentials** — monorepo structure, existing phases in `tasks/`, tech-stack constraints affecting dependency order.
 
 Ask the advisor for three things:
 
 1. **Phase boundary recommendations** — which tasks belong to which phase, and why each boundary is a hard gate.
-2. **Task size verification** — any task likely to exceed ~10 files or ~300 LOC that should be split further.
+2. **Task size verification** — whether any task exceeds the selected mode's matching advisory guideline and, independently, whether a feature, Ownership, Shared Surface, safety-invariant, phase, or buildability boundary requires a split even when the numeric limit is met.
 3. **Dependency cycle risk** — any tasks with circular implicit dependencies the first-pass missed.
 
 **Budget**: exactly **1** advisor pass per invocation of this skill. Pattern C explicitly rules out re-invocation during execution — if the initial plan proves wrong, re-run the whole skill with refined input rather than calling another advisor mid-generation. This rule exists because mid-generation re-planning leads to inconsistent task directories; a fresh start is cleaner and more auditable.

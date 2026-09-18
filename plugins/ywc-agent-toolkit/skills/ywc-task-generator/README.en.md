@@ -42,10 +42,10 @@ The Skill supports two task granularity modes. The canonical option is `--mode h
 
 | Mode   | Size guideline         | Optimized for                                       |
 |--------|------------------------|-----------------------------------------------------|
-| human  | ~10 files / ~300 LOC   | Per-PR human review                                 |
-| llm    | ~25 files / ~800 LOC   | Single LLM agent session in an isolated worktree    |
+| human  | ~15 files / ~500 LOC (advisory) | Per-PR human review                              |
+| llm    | ~35 files / ~1,200 LOC (advisory) | Single LLM agent session in an isolated worktree |
 
-Safety Invariants (DB migration separation, Library introduction separation, Phase hard gate, post-task buildability) apply identically in both modes. See [references/granularity-modes.md](./references/granularity-modes.md) for the full specification.
+Numeric limits are advisory reviewability guidance, not automatic bundling authorization. LLM bundling is limited to one feature with exclusive Ownership and explicit Shared Surfaces. Safety Invariants (DB migration separation, Library introduction separation, Phase hard gate, single phase per task, post-task buildability) apply identically in both modes; split any feature or Ownership boundary even when the numeric limit is met. See [references/granularity-modes.md](./references/granularity-modes.md) for the full specification.
 
 ## Preview Approval Workflow
 
