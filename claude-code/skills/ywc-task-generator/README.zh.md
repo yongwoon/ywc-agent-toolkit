@@ -46,8 +46,8 @@ Skill 支持两种任务粒度模式，并**始终询问应用哪种模式** —
 
 | 模式   | 大小指南               | 优化目标                                            |
 |--------|------------------------|-----------------------------------------------------|
-| human  | 约 12-15 个文件 / 约 400-500 行代码 | 每 PR 人工审查（约 1 小时 review budget） |
-| llm    | 约 30 个文件 / 约 1,000 行代码      | 单 LLM 代理（baseline: Sonnet 5）在隔离 worktree 中的会话 |
+| human  | 约 15 个文件 / 约 500 行代码 | 每 PR 人工审查（约 1 小时 review budget） |
+| llm    | 约 35 个文件 / 约 1,200 行代码      | 单 LLM 代理（baseline: Sonnet 5）在隔离 worktree 中的会话 |
 
 安全不变量（DB 迁移分离、库引入分离、阶段硬门控、任务后可构建性）在两种模式下均相同适用。完整规范请参见 [references/granularity-modes.md](./references/granularity-modes.md)。
 

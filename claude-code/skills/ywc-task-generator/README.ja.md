@@ -54,8 +54,8 @@ Task ID は collaborator initials の接頭辞で namespace を分けます (`yk
 
 | Mode   | Size guideline         | 最適化対象                                          |
 |--------|------------------------|-----------------------------------------------------|
-| human  | ~12-15 files / ~400-500 LOC | PR 単位の human review (~1 時間 review budget)         |
-| llm    | ~30 files / ~1,000 LOC      | 単一 LLM agent(baseline: Sonnet 5) session (isolated worktree) 実行単位 |
+| human  | ~15 files / ~500 LOC | PR 単位の human review (~1 時間 review budget)         |
+| llm    | ~35 files / ~1,200 LOC      | 単一 LLM agent(baseline: Sonnet 5) session (isolated worktree) 実行単位 |
 
 Safety Invariants (DB migration 分離、Library 導入分離、Phase hard gate、完了時 buildable) は両 mode で同一です。詳細は [references/granularity-modes.md](./references/granularity-modes.md) を参照してください。
 

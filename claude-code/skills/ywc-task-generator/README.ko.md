@@ -54,8 +54,8 @@ Task ID 는 collaborator initials 접두로 namespace 를 나눕니다 (`yk-0000
 
 | Mode   | Size guideline         | 최적화 대상                                          |
 |--------|------------------------|------------------------------------------------------|
-| human  | ~12-15 files / ~400-500 LOC | Per-PR human review (~1시간 review budget)              |
-| llm    | ~30 files / ~1,000 LOC      | 단일 LLM agent(baseline: Sonnet 5) session (isolated worktree) 실행 단위 |
+| human  | ~15 files / ~500 LOC | Per-PR human review (~1시간 review budget)              |
+| llm    | ~35 files / ~1,200 LOC      | 단일 LLM agent(baseline: Sonnet 5) session (isolated worktree) 실행 단위 |
 
 Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, 완료 시 buildable) 는 두 mode 모두 동일하게 유지됩니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
 
