@@ -97,8 +97,7 @@ guarantee, **read
   - `human` mode: ~15 files / ~500 LOC (optimized for a single-reviewer PR)
   - `llm` mode: ~35 files / ~1,200 LOC (optimized for an LLM agent completing a vertical slice in one run)
 - See [references/granularity-modes.md](references/granularity-modes.md) for the full rule set
-- Treat these numeric limits as advisory reviewability guidance, never as automatic authorization to bundle work
-- Split tasks that significantly exceed the selected mode's guideline or cross a safety, feature, ownership, or phase boundary
+- Treat these numeric limits as advisory reviewability guidance, never as automatic authorization to bundle work; split tasks that significantly exceed the selected mode's guideline or cross a safety, feature, ownership, or phase boundary
 - In `llm` mode, bundling is limited to one feature with exclusive Ownership and explicitly declared Shared Surfaces
 - Prefer self-contained change units that leave the codebase buildable on completion
 
