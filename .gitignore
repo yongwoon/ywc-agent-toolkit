@@ -25,3 +25,6 @@ tasks-codex-sdlc-v11
 docs/skill-agent-eval/*/runs/
 docs/skill-agent-eval/codex/runs/
 .ywc-run-state.json
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
