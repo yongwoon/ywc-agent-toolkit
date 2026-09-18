@@ -400,7 +400,7 @@ Each task.md must include the following:
   - Example: `Create src/models/user.ts with User entity definition`
 - **Task Verify**: Task-specific verification command checklist
 - **Verification**: Confirm lint, typecheck, test, and build pass (use the project's actual commands)
-
+For a `ui` task changing end-user layout/styles, link to [`mobile-first-ui.md`](../references/mobile-first-ui.md) and order Implementation Steps narrowest-viewport base first, then outward `min-width` expansion. Require a PC/tablet-only exception only when explicitly stated; do not apply this to logic-only UI, admin/internal, non-UI, or unchanged legacy desktop-first CSS (no retrofit).
 **Duplicate-sensitive write Task Verify rule**: When a task touches payment, order creation, provisioning, credit / balance / stock / quota mutation, or another duplicate-sensitive write flow, its `task.md` must include concrete Task Verify commands or test scenarios for concurrent request behavior, transaction rollback or equivalent consistency rollback on partial failure, and idempotency retry / double-click behavior. The task must name the selected mechanism where applicable: atomic conditional update, row lock, optimistic lock, idempotency key, unique constraint, or persisted request/result record. Expected results must be observable: lock/version conflict response, exhausted stock/balance/quota response, rollback state after a forced mid-flow failure, and duplicate retry returning the prior result without repeating the side effect. If the project has no practical local concurrency harness, the task may record a named exception only with replacement verification such as a code-level lock/transaction proof or an integration-test plan.
 
 #### test.md (optional)
