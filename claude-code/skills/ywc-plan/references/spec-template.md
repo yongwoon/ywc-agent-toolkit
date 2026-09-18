@@ -129,6 +129,7 @@ Anti-patterns to avoid:
 | Performance | <e.g., "p95 response time < 200ms"> |
 | Security | <e.g., "All endpoints require authenticated user"> |
 | Scalability | <e.g., "Handle 1000 concurrent users"> |
+| Responsive (UI-touching only) | <e.g., "Mobile-first, `min-width` breakpoints" per [../../references/mobile-first-ui.md](../../references/mobile-first-ui.md), or the stated PC/tablet-only exception> |
 
 ## Data Model
 
