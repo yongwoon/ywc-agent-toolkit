@@ -582,6 +582,16 @@ check_codex_agent_file() {
       ;;
   esac
 
+  local readonly_qualifier developer_instructions_body
+  readonly_qualifier='Read-only inline/no-artifact contract: You have no write capability. Return bounded findings/advice inline; do not promise or wait for an artifact file. Omit Artifacts: unless a write-enabled caller separately produced an artifact.'
+  if grep -q '^sandbox_mode = "read-only"$' "$file"; then
+    developer_instructions_body="$(sed -n '/^developer_instructions = """$/,/^"""$/p' "$file")"
+    if ! grep -Fq "$readonly_qualifier" <<<"$developer_instructions_body"; then
+      echo "ERROR: codex/agents/$base.toml read-only developer_instructions is missing the inline/no-artifact contract"
+      ERRORS=$((ERRORS + 1))
+    fi
+  fi
+
   if grep -Eq '^(tools|permissionMode)[[:space:]]*=' "$file" || grep -q 'Task(subagent_type=' "$file"; then
     echo "ERROR: codex/agents/$base.toml contains Claude Code-only agent fields"
     ERRORS=$((ERRORS + 1))
@@ -738,6 +748,30 @@ check_cc_support_dirs() {
   done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
 }
 
+check_agent_readonly_return_contract() {
+  local file="$1"
+  local base
+  base="$(basename "$file" .md)"
+
+  local tools_line
+  tools_line="$(sed -n 's/^tools:[[:space:]]*//p' "$file" | head -n 1)"
+  [ -n "$tools_line" ] || return 0
+  [[ "$tools_line" == \[*\] ]] || return 0
+
+  # Word-boundary match so a future Rewrite/WriteXyz-named tool never
+  # falsely counts as this agent holding Write.
+  if grep -Eq '\bWrite\b' <<<"$tools_line"; then
+    return 0
+  fi
+
+  local contract_body
+  contract_body="$(sed -n '/^## Return Contract$/,/^## /p' "$file")"
+  if ! grep -Eq 'returns? inline|read-only review-worker exception' <<<"$contract_body"; then
+    echo "ERROR: agents/$base.md is a read-only agent (no Write tool) but its Return Contract section does not carry the inline-return qualifier"
+    ERRORS=$((ERRORS + 1))
+  fi
+}
+
 check_cc_agents() {
   local dir=claude-code/agents
   [ -d "$dir" ] || return 0
@@ -755,6 +789,7 @@ check_cc_agents() {
   for file in "$dir"/ywc-*.md; do
     [ -f "$file" ] || continue
     check_agent_file "$file"
+    check_agent_readonly_return_contract "$file"
   done
 }
 

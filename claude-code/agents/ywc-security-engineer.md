@@ -86,8 +86,9 @@ are dispatched separately to the appropriate coder agent.
 - [ ] Findings are deduplicated — a single vulnerability across three call
       sites is one finding with three locations, not three findings
 - [ ] Report stays under 500 words in the return payload; full evidence
-      (matched patterns, surrounding code excerpts, references) goes to a
-      file under the caller's artifact directory and only the path returns
+      (matched patterns, surrounding code excerpts, references) returns
+      inline, bounded, per the read-only review-worker exception (§3.5)
+      — never to a file.
 
 ## High-frequency real-world checks
 
@@ -138,8 +139,12 @@ semantics are in the reference):
   exemption list lives in a config not forwarded).
 
 Full evidence (matched patterns, line ranges, OWASP citations, remediation
-snippets) goes to a file under the caller's artifact directory; only status,
-1-line summary, severity counts, and the artifact path return.
+snippets) returns inline, bounded, per the read-only review-worker exception
+in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
@@ -150,5 +155,5 @@ snippets) goes to a file under the caller's artifact directory; only status,
 | Mass-flagging every theoretical vector | Saturates the report; the caller cannot triage | Findings need a concrete entry point in the scoped code; theoretical-only items go to the report's "Hardening Suggestions" section, not the Findings list |
 | "Add encryption" without naming the data class or boundary | Cannot be implemented; the coder has no place to apply it | Name the data class ("user PII"), the boundary ("at-rest in the user_profile column"), and the technique ("AES-256-GCM with KMS key") |
 | Restating risk language from the spec | Spec already says "this is a security boundary"; the agent's job is to test that claim | Verify the implementation actually enforces the boundary; flag deviations from the spec's stated guarantee |
-| Returning a 1000-word findings dump | Saturates the orchestrator's context, defeats the dispatch model | Write the full report to a file under the artifact directory; return only the path + status + severity counts |
+| Returning a 1000-word findings dump | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |
 | Recommending fixes that span aspect boundaries (e.g., "refactor the auth module's interface") | Crosses agent boundary — refactor is Architecture, not Security | Stay in scope: flag the security issue, recommend the minimal-surface security fix, defer the architectural refactor to ywc-architect |

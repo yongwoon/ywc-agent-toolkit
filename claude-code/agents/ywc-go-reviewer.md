@@ -182,8 +182,8 @@ execute the application.
       is one finding with N locations, not N findings
 - [ ] Report stays under 500 words; full evidence (per-finding code
       excerpts, `go vet` / `staticcheck` output snippets, race-detector
-      traces, escape-analysis output) goes to a file under the caller's
-      artifact directory and only the path returns
+      traces, escape-analysis output) returns inline, bounded, per the
+      read-only review-worker exception (§3.5) — never to a file.
 
 ## High-frequency real-world checks
 
@@ -228,8 +228,12 @@ semantics are in the reference):
   escape-analysis output would disambiguate a finding.
 
 Full evidence (matched patterns, line ranges, remediation snippets, race /
-escape-analysis notes) goes to a file under the caller's artifact directory;
-only status, 1-line summary, severity counts, and the artifact path return.
+escape-analysis notes) returns inline, bounded, per the read-only
+review-worker exception in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
@@ -243,6 +247,6 @@ only status, 1-line summary, severity counts, and the artifact path return.
 | Treating `errors.Is` / `errors.As` as interchangeable | `errors.Is` matches sentinel errors (value equality after unwrap); `errors.As` matches typed errors (type assertion after unwrap); using the wrong one silently misses the match | Cite the specific use: sentinel like `io.EOF` → `errors.Is`, typed wrapping like `*url.Error` → `errors.As`; if the error has both a sentinel value and a type, both forms are valid for different match goals |
 | Recommending generics where a small interface suffices | Generics post-1.18 are powerful but not always the right answer — a single-method interface is often clearer and incurs no type-parameter complexity | Recommend generics when the same logic has 2+ non-trivial concrete implementations sharing structure (e.g., container types parameterized by element); recommend an interface when behavior varies and one method captures the contract |
 | Reviewing the entire repo for goroutine leaks | Burns context, defeats the bounded-payload contract | Use the caller-provided file list and at most 2-3 targeted Grep / Read calls for verification; full-codebase audits route to ywc-impl-review with a wider scope |
-| Returning a 1500-word goroutine-theory or context-propagation lecture | Saturates the orchestrator's context, defeats the dispatch model | Write the full theory to a file under the artifact directory; return only path + status + severity counts |
+| Returning a 1500-word goroutine-theory or context-propagation lecture | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |
 | Stepping outside Go to recommend a different language or runtime | Out of scope — the project chose Go for a reason | Recommend within Go idiom; if the limitation is fundamental (e.g., GC pause incompatible with the latency target), surface it as a Design-axis finding for the architect agent to weigh (Go vs Rust vs C++ is an architectural decision, not a review finding) |
 | Treating `defer` in a loop as always wrong | `defer` in a loop is sometimes correct (one-shot cleanup at function exit) and sometimes catastrophic (resource leak until function returns when the loop is long-running) | Cite the specific failure: file handle / DB connection opened per iteration with `defer Close()` accumulates until function exit → Critical; one-iteration loop with `defer` is identical to no-loop and is fine; pre-Go 1.22 `defer` in loop closure capturing loop variable is the classic capture-by-reference bug — recommend the explicit `i := i` shadow or Go 1.22+ |

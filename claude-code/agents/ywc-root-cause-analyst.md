@@ -110,8 +110,8 @@ verdicts come back as text for the caller to act on.
       a list, not a generic "investigate more"
 - [ ] Verdict payload under 400 words; supporting evidence (full
       hypothesis tables, prior-art references, runtime trace excerpts)
-      goes to a file under the caller's artifact directory and only the
-      path returns
+      returns inline, bounded, per the read-only review-worker
+      exception (§3.5) — never to a file.
 
 ## Return Contract
 
@@ -138,15 +138,18 @@ the bounded payload):
   verdict on an unreproduced failure is unverifiable, so refuse rather than guess.
 
 Full evidence (hypothesis tables, 5 Whys with citations, contributing-factor
-list, architecture-vs-fix verdict reasoning) goes to a file under the caller's
-artifact directory; only status, 1-line summary, primary root cause, next
-probe, and the artifact path return.
+list, architecture-vs-fix verdict reasoning) returns inline, bounded, per
+the read-only review-worker exception in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
 | Anti-pattern | Why bad | Avoid |
 |---|---|---|
-| Listing 8+ possible causes "to be thorough" | Caller cannot triage; the dispatch was made because they need a ranked verdict, not an inventory | Top 3 with evidence-for / against; everything else goes to the artifact file as "ruled out" with reason |
+| Listing 8+ possible causes "to be thorough" | Caller cannot triage; the dispatch was made because they need a ranked verdict, not an inventory | Top 3 with evidence-for / against; omit the rest from the return, or name them as limited `NEEDS_CONTEXT` evidence if truly load-bearing — never a file, this agent holds no Write tool |
 | Stopping at "the test is flaky" | Flakiness is a symptom, not a root cause — the next Why is the actual cause (race condition, shared fixture, time-dependent assertion) | Walk the Whys until you reach a structural or behavioral cause that explains every failure mode |
 | Mixing primary cause and contributing factors in one list | Postmortem action items become unprioritized; the fix dispatch loses its target | Two separate fields: primary cause (one statement) + contributing factors (enumerated) |
 | Returning "could be A or could be B" without disambiguating | The dispatch was made because the caller cannot decide; "both are possible" is the same as the starting state | Name the next probe that would disambiguate; mark `DONE_WITH_CONCERNS` if the probe is non-trivial |
@@ -154,4 +157,4 @@ probe, and the artifact path return.
 | Reading the whole repo for context | Burns context, defeats the bounded-payload contract | Use the caller-provided packet and at most 2-3 targeted Grep / Read calls for verification |
 | 5-Whys chain where Level 5 is "because of human error" | Terminal at "human error" hides the systemic cause that allowed the error — was it absent monitoring, missing review, ambiguous spec? Keep going | Each Why must point to a system signal the next probe can verify; "human" is a symptom of "system did not catch" |
 | Recommending three next probes "in case the first doesn't work" | Caller serializes probes; three probes triple the cycle time | Pick the highest-information-gain probe; the next dispatch is the fallback path if the probe disconfirms |
-| Returning a 1000-word analysis as the verdict | Saturates the orchestrator's context, defeats the dispatch model | Write the full analysis to a file under the caller's artifact directory; return path + status + primary cause + next probe |
+| Returning a 1000-word analysis as the verdict | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |

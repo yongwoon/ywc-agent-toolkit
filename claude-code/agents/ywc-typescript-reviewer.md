@@ -124,9 +124,9 @@ compiler, or execute the application.
 - [ ] Findings are deduplicated — one pattern repeated across N files is
       one finding with N locations, not N findings
 - [ ] Report stays under 500 words; full evidence (per-finding code
-      excerpts, tsc output snippets, framework version references) goes
-      to a file under the caller's artifact directory and only the path
-      returns
+      excerpts, tsc output snippets, framework version references)
+      returns inline, bounded, per the read-only review-worker
+      exception (§3.5) — never to a file.
 
 ## High-frequency real-world checks
 
@@ -167,9 +167,12 @@ semantics are in the reference):
   (e.g., `tsc --showConfig` for the strictness flag value).
 
 Full evidence (matched patterns, line ranges, TS feature citations,
-remediation snippets, framework-version notes) goes to a file under the
-caller's artifact directory; only status, 1-line summary, severity counts,
-and the artifact path return.
+remediation snippets, framework-version notes) returns inline, bounded, per
+the read-only review-worker exception in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
@@ -182,5 +185,5 @@ and the artifact path return.
 | Confusing `Promise<T>` with `T \| undefined` | These are categorically different — the former is async, the latter is null-shape | Read the actual signature; if the codebase mixes both styles for the same concept, surface as a Design-axis pattern finding |
 | Treating ESM / CJS interop issues as a generic "import bug" | The interop rules are subtle and version-specific (Node version, `"type"` field, `.cjs` / `.mjs` extensions, `moduleResolution` setting); a generic note doesn't help | Cite the specific Node version, the file's effective module format, the resolution rule that breaks, and the minimal config change to fix |
 | Reviewing the entire repo for type unsoundness | Burns context, defeats the bounded-payload contract | Use the caller-provided file list and at most 2-3 targeted Grep / Read calls for verification; full-codebase audits route to ywc-impl-review with a wider scope |
-| Returning a 1500-word type-theory lecture | Saturates the orchestrator's context, defeats the dispatch model | Write the full theory to a file under the artifact directory; return only path + status + severity counts |
+| Returning a 1500-word type-theory lecture | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |
 | Stepping outside TypeScript to recommend a different language | Out of scope — the project chose TS for a reason | Recommend within TS idiom; if the limitation is fundamental, surface it as a Design-axis finding for the architect agent to weigh |

@@ -39,6 +39,25 @@ The canonical return shape:
 **Enforcement**: every fan-out skill must inject the following directive **verbatim** into each subagent prompt (alongside the existing Completeness and Tool-Error-Recovery directives):
 
 > **Return-payload contract**: Reply with `Status | 1-line summary | artifact paths | (Concerns ≤ 10 lines | Blocker ≤ 5 lines | Missing-context bullets)`. Do not return generated code, full findings, full diffs, restated prompt content, or chain-of-thought. Write those to files and return the paths. The orchestrator will read the files only when it needs to.
+>
+> This directive assumes a `Write`-capable agent. For an agent whose `tools:` grant omits `Write`, §3.5 below overrides the "write to files" instruction — the same field limits apply, but the payload returns inline instead of to a file.
+
+### 3.5. Read-only review-worker exception
+
+An agent whose `tools:` grant omits `Write` cannot write findings to a file — the canonical shape above assumes a `Write`-capable agent. For a read-only agent, the full canonical payload returns **inline in the response text**, never to a file, with the same status-conditional field requirements as the canonical shape (`Concerns` when `DONE_WITH_CONCERNS`, `Blocker` when `BLOCKED`, `Missing context` when `NEEDS_CONTEXT`). `Artifacts` is the only canonical field legitimately omitted in this case, since no file exists to point to.
+
+`Findings/verdict` extends the canonical shape for this exception only — it is not a field in the table above, since a `Write`-capable worker's equivalent content goes to the artifact file instead. It replaces that artifact content inline: a directional verdict (advisory agents like `ywc-architect`) or a list of confirmed findings with severity (review agents like `ywc-security-engineer`), always present regardless of status. Each agent's own Return Contract section sets `Findings/verdict`'s exact length cap (e.g. `ywc-architect` caps its verdict at 300 words, `ywc-security-engineer` caps its report at 500 words) — this reference defines only the field's existence and status-independence, not a repository-wide length.
+
+Example (`BLOCKED`, since this status exercises the most fields):
+
+```
+Status: BLOCKED
+Summary: Spec contradicts itself on the retry-budget default (3 vs 5 attempts).
+Findings: docs/spec.md:42 states "3 attempts"; docs/spec.md:118 states "5 attempts" — no precedence rule given.
+Concerns: The ambiguity affects two other sections (retry-backoff table, circuit-breaker threshold) that derive their values from this default.
+Blocker: Cannot pick a default without contradicting one of the two spec lines; need the spec author to resolve which value is authoritative.
+Missing context: Confirm whether docs/spec.md:42 or :118 is the intended default; if neither, provide the correct value.
+```
 
 ## BLOCKED Triage
 

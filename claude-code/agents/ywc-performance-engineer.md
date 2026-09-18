@@ -191,8 +191,8 @@ bundle analyzer, or execute the application.
       is one finding with N locations, not N findings
 - [ ] Report stays under 500 words; full evidence (profiler output
       excerpts, lighthouse report screenshots, bundle-analyzer
-      output, query-plan dumps) goes to a file under the caller's
-      artifact directory and only the path returns
+      output, query-plan dumps) returns inline, bounded, per the
+      read-only review-worker exception (§3.5) — never to a file.
 
 ## Cloud cost / FinOps (when `.tf` is in scope)
 
@@ -227,9 +227,12 @@ semantics are in the reference):
   bundle-analyzer treemap naming the top 3 size contributors).
 
 Full evidence (query plans, profiler flamegraph captures, lighthouse excerpts,
-bundle-analyzer treemap references) goes to a file under the caller's artifact
-directory; only status, 1-line summary, severity counts, and the artifact path
-return.
+bundle-analyzer treemap references) returns inline, bounded, per the
+read-only review-worker exception in
+[claude-code/skills/references/subagent-status-actions.md](../skills/references/subagent-status-actions.md)
+§3.5; only status, 1-line summary, verdict/findings, and severity counts
+return — plus the status-conditional `Concerns` / `Blocker` / `Missing context`
+field when the status is `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`.
 
 ## Anti-patterns
 
@@ -243,6 +246,6 @@ return.
 | Treating every allocation in a hot loop as Critical | Some allocations (`str.format` once per request) are Negligible-tier; others (allocating a 10KB dict per row in a 1M-row loop) are Critical — severity by GC-survival generation and frequency | Tier by allocation lifetime: short-lived → Gen-0 GC cleans up, no concern; long-lived in a hot path → high; pool / cache / reuse recommendation in the finding |
 | Recommending generic "optimize the database" without naming the operation | A finding without the specific query, the missing index, or the slow JOIN does not enable remediation | Cite the specific query, the columns to index, the EXPLAIN plan excerpt, and the rewrite (with vs without `select_related` / `prefetch_related` for ORM cases, JOIN reordering for raw SQL) |
 | Reviewing the entire repo for performance | Burns context, defeats the bounded-payload contract | Use the caller-provided file list and at most 2-3 targeted Grep / Read calls for verification; full-codebase performance audits route to ywc-impl-review with a wider scope |
-| Returning a 1500-word performance theory or runtime internals lecture | Saturates the orchestrator's context, defeats the dispatch model | Write the full theory to a file under the artifact directory; return only path + status + severity counts |
+| Returning a 1500-word performance theory or runtime internals lecture | Saturates the orchestrator's context, defeats the dispatch model | Return the bounded inline payload per §3.5 — never write to a file; this agent holds no Write tool |
 | Recommending bundle-split for any large bundle without naming the split point | "Code-split this" is not actionable; the caller needs the specific dynamic-import boundary and the route or component | Cite the specific module, the recommended `dynamic()` / `lazy()` import call, and the route or render boundary where the split lands (e.g., "split `Chart.tsx` at the `/dashboard` route via `const Chart = dynamic(() => import('./Chart'), { ssr: false })`") |
 | Flagging every CSS specificity warning as a finding | Specificity bloat is real but a per-selector finding is noise — surface as one finding with N locations, severity Low / Medium | Aggregate per-component or per-stylesheet; severity reflects the cascade-debugging cost the bloat imposes, not a per-selector count |
