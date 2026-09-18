@@ -74,6 +74,15 @@ Identify the following elements from user input. Ask a focused clarification whe
 - **Medium**: Modularized service, mid-size team (3-8 members), typical production
 - **Large**: Multi-module/Monorepo consideration, large team (8+ members), enterprise-grade
 
+### End-user UI mobile-first policy
+
+When scaffolding a new end-user UI that will include layout or style work, note
+the shared [mobile-first UI policy](../references/mobile-first-ui.md): author
+the narrowest-viewport base styles first, then expand with `min-width`
+breakpoints. An otherwise in-scope PC/tablet-only UI must record its explicit
+exception. This does not apply to admin/internal tools, non-UI work, or
+unchanged legacy desktop-first CSS, which do not require a retrofit.
+
 ## Modes
 
 ### `reference-refresh`

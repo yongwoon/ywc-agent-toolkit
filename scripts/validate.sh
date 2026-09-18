@@ -870,6 +870,11 @@ if [ -f scripts/test-wave-int-checkpoint-ownership.sh ]; then
   bash scripts/test-wave-int-checkpoint-ownership.sh || ERRORS=$((ERRORS + 1))
 fi
 
+if [ -f scripts/test-wave-int-hook-isolation.sh ]; then
+  echo "==> Running wave-int hook-isolation regression suite..."
+  bash scripts/test-wave-int-hook-isolation.sh || ERRORS=$((ERRORS + 1))
+fi
+
 if [ "$ERRORS" -gt 0 ]; then
   echo ""
   echo "Validation failed: $ERRORS error(s) found."
