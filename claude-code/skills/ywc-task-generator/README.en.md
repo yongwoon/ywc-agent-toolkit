@@ -54,8 +54,8 @@ The Skill supports two task granularity modes and **always asks which mode to ap
 
 | Mode   | Size guideline               | Optimized for                                                |
 |--------|-------------------------------|---------------------------------------------------------------|
-| human  | ~15 files / ~500 LOC  | Per-PR human review (~1 hour review budget)                  |
-| llm    | ~35 files / ~1,200 LOC       | Single LLM agent session (baseline: Sonnet 5) in an isolated worktree |
+| human  | ~12-15 files / ~400-500 LOC  | Per-PR human review (~1 hour review budget)                  |
+| llm    | ~30 files / ~1,000 LOC       | Single LLM agent session (baseline: Sonnet 5) in an isolated worktree |
 
 Safety Invariants (DB migration separation, Library introduction separation, Phase hard gate, post-task buildability) apply identically in both modes. See [references/granularity-modes.md](./references/granularity-modes.md) for the full specification.
 

@@ -61,8 +61,8 @@ For the full language detection examples, language-specific writing rules (techn
 ### 1. Reviewability
 - Each task should be small enough for the intended executor to hold the full context in one session
 - Size guideline depends on the selected **Granularity Mode** (see Step 5):
-  - `human` mode: ~15 files / ~500 LOC (optimized for a single-reviewer PR within a ~1 hour review budget)
-  - `llm` mode: ~35 files / ~1,200 LOC (optimized for a single LLM agent — baseline: Sonnet 5 — completing one vertical slice, build+test verified, in one worktree session; see references/granularity-modes.md for the baseline note)
+  - `human` mode: ~12-15 files / ~400-500 LOC (optimized for a single-reviewer PR within a ~1 hour review budget)
+  - `llm` mode: ~30 files / ~1,000 LOC (optimized for a single LLM agent — baseline: Sonnet 5 — completing one vertical slice, build+test verified, in one worktree session; see references/granularity-modes.md for the baseline note)
 - See [references/granularity-modes.md](references/granularity-modes.md) for the full rule set
 - Split tasks that significantly exceed the mode's guideline
 - Do not bundle more than one major concern in a single task
@@ -172,8 +172,8 @@ If `--lang` is provided, skip this step. Otherwise resolve via [../references/la
 If `--mode` (or its alias `--granularity`) is provided, use it directly and skip the prompt. If both `--mode` and `--granularity` are provided with different values, stop and ask the user to resolve the conflict. Otherwise **always ask** the user which granularity mode to apply — do not silently default. The correct mode depends on who will execute the tasks.
 
 > "Which granularity mode should the tasks be generated in?
-> - `human` — small, single-PR reviewable units (~15 files / ~500 LOC)
-> - `llm` — larger vertical slices optimized for a single LLM agent run (~35 files / ~1,200 LOC)"
+> - `human` — small, single-PR reviewable units (~12-15 files / ~400-500 LOC)
+> - `llm` — larger vertical slices optimized for a single LLM agent run (~30 files / ~1,000 LOC)"
 
 **Mode selection criteria** (share with the user if they are unsure):
 - Choose `human` when a person will implement and code-review each task in sequence
@@ -211,7 +211,7 @@ This skill applies **Pattern C** from [advisor-pattern.md](../references/advisor
 - **First-pass task list** — task name + one-line description for each candidate task from your Step 6 decomposition.
 - **Known conflicts / shared surfaces** — any Ownership overlaps or Shared Surfaces you identified.
 - **Project context essentials** — monorepo structure, existing phases in `tasks/`, tech-stack constraints affecting dependency order.
-- **Selected Granularity Mode and size guideline** — the confirmed `human` or `llm` mode and only its applicable file/LOC guideline (`human`: ~15 files / ~500 LOC; `llm`: ~35 files / ~1,200 LOC). Pass the single selected guideline, not both, so the advisor cannot apply the wrong mode's threshold.
+- **Selected Granularity Mode and size guideline** — the confirmed `human` or `llm` mode and only its applicable file/LOC guideline (`human`: ~12-15 files / ~400-500 LOC; `llm`: ~30 files / ~1,000 LOC). Pass the single selected guideline, not both, so the advisor cannot apply the wrong mode's threshold.
 
 Ask the advisor for three things:
 

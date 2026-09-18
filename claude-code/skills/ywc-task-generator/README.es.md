@@ -46,8 +46,8 @@ La Habilidad admite dos modos de granularidad de tareas y **siempre pregunta qu�
 
 | Modo   | Guía de tamaño          | Optimizado para                                                  |
 |--------|-------------------------|------------------------------------------------------------------|
-| human  | ~15 archivos / ~500 LOC | Revisión humana por PR (~1 hora de review budget)             |
-| llm    | ~35 archivos / ~1,200 LOC      | Sesión de agente LLM único (baseline: Sonnet 5) en un worktree aislado |
+| human  | ~12-15 archivos / ~400-500 LOC | Revisión humana por PR (~1 hora de review budget)             |
+| llm    | ~30 archivos / ~1,000 LOC      | Sesión de agente LLM único (baseline: Sonnet 5) en un worktree aislado |
 
 Las Invariantes de Seguridad (separación de migración de BD, separación de introducción de librería, puerta de fase, compilabilidad post-tarea) aplican de forma idéntica en ambos modos. Consulte [references/granularity-modes.md](./references/granularity-modes.md) para la especificación completa.
 

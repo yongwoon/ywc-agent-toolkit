@@ -16,7 +16,7 @@ This document specifies the two Granularity Modes supported by `ywc-task-generat
 | Axis | `human` mode | `llm` mode |
 |---|---|---|
 | Primary executor | Human developer reviewing each PR | LLM agent in an isolated worktree |
-| Size guideline | ~15 files / ~500 LOC | ~35 files / ~1,200 LOC |
+| Size guideline | ~12-15 files / ~400-500 LOC | ~30 files / ~1,000 LOC |
 | Internal bundling | One primary concern per task; strict category split | Vertical slice permitted — a single feature may bundle `domain` + `api`, provided Safety Invariants hold |
 | Category splitting | `db`, `lib`, `api`, `domain`, `ui`, `worker` strictly separated | Feature-level bundling allowed for non-invariant categories; invariants remain separate |
 | Ownership scope | Narrow path globs (file-level or small directory) | Feature-level module subtree |
@@ -57,7 +57,7 @@ Use `llm` mode when:
 - Throughput and single-session context coherence matter more than per-PR reviewability
 
 Vertical bundling rules:
-- A task may cover one feature across `domain` + `api` if the scope stays within ~35 files / ~1,200 LOC
+- A task may cover one feature across `domain` + `api` if the scope stays within ~30 files / ~1,000 LOC
 - `ui` may be bundled with its directly-coupled `api` only when the UI and API share exclusive ownership (no cross-feature reuse)
 - Never bundle a Safety Invariant (DB migration, Library introduction) with other work
 
