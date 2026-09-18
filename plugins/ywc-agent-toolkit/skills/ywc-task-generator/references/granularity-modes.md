@@ -16,8 +16,8 @@ This document specifies the two Granularity Modes supported by `ywc-task-generat
 | Axis | `human` mode | `llm` mode |
 |---|---|---|
 | Primary executor | Human developer reviewing each PR | LLM agent in an isolated worktree |
-| Size guideline | ~10 files / ~300 LOC | ~25 files / ~800 LOC |
-| Internal bundling | One primary concern per task; strict category split | Vertical slice permitted — a single feature may bundle `domain` + `api`, provided Safety Invariants hold |
+| Size guideline | ~15 files / ~500 LOC (advisory) | ~35 files / ~1,200 LOC (advisory) |
+| Internal bundling | One primary concern per task; strict category split | One-feature vertical slice permitted — only with exclusive Ownership and explicit Shared Surfaces, provided Safety Invariants hold |
 | Category splitting | `db`, `lib`, `api`, `domain`, `ui`, `worker` strictly separated | Feature-level bundling allowed for non-invariant categories; invariants remain separate |
 | Ownership scope | Narrow path globs (file-level or small directory) | Feature-level module subtree |
 | Implementation Steps depth | 10–20 fine-grained checkboxes | 3–7 top-level bullets, each with 2–5 sub-bullets |
@@ -35,11 +35,13 @@ These rules apply identically in `human` and `llm` mode. Do not relax them when 
 4. **Post-task buildability** — after each task completes, the codebase must remain consistent and buildable
 5. **Single phase per task** — a task never spans more than one phase
 
+Numeric size guidelines are advisory reviewability signals, not automatic bundling authorization. A task must split when it crosses feature, Ownership, Shared Surface, safety-invariant, phase, or buildability boundaries, even when it fits within the selected numeric guideline.
+
 ## `human` Mode Detailed Rules
 
 Use `human` mode when:
 - A developer will implement and review each task in sequence
-- Changes must fit in a reviewable single PR (~1 hour review budget)
+- Changes should fit in a reviewable single PR (~1 hour review budget and roughly ~15 files / ~500 LOC)
 - Tight feedback loop per task is valued over throughput
 
 Guidelines:
@@ -55,9 +57,10 @@ Use `llm` mode when:
 - Throughput and single-session context coherence matter more than per-PR reviewability
 
 Vertical bundling rules:
-- A task may cover one feature across `domain` + `api` if the scope stays within ~25 files / ~800 LOC
-- `ui` may be bundled with its directly-coupled `api` only when the UI and API share exclusive ownership (no cross-feature reuse)
-- Never bundle a Safety Invariant (DB migration, Library introduction) with other work
+- A task may cover one feature across `domain` + `api` if the scope stays within the advisory ~35 files / ~1,200 LOC guideline, has exclusive Ownership, and declares explicit Shared Surfaces
+- `ui` may be bundled with its directly-coupled `api` only when the UI and API share exclusive Ownership and the slice remains one feature; shared or reusable APIs stay explicit Shared Surfaces
+- Never bundle unrelated features or a Safety Invariant (DB migration, Library introduction) with other work
+- Numeric fit never overrides the one-feature, Ownership, Shared Surface, phase, or buildability boundaries
 
 Implementation Steps rules:
 - Use 3–7 top-level bullets, each representing a coherent sub-goal
