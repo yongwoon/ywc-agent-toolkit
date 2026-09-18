@@ -748,6 +748,27 @@ check_cc_support_dirs() {
   done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
 }
 
+check_loop_only_tool_calls() {
+  # `ScheduleWakeup` is a /loop-dynamic-pacing-only tool. A skill or shared
+  # reference that instructs a call to it makes every ordinary subagent-wait
+  # inject a spurious /loop prompt into the session — the defect fixed by
+  # this check (see references/subagent-async-monitoring.md's "Waiting for
+  # Completion" section). Scans the whole skill root, not just SKILL.md
+  # files, since the defect this exists for shipped in a shared
+  # references/*.md file that no per-skill check reaches. Bare prose naming
+  # the tool (to forbid it) is fine; call syntax is what this rejects.
+  local root="$1"
+  local file hit
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    while IFS= read -r hit; do
+      [ -n "$hit" ] || continue
+      echo "ERROR: ${file#./}:${hit}: \`ScheduleWakeup(\` call syntax — that tool is /loop-only. To wait on a dispatched subagent, end the turn and let the harness <task-notification> arrive (references/subagent-async-monitoring.md)"
+      ERRORS=$((ERRORS + 1))
+    done < <(grep -nE 'ScheduleWakeup[[:space:]]*\(' "$file" | cut -d: -f1)
+  done < <(find "$root" -name '*.md' -type f)
+}
+
 check_agent_readonly_return_contract() {
   local file="$1"
   local base
@@ -804,6 +825,7 @@ done
 echo "==> Validating claude-code agents..."
 check_cc_agents
 check_cc_support_dirs
+check_loop_only_tool_calls claude-code/skills
 
 echo "==> Validating codex skills..."
 for dir in codex/skills/*/; do
@@ -814,6 +836,7 @@ done
 check_codex_support_dirs
 check_codex_plan_handoff
 check_codex_skill_contracts
+check_loop_only_tool_calls codex/skills
 
 echo "==> Validating Codex plugin package..."
 check_codex_plugin_manifest
