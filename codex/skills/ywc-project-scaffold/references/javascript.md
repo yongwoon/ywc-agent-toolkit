@@ -19,6 +19,8 @@
     - [Astro Medium](#astro-medium)
   - [Express.js](#expressjs)
     - [Express Medium](#express-medium)
+  - [TypeScript Monorepo (pnpm workspaces)](#typescript-monorepo-pnpm-workspaces)
+    - [TypeScript Monorepo Large (apps + packages)](#typescript-monorepo-large-apps--packages)
 
 ---
 
@@ -516,3 +518,51 @@ project-root/
 ├── tsconfig.json
 └── package.json
 ```
+
+---
+
+## TypeScript Monorepo (pnpm workspaces)
+
+### TypeScript Monorepo Large (apps + packages)
+
+Multi-app pnpm workspaces monorepo. Separates deployable applications from reusable packages, and isolates external SDK dependencies behind dedicated packages. Applies at Large scale — multiple deployable apps sharing business logic, or a single backend that must split HTTP/worker processes without a microservices rewrite.
+
+```
+project-root/
+├── apps/
+│   ├── web/
+│   │   └── src/
+│   │       ├── app/                   # bootstrap, router, provider, feature registry
+│   │       ├── features/              # per-feature screens
+│   │       └── shared/                # UI parts, API client, generic utilities
+│   └── server/
+│       └── src/
+│           ├── entrypoints/           # api.ts, worker.ts - one file per process
+│           ├── modules/<module>/      # transport-facing routes/handlers per domain
+│           ├── http/                  # framework init, shared plugins, error mapping
+│           ├── jobs/<job-name>/       # background job handlers
+│           └── composition/           # DI wiring at process startup
+├── packages/
+│   ├── contracts/                     # HTTP/event schema, DTOs, generated client boundary
+│   ├── core/                          # business rules, use cases, ports, state transitions
+│   ├── db/                            # ORM schema/migrations, repository implementations
+│   ├── <external-sdk>/                # provider-specific SDK adapters, isolated behind a port
+│   └── connectors/                    # outbound integration adapters + fakes/contract test kit
+├── tests/
+│   ├── architecture/                  # forbidden-dependency / single-source rules
+│   ├── contract/                      # API and connector contract tests
+│   ├── integration/                   # DB, job, cross-package integration tests
+│   └── e2e/                           # end-to-end user-flow tests
+├── package.json
+├── pnpm-workspace.yaml
+└── tsconfig.base.json
+```
+
+**Key Points:**
+
+- `apps/` vs `packages/`: `apps/` holds only what is started and deployed as its own process; `packages/` holds anything shared across 2+ entry points. A single backend can still run HTTP and worker as separate `apps/server/src/entrypoints/*.ts` processes from one codebase, without splitting into microservices yet.
+- `packages/contracts`: the only package with zero dependency on other internal packages - the shared schema/DTO boundary that `apps/*` and `packages/core` consumers build against.
+- External SDK isolation: confine every import of a given external SDK (an agent/LLM provider, a payment gateway, etc.) to one package (e.g. `packages/<external-sdk>/src/providers/<provider>/`) so a provider swap or SDK upgrade touches one location, not every caller.
+- `packages/core` carries no framework or infrastructure imports (no ORM, no HTTP framework, no external SDK) - it depends only on its own ports and, for shared type/DTO definitions, `packages/contracts`; `db` / `<external-sdk>` / `connectors` implement those ports.
+- Root `tests/architecture/`: forbidden-dependency direction (`packages/* → apps/*`, `core → infrastructure`, deep imports across `packages/<name>/src/...`) is enforced by an automated test suite here, not by convention alone.
+- Package public API: each package's `index.ts` exports only its intended public surface; consumers do not deep-import into another package's `src/`.
