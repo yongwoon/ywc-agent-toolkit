@@ -24,6 +24,16 @@ The structure is aligned with `ywc-spec-validate`'s evaluation dimensions (Compl
 
 Use `N/A — no project-wide constraint beyond standard conventions` only after active consideration.
 
+### End-user UI mobile-first policy
+
+For Medium/Large plans that include new or redesigned end-user UI layout or
+style work, record how the plan follows the shared
+[`mobile-first UI policy`](../../references/mobile-first-ui.md): narrowest
+viewport base styles first, followed by outward `min-width` expansion. An
+otherwise in-scope PC/tablet-only surface must state that exception explicitly.
+Admin/internal tools, non-UI work, and unchanged legacy desktop-first CSS are
+outside this requirement; do not add a retrofit requirement for them.
+
 ## Purpose
 
 <2-3 sentences: What problem does this feature solve, and why now?>
