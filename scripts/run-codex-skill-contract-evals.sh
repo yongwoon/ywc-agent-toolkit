@@ -77,7 +77,7 @@ require_tokens() {
   require_file "$file" || return 0
   raw="$(cat "$file")"
   for token in "$@"; do
-    if ! printf '%s' "$raw" | grep -Fq -- "$token"; then
+    if ! grep -Fq -- "$token" <<<"$raw"; then
       fail "$rel is missing required token: $token"
     fi
   done
@@ -159,10 +159,47 @@ check_research_persistence_contracts() {
   fi
 }
 
+check_mobile_first_ui_contract() {
+  local policy="$ROOT/codex/skills/references/mobile-first-ui.md"
+  local reviewer="$ROOT/codex/agents/ywc-typescript-reviewer.toml"
+  local evals="$ROOT/codex/agents/evals/evals.json"
+  local file
+  local consumers=(
+    "$ROOT/codex/skills/ywc-plan/references/spec-template.md"
+    "$ROOT/codex/skills/ywc-project-scaffold/SKILL.md"
+    "$ROOT/codex/skills/ywc-task-generator/SKILL.md"
+    "$ROOT/codex/skills/ywc-sequential-executor/SKILL.md"
+    "$ROOT/codex/skills/ywc-parallel-executor/SKILL.md"
+  )
+
+  require_tokens "$policy" "narrowest supported viewport" "min-width" "PC/tablet-only" "legacy"
+
+  for file in "${consumers[@]}"; do
+    require_tokens "$file" "end-user" "min-width" "PC/tablet-only" "legacy"
+  done
+
+  require_tokens "$reviewer" "../skills/references/mobile-first-ui.md" "Framework idiom" "read-only" "NEEDS_CONTEXT"
+  require_file "$evals"
+  if ! jq -e '
+    .evals
+    | any(.[]; .name == "typescript-reviewer-mobile-first-ui"
+      and .agent == "ywc-typescript-reviewer"
+      and (.prompt | contains("Framework idiom"))
+      and (.prompt | contains("NEEDS_CONTEXT")))
+  ' "$evals" >/dev/null 2>&1; then
+    fail "codex/agents/evals/evals.json is missing the bounded mobile-first TypeScript reviewer scenario"
+  fi
+}
+
 check_all_eval_json
 check_wayfinder_contracts
 check_preview_contracts
 check_research_persistence_contracts
+check_mobile_first_ui_contract
+
+if ! bash "$ROOT/scripts/check-codex-agent-evals.sh"; then
+  fail "Codex agent eval checker failed"
+fi
 
 if [ "$ERRORS" -gt 0 ]; then
   echo ""

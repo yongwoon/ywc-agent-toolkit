@@ -302,7 +302,7 @@ setup_git_repo() {
     git remote add origin "$origin"
     echo base > base.txt
     git add base.txt
-    git commit -q -m base
+    git -c core.hooksPath=/dev/null commit -q -m base
     git push -q origin main
   )
 }
@@ -333,7 +333,7 @@ run_integration_scenarios() {
     cd "$work"
     echo task1 > t1.txt
     git add t1.txt
-    git commit -q -m "task1 (unrecorded per-task merge)"
+    git -c core.hooksPath=/dev/null commit -q -m "task1 (unrecorded per-task merge)"
   )
   run_capture "$work" "$abs_root" wave-int-status 0
   assert_eq "$run_id $tip0" "$OUT" "AC1 recorded checkpoint before per-task merge ($root)"
@@ -403,7 +403,7 @@ print(flipped)
     cd "$work"
     git checkout -q main
     git checkout -q --orphan wave-int-3-orphan
-    git commit -q --allow-empty -m orphan
+    git -c core.hooksPath=/dev/null commit -q --allow-empty -m orphan
     git branch -f wave-int/3 wave-int-3-orphan
     git checkout -q wave-int/3
     git branch -D wave-int-3-orphan
@@ -427,7 +427,7 @@ print(flipped)
     git checkout -q -b wave-int/4 main
     echo w4 > w4.txt
     git add w4.txt
-    git commit -q -m w4
+    git -c core.hooksPath=/dev/null commit -q -m w4
   )
   local tip4; tip4=$(cd "$work" && git rev-parse wave-int/4)
   run_capture "$work" "$abs_root" wave-int-owner 4 --tip-sha "$tip4"

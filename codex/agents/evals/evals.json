@@ -60,6 +60,13 @@
       "expected_dispatch": "none",
       "prompt": "Provide the exact no-contract sentinel.",
       "expectations": ["Neither worker is selected", "Existing workflow remains unchanged", "No placeholder packet", "Not a worker terminal status"]
+    },
+    {
+      "name": "typescript-reviewer-mobile-first-ui",
+      "agent": "ywc-typescript-reviewer",
+      "expected_status": "DONE_WITH_CONCERNS",
+      "prompt": "Review a bounded TSX diff whose evidence packet explicitly identifies a new end-user UI layout/style surface and redesign scope. The diff uses a desktop-first base with max-width claw-back. Read the shared mobile-first policy, return one Framework idiom finding with file:line evidence, preserve the read-only/no-delivery contract, and return NEEDS_CONTEXT instead when target-surface evidence is missing.",
+      "expectations": ["Shared policy read", "Framework idiom finding for the scoped violation", "NEEDS_CONTEXT for missing target-surface evidence", "Legacy UI skipped without redesign scope", "Read-only and no delivery"]
     }
   ]
 }

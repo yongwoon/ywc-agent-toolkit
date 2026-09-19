@@ -156,6 +156,12 @@ Provide useful additional information based on the project domain or scale:
 - Framework-specific convention notes
 - Structural changes to consider when scaling up
 
+**Mobile-first UI note (frontend frameworks only):** When the Framework renders
+UI for end users (Next.js, Astro, etc.), state the mobile-first responsive
+default from [../references/mobile-first-ui.md](../references/mobile-first-ui.md)
+in one line, unless the request already identifies the service as PC/tablet-only
+(admin dashboard, internal tool) — in that case, state the exception instead.
+
 ### 6. Reference Refresh - Optional Mode
 
 Triggered when the user asks to review, refresh, or audit a `references/<language>.md` file itself, rather than generate a project plan. This mode never edits silently — it produces a proposal for the user to approve, then stops.

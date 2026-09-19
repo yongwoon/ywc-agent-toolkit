@@ -1,6 +1,49 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000050`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000054`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+
+## Batch — Codex mobile-first UI default
+
+- Spec: `docs/ywc-plans/20260918-codex-mobile-first-ui-default.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000050` (ledger reservation)
+- Advisor pass: unavailable — no delegation tool was exposed; bounded decomposition reviewed locally against the llm size and phase-gate rules.
+- No-AC requirements: none found — all scoped requirements map to AC1–AC5 and FR-1–FR-6.
+- Architecture contract: N/A — no manifest supplied and no architecture contract applies to this bounded docs/evaluation/distribution change.
+
+### Phase yw-000050 — canonical policy and planning capture
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000050-010-docs-mobile-first-policy` | docs | (root) |
+
+### Phase yw-000051 — consumer continuity
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000051-010-docs-mobile-first-consumers` | docs | `yw-000050-010` |
+| `yw-000051-020-docs-mobile-first-reviewer` | docs | `yw-000050-010` |
+
+### Phase yw-000052 — deterministic contract evidence
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000052-010-test-mobile-first-contract-eval` | test | `yw-000051-010`, `yw-000051-020` |
+
+### Phase yw-000053 — distribution hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000053-010-infra-mobile-first-distribution` | infra | `yw-000052-010` |
+
+### Parallel Execution Notes (Codex mobile-first UI default)
+
+- Initial ready set: `yw-000050-010-docs-mobile-first-policy`.
+- After it merges: `yw-000051-010-docs-mobile-first-consumers` and `yw-000051-020-docs-mobile-first-reviewer` may run in parallel because their owned source surfaces are separate.
+- `yw-000052-010-test-mobile-first-contract-eval` waits for both Phase `yw-000051` tasks because its checker validates every consumer and the reviewer/eval record.
+- `yw-000053-010-infra-mobile-first-distribution` is blocked until the deterministic contract check passes and owns generated plugin output.
 
 ## Batch — Codex task-generator granularity expansion
 

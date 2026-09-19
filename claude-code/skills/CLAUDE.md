@@ -418,6 +418,34 @@ As with the other top-level shared references, the skill roots are maintained
 independently — the codex bundle keeps its own schema guidance and is not
 auto-synced; port deliberately if a shared change is wanted there.
 
+## Mobile-First UI Default
+
+Frontend-touching work defaults to a mobile-first, responsive implementation
+order (narrowest viewport first, then `min-width` breakpoints outward — never
+`max-width` claw-backs from a desktop-first base) via the single top-level
+shared reference `references/mobile-first-ui.md`. Do not re-state the rule,
+its trigger, or its escape hatch inline in a SKILL.md body — link the
+reference the same way `pr-bot-polling.md` and `schema/core.md` are linked.
+
+Five skills point here at their UI touchpoints: `ywc-project-scaffold`
+(Section 5 Extras, frontend frameworks only), `ywc-task-generator`
+(Implementation Steps, `ui` category tasks), `ywc-plan`
+(`spec-template.md` Non-Functional Requirements table), `ywc-sequential-executor`
+(Step 3 implementation, mirroring the schema-aware-implementation callout),
+and `ywc-parallel-executor` (Step 4b, `ui`-category subagent prompts only —
+kept out of `references/subagent-directives.md` because that file's six
+directives are explicitly scoped to every task category, not `ui` alone).
+
+**Escape hatch / no-block invariant**: a surface explicitly identified as
+PC/tablet-only (admin dashboard, internal tool) states the exception instead
+of the default — one line, never silent. A UI task, plan, or scaffold request
+that predates this rule, or that the escape hatch covers, behaves exactly as
+before the reference existed.
+
+As with the other top-level shared references, this is Claude Code-skill-root
+only — `codex/skills/` is maintained independently and is not auto-synced;
+port deliberately if the same convention is wanted there.
+
 ## Language Resolution
 
 Language-aware skills that emit user-facing output (`ywc-task-generator`,
