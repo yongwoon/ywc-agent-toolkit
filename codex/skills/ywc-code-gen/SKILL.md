@@ -318,8 +318,8 @@ Any subagent output containing the following patterns is treated as a failed gen
 Catch the high-confidence comment/marker stubs mechanically before delivering (more reliable than self-review; exits non-zero on any hit):
 
 ```bash
-STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
-[ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
+STUB_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "scripts/scan-stubs.sh" bash)" || exit $?
 bash "$STUB_SCRIPT" <generated-file>...
 ```
 

@@ -88,8 +88,8 @@ gh pr view <PR_NUMBER> --json commits --jq '.commits[].messageHeadline'
 Fetch author, title, summary, and MERGED state for all extracted PR numbers in one script call:
 
 ```bash
-FETCH_PR_METADATA_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh"
-[ -f "$FETCH_PR_METADATA_SCRIPT" ] || FETCH_PR_METADATA_SCRIPT="codex/skills/ywc-release-pr-list/scripts/fetch-pr-metadata.sh"
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
+FETCH_PR_METADATA_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-release-pr-list/scripts/fetch-pr-metadata.sh" bash)" || exit $?
 bash "$FETCH_PR_METADATA_SCRIPT" \
   <pr-number-1> <pr-number-2> ...
 # exit 0 → NDJSON on stdout (one JSON object per line); exit 2 → usage error

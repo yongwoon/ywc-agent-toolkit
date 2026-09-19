@@ -478,12 +478,12 @@ When parallel execution is expected, verify that each task is safe for isolated 
 ## Validation
 
 For allocation, run:
-
 ```bash
-bash codex/skills/ywc-task-generator/scripts/test-initials-allocation.sh
-bash codex/skills/ywc-task-generator/scripts/test-parser-ids.sh
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
+INITIALS_TEST="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/test-initials-allocation.sh" bash)" || exit $?
+PARSER_TEST="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/test-parser-ids.sh" bash)" || exit $?
+bash "$INITIALS_TEST" && bash "$PARSER_TEST"
 ```
-
 Task Verify must cover config precedence/malformed tiers, linked-worktree
 graph/active/completed sources, scoped empty-graph maxima, concurrent distinct
 reservations, and missing-initials `NEEDS_CONTEXT` before any write.
