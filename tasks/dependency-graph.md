@@ -1,6 +1,6 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000054`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000058`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 ## Batch — Codex mobile-first UI default
 
@@ -1961,4 +1961,53 @@ graph LR
 graph LR
   A[yw-000044-010 fix-agent-return-contract] --> C[yw-000044-030 add-return-contract-validator]
   B[yw-000044-020 add-readonly-exception-section]
+```
+
+## Batch 25 — Codex executable-resolution hardening
+
+- Spec: `docs/ywc-plans/20260919-codex-executable-resolution-hardening.md`
+- Granularity mode: `llm`
+- Output language: `en`
+- Initials: `yw`
+- Starting phase: `yw-000054` (ledger reservation)
+- Preview approval: interactive approval received (`approve`)
+- Advisor pass: skipped — phase boundaries are explicit in the spec and no DB migration or library introduction is present.
+- No-AC requirements: none — all scoped requirements map to AC1–AC7 and FR-1–FR-4.
+- Architecture contract: N/A — no manifest supplied and no architecture contract applies to this bounded resolver/validation change.
+
+### Phase yw-000054 — resolver contract
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000054-010-infra-bundle-executable-resolver` | infra | (root) |
+
+### Phase yw-000055 — caller migration
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000055-010-domain-executable-fallback-migration` | domain | `yw-000054-010` |
+
+### Phase yw-000056 — regression and closure validation
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000056-010-test-executable-resolution-regression` | test | `yw-000055-010` |
+
+### Phase yw-000057 — distribution hard gate
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000057-010-infra-executable-resolution-distribution` | infra | `yw-000056-010` |
+
+### Parallel Execution Notes (Codex executable-resolution hardening)
+
+- Initial ready set: `yw-000054-010-infra-bundle-executable-resolver`.
+- Each later phase is a hard gate because migration requires the finalized contract, regression requires the complete migrated inventory, and distribution must consume all passing source checks.
+- No tasks in this batch are parallel-safe because each phase owns the next shared security boundary or validation gate.
+
+```mermaid
+graph LR
+  A[yw-000054-010 bundle-executable-resolver] --> B[yw-000055-010 executable-fallback-migration]
+  B --> C[yw-000056-010 executable-resolution-regression]
+  C --> D[yw-000057-010 executable-resolution-distribution]
 ```
