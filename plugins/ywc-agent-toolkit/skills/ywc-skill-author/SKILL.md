@@ -58,8 +58,9 @@ detailed reference before edits.
 ## Validation
 
 ```bash
-VALIDATE_SKILL_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-skill-author/scripts/validate-skill.sh"
-[ -f "$VALIDATE_SKILL_SCRIPT" ] || VALIDATE_SKILL_SCRIPT="codex/skills/ywc-skill-author/scripts/validate-skill.sh"
+RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
+[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+VALIDATE_SKILL_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-skill-author/scripts/validate-skill.sh" bash)" || exit $?
 bash "$VALIDATE_SKILL_SCRIPT" <skill-dir>
 ```
 

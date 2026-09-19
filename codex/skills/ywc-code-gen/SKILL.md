@@ -318,8 +318,9 @@ Any subagent output containing the following patterns is treated as a failed gen
 Catch the high-confidence comment/marker stubs mechanically before delivering (more reliable than self-review; exits non-zero on any hit):
 
 ```bash
-STUB_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/scripts/scan-stubs.sh"
-[ -f "$STUB_SCRIPT" ] || STUB_SCRIPT="codex/skills/scripts/scan-stubs.sh"
+RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
+[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+STUB_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "scripts/scan-stubs.sh" bash)" || exit $?
 bash "$STUB_SCRIPT" <generated-file>...
 ```
 

@@ -92,8 +92,9 @@ Run the bundled secret scan script:
 
 ```bash
 # Phase 1+2: dangerous file names + staged/unstaged diff content
-SECRET_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/scan-secrets.sh"
-[ -f "$SECRET_SCRIPT" ] || SECRET_SCRIPT="codex/skills/ywc-create-pr/scripts/scan-secrets.sh"
+RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
+[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+SECRET_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/scan-secrets.sh" bash)" || exit $?
 bash "$SECRET_SCRIPT" --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
@@ -125,8 +126,7 @@ Run the same lint, format, typecheck, and test checks locally that CI will execu
 Run the bundled detector first — it emits candidate commands from each source plus the package manager, so you do not re-derive the same greps each run:
 
 ```bash
-CI_DETECT_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-create-pr/scripts/detect-ci-commands.sh"
-[ -f "$CI_DETECT_SCRIPT" ] || CI_DETECT_SCRIPT="codex/skills/ywc-create-pr/scripts/detect-ci-commands.sh"
+CI_DETECT_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/detect-ci-commands.sh" bash)" || exit $?
 bash "$CI_DETECT_SCRIPT" [repo-dir]
 ```
 

@@ -107,8 +107,9 @@ For locale-specific writing rules (formality level, term policy), see [reference
 If `docs/specification/` does not exist, run:
 
 ```bash
-INIT_SPEC_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/init-spec-structure.sh"
-[ -f "$INIT_SPEC_SCRIPT" ] || INIT_SPEC_SCRIPT="codex/skills/ywc-spec-writer/scripts/init-spec-structure.sh"
+RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
+[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+INIT_SPEC_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/init-spec-structure.sh" bash)" || exit $?
 bash "$INIT_SPEC_SCRIPT" <lang> "<ProjectName>"
 ```
 
@@ -121,8 +122,7 @@ For incremental modes, identify which spec sections need updating before writing
 **Commit-based**
 
 ```bash
-DETECT_SECTIONS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
-[ -f "$DETECT_SECTIONS_SCRIPT" ] || DETECT_SECTIONS_SCRIPT="codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+DETECT_SECTIONS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/detect-affected-sections.sh" bash)" || exit $?
 git diff <ref>^..<ref> --name-only \
   | bash "$DETECT_SECTIONS_SCRIPT"
 ```
@@ -133,8 +133,7 @@ git diff <ref>^..<ref> --name-only \
 
 ```bash
 # Resolve range / glob / multi-id to absolute task directory paths
-RESOLVE_TASK_PATHS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/resolve-task-paths.sh"
-[ -f "$RESOLVE_TASK_PATHS_SCRIPT" ] || RESOLVE_TASK_PATHS_SCRIPT="codex/skills/ywc-spec-writer/scripts/resolve-task-paths.sh"
+RESOLVE_TASK_PATHS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/resolve-task-paths.sh" bash)" || exit $?
 bash "$RESOLVE_TASK_PATHS_SCRIPT" \
   000002-010..000003-020
 
@@ -149,10 +148,8 @@ bash "$RESOLVE_TASK_PATHS_SCRIPT" \
 **PR-based (single or multiple PRs)** — fetch the changed-file union, then feed it into `detect-affected-sections.sh`:
 
 ```bash
-COLLECT_PR_FILES_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh"
-[ -f "$COLLECT_PR_FILES_SCRIPT" ] || COLLECT_PR_FILES_SCRIPT="codex/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh"
-DETECT_SECTIONS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
-[ -f "$DETECT_SECTIONS_SCRIPT" ] || DETECT_SECTIONS_SCRIPT="codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh"
+COLLECT_PR_FILES_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/collect-files-from-prs.sh" bash)" || exit $?
+DETECT_SECTIONS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/detect-affected-sections.sh" bash)" || exit $?
 bash "$COLLECT_PR_FILES_SCRIPT" 42 43 51 \
   | bash "$DETECT_SECTIONS_SCRIPT"
 ```

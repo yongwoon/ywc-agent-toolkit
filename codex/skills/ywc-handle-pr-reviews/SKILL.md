@@ -64,8 +64,9 @@ gh repo view --json nameWithOwner --jq .nameWithOwner
 Retrieve review artifacts, CI status, and merge-readiness in one normalized artifact list. Review artifacts may be empty; that is not terminal success. Continue through CI status and merge-readiness gates because a PR with no comments can still be blocked by failed checks or conflicts.
 
 ```bash
-FETCH_ARTIFACTS_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-handle-pr-reviews/scripts/fetch-pr-review-artifacts.sh"
-[ -f "$FETCH_ARTIFACTS_SCRIPT" ] || FETCH_ARTIFACTS_SCRIPT="codex/skills/ywc-handle-pr-reviews/scripts/fetch-pr-review-artifacts.sh"
+RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
+[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+FETCH_ARTIFACTS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-handle-pr-reviews/scripts/fetch-pr-review-artifacts.sh" bash)" || exit $?
 bash "$FETCH_ARTIFACTS_SCRIPT" \
   {owner}/{repo} {pr_number}
 # exit 0 -> normalized JSON artifact array on stdout (may have empty review artifacts)
