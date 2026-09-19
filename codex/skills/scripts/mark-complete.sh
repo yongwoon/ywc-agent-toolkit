@@ -52,7 +52,8 @@ SRC="$TASKS_DIR/$TASK"
 DEST="$TASKS_DIR/completed/$TASK"
 MSG="chore: mark $TASK as completed"
 COMPACT_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-task-generator/scripts/compact-dependency-graph.py"
-[ -f "$COMPACT_SCRIPT" ] || COMPACT_SCRIPT="codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py"
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
+COMPACT_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/compact-dependency-graph.py" python3)" || exit $?
 
 [ -d "$SRC" ]  || { echo "error: source task dir not found: $SRC" >&2; exit 1; }
 [ -e "$DEST" ] && { echo "error: destination already exists: $DEST" >&2; exit 1; }
