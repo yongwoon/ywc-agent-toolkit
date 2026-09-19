@@ -77,7 +77,7 @@ require_tokens() {
   require_file "$file" || return 0
   raw="$(cat "$file")"
   for token in "$@"; do
-    if ! printf '%s' "$raw" | grep -Fq -- "$token"; then
+    if ! grep -Fq -- "$token" <<<"$raw"; then
       fail "$rel is missing required token: $token"
     fi
   done
