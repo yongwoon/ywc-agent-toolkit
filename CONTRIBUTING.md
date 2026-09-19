@@ -119,6 +119,16 @@ Claude Code skills may include extra metadata such as `version`, `category`,
 - Skill directory: `ywc-<kebab-case>` for distributed Claude Code and Codex skills
 - Follow the patterns in [ywc-skill-author](claude-code/skills/ywc-skill-author/SKILL.md)
 
+### Bundled script path resolution
+
+A skill's bundled script must resolve sibling scripts only through
+`$(dirname "$0")` (its own installed skill directory) or, for a script shared
+across skills, `${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/<skill>/scripts/...`.
+Never resolve an executable by searching the repository the skill is currently
+operating on (the "target repository") — a same-named file planted there would
+run instead of the trusted bundled one. Every script in this repo already
+follows this rule; keep it that way in new scripts.
+
 ### Before submitting a new skill PR
 
 - [ ] `SKILL.md` has `name:` and `description:` frontmatter
@@ -127,6 +137,7 @@ Claude Code skills may include extra metadata such as `version`, `category`,
 - [ ] Codex `SKILL.md` frontmatter has no Claude-only metadata fields
 - [ ] The skill is general-purpose (not specific to a single project)
 - [ ] `bash scripts/install.sh --list` still works after your change
+- [ ] Any bundled script resolves sibling/shared executables per [Bundled script path resolution](#bundled-script-path-resolution) above — never against the target repository
 
 ---
 
