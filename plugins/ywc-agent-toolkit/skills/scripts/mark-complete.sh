@@ -52,7 +52,12 @@ SRC="$TASKS_DIR/$TASK"
 DEST="$TASKS_DIR/completed/$TASK"
 MSG="chore: mark $TASK as completed"
 COMPACT_SCRIPT="${CODEX_HOME:-$HOME/.codex}/skills/ywc-task-generator/scripts/compact-dependency-graph.py"
-[ -f "$COMPACT_SCRIPT" ] || COMPACT_SCRIPT="codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py"
+RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
+if [ ! -f "$RESOLVER_LAUNCHER" ]; then
+  [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: development source fallback requires YWC_BUNDLE_DEVELOPMENT=1" >&2; exit 3; }
+  RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: installed resolver launcher is missing; set YWC_BUNDLE_DEVELOPMENT=1 and YWC_BUNDLE_SOURCE_ROOT}/codex/skills/scripts/resolve-bundle-executable.sh"
+fi
+COMPACT_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/compact-dependency-graph.py" python3)" || exit $?
 
 [ -d "$SRC" ]  || { echo "error: source task dir not found: $SRC" >&2; exit 1; }
 [ -e "$DEST" ] && { echo "error: destination already exists: $DEST" >&2; exit 1; }
