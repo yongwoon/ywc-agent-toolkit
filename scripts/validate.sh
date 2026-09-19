@@ -838,6 +838,9 @@ check_codex_plan_handoff
 check_codex_skill_contracts
 check_loop_only_tool_calls codex/skills
 
+echo "==> Running Codex executable-resolution regression gate..."
+python3 tests/codex_executable_resolution_test.py || ERRORS=$((ERRORS + 1))
+
 echo "==> Validating Codex plugin package..."
 check_codex_plugin_manifest
 check_codex_plugin_marketplace
