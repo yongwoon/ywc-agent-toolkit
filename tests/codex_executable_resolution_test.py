@@ -171,7 +171,15 @@ def test_mark_complete_does_not_mutate_when_blocked() -> None:
         before_result = run(["git", "rev-parse", "HEAD"], cwd=repo)
         assert before_result.returncode == 0
         before = before_result.stdout.strip()
-        result = run(["bash", str(MARK_COMPLETE), "tasks", "pending-task"], env=resolver_env(CODEX_HOME=str(repo / "empty-home")), cwd=repo)
+        result = run(
+            ["bash", str(MARK_COMPLETE), "tasks", "pending-task"],
+            env=resolver_env(
+                CODEX_HOME=str(repo / "empty-home"),
+                YWC_BUNDLE_DEVELOPMENT="",
+                YWC_BUNDLE_SOURCE_ROOT="",
+            ),
+            cwd=repo,
+        )
         assert_blocked(result, "development source fallback")
         assert task.is_dir()
         assert not (repo / "tasks/completed").exists()
