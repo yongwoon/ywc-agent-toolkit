@@ -88,8 +88,7 @@ gh pr view <PR_NUMBER> --json commits --jq '.commits[].messageHeadline'
 Fetch author, title, summary, and MERGED state for all extracted PR numbers in one script call:
 
 ```bash
-RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
-[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 FETCH_PR_METADATA_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-release-pr-list/scripts/fetch-pr-metadata.sh" bash)" || exit $?
 bash "$FETCH_PR_METADATA_SCRIPT" \
   <pr-number-1> <pr-number-2> ...

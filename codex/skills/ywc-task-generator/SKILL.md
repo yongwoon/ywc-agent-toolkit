@@ -479,9 +479,10 @@ When parallel execution is expected, verify that each task is safe for isolated 
 
 For allocation, run:
 ```bash
-RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
-[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
-INITIALS_TEST="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/test-initials-allocation.sh" bash)" || exit $?; PARSER_TEST="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/test-parser-ids.sh" bash)" || exit $?; bash "$INITIALS_TEST"; bash "$PARSER_TEST"
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
+INITIALS_TEST="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/test-initials-allocation.sh" bash)" || exit $?
+PARSER_TEST="$(bash "$RESOLVER_LAUNCHER" "ywc-task-generator/scripts/test-parser-ids.sh" bash)" || exit $?
+bash "$INITIALS_TEST" && bash "$PARSER_TEST"
 ```
 Task Verify must cover config precedence/malformed tiers, linked-worktree
 graph/active/completed sources, scoped empty-graph maxima, concurrent distinct

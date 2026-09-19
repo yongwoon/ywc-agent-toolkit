@@ -107,8 +107,7 @@ For locale-specific writing rules (formality level, term policy), see [reference
 If `docs/specification/` does not exist, run:
 
 ```bash
-RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
-[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 INIT_SPEC_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/init-spec-structure.sh" bash)" || exit $?
 bash "$INIT_SPEC_SCRIPT" <lang> "<ProjectName>"
 ```
@@ -122,6 +121,7 @@ For incremental modes, identify which spec sections need updating before writing
 **Commit-based**
 
 ```bash
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 DETECT_SECTIONS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/detect-affected-sections.sh" bash)" || exit $?
 git diff <ref>^..<ref> --name-only \
   | bash "$DETECT_SECTIONS_SCRIPT"
@@ -133,6 +133,7 @@ git diff <ref>^..<ref> --name-only \
 
 ```bash
 # Resolve range / glob / multi-id to absolute task directory paths
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 RESOLVE_TASK_PATHS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/resolve-task-paths.sh" bash)" || exit $?
 bash "$RESOLVE_TASK_PATHS_SCRIPT" \
   000002-010..000003-020
@@ -148,6 +149,7 @@ bash "$RESOLVE_TASK_PATHS_SCRIPT" \
 **PR-based (single or multiple PRs)** — fetch the changed-file union, then feed it into `detect-affected-sections.sh`:
 
 ```bash
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 COLLECT_PR_FILES_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/collect-files-from-prs.sh" bash)" || exit $?
 DETECT_SECTIONS_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-spec-writer/scripts/detect-affected-sections.sh" bash)" || exit $?
 bash "$COLLECT_PR_FILES_SCRIPT" 42 43 51 \

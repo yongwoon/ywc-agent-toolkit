@@ -29,68 +29,38 @@ arguments, shell evaluation, target-repository script discovery, or source
 fallback based on file existence alone. Callers preserve their existing
 interpreter, arguments, pipeline ordering, and exit-result handling.
 
+## Launcher-selection contract
+
+Selecting `RESOLVER_LAUNCHER` itself (installed bundle vs. authorized
+development source) is not inlined per caller. `scripts/select-resolver-launcher.sh`
+owns it exactly once so the trust checks below cannot drift or be duplicated
+incorrectly at a new call site:
+
+- Installed resolution is first, via `${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh`.
+- Source fallback requires explicit `YWC_BUNDLE_DEVELOPMENT=1` and a
+  `YWC_BUNDLE_SOURCE_ROOT` that is the canonical Git root of this repository
+  with the expected `yongwoon/ywc-agent-toolkit` origin — checked *before*
+  the source-root launcher is ever executed, not only for the executable it
+  later resolves.
+- Both branches fully resolve the launcher file's own symlink chain (not
+  only its parent directory) before the containment check, so a launcher
+  path whose final component is a symlink escaping the authorized tree is
+  rejected rather than executed.
+- Failure prints a deterministic `BLOCKED:` diagnostic to stderr and exits 3
+  — never a bare parameter-expansion error, so the exit code and message are
+  contractually stable for callers.
+
 ## Exact launcher-selection block
 
 Every caller must use this block, changing only `BUNDLE_EXECUTABLE` and the
-fixed invocation kind/path passed to the launcher. The block validates the
-launcher source before invoking it; it must not be replaced with a
-target-relative fallback.
+fixed invocation kind/path passed to the launcher. Re-run it at the start of
+every code block that resolves an executable — a shell variable set in one
+code block does not persist into a separately executed one, so a later block
+reusing `$RESOLVER_LAUNCHER` without recomputing it would silently invoke
+`bash` with an empty path.
 
 ```bash
-RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
-if [ -f "$RESOLVER_LAUNCHER" ]; then
-  INSTALLED_SKILLS="$(cd -- "$(dirname -- "$RESOLVER_LAUNCHER")/.." 2>/dev/null && pwd -P)" || {
-    echo "BLOCKED: installed resolver root is not accessible" >&2
-    exit 3
-  }
-  INSTALLED_LAUNCHER="$(cd -- "$(dirname -- "$RESOLVER_LAUNCHER")" 2>/dev/null && pwd -P)/$(basename -- "$RESOLVER_LAUNCHER")" || {
-    echo "BLOCKED: installed resolver launcher cannot be canonicalized" >&2
-    exit 3
-  }
-  case "$INSTALLED_LAUNCHER" in
-    "$INSTALLED_SKILLS"/*) RESOLVER_LAUNCHER="$INSTALLED_LAUNCHER" ;;
-    *) echo "BLOCKED: installed resolver launcher escapes the installed skills tree" >&2; exit 3 ;;
-  esac
-else
-  [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || {
-    echo "BLOCKED: installed Codex resolver launcher is missing" >&2
-    exit 3
-  }
-  : "${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: YWC_BUNDLE_SOURCE_ROOT is required for development fallback}"
-  SOURCE_ROOT="$(cd -- "$YWC_BUNDLE_SOURCE_ROOT" 2>/dev/null && pwd -P)" || {
-    echo "BLOCKED: source root is not accessible" >&2
-    exit 3
-  }
-  SOURCE_ORIGIN="$(git -C "$SOURCE_ROOT" config --get remote.origin.url)" || {
-    echo "BLOCKED: source origin cannot be read" >&2
-    exit 3
-  }
-  case "$SOURCE_ORIGIN" in
-    https://github.com/yongwoon/ywc-agent-toolkit.git|https://github.com/yongwoon/ywc-agent-toolkit|git@github.com:yongwoon/ywc-agent-toolkit.git|git@github.com:yongwoon/ywc-agent-toolkit|ssh://git@github.com/yongwoon/ywc-agent-toolkit.git|ssh://git@github.com/yongwoon/ywc-agent-toolkit) : ;;
-    *) echo "BLOCKED: source origin is not the authorized repository" >&2; exit 3 ;;
-  esac
-  SOURCE_ROOT="$(git -C "$SOURCE_ROOT" rev-parse --show-toplevel)" || {
-    echo "BLOCKED: source Git root cannot be resolved" >&2
-    exit 3
-  }
-  RESOLVER_LAUNCHER="$SOURCE_ROOT/codex/skills/scripts/resolve-bundle-executable.sh"
-  [ -f "$RESOLVER_LAUNCHER" ] || {
-    echo "BLOCKED: source resolver launcher is missing" >&2
-    exit 3
-  }
-  SOURCE_SKILLS="$(cd -- "$SOURCE_ROOT/codex/skills" 2>/dev/null && pwd -P)" || {
-    echo "BLOCKED: source codex/skills layout is missing" >&2
-    exit 3
-  }
-  SOURCE_LAUNCHER="$(cd -- "$(dirname -- "$RESOLVER_LAUNCHER")" 2>/dev/null && pwd -P)/$(basename -- "$RESOLVER_LAUNCHER")" || {
-    echo "BLOCKED: source resolver launcher cannot be canonicalized" >&2
-    exit 3
-  }
-  case "$SOURCE_LAUNCHER" in
-    "$SOURCE_SKILLS"/*) RESOLVER_LAUNCHER="$SOURCE_LAUNCHER" ;;
-    *) echo "BLOCKED: source resolver launcher escapes the source skills tree" >&2; exit 3 ;;
-  esac
-fi
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 BUNDLE_EXECUTABLE="$(bash "$RESOLVER_LAUNCHER" <bundle-relative-path> <bash|python|python3|direct>)" || exit $?
 ```
 

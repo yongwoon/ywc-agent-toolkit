@@ -120,8 +120,7 @@ Verify the following conditions before starting:
 **State Init (non-resume runs only, `--local-merge`/`--draft`/`--aggregate-pr` run the contract-bearing wave scan first — see [references/wave-integration-branch.md](references/wave-integration-branch.md) for the scan, the `wave-int/<N>` lifecycle, and promotion-conflict handling)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
-RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
-[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 STATE_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "scripts/update-state.py" python3)" || exit $?
 python3 "$STATE_SCRIPT" init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
@@ -346,6 +345,7 @@ $ywc-finish-branch \
 **For `--per-task-pr`** — the merge already happened in (a) step 5, so do **not** call finish-branch (its `local-merge` would attempt a redundant merge, and its `normal-pr` assumes the feature branch is the current checkout, which it is not under the worktree model). Instead, run the same Mark Complete that finish-branch would, then push immediately:
 
 ```bash
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 MARK_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "scripts/mark-complete.sh" bash)" || exit $?
 bash "$MARK_SCRIPT" <tasks-dir> <task-name> --push
 ```

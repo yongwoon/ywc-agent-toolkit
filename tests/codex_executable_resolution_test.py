@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RESOLVER = ROOT / "codex/skills/scripts/resolve-bundle-executable.py"
 LAUNCHER = ROOT / "codex/skills/scripts/resolve-bundle-executable.sh"
+SELECT_LAUNCHER = ROOT / "codex/skills/scripts/select-resolver-launcher.sh"
 MARK_COMPLETE = ROOT / "codex/skills/scripts/mark-complete.sh"
 CALLER_FILES = [
     ROOT / "codex/skills/scripts/mark-complete.sh",
@@ -158,8 +159,9 @@ def test_installed_symlink_escape() -> None:
 
 
 def test_mark_complete_does_not_mutate_when_blocked() -> None:
-    with tempfile.TemporaryDirectory() as raw:
+    with tempfile.TemporaryDirectory() as raw, tempfile.TemporaryDirectory() as raw_home:
         repo = Path(raw)
+        empty_home = Path(raw_home)
         task = repo / "tasks/pending-task"
         task.mkdir(parents=True)
         (task / "task.md").write_text("pending\n", encoding="utf-8")
@@ -171,10 +173,18 @@ def test_mark_complete_does_not_mutate_when_blocked() -> None:
         before_result = run(["git", "rev-parse", "HEAD"], cwd=repo)
         assert before_result.returncode == 0
         before = before_result.stdout.strip()
+        # select-resolver-launcher.sh is installed (as it always is alongside
+        # the rest of codex/skills/scripts/ via scripts/install.sh) but
+        # resolve-bundle-executable.sh is not, and dev fallback is not
+        # opted in — this exercises select-resolver-launcher.sh's own
+        # "installed launcher missing, dev mode off" BLOCKED path.
+        empty_home_scripts = empty_home / "skills/scripts"
+        empty_home_scripts.mkdir(parents=True)
+        shutil.copy2(SELECT_LAUNCHER, empty_home_scripts / SELECT_LAUNCHER.name)
         result = run(
             ["bash", str(MARK_COMPLETE), "tasks", "pending-task"],
             env=resolver_env(
-                CODEX_HOME=str(repo / "empty-home"),
+                CODEX_HOME=str(empty_home),
                 YWC_BUNDLE_DEVELOPMENT="",
                 YWC_BUNDLE_SOURCE_ROOT="",
             ),

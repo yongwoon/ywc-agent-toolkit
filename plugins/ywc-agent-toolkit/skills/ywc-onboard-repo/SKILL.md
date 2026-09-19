@@ -59,8 +59,7 @@ When tempted to bypass a rule, check this table first:
 Run **all seven signal-gathering passes** (no Read tool — Glob and Grep only). The fastest path is the bundled script, which runs every pass in one shot and prints the structured summary:
 
 ```bash
-RESOLVER_LAUNCHER="${CODEX_HOME:-$HOME/.codex}/skills/scripts/resolve-bundle-executable.sh"
-[ -f "$RESOLVER_LAUNCHER" ] || { [ "${YWC_BUNDLE_DEVELOPMENT:-}" = "1" ] || { echo "BLOCKED: set explicit development opt-in" >&2; exit 3; }; RESOLVER_LAUNCHER="${YWC_BUNDLE_SOURCE_ROOT:?BLOCKED: set explicit development source root}/codex/skills/scripts/resolve-bundle-executable.sh"; }
+RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 RECON_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-onboard-repo/scripts/recon.sh" bash)" || exit $?
 bash "$RECON_SCRIPT" [repo-dir]
 ```
