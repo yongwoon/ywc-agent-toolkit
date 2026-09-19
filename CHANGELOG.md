@@ -11,6 +11,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.38.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.37.0...v1.38.0) (2026-09-19)
+
+
+### Added
+
+* **ywc-verify-done:** add Executable Gate Ledger checker ([#191](https://github.com/yongwoon/ywc-agent-toolkit/issues/191)) ([9616a79](https://github.com/yongwoon/ywc-agent-toolkit/commit/9616a79fa135896d327af428d955ebfafffed1bc))
+
+
+### Fixed
+
+* correct read-only agent Return Contract to return inline, not to a file ([#193](https://github.com/yongwoon/ywc-agent-toolkit/issues/193)) ([43f5411](https://github.com/yongwoon/ywc-agent-toolkit/commit/43f54114325f175469a8106c7cc67cdd1bb6aa2a))
+* replace ScheduleWakeup misuse with turn-boundary wait for subagent completion ([#195](https://github.com/yongwoon/ywc-agent-toolkit/issues/195)) ([a295810](https://github.com/yongwoon/ywc-agent-toolkit/commit/a29581050197d936b535ea9b23e5aa4b07627c3e))
+
+
+### Documentation
+
+* add mobile-first UI default for Codex and Claude Code skills ([#198](https://github.com/yongwoon/ywc-agent-toolkit/issues/198)) ([abbd464](https://github.com/yongwoon/ywc-agent-toolkit/commit/abbd4648f455210f8617b6726f8f9bd485f9e54c))
+* add TypeScript monorepo (pnpm workspaces) reference to ywc-project-scaffold ([#197](https://github.com/yongwoon/ywc-agent-toolkit/issues/197)) ([9e4a89e](https://github.com/yongwoon/ywc-agent-toolkit/commit/9e4a89ed340fdbd2188116ac412834b485d18cd3))
+* expand ywc-task-generator granularity size guidelines ([#196](https://github.com/yongwoon/ywc-agent-toolkit/issues/196)) ([cd5e8d2](https://github.com/yongwoon/ywc-agent-toolkit/commit/cd5e8d208f94c5bf266ec06b33cb9b0c7b5ae08f))
+
 ## [1.37.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.36.0...v1.37.0) (2026-09-11)
 
 
