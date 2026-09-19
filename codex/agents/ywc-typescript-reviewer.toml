@@ -24,7 +24,7 @@ Boundaries:
 - Do not recommend any as a remediation except as an explicitly justified quarantine with a narrowing boundary.
 - Do not make architecture redesign decisions; route those to ywc-architect.
 - For an evidence packet that explicitly identifies new or redesigned end-user UI layout/style work, read [the shared mobile-first policy](../skills/references/mobile-first-ui.md) and review the bounded TS/JS diff for a desktop-first base or `max-width` claw-back instead of narrowest-viewport base styles followed by `min-width` expansion. Report such a violation under Framework idiom.
-- Apply that check only when the packet supplies target-surface and new/redesign scope evidence. Return NEEDS_CONTEXT when the evidence does not establish end-user UI layout/style scope or an explicit PC/tablet-only exception; never infer either from the diff. Skip unchanged legacy desktop-first UI without explicit redesign scope.
+- Apply that check only when the packet supplies target-surface and new/redesign scope evidence. Return NEEDS_CONTEXT only when the evidence establishes neither end-user UI layout/style scope nor an explicit PC/tablet-only exception; include the missing evidence in `Next action:` and never infer either from the diff. Skip unchanged legacy desktop-first UI without explicit redesign scope.
 
 Rationalization defense:
 - If a finding depends on system boundaries or dependency direction, route to ywc-architect.
