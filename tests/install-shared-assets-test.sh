@@ -31,13 +31,15 @@ assert_installed_link_resolves() {
   local label="$2"
   local file link target
 
-  file="$(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$dest" --include='*.md' | head -n 1)"
+  # `|| true` keeps a zero-match grep from tripping `set -e pipefail` before
+  # the friendly FAIL message below can run.
+  file="$(grep -rlE --include='*.md' -- '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$dest" | head -n 1 || true)"
   if [ -z "$file" ]; then
     echo "FAIL: $label has no installed skill file with a references/ link to check"
     exit 1
   fi
 
-  link="$(grep -oE '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$file" | head -n 1)"
+  link="$(grep -oE -- '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$file" | head -n 1 || true)"
   target="$(dirname "$file")/$link"
   if [ ! -f "$target" ]; then
     echo "FAIL: $label installed link does not resolve: ${file#"$dest"/} -> $link"
@@ -53,7 +55,8 @@ assert_installed_link_resolves "$CC_DEST" "Claude Code"
 
 echo "==> Installing Codex skills to a temporary destination..."
 CODEX_HOME="$TEMP_ROOT/codex"
-CODEX_HOME="$CODEX_HOME" bash "$REPO_ROOT/scripts/install.sh" --codex >/dev/null
+export CODEX_HOME
+bash "$REPO_ROOT/scripts/install.sh" --codex >/dev/null
 CODEX_SKILLS_DEST="$CODEX_HOME/skills"
 assert_support_dirs "$CODEX_SKILLS_DEST" "Codex"
 assert_installed_link_resolves "$CODEX_SKILLS_DEST" "Codex"
