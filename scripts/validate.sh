@@ -878,6 +878,16 @@ if [ -f scripts/test-wave-int-hook-isolation.sh ]; then
   bash scripts/test-wave-int-hook-isolation.sh || ERRORS=$((ERRORS + 1))
 fi
 
+if [ -f tests/install-codex-agents-test.sh ]; then
+  echo "==> Running Codex installed-agent regression suite..."
+  bash tests/install-codex-agents-test.sh || ERRORS=$((ERRORS + 1))
+fi
+
+if [ -f tests/install-shared-assets-test.sh ]; then
+  echo "==> Running installed shared references/scripts regression suite..."
+  bash tests/install-shared-assets-test.sh || ERRORS=$((ERRORS + 1))
+fi
+
 if [ "$ERRORS" -gt 0 ]; then
   echo ""
   echo "Validation failed: $ERRORS error(s) found."
