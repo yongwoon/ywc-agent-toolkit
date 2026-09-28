@@ -13,7 +13,7 @@ Today, Step 4e delivers every wave task directly into the base branch and stamps
 `init-parallel`'s only input is the `--waves` JSON array (task names only) — it has no access to any task's declared Quality Gate Contract tier. Before calling `init-parallel`, compute a per-wave `has_contract` boolean:
 
 1. For each wave, read every member task's declared Quality Gate Contract tier from its task-directory spec/README.
-2. OR across the wave's tasks against the exact `N/A — no quality gate contract` sentinel (`../references/quality-gates.md` §7) — contract-bearing if any task's tier differs from that sentinel (i.e. `report-only`, `advisory`, or `enforced`).
+2. OR across the wave's tasks against the exact `N/A — no quality gate contract` sentinel (`../../references/quality-gates.md` §7) — contract-bearing if any task's tier differs from that sentinel (i.e. `report-only`, `advisory`, or `enforced`).
 3. Extend the `--waves` entry: `{"wave":1,"tasks":["t-a","t-b"],"has_contract":true}`.
 4. **Malformed / missing field / absent task directory** — each of these three cases stops Pre-flight with `NEEDS_CONTEXT`, naming the offending task and the missing/malformed field. Never silently resolve to `false` — that would route a possibly contract-bearing wave direct to base, the exact regression the no-block invariant forbids.
 
@@ -84,14 +84,14 @@ git merge --ff-only refs/heads/wave-int/<N>
 
 **On fast-forward failure (base advanced during the wave):**
 
-1. Merge base **into** `wave-int/<N>` — never rebase, per `../references/pr-conflict-resolution.md`:
+1. Merge base **into** `wave-int/<N>` — never rebase, per `../../references/pr-conflict-resolution.md`:
    ```bash
    git checkout refs/heads/wave-int/<N>
    git merge --no-ff <base-branch> -m "Merge <base-branch> into wave-int/<N>"
    git push origin wave-int/<N>
    ```
    then immediately call `python3 codex/skills/scripts/update-state.py wave-int-owner <N> --tip-sha "$(git rev-parse refs/heads/wave-int/<N>)"` (FR-5's second checkpoint — the branch's identity could have shifted here, not just its accumulating content).
-2. **Re-run the wave-boundary aggregation** against the merged result before retrying promotion. This is a second dispatch and gets its own fresh 3 approved Mutation Loop Cap attempts (`../references/quality-gates.md` §"Mutation Loop Cap") — a base-merge produces genuinely new content the prior dispatch never measured.
+2. **Re-run the wave-boundary aggregation** against the merged result before retrying promotion. This is a second dispatch and gets its own fresh 3 approved Mutation Loop Cap attempts (`../../references/quality-gates.md` §"Mutation Loop Cap") — a base-merge produces genuinely new content the prior dispatch never measured.
 3. **Two-counter attempt bound**:
    - **Mutation Loop Cap**: fresh 3 attempts per dispatch (see above).
    - **Live-lock cap**: a separate per-wave counter, `promotion_retry_count` (via `yw-000036-020`'s `promotion-retry` subcommand), capped at **2**. Exceeding it marks the wave `BLOCKED` with reason `promotion-churn` — distinct from the textual-conflict `BLOCKED` reason below.
