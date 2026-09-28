@@ -33,7 +33,7 @@ assert_installed_link_resolves() {
 
   # `|| true` keeps a zero-match grep from tripping `set -e pipefail` before
   # the friendly FAIL message below can run.
-  file="$(grep -rlE --include='*.md' -- '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$dest" | head -n 1 || true)"
+  file="$(grep -rlE --include='SKILL.md' -- '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$dest" | head -n 1 || true)"
   if [ -z "$file" ]; then
     echo "FAIL: $label has no installed skill file with a references/ link to check"
     exit 1
