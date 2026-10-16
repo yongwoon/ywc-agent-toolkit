@@ -13,6 +13,20 @@
         "command-bearing AC",
         "observed baseline, revision/context, and evidence"
       ]
+    },
+    {
+      "source": "codex/skills/ywc-plan/SKILL.md",
+      "required": [
+        "For each command-bearing AC, record observed baseline,",
+        "revision/context and evidence, or `not measured` with the gap"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-plan/references/spec-template.md",
+      "required": [
+        "For command-bearing ACs record observed baseline, revision/context and evidence,",
+        "or `not measured` with the gap"
+      ]
     }
   ]
 }
