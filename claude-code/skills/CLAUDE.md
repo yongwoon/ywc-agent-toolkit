@@ -318,8 +318,12 @@ these values in skill bodies):
   `references/subagent-status-actions.md`, naming the unaccounted-for
   subagent(s) — never silent re-dispatch
 
-> **Action required on entering the branch that needs it**: Read
-> [references/subagent-async-monitoring.md]
+Cite it at every batch dispatch point with a **single physical line** — a callout
+wrapped across lines is rejected by the test below:
+
+```markdown
+> **Action required**: Read [<relative path>/references/subagent-async-monitoring.md] (a markdown link to the shared reference) now — <what the batch is>. **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After <results are consumed>, call `TaskStop` once per <lane> with its `name` as `task_id` (current batch only; skip any still `running`).
+```
 
 Consumers (each batch-dispatch site carries an `Action required` callout with
 a same-line `Release … TaskStop` clause, enforced by

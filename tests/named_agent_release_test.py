@@ -9,7 +9,9 @@ clause has to live on the callout line in the SKILL.md body.
 Rule: in every `claude-code/skills/*/SKILL.md`, EACH physical line that matches
 `Action required.*subagent-async-monitoring\\.md` must also match
 `Release.*TaskStop`. Checking per line (not per file) catches a second batch in the
-same skill (impl-review Step 4.5, spec-validate Council) that omits Release.
+same skill (impl-review Step 4.5, spec-validate Council) that omits Release. A
+callout wrapped so `Action required` and the link sit on different lines (same
+blank-line-delimited block) is reported as a violation too.
 
 Known limit (FM-2, accepted): a skill that cites the contract only in prose, with
 no `Action required` callout, is treated as a single dispatch and is not bound.
@@ -41,17 +43,32 @@ RELEASE_CLAUSE = " **Release (mechanical gate)**: call `TaskStop` once per lane.
 PROSE_CITE = f"For the contract see {LINK}.\n"
 
 
+def paragraphs(text: str) -> list[list[tuple[int, str]]]:
+    """Split text into blank-line separated blocks of (line number, line)."""
+    blocks: list[list[tuple[int, str]]] = [[]]
+    for number, line in enumerate(text.splitlines(), 1):
+        if line.strip():
+            blocks[-1].append((number, line))
+        elif blocks[-1]:
+            blocks.append([])
+    return [block for block in blocks if block]
+
+
 def find_violations(skills_dir: Path) -> tuple[int, list[str]]:
-    """Return (callout line count, violations as `path:line`) under skills_dir."""
+    """Return (callout count, violations as `path:line`) under skills_dir."""
     callouts = 0
     violations: list[str] = []
     for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
-        for number, line in enumerate(skill_md.read_text(encoding="utf-8").splitlines(), 1):
-            if not CALLOUT.search(line):
-                continue
-            callouts += 1
-            if not RELEASE.search(line):
-                violations.append(f"{skill_md.relative_to(skills_dir.parent.parent)}:{number}")
+        rel = skill_md.relative_to(skills_dir.parent.parent)
+        for block in paragraphs(skill_md.read_text(encoding="utf-8")):
+            matched = [(number, line) for number, line in block if CALLOUT.search(line)]
+            if not matched and CALLOUT.search(" ".join(line for _, line in block)):
+                callouts += 1
+                violations.append(f"{rel}:{block[0][0]} (callout wrapped across lines)")
+            for number, line in matched:
+                callouts += 1
+                if not RELEASE.search(line):
+                    violations.append(f"{rel}:{number}")
     return callouts, violations
 
 
@@ -85,6 +102,12 @@ def self_check() -> bool:
             1,
         ),
         ("prose citation is out of scope", PROSE_CITE, 0, 0),
+        (
+            "callout wrapped before the link is a violation",
+            "> **Action required**: Read\n> " + LINK + " now — one batch." + RELEASE_CLAUSE,
+            1,
+            1,
+        ),
     ]
     return all([run_synthetic(*case) for case in cases])
 
