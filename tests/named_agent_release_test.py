@@ -61,14 +61,24 @@ def find_violations(skills_dir: Path) -> tuple[int, list[str]]:
     for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
         rel = skill_md.relative_to(skills_dir.parent.parent)
         for block in paragraphs(skill_md.read_text(encoding="utf-8")):
-            matched = [(number, line) for number, line in block if CALLOUT.search(line)]
-            if not matched and CALLOUT.search(" ".join(line for _, line in block)):
-                callouts += 1
-                violations.append(f"{rel}:{block[0][0]} (callout wrapped across lines)")
-            for number, line in matched:
-                callouts += 1
-                if not RELEASE.search(line):
-                    violations.append(f"{rel}:{number}")
+            for index, (number, line) in enumerate(block):
+                if "Action required" not in line:
+                    continue
+                if CALLOUT.search(line):
+                    callouts += 1
+                    if not RELEASE.search(line):
+                        violations.append(f"{rel}:{number}")
+                    continue
+                # Each callout is judged on its own: join only the lines up to the next
+                # `Action required`, so a wrapped callout cannot hide behind a complete one.
+                tail = [line]
+                for _, following in block[index + 1 :]:
+                    if "Action required" in following:
+                        break
+                    tail.append(following)
+                if CALLOUT.search(" ".join(tail)):
+                    callouts += 1
+                    violations.append(f"{rel}:{number} (callout wrapped across lines)")
     return callouts, violations
 
 
@@ -106,6 +116,17 @@ def self_check() -> bool:
             "callout wrapped before the link is a violation",
             "> **Action required**: Read\n> " + LINK + " now — one batch." + RELEASE_CLAUSE,
             1,
+            1,
+        ),
+        (
+            "wrapped callout next to a complete one in the same block is still a violation",
+            CALLOUT_ONLY.rstrip("\n")
+            + RELEASE_CLAUSE
+            + "> **Action required**: Read\n> "
+            + LINK
+            + " now — one batch."
+            + RELEASE_CLAUSE,
+            2,
             1,
         ),
     ]
