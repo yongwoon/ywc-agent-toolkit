@@ -43,6 +43,10 @@ dropped. This skill already separates authoring (Phase 1) from frontier judgment
 This is the mechanism behind the Confidence Gate's Evidence-quality dimension —
 make it a per-finding gate, not only a report-level one.
 
+### SDK hierarchy evidence gate
+
+Use the [Devex SDK exception check](./devex-agent.md#sdk-exception-hierarchy-evidence) for SDK-specific catch/retry findings. Retain inspected package/version, version-relevant primary source or official error-reference citation, actual exception inheritance and the reviewed throw/catch path as provenance. Unavailable or version-mismatched primary evidence is uncertainty: record the verification gap separately and do not emit a confirmed SDK hierarchy finding based on an inline comment or recollection. A version match alone does not prove a defect; require the traced hierarchy and affected operation to establish it. No unconditional network phase or new SDK dependency belongs in mechanical verification; use existing bounded review acquisition and report missing evidence honestly. Offline source assertions and predetermined fixtures are not observed SDK review behavior.
+
 ## 3. Context phase before commenting
 
 CodeRabbit never reviews the diff in isolation: it builds a dependency picture of
