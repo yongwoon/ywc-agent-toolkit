@@ -1,0 +1,19 @@
+{
+  "id": "spec-availability-possibly-live-api-error",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-2",
+    "FR-2",
+    "FM-2"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "possibly-live lane returns `BLOCKED`",
+        "Skip direct fallback, Phase 2, ordinary aggregation, normal report, and downstream handoff",
+        "Monitoring Blocked"
+      ]
+    }
+  ]
+}

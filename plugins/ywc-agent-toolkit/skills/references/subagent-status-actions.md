@@ -11,7 +11,17 @@ Use this when an orchestrating skill receives `DONE`, `DONE_WITH_CONCERNS`, `BLO
 | `NEEDS_CONTEXT` | Provide the missing context and re-dispatch the same subagent with the same model class. Context is the cheapest fix. |
 | `BLOCKED` | Apply the triage below before surfacing to the user. |
 
-Phase 1 review workers are a narrow read-only inline exception: the eight named read-only reviewer/advisor agents may return only `Status`, a one-line `Summary`, 0–5 confirmed findings, and 0–2 advisor candidates inline; they have no write authority, may not write files or mutate artifacts, and must not promise or wait for an artifact file. This exception overrides the "write to files" Enforcement directive below for these eight agents only — the field limits are otherwise the same. When their `Status` is `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`, the corresponding `Concerns` (≤ 10 lines), `Blocker` (≤ 5 lines), or `Missing context` (≤ 10 items) field from the canonical shape below still returns inline alongside `Status`/`Summary`. Omit `Artifacts:` unless a write-enabled caller separately produced an artifact. Validate the returned canonical target before applying these actions; malformed, status-less, ambiguous, or non-attributable output is non-terminal and follows review monitor precedence.
+Phase 1 review workers are a narrow read-only inline exception: the eight named read-only reviewer/advisor agents and explicitly designated spec-review dimension workers may return only `Status`, a one-line `Summary`, 0–5 confirmed findings, and 0–2 advisor candidates inline; they have no write authority, may not write files or mutate artifacts, and must not promise or wait for an artifact file. This exception overrides the "write to files" Enforcement directive below only for these eight agents and explicitly designated spec-review dimension workers — the field limits are otherwise the same. When their `Status` is `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`, the corresponding `Concerns` (≤ 10 lines), `Blocker` (≤ 5 lines), or `Missing context` (≤ 10 items) field from the canonical shape below still returns inline alongside `Status`/`Summary`. Omit `Artifacts:` unless a write-enabled caller separately produced an artifact. Validate the returned canonical target before applying these actions; malformed, status-less, ambiguous, or non-attributable output is non-terminal and follows review monitor precedence.
+
+### Spec-review dimension worker boundary
+
+Each designated dimension worker returns its captured canonical target, `Status`,
+a one-line `Summary`, and at most five confirmed findings and two advisor candidates.
+Its packet must prohibit writes: it must not create, edit, or remove files, promise
+an artifact, or wait for an artifact. Preserve the bounded concern/blocker/context
+fields above. Identity must match the canonical target returned by dispatch, never
+a requested label or an invented terminal result. This exception does not grant
+other generic workers inline output or change implementation-review status policy.
 
 ## Return Payload Contract
 

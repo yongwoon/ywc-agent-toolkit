@@ -39,3 +39,5 @@ Critical / Warning / Suggestion の重大度別に分類し、各 Issue にフ�
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+集計前に共有モニターで四つの観点を照合します。稼働中の可能性が残る場合は BLOCKED です。停止を確認した利用不能な観点のみ親が一度レビューし、degraded coverage を記録します。委任なしのインライン確認とは区別します。
