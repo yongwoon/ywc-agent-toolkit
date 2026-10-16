@@ -1,6 +1,6 @@
 # Task Dependency Graph
 
-**Next PHASE (yw): `000058`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yw): `000066`** — reservation lower bound; cross-check conforming active directories before allocation.
 
 ## Batch — Codex mobile-first UI default
 
@@ -2010,4 +2010,173 @@ graph LR
   A[yw-000054-010 bundle-executable-resolver] --> B[yw-000055-010 executable-fallback-migration]
   B --> C[yw-000056-010 executable-resolution-regression]
   C --> D[yw-000057-010 executable-resolution-distribution]
+```
+
+## Batch 26 — Claude Code issue #69 upstream port
+
+- Spec: `docs/ywc-plans/20261016-claude-upstream-issue69-port.md` (ywc-spec-ready DONE)
+- Granularity mode: `llm`
+- Output language: `ko`
+- Initials: `yw`
+- Starting phase: `yw-000058` (ledger reservation)
+- Advisor pass: skipped — phase boundaries are fixed by the spec's `## Dependencies` (A→B→C→D→E mandatory, file overlaps across phases).
+- No-AC requirements: none found — FR-A1~A8, B1~B4, C1~C3, D1, E1~E6 all map to AC-1~AC-18.
+- Spec coverage: AC-1, AC-13 → every task; AC-2/3/4/15/18 + AC-12(A2·A3) → 000058-010; AC-5/6/7/14 + AC-12(B3) → 000059-010; AC-8 + AC-12(C3) → 000060-010; AC-9 → 000061-010; AC-12(E1) + AC-17(description) → 000062-010; AC-10/16 + AC-17(README) → 000062-020; AC-11 → 000062-030. FM-1/2/6 → 000058-010, FM-4 → 000059-010, FM-3 → 000062-020, FM-5 → AC-1 in every task.
+
+### Phase yw-000058 — named agent release (Phase A)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000058-010-docs-named-agent-release` | docs | (root) |
+
+### Phase yw-000059 — spec / plan omission checks (Phase B)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000059-010-docs-spec-plan-omission-checks` | docs | `yw-000058-010` |
+
+### Phase yw-000060 — PR / review impact (Phase C)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000060-010-docs-pr-review-impact` | docs | `yw-000059-010` |
+
+### Phase yw-000061 — Fastify scaffold (Phase D)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000061-010-docs-fastify-scaffold` | docs | `yw-000060-010` |
+
+### Phase yw-000062 — trigger boundary / model routing / AC baseline (Phase E)
+
+| Task | Category | Depends On |
+|---|---|---|
+| `yw-000062-010-docs-trigger-boundary-descriptions` | docs | `yw-000061-010` |
+| `yw-000062-020-docs-model-hint-routing` | docs | `yw-000061-010` |
+| `yw-000062-030-docs-ac-baseline` | docs | `yw-000061-010` |
+
+### Parallel Execution Notes (Claude Code issue #69 upstream port)
+
+- Initial ready set: `yw-000058-010-docs-named-agent-release`.
+- Phases 000058 → 000062 are hard gates in strict order: phases share files (A↔B `ywc-spec-validate`, A↔E fan-out SKILL.md files, B↔E `ywc-plan` / `spec-template` / `ywc-spec-validate` / `ywc-task-generator`).
+- Within Phase yw-000062, tasks 010 / 020 / 030 have disjoint Ownership and may run in parallel after `yw-000061-010` merges.
+- `scripts/validate.sh` is also a candidate edit target of the Codex-side plan (`docs/ywc-plans/20261016-codex-issue69-selective-port.md`); refresh `main` before starting 000058-010.
+
+```mermaid
+graph LR
+  A[yw-000058-010 named-agent-release] --> B[yw-000059-010 spec-plan-omission-checks]
+  B --> C[yw-000060-010 pr-review-impact]
+  C --> D[yw-000061-010 fastify-scaffold]
+  D --> E1[yw-000062-010 trigger-boundary-descriptions]
+  D --> E2[yw-000062-020 model-hint-routing]
+  D --> E3[yw-000062-030 ac-baseline]
+```
+
+
+## Batch 27 — Codex issue #69 selective port
+
+- Source spec: [20261016-codex-issue69-selective-port.md](../docs/ywc-plans/20261016-codex-issue69-selective-port.md).
+- Invocation: `$ywc-task-generator docs/ywc-plans/20261016-codex-issue69-selective-port.md --mode --llm --lang en`; normalized `--mode llm --lang en`; default tasks directory `tasks/`; project initials `yw`.
+- Interactive preview presented before task writes; no separate approval wait under the explicitly invoked installed skill. No persisted-preview approval is fabricated; `--approve-preview` was not supplied.
+- Allocation: ledger lower bound 000063; active conforming directory maximum 000062. POSIX exclusive flock held through scan/creation/ledger update using Python fcntl because the flock CLI is unavailable. One linked worktree; current ledger avoids a full historical scan.
+- Compaction: 2,073 → 2,073 lines; no fully completed phase removable. Existing active Claude tasks and graph history preserved.
+- Mode: llm (~35 files/~1,200 authored changed LOC guideline); output English; advisor pass used once, verdict proceed with separate SDK task.
+- Architecture: contract_state N/A — no architecture contract; enforcement_verdict N/A. No invented callable signatures from prose Module Boundaries.
+- No-AC Open Questions: none. All scoped work has an AC or motivating goal. No new DB/library tasks are needed.
+- Nine tasks, three delivery stages. Stage 2 requires all Stage 1 outputs accepted; Stage 3 requires all Stage 2 outputs accepted. Acceptance does not itself authorize PR creation, publishing, or merging.
+- Generation writes planning artifacts only. Implementation, routing trials and packaging commands belong to subsequent execution.
+
+## Phase yw-000063 — Stage 1 — monitoring and review availability
+
+| Task | Deliverable | Depends On |
+|---|---|---|
+| [yw-000063-010-domain-event-monitoring](yw-000063-010-domain-event-monitoring/README.md) | Event-aware monitoring reconciliation | (root) |
+| [yw-000063-020-domain-spec-review-availability](yw-000063-020-domain-spec-review-availability/README.md) | Quiescence-gated spec-review availability | `yw-000063-010-domain-event-monitoring` |
+
+## Phase yw-000064 — Stage 2 — omission and traceability
+
+| Task | Deliverable | Depends On |
+|---|---|---|
+| [yw-000064-010-domain-conditional-omission-lenses](yw-000064-010-domain-conditional-omission-lenses/README.md) | Conditional UI and security omission lenses | `yw-000063-020-domain-spec-review-availability` |
+| [yw-000064-020-domain-spec-failure-evidence](yw-000064-020-domain-spec-failure-evidence/README.md) | Failure Modes and read-only baseline evidence | `yw-000064-010-domain-conditional-omission-lenses` |
+| [yw-000064-030-domain-task-coverage-gate](yw-000064-030-domain-task-coverage-gate/README.md) | Task coverage with atomic agentic consumer gate | `yw-000064-020-domain-spec-failure-evidence` |
+
+## Phase yw-000065 — Stage 3 — interaction and evidence
+
+| Task | Deliverable | Depends On |
+|---|---|---|
+| [yw-000065-010-domain-bounded-suggestion-policy](yw-000065-010-domain-bounded-suggestion-policy/README.md) | Bounded Suggestions and approved-preview reuse | `yw-000064-030-domain-task-coverage-gate` |
+| [yw-000065-020-domain-impact-security-evidence](yw-000065-020-domain-impact-security-evidence/README.md) | Localized PR Impact and security testcase evidence | `yw-000065-010-domain-bounded-suggestion-policy` |
+| [yw-000065-030-domain-sdk-review-evidence](yw-000065-030-domain-sdk-review-evidence/README.md) | Version-grounded SDK exception review evidence | `yw-000065-020-domain-impact-security-evidence` |
+| [yw-000065-040-domain-trigger-selection-evidence](yw-000065-040-domain-trigger-selection-evidence/README.md) | Bounded trigger corrections and observed selections | `yw-000065-030-domain-sdk-review-evidence` |
+
+## Parallel Execution Notes — Codex issue #69
+
+- Initial ready set: `yw-000063-010-domain-event-monitoring` only. Subsequent tasks become ready after their immediate predecessor is accepted and merged, subject to the full-stage gates.
+- This batch is deliberately serialized: every task extends the shared focused runner and contract assertions, and synchronizes source/generated distribution. No same-phase parallel task pair is advertised.
+- External conflict: `yw-000058-010-docs-named-agent-release` may modify `scripts/validate.sh`. Serialize and refresh its baseline before 63-010 validation wiring; it is a conflict, not a logical dependency on Claude work. Other existing tasks remain governed by their original graph sections.
+- Each task owns exact source/locale files, task-specific fixtures, matching generated paths, and bounded shared-runner edits. Only 63-010 owns new validator wiring. Synchronization must not sweep unrelated changes.
+- Size exceptions: required locale and generated mirror paths can exceed ~35 files, especially atomic coverage producer/consumer and Suggestion owner/caller changes. README forecasts count these explicitly; authored delta remains bounded below ~1,200 LOC per task. Do not fragment those contracts solely to reduce duplicate-file counts.
+
+## Requirement Coverage — Codex issue #69
+
+All rows below are COVERED by generated implementation tasks, not implemented or verified behavior. AC-9 requires both SDK evidence and all six real routing observations; unavailable/mismatched observations leave implementation acceptance unmet.
+
+| Requirement | Owner tasks | Verification | Status |
+|---|---|---|---|
+| AC-1 | `yw-000063-010-domain-event-monitoring` | M1, M2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-2 | `yw-000063-020-domain-spec-review-availability` | M1, M2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-3 | `yw-000064-010-domain-conditional-omission-lenses` | O1, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-4 | `yw-000064-030-domain-task-coverage-gate` | O2, O3; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-5 | `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate` | O1, O2, O3; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-6 | `yw-000065-010-domain-bounded-suggestion-policy` | I1, I2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-7 | `yw-000065-010-domain-bounded-suggestion-policy` | I1, I2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-8 | `yw-000065-020-domain-impact-security-evidence` | E1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-9 | `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence` | E2, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| AC-10 | `yw-000063-010-domain-event-monitoring`, `yw-000063-020-domain-spec-review-availability`, `yw-000064-010-domain-conditional-omission-lenses`, `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate`, `yw-000065-010-domain-bounded-suggestion-policy`, `yw-000065-020-domain-impact-security-evidence`, `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence` | E1, E2, I1, I2, M1, M2, O1, O2, O3, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-1 | `yw-000063-010-domain-event-monitoring` | M1, M2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-2 | `yw-000063-020-domain-spec-review-availability` | M1, M2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-3 | `yw-000064-010-domain-conditional-omission-lenses` | O1, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-4 | `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate` | O1, O2, O3; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-5 | `yw-000065-010-domain-bounded-suggestion-policy` | I1, I2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-6 | `yw-000065-010-domain-bounded-suggestion-policy` | I1, I2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-7 | `yw-000065-020-domain-impact-security-evidence` | E1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-8 | `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence` | E2, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FR-9 | `yw-000063-010-domain-event-monitoring`, `yw-000063-020-domain-spec-review-availability`, `yw-000064-010-domain-conditional-omission-lenses`, `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate`, `yw-000065-010-domain-bounded-suggestion-policy`, `yw-000065-020-domain-impact-security-evidence`, `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence` | E1, E2, I1, I2, M1, M2, O1, O2, O3, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-1 | `yw-000063-010-domain-event-monitoring` | M1, M2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-2 | `yw-000063-020-domain-spec-review-availability` | M1, M2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-3 | `yw-000064-010-domain-conditional-omission-lenses` | O1, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-4 | `yw-000064-030-domain-task-coverage-gate` | O2, O3; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-5 | `yw-000064-020-domain-spec-failure-evidence` | O1, O3; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-6 | `yw-000065-010-domain-bounded-suggestion-policy` | I1, I2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-7 | `yw-000065-010-domain-bounded-suggestion-policy` | I1, I2; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-8 | `yw-000063-010-domain-event-monitoring`, `yw-000063-020-domain-spec-review-availability`, `yw-000064-010-domain-conditional-omission-lenses`, `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate`, `yw-000065-010-domain-bounded-suggestion-policy`, `yw-000065-020-domain-impact-security-evidence`, `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence` | E1, E2, I1, I2, M1, M2, O1, O2, O3, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+| FM-9 | `yw-000063-010-domain-event-monitoring`, `yw-000063-020-domain-spec-review-availability`, `yw-000064-010-domain-conditional-omission-lenses`, `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate`, `yw-000065-010-domain-bounded-suggestion-policy`, `yw-000065-020-domain-impact-security-evidence`, `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence` | E1, E2, I1, I2, M1, M2, O1, O2, O3, P1; owner `task.md` / `test.md` / focused fixtures | COVERED |
+
+- Coverage summary: covered 28; deferred-in-scope 0; uncovered 0; unresolved requirement IDs: []. Counts cover the plan's 10 ACs, 9 FRs and 9 Failure Modes rows.
+- Source identity: `docs/ywc-plans/20261016-codex-issue69-selective-port.md`; source revision `614096d3241025b6ddab02eae56400bf573ef729`; no persisted preview identity is asserted by this interactive invocation.
+- AC-10 / FR-9 / FM-8 / FM-9 apply to all nine tasks; each task includes source-first packaging, locale/metadata preservation, offline test wiring, evidence labels and applicable installed-asset checks.
+- Optional delegated-review observation belongs to 63-020. Mandatory T1–T6 observations belong to 65-040; static fixtures never satisfy them.
+
+## Visual Dependency Graph — Codex issue #69
+
+```mermaid
+graph LR
+  N0["yw-000063-010 Event-aware monitoring reconciliation"]
+  N1["yw-000063-020 Quiescence-gated spec-review availability"]
+  N2["yw-000064-010 Conditional UI and security omission lenses"]
+  N3["yw-000064-020 Failure Modes and read-only baseline evidence"]
+  N4["yw-000064-030 Task coverage with atomic agentic consumer gate"]
+  N5["yw-000065-010 Bounded Suggestions and approved-preview reuse"]
+  N6["yw-000065-020 Localized PR Impact and security testcase evidence"]
+  N7["yw-000065-030 Version-grounded SDK exception review evidence"]
+  N8["yw-000065-040 Bounded trigger corrections and observed selections"]
+  N0 --> N1
+  N1 --> N2
+  N2 --> N3
+  N3 --> N4
+  N4 --> N5
+  N5 --> N6
+  N6 --> N7
+  N7 --> N8
 ```
