@@ -86,7 +86,7 @@ If the Protocol is not REST, also refer to `references/protocols.md`.
 
 - Python/FastAPI → `references/python.md`
 - Ruby/Rails → `references/ruby.md`
-- JavaScript/TypeScript (Next.js, NestJS, Astro) → `references/javascript.md`
+- JavaScript/TypeScript (Next.js, NestJS, Astro, Fastify) → `references/javascript.md`
 - Go (Gin, Echo, standard) → `references/go.md`
 - Rust (Actix Web, Axum, standard) → `references/rust.md`
 - Protocol related → `references/protocols.md`
