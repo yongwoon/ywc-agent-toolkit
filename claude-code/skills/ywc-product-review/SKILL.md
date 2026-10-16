@@ -117,5 +117,5 @@ For all other ambiguities — borderline High vs Medium severity, uncertain evid
 
 - If the user provides specific docs or files, read those first before scanning the codebase
 - If the codebase is large, focus on README, main entrypoints, and feature directories rather than implementation details
-- Base all findings on observable evidence — avoid speculation without grounding in what you actually read
+- Verify-before-surface: every finding must cite the specific file a perspective subagent actually read it from, or carry an explicit `unverified` marker (see the Rationalization Defense table) — never hedged with "likely" or "probably". For perspectives that rest on outside context, such as Market, name the source or mark the finding `unverified`
 - Follow any additional instructions in `$ARGUMENTS`

@@ -9,7 +9,9 @@ description: >-
   Do not use for: production code changes (dispatch ywc-backend-coder or
   ywc-frontend-coder; this agent never modifies production code), test-first
   RED-GREEN discipline (use ywc-tdd-ritual), E2E test strategy or Playwright
-  setup (use ywc-e2e-test-strategy), or pure documentation work (dispatch
+  setup (use ywc-e2e-test-strategy), a manual verification testsheet for a
+  PR/task/diff (use ywc-gen-testcase — this agent writes automated test code,
+  not a human-readable checklist), or pure documentation work (dispatch
   ywc-doc-writer).
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]

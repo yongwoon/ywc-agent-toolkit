@@ -8,7 +8,9 @@ description: >-
   explicit `Task(subagent_type=ywc-refactor-cleaner)` dispatch by
   ywc-refactor-clean Step 3 (SAFE tier worklist); natural language phrases
   "dead code 정리 worker", "knip 결과 안전한 것만 삭제", "デッドコード削除",
-  "execute the safe deletion loop". Do not use for: classifying findings into
+  "execute the safe deletion loop". Do not use for: a whole-codebase / repo-wide
+  cleanup request without a pre-classified SAFE-tier worklist (ywc-refactor-clean
+  owns that scope end-to-end), classifying findings into
   SAFE/CAUTION/DANGER (the parent skill ywc-refactor-clean owns classification
   in Step 2), deleting CAUTION or DANGER items (parent escalates separately),
   consolidating near-duplicate functions or merging helpers (behavior change —
