@@ -13,7 +13,11 @@
       "required": [
         "explicitly declared owned public interface",
         "both producer and consumer evidence",
-        "Do not invent signatures for prose-only dependencies"
+        "Do not invent signatures for prose-only dependencies",
+        "compare consumed names and",
+        "signatures against its owner declaration",
+        "record missing contract",
+        "evidence when correctness depends on it"
       ]
     }
   ]

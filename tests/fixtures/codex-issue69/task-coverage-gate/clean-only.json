@@ -12,7 +12,10 @@
       "source": "codex/skills/ywc-agentic/SKILL.md",
       "required": [
         "Continue only on `DONE` with zero deferred-in-scope and uncovered counts",
-        "no contradictory unresolved IDs"
+        "no contradictory unresolved IDs",
+        "Require non-negative integer counts, deduplicated",
+        "unresolved IDs consistent with those counts and coverage rows",
+        "to this call's spec/revision and exact preview path/revision/digest"
       ]
     }
   ]
