@@ -30,7 +30,7 @@
 
 ## Naming Convention
 
-Applies across every framework in this reference (Next.js, NestJS, Astro, Express), regardless of project size.
+Applies across every framework in this reference (Next.js, NestJS, Astro, Express, Fastify), regardless of project size.
 
 | Target | Convention | Example |
 |---|---|---|
@@ -591,18 +591,19 @@ project-root/
 - `types/fastify.d.ts`: TypeScript augmentation is required to type decorators (`fastify.db`, `fastify.authenticate`) — without it, `plugins/` additions are invisible to the compiler in `modules/`.
 - Integration tests use `fastify.inject()` (no real socket) against the instance returned by `buildApp()` — do not `listen()` in tests.
 - Reserve `fastify-plugin` (`fp()`) for `plugins/*` only, where breaking encapsulation to expose a decorator/hook globally is the point. Wrapping a `modules/*` route file in `fp()` flattens it into the parent context — the feature's own `prefix` option is then silently ignored and its encapsulation is lost.
+- Register `plugins/*` before `modules/*` — child contexts only inherit hooks and the error handler that already exist when they are registered. Enforce authentication fail-closed: have `plugins/auth.ts` add a global `onRequest` hook with an explicit public-route allowlist, rather than relying on every route to opt in with `preHandler: [fastify.authenticate]`.
 
 ---
 
 ### Fastify Large (plugin-per-domain)
 
-Bounded-context plugins with explicit encapsulation contexts, each owning its own DB access, schemas, and sub-plugins — Fastify's plugin tree stands in for the module boundaries NestJS gets from DI.
+Bounded-context plugins with explicit encapsulation contexts, each owning its own DB access, schemas, and sub-plugins — Fastify's plugin tree stands in for the module boundaries NestJS gets from modules and DI. Naming differs from Medium: Medium's global `plugins/` is called `infra/` here, and `plugins/` now holds cross-domain utility plugins.
 
 ```
 project-root/
 ├── src/
 │   ├── server.ts
-│   ├── app.ts                     # root plugin: registers infra plugins, then autoloads domains/
+│   ├── app.ts                     # root plugin: registers infra/ first, then each domains/ plugin with its own prefix
 │   ├── infra/                     # root-level infrastructure plugins (registered once, global scope)
 │   │   ├── db.ts
 │   │   ├── auth.ts
@@ -635,7 +636,7 @@ project-root/
 
 **Key Points:**
 
-- Each `domains/<name>/index.ts` is a **plain** plugin (not `fp()`-wrapped) registered with `fastify.register(usersDomain, { prefix: '/users' })`, so it keeps its own encapsulation context and `prefix` — decorators/hooks added inside it do not leak to sibling domains. `fp()` is reserved for `infra/` (see Medium's Key Points) — wrapping a domain entrypoint in it would flatten the domain into the parent context and drop the `prefix`.
+- Each `domains/<name>/index.ts` is a **plain** plugin (not `fp()`-wrapped) registered with `fastify.register(usersDomain, { prefix: '/users' })`, so it keeps its own encapsulation context and `prefix` — decorators/hooks added inside it do not leak to sibling domains. `fp()` is reserved for the shared plugins whose decorators or hooks must reach several domains — `infra/` and `plugins/` (see Medium's Key Points) — wrapping a domain entrypoint in it would flatten the domain into the parent context and drop the `prefix`.
 - `service/` and `repository/` layers inside each domain take no Fastify import — this is what keeps business logic testable without booting an instance, the same separation Express's `services/` and NestJS's `application/` layers enforce.
 - `infra/` vs `plugins/`: `infra/` is always-global (DB, auth, error handling — every domain needs it); `plugins/` holds cross-domain utility plugins used by 2+ domains but not by all of them. Do not promote a domain-private helper straight to `infra/`.
 - Only promote a domain's decorator/schema to `plugins/` once 2+ domains need it — same staged-promotion rule as [Component Logic Colocation](#component-logic-colocation) on the frontend side.
