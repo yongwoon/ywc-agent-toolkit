@@ -2089,13 +2089,8 @@ graph LR
 ## Phase yw-000063 — done
 - Completed: `yw-000063-010-domain-event-monitoring`, `yw-000063-020-domain-spec-review-availability`
 
-## Phase yw-000064 — Stage 2 — omission and traceability
-
-| Task | Deliverable | Depends On |
-|---|---|---|
-| [yw-000064-010-domain-conditional-omission-lenses](yw-000064-010-domain-conditional-omission-lenses/README.md) | Conditional UI and security omission lenses | `yw-000063-020-domain-spec-review-availability` |
-| [yw-000064-020-domain-spec-failure-evidence](yw-000064-020-domain-spec-failure-evidence/README.md) | Failure Modes and read-only baseline evidence | `yw-000064-010-domain-conditional-omission-lenses` |
-| [yw-000064-030-domain-task-coverage-gate](yw-000064-030-domain-task-coverage-gate/README.md) | Task coverage with atomic agentic consumer gate | `yw-000064-020-domain-spec-failure-evidence` |
+## Phase yw-000064 — done
+- Completed: `yw-000064-010-domain-conditional-omission-lenses`, `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate`
 
 ## Phase yw-000065 — Stage 3 — interaction and evidence
 
