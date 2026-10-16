@@ -219,7 +219,7 @@ When scale is **Medium** or **Large**, generate a spec document under `docs/ywc-
 
 For the full spec structure aligned with `ywc-spec-validate`'s evaluation dimensions, see [references/spec-template.md](references/spec-template.md).
 
-The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, and Open Questions (use `N/A — none identified` if none).
+The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, Failure Modes, and Open Questions (use `N/A — none identified` if none).
 
 Record project-wide constraints found in Step 2 (version floors, dependency constraints, naming/copy conventions, platform requirements) in the spec's `## Global Constraints` section — see [references/spec-template.md](references/spec-template.md).
 
@@ -269,6 +269,7 @@ Catches drift between AC / FR / API Contract / Data Model of the same spec.
 | Every Acceptance Criterion is in the form `When <trigger>, system does <behavior>, observable as <concrete check>` — not a bare behavior name | "e2e: form submission の golden path" is a section name; becomes an AC only when it specifies request shape → expected status → DB row state |
 | Every new state value (enum value, status flag, lifecycle column) declared in Data Model has ≥1 Functional Requirement writing it, **and** Edge Cases enumerate every state combination it introduces (A→B→A, delete-then-recreate, partial-then-resume) | `LandingPage.status='PUBLISHED'` added to the enum without a transaction writing it; `unpublish → delete LpFormConfig → republish` is a 3-step path the spec never enumerates |
 | Every grep-based Acceptance Criterion matches the code's **actual call shape** — a single-line regex like `update\([^)]*field` does not match a multi-line `.update({ … field … })`, so use a broad identifier grep or pair the narrow regex with one | AC1's single-line `landingPage\.update\([^)]*generatedHtml` could not match `markDone`'s multi-line `.update({ … })` — the verification command shared the exact blind spot that let the Critical through, so the AC would have falsely passed |
+| Every new runtime path or integration has a `## Failure Modes` row, and no row is simultaneously untested, unhandled, and silent (critical gap) | A new outbound webhook call with no timeout handling and no AC — the failure surfaces only as missing data in production |
 
 #### Pass B — Claim ↔ reality verification (this spec vs existing code / sibling specs)
 
@@ -367,6 +368,7 @@ Before declaring the skill's task complete, verify:
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly
 - [ ] If scale = Small, none of the hard-disqualifiers apply (re-check DB / library / API contract / cross-cutting)
 - [ ] If scale = Medium/Large, the spec includes an **Existing Constraints Touched** section with `file:line` citations for every inherited behavior
+- [ ] If scale = Medium/Large, the spec's **Failure Modes** section names a realistic failure per new path and contains no critical gap (untested + unhandled + silent)
 - [ ] If scale = Medium/Large, **Step 4b.5 Self-Consistency Pass** ran (all three passes A/B/C) and every row resolved to a concrete pointer
 - [ ] If Re-plan Mode (Step 4c) ran, **Step 4b.5 was re-run on the whole spec** (original + amendment) before handoff
 - [ ] If this run was an **in-place append** (追補 / follow-up) to an existing plan/spec, Step 4b.5 (≥ Pass B + C) ran on the appended content
