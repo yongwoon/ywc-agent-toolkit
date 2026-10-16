@@ -80,7 +80,7 @@ spec path, tasks dir, language, mode, preview path, revision, and digest, and
 it is consume-only: no re-decomposition, no silent refresh, no write on
 mismatch. Unsafe `--spec` / `--preview-path` inputs (absolute paths, `..`
 escape, symlink escape, non-Markdown preview paths) return `NEEDS_CONTEXT`
-before any artifact write.
+before any artifact write. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved; reuse never supplies missing approval. Retain all existing containment, spec/tasks-dir/language/mode/path/revision/digest checks, consume-only semantics, and preview-only zero-task-write boundaries; an unapproved, stale or escaping preview cannot inherit approval.
 
 For the canonical preview identity fields, wide-refactor digest invalidation
 rules (`Refactor Phase`, `Batch ID`, `Depends On`), and the consume-only

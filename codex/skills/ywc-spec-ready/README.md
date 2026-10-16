@@ -31,3 +31,5 @@ $ywc-spec-ready --spec docs/ywc-plans/example.md --dry-run
 ## Agentic artifact profile
 
 `--artifact-profile agentic` 성공 시 `Status: DONE`과 `Artifact: <path>`만 포함한 Result 블록 하나를 반환합니다. Artifact는 검증된 후보 루트 안의 기존 일반 파일인 저장소 상대 Markdown이어야 하며 `Scale`이나 prose/basename/raw-response fallback은 허용하지 않습니다.
+
+별도 지시가 없고 차단 소견 없이 Suggestions만 남으면 한 번 보정·재검증합니다. 명시적 apply/defer와 사용자 지시가 우선하며, 잔여 권고만으로 다시 묻지 않습니다. defer는 유효한 검토 산출물에 기록하고 보정하지 않습니다. 새 Critical/Warning과 잘못된 증거는 계속 차단합니다.

@@ -1,0 +1,55 @@
+{
+  "id": "suggestion-owner",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-6",
+    "AC-7",
+    "FR-5",
+    "FR-6",
+    "FM-6",
+    "FM-7"
+  ],
+  "scenarios": [
+    "no Suggestions",
+    "default single pass",
+    "apply/defer",
+    "residual advisory",
+    "new Warning",
+    "invalid/malformed evidence",
+    "fresh/unapproved/stale/escaping preview",
+    "preview-only zero task writes"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-ready/SKILL.md",
+      "required": [
+        "With no explicit policy and no Critical/Warning findings",
+        "exactly one Suggestion-focused amendment and revalidate once",
+        "Residual Suggestions alone are advisory",
+        "Explicit `defer` performs no amendment",
+        "invalid explicit policy returns `NEEDS_CONTEXT`",
+        "No Suggestions means no Suggestion amendment",
+        "across the whole",
+        "invocation, including any later blocking-finding repairs; never reset it",
+        "If revalidation introduces Critical/Warning findings",
+        "Missing/malformed validation evidence retains its existing failure status",
+        "valid reviewed"
+      ],
+      "forbidden": [
+        "ask on Suggestions",
+        "Run one more `ywc-plan --update-spec` pass for these Suggestions?",
+        "stop with bounded `NEEDS_CONTEXT: --suggestions`"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-spec-ready/references/convergence.md",
+      "required": [
+        "The owner is Step 7",
+        "at most one amendment/revalidation",
+        "explicit defer means no amendment",
+        "Residual advisory Suggestions",
+        "New Critical/Warning findings return"
+      ]
+    }
+  ]
+}

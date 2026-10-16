@@ -37,3 +37,5 @@ Este Skill sigue el report, loop log y status format definidos en [SKILL.md](./S
 ## Agentic artifact profile
 
 Con `--artifact-profile agentic`, el éxito devuelve un único bloque Result con solo `Status: DONE` y `Artifact: <path>`. Artifact debe ser un Markdown relativo al repositorio, existente y regular, dentro de la raíz candidata validada; se rechazan `Scale` y los fallbacks de prose/basename/raw-response.
+
+Si solo quedan Suggestions, la política predeterminada intenta una modificación y revalidación en ambos modos. Prevalecen apply/defer explícitos y las instrucciones del usuario; los consejos residuales no provocan otra pregunta. Defer se registra sobre un artefacto revisado válido sin modificarlo. Los nuevos Critical/Warning y la evidencia inválida siguen bloqueando la entrega.

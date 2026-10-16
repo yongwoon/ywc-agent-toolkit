@@ -371,7 +371,7 @@ Then ask the user (skip when `--non-interactive` is set):
 If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <path>` immediately.
 If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
 
-The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. When `ywc-spec-ready` reaches `DONE` with only Suggestion findings left, it should ask the user whether to run one more suggestion-focused amendment pass or defer those Suggestions before handing off to `ywc-task-generator`.
+The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. Use the bounded Suggestion owner policy in `ywc-spec-ready`: explicit apply/defer wins, otherwise one amendment/revalidation when needed; residual advisory Suggestions alone do not create another prompt or block a valid handoff.
 
 ### Agentic artifact profile
 

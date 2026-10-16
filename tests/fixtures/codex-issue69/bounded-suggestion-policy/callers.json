@@ -1,0 +1,45 @@
+{
+  "id": "suggestion-callers",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-6",
+    "AC-7",
+    "FR-5",
+    "FR-6",
+    "FM-6",
+    "FM-7"
+  ],
+  "scenarios": [
+    "no Suggestions",
+    "default single pass",
+    "apply/defer",
+    "residual advisory",
+    "new Warning",
+    "invalid/malformed evidence",
+    "fresh/unapproved/stale/escaping preview",
+    "preview-only zero task writes"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "forward an explicit `--suggestions apply|defer` on the initial ready call",
+        "absence uses the owner default",
+        "Residual advisory Suggestions never trigger another policy preflight"
+      ],
+      "forbidden": [
+        "Required when `ywc-spec-ready` reports Suggestions",
+        "residual Suggestions return `NEEDS_CONTEXT: --suggestions`",
+        "Invoke it **without** `--suggestions` first"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-plan/SKILL.md",
+      "required": [
+        "Use the bounded Suggestion owner policy",
+        "explicit apply/defer wins",
+        "residual advisory Suggestions alone do not create another prompt"
+      ]
+    }
+  ]
+}
