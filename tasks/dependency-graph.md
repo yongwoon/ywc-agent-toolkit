@@ -2086,12 +2086,8 @@ graph LR
 - Nine tasks, three delivery stages. Stage 2 requires all Stage 1 outputs accepted; Stage 3 requires all Stage 2 outputs accepted. Acceptance does not itself authorize PR creation, publishing, or merging.
 - Generation writes planning artifacts only. Implementation, routing trials and packaging commands belong to subsequent execution.
 
-## Phase yw-000063 — Stage 1 — monitoring and review availability
-
-| Task | Deliverable | Depends On |
-|---|---|---|
-| [yw-000063-010-domain-event-monitoring](yw-000063-010-domain-event-monitoring/README.md) | Event-aware monitoring reconciliation | (root) |
-| [yw-000063-020-domain-spec-review-availability](yw-000063-020-domain-spec-review-availability/README.md) | Quiescence-gated spec-review availability | `yw-000063-010-domain-event-monitoring` |
+## Phase yw-000063 — done
+- Completed: `yw-000063-010-domain-event-monitoring`, `yw-000063-020-domain-spec-review-availability`
 
 ## Phase yw-000064 — Stage 2 — omission and traceability
 
