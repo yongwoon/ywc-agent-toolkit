@@ -1,0 +1,57 @@
+{
+  "id": "trigger-technical-product",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-9",
+    "FR-8",
+    "AC-10",
+    "FR-9"
+  ],
+  "paired_expectations": [
+    {
+      "prompt": "Compare implementation libraries and their technical trade-offs before writing a spec.",
+      "expected_skill": "ywc-tech-research",
+      "rejected_skill": "ywc-product-review"
+    },
+    {
+      "prompt": "Assess whether this feature is worth building for the business, including user value and ROI.",
+      "expected_skill": "ywc-product-review",
+      "rejected_skill": "ywc-tech-research"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-tech-research/SKILL.md",
+      "required": [
+        "business value or ROI"
+      ],
+      "description_required": [
+        "business value or ROI",
+        "기술 조사",
+        "라이브러리 비교",
+        "research",
+        "compare options",
+        "best way to implement",
+        "技術調査",
+        "ライブラリ比較"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-product-review/SKILL.md",
+      "required": [
+        "adoption, monetization and ROI",
+        "Drop unsupported conclusions rather than invent evidence"
+      ],
+      "description_required": [
+        "adoption, monetization and ROI",
+        "product review",
+        "service feedback",
+        "비즈니스 관점 리뷰",
+        "서비스 개선 포인트",
+        "what should we improve",
+        "プロダクトレビュー",
+        "サービス改善"
+      ]
+    }
+  ]
+}

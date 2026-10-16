@@ -34,6 +34,11 @@ class ContractTests(unittest.TestCase):
                     self.assertTrue(check['required'])
                     for clause in check['required']:
                         self.assertTrue(clause in text, f'{source}: missing {clause!r}')
+                    if check.get('description_required'):
+                        self.assertTrue(text.startswith('---\n'))
+                        description = text.split('---', 2)[1].partition('description:')[2]
+                        for clause in check['description_required']:
+                            self.assertIn(clause, description, f'{source}: activation clause missing')
                     for clause in check.get('forbidden', []):
                         self.assertFalse(clause in text, f'{source}: forbidden {clause!r}')
 

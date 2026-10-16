@@ -1,0 +1,58 @@
+{
+  "id": "trigger-security-product",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-9",
+    "FR-8",
+    "AC-10",
+    "FR-9"
+  ],
+  "paired_expectations": [
+    {
+      "prompt": "Threat-model this existing authenticated file-upload implementation and its trust boundaries.",
+      "expected_skill": "ywc-security-audit",
+      "rejected_skill": "ywc-product-review"
+    },
+    {
+      "prompt": "Review the product's adoption and monetization risks.",
+      "expected_skill": "ywc-product-review",
+      "rejected_skill": "ywc-security-audit"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-security-audit/SKILL.md",
+      "required": [
+        "threat modeling of existing implementation trust boundaries"
+      ],
+      "description_required": [
+        "threat modeling of existing implementation trust boundaries",
+        "보안 점검",
+        "security audit",
+        "보안 감사",
+        "OWASP",
+        "취약점 분석",
+        "보안 리뷰",
+        "security check",
+        "is this code secure",
+        "セキュリティ監査"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-product-review/SKILL.md",
+      "required": [
+        "adoption, monetization and ROI"
+      ],
+      "description_required": [
+        "adoption, monetization and ROI",
+        "product review",
+        "service feedback",
+        "비즈니스 관점 리뷰",
+        "서비스 개선 포인트",
+        "what should we improve",
+        "プロダクトレビュー",
+        "サービス改善"
+      ]
+    }
+  ]
+}
