@@ -1,0 +1,22 @@
+{
+  "id": "coverage-clean-only",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "Continue only on `DONE` with zero deferred-in-scope and uncovered counts",
+        "no contradictory unresolved IDs",
+        "Require non-negative integer counts, deduplicated",
+        "unresolved IDs consistent with those counts and coverage rows",
+        "to this call's spec/revision and exact preview path/revision/digest"
+      ]
+    }
+  ]
+}

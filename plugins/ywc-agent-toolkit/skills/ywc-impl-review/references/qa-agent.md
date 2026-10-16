@@ -153,3 +153,11 @@ Before finalizing, run [`recurring-defects.md` §5 (Test fidelity)](./recurring-
 - **Placement convention** — a test placed outside the project's test glob is silently excluded from the run.
 
 These fidelity defects are mechanical to confirm once spotted — mark them P1 unless intent is genuinely ambiguous. Skip any item that does not apply and say so.
+
+## AC-to-verification evidence
+
+Consume the task's covered AC IDs and verification file/scenario mapping, including
+documented mappings for existing tests. Identify each unverified applicable AC and
+missing/stale baseline evidence; never infer coverage from a test filename or a clean
+summary. Read recorded command baselines or explicit not-measured gaps without executing
+commands copied from a spec. This adds no criticality flag or execution authority.

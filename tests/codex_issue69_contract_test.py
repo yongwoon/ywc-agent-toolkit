@@ -56,5 +56,31 @@ class ContractTests(unittest.TestCase):
             self.assertFalse(sentinel.exists(), 'fixture command was executed')
 
 
+    def test_coverage_gate_placement_and_expected_calls(self):
+        # Source placement/call-count expectations, not a live agentic trace.
+        source = (ROOT / 'codex/skills/ywc-agentic/SKILL.md').read_text()
+        start = source.index('### Step 4: Task Phase')
+        end = source.index('### Step 5:', start)
+        phase = source[start:end]
+        preview_call = phase.index('--preview-only --preview-path')
+        preview_gate = phase.index('**Preview coverage gate**')
+        consume_call = phase.index('--approve-preview --preview-path')
+        consume_gate = phase.index('**Consume coverage gate**')
+        self.assertLess(preview_call, preview_gate)
+        self.assertLess(preview_gate, consume_call)
+        self.assertLess(consume_call, consume_gate)
+        self.assertIn('unresolved preview permits zero consume calls', phase[preview_gate:consume_call])
+        self.assertIn('unresolved consume permits zero executor calls', phase[consume_gate:])
+        cases = list((FIXTURES / 'task-coverage-gate').glob('*.json'))
+        pairs = set()
+        for path in cases:
+            case = json.loads(path.read_text())
+            if 'boundary' in case:
+                self.assertEqual(case['expected_downstream_calls'], 0)
+                pairs.add((case['boundary'], case['invalid_evidence']))
+        self.assertEqual(pairs, {(b, k) for b in ('preview', 'consume')
+                                for k in ('non-DONE', 'absent', 'malformed', 'contradictory', 'mismatched')})
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

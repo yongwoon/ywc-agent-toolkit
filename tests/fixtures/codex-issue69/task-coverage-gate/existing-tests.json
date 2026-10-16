@@ -1,0 +1,42 @@
+{
+  "id": "coverage-existing-tests",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-task-generator/references/task.md.template",
+      "required": [
+        "AC-to-verification mapping",
+        "existing tests may use a documented mapping"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-task-generator/references/README.md.template",
+      "required": [
+        "AC-to-verification mapping",
+        "Each applicable AC requires a verification location"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-impl-review/references/qa-agent.md",
+      "required": [
+        "Consume the task's covered AC IDs and verification file/scenario mapping",
+        "Identify each unverified applicable AC",
+        "never infer coverage from a test filename",
+        "documented mappings for existing tests",
+        "missing/stale baseline evidence"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-task-generator/references/output-and-validation.md",
+      "required": [
+        "Existing tests may use a documented mapping instead of inline comments"
+      ]
+    }
+  ]
+}
