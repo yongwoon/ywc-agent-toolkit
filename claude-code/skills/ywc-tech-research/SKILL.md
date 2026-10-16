@@ -88,6 +88,8 @@ Parse `$ARGUMENTS` for:
 
    When `--compare "A,B[,C...]"` is specified, spawn one research subagent per option in parallel via the Task tool, each with the same project context and quality criteria. Collect all results before synthesizing — do not synthesize from partial results.
 
+   > **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — the `--compare` option subagents are one batch under that contract (distinct `name` per option, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all option results are collected and before synthesizing, call `TaskStop` once per option subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
+
 4. **Verify Source Recency** — Before writing the report, confirm:
    - At least one official source per option was found
    - Each official source has a visible last-updated date or release version

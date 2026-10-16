@@ -298,8 +298,10 @@ inject the §3.5 directive verbatim into each subagent prompt.
 ## Subagent Async Monitoring Contract
 
 Skills that dispatch a **concurrent batch** of subagents (a wave in
-`ywc-parallel-executor`, the fan-outs in `ywc-impl-review`, or a bounded
-Opus advisor dispatch in `ywc-sequential-executor`) must use the canonical
+`ywc-parallel-executor`, the fan-outs in `ywc-impl-review`, the module
+fan-out in `ywc-iac-author`, the lens fan-out in
+`ywc-infra-review`, or a bounded Opus advisor dispatch in
+`ywc-sequential-executor`) must use the canonical
 monitoring contract defined in `references/subagent-async-monitoring.md`.
 This exists because a concurrently-dispatched subagent's completion
 notification can arrive out of order or late — an incident where two
@@ -316,11 +318,20 @@ these values in skill bodies):
   `references/subagent-status-actions.md`, naming the unaccounted-for
   subagent(s) — never silent re-dispatch
 
-> **Action required on entering the branch that needs it**: Read
-> [references/subagent-async-monitoring.md]
+Cite it at every batch dispatch point with a **single physical line** — a callout
+wrapped across lines is rejected by the test below:
 
-Consumers: `ywc-parallel-executor`, `ywc-sequential-executor`,
-`ywc-impl-review`.
+```markdown
+> **Action required**: Read [<relative path>/references/subagent-async-monitoring.md] (a markdown link to the shared reference) now — <what the batch is>. **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After <results are consumed>, call `TaskStop` once per <lane> with its `name` as `task_id` (current batch only; skip any still `running`).
+```
+
+Consumers (each batch-dispatch site carries an `Action required` callout with
+a same-line `Release … TaskStop` clause, enforced by
+`tests/named_agent_release_test.py`): `ywc-impl-review`, `ywc-spec-validate`,
+`ywc-parallel-executor`, `ywc-code-gen`, `ywc-product-review`,
+`ywc-security-audit`, `ywc-ui-ux-review`, `ywc-tech-research`,
+`ywc-iac-author`, `ywc-infra-review`. `ywc-sequential-executor` is the
+single-bounded-dispatch consumer (prose citation, no batch, no callout).
 
 ## Bundled Execution Scripts
 
