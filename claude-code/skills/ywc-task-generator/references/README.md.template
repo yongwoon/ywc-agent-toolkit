@@ -52,7 +52,7 @@ Important considerations, pitfalls, or design decisions.
 
 ## Parallel Execution Metadata
 
-- Model Hint: sonnet — M3 default
+- Model Hint: <haiku|sonnet|opus> — <rule that fired: M1 / M2 / M3, see references/model-routing.md>
 
 ### Ownership
 Files, directories, modules, or contracts this task is allowed to modify.

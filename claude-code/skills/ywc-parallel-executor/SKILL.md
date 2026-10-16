@@ -161,7 +161,7 @@ Read `dependency-graph.md` to extract the TaskInfo list. Parse the following fro
 - Category (`db`, `api`, `ui`, `test`, etc.)
 - Depends On (predecessor task list)
 - Agent Hint (if specified in README.md)
-- Model Hint (if specified under `## Parallel Execution Metadata` in README.md)
+- Model Hint (if specified under `## Parallel Execution Metadata` in README.md); read `CLAUDE_CODE_SUBAGENT_MODEL` once here for the effective-model source ([../references/model-routing.md](../references/model-routing.md))
 
 ### Step 2: Plan Waves (Topological Sort)
 
@@ -442,7 +442,7 @@ command sequences live in [references/aggregate-pr.md](references/aggregate-pr.m
 Display the following after all waves are complete:
 
 - Total tasks executed, total waves
-- Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode, and its dispatch model as `<model> (<source>)` (source `hint` / `frontmatter` / `env` / `default`; see [../references/model-routing.md](../references/model-routing.md))
+- Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode, and its dispatch model as `<model> (<source>)` (source `hint` / `frontmatter` / `env` / `default`), plus an `Invalid Model Hint` note for any ignored hint (see [../references/model-routing.md](../references/model-routing.md))
 - Failed/skipped tasks with reasons
 - Per-wave changed public contracts (interfaces/DTOs altered) and any critical-path tasks that triggered `/ywc-security-audit`
 - In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed

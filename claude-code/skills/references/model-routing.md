@@ -20,7 +20,7 @@ Applied by `ywc-task-generator` when it writes each task's README (Step 9), afte
 | Rule | Condition | Hint |
 |---|---|---|
 | M1 | `### Depended By` lists ≥2 tasks and `### Owned Interface` is not `(None …)` | `opus` |
-| M2 | Task Category is not `infra`, AND every `### Ownership` entry matches the include list (`*.md`, `docs/**`, `*.json`, `*.yaml`, `*.yml`, `*.toml`, `.env.example`) and none matches the exclusion list: `.github/**`, `.circleci/**`, `.gitlab-ci.yml`, `azure-pipelines*.y*ml`, `**/docker-compose*.y*ml`, `**/compose*.y*ml`, `**/k8s/**`, `**/helm/**`, `**/Chart.yaml`, `**/openapi*`, `**/schema*`, `package.json`, `tsconfig*.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.lock`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock` | `haiku` |
+| M2 | Task Category (the category segment of the task name, e.g. `docs`, `infra`) is not `infra`, AND every `### Ownership` entry matches the include list (`**/*.md`, `docs/**`, `*.json`, `*.yaml`, `*.yml`, `*.toml`, `.env.example`) and none matches the exclusion list: `.github/**`, `.circleci/**`, `.gitlab-ci.yml`, `azure-pipelines*.y*ml`, `**/docker-compose*.y*ml`, `**/compose*.y*ml`, `**/k8s/**`, `**/helm/**`, `**/Chart.yaml`, `**/openapi*`, `**/schema*`, `package.json`, `tsconfig*.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.lock`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock` | `haiku` |
 | M3 | otherwise | `sonnet` |
 
 This repository has no per-task `Criticality` field, so M1 is adapted to the dependency-fan-out signal alone: a task that two or more downstream tasks build on, through a published interface, is the one whose mistakes cost the most. Treat this as a provisional rule until a Criticality concept exists.
@@ -28,8 +28,8 @@ This repository has no per-task `Criticality` field, so M1 is adapted to the dep
 Determinism rules:
 
 - **M1 counting**: count only real task bullets under `### Depended By` (exclude a `(None …)` line). `### Owned Interface` is "present" when it has ≥1 bullet that does not start with `(None`.
-- **M2 matching**: each `### Ownership` entry (a repo-relative path) is matched as a glob where `*` matches within one path segment and never crosses `/`, `**/` matches zero or more directories, and a trailing `/**` matches all descendants at any depth. A pattern without `/` matches root-level files only (`*.md` matches `README.md`, not `src/README.md`; nested docs qualify via `docs/**`). Both lists are exhaustive: an entry matching no include pattern (module subtree glob, `Dockerfile`, `API contract: …`, `Database schema: …`) does not satisfy M2 → M3. Mixed docs + code/test → M3.
-- The generator records which rule fired in the rationale. A user may edit the hint by hand afterwards; the executor trusts the README value.
+- **M2 matching**: each `### Ownership` entry (a repo-relative path) is matched as a glob where `*` matches within one path segment and never crosses `/`, `**/` matches zero or more directories, and a trailing `/**` matches all descendants at any depth. A pattern without `/` matches root-level files only (`*.json` matches `tsconfig.json`-style root files, not `src/data.json`). Markdown is the exception: `**/*.md` matches a `.md` file at any depth, because this repository's docs-only tasks edit skill and reference markdown nested under `claude-code/` (`docs/**` still covers non-markdown files under `docs/`). Both lists are exhaustive: an entry matching no include pattern (module subtree glob, `Dockerfile`, `API contract: …`, `Database schema: …`) does not satisfy M2 → M3. Mixed docs + code/test → M3.
+- The generator records which rule fired in the rationale. A user may edit the hint by hand afterwards; the executor trusts the README value after it has been normalized and validated (see Absent or Invalid Value).
 
 ## Consumption
 
@@ -50,7 +50,7 @@ Determinism rules:
 3. Named agent whose frontmatter `model` is absent (not `inherit`), with `CLAUDE_CODE_SUBAGENT_MODEL` non-empty (read once in Step 1, re-read on resume) → that value, source `env`.
 4. Inline implementer → `sonnet`, source `default`.
 
-A named agent with `inherit` frontmatter, or absent frontmatter and no such variable, keeps source `frontmatter` (session model). A frontmatter value that is a pinned model ID is reported verbatim.
+A named agent with `inherit` frontmatter, or absent frontmatter and no such variable, keeps source `frontmatter` and is written `inherit (frontmatter)` (it runs on the session model). A frontmatter value that is a pinned model ID is reported verbatim. An `env` value is reported only when it is a plain model-id token (`^[A-Za-z0-9._:/-]{1,64}$`); anything else is written `env (unrecognized)` so a free-form variable is never echoed into a report.
 
 Source labels used everywhere (Completion Report included): `hint` / `frontmatter` / `env` / `default`. A dispatch is written `<model> (<source>)`, for example `sonnet (hint)`. When a user's environment sets `CLAUDE_CODE_SUBAGENT_MODEL` on an older Claude Code, the report still shows the value that was *passed* (`hint`), so the label is how a reader spots that the hint may have been overridden.
 
@@ -63,7 +63,7 @@ Source labels used everywhere (Completion Report included): `hint` / `frontmatte
 ## Absent or Invalid Value
 
 - Normalize: trim and lowercase the parsed token, then validate against `haiku|sonnet|opus`.
-- An empty value, a value outside the three, or a duplicated `Model Hint` bullet → treat as absent and add an `Invalid Model Hint` note to the Completion Report. Never block.
+- An empty value, a value outside the three, or a duplicated `Model Hint` bullet → treat as absent and add an `Invalid Model Hint` note to the Completion Report (Step 5 of `ywc-parallel-executor`). The note carries the task name and the fixed text `unrecognized value`; the offending token is omitted or truncated to 20 characters, never echoed whole. Never block.
 - Field absent → current behavior (named agent: frontmatter; inline implementer: `sonnet`). Task sets generated before this field existed run unchanged; absence is never an error.
 
 ## Worked Examples
@@ -71,8 +71,8 @@ Source labels used everywhere (Completion Report included): `hint` / `frontmatte
 | Row | Inputs | Rule | Output |
 |---|---|---|---|
 | (a) | `Depended By` lists 2 tasks; `Owned Interface` has a signature bullet | M1 | `opus` |
-| (b) | `Depended By` lists 2 tasks; `Owned Interface` is `(None — …)` | M1 does not fire; Ownership decides (M2 or M3) | `haiku` or `sonnet` |
-| (c) | Ownership `docs/guide/setup.md` + root `README.md` (`src/README.md` would not match `*.md` → M3) | M2 | `haiku` |
+| (b) | `Depended By` lists 2 tasks; `Owned Interface` is `(None — …)`; Ownership `claude-code/skills/ywc-x/SKILL.md` | M1 does not fire (no interface); M2 (nested markdown) | `haiku` |
+| (c) | Ownership `docs/guide/setup.md` + root `README.md` + `src/README.md` | M2 | `haiku` |
 | (d) | Ownership root `.gitlab-ci.yml` only (include match `*.yml`, then exclusion) | M2 exclusion → M3 | `sonnet` |
 | (e) | Ownership `src/features/auth/**` | M3 | `sonnet` |
 | (f) | Ownership `docs/x.md` + `tests/x.test.ts` | M3 | `sonnet` |
