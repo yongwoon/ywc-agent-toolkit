@@ -99,6 +99,8 @@ Agent Hint 로 Override 가능:
 - Agent Hint: frontend
 ```
 
+Task README 의 `## Parallel Execution Metadata` 에 `- Model Hint: haiku|sonnet|opus` 가 있으면 implementer dispatch 시 Agent tool `model` 로 전달합니다. Hint 가 없으면 named agent 는 frontmatter 의 model 을 그대로 쓰고(`model` 생략), inline implementer 는 `sonnet` 을 씁니다. 규칙 전체는 [`model-routing.md`](../references/model-routing.md) 를 참조합니다.
+
 ## sequential-executor 와의 비교
 
 | 상황 | 권장 도구 |

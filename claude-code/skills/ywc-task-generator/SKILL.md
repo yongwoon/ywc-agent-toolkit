@@ -327,6 +327,7 @@ Each README.md must include the following:
 - **Notes**: Important considerations, design decisions, and **Assumptions** — any spec ambiguity resolved during decomposition, with the interpretation chosen, so the implementer can challenge it instead of inheriting a silent guess
 - **Out of Scope**: What is intentionally excluded
 - **Parallel Execution Metadata**:
+  - **Model Hint**: `haiku` | `sonnet` | `opus` with the rule that fired (M1/M2/M3), decided last — after `Depended By`, `Ownership` and `Owned Interface` are final; rules in [../references/model-routing.md](../references/model-routing.md)
   - **Ownership**: Files, directories, modules, contracts this task may modify
   - **Shared Surfaces**: Shared boundaries that may cause merge or design conflicts
   - **Conflicts With**: Tasks that must not run in parallel
@@ -418,7 +419,7 @@ After generating all tasks, verify the following:
 
 **README.md Quality:**
 - [ ] Both "Depends On" and "Depended By" included
-- [ ] Parallel Execution Metadata included (Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
+- [ ] Parallel Execution Metadata included (Model Hint, Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
 - [ ] Ownership is narrow enough to serve as an actual edit boundary, not just a restatement of Key Files
 - [ ] **Spec Reference** section included — Primary Sources, Summary, and Out of Scope (from spec) all filled in or explicitly marked `N/A`
 - [ ] If Primary Sources include external URLs, only if the project allows it (default is project-relative paths only)

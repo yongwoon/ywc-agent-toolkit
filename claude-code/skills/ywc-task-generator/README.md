@@ -123,6 +123,7 @@ When tasks may be executed in parallel via isolated worktrees or agent sessions,
 Each `README.md` should include:
 
 - `Spec Reference`: Primary Sources (links to PRD / tech design), Summary (2–5 sentence orientation), and Out of Scope (from spec) — the guardrail against scope creep. Use `N/A — no external spec` for housekeeping tasks rather than omitting the section.
+- `Model Hint`: `haiku` | `sonnet` | `opus` (optional) — the first bullet under `## Parallel Execution Metadata`. The generator assigns it with rules M1–M3 and `ywc-parallel-executor` passes it as the Agent tool `model` when dispatching the implementer (rules in [`model-routing.md`](../references/model-routing.md))
 - `Ownership`: the edit boundary for the task
 - `Shared Surfaces`: shared contracts or boundaries that may create conflicts
 - `Conflicts With`: tasks that must not run in parallel

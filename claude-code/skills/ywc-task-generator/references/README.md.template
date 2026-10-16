@@ -52,6 +52,8 @@ Important considerations, pitfalls, or design decisions.
 
 ## Parallel Execution Metadata
 
+- Model Hint: sonnet — M3 default
+
 ### Ownership
 Files, directories, modules, or contracts this task is allowed to modify.
 - `path/to/module/**`
