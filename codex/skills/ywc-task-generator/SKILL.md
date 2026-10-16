@@ -80,7 +80,7 @@ spec path, tasks dir, language, mode, preview path, revision, and digest, and
 it is consume-only: no re-decomposition, no silent refresh, no write on
 mismatch. Unsafe `--spec` / `--preview-path` inputs (absolute paths, `..`
 escape, symlink escape, non-Markdown preview paths) return `NEEDS_CONTEXT`
-before any artifact write.
+before any artifact write. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved; reuse never supplies missing approval. Retain all existing containment, spec/tasks-dir/language/mode/path/revision/digest checks, consume-only semantics, and preview-only zero-task-write boundaries; an unapproved, stale or escaping preview cannot inherit approval.
 
 For the canonical preview identity fields, wide-refactor digest invalidation
 rules (`Refactor Phase`, `Batch ID`, `Depends On`), and the consume-only
@@ -425,7 +425,7 @@ Refer to `references/dependency-graph.md.template` for format. List tasks by pha
 This graph must be consistent with the Dependencies sections in individual README.md files.
 Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
-After generating all tasks, verify the following:
+Before returning either a preview or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md), including its attributable coverage summary and interface/verification mapping. Then verify the following:
 
 **Dependency & Structure:**
 - [ ] No forward dependencies (earlier tasks do not depend on later tasks)

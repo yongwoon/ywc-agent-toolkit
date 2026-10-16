@@ -1,14 +1,7 @@
 ---
 name: ywc-impl-review
 description: >-
-  (ywc) Use when implementation is complete and the user wants pre-PR code
-  quality review, spec conformance checks, or comprehensive implementation
-  validation. Triggers: "구현 검증", "impl review", "코드 리뷰",
-  "実装レビュー", "ywc-impl-review". Do not use for active code generation
-  (use ywc-code-gen), spec-only review before code exists (use
-  ywc-spec-validate), product/business review (use ywc-product-review),
-  review learnings (use ywc-review-learnings), or UI-only live
-  design audits (use ywc-ui-ux-review).
+  (ywc) Pre-PR quality review and completed implementation conformance to an approved spec, including comprehensive implementation validation. Triggers: "구현 검증", "impl review", "코드 리뷰", "実装レビュー", "ywc-impl-review". Not active generation (ywc-code-gen), spec-only review before code (ywc-spec-validate), product/business review (ywc-product-review), review learnings (ywc-review-learnings), or UI-only live audits (ywc-ui-ux-review).
 ---
 
 # ywc-impl-review
@@ -171,6 +164,8 @@ merge authority.
    - **Devex worker** — Readability, error messages, logging, documentation, debuggability, config UX. The operator-experience dimension. Reference: `references/devex-agent.md`.
    - **Security worker** — OWASP Top 10 analysis. Reference: `references/security-agent.md`.
    - **QA worker** — Test coverage gaps, missing test cases, and sanitized quality-gate evidence. Reference: `references/qa-agent.md`. Coverage-gap detection is largely mechanical (file enumeration, assertion counting, branch enumeration), so keep the prompt narrow and evidence-based. When a quality-gate packet is present, pass only its bounded contract state, Ownership symbols, approved command IDs/digests, sanitized evidence paths, normalized results, unavailable-tool gaps, and residual survivors; never pass raw commands, output, secrets, transcripts, or full diffs.
+     Supply covered AC IDs and their verification file/scenario mappings (including documented existing-test mappings); require the QA lane to name unverified applicable ACs using `references/qa-agent.md`.
+
 
    **Inject the Step 0 learnings** into each worker prompt, filtered to that aspect's category. **Apply the `--profile` dial**: in `chill` (default), suppress Style/Docs/Devex-polish `Low`/`Info` nits and surface only correctness/security/logic/runtime-risk findings; `assertive` emits the tail too. **Verify before surfacing** ([coderabbit-methodology.md §2](./references/coderabbit-methodology.md)): every finding must cite primary evidence — exact `file:line`, a traced symbol, or fresh command output — and a finding that cannot be substantiated is dropped, not hedged. Where the project ships linters/scanners, run them and feed output to the relevant worker as evidence to triage, not as the verdict ([§4](./references/coderabbit-methodology.md)).
 
@@ -337,7 +332,7 @@ Read the corresponding reference file when spawning each worker and include the 
 
 If a reference file does not yet contain an "Advisor Candidate Criteria" section, fall back to the three-property test in [advisor-pattern.md §5](../references/advisor-pattern.md): objective trigger, irreversibility, ambiguity. A finding must satisfy all three to be a Phase 2 candidate.
 
-**CodeRabbit-derived methodology** — the verbosity dial (`--profile`), verify-before-surface precision gate, intent/context phase, static-analysis-as-evidence, and per-project learnings loop are specified in [`references/coderabbit-methodology.md`](./references/coderabbit-methodology.md). These techniques raise review quality toward bot-reviewer parity without depending on CodeRabbit runtime. The learnings half pairs with `ywc-review-learnings`, which owns `docs/review-learnings.md`.
+**CodeRabbit-derived methodology** — the verbosity dial (`--profile`), verify-before-surface precision gate, intent/context phase, static-analysis-as-evidence, and per-project learnings loop are specified in [`references/coderabbit-methodology.md`](./references/coderabbit-methodology.md). SDK-specific exception findings also require the Devex version-grounded hierarchy evidence gate; missing primary evidence remains uncertainty. These techniques raise review quality toward bot-reviewer parity without depending on CodeRabbit runtime. The learnings half pairs with `ywc-review-learnings`, which owns `docs/review-learnings.md`.
 
 **Recurring real-world defects catalog** — every reviewer worker additionally consults [`references/recurring-defects.md`](./references/recurring-defects.md), a derived-from-data catalog of the defect classes that production bot reviewers (CodeRabbit, Codex Review) flag most often: data-layer access-boundary (ownership / tenant isolation), data-integrity / `NULL` handling, race condition / concurrent write safety, transaction boundary / partial write prevention, durable idempotency for retryable side effects, error-swallowing, external-call resilience, validation / fail-fast, HTTP-status semantics, and test fidelity. Each worker's "High-frequency real-world checks" section points at its catalog slice. The catalog tells the reviewer *where real bugs cluster*; the per-aspect rubric still governs severity and escalation.
 

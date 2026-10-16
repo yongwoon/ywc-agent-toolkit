@@ -60,7 +60,11 @@
       "name": "architecture-packet-positive",
       "prompt": "Use $ywc-code-gen --spec docs/ywc-plans/feature.md --feature \"feature\" --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
       "expected_output": "Runs the shared helper and projects a sanitized packet with contract_state VALIDATED, affected component_ids, rule_ids from rule_results, invariant_verdict from aggregate_verdict, and evidence_artifact_path naming the artifact. Sanitized rule_results evidence_paths may be cited only through the normal finding channel.",
-      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "Does not rename aggregate_verdict to contract_state or forward raw evidence, transcript, command-like fields, or full diffs"],
+      "expectations": [
+        "Emits component_ids from the helper bounded changed-path mapping",
+        "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json",
+        "Does not rename aggregate_verdict to contract_state or forward raw evidence, transcript, command-like fields, or full diffs"
+      ],
       "files": []
     },
     {
@@ -88,11 +92,27 @@
       "id": 13,
       "name": "artifact-authority-matrix",
       "prompt": "Invoke code generation with the exact validated final Artifact from agentic routing, then repeat with a guessed plan.md path, a basename-only path, and a raw response path.",
-      "input": {"accepted": "--spec docs/ywc-plans/20260812-small_profile.md", "rejected": ["plan.md", "profile.md reconstructed from basename", "path found by scanning raw response"]},
+      "input": {
+        "accepted": "--spec docs/ywc-plans/20260812-small_profile.md",
+        "rejected": [
+          "plan.md",
+          "profile.md reconstructed from basename",
+          "path found by scanning raw response"
+        ]
+      },
       "expected_status": "DONE for the exact Artifact; NEEDS_CONTEXT for every guessed-path fixture",
-      "expected_downstream_calls": {"accepted": 3, "rejected": 0},
+      "expected_downstream_calls": {
+        "accepted": 3,
+        "rejected": 0
+      },
       "expected_handoff": "accepted only for the explicit validated Artifact; rejected before worker dispatch otherwise",
       "expected_output": "Does not construct or recover an authority path outside the producer Result."
+    },
+    {
+      "id": 14,
+      "prompt": "Generate Backend, Frontend, and QA layers in parallel from this approved specification.",
+      "expected_output": "Selects ywc-code-gen, not ywc-impl-review, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
+      "files": []
     }
   ]
 }

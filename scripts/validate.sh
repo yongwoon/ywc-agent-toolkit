@@ -139,6 +139,7 @@ check_codex_plan_handoff() {
 check_codex_skill_contracts() {
   local desc_helper="scripts/check-codex-skill-descriptions.sh"
   local contract_runner="scripts/run-codex-skill-contract-evals.sh"
+  # The contract runner also executes tests/codex_issue69_contract_test.py (offline only).
 
   if [ ! -x "$desc_helper" ]; then
     echo "ERROR: $desc_helper is missing or not executable"
@@ -826,6 +827,9 @@ echo "==> Validating claude-code agents..."
 check_cc_agents
 check_cc_support_dirs
 check_loop_only_tool_calls claude-code/skills
+
+echo "==> Running named-agent release gate..."
+python3 tests/named_agent_release_test.py || ERRORS=$((ERRORS + 1))
 
 echo "==> Validating codex skills..."
 for dir in codex/skills/*/; do

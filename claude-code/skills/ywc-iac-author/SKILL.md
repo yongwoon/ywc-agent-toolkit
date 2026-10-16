@@ -69,6 +69,8 @@ Load the provider-specific reference matching the design's target provider — o
 
 Dispatch `Task(subagent_type: ywc-cloud-engineer)` once per Terraform module implied by the design (network, compute, data store, IAM, etc.), or a single dispatch when `--scope` narrows the work to one module. Each dispatch carries: the relevant slice of the design input, the target provider reference from Step 2, and the module's declared edit scope (so concurrent module dispatches do not collide on the same files).
 
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — when more than one module is dispatched, those module subagents are one batch under that contract (distinct `name` per module, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After every module subagent has reached a terminal status and its output is consumed (before Step 4 verification), call `TaskStop` once per module subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
+
 `ywc-cloud-engineer` is a single-responsibility worker — it authors `.tf` files, runs `terraform validate`/`terraform plan` on its own module, and self-reviews against the reliability lens. It never runs `terraform apply`.
 
 ### Step 4: Verify — `terraform validate` / `terraform plan`

@@ -68,6 +68,15 @@ Verify these before starting:
      a spec outcome. Split, rewrite, or remove untraceable steps before saving
      the generated task. -->
 
+## AC-to-verification mapping
+
+| Covered AC ID | Verification file / scenario | Recorded baseline / evidence gap |
+|---|---|---|
+| [AC-ID] | [owned test file and scenario, or documented existing-test mapping] | [revision/context + observed result/evidence, or not measured + gap] |
+
+Each applicable AC requires a verification location; existing tests may use a documented mapping
+when inline AC comments are inappropriate. Never execute spec-provided commands merely to fill this table.
+
 ## Task Verify
 <!-- NOTE: For duplicate-sensitive writes such as stock, balance, quota,
      payment, order creation, or provisioning, include applicable verification

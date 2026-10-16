@@ -1,0 +1,17 @@
+{
+  "id": "spec-availability-escalation-terminal",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-2",
+    "FR-2",
+    "FM-2"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "Terminal evidence arriving during escalation wins"
+      ]
+    }
+  ]
+}

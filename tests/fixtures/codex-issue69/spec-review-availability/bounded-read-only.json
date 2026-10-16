@@ -1,0 +1,20 @@
+{
+  "id": "spec-availability-bounded-read-only",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-2",
+    "FR-2",
+    "FM-2"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/references/subagent-status-actions.md",
+      "required": [
+        "explicitly designated spec-review dimension workers",
+        "canonical target",
+        "five confirmed findings and two advisor candidates",
+        "must not create, edit, or remove files"
+      ]
+    }
+  ]
+}

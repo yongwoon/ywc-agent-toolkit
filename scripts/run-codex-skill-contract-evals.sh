@@ -191,6 +191,10 @@ check_mobile_first_ui_contract() {
   fi
 }
 
+if ! python3 "$ROOT/tests/codex_issue69_contract_test.py"; then
+  fail "Codex issue 69 source/fixture contract checks failed"
+fi
+
 check_all_eval_json
 check_wayfinder_contracts
 check_preview_contracts

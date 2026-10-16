@@ -1,7 +1,7 @@
 ---
 name: ywc-tech-research
 version: 1.0.0
-description: (ywc) Use when comparing libraries, investigating implementation approaches, evaluating technology options, or gathering best practices before writing specifications. Triggers: "기술 조사", "라이브러리 비교", "research", "investigate", "compare options", "어떤 걸 쓸까", "best way to implement", "技術調査", "ライブラリ比較", "ywc-tech-research". Do not use for spec writing (output goes to ywc-spec-validate), code generation (use ywc-code-gen), or simple documentation lookup that does not require comparison/evaluation.
+description: (ywc) Use when comparing libraries, investigating implementation approaches, evaluating technology options, or gathering best practices before writing specifications. Triggers: "기술 조사", "라이브러리 비교", "research", "investigate", "compare options", "어떤 걸 쓸까", "best way to implement", "技術調査", "ライブラリ比較", "ywc-tech-research". Do not use for spec writing (output goes to ywc-spec-validate), code generation (use ywc-code-gen), ROI or business-value judgments about a tech choice (use ywc-product-review; this skill owns non-ROI comparisons), or simple documentation lookup that does not require comparison/evaluation.
 category: spec
 phase: planning
 requires: []
@@ -87,6 +87,8 @@ Parse `$ARGUMENTS` for:
    **Step 3c — `--compare` parallel mode**
 
    When `--compare "A,B[,C...]"` is specified, spawn one research subagent per option in parallel via the Task tool, each with the same project context and quality criteria. Collect all results before synthesizing — do not synthesize from partial results.
+
+   > **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — the `--compare` option subagents are one batch under that contract (distinct `name` per option, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all option results are collected and before synthesizing, call `TaskStop` once per option subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
 4. **Verify Source Recency** — Before writing the report, confirm:
    - At least one official source per option was found

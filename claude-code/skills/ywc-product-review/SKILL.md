@@ -63,6 +63,8 @@ Focus on: what the service **does**, who it serves, and what the main user flows
 
 Use the Task tool to spawn 5 Sonnet subagents in parallel — one per perspective. Pass each subagent a brief context summary (service name, target user, main flows) and the corresponding reference file to read:
 
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — these five perspective subagents are one batch under that contract (distinct `name` per perspective, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all five perspective returns are consumed in Step 2b, call `TaskStop` once per perspective subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
+
 | Subagent | Model | Reference |
 |---|---|---|
 | User Value | sonnet | `references/user-value.md` |
@@ -115,5 +117,5 @@ For all other ambiguities — borderline High vs Medium severity, uncertain evid
 
 - If the user provides specific docs or files, read those first before scanning the codebase
 - If the codebase is large, focus on README, main entrypoints, and feature directories rather than implementation details
-- Base all findings on observable evidence — avoid speculation without grounding in what you actually read
+- Verify-before-surface: every finding must cite the specific file a perspective subagent actually read it from, or carry an explicit `unverified` marker (see the Rationalization Defense table) — never hedged with "likely" or "probably". For perspectives that rest on outside context, such as Market, name the source or mark the finding `unverified`
 - Follow any additional instructions in `$ARGUMENTS`

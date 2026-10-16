@@ -1,0 +1,22 @@
+{
+  "id": "coverage-preview-contradictory",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "FR-4",
+    "FM-4"
+  ],
+  "boundary": "preview",
+  "invalid_evidence": "contradictory",
+  "expected_downstream_calls": 0,
+  "checks": [
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "unresolved preview permits zero consume calls",
+        "missing, malformed, contradictory, or identity-mismatched",
+        "attributable non-`DONE` status propagates unchanged"
+      ]
+    }
+  ]
+}

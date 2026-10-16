@@ -1,0 +1,36 @@
+{
+  "id": "coverage-coverage-rows",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-task-generator/references/output-and-validation.md",
+      "required": [
+        "every AC, FR, and present Failure Modes row",
+        "COVERED",
+        "DEFERRED_WITH_REASON",
+        "UNCOVERED",
+        "deferred-in-scope",
+        "deduplicated unresolved requirement IDs",
+        "prevents clean `DONE`",
+        "current spec identity/revision and exact preview path/revision/digest",
+        "covered, deferred-in-scope, and uncovered integer counts",
+        "Counts, IDs and coverage rows must agree",
+        "no checkpoint field, handoff schema, or planner/ready",
+        "Preview-only still writes no tasks"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-task-generator/SKILL.md",
+      "required": [
+        "Before returning either a preview or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md)",
+        "including its attributable coverage summary and interface/verification mapping"
+      ]
+    }
+  ]
+}

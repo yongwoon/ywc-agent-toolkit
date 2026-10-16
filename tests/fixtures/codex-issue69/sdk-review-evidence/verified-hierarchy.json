@@ -1,0 +1,39 @@
+{
+  "id": "sdk-verified-hierarchy",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-9",
+    "FR-8",
+    "AC-10",
+    "FR-9"
+  ],
+  "predetermined_expectation": "May confirm only if version-relevant primary chain and actual catch prove the defect",
+  "checks": [
+    {
+      "source": "codex/skills/ywc-impl-review/references/devex-agent.md",
+      "required": [
+        "Verify SDK-specific exception inheritance",
+        "Record the inspected SDK/package version",
+        "version-relevant SDK source or official error reference",
+        "Trace the thrown exception through its base classes to the actual catch",
+        "Inline comments, remembered SDK behavior and wrong-version documentation are not primary evidence",
+        "If version resolution, hierarchy or primary evidence is unavailable",
+        "do not promote the SDK claim to a confirmed finding",
+        "including any repository wrapper",
+        "no unconditional network/SDK installation phase or execution of reviewed code is authorized"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-impl-review/references/coderabbit-methodology.md",
+      "required": [
+        "SDK hierarchy evidence gate",
+        "Unavailable or version-mismatched primary evidence is uncertainty",
+        "do not emit a confirmed SDK hierarchy finding",
+        "No unconditional network phase",
+        "existing bounded review acquisition",
+        "A version match alone does not prove a defect",
+        "Offline source assertions and predetermined fixtures are not observed SDK review behavior"
+      ]
+    }
+  ]
+}

@@ -48,6 +48,15 @@
       "expected_downstream_calls": {"accepted": 1, "rejected": 0},
       "expected_handoff": "accepted only for the exact DONE Status/Artifact pair; rejected otherwise",
       "expected_output": "Never infers Scale, recovers a path from prose, or forwards a non-DONE or stale artifact."
+    },
+    {
+      "id": 7,
+      "name": "bounded-suggestions-approved-preview",
+      "prompt": "Exercise no Suggestions, default one pass, explicit apply/defer, residual Suggestions, new Warning, invalid/malformed evidence and fresh/unapproved/stale/escaping vs matching-approved preview.",
+      "expected_output": "Use spec-ready owner default once in either mode, explicit policy wins, defer never amends, residual advisory findings do not ask again; blocking/malformed failures remain. Reuse only matching already-approved unchanged preview without another confirmation; never invent approval or weaken containment/identity/consume-only/preview-only write boundaries.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

@@ -1,0 +1,22 @@
+{
+  "id": "attributable-with-outstanding",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-1",
+    "FR-1",
+    "FM-1"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/references/subagent-async-monitoring.md",
+      "required": [
+        "Skip the immediate redundant roster query only",
+        "Continue elapsed-time tracking for every other outstanding target",
+        "At final batch closure, always perform complete roster reconciliation",
+        "exactly one captured canonical dispatch target and parses to exactly one supported",
+        "terminal status (`DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`)",
+        "A contradictory payload does not satisfy this exception"
+      ]
+    }
+  ]
+}

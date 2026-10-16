@@ -29,6 +29,10 @@ Verify thrown / logged / returned error messages are useful in production debugg
 - Are sensitive values redacted in error messages (no raw tokens, passwords, PII)?
 - Do messages avoid implementation-internal vocabulary the operator cannot map to a runbook entry?
 
+### SDK exception hierarchy evidence
+
+Verify SDK-specific exception inheritance before asserting that a catch misses an error, a retry is unreachable, or a handler swallows a subclass. Record the inspected SDK/package version from the lockfile or resolved installed metadata and cite version-relevant SDK source or official error reference (path:line or versioned URL/section). Trace the thrown exception through its base classes to the actual catch and operation under review, including any repository wrapper. Inline comments, remembered SDK behavior and wrong-version documentation are not primary evidence. If version resolution, hierarchy or primary evidence is unavailable, record bounded uncertainty and the missing verification; do not promote the SDK claim to a confirmed finding. Reuse existing bounded review context; no unconditional network/SDK installation phase or execution of reviewed code is authorized.
+
 ### 3. Logging / Observability Surface
 
 Verify log volume and structure support debugging without drowning out signal.

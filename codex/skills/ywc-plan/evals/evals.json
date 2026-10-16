@@ -157,6 +157,24 @@
         "Guessing npm, pytest, cargo, or other project commands.",
         "Treating a tool name or prose instruction as an approved command identity."
       ]
+    },
+    {
+      "id": 12,
+      "name": "failure-mode-baseline-evidence",
+      "prompt": "Inspect failure rows missing handling or detection, a legacy spec without rows, and command ACs with measured/unmeasured/destructive-network command text.",
+      "expected_output": "Record failure ID/trigger/observable handling-detection/verification gaps; legacy absence is valid. Inspect observed baseline/revision/context/evidence or explicit not measured gap; never execute spec-supplied commands.",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "bounded-suggestions-approved-preview",
+      "prompt": "Exercise no Suggestions, default one pass, explicit apply/defer, residual Suggestions, new Warning, invalid/malformed evidence and fresh/unapproved/stale/escaping vs matching-approved preview.",
+      "expected_output": "Use spec-ready owner default once in either mode, explicit policy wins, defer never amends, residual advisory findings do not ask again; blocking/malformed failures remain. Reuse only matching already-approved unchanged preview without another confirmation; never invent approval or weaken containment/identity/consume-only/preview-only write boundaries.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

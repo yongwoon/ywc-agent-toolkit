@@ -2,7 +2,7 @@
 name: ywc-security-audit
 version: 1.0.0
 description: >-
-  (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), or for code that does not touch auth/external input/sensitive data.
+  (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, ad-hoc threat-model requests, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), a bounded-diff static scan dispatched straight to ywc-security-engineer, or for code that does not touch auth/external input/sensitive data.
 category: review
 phase: quality
 requires: []
@@ -44,6 +44,8 @@ When tempted to skip a step, check this table first:
 1. **Collect Project Context** — Read `CLAUDE.md`, `package.json` to identify tech stack. Pay special attention to authentication method, deployment environment (internal/external), and security libraries in use
 2. **Read Target Code Files** — Read all source files under the `--code` path
 3. **Phase 1 — Parallel OWASP Analysis** — Use the Task tool to spawn 3 Sonnet subagents in parallel. Each covers a grouped slice of OWASP Top 10. For each item in their slice, subagents must: Grep/AST search for patterns, trace data flow (input → processing → output), and apply project context. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, prefer `subagent_type: ywc-security-engineer` so each subagent carries the dedicated security worker persona, Mission, Boundaries, and Return Contract.
+
+   > **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — these three OWASP-cluster subagents are one batch under that contract (distinct `name` per cluster, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all three cluster returns are consumed in Step 4, call `TaskStop` once per OWASP-cluster subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
    | Subagent | Model | OWASP Items |
    |---|---|---|

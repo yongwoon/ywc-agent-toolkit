@@ -82,7 +82,11 @@
       "name": "architecture-packet-positive",
       "prompt": "Use $ywc-impl-review --spec docs/specification/03-behavior.md --working-tree --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
       "expected_output": "The Architecture worker receives only the sanitized packet. Helper status remains dispatch status; aggregate_verdict becomes invariant_verdict; rule_results rule IDs become rule_ids; sanitized evidence paths remain bounded finding citations; contract_state is VALIDATED and evidence_artifact_path names the artifact.",
-      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "No raw evidence, transcript, command-like field, or full diff is included and the packet cannot alter merge authority"],
+      "expectations": [
+        "Emits component_ids from the helper bounded changed-path mapping",
+        "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json",
+        "No raw evidence, transcript, command-like field, or full diff is included and the packet cannot alter merge authority"
+      ],
       "files": []
     },
     {
@@ -194,7 +198,11 @@
         "Keeps Cleaner production-only and Hardener test/fixture-only.",
         "Does not accept raw command text, raw output, secrets, transcripts, or full diffs."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md",
+        "../../references/quality-gates.md"
+      ]
     },
     {
       "id": 23,
@@ -206,7 +214,10 @@
         "Never creates placeholder packet fields or invents a gate result.",
         "Does not execute a gate for report-only evidence."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md"
+      ]
     },
     {
       "id": 24,
@@ -218,7 +229,11 @@
         "Rejects missing exact production/test fixture symbols and unbounded evidence paths.",
         "Does not recover missing evidence from raw worker output."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md",
+        "../../references/quality-gates.md"
+      ]
     },
     {
       "id": 25,
@@ -230,7 +245,10 @@
         "Never forwards raw output, secrets, transcripts, or full diffs.",
         "Treats an artifact path as bounded metadata rather than read or execution authority."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md"
+      ]
     },
     {
       "id": 26,
@@ -242,7 +260,11 @@
         "Applies state-specific unavailable-tool handling and the three-attempt cap.",
         "Does not treat completed attempts as proof of success."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md",
+        "../../references/quality-gates.md"
+      ]
     },
     {
       "id": 27,
@@ -254,7 +276,11 @@
         "Cleaner BLOCKED or NEEDS_CONTEXT prevents Hardener dispatch.",
         "Only sanitized statuses, evidence references, and residuals appear in the aggregate report."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md",
+        "../../references/quality-gates.md"
+      ]
     },
     {
       "id": 28,
@@ -266,7 +292,10 @@
         "The reviewer never executes Cleaner, Hardener, or an approved command.",
         "The final report contains no delivery claim beyond sanitized status/evidence."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md"
+      ]
     },
     {
       "id": 29,
@@ -279,7 +308,32 @@
         "Validates sanitized evidence paths as bounded repository-relative non-secret artifact metadata: no absolute, ./, .., wildcard, directory, symlink escape, or secret-bearing destination is accepted.",
         "Keeps the valid sanitized boundary limited to normalized facts, approved command IDs/digests, exact Ownership symbols, residuals, unavailable-tool gaps, and bounded evidence references; never reads or reconstructs raw commands, output, transcripts, secrets, or full diffs."
       ],
-      "files": ["SKILL.md", "references/qa-agent.md", "../../references/quality-gates.md"]
+      "files": [
+        "SKILL.md",
+        "references/qa-agent.md",
+        "../../references/quality-gates.md"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "attributable-requirement-coverage",
+      "prompt": "An AC/FR/failure row is uncovered or deferred in scope; preview or consume returns non-DONE, missing/malformed/contradictory/mismatched coverage. Also compare an owned interface mismatch and existing-test mapping.",
+      "expected_output": "Report every requirement status and attributable counts/IDs; unresolved preview has zero consume calls, unresolved consume has zero executor calls. Propagate attributable non-DONE unchanged, invalid evidence BLOCKED, preserve artifacts. Clean DONE needs zero gaps and matching identity; no state/Result-schema expansion or implicit approval. QA consumes actual AC verification mappings.",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "Review SDK exception handling where an inline comment claims subclass behavior, with matching, wrong-version or unavailable primary SDK sources.",
+      "expected_output": "Resolves inspected package version, cites version-relevant primary SDK source or official error reference and traces inheritance to the actual catch/wrapper. Unsupported comments and wrong/missing version evidence are uncertainty, not confirmed SDK findings; no unconditional network phase. Offline fixtures are not observed behavior.",
+      "files": []
+    },
+    {
+      "id": 32,
+      "prompt": "Check whether this completed implementation conforms to its approved specification.",
+      "expected_output": "Selects ywc-impl-review, not ywc-code-gen, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
+      "files": []
     }
   ]
 }

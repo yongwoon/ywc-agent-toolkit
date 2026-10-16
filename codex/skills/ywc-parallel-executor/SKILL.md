@@ -266,6 +266,13 @@ If setup exits 1, mark that task `BLOCKED`, preserve its branch/worktree for rec
 
 **Handling each subagent's status return**: immediately after each successful dispatch and before routing, register the source task name against its returned canonical target and apply [`subagent-async-monitoring.md`](../references/subagent-async-monitoring.md) — only a task with a confirmed terminal status proceeds to Status Routing; a missing identity or possibly-live target is a non-terminal blocker for cleanup, next-wave dispatch, reports, and `DONE`. Each subagent then ends with `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular: `NEEDS_CONTEXT` → provide the missing context and re-dispatch the same subagent at the same model class (context is the cheapest fix); `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report). Do not silently retry the same subagent on the same input — change the input or the model class between attempts.
 
+Consume the canonical event-first exception from that reference: an attributable,
+parseable terminal event may skip the immediate redundant roster query while
+outstanding-target clocks continue; ambiguous evidence and final batch closure
+require complete reconciliation. Preserve elapsed >= 600 seconds, heartbeat <= 60 seconds,
+and one request and one interrupt per dispatch. A missing roster entry alone proves
+nothing. Use the shared procedure rather than introducing a second escalation algorithm.
+
 **Status Routing** — Apply to every per-task subagent return inside the wave loop, once async monitoring above has confirmed a terminal status:
 
 | Returned status | Caller action |

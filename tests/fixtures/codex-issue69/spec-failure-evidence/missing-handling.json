@@ -1,0 +1,38 @@
+{
+  "id": "failure-evidence-missing-handling",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-5",
+    "FR-4",
+    "FM-5"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "missing handling is an explicit gap",
+        "inspect each ID, triggering path, observable failure, handling/detection, and",
+        "verification. A missing handling is an explicit gap",
+        "Missing both never passes silently",
+        "absence of the section alone is not a finding"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-plan/SKILL.md",
+      "required": [
+        "Add `## Failure Modes` rows with ID, triggering path, observable failure,",
+        "handling/detection, and verification",
+        "legacy specs without this section",
+        "remain valid"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-plan/references/spec-template.md",
+      "required": [
+        "| ID | Triggering path | Observable failure | Handling / detection | Verification |",
+        "Missing handling or missing detection/test evidence is an explicit gap",
+        "Legacy specs without this section remain valid"
+      ]
+    }
+  ]
+}

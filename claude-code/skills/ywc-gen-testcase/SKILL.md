@@ -93,7 +93,7 @@ gh pr view <N> --json number,title,body,author,headRefName,baseRefName,url,files
 gh pr diff <N>
 ```
 
-Capture PR URL, title, body, author, head/base branches, labels, changed files, commit messages. Lift any explicit "How to test" / "Acceptance Criteria" / "動作確認" block from the PR body into scenario goals verbatim.
+Capture PR URL, title, body, author, head/base branches, labels, changed files, commit messages. Lift any explicit "How to test" / "Acceptance Criteria" / "動作確認" block from the PR body into scenario goals verbatim. For an **Impact** (Before/After) block, keep it as source material but split each concrete behavior change into its own scenario with a single-sentence Goal — do not copy the whole block verbatim into one Goal, since a Goal must describe one testable behaviour (Step 3).
 
 ### 1b. Task input
 
@@ -192,7 +192,7 @@ Each scenario has:
 
 Scenario sources, in priority order:
 
-1. PR body / task Acceptance Criteria ("How to test", "動作確認", "Reviewer should verify")
+1. PR body / task Acceptance Criteria ("How to test", "動作確認", "Reviewer should verify", **Impact** Before/After)
 2. Commit messages
 3. Surface-driven scenarios (from 2b)
 4. Diff edge cases (new `NOT NULL` → null-input scenario; new permission check → unauthorised-role scenario)

@@ -1,7 +1,7 @@
 ---
 name: ywc-ui-ux-review
 description: >-
-  (ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (Chrome DevTools MCP) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', '사용성 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), aesthetic / visual de-slop renewal of a generic / 'AI-made'-looking surface (use ywc-design-renew), or code-only review without a running UI.
+  (ywc) Use when the user wants a UI/UX review combining static code analysis with live UI exploration (Chrome DevTools MCP) covering information architecture, visual design, usability, and accessibility. Triggers: 'UI/UX review', 'UX 점검', '사용성 점검', 'UI 검토', 'usability audit', 'design review', 'accessibility review', '디자인 리뷰', 'UX 監査', 'UI レビュー'. Do not use for backend/API review (use ywc-impl-review), product/business strategy review (use ywc-product-review), de-slop renewal of a generic or 'looks AI-generated' surface (use ywc-design-renew), or code-only review without a running UI.
 ---
 
 # UI/UX Review — Hybrid (Code + Live UI)
@@ -82,6 +82,8 @@ For each piece of evidence record: URL, breakpoint, screenshot reference, snapsh
 ### Phase 4 — Per-Domain Review (Parallel)
 
 Use the Task tool to spawn 2 Sonnet subagents in parallel. Pass each subagent the code reconnaissance notes from Phase 2 and the live UI evidence from Phase 3:
+
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — these two IA/Visual Design subagents are one batch under that contract (distinct `name` per reviewer, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After both reviewers' findings are consumed in Phase 4b, call `TaskStop` once per reviewer with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
 | Subagent | Model | Reference |
 |---|---|---|

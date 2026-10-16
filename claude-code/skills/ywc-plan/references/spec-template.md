@@ -48,7 +48,9 @@ Use `N/A — no project-wide constraint beyond standard conventions` only after 
 
 | Existing artifact | Behavior (verified by reading the file) | New code's interaction |
 |---|---|---|
-| `<path>:<line>` `<symbol>` | `<one-line summary of what the cited code actually does>` | `<comply / override / extend / bypass — with the named override mechanism>` |
+| `<path>:<line>` `<symbol>` | `<one-line summary of what the cited code actually does>` | `<comply / override / extend / bypass / reuse — with the named override mechanism>` |
+
+Also list existing helpers, modules, or libraries that already solve a sub-problem of this feature with interaction `reuse`. Rebuilding something listed here as `reuse` is a finding, not a design choice.
 
 This section exists because Code Compatibility is the largest source of `ywc-spec-validate` Critical findings, and the failure mode is always the same: the spec says "follows X" without ever transcribing what X actually does, so the implementer copies X verbatim and silently violates an AC.
 
@@ -78,13 +80,21 @@ Use one of these forms:
 
 <Observable, testable conditions that prove the feature is complete. Each AC must be **declarative and verifiable** — written so a tester (human or automated) knows exactly what to send, what to observe, and how to decide pass/fail.>
 
-Before writing the ACs, it is recommended to name — in one sentence — the test seam (public boundary) this AC group will verify; for the detailed procedure follow `ywc-tdd-ritual`'s `### Seams` subsection, which is the canonical source (do not restate it here).
+Before writing the ACs, it is recommended to name — in one sentence — the test seam (public boundary) this AC group will verify, and cite one existing test file at that seam as prior art for the implementer to mirror (or `none — first test at this seam`); for the detailed procedure follow `ywc-tdd-ritual`'s `### Seams` subsection, which is the canonical source (do not restate it here).
 
 Preferred form for each AC:
 
 ```
 [ ] <Name>: When <trigger / input>, system does <behavior>, observable as <concrete check — status code, DB row state, response field, log entry, UI state>.
 ```
+
+For an AC that names an executable command, add the measured pre-change result:
+
+```
+[ ] <Name>: When <command> runs, <expected behavior>, observable as <exit code / output>. Baseline: <exit code> — <one-line output on the pre-change tree>.
+```
+
+`Baseline:` is the command's actual result on the tree before the change (a failing baseline is valid). If the command cannot run before the change, keep the AC unchanged and write `Baseline: unrunnable — <reason>`; never rewrite the AC to make it runnable.
 
 Examples below are written in the preferred form. The first two are generic (any project that has users, items, or scheduled state); the bracketed ones are from a past LP-form session and are included for concreteness — adapt the *shape*, not the LP identifiers.
 
@@ -188,6 +198,16 @@ Anti-patterns to avoid:
 - **<Edge case 2>**: <Expected behavior>
 - **<Empty / null / unicode / large input>**: <Expected behavior>
 
+## Failure Modes
+
+<For each new runtime path or integration this spec introduces, name one realistic production failure (timeout, partial write, upstream 5xx, malformed payload) and how it is caught. Edge Cases lists inputs; this section lists what breaks in production.>
+
+| ID | New path | Realistic failure | Covered by (AC / test / error handling) | User-visible? |
+|---|---|---|---|---|
+| `FM-1` | `<path or integration>` | `<failure>` | `<AC id, test, or handler — or "none">` | `<clear error / silent>` |
+
+Number rows `FM-1`, `FM-2`, … and never renumber an existing row — `ywc-task-generator` reports unmapped rows by this ID. A row with no test, no error handling, **and** a silent outcome is a **critical gap** — add an AC or an error-handling FR before handoff. `ywc-task-generator` assigns each row's test to the task that owns the path. Use `N/A — no new runtime path` only after active consideration.
+
 ## Dependencies
 
 <External services, libraries, or upstream features required.>
@@ -251,6 +271,7 @@ Users currently receive all notifications by default with no opt-out. This cause
 
 - [ ] User can toggle notification preferences per channel and event type
 - [ ] Preferences persist across sessions
+- [ ] Batch upsert rejects an invalid enum value with HTTP `422` and leaves all notification preference rows unchanged
 - [ ] Notification dispatcher respects preferences before sending
 - [ ] Default state applied correctly for new and existing users
 - [ ] Settings page is keyboard-accessible (WCAG AA)
@@ -304,13 +325,19 @@ Returns array of preference rows for the authenticated user.
 
 ### `PATCH /api/v1/users/me/notification-preferences`
 
-Accepts array of `{event_type, channel, enabled}`. Upserts each row.
+Accepts array of `{event_type, channel, enabled}`. Upserts every row in a single transaction. Returns `422` when any row carries an invalid enum value; no row is written.
 
 ## Edge Cases
 
 - **User updates preferences while a notification is mid-dispatch**: dispatcher reads at send-time, not enqueue-time — accept this small race
 - **Event type added in the future**: dispatcher falls back to default-by-event-type for missing rows
 - **Bulk preference toggle (all off)**: still allow — no special-case UI
+
+## Failure Modes
+
+| ID | New path | Realistic failure | Covered by (AC / test / error handling) | User-visible? |
+|---|---|---|---|---|
+| `FM-1` | `PATCH /notification-preferences` upsert | One row of the batch violates the enum, earlier rows already written | Single transaction + the batch-422 AC | clear error |
 
 ## Dependencies
 

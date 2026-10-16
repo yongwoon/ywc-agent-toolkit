@@ -66,6 +66,7 @@ For the full language detection examples, language-specific writing rules (techn
 - See [references/granularity-modes.md](references/granularity-modes.md) for the full rule set
 - Split tasks that significantly exceed the mode's guideline
 - Do not bundle more than one major concern in a single task
+- **Right-Sizing** (subordinate to the size-driven split rule above). Fold setup, configuration, scaffolding, and documentation steps into the task whose deliverable needs them; split only where a reviewer could meaningfully reject one task while approving its neighbor (Principles 3–4 still force their own tasks)
 - Prefer self-contained change units that leave the codebase buildable on completion
 
 ### 2. Dependency Safety
@@ -326,6 +327,7 @@ Each README.md must include the following:
 - **Notes**: Important considerations, design decisions, and **Assumptions** — any spec ambiguity resolved during decomposition, with the interpretation chosen, so the implementer can challenge it instead of inheriting a silent guess
 - **Out of Scope**: What is intentionally excluded
 - **Parallel Execution Metadata**:
+  - **Model Hint**: `haiku` | `sonnet` | `opus` with the rule that fired (M1/M2/M3), decided last — after `Depended By`, `Ownership` and `Owned Interface` are final; rules in [../references/model-routing.md](../references/model-routing.md)
   - **Ownership**: Files, directories, modules, contracts this task may modify
   - **Shared Surfaces**: Shared boundaries that may cause merge or design conflicts
   - **Conflicts With**: Tasks that must not run in parallel
@@ -417,7 +419,7 @@ After generating all tasks, verify the following:
 
 **README.md Quality:**
 - [ ] Both "Depends On" and "Depended By" included
-- [ ] Parallel Execution Metadata included (Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
+- [ ] Parallel Execution Metadata included (Model Hint, Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
 - [ ] Ownership is narrow enough to serve as an actual edit boundary, not just a restatement of Key Files
 - [ ] **Spec Reference** section included — Primary Sources, Summary, and Out of Scope (from spec) all filled in or explicitly marked `N/A`
 - [ ] If Primary Sources include external URLs, only if the project allows it (default is project-relative paths only)
@@ -432,6 +434,8 @@ After generating all tasks, verify the following:
 - [ ] Verification commands match the project's actual commands (based on context collected in Step 2)
 
 **Consistency:**
+- [ ] **Spec coverage**: every spec Acceptance Criterion, Functional Requirement, and `## Failure Modes` row maps to ≥1 task (Failure Modes rows as a test step in the task owning that path); an unmapped item gets a task or is reported on the `Unmapped spec items: <id list>` line of the final output (see Output Format) — never silently dropped
+- [ ] **Interface consistency**: every name/signature a task consumes from a `Depends On` task matches that task's `Owned Interface` verbatim
 - [ ] Dependency Graph Summary matches individual README.md files
 - [ ] If the task set is intended for parallel execution, Dependency Graph includes Parallel Execution Notes
 - [ ] Codebase is buildable after each task completes
@@ -447,6 +451,7 @@ The final output includes:
 2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default: `tasks/`)
 3. **Dependency Graph**: `<tasks-dir>/dependency-graph.md` generated — single source of truth for execution order
 4. **Parallel Execution Notes**: Included in `<tasks-dir>/dependency-graph.md` when parallel worktree execution is expected
+5. **Unmapped spec items**: one line `Unmapped spec items: <id list>` (`none` when every Acceptance Criterion, Functional Requirement, and Failure Modes row maps to a task) from the Step 11 Spec coverage check
 
 When parallel execution is expected, verify that each task is safe for isolated worktree or agent execution.
 

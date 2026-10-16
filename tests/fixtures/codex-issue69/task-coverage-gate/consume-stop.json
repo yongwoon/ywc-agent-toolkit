@@ -1,0 +1,19 @@
+{
+  "id": "coverage-consume-stop",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "**Consume coverage gate**",
+        "unresolved consume permits zero executor calls"
+      ]
+    }
+  ]
+}

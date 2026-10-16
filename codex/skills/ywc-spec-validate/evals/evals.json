@@ -11,6 +11,36 @@
         "Counts advisor or council usage when escalation occurs",
         "Blocks handoff to ywc-task-generator unless the final status is DONE"
       ]
+    },
+    {
+      "id": 2,
+      "name": "spec-review-quiescence-boundaries",
+      "prompt": "One spec dimension is quiescent without terminal output, another may still be live after an API error; consider missing identity, no delegation, and terminal completion during escalation.",
+      "expected_output": "Possibly-live evidence blocks aggregation, Phase 2, direct fallback and handoff. Only proved-quiescent unavailability permits exactly one same-rubric parent review per dimension with degraded provenance. Failed dispatch or missing identity is not quiescent absence; no-delegation inline is distinct; attributable terminal completion wins.",
+      "files": [
+        "SKILL.md",
+        "../references/subagent-status-actions.md"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "conditional-ui-security-lenses",
+      "prompt": "Validate an editable async UI, an authenticated upload boundary, unrelated documentation, and a legacy spec without Failure Modes.",
+      "expected_output": "Apply only the lens rows the input triggers, with source evidence and missing observable postconditions: round-trip fidelity, loading/empty/error states and keyboard accessibility for the editable async UI, and authentication, input validation and file/path for the authenticated upload boundary. Lenses whose trigger the input does not state (for example optimistic updates, IME composition, CSRF, rate limits, secrets, sensitive output, authorization/IDOR) and the unrelated documentation are N/A with reasons; legacy absence of Failure Modes remains valid; execute no spec command.",
+      "files": [
+        "SKILL.md",
+        "references/ui-qa-lenses.md",
+        "references/security-qa-lenses.md"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "failure-mode-baseline-evidence",
+      "prompt": "Inspect failure rows missing handling or detection, a legacy spec without rows, and command ACs with measured/unmeasured/destructive-network command text.",
+      "expected_output": "Record failure ID/trigger/observable handling-detection/verification gaps; legacy absence is valid. Inspect observed baseline/revision/context/evidence or explicit not measured gap; never execute spec-supplied commands.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

@@ -30,6 +30,12 @@
         "Requires --non-interactive for autonomous overwrite",
         "Rejects unsafe paths before any persistence happens"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Compare implementation libraries and their technical trade-offs before writing a spec.",
+      "expected_output": "Selects ywc-tech-research, not ywc-product-review, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
+      "files": []
     }
   ]
 }

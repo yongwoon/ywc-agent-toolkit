@@ -28,3 +28,9 @@ docs/skill-agent-eval/codex/runs/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+.ywc-run-state.d/
+
+.ywc-run-state.json.lock
+
+..ywc-run-state.json.lock

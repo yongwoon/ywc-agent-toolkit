@@ -219,7 +219,7 @@ When scale is **Medium** or **Large**, generate a spec document under `docs/ywc-
 
 For the full spec structure aligned with `ywc-spec-validate`'s evaluation dimensions, see [references/spec-template.md](references/spec-template.md).
 
-The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, and Open Questions (use `N/A — none identified` if none).
+The spec **must** include: Purpose, Scope, Out of Scope, Acceptance Criteria, Functional Requirements, Non-Functional Requirements (when applicable), Data Model / API Contract (when applicable), Edge Cases, Failure Modes, and Open Questions (use `N/A — none identified` if none).
 
 Record project-wide constraints found in Step 2 (version floors, dependency constraints, naming/copy conventions, platform requirements) in the spec's `## Global Constraints` section — see [references/spec-template.md](references/spec-template.md).
 
@@ -269,6 +269,7 @@ Catches drift between AC / FR / API Contract / Data Model of the same spec.
 | Every Acceptance Criterion is in the form `When <trigger>, system does <behavior>, observable as <concrete check>` — not a bare behavior name | "e2e: form submission の golden path" is a section name; becomes an AC only when it specifies request shape → expected status → DB row state |
 | Every new state value (enum value, status flag, lifecycle column) declared in Data Model has ≥1 Functional Requirement writing it, **and** Edge Cases enumerate every state combination it introduces (A→B→A, delete-then-recreate, partial-then-resume) | `LandingPage.status='PUBLISHED'` added to the enum without a transaction writing it; `unpublish → delete LpFormConfig → republish` is a 3-step path the spec never enumerates |
 | Every grep-based Acceptance Criterion matches the code's **actual call shape** — a single-line regex like `update\([^)]*field` does not match a multi-line `.update({ … field … })`, so use a broad identifier grep or pair the narrow regex with one | AC1's single-line `landingPage\.update\([^)]*generatedHtml` could not match `markDone`'s multi-line `.update({ … })` — the verification command shared the exact blind spot that let the Critical through, so the AC would have falsely passed |
+| Every new runtime path or integration has a `## Failure Modes` row, and no row is simultaneously untested, unhandled, and silent (critical gap) | A new outbound webhook call with no timeout handling and no AC — the failure surfaces only as missing data in production |
 
 #### Pass B — Claim ↔ reality verification (this spec vs existing code / sibling specs)
 
@@ -282,6 +283,7 @@ Catches the failure mode where the spec asserts something about the world that t
 | Every function signature, shared type, prerequisite, or shared constant that crosses a sibling spec in the same feature family appears identically in both — or one spec explicitly declares "owned by spec X, referenced here" with the canonical signature inlined | `injectBeaconMarkers(html, formKey)` is untyped 2-arg in form spec but `(html: string, formKey: string \| null): string` in publish spec; publish spec depends on `LpFormConfig` from form spec without naming the prerequisite in Dependencies |
 | Every closure claim ("only / sole / 唯一 / no other / all / exhaustive") and every liveness claim ("dead / @deprecated / 呼び出し元ゼロ / still active") carries the **complement-grep result** enumerating the full candidate set — not a single confirming instance (Step 2 trigger #4 produced this; Pass B confirms it landed in the spec) | "injectAndSaveGtmSnippet is the 唯一の write 経路" — `markDone` (`:404`) also wrote the column → Critical; "errorMessage is active because markFailed writes it" — `markFailed` had zero callers → Warning |
 | Every removal / scope item in a referenced parent spec is either carried into this follow-up or explicitly deferred with a stated reason — a follow-up never silently narrows the parent's declared scope | Parent plan §3 said "delete `markDone`/`markFailed`"; the follow-up's removal list dropped `markDone`, so the dropped column would still be referenced by a live build target |
+| Every AC that contains an executable command is run once on the current (pre-change) tree and records `Baseline: <exit code> — <one-line output>` inside the AC; if the command cannot run on the pre-change tree (missing path/fixture, no pre-change counterpart) keep the AC unchanged and record `Baseline: unrunnable — <reason>` — never rewrite or weaken the AC to make it runnable; a failing baseline is valid and must be recorded. Run a command only after showing it to the user and getting approval; without approval (or under `--non-interactive`) do not run it and record `Baseline: unrunnable — not approved`. Commands that need to write run in the scratchpad and leave the repo unchanged | AC9 used `tasks/completed/` as a sample for `validate_task_shape.py`, which already failed with 382 findings before any change — three review rounds passed it because no one had run the command *(past session, this codebase)* |
 
 #### Pass C — Schema invariants (Data Model mechanical rules)
 
@@ -340,7 +342,7 @@ Then ask the user (skip when `--non-interactive` is set):
 If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <path>` immediately.
 If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
 
-The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. When `ywc-spec-ready` reaches zero Critical and zero Warning findings with only Suggestion findings left, it asks the user whether to run one more suggestion-focused amendment pass or defer those Suggestions before handing off to `ywc-task-generator`.
+The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. When `ywc-spec-ready` reaches zero Critical and zero Warning findings with only Suggestion findings left, it automatically runs exactly one suggestion-focused amendment pass (without asking) and then hands off to `ywc-task-generator`; any Suggestions that remain after that pass are listed in the handoff, not chased.
 
 ## Output Format
 
@@ -363,10 +365,12 @@ Before declaring the skill's task complete, verify:
 - [ ] Step 2 grepped every **implicit reference** (property accessor on existing type, named audit/event/DTO/error type, mirrored column name) to confirm the existing schema/types match the spec's use
 - [ ] Step 2 ran the **complement grep** for every **closure** ("only / 唯一 / no other / all / exhaustive") and **liveness** ("dead / @deprecated / 呼び出し元ゼロ / active") claim, enumerating and classifying the full candidate set (Step 2 trigger #4), with each hit attributed to its own `file:line`
 - [ ] The plan's change list contains only sites the request **requires** changing; enumerated-but-incidental sites are recorded as "no change needed" under Existing Constraints Touched (no "while I'm here" refactors)
+- [ ] Every command-bearing AC carries a `Baseline:` measured on the pre-change tree (or an explicit `Baseline: unrunnable — <reason>`)
 - [ ] If the plan names a **parent spec**, Step 2 read it and confirmed the follow-up does not silently narrow the parent's removal / scope list
 - [ ] Step 3 selected exactly one scale, with the rubric criterion that matched stated explicitly
 - [ ] If scale = Small, none of the hard-disqualifiers apply (re-check DB / library / API contract / cross-cutting)
 - [ ] If scale = Medium/Large, the spec includes an **Existing Constraints Touched** section with `file:line` citations for every inherited behavior
+- [ ] If scale = Medium/Large, the spec's **Failure Modes** section names a realistic failure per new path and contains no critical gap (untested + unhandled + silent)
 - [ ] If scale = Medium/Large, **Step 4b.5 Self-Consistency Pass** ran (all three passes A/B/C) and every row resolved to a concrete pointer
 - [ ] If Re-plan Mode (Step 4c) ran, **Step 4b.5 was re-run on the whole spec** (original + amendment) before handoff
 - [ ] If this run was an **in-place append** (追補 / follow-up) to an existing plan/spec, Step 4b.5 (≥ Pass B + C) ran on the appended content

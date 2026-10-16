@@ -214,6 +214,12 @@ Scenario sources, in priority order:
 3. Surface-driven scenarios (from 2b)
 4. Diff edge cases (new `NOT NULL` → null-input scenario; new permission check → unauthorised-role scenario)
 
+### Triggered security negative paths
+
+Read the shared security omission lenses at `ywc-spec-validate/references/security-qa-lenses.md`, resolved from the skills root containing this installed skill (not the working directory), against the already-acquired diff, task/spec and verified project context. If the installed reference is missing or unreadable, return `NEEDS_CONTEXT` identifying that path and request installation of `ywc-spec-validate`; do not silently skip security checks or invent a replacement rubric. Add one negative-path scenario for each triggered lens, with concrete preconditions, steps and observable denial/safe-failure outcome. Deduplicate overlapping scenarios without dropping any triggered check: record all covered lens names on the retained scenario and preserve each distinct expected outcome. These security scenarios are in addition to the 2–5 per (audience, surface) pair above, so that limit never forces a triggered lens to be dropped; they still count toward the Step 4 scenario count. Do not invent untriggered security surfaces; record N/A reasons where appropriate. Scope manual checks to safe test fixtures and authorized environments; this does not authorize attacks or production probes.
+
+Reuse evidence from the selected input mode. Do not fetch a PR body solely to import Impact; Impact already present in acquired evidence may inform scenarios but never substitutes for verified scope. Do not add unconditional PR-body acquisition, another diff read, screenshot operations or broad collection for this feature.
+
 ## Step 4: Tier Decision
 
 Count scenarios after Step 3. Use the count to choose layout. This protects testsheets from becoming unread 1000-line walls.

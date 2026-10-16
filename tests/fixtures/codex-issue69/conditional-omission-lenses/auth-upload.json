@@ -1,0 +1,33 @@
+{
+  "id": "omission-auth-upload",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-3",
+    "FR-3",
+    "FM-3"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/references/security-qa-lenses.md",
+      "required": [
+        "authentication",
+        "authorization / IDOR",
+        "input validation",
+        "secrets",
+        "rate limits",
+        "sensitive output",
+        "CSRF",
+        "file / path",
+        "Apply each lens only to a matching boundary in the reviewed spec",
+        "Missing/invalid/expired identity",
+        "Another actor's object, alternate IDs, privilege changes and denied writes",
+        "Malformed, oversized and injected values rejected or safely handled",
+        "No exposure through logs, errors, commits or client output",
+        "concurrent requests cannot bypass a stated quota",
+        "Authorized visibility, redaction and cross-user/tenant leakage",
+        "Cross-site request rejection",
+        "Traversal/absolute path rejection"
+      ]
+    }
+  ]
+}

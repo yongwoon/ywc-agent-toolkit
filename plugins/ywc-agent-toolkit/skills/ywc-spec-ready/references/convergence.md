@@ -2,32 +2,30 @@
 
 `ywc-spec-ready` stops or continues based on validation status plus convergence evidence. These rules prevent unbounded spec churn while allowing useful amendment loops.
 
-## Critical Trend
+## Blocking Trend
 
-Track the Critical finding count for every validation iteration.
+`ywc-spec-ready` treats Critical and Warning findings as blocking (see `SKILL.md`), so track the blocking count (Critical + Warning) for every validation iteration. Suggestions are never part of this count.
 
 | Trend | Action |
 |---|---|
-| Critical count decreases | Continue when under `--max-iterations`. |
-| Critical count stays flat for two consecutive iterations with similar signatures | Stop with `DONE_WITH_CONCERNS`. |
-| Critical count increases | Stop with `DONE_WITH_CONCERNS`; report non-convergence. |
-| Critical count reaches 0 and status is `DONE` | Print `ywc-task-generator <spec-path>`. |
-
-Warnings do not drive non-convergence unless the validation report explicitly states that the Warning blocks `DONE` or the Warning is coupled to a Critical finding.
+| Blocking count decreases | Continue when under `--max-iterations`. |
+| Blocking count stays flat for two consecutive iterations with similar signatures | Stop with `DONE_WITH_CONCERNS`. |
+| Blocking count increases | Stop with `DONE_WITH_CONCERNS`; report non-convergence. |
+| Blocking count reaches 0 and status is `DONE` | Print `ywc-task-generator <spec-path>`. |
 
 ## Finding Signature
 
-Create a signature for each Critical finding:
+Create a signature for each Critical or Warning finding:
 
 ```text
-<dimension>|<section-or-file-line>|<normalized-critical-summary>
+<severity>|<dimension>|<section-or-file-line>|<normalized-summary>
 ```
 
 Normalize by lowercasing, collapsing whitespace, and removing iteration-specific numbering. The signature is for convergence detection only; reports should keep the original finding text.
 
 ## Repeated Signature Guard
 
-Stop when the same Critical signature appears in two consecutive validation reports after a re-plan. This means the amendment did not address the actual issue.
+Stop when the same Critical or Warning signature appears in two consecutive validation reports after a re-plan. This means the amendment did not address the actual issue.
 
 ## Identical Amendment Scope Guard
 
@@ -56,3 +54,13 @@ Routing rules:
 - Continue normal Completion Status routing when the upstream status means budget remains usable, budget is disabled, or budget was exhausted after a deterministic report.
 - Stop with final action `stop-advisor-required` only when the upstream status means advisor escalation is required and the validation Completion Status is `BLOCKED` or `NEEDS_CONTEXT`.
 - If the upstream status is absent or unparsable, assume the full per-iteration budget was consumed and continue only if the validation Completion Status is parseable.
+
+## Single Suggestion allowance
+
+The owner is Step 7 of `ywc-spec-ready/SKILL.md`. Explicit user instructions and
+apply/defer override the default; with no blocking findings and Suggestions present,
+at most one amendment/revalidation is attempted in either mode. No Suggestions
+means no pass; explicit defer means no amendment. Residual advisory Suggestions
+never restart this allowance or create another prompt/missing-policy status.
+New Critical/Warning findings return to the existing bounded blocking convergence
+with no ready handoff; limits and malformed-evidence failures remain effective.

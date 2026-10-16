@@ -161,6 +161,7 @@ Read `dependency-graph.md` to extract the TaskInfo list. Parse the following fro
 - Category (`db`, `api`, `ui`, `test`, etc.)
 - Depends On (predecessor task list)
 - Agent Hint (if specified in README.md)
+- Model Hint (if specified under `## Parallel Execution Metadata` in README.md); read `CLAUDE_CODE_SUBAGENT_MODEL` once here for the effective-model source ([../references/model-routing.md](../references/model-routing.md))
 
 ### Step 2: Plan Waves (Topological Sort)
 
@@ -188,7 +189,7 @@ For the payload, the three advisor questions, budget, and output format of this 
 | `infra` | (inline implementer) | CI/CD, deployment configuration — no named Tier-1 agent yet; dispatch via `general-purpose` with focused prompt | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
 | `refactor` | (inline implementer) | Code structure improvement — no named Tier-1 agent yet; dispatch via `general-purpose` with focused prompt | `ywc-refactor-cleaner` | `ywc-qa-engineer` |
 
-If an Agent Hint is specified in the task's README.md, it overrides the mapping above. Category coverage: 5 of 7 categories map to named Tier-1 worker agents; `infra` and `refactor` follow up in a later PR (Iteration 1 §B3 deferred coverage).
+If an Agent Hint is specified in the task's README.md, it overrides the mapping above; a Model Hint selects the implementer's `model` independently of `subagent_type` (Step 4b). Category coverage: 5 of 7 categories map to named Tier-1 worker agents; `infra` and `refactor` follow up in a later PR (Iteration 1 §B3 deferred coverage).
 
 ### Step 4: Execute Waves in Parallel
 
@@ -212,11 +213,12 @@ for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktre
 - The task's `task.md` (implementation checklist)
 - The task's `README.md` (scope, ownership, spec reference)
 - The worktree path (working directory)
+- The Agent tool `model` for the implementer dispatch and its re-dispatches only: pass the task's Model Hint when present; when absent, omit it for a named agent (frontmatter default) and pass `sonnet` for the inline `general-purpose` implementer. Re-dispatches reuse the effective model — see [../references/model-routing.md](../references/model-routing.md)
 - The canonical term table from `docs/ubiquitous-language.md` if it exists in the project root (include the "Synonyms to Avoid" column — identifiers matching those entries are naming violations)
 - All six prompt directives (Question-First, Completeness, Tool Error Recovery, Simplicity + Surgical Changes, Interface-first, Test-first-where-feasible) from [references/subagent-directives.md](references/subagent-directives.md) — read that file now and append each directive **verbatim** to every subagent prompt.
 - **Mobile-first UI directive (append verbatim to `ui`-category subagent prompts only, for new or redesigned end-user UI layout/style work):** Read [../references/mobile-first-ui.md](../references/mobile-first-ui.md) before writing layout/styling code. Author the base layout and styles for the narrowest viewport first, then expand outward with `min-width` breakpoints — never a `max-width` override that claws back mobile styles from a desktop-first base. Skip this for admin/internal tools, non-UI work, and unchanged legacy desktop-first CSS, or when the task README already states the surface is PC/tablet-only per that file's escape hatch.
 
-**4b-monitor (mechanical gate — do not skip)**: before treating the wave as complete, the orchestrator must reconcile the full expected roster (every task name dispatched in this wave) against the set of task names it has received a terminal status for, per the Unique Dispatch Labeling and Full-Roster Reconciliation rules in [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) — never treat the wave complete without one terminal status per dispatched task name.
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — **4b-monitor (mechanical gate — do not skip)**: before treating the wave as complete, reconcile the full expected roster (every task name dispatched in this wave) against the set of task names with a terminal status, per its Unique Dispatch Labeling and Full-Roster Reconciliation rules — never treat the wave complete without one terminal status per dispatched task name. **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After every task in the wave has a final routed status (no `NEEDS_CONTEXT` re-dispatch pending) and its return is consumed, call `TaskStop` once per task agent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
 **Handling each subagent's status return**: each subagent ends with `DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`. The orchestrator's response is defined by [../references/subagent-status-actions.md](../references/subagent-status-actions.md). In particular: `NEEDS_CONTEXT` → provide the missing context and re-dispatch the same subagent at the same model class (context is the cheapest fix); `BLOCKED` → run the four-step triage (context → reasoning → scope → plan) before surfacing to the user; `DONE_WITH_CONCERNS` → read the concerns and decide whether they are correctness-level (fix and re-dispatch) or observation-level (carry forward to the Completion Report). Do not silently retry the same subagent on the same input — change the input or the model class between attempts.
 
@@ -440,7 +442,7 @@ command sequences live in [references/aggregate-pr.md](references/aggregate-pr.m
 Display the following after all waves are complete:
 
 - Total tasks executed, total waves
-- Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode
+- Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode, and its dispatch model as `<model> (<source>)` (source `hint` / `frontmatter` / `env` / `default`), plus an `Invalid Model Hint` note for any ignored hint (see [../references/model-routing.md](../references/model-routing.md))
 - Failed/skipped tasks with reasons
 - Per-wave changed public contracts (interfaces/DTOs altered) and any critical-path tasks that triggered `/ywc-security-audit`
 - In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed

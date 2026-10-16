@@ -31,6 +31,7 @@ When tempted to skip a step, check this table first:
 | "Spec passed and tasks were generated from it, so they must agree" | task-generator can silently drop or reinterpret a requirement. When `--tasks` is set, build the Requirement Coverage table (Step 4c) — an UNCOVERED FR ships an incomplete feature while every spec-internal claim still validates cleanly. Drift between artifacts is invisible to spec-only review. |
 | "Every spec deserves the full 2 advisor calls" | Right-size the *advisor/council* spend (not the cheap Sonnet fan-out): a single-section follow-up does not need the same Opus budget as a 15-AC multi-module spec. Spending advisor calls on a trivial spec wastes tokens; under-spending on a cross-cutting one misses real trade-offs. Apply the Complexity-Aware Budget Defaults before Phase 1. |
 | "spec has no code yet, so concurrency is an implementation-phase problem" | Missing concurrency/transaction/idempotency requirements for a duplicate-sensitive write are a Completeness Critical — caught at the spec stage. |
+| "The spec already describes the screen, no need to run the UI lens check" | A screen description states what the UI looks like, not whether round-trip fidelity, loading/empty/error states, or destructive-action reversibility are defined — Step 3.6 exists precisely because these are the QA expectations an author assumes are "obvious" and therefore never writes down. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
 
@@ -74,14 +75,24 @@ When tempted to skip a step, check this table first:
 
    Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical.
 
+3.6. **UI/Interaction Omission Check (MANDATORY omission check).** Step 3.5 targets precedent-site omissions; this step targets UI/interaction trigger surfaces with the same structure — a spec's own prose rarely states a QA expectation an experienced reviewer would apply by habit, so the check runs against a fixed lens table rather than the spec's own claims.
+
+   > **Action required**: Read [references/ui-qa-lenses.md](references/ui-qa-lenses.md) now for the canonical lens table before running this check.
+
+   For each lens row whose Trigger surface matches this spec, check whether the spec's Acceptance Criteria / Functional Requirements / Edge Cases satisfy that lens's Rule. A triggered lens the spec does not address is a **Completeness Warning** — cite the lens name and the nearest relevant spec section (or its absence). Feed each such row into the Completeness dimension of Phase 1 as its own finding (do not fold several lenses into one), and include them in the report. Skip any lens whose trigger surface the spec does not touch; do not force-fit lenses onto a non-UI spec.
+
 4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
+
+   > **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — these four dimension subagents are one batch under that contract (distinct `name` per dimension, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). Apply it before aggregating the dimension returns. **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all four dimension returns are aggregated, call `TaskStop` once per dimension subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
    | Subagent | Model | Dimension | Focus |
    |---|---|---|---|
    | Completeness | sonnet | Completeness | Missing required items, edge cases, pagination. For a **duplicate-sensitive write flow** (stock/balance/order/payment/provisioning/quota) also check whether the spec specifies: (a) concurrent-request behavior, (b) the transaction/consistency boundary spanning multiple DB writes, (c) handling of duplicate client retry / double-click, (d) the failure response/status when stock/balance/quota is exhausted or a lock/version mismatch occurs. Missing any → a Completeness finding: **Critical** when the gap can cause double charge / oversell / lost ledger / duplicate provisioning, otherwise **Warning** |
    | Consistency | sonnet | Consistency | Terminology mismatches; Synonyms-to-Avoid violations |
-   | Feasibility | sonnet | Feasibility + Simplicity | Implementable with current stack and dependencies; also flag over-engineering — abstraction, configurability, or generality the stated scope does not yet require (surface as Warning) |
+   | Feasibility | sonnet | Feasibility + Simplicity | Implementable with current stack and dependencies; also flag over-engineering — abstraction, configurability, or generality the stated scope does not yet require (surface as Warning). Check command-bearing AC with the AC baseline check (see the callout below the table). |
    | Code Compatibility | sonnet | Code Compatibility | Conflicts with existing schema, API routes, type definitions |
+
+   > **Action required**: Read [references/ac-baseline-check.md](references/ac-baseline-check.md) now and pass its content to the Feasibility subagent — it defines the path exclusions, the Glob-only existence check, the single Grep-tool-call re-run and the `Baseline:` comparison.
 
    Each subagent returns:
    - **Confirmed findings** — dimension label, severity (Critical / Warning / Suggestion), file:line, description, improvement
@@ -117,9 +128,12 @@ When tempted to skip a step, check this table first:
 |-----------|-------------|
 | Completeness | Missing required items (error handling, edge cases, pagination, etc.) |
 | Consistency | Terminology, format, or data structure mismatches across documents; spec terms appearing in the "Synonyms to Avoid" column of `docs/ubiquitous-language.md` |
-| Feasibility | Whether the spec can be implemented with the current stack |
+| Feasibility | Whether the spec can be implemented with the current stack, and whether its command-bearing AC pass the [AC baseline check](references/ac-baseline-check.md) |
 | Code Compatibility | Conflicts with existing DB schema, API route patterns |
 | Simplicity | Whether the spec specifies abstraction, configurability, or generality the stated scope does not yet require (over-engineering). Assessed within the Feasibility pass — surface speculative scope as a Warning, not a separate subagent. |
+
+UI/Interaction omission mapping (Step 3.6):
+- **Completeness**: the spec triggers ≥1 lens from [references/ui-qa-lenses.md](references/ui-qa-lenses.md) but its Acceptance Criteria / Functional Requirements / Edge Cases do not satisfy that lens's rule.
 
 ## Output Format
 
@@ -245,6 +259,8 @@ When a finding involves a genuine architectural trade-off — where two reasonab
 | Critic | Failure modes; what breaks at scale or under adversarial conditions | Assume the happy path is wrong |
 
 **Anti-anchoring rule**: Each voice receives only the trade-off description — not the other voices' verdicts. Collect all four independently before synthesizing.
+
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — the four Council voices are one batch under that contract (distinct `name` per voice, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all four voice verdicts are collected and synthesized, call `TaskStop` once per voice subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
 **Council output format** (append to the relevant finding in the report):
 ```
