@@ -117,5 +117,5 @@ For all other ambiguities — borderline High vs Medium severity, uncertain evid
 
 - If the user provides specific docs or files, read those first before scanning the codebase
 - If the codebase is large, focus on README, main entrypoints, and feature directories rather than implementation details
-- Base all findings on observable evidence — avoid speculation without grounding in what you actually read
+- Verify-before-surface: every finding in the report must cite the specific file this session actually read it from — a finding with no citable read is dropped, not hedged with "likely" or "probably"
 - Follow any additional instructions in `$ARGUMENTS`
