@@ -74,6 +74,8 @@ When tempted to skip a step, check this table first:
 
    Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical.
 
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — these four dimension subagents are one batch under that contract (distinct `name` per dimension, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). Apply it before aggregating the dimension returns. **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all four dimension returns are aggregated, call `TaskStop` once per dimension subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
+
 4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
 
    | Subagent | Model | Dimension | Focus |
@@ -245,6 +247,8 @@ When a finding involves a genuine architectural trade-off — where two reasonab
 | Critic | Failure modes; what breaks at scale or under adversarial conditions | Assume the happy path is wrong |
 
 **Anti-anchoring rule**: Each voice receives only the trade-off description — not the other voices' verdicts. Collect all four independently before synthesizing.
+
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — the four Council voices are one batch under that contract (distinct `name` per voice, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all four voice verdicts are collected and synthesized, call `TaskStop` once per voice subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
 
 **Council output format** (append to the relevant finding in the report):
 ```

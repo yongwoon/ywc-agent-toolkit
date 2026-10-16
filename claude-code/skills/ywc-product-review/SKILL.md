@@ -63,6 +63,8 @@ Focus on: what the service **does**, who it serves, and what the main user flows
 
 Use the Task tool to spawn 5 Sonnet subagents in parallel — one per perspective. Pass each subagent a brief context summary (service name, target user, main flows) and the corresponding reference file to read:
 
+> **Action required**: Read [../references/subagent-async-monitoring.md](../references/subagent-async-monitoring.md) now — these five perspective subagents are one batch under that contract (distinct `name` per perspective, full-roster reconciliation on every signal, turn-boundary waiting, bounded escalation). **Release (mechanical gate — do not skip)**: named dispatches stay `idle` after finishing instead of exiting. After all five perspective returns are consumed in Step 2b, call `TaskStop` once per perspective subagent with its `name` as `task_id` (current batch only; skip any still `running`). See the "Releasing Completed Named Agents" section of the reference.
+
 | Subagent | Model | Reference |
 |---|---|---|
 | User Value | sonnet | `references/user-value.md` |
