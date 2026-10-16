@@ -25,7 +25,12 @@
       "required": [
         "forward an explicit `--suggestions apply|defer` on the initial ready call",
         "absence uses the owner default",
-        "Residual advisory Suggestions never trigger another policy preflight"
+        "Residual advisory Suggestions never trigger another policy preflight",
+        "Approval evidence gate",
+        "A fresh preview requires explicit user approval of that concrete preview",
+        "Approval must cover the exact spec/tasks-dir/language/mode/path/revision/digest identity",
+        "never treat preview generation, reuse, or `--approve-preview` itself as approval",
+        "Without approval, return `NEEDS_CONTEXT` with zero consume and executor calls"
       ],
       "forbidden": [
         "Required when `ywc-spec-ready` reports Suggestions",

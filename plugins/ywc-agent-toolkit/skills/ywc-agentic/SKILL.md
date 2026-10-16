@@ -168,7 +168,7 @@ Medium/Large goals only. Skipped on the Small Path.
    **Preview coverage gate** — Immediately validate this call's terminal Status and
    coverage summary against the current ready spec and returned preview identity,
    using the coverage rules below. An unresolved preview permits zero consume calls.
-   This first call writes only the persisted preview artifact. Validate and capture the returned `preview_path`, `preview_revision`, and `preview_digest`, then append them to the UTC iteration log before making the second call:
+   This first call writes only the persisted preview artifact. Validate and capture the returned `preview_path`, `preview_revision`, and `preview_digest`, then append them to the UTC iteration log. **Approval evidence gate** — A fresh preview requires explicit user approval of that concrete preview before making the second call. Approval must cover the exact spec/tasks-dir/language/mode/path/revision/digest identity; never treat preview generation, reuse, or `--approve-preview` itself as approval. In interactive mode, present the persisted preview and obtain approval once; under `--non-interactive`, require existing attributable approval evidence. Without approval, return `NEEDS_CONTEXT` with zero consume and executor calls. An already-approved unchanged preview passes without another confirmation:
    ```text
    ywc-task-generator --spec <ready-artifact> --tasks-dir <tasks-dir> --mode <mode> --approve-preview --preview-path <preview-path> --non-interactive
    ```
