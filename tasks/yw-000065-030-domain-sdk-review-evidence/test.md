@@ -37,3 +37,9 @@ The result exposes uncertainty rather than claiming verified inheritance.
 **Expected Result:**
 
 All applicable checks pass; no Claude Code changes or stale generated copies. Predetermined fixtures are never reported as live behavior. Missing live evidence remains an explicit gap.
+
+## Implementation Evidence
+
+- Baseline `b39a217c`, accepted predecessor. Confidence 95 PROCEED: scope96 architecture96 evidence93 reuse95 root96; existing Devex/error and verify-before-surface owners reused, exact FR-8 portion, no runtime SDK factual claim.
+- AC-9/FR-8 SDK portion: three predetermined source scenarios (verified hierarchy, wrong version, unsupported comment) RED before edits, GREEN after. Version resolution and citation provenance plus actual throw/base/catch/wrapper trace required; unavailable primary evidence stays uncertainty. No new SDK install/network/execute phase. Routing/live selection acceptance remains final task.
+- Interface is prose review evidence, not callable signature. Quality Gate N/A. Unit/source RUN, integration/package/temp-install RUN, security applicability N/A no new auth/SDK execution; mock/performance/build/typecheck N/A Markdown/stdlib. Existing locale usage descriptions remain accurate; internal methodology does not change invocation/output usage.
