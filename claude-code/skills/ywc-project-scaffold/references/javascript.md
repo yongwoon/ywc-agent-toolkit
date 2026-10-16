@@ -19,6 +19,10 @@
     - [Astro Medium](#astro-medium)
   - [Express.js](#expressjs)
     - [Express Medium](#express-medium)
+  - [Fastify](#fastify)
+    - [Fastify Small](#fastify-small)
+    - [Fastify Medium](#fastify-medium)
+    - [Fastify Large (plugin-per-domain)](#fastify-large-plugin-per-domain)
   - [TypeScript Monorepo (pnpm workspaces)](#typescript-monorepo-pnpm-workspaces)
     - [TypeScript Monorepo Large (apps + packages)](#typescript-monorepo-large-apps--packages)
 
@@ -26,7 +30,7 @@
 
 ## Naming Convention
 
-Applies across every framework in this reference (Next.js, NestJS, Astro, Express), regardless of project size.
+Applies across every framework in this reference (Next.js, NestJS, Astro, Express, Fastify), regardless of project size.
 
 | Target | Convention | Example |
 |---|---|---|
@@ -519,6 +523,123 @@ project-root/
 ├── tsconfig.json
 └── package.json
 ```
+
+---
+
+## Fastify
+
+### Fastify Small
+
+Single-file or near-single-file API. Plugin encapsulation is the framework's idiom from day one, but at Small scale it's one route plugin plus schema-based validation — no layering yet.
+
+```
+project-root/
+├── src/
+│   ├── server.ts                  # Fastify instance + listen()
+│   ├── app.ts                     # buildApp() - registers plugins/routes, returns instance (testable)
+│   ├── routes/
+│   │   └── items.ts               # routes as a plain async Fastify plugin (no fp() - keeps this route's context encapsulated)
+│   └── schemas/
+│       └── item.schema.ts         # JSON Schema / TypeBox for request & response validation
+├── tsconfig.json
+└── package.json
+```
+
+**Key Points:**
+
+- `app.ts` / `server.ts` split: `buildApp()` returns a configured Fastify instance without calling `listen()`, so tests can `inject()` against it directly instead of binding a real port.
+- Route files are registered as Fastify plugins (`fastify.register(itemsRoutes)`), not raw Express-style handler exports — this is what makes encapsulation (and later, per-domain isolation) free as the app grows.
+- Request/response validation lives in `schemas/`, not in the handler body — Fastify compiles JSON Schema into a fast validator ahead of time.
+
+---
+
+### Fastify Medium
+
+Feature-grouped plugins, shared decorators, and a plugin for cross-cutting infrastructure (DB client, auth).
+
+```
+project-root/
+├── src/
+│   ├── server.ts
+│   ├── app.ts
+│   ├── plugins/                   # cross-cutting Fastify plugins (loaded once, decorate the instance)
+│   │   ├── db.ts                  # decorates fastify.db
+│   │   ├── auth.ts                # decorates fastify.authenticate (preHandler)
+│   │   └── error-handler.ts       # setErrorHandler + notFoundHandler
+│   ├── modules/                   # one Fastify plugin per feature
+│   │   ├── users/
+│   │   │   ├── users.routes.ts    # export default async function (fastify, opts) { ... } - plain plugin, not fp()
+│   │   │   ├── users.service.ts   # framework-independent business logic
+│   │   │   └── users.schema.ts
+│   │   └── items/
+│   │       └── ... (same pattern)
+│   ├── config/
+│   │   └── index.ts               # env parsing (env-schema / zod)
+│   └── types/
+│       └── fastify.d.ts           # module augmentation for fastify.db / fastify.authenticate
+├── test/
+│   ├── unit/
+│   └── integration/                # fastify.inject() against buildApp()
+├── tsconfig.json
+└── package.json
+```
+
+**Key Points:**
+
+- `plugins/`: infrastructure registered once at the root (DB client, auth `preHandler`, centralized error handler) and exposed to routes via `fastify.decorate()` — not re-instantiated per module.
+- `modules/`: each feature is its own plugin (`fastify.register(usersRoutes, { prefix: '/users' })`), keeping routes, service logic, and schema colocated per domain, same intent as Express's `routes/controllers/services` split but Fastify-native via plugin encapsulation.
+- `types/fastify.d.ts`: TypeScript augmentation is required to type decorators (`fastify.db`, `fastify.authenticate`) — without it, `plugins/` additions are invisible to the compiler in `modules/`.
+- Integration tests use `fastify.inject()` (no real socket) against the instance returned by `buildApp()` — do not `listen()` in tests.
+- Reserve `fastify-plugin` (`fp()`) for `plugins/*` only, where breaking encapsulation to expose a decorator/hook globally is the point. Wrapping a `modules/*` route file in `fp()` flattens it into the parent context — the feature's own `prefix` option is then silently ignored and its encapsulation is lost.
+- Register `plugins/*` before `modules/*` — child contexts only inherit hooks and the error handler that already exist when they are registered. Enforce authentication fail-closed: have `plugins/auth.ts` add a global `onRequest` hook with an explicit public-route allowlist, rather than relying on every route to opt in with `preHandler: [fastify.authenticate]`.
+
+---
+
+### Fastify Large (plugin-per-domain)
+
+Bounded-context plugins with explicit encapsulation contexts, each owning its own DB access, schemas, and sub-plugins — Fastify's plugin tree stands in for the module boundaries NestJS gets from modules and DI. Naming differs from Medium: Medium's global `plugins/` is called `infra/` here, and `plugins/` now holds cross-domain utility plugins.
+
+```
+project-root/
+├── src/
+│   ├── server.ts
+│   ├── app.ts                     # root plugin: registers infra/ first, then each domains/ plugin with its own prefix
+│   ├── infra/                     # root-level infrastructure plugins (registered once, global scope)
+│   │   ├── db.ts
+│   │   ├── auth.ts
+│   │   ├── cache.ts
+│   │   └── error-handler.ts
+│   ├── domains/                   # one encapsulation context per bounded domain
+│   │   ├── users/
+│   │   │   ├── index.ts           # domain plugin entrypoint - async (fastify, opts) => {...}, plain plugin, not fp()
+│   │   │   ├── routes/
+│   │   │   │   └── users.routes.ts
+│   │   │   ├── service/
+│   │   │   │   └── users.service.ts   # no Fastify import - framework-independent
+│   │   │   ├── repository/
+│   │   │   │   └── users.repository.ts
+│   │   │   └── schema/
+│   │   │       └── users.schema.ts
+│   │   └── orders/
+│   │       └── ... (same structure)
+│   ├── plugins/                   # shared, reusable plugins referenced by 2+ domains
+│   │   └── pagination.ts
+│   └── types/
+│       └── fastify.d.ts
+├── test/
+│   ├── unit/                      # service/repository tests - no Fastify instance needed
+│   ├── integration/               # per-domain fastify.inject() tests
+│   └── e2e/
+├── tsconfig.json
+└── package.json
+```
+
+**Key Points:**
+
+- Each `domains/<name>/index.ts` is a **plain** plugin (not `fp()`-wrapped) registered with `fastify.register(usersDomain, { prefix: '/users' })`, so it keeps its own encapsulation context and `prefix` — decorators/hooks added inside it do not leak to sibling domains. `fp()` is reserved for the shared plugins whose decorators or hooks must reach several domains — `infra/` and `plugins/` (see Medium's Key Points) — wrapping a domain entrypoint in it would flatten the domain into the parent context and drop the `prefix`.
+- `service/` and `repository/` layers inside each domain take no Fastify import — this is what keeps business logic testable without booting an instance, the same separation Express's `services/` and NestJS's `application/` layers enforce.
+- `infra/` vs `plugins/`: `infra/` is always-global (DB, auth, error handling — every domain needs it); `plugins/` holds cross-domain utility plugins used by 2+ domains but not by all of them. Do not promote a domain-private helper straight to `infra/`.
+- Only promote a domain's decorator/schema to `plugins/` once 2+ domains need it — same staged-promotion rule as [Component Logic Colocation](#component-logic-colocation) on the frontend side.
 
 ---
 
