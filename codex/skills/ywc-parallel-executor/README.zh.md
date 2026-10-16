@@ -58,3 +58,5 @@ Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文�
 ## Transition Safety
 
 `--non-interactive` 运行不会等待提示，而是返回有界的终端状态。Parallel run 只在根 `.ywc-run-state.json` 旁原子地写入一个 aggregate `.ywc-context-handoff.json`；worker 没有 handoff 权限，也不会传递 peer conclusion。无效 handoff 按 checkpoint、当前 `README.md`、`task.md` 顺序重建。
+
+可归属于 canonical target 的终态事件可省略立即重复的 roster 查询。其他任务继续计时；模糊证据和最终结束仍须完整核对。源码及 fixture 检查不代表实际模型观测。
