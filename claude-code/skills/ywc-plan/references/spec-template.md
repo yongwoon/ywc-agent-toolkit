@@ -88,6 +88,14 @@ Preferred form for each AC:
 [ ] <Name>: When <trigger / input>, system does <behavior>, observable as <concrete check — status code, DB row state, response field, log entry, UI state>.
 ```
 
+For an AC that names an executable command, add the measured pre-change result:
+
+```
+[ ] <Name>: When <command> runs, <expected behavior>, observable as <exit code / output>. Baseline: <exit code> — <one-line output on the pre-change tree>.
+```
+
+`Baseline:` is the command's actual result on the tree before the change (a failing baseline is valid). If the command cannot run before the change, keep the AC unchanged and write `Baseline: unrunnable — <reason>`; never rewrite the AC to make it runnable.
+
 Examples below are written in the preferred form. The first two are generic (any project that has users, items, or scheduled state); the bracketed ones are from a past LP-form session and are included for concreteness — adapt the *shape*, not the LP identifiers.
 
 - [ ] **AC1 — Save notification preference**: When `PATCH /api/v1/users/me/notification-preferences` is called with `{ event_type, channel, enabled }`, system upserts one row in `notification_preferences`, observable as HTTP `200 OK` with the upserted row in the response and the matching row reflecting the new `enabled` value in the DB.
