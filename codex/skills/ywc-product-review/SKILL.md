@@ -1,7 +1,7 @@
 ---
 name: ywc-product-review
 description: >-
-  (ywc) Use when the user wants a business/service perspective review of a project (user value, UX, growth, risk, market). Triggers: "product review", "service feedback", "비즈니스 관점 리뷰", "서비스 개선 포인트", "what should we improve", "プロダクトレビュー", "サービス改善". Do not use for code-level review (use ywc-impl-review), security review (use ywc-security-audit), or UI/UX implementation review (use ywc-ui-ux-review).
+  (ywc) Review business/service value, UX, growth, market risk, adoption, monetization and ROI. Triggers: "product review", "service feedback", "비즈니스 관점 리뷰", "서비스 개선 포인트", "what should we improve", "プロダクトレビュー", "サービス改善". Not technical library comparison (ywc-tech-research), implementation threat modeling (ywc-security-audit), code review (ywc-impl-review), or UI/UX implementation review (ywc-ui-ux-review).
 ---
 
 # Product Review
@@ -20,7 +20,7 @@ When tempted to skip a step, check this table first:
 | "Feature recommendations should match what the user already wants" | Honest review means surfacing tradeoffs the user did not ask about. Soften tone, never soften findings. |
 | "I'll mix multiple perspectives in one finding to save space" | Tag each finding with exactly one primary perspective. Multi-tag findings become impossible to triage. |
 | "Priority is roughly High, do not specify P0/P1/P2" | Always emit explicit priority. Without it, the report becomes a wishlist instead of a plan. |
-| "Risks are speculative, drop them from the report" | Risk is a perspective. Speculative risks are still findings — mark `unverified`, do not drop. |
+| "Risks are speculative, drop them from the report" | Risk is a perspective, but conclusions require observable grounding. Drop unsupported conclusions rather than invent evidence; record missing data as a gap. A grounded uncertain risk may be labeled `unverified` with its evidence and validation need. |
 | "I have no live access, infer growth metrics from code" | If a perspective cannot be assessed (no live data), state the gap. Do not fabricate. |
 | "Running 5 perspectives sequentially is fine" | Phase 1 fan-out reduces total latency; each worker sees only one perspective's checklist, lowering per-call context and improving analysis depth. |
 
@@ -103,7 +103,7 @@ For all other ambiguities — borderline High vs Medium severity, uncertain evid
 
 - If the user provides specific docs or files, read those first before scanning the codebase
 - If the codebase is large, focus on README, main entrypoints, and feature directories rather than implementation details
-- Base all findings on observable evidence — avoid speculation without grounding in what you actually read
+- Base all findings on observable evidence — avoid speculation without grounding in what you actually read. Drop unsupported conclusions rather than invent evidence; missing metrics or market data remain explicit gaps, never invented ROI/adoption claims.
 - Follow any additional instructions in `$ARGUMENTS`
 
 ## Output Format

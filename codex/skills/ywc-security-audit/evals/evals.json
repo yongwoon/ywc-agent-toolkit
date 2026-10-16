@@ -11,6 +11,12 @@
         "Escalates ambiguous Critical/High findings as [P2] with advisor budget accounting",
         "Does not include secrets or full files in snippets"
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "Threat-model this existing authenticated file-upload implementation and its trust boundaries.",
+      "expected_output": "Selects ywc-security-audit, not ywc-product-review, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
+      "files": []
     }
   ]
 }

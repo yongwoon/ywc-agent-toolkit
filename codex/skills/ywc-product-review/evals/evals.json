@@ -18,6 +18,18 @@
       "prompt": "Find growth and user value gaps in this project, but do not invent a roadmap.",
       "expected_output": "Reports grounded growth and user-value findings, marks uncertainty, and avoids fabricated roadmap commitments.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Assess whether this feature is worth building for the business, including user value and ROI.",
+      "expected_output": "Selects ywc-product-review, not ywc-tech-research, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Review the product's adoption and monetization risks.",
+      "expected_output": "Selects ywc-product-review, not ywc-security-audit, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
+      "files": []
     }
   ]
 }

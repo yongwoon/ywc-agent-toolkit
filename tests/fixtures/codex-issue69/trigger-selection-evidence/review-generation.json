@@ -1,0 +1,55 @@
+{
+  "id": "trigger-review-generation",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-9",
+    "FR-8",
+    "AC-10",
+    "FR-9"
+  ],
+  "paired_expectations": [
+    {
+      "prompt": "Check whether this completed implementation conforms to its approved specification.",
+      "expected_skill": "ywc-impl-review",
+      "rejected_skill": "ywc-code-gen"
+    },
+    {
+      "prompt": "Generate Backend, Frontend, and QA layers in parallel from this approved specification.",
+      "expected_skill": "ywc-code-gen",
+      "rejected_skill": "ywc-impl-review"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-impl-review/SKILL.md",
+      "required": [
+        "completed implementation conformance"
+      ],
+      "description_required": [
+        "completed implementation conformance",
+        "구현 검증",
+        "impl review",
+        "코드 리뷰",
+        "実装レビュー",
+        "ywc-impl-review"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-code-gen/SKILL.md",
+      "required": [
+        "completed implementation conformance review"
+      ],
+      "description_required": [
+        "completed implementation conformance review",
+        "코드 생성",
+        "code gen",
+        "풀스택 생성",
+        "full-stack generation",
+        "scaffold feature",
+        "CRUD 생성",
+        "API + UI 동시 생성",
+        "コード生成"
+      ]
+    }
+  ]
+}

@@ -207,7 +207,7 @@
     {
       "id": 23,
       "name": "quality-gate-no-contract-report-only",
-      "prompt": "Review a task with contract_state `N/A \u2014 no quality gate contract`, then a report-only packet with sanitized evidence and an unavailable authorized tool.",
+      "prompt": "Review a task with contract_state `N/A — no quality gate contract`, then a report-only packet with sanitized evidence and an unavailable authorized tool.",
       "expected_output": "No-contract preserves the existing review path and dispatches neither worker; report-only records the sanitized gap without mutation or worker dispatch.",
       "expectations": [
         "Treats the exact no-contract sentinel as compatibility, not failure.",
@@ -327,6 +327,12 @@
       "id": 31,
       "prompt": "Review SDK exception handling where an inline comment claims subclass behavior, with matching, wrong-version or unavailable primary SDK sources.",
       "expected_output": "Resolves inspected package version, cites version-relevant primary SDK source or official error reference and traces inheritance to the actual catch/wrapper. Unsupported comments and wrong/missing version evidence are uncertainty, not confirmed SDK findings; no unconditional network phase. Offline fixtures are not observed behavior.",
+      "files": []
+    },
+    {
+      "id": 32,
+      "prompt": "Check whether this completed implementation conforms to its approved specification.",
+      "expected_output": "Selects ywc-impl-review, not ywc-code-gen, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
       "files": []
     }
   ]
