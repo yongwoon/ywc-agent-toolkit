@@ -26,7 +26,7 @@
       "id": 3,
       "name": "conditional-ui-security-lenses",
       "prompt": "Validate an editable async UI, an authenticated upload boundary, unrelated documentation, and a legacy spec without Failure Modes.",
-      "expected_output": "Apply triggered UI/security rows with source evidence and missing observable postconditions. Cover round-trip/states/optimism/IME/keyboard and relevant auth/IDOR/input/secrets/rate/output/CSRF/path cases. Unrelated rows are N/A with reasons; legacy absence remains valid; execute no spec command.",
+      "expected_output": "Apply only the lens rows the input triggers, with source evidence and missing observable postconditions: round-trip fidelity, loading/empty/error states and keyboard accessibility for the editable async UI, and authentication, input validation and file/path for the authenticated upload boundary. Lenses whose trigger the input does not state (for example optimistic updates, IME composition, CSRF, rate limits, secrets, sensitive output, authorization/IDOR) and the unrelated documentation are N/A with reasons; legacy absence of Failure Modes remains valid; execute no spec command.",
       "files": [
         "SKILL.md",
         "references/ui-qa-lenses.md",
