@@ -37,3 +37,11 @@ Each triggered lens has a negative-path test; duplicate scenarios and unconditio
 **Expected Result:**
 
 All applicable checks pass; no Claude Code changes or stale generated copies. Predetermined fixtures are never reported as live behavior. Missing live evidence remains an explicit gap.
+
+## Implementation Evidence
+
+- Baseline `b5fac41f`; predecessor merged/accepted. Confidence 95 PROCEED (scope96 architecture94 evidence92 reuse96 root95): exact FR-7 scope, existing diff/template/input modes and Stage2 lens reused; no signature invention or source ambiguity.
+- AC-8/FR-7 E1: behavior/docs-only/localized-template and overlapping/untriggered/missing-reference source fixtures observed RED before production edits. These are offline source assertions, not live behavioral observations.
+- Interfaces: create-pr reuses existing author-review evidence and resolved language/template; gen-testcase consumes shared spec-validator lens from installed sibling, returning NEEDS_CONTEXT when absent. No extra fetch/collection or publishing authorization.
+- Quality Gate N/A. Unit source predicates RUN; integration source/package/temp-install RUN; security negative-path contracts RUN; mock/performance/build/typecheck N/A Markdown/stdlib with no runtime service. Existing localized README invocation descriptions remain accurate and contain no conflicting Impact/lens behavior. No unrelated locale churn.
+- GREEN: 3 contract tests, contract runner, both description shards, agent evals and install list passed. Temporary installation of gen-testcase + spec-validate resolved the sibling lens byte-for-byte. First mechanical S7 check misclassified Markdown `../ywc-…` as slash command; explicit skills-root-relative reference removed ambiguity without changing reference authority or evaluator.
