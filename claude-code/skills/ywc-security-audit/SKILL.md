@@ -2,7 +2,7 @@
 name: ywc-security-audit
 version: 1.0.0
 description: >-
-  (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), the static-analysis worker pass (ywc-security-engineer: bounded-diff dispatch; this skill owns orchestration and ad-hoc threat-model requests), or for code that does not touch auth/external input/sensitive data.
+  (ywc) Use when reviewing authentication/authorization code, external-facing endpoints, code handling sensitive data, ad-hoc threat-model requests, or for periodic security reviews. Triggers: "보안 점검", "security audit", "보안 감사", "OWASP", "취약점 분석", "보안 리뷰", "security check", "is this code secure", "セキュリティ監査". Do not use for general code review (use ywc-impl-review), product-level risk review (use ywc-product-review), a bounded-diff static scan dispatched straight to ywc-security-engineer, or for code that does not touch auth/external input/sensitive data.
 category: review
 phase: quality
 requires: []
