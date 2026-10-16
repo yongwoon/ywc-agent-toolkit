@@ -13,7 +13,9 @@
         "review each unavailable dimension exactly once",
         "degraded coverage",
         "target, elapsed time, final roster state, evidence category, and direct-review result",
-        "Never manufacture a worker terminal result"
+        "Never manufacture a worker terminal result",
+        "For proved-quiescent `reviewer-unavailable` lanes",
+        "against the same spec, project context and dimension rubric"
       ]
     }
   ]

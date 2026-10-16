@@ -10,7 +10,8 @@
     {
       "source": "codex/skills/ywc-spec-validate/SKILL.md",
       "required": [
-        "No-delegation inline review is a separate provenance category"
+        "No-delegation inline review is a separate provenance category",
+        "dimensions inline only when delegation is unavailable"
       ]
     }
   ]
