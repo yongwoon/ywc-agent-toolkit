@@ -21,6 +21,17 @@
         "SKILL.md",
         "../references/subagent-status-actions.md"
       ]
+    },
+    {
+      "id": 3,
+      "name": "conditional-ui-security-lenses",
+      "prompt": "Validate an editable async UI, an authenticated upload boundary, unrelated documentation, and a legacy spec without Failure Modes.",
+      "expected_output": "Apply triggered UI/security rows with source evidence and missing observable postconditions. Cover round-trip/states/optimism/IME/keyboard and relevant auth/IDOR/input/secrets/rate/output/CSRF/path cases. Unrelated rows are N/A with reasons; legacy absence remains valid; execute no spec command.",
+      "files": [
+        "SKILL.md",
+        "references/ui-qa-lenses.md",
+        "references/security-qa-lenses.md"
+      ]
     }
   ]
 }

@@ -37,3 +37,11 @@ Both references resolve and absence of the legacy section alone is not a failure
 **Expected Result:**
 
 All applicable checks pass; no Claude Code changes or stale generated copies. Predetermined fixtures are never reported as live behavior. Missing live evidence remains an explicit gap.
+
+## Implementation Evidence
+
+- Baseline `fb9fa13d`. AC-3/FR-3/FM-3: four source/fixture cases (UI, auth/upload, unrelated documentation, legacy) failed before edits (2 failures, 2 missing-reference errors); then passed after definitions and consumer wiring. Removing the trigger eligibility or N/A/no-invention clauses fails the unrelated-surface case. These are source assertions / fixture expectations, not model behavior.
+- Interface: trigger/source evidence -> applicable row or N/A with reason -> observable omission/evidence gap using existing dimension severity. No new callable or state/schema interface.
+- Quality Gate N/A — no quality gate contract. Unit RUN source fixtures; integration RUN generated package/temp installed references via validate.sh; security RUN focused negative applicability and security-lens source assertions (not a runtime scanner); mock service N/A (no runtime boundary implementation); performance N/A (no budget/claim). Full five-axis review required by critical metadata.
+- Build/typecheck N/A for Markdown contracts. Preserve metadata/locales and source-first package synchronization; no Claude Code or release edits. Existing localized usage stays accurate (no new flag or changed invocation); no gratuitous locale edits.
+- Description verification uses `--paths a-m` and `--paths n-z` per recorded run ruling.

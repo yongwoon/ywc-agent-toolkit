@@ -71,6 +71,16 @@ When tempted to skip a step, check this table first:
 
      Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical. If no named precedent exists, still include the table with a single `(No named precedent identified)` row so downstream readers know the omission check was performed.
 
+3.6. **Conditional omission lenses** — Apply a lens only when its trigger matches the reviewed spec
+   or verified project context. Use [UI lenses](references/ui-qa-lenses.md) for
+   affected user interfaces and [security lenses](references/security-qa-lenses.md)
+   for affected trust boundaries. Record lens, trigger/source evidence, applicability,
+   missing observable requirement, and verification location/gap. For unrelated
+   surfaces, record `N/A` with a reason. Do not invent product requirements for unrelated surfaces.
+   Feed applicable omissions into Completeness and relevant compatibility checks;
+   the existing dimension rubric determines severity. Legacy specs without Failure Modes remain valid;
+   lens applicability does not require adding that section or executing spec commands.
+
 4. **Phase 1 — Parallel Dimension Review** — Use Codex subagent delegation when the current session exposes a delegation tool to run 4 workers in parallel, one per review dimension. If no delegation tool is available, run the same four dimension passes inline and record the fallback in the report. Do not use Claude Code-only `Task(...)` fields, `subagent_type`, or explicit Claude model pins in the Codex bundle. Pass each worker the project context from Step 1, the spec text from Step 2, and any Step 3.5 coverage rows relevant to its dimension:
 
    | Worker | Dimension | Focus |

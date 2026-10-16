@@ -1,0 +1,24 @@
+{
+  "id": "omission-auth-upload",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-3",
+    "FR-3",
+    "FM-3"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/references/security-qa-lenses.md",
+      "required": [
+        "authentication",
+        "authorization / IDOR",
+        "input validation",
+        "secrets",
+        "rate limits",
+        "sensitive output",
+        "CSRF",
+        "file / path"
+      ]
+    }
+  ]
+}
