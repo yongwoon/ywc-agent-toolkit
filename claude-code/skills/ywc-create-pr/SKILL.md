@@ -34,6 +34,7 @@ When tempted to skip a step, check this table first:
 | "The PR conflicts with base — I'll rebase the feature branch to fix it" | Rebasing rewrites commit SHAs and orphans existing PR review threads. Merge the base *into* the feature branch instead (`git merge --no-ff origin/<base>`); it preserves SHAs and review history. See `references/pr-conflict-resolution.md`. |
 | "The UL update adds noise before every PR" | The update is a diff-driven incremental review, not a full re-extraction. If no new domain terms appeared in the branch, the skill produces no changes. Skipping it lets the glossary drift from the codebase with every PR that introduces new vocabulary. |
 | "I generated this code, I know it is fine — just file the PR" | Filing code whose diff you have not read yourself inflicts unreviewed code on every reviewer. Read each changed line first (Step 6.5); it catches scope creep, leftover debug output, and secrets the generation step introduced — the cheapest review pass there is. |
+| "I'll re-fetch the diff for the Impact section since Step 6.5's read might be stale by now" | Nothing lands between Step 6.5's diff read and Step 7's PR-description writing — no new commits, no rebase. Re-fetching is a wasted duplicate diff read; reuse the same output. If the branch genuinely changed in between (e.g. a user-directed amendment), re-run Step 6.5 itself first, not a second ad-hoc diff pull scoped only to Impact. |
 | "Checking the task README too is extra work, just fuzzy-match the plan folder" | The task README's `## Spec Reference` → `Primary Sources` is already recorded precisely by `ywc-task-generator` — it is the authoritative source. Path A (task lookup) always runs before Path B (fuzzy match), never the reverse. |
 | "Completed plans always live in `OLD/`, so I only need to search that folder" | The subdirectory name for completed plans is project-specific (`OLD`, `archive`, `done`, etc.). Search `docs/ywc-plans/**/*.md` recursively instead of hardcoding one folder name. |
 | "`docs/ywc-plans/` is missing, treat it as an error" | Other projects reusing this skill may never have created the directory, or it may be `.gitignore`d. Absence is a normal state — skip Step 6.6's Path B silently, never surface it as a failure. |
@@ -261,7 +262,7 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
     ```
 
 - Write each section based on all commits from the base branch (`git log <base-branch>..HEAD`)
-- Review the full diff (`git diff <base-branch>...HEAD`) to ensure the description accurately reflects the changes
+- Review the full diff already read in Step 6.5 to ensure the description accurately reflects the changes
 - **Design Background (optional, appended)**: if Step 6.6 held a result, **append** a Design Background section after the template/default body above — this augments the body, it never replaces or reorders the project's own template structure (same rule as the `.github/pull_request_template.md` precedence above). Localize the heading and intro line to the language chosen in Step 0 — do not hardcode a single language:
 
   | Language | Heading | Intro (`source: "task"`) | Intro (`source: "plan"`) |
@@ -311,6 +312,27 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
   ```
 
   The quoted `summary`/`excerpt`/`alternatives_excerpt` text itself stays verbatim (it is a quotation, not translated). If Step 6.6 held no result, omit this section entirely — do not add an empty or placeholder Design Background block.
+- **Impact (optional, appended)**: reuse the diff already read in Step 6.5 (`git diff <base-branch>...HEAD`) — do not fetch it a second time, the branch has not changed since that read. Classify the diff as either a **behavior change** (logic, API contract, config values, or other user/operator-facing behavior shifted) or **no behavior change** (docs-only, comments, pure formatting/lint fixes, renames with no logic change, test-only additions). If no behavior change, omit this section entirely — do not add a placeholder sentence. If a behavior change is present, **append** an Impact section after the Design Background block above (or directly after the template/default body if Step 6.6 held no result) — this augments the body, it never replaces or reorders the project's own template structure (same rule as the `.github/pull_request_template.md` precedence above). Localize the heading and sub-headings to the language chosen in Step 0:
+
+  | Language | Heading | Scope sub-heading | Before/After sub-heading | Before label | After label |
+  |---|---|---|---|---|---|
+  | en | `## Impact` | `**Scope of Impact**` | `**Before / After**` | `Before:` | `After:` |
+  | ko | `## 영향 범위 (Impact)` | `**영향 대상 (Scope of Impact)**` | `**변경 전/후 (Before / After)**` | `변경 전:` | `변경 후:` |
+  | ja | `## 影響範囲 (Impact)` | `**影響対象 (Scope of Impact)**` | `**変更前後 (Before / After)**` | `変更前:` | `変更後:` |
+  | zh | `## 影响范围 (Impact)` | `**影响对象 (Scope of Impact)**` | `**变更前后 (Before / After)**` | `变更前:` | `变更后:` |
+  | es | `## Impacto (Impact)` | `**Alcance del impacto (Scope of Impact)**` | `**Antes / Después (Before / After)**` | `Antes:` | `Después:` |
+
+  ```markdown
+  <localized heading>
+
+  <localized scope sub-heading>: <who or what is affected — e.g. production vs. dev-only, a specific user segment, or "no impact on production" with the reason>
+
+  <localized before/after sub-heading>:
+  - <localized before label> <concrete behavior prior to this change>
+  - <localized after label> <concrete behavior after this change>
+  ```
+
+  Base both sub-parts strictly on what Step 6.5's diff shows — never speculate about downstream effects the diff does not evidence.
 - **PR title**: if `--title` was provided in Step 0, use it verbatim. Otherwise, generate a title from the commit history in the language chosen in Step 0.
 - Write all description content in the language chosen in Step 0
 - If there are no UI changes, write "N/A" in the screenshot section (if the template has one)

@@ -37,6 +37,13 @@ Verify log volume and structure support debugging without drowning out signal.
 - Are log levels assigned correctly (DEBUG / INFO / WARN / ERROR)? An INFO line that fires on every request adds 86,400 lines/day per RPS.
 - Are correlation identifiers (request_id, trace_id, user_id) present on every log line in the request scope?
 - Are noisy logs gated behind feature flags or DEBUG level, not unconditionally enabled?
+- When log-level or retry/alerting decisions branch on a **third-party SDK's exception hierarchy**
+  (an `instanceof` / error-code predicate over a library's error classes, e.g. classifying a caught
+  error as "infrastructure failure" vs "client/validation failure"), verify the classification against
+  that library's *actual* exception taxonomy — fetch its source or published error-reference docs —
+  rather than trusting the diff's inline comment. A plausible-sounding comment is not evidence; a
+  catch-all predicate (`!(error instanceof <LibraryBaseError>)`) silently folds every error that
+  doesn't extend `<LibraryBaseError>` into the wrong bucket.
 
 ### 4. Documentation
 
