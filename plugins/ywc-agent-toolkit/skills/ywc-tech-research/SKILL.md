@@ -1,7 +1,7 @@
 ---
 name: ywc-tech-research
 description: >-
-  (ywc) Compare libraries, implementation approaches and technical trade-offs and sourced best practices before plan/spec decisions. Triggers: "기술 조사", "라이브러리 비교", "research", "compare options", "best way to implement", "技術調査", "ライブラリ比較". For business value or ROI use ywc-product-review. Not spec writing (ywc-spec-writer), validation (ywc-spec-validate), generation (ywc-code-gen), or simple doc lookup without evaluation.
+  (ywc) Compare libraries, implementation approaches and technical trade-offs and sourced best practices before plan/spec decisions. Triggers: "기술 조사", "라이브러리 비교", "research", "compare options", "best way to implement", "技術調査", "ライブラリ比較". For business value or ROI use ywc-product-review. Do not use for spec writing (ywc-spec-writer), validation (ywc-spec-validate), generation (ywc-code-gen), or simple doc lookup without evaluation.
 ---
 
 # ywc-tech-research

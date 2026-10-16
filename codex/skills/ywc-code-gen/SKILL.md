@@ -1,7 +1,7 @@
 ---
 name: ywc-code-gen
 description: >-
-  (ywc) Parallel Backend + Frontend + QA generation from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Not completed implementation conformance review (ywc-impl-review), single-owner spec/ticket implementation without parallel layers (ywc-implement), single-file edits, existing-module refactoring, debugging, or work without a spec.
+  (ywc) Parallel Backend + Frontend + QA generation from a spec. Triggers: "코드 생성", "code gen", "풀스택 생성", "full-stack generation", "scaffold feature", "CRUD 생성", "API + UI 동시 생성", "コード生成". Do not use for completed implementation conformance review (ywc-impl-review), single-owner spec/ticket implementation without parallel layers (ywc-implement), single-file edits, existing-module refactoring, debugging, or work without a spec.
 ---
 
 # ywc-code-gen
