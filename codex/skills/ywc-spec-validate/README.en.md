@@ -39,3 +39,5 @@ Trigger conditions for this Skill are defined in the `description` field of [SKI
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+Before aggregation, reconcile all four dimensions through the shared monitor. Possibly-live reviewers block the result. Proven-quiescent unavailable dimensions receive one parent review with explicit degraded coverage, distinct from inline review without delegation.

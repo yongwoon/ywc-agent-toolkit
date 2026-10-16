@@ -43,3 +43,5 @@
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+汇总前通过共享监控核对四个维度。可能仍在运行的审查者会阻止结果。仅已确认静止但不可用的维度由父代理复核一次，并标记 degraded coverage；这与未委派的内联审查不同。

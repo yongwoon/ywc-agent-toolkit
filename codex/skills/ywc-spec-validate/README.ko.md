@@ -39,3 +39,5 @@ Critical / Warning / Suggestion 심각도별 분류, 각 Issue 에 파일:행 �
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+사양 리뷰 집계 전에 공유 모니터로 네 차원을 확인합니다. 실행 중일 수 있는 리뷰어는 BLOCKED이며, 종료가 입증된 불가용 차원만 부모가 한 번 검토하고 degraded coverage로 기록합니다. 위임 없는 인라인 검토와 구분합니다.

@@ -11,6 +11,16 @@
         "Counts advisor or council usage when escalation occurs",
         "Blocks handoff to ywc-task-generator unless the final status is DONE"
       ]
+    },
+    {
+      "id": 2,
+      "name": "spec-review-quiescence-boundaries",
+      "prompt": "One spec dimension is quiescent without terminal output, another may still be live after an API error; consider missing identity, no delegation, and terminal completion during escalation.",
+      "expected_output": "Possibly-live evidence blocks aggregation, Phase 2, direct fallback and handoff. Only proved-quiescent unavailability permits exactly one same-rubric parent review per dimension with degraded provenance. Failed dispatch or missing identity is not quiescent absence; no-delegation inline is distinct; attributable terminal completion wins.",
+      "files": [
+        "SKILL.md",
+        "../references/subagent-status-actions.md"
+      ]
     }
   ]
 }

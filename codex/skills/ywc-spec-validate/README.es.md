@@ -43,3 +43,5 @@ Las condiciones de activación de esta Habilidad están definidas en el campo `d
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+Antes de agregar resultados, el monitor compartido reconcilia las cuatro dimensiones. Un revisor posiblemente activo bloquea el resultado. Solo una dimensión no disponible y confirmada como detenida recibe una revisión directa del agente principal con degraded coverage, distinta de la revisión sin delegación.

@@ -88,6 +88,36 @@ When tempted to skip a step, check this table first:
 
    Missing requirements in these flows are Completeness findings. Use Critical when the omission can produce a double charge, oversell, lost ledger entry, or duplicate provisioning; otherwise use Warning.
 
+   **Read-only dispatch and availability gate (before Step 4b / Phase 2):**
+   Explicitly designate every dimension worker as read-only and inject the bounded
+   inline exception from [`subagent-status-actions.md`](../references/subagent-status-actions.md):
+   captured canonical target, `Status`, one-line `Summary`, up to five confirmed
+   findings and two advisor candidates, plus applicable bounded concern/blocker/context
+   fields. Prohibit create/edit/remove operations and artifact promises. Retain only
+   returned canonical targets from successful dispatches; no identity from labels.
+
+   Apply [`subagent-async-monitoring.md`](../references/subagent-async-monitoring.md)
+   to the complete four-dimension roster before aggregation or advisor selection.
+   That reference owns event-first reconciliation, timing, escalation, and final
+   quiescence proof; do not introduce a second monitoring algorithm.
+   Terminal evidence arriving during escalation wins under that shared procedure.
+
+   - Any possibly-live lane returns `BLOCKED` with only a minimal `Monitoring Blocked`
+     result and its monitoring evidence. Skip direct fallback, Phase 2, ordinary aggregation, normal report, and downstream handoff.
+   - For proved-quiescent `reviewer-unavailable` lanes, the parent must review each unavailable dimension exactly once
+     against the same spec, project context and dimension rubric. Record source dimension,
+     target, elapsed time, final roster state, evidence category, and direct-review result.
+     Mark this as **degraded coverage**; never label it a clean worker response.
+     Never manufacture a worker terminal result. Preserve the unavailable lane alongside
+     the parent's findings, then aggregate all four dimensions. `DONE` is possible only
+     if normal findings/gates permit it and the degraded provenance remains explicit.
+   - Failed dispatch or missing canonical identity follows existing failed-dispatch
+     handling as a non-terminal blocker; never classify them as quiescent absence.
+     Retain raw evidence and establish identity/quiescence before any lifecycle action.
+   - No-delegation inline review is a separate provenance category: review all four
+     dimensions inline only when delegation is unavailable, recording that fact rather
+     than fabricating a dispatch or an unavailable-worker result.
+
    Each worker returns:
    - **Confirmed findings** — dimension label, severity (Critical / Warning / Suggestion), file:line, description, improvement
    - **Advisor candidates** — findings where two reasonable interpretations exist (include the specific choice and its consequence, ≤100 lines per candidate)
@@ -141,6 +171,10 @@ When tempted to skip a step, check this table first:
 - Critical: N, Warning: M, Suggestion: K
 - Phase 2 advisor calls used: X of N ({single-advisor|council|none|disabled|budget-exhausted})
 - Advisor budget status: {available|disabled|exhausted|advisor-required|not-reported}
+
+### Review Availability
+- Coverage: delegated | degraded coverage (with parent direct-review evidence) | no-delegation inline
+- Unavailable dimensions: source, target, elapsed, final roster, evidence category, direct result
 
 ### Precedent Site Coverage
 | Precedent site (`file:line` + what runs there) | Spec coverage: Replicated / Deferred-with-reason / OMITTED |

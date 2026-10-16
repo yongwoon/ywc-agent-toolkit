@@ -1,0 +1,20 @@
+{
+  "id": "spec-availability-quiescent",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-2",
+    "FR-2",
+    "FM-2"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "review each unavailable dimension exactly once",
+        "degraded coverage",
+        "target, elapsed time, final roster state, evidence category, and direct-review result",
+        "Never manufacture a worker terminal result"
+      ]
+    }
+  ]
+}
