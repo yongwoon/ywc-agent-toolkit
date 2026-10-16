@@ -2092,14 +2092,8 @@ graph LR
 ## Phase yw-000064 — done
 - Completed: `yw-000064-010-domain-conditional-omission-lenses`, `yw-000064-020-domain-spec-failure-evidence`, `yw-000064-030-domain-task-coverage-gate`
 
-## Phase yw-000065 — Stage 3 — interaction and evidence
-
-| Task | Deliverable | Depends On |
-|---|---|---|
-| [yw-000065-010-domain-bounded-suggestion-policy](yw-000065-010-domain-bounded-suggestion-policy/README.md) | Bounded Suggestions and approved-preview reuse | `yw-000064-030-domain-task-coverage-gate` |
-| [yw-000065-020-domain-impact-security-evidence](yw-000065-020-domain-impact-security-evidence/README.md) | Localized PR Impact and security testcase evidence | `yw-000065-010-domain-bounded-suggestion-policy` |
-| [yw-000065-030-domain-sdk-review-evidence](yw-000065-030-domain-sdk-review-evidence/README.md) | Version-grounded SDK exception review evidence | `yw-000065-020-domain-impact-security-evidence` |
-| [yw-000065-040-domain-trigger-selection-evidence](yw-000065-040-domain-trigger-selection-evidence/README.md) | Bounded trigger corrections and observed selections | `yw-000065-030-domain-sdk-review-evidence` |
+## Phase yw-000065 — done
+- Completed: `yw-000065-010-domain-bounded-suggestion-policy`, `yw-000065-020-domain-impact-security-evidence`, `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence`
 
 ## Parallel Execution Notes — Codex issue #69
 
@@ -2149,25 +2143,3 @@ All rows below are COVERED by generated implementation tasks, not implemented or
 - AC-10 / FR-9 / FM-8 / FM-9 apply to all nine tasks; each task includes source-first packaging, locale/metadata preservation, offline test wiring, evidence labels and applicable installed-asset checks.
 - Optional delegated-review observation belongs to 63-020. Mandatory T1–T6 observations belong to 65-040; static fixtures never satisfy them.
 
-## Visual Dependency Graph — Codex issue #69
-
-```mermaid
-graph LR
-  N0["yw-000063-010 Event-aware monitoring reconciliation"]
-  N1["yw-000063-020 Quiescence-gated spec-review availability"]
-  N2["yw-000064-010 Conditional UI and security omission lenses"]
-  N3["yw-000064-020 Failure Modes and read-only baseline evidence"]
-  N4["yw-000064-030 Task coverage with atomic agentic consumer gate"]
-  N5["yw-000065-010 Bounded Suggestions and approved-preview reuse"]
-  N6["yw-000065-020 Localized PR Impact and security testcase evidence"]
-  N7["yw-000065-030 Version-grounded SDK exception review evidence"]
-  N8["yw-000065-040 Bounded trigger corrections and observed selections"]
-  N0 --> N1
-  N1 --> N2
-  N2 --> N3
-  N3 --> N4
-  N4 --> N5
-  N5 --> N6
-  N6 --> N7
-  N7 --> N8
-```
