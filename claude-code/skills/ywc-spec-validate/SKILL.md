@@ -31,6 +31,7 @@ When tempted to skip a step, check this table first:
 | "Spec passed and tasks were generated from it, so they must agree" | task-generator can silently drop or reinterpret a requirement. When `--tasks` is set, build the Requirement Coverage table (Step 4c) — an UNCOVERED FR ships an incomplete feature while every spec-internal claim still validates cleanly. Drift between artifacts is invisible to spec-only review. |
 | "Every spec deserves the full 2 advisor calls" | Right-size the *advisor/council* spend (not the cheap Sonnet fan-out): a single-section follow-up does not need the same Opus budget as a 15-AC multi-module spec. Spending advisor calls on a trivial spec wastes tokens; under-spending on a cross-cutting one misses real trade-offs. Apply the Complexity-Aware Budget Defaults before Phase 1. |
 | "spec has no code yet, so concurrency is an implementation-phase problem" | Missing concurrency/transaction/idempotency requirements for a duplicate-sensitive write are a Completeness Critical — caught at the spec stage. |
+| "The spec already describes the screen, no need to run the UI lens check" | A screen description states what the UI looks like, not whether round-trip fidelity, loading/empty/error states, or destructive-action reversibility are defined — Step 3.6 exists precisely because these are the QA expectations an author assumes are "obvious" and therefore never writes down. |
 
 **Violating the letter of these rules is violating the spirit.** A spec review that finds nothing is not a review.
 
@@ -73,6 +74,12 @@ When tempted to skip a step, check this table first:
    4. **Every row marked OMITTED is its own Completeness Critical.** Do not fold multiple omitted sites into one finding, and **do not let a louder conflict elsewhere (e.g. a stale-anchor or deprecated-path finding) substitute for explicitly naming the omitted site** — an omission and a conflict are different defects and both must be reported. Each OMITTED Critical names the omitted site's `file:line` and the runtime path on which the feature fails.
 
    Include the coverage table in the report, and feed each OMITTED row into the Completeness dimension of Phase 1 as a separate Critical.
+
+3.6. **UI/Interaction Omission Check (MANDATORY omission check).** Step 3.5 targets precedent-site omissions; this step targets UI/interaction trigger surfaces with the same structure — a spec's own prose rarely states a QA expectation an experienced reviewer would apply by habit, so the check runs against a fixed lens table rather than the spec's own claims.
+
+   > **Action required**: Read [references/ui-qa-lenses.md](references/ui-qa-lenses.md) now for the canonical lens table before running this check.
+
+   For each lens row whose Trigger surface matches this spec, check whether the spec's Acceptance Criteria / Functional Requirements / Edge Cases satisfy that lens's Rule. A triggered lens the spec does not address is a **Completeness** finding — cite the lens name and the nearest relevant spec section (or its absence). Skip any lens whose trigger surface the spec does not touch; do not force-fit lenses onto a non-UI spec.
 
 4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
 
@@ -122,6 +129,9 @@ When tempted to skip a step, check this table first:
 | Feasibility | Whether the spec can be implemented with the current stack |
 | Code Compatibility | Conflicts with existing DB schema, API route patterns |
 | Simplicity | Whether the spec specifies abstraction, configurability, or generality the stated scope does not yet require (over-engineering). Assessed within the Feasibility pass — surface speculative scope as a Warning, not a separate subagent. |
+
+UI/Interaction omission mapping (Step 3.6):
+- **Completeness**: the spec triggers ≥1 lens from [references/ui-qa-lenses.md](references/ui-qa-lenses.md) but its Acceptance Criteria / Functional Requirements / Edge Cases do not satisfy that lens's rule.
 
 ## Output Format
 

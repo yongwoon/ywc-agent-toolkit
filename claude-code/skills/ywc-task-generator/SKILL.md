@@ -66,6 +66,7 @@ For the full language detection examples, language-specific writing rules (techn
 - See [references/granularity-modes.md](references/granularity-modes.md) for the full rule set
 - Split tasks that significantly exceed the mode's guideline
 - Do not bundle more than one major concern in a single task
+- **Right-Sizing.** Fold setup, configuration, scaffolding, and documentation steps into the task whose deliverable needs them; split only where a reviewer could meaningfully reject one task while approving its neighbor (Principles 3–4 still force their own tasks)
 - Prefer self-contained change units that leave the codebase buildable on completion
 
 ### 2. Dependency Safety
@@ -432,6 +433,8 @@ After generating all tasks, verify the following:
 - [ ] Verification commands match the project's actual commands (based on context collected in Step 2)
 
 **Consistency:**
+- [ ] **Spec coverage**: every spec Acceptance Criterion, Functional Requirement, and `## Failure Modes` row maps to ≥1 task (Failure Modes rows as a test step in the task owning that path); an unmapped item gets a task or is listed in the Step 11 result summary as `Unmapped spec items: <id list>` — never silently dropped (the No-AC Open Questions list guards the opposite direction)
+- [ ] **Interface consistency**: every name/signature a task consumes from a `Depends On` task matches that task's `Owned Interface` verbatim
 - [ ] Dependency Graph Summary matches individual README.md files
 - [ ] If the task set is intended for parallel execution, Dependency Graph includes Parallel Execution Notes
 - [ ] Codebase is buildable after each task completes
