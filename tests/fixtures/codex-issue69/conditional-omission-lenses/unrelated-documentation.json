@@ -1,0 +1,19 @@
+{
+  "id": "omission-unrelated-documentation",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-3",
+    "FR-3",
+    "FM-3"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "Apply a lens only when its trigger matches the reviewed spec",
+        "Do not invent product requirements for unrelated surfaces",
+        "record `N/A` with a reason"
+      ]
+    }
+  ]
+}
