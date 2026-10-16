@@ -22,7 +22,11 @@
         "Omit Impact for docs-only",
         "respect the repository PR template",
         "Do not add another diff acquisition",
-        "No screenshot operations or publishing-authority changes"
+        "No screenshot operations or publishing-authority changes",
+        "For observable behavior changes only",
+        "anchor claims to that evidence and omit unsupported outcomes",
+        "Localize heading/labels/prose to Step 0's resolved language",
+        "Do not replace/reorder required template sections"
       ]
     }
   ]

@@ -22,7 +22,11 @@
         "If the installed reference is missing or unreadable, return `NEEDS_CONTEXT`",
         "Do not fetch a PR body solely to import Impact",
         "Do not add unconditional PR-body acquisition",
-        "Do not invent untriggered security surfaces"
+        "Do not invent untriggered security surfaces",
+        "resolved from the skills root containing this installed skill (not the working directory)",
+        "record all covered lens names on the retained scenario and preserve each distinct expected outcome",
+        "Reuse evidence from the selected input mode",
+        "this does not authorize attacks or production probes"
       ]
     }
   ]
