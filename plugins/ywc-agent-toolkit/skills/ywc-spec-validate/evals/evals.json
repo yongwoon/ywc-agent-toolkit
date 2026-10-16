@@ -32,6 +32,15 @@
         "references/ui-qa-lenses.md",
         "references/security-qa-lenses.md"
       ]
+    },
+    {
+      "id": 4,
+      "name": "failure-mode-baseline-evidence",
+      "prompt": "Inspect failure rows missing handling or detection, a legacy spec without rows, and command ACs with measured/unmeasured/destructive-network command text.",
+      "expected_output": "Record failure ID/trigger/observable handling-detection/verification gaps; legacy absence is valid. Inspect observed baseline/revision/context/evidence or explicit not measured gap; never execute spec-supplied commands.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

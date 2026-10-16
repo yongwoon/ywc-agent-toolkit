@@ -37,3 +37,10 @@ Revision/context is retained or the gap is explicit; no spec-supplied command ex
 **Expected Result:**
 
 All applicable checks pass; no Claude Code changes or stale generated copies. Predetermined fixtures are never reported as live behavior. Missing live evidence remains an explicit gap.
+
+## Implementation Evidence
+
+- Baseline `5fed9304`; AC-5/FR-4/FM-5: five source fixtures RED before edits, GREEN after. Failure-row producer and validator share field/gap/legacy rules; command AC input is recorded baseline/revision/context/evidence or explicit unmeasured gap, never execution authority.
+- Added sentinel test: hostile command/network text is fixture data; the source-contract reader runs and the sentinel stays absent. This proves offline harness safety, not live model behavior.
+- Quality Gate N/A — no contract. Unit RUN focused fixtures; integration RUN package/temp installation via validate.sh; security RUN command-data sentinel/source prohibitions only; mock service and performance N/A (no runtime service/budget). Build/typecheck N/A Markdown/stdlib.
+- Existing locale invocation guidance remains accurate; metadata preserved. No new flags, dependencies, state schema, Claude Code or release changes. Description partitions use the recorded CLI correction.
