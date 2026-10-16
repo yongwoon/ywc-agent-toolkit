@@ -2095,14 +2095,6 @@ graph LR
 ## Phase yw-000065 — done
 - Completed: `yw-000065-010-domain-bounded-suggestion-policy`, `yw-000065-020-domain-impact-security-evidence`, `yw-000065-030-domain-sdk-review-evidence`, `yw-000065-040-domain-trigger-selection-evidence`
 
-## Parallel Execution Notes — Codex issue #69
-
-- Initial ready set: `yw-000063-010-domain-event-monitoring` only. Subsequent tasks become ready after their immediate predecessor is accepted and merged, subject to the full-stage gates.
-- This batch is deliberately serialized: every task extends the shared focused runner and contract assertions, and synchronizes source/generated distribution. No same-phase parallel task pair is advertised.
-- External conflict: `yw-000058-010-docs-named-agent-release` may modify `scripts/validate.sh`. Serialize and refresh its baseline before 63-010 validation wiring; it is a conflict, not a logical dependency on Claude work. Other existing tasks remain governed by their original graph sections.
-- Each task owns exact source/locale files, task-specific fixtures, matching generated paths, and bounded shared-runner edits. Only 63-010 owns new validator wiring. Synchronization must not sweep unrelated changes.
-- Size exceptions: required locale and generated mirror paths can exceed ~35 files, especially atomic coverage producer/consumer and Suggestion owner/caller changes. README forecasts count these explicitly; authored delta remains bounded below ~1,200 LOC per task. Do not fragment those contracts solely to reduce duplicate-file counts.
-
 ## Requirement Coverage — Codex issue #69
 
 All rows below are COVERED by generated implementation tasks, not implemented or verified behavior. AC-9 requires both SDK evidence and all six real routing observations; unavailable/mismatched observations leave implementation acceptance unmet.
