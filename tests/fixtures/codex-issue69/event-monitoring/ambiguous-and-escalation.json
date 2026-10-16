@@ -1,0 +1,18 @@
+{
+  "id": "ambiguous-and-escalation",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-1",
+    "FM-1"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/references/subagent-async-monitoring.md",
+      "required": [
+        "Malformed, ambiguous, status-less, or target-mismatched messages remain non-terminal",
+        "A missing roster entry is not terminal evidence",
+        "An attributable terminal payload wins when it arrives during escalation"
+      ]
+    }
+  ]
+}

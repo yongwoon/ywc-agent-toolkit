@@ -192,6 +192,16 @@
       "prompt": "A parallel worker spawn succeeds without a usable returned canonical task_name, or returns an unparseable target.",
       "expected_output": "Does not invent identity from the agent ID or requested label and does not add the worker to the active roster. It uses existing failed-dispatch handling and remains non-terminal if the response may represent a live worker.",
       "files": ["SKILL.md", "../references/subagent-async-monitoring.md"]
+    },
+    {
+      "id": 30,
+      "name": "event-first-query-accounting",
+      "prompt": "A captured terminal target completes while another worker remains outstanding; then malformed, status-less, mismatched and escalation-time messages arrive.",
+      "expected_output": "Skip an immediate redundant roster call only for an attributable parseable terminal event; keep other clocks, reconcile ambiguity and final closure. Missing roster entries never prove completion. Preserve shared heartbeat and one-request/interrupt guards.",
+      "files": [
+        "SKILL.md",
+        "../references/subagent-async-monitoring.md"
+      ]
     }
   ]
 }

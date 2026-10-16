@@ -1,0 +1,20 @@
+{
+  "id": "bounded-consumer",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-10",
+    "FR-9",
+    "FM-8",
+    "FM-9"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-parallel-executor/SKILL.md",
+      "required": [
+        "elapsed >= 600 seconds",
+        "heartbeat <= 60 seconds",
+        "one request and one interrupt per dispatch"
+      ]
+    }
+  ]
+}

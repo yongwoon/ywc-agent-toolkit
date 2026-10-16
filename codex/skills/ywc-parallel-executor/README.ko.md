@@ -60,3 +60,5 @@ Quality Gate Contract가 있으면 Task Verify 직후 task별 Cleaner를 한 번
 ## Transition Safety
 
 `--non-interactive` 실행은 prompt 없이 bounded terminal status를 반환합니다. Parallel run은 root `.ywc-run-state.json` 옆에 aggregate `.ywc-context-handoff.json` 하나만 원자적으로 기록하며 worker handoff와 peer conclusion은 허용하지 않습니다. 잘못된 handoff는 checkpoint와 현재 `README.md`/`task.md`에서 재구성합니다.
+
+명확한 canonical target의 terminal event는 즉시 중복 roster 조회를 생략할 수 있습니다. 다른 작업의 시간 추적은 계속하며, 모호한 메시지와 최종 종료 시에는 전체 roster를 확인합니다. 소스/fixture 검증은 실제 모델 관찰이 아닙니다.

@@ -62,3 +62,5 @@ This skill follows the report, artifact, and status format defined in [SKILL.md]
 ## Transition Safety
 
 `--non-interactive` runs return bounded terminal statuses without prompts. A parallel run writes exactly one aggregate `.ywc-context-handoff.json` beside root `.ywc-run-state.json`; workers have no handoff authority and peer conclusions are excluded. Invalid handoffs are reconstructed from checkpoint, then current `README.md` and `task.md`.
+
+An attributable canonical-target terminal event may skip an immediate redundant roster query. Other workers retain their timers; ambiguous evidence and final closure require full-roster reconciliation. Source/fixture checks do not constitute live model observations.

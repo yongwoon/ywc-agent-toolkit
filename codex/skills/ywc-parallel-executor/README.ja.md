@@ -58,3 +58,5 @@ Wave planning は shared public contract を単なる file path ではなく Sha
 ## Transition Safety
 
 `--non-interactive` 実行は prompt を開かず bounded terminal status を返します。Parallel run は root の `.ywc-run-state.json` の隣に aggregate `.ywc-context-handoff.json` を 1 つだけ原子的に書き込み、worker handoff と peer conclusion を許可しません。無効な handoff は checkpoint、現在の `README.md`、`task.md` の順で再構成します。
+
+canonical target に帰属する終端イベントでは、直後の重複 roster 照会を省略できます。他の対象の計時は継続し、曖昧な証拠と最終終了時には全体を照合します。ソース・fixture 検証は実モデルの観測ではありません。

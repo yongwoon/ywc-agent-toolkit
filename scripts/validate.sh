@@ -139,6 +139,7 @@ check_codex_plan_handoff() {
 check_codex_skill_contracts() {
   local desc_helper="scripts/check-codex-skill-descriptions.sh"
   local contract_runner="scripts/run-codex-skill-contract-evals.sh"
+  # The contract runner also executes tests/codex_issue69_contract_test.py (offline only).
 
   if [ ! -x "$desc_helper" ]; then
     echo "ERROR: $desc_helper is missing or not executable"

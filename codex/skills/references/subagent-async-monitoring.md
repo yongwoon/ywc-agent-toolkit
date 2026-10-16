@@ -54,6 +54,19 @@ The monitor is event-first but roster-complete:
 4. Keep monitoring while any target lacks attributable terminal evidence.
 5. A missing roster entry is not terminal evidence and never proves `DONE`.
 
+Skip the immediate redundant roster query only when the delivered event names
+exactly one captured canonical dispatch target and parses to exactly one supported
+terminal status (`DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, or `NEEDS_CONTEXT`).
+The recorded outstanding roster must already account for the remaining dispatches.
+Continue elapsed-time tracking for every other outstanding target; processing one
+completion never resets another target's clock or escalation guards.
+Malformed, ambiguous, status-less, or target-mismatched messages remain non-terminal;
+reconcile the complete roster on those wakeups, timeouts, steering, unclear event
+ordering, and API errors. A contradictory payload does not satisfy this exception.
+At final batch closure, always perform complete roster reconciliation, processing
+all delivered events and accounting for every captured dispatch before closing.
+A missing roster entry alone proves neither completion nor quiescence.
+
 An attributable terminal payload wins when it arrives during escalation. A late
 terminal payload after a preserved failure is retained as recovery evidence and
 does not silently reverse the source-task transition.
@@ -71,7 +84,7 @@ state; they must not issue a second request or interrupt for the same identity.
 
 ### Implementation and review workers
 
-At 600 seconds after successful dispatch, if no attributable terminal payload
+At elapsed >= 600 seconds after successful dispatch, if no attributable terminal payload
 exists:
 
 1. send one status request to the returned canonical target;
