@@ -248,7 +248,7 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
     ```
 
 - Write each section based on all commits from the base branch (`git log <base-branch>..HEAD`)
-- Review the full diff (`git diff <base-branch>...HEAD`) to ensure the description accurately reflects the changes
+- Use the full diff already read in Step 6.5 to ensure the description accurately reflects the changes — do not fetch it again
 - **Impact (optional)** — For observable behavior changes only, write a concise localized block with affected scope and concrete Before/After behavior. Reuse the diff already read during author review; anchor claims to that evidence and omit unsupported outcomes. Omit Impact for docs-only changes or when no observable behavior changes. Localize heading/labels/prose to Step 0's resolved language; respect the repository PR template by using its matching section or fitting the block within its existing structure. Do not replace/reorder required template sections. Do not add another diff acquisition or a collection phase solely for Impact. No screenshot operations or publishing-authority changes.
 - **PR title**: if `--title` was provided in Step 0, use it verbatim. Otherwise, generate a title from the commit history in the language resolved in Step 0 (`en`, `ja`, `ko`, `zh`, or `es`).
 - Write all description prose in the language chosen in Step 0. Do not translate branch names, task IDs, file paths, commands, labels, code blocks, YAML keys, JSON keys, or other machine identifiers.
