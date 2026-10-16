@@ -11,6 +11,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.39.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.38.0...v1.39.0) (2026-10-16)
+
+
+### Added
+
+* port develop-with-llm issue [#69](https://github.com/yongwoon/ywc-agent-toolkit/issues/69) skill improvements to Claude Code and Codex skills ([#201](https://github.com/yongwoon/ywc-agent-toolkit/issues/201)) ([c9f4fe0](https://github.com/yongwoon/ywc-agent-toolkit/commit/c9f4fe04f76dd04c779d2e885d7d247bdc1fe032))
+
+
+### Fixed
+
+* remove machine-specific graft path from helpers ([#206](https://github.com/yongwoon/ywc-agent-toolkit/issues/206)) ([160c59e](https://github.com/yongwoon/ywc-agent-toolkit/commit/160c59eb5207379bb1ddc2ee13c39aa8224127c8))
+
 ## [1.38.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.37.0...v1.38.0) (2026-09-28)
 
 
