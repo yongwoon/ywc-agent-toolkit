@@ -425,7 +425,7 @@ Refer to `references/dependency-graph.md.template` for format. List tasks by pha
 This graph must be consistent with the Dependencies sections in individual README.md files.
 Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
-After generating all tasks, verify the following:
+Before returning either a preview or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md), including its attributable coverage summary and interface/verification mapping. Then verify the following:
 
 **Dependency & Structure:**
 - [ ] No forward dependencies (earlier tasks do not depend on later tasks)

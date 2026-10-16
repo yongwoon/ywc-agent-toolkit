@@ -47,3 +47,10 @@ Mismatch includes producer/consumer evidence; valid documented test mapping is a
 **Expected Result:**
 
 All applicable checks pass; no Claude Code changes or stale generated copies. Predetermined fixtures are never reported as live behavior. Missing live evidence remains an explicit gap.
+
+## Implementation Evidence
+
+- Baseline `67e08599`: seven source fixtures RED (5 failures/2 absent-reference errors), GREEN after atomic producer/consumer edits. Added ten negative report fixtures (non-DONE/absent/malformed/contradictory/mismatched at both boundaries), expected zero downstream calls, plus source-order assertions that each gate follows its call before the next boundary. These are fixture expectations/source checks, not a live call trace.
+- Interface: existing task-generator Status plus call-attributed spec/preview identity, coverage counts and unresolved IDs; no planner/ready Result or checkpoint/handoff schema extension. Consumer returns unchanged attributable failure or BLOCKED invalid evidence, preserves artifacts, and authorizes no repair execution.
+- Ruling: owned output reference did not exist, so created it from existing inline Step 11 and linked it. Owned README template mapping is required by task checklist though not listed separately in Key Files.
+- Quality Gate N/A. Unit RUN source/placement fixtures; integration RUN package/temp install via validate.sh; security RUN source approval/identity negatives only; mock/performance N/A no runtime API/budget. Build/typecheck N/A Markdown/stdlib. Existing locale invocation usage remains accurate; required metadata/locales preserved.

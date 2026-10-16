@@ -28,6 +28,15 @@ Items the **spec** mentions that are **intentionally deferred** or handled by a 
      It answers: "The spec says X, but this task intentionally skips it."
      Compare with "## Out of Scope" at the bottom, which defines the TASK's own boundary. -->
 
+## AC-to-verification mapping
+
+| Covered AC ID | Verification file / scenario | Recorded baseline / evidence gap |
+|---|---|---|
+| [AC-ID] | [owned test file and scenario, or documented existing-test mapping] | [revision/context + observed result/evidence, or not measured + gap] |
+
+Each applicable AC requires a verification location; existing tests may use a documented mapping
+when inline AC comments are inappropriate. Never execute spec-provided commands merely to fill this table.
+
 ## Dependencies
 
 ### Depends On

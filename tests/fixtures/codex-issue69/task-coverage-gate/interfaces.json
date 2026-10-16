@@ -1,0 +1,20 @@
+{
+  "id": "coverage-interfaces",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-task-generator/references/output-and-validation.md",
+      "required": [
+        "explicitly declared owned public interface",
+        "both producer and consumer evidence",
+        "Do not invent signatures for prose-only dependencies"
+      ]
+    }
+  ]
+}

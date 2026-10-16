@@ -165,10 +165,16 @@ Medium/Large goals only. Skipped on the Small Path.
    ```text
    ywc-task-generator --spec <ready-artifact> --tasks-dir <tasks-dir> --mode <mode> --preview-only --preview-path <preview-path>
    ```
+   **Preview coverage gate** — Immediately validate this call's terminal Status and
+   coverage summary against the current ready spec and returned preview identity,
+   using the coverage rules below. An unresolved preview permits zero consume calls.
    This first call writes only the persisted preview artifact. Validate and capture the returned `preview_path`, `preview_revision`, and `preview_digest`, then append them to the UTC iteration log before making the second call:
    ```text
    ywc-task-generator --spec <ready-artifact> --tasks-dir <tasks-dir> --mode <mode> --approve-preview --preview-path <preview-path> --non-interactive
    ```
+   **Consume coverage gate** — Immediately validate this call's terminal Status and
+   coverage summary against the same spec and approved preview identity, using the
+   coverage rules below. An unresolved consume permits zero executor calls.
    The second call is consume-only. It must reuse the exact same `--spec`, `--tasks-dir`, output language, and approved preview identity. Missing preview, stale digest, mismatched identity, or a direct bypass of the first call stop the run with `NEEDS_CONTEXT`.
    `ywc-task-generator` resolves output language through
    [`../references/language-resolution.md`](../references/language-resolution.md).
@@ -176,6 +182,16 @@ Medium/Large goals only. Skipped on the Small Path.
    task/spec language or a shared config tier resolves one for task/spec
    artifacts. Otherwise preserve the no-`--lang` behavior and let
    `ywc-task-generator` ask if needed.
+   **Coverage rules for both gates:** Continue only on `DONE` with zero deferred-in-scope and uncovered counts
+   and no contradictory unresolved IDs. Require non-negative integer counts, deduplicated
+   unresolved IDs consistent with those counts and coverage rows, and evidence attributable
+   to this call's spec/revision and exact preview path/revision/digest. An
+   attributable non-`DONE` status propagates unchanged and preserves artifacts.
+   Any missing, malformed, contradictory, or identity-mismatched status/coverage evidence
+   returns `BLOCKED`. Never use a prior call's report to satisfy the current gate.
+   Repair returns to existing spec/task preparation within approved scope; no automatic
+   execution or completion mutation is authorized. This bounded report does not expand
+   the closed planner/ready Result schema or executor checkpoint/handoff state.
 3. Read `<tasks-dir>/dependency-graph.md` and select the executor:
    - `--executor` is explicit → use that executor.
    - `--executor auto` and the graph yields **multiple waves with independent tasks** → `ywc-parallel-executor`.

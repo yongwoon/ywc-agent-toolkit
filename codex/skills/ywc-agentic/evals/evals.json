@@ -82,6 +82,15 @@
       "expected_downstream_calls": {"valid": 1, "invalid": 0, "note": "invalid counts calls at or after the rejecting stage's preflight; callees that legitimately completed at earlier stages are not counted — a Small-scale goal never reaches the --mode preflight at all"},
       "expected_handoff": "accepted only for the complete validated Result; rejected for every malformed, guessed, or incomplete input",
       "expected_output": "Uses only the paired labelled Scale/Artifact or final ready Artifact, returns the named bounded terminal status for each case, and never prompts or calls a downstream skill after a rejected preflight. Each argument is validated immediately before the callee that consumes it, so a Small-scale --non-interactive goal is never blocked on a missing --mode."
+    },
+    {
+      "id": 14,
+      "name": "attributable-requirement-coverage",
+      "prompt": "An AC/FR/failure row is uncovered or deferred in scope; preview or consume returns non-DONE, missing/malformed/contradictory/mismatched coverage. Also compare an owned interface mismatch and existing-test mapping.",
+      "expected_output": "Report every requirement status and attributable counts/IDs; unresolved preview has zero consume calls, unresolved consume has zero executor calls. Propagate attributable non-DONE unchanged, invalid evidence BLOCKED, preserve artifacts. Clean DONE needs zero gaps and matching identity; no state/Result-schema expansion or implicit approval. QA consumes actual AC verification mappings.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

@@ -261,6 +261,15 @@
         "Advisor retains boundary-based split reasons and the one-advisor budget"
       ],
       "files": ["SKILL.md"]
+    },
+    {
+      "id": 34,
+      "name": "attributable-requirement-coverage",
+      "prompt": "An AC/FR/failure row is uncovered or deferred in scope; preview or consume returns non-DONE, missing/malformed/contradictory/mismatched coverage. Also compare an owned interface mismatch and existing-test mapping.",
+      "expected_output": "Report every requirement status and attributable counts/IDs; unresolved preview has zero consume calls, unresolved consume has zero executor calls. Propagate attributable non-DONE unchanged, invalid evidence BLOCKED, preserve artifacts. Clean DONE needs zero gaps and matching identity; no state/Result-schema expansion or implicit approval. QA consumes actual AC verification mappings.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

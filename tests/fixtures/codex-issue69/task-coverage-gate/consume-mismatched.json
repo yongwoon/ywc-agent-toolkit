@@ -1,0 +1,22 @@
+{
+  "id": "coverage-consume-mismatched",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "FR-4",
+    "FM-4"
+  ],
+  "boundary": "consume",
+  "invalid_evidence": "mismatched",
+  "expected_downstream_calls": 0,
+  "checks": [
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "unresolved consume permits zero executor calls",
+        "missing, malformed, contradictory, or identity-mismatched",
+        "attributable non-`DONE` status propagates unchanged"
+      ]
+    }
+  ]
+}

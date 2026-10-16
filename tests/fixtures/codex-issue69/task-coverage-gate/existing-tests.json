@@ -1,0 +1,19 @@
+{
+  "id": "coverage-existing-tests",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-task-generator/references/task.md.template",
+      "required": [
+        "AC-to-verification mapping",
+        "existing tests may use a documented mapping"
+      ]
+    }
+  ]
+}

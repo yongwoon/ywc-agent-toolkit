@@ -1,0 +1,19 @@
+{
+  "id": "coverage-preview-stop",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-4",
+    "AC-5",
+    "FR-4",
+    "FM-4"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "**Preview coverage gate**",
+        "unresolved preview permits zero consume calls"
+      ]
+    }
+  ]
+}
