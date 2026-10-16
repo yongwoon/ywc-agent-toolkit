@@ -1,0 +1,33 @@
+{
+  "id": "impact-security-impact",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-8",
+    "FR-7",
+    "AC-10",
+    "FR-9"
+  ],
+  "scenarios": [
+    "behavior diff",
+    "docs-only",
+    "localized template"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-create-pr/SKILL.md",
+      "required": [
+        "**Impact (optional)**",
+        "Reuse the diff already read",
+        "affected scope and concrete Before/After",
+        "Omit Impact for docs-only",
+        "respect the repository PR template",
+        "Do not add another diff acquisition",
+        "No screenshot operations or publishing-authority changes",
+        "For observable behavior changes only",
+        "anchor claims to that evidence and omit unsupported outcomes",
+        "Localize heading/labels/prose to Step 0's resolved language",
+        "Do not replace/reorder required template sections"
+      ]
+    }
+  ]
+}

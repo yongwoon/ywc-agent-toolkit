@@ -30,6 +30,12 @@
       "prompt": "Use $ywc-gen-testcase --range HEAD~3..HEAD --lang es.",
       "expected_output": "Generates testsheet prose in Spanish while keeping YAML front matter keys, section numbers, filenames, code snippets, and template skeleton in English. Technical terms such as Developer Verification, QA / Browser, PR, Task, Expected, Status, and Sign-off remain English.",
       "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Generate a testsheet for overlapping authorization and file/path changes in a git range.",
+      "expected_output": "Reads shared security lenses, adds triggered negative paths, deduplicates without dropping checks, uses existing range evidence without PR-body fetch. Missing installed reference returns NEEDS_CONTEXT.",
+      "files": []
     }
   ]
 }

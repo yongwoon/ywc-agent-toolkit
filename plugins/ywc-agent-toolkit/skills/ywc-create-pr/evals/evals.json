@@ -69,6 +69,12 @@
         "Keeps branch names, task IDs, file paths, commands, labels, YAML keys, JSON keys, and code blocks unchanged",
         "Does not prompt for title/body language because an explicit language hint was provided"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Write a localized PR body for a behavior diff, then for docs-only, using the repository template.",
+      "expected_output": "Uses already-read diff for optional affected scope and concrete Before/After; localizes to resolved language and respects template. Docs-only omits Impact. No extra acquisition, screenshot or authority change.",
+      "files": []
     }
   ]
 }

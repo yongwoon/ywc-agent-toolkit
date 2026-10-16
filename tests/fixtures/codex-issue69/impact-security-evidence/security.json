@@ -1,0 +1,33 @@
+{
+  "id": "impact-security-security",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-8",
+    "FR-7",
+    "AC-10",
+    "FR-9"
+  ],
+  "scenarios": [
+    "overlapping triggered lenses",
+    "untriggered lens",
+    "missing installed reference"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-gen-testcase/SKILL.md",
+      "required": [
+        "ywc-spec-validate/references/security-qa-lenses.md",
+        "one negative-path scenario for each triggered lens",
+        "Deduplicate overlapping scenarios without dropping any triggered check",
+        "If the installed reference is missing or unreadable, return `NEEDS_CONTEXT`",
+        "Do not fetch a PR body solely to import Impact",
+        "Do not add unconditional PR-body acquisition",
+        "Do not invent untriggered security surfaces",
+        "resolved from the skills root containing this installed skill (not the working directory)",
+        "record all covered lens names on the retained scenario and preserve each distinct expected outcome",
+        "Reuse evidence from the selected input mode",
+        "this does not authorize attacks or production probes"
+      ]
+    }
+  ]
+}
