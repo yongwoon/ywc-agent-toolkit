@@ -14,7 +14,13 @@
         "loading / empty / error",
         "optimistic",
         "IME",
-        "keyboard"
+        "keyboard",
+        "Apply a row only when its trigger appears in the reviewed requirements",
+        "Accepted values survive edit -> save -> reload/export without unintended normalization or loss",
+        "Loading, no results and failed operations are distinguishable",
+        "rollback on rejection and duplicate/reordered responses",
+        "Composition is not submitted, normalized or truncated prematurely",
+        "Keyboard operation, visible focus, focus order/return"
       ]
     }
   ]
