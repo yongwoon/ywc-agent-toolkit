@@ -1,0 +1,17 @@
+{
+  "id": "failure-evidence-missing-detection",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-5",
+    "FR-4",
+    "FM-5"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "missing detection/test evidence is an explicit gap"
+      ]
+    }
+  ]
+}

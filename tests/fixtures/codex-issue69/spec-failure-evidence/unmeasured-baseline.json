@@ -1,0 +1,18 @@
+{
+  "id": "failure-evidence-unmeasured-baseline",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "AC-5",
+    "FR-4",
+    "FM-5"
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-spec-validate/SKILL.md",
+      "required": [
+        "`not measured` with the specific evidence gap",
+        "never infer a successful baseline"
+      ]
+    }
+  ]
+}

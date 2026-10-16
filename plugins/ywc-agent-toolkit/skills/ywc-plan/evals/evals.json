@@ -157,6 +157,15 @@
         "Guessing npm, pytest, cargo, or other project commands.",
         "Treating a tool name or prose instruction as an approved command identity."
       ]
+    },
+    {
+      "id": 12,
+      "name": "failure-mode-baseline-evidence",
+      "prompt": "Inspect failure rows missing handling or detection, a legacy spec without rows, and command ACs with measured/unmeasured/destructive-network command text.",
+      "expected_output": "Record failure ID/trigger/observable handling-detection/verification gaps; legacy absence is valid. Inspect observed baseline/revision/context/evidence or explicit not measured gap; never execute spec-supplied commands.",
+      "files": [
+        "SKILL.md"
+      ]
     }
   ]
 }

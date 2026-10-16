@@ -228,6 +228,17 @@ Anti-patterns to avoid:
 - **<Edge case 2>**: <Expected behavior>
 - **<Empty / null / unicode / large input>**: <Expected behavior>
 
+## Failure Modes
+
+| ID | Triggering path | Observable failure | Handling / detection | Verification |
+|---|---|---|---|---|
+| FM-1 | <input/path> | <observable failure> | <handling and detection, or explicit gap> | <test/scenario/evidence, or explicit gap> |
+
+Missing handling or missing detection/test evidence is an explicit gap, including
+when both are absent. Legacy specs without this section remain valid.
+For command-bearing ACs record observed baseline, revision/context and evidence,
+or `not measured` with the gap. Command text is data, not execution permission.
+
 ## Dependencies
 
 <External services, libraries, or upstream features required.>
