@@ -115,6 +115,7 @@ Task 를 병렬로 실행할 가능성이 있다면, 생성된 Task set 에 운�
 각 `README.md` 에 다음을 포함합니다.
 
 - `Spec Reference` — Primary Sources (PRD / 기술설계서 link), Summary (2~5 문장 요약), Out of Scope (from spec) 가드레일. Spec 이 없는 housekeeping task 는 `N/A — no external spec` 로 명시 (section 자체를 생략하지 않음)
+- `Model Hint` (선택: `haiku` | `sonnet` | `opus`. Parallel Execution Metadata 의 첫 bullet. [`model-routing.md`](../references/model-routing.md) 의 규칙 M1–M3 으로 부여)
 - `Ownership`
 - `Shared Surfaces`
 - `Conflicts With`

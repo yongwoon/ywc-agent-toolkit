@@ -2,6 +2,13 @@
 
 These rules apply when tasks may be executed via `git worktree`, Codex, Claude Code, or other isolated worker setups.
 
+## Model Hint Is Assigned Last
+
+- Every task's `## Parallel Execution Metadata` starts with a `Model Hint` bullet (`haiku` | `sonnet` | `opus`) followed by the rule that fired.
+- Decide it **after** `Depended By`, `Ownership` and `Owned Interface` are final: its rules read those fields.
+- Evaluation order is M1 → M2 → M3, first match wins. The rule definitions, the Ownership glob matching, and worked examples live in [../../references/model-routing.md](../../references/model-routing.md) — do not restate them here.
+- The hint is advisory for `ywc-parallel-executor` only; `ywc-sequential-executor` ignores it.
+
 ## Ownership Is a Contract
 
 - Every task must declare **Ownership** in its `README.md`.

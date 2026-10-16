@@ -115,6 +115,7 @@ Task を parallel execution する可能性がある場合、生成される Tas
 各 `README.md` には以下を含めます。
 
 - `Spec Reference` — Primary Sources (PRD / tech design への link)、Summary (2〜5 文の orientation)、Out of Scope (from spec) の guardrail。spec が存在しない housekeeping task は section を省略せず `N/A — no external spec` と明記します。
+- `Model Hint` (任意: `haiku` | `sonnet` | `opus`。Parallel Execution Metadata の最初の bullet。[`model-routing.md`](../references/model-routing.md) の規則 M1–M3 で付与)
 - `Ownership`
 - `Shared Surfaces`
 - `Conflicts With`

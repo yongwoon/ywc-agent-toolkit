@@ -115,6 +115,7 @@ When tasks may be executed in parallel, the generated task set should include op
 Each `README.md` should include:
 
 - `Spec Reference` — Primary Sources (links to PRD / tech design), Summary (2–5 sentence orientation), and Out of Scope (from spec) guardrail. Housekeeping tasks with no spec should explicitly record `N/A — no external spec` instead of omitting the section.
+- `Model Hint` (optional: `haiku` | `sonnet` | `opus`, first bullet under Parallel Execution Metadata; assigned by rules M1–M3 in [`model-routing.md`](../references/model-routing.md))
 - `Ownership`
 - `Shared Surfaces`
 - `Conflicts With`
