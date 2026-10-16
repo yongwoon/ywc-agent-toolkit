@@ -24,7 +24,7 @@ them.
 For each row whose Trigger surface matches the spec under review, check whether
 the spec's Acceptance Criteria, Functional Requirements, or Edge Cases satisfy
 that row's Rule. A triggered row the spec does not address is a Completeness
-finding — cite the row's Lens name and the nearest relevant spec section (or
+Warning — cite the row's Lens name and the nearest relevant spec section (or
 its absence) in the finding description. Do not force-fit a row whose trigger
 surface the spec does not touch.
 

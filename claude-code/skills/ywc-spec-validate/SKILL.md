@@ -79,7 +79,7 @@ When tempted to skip a step, check this table first:
 
    > **Action required**: Read [references/ui-qa-lenses.md](references/ui-qa-lenses.md) now for the canonical lens table before running this check.
 
-   For each lens row whose Trigger surface matches this spec, check whether the spec's Acceptance Criteria / Functional Requirements / Edge Cases satisfy that lens's Rule. A triggered lens the spec does not address is a **Completeness** finding — cite the lens name and the nearest relevant spec section (or its absence). Skip any lens whose trigger surface the spec does not touch; do not force-fit lenses onto a non-UI spec.
+   For each lens row whose Trigger surface matches this spec, check whether the spec's Acceptance Criteria / Functional Requirements / Edge Cases satisfy that lens's Rule. A triggered lens the spec does not address is a **Completeness Warning** — cite the lens name and the nearest relevant spec section (or its absence). Feed each such row into the Completeness dimension of Phase 1 as its own finding (do not fold several lenses into one), and include them in the report. Skip any lens whose trigger surface the spec does not touch; do not force-fit lenses onto a non-UI spec.
 
 4. **Phase 1 — Parallel Dimension Review** — Use the Task tool to spawn 4 Sonnet subagents in parallel, one per review dimension. Pass each subagent the project context from Step 1 and the spec text from Step 2:
 
