@@ -31,3 +31,5 @@ This skill follows the report, loop log, and status format defined in [SKILL.md]
 ## Agentic artifact profile
 
 With `--artifact-profile agentic`, success returns one Result block containing only `Status: DONE` and `Artifact: <path>`. Artifact must be an existing regular repository-relative Markdown file inside the validated candidate root; `Scale` and prose/basename/raw-response fallbacks are rejected.
+
+When only Suggestions remain, the default attempts one amendment/revalidation in either mode. Explicit apply/defer and user instructions win; residual advisory findings do not create another prompt. Defer records against a valid reviewed artifact without amendment. New Critical/Warning findings and invalid evidence retain blocking behavior.

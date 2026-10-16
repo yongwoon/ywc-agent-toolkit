@@ -66,6 +66,11 @@ class ContractTests(unittest.TestCase):
         preview_gate = phase.index('**Preview coverage gate**')
         consume_call = phase.index('--approve-preview --preview-path')
         consume_gate = phase.index('**Consume coverage gate**')
+        approval_gate = phase.index('**Approval evidence gate**')
+        self.assertLess(preview_gate, approval_gate)
+        self.assertLess(approval_gate, consume_call)
+        self.assertIn('Without approval, return `NEEDS_CONTEXT` with zero consume and executor calls',
+                      phase[approval_gate:consume_call])
         self.assertLess(preview_call, preview_gate)
         self.assertLess(preview_gate, consume_call)
         self.assertLess(consume_call, consume_gate)

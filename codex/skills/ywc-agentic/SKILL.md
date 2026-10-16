@@ -55,7 +55,7 @@ When tempted to bypass a rule, check this table first:
 | `--non-interactive` | flag | — | Close each callee's required inputs immediately before that callee is invoked; never leave a prompt open. Propagated to downstream callees only when the orchestrator itself received it. |
 | `--mode` | `--mode <documented-task-generator-mode>` | — | Required for Medium/Large task generation and forwarded unchanged. |
 | `--lang` | `--lang <en\|ja\|ko\|zh\|es>` | — | Required only when shared language resolution cannot determine task/spec language. |
-| `--suggestions` | `--suggestions <apply\|defer>` | — | Required when `ywc-spec-ready` reports Suggestions. |
+| `--suggestions` | `--suggestions <apply\|defer>` | owner default | Optional override forwarded to spec-ready in either mode. |
 | `--resume-disposition` | `--resume-disposition <resume\|stop>` | — | Required only when the selected executor has an authoritative checkpoint. |
 | `--dry-run` | flag | — | Print the planned phase sequence only; invoke no skills and make no changes. |
 | `--terse` | flag | — | Minimal output — phase headers and the final report only, no per-phase prose. |
@@ -72,7 +72,7 @@ Argument validation is **staged**: each argument is validated immediately before
 | Argument | Validated immediately before |
 |---|---|
 | Planner inputs (`<goal>` / `--goal`, `--tasks-dir`, `--max-iterations`) | the first `ywc-plan` call (Step 3) |
-| `--suggestions` | the `ywc-spec-ready` amendment call, once its Result has reported Suggestions (Step 3) |
+| `--suggestions` | validate an explicit value before the initial ready call; absence uses the owner default |
 | `--mode`, `--lang` | Medium/Large task generation, once Scale is known (Step 4) |
 | `--resume-disposition` | executor invocation, once the executor's checkpoint has been inspected (Step 5) |
 | `--pr-lang` | executor invocation, once shared language resolution has run (Step 5) |
@@ -127,7 +127,7 @@ Skipped entirely in **Resume Mode**. In **Full Mode** (first iteration) and on *
    Parse `Scale` and `Artifact` atomically. Resolve the labelled Artifact against the repository root; require an existing regular Markdown file under `docs/ywc-plans/`, and for Small require `docs/ywc-plans/YYYYMMDD-small_<slug>.md`. Reject duplicate/missing/conflicting fields, absolute or escaping paths, non-Markdown files, unlabelled prose, basenames, requested output paths, and raw-response recovery. A parseable non-`DONE` terminal status is propagated; missing or invalid status/result is `BLOCKED`. The bounded diagnostic may contain only producer, failed field, candidate count, path digest, and reason; never store response text or tool output.
 3. Branch on the verified Scale:
    - **Small** → skip task generation and executors; do not invoke `ywc-code-gen` here. Proceed to Step 5 (Execute Phase), which invokes it against this resolved Artifact only after recording the pre-iteration baseline SHA.
-   - **Medium / Large** → pass the resolved candidate Artifact verbatim to `ywc-spec-ready --spec <artifact> [--non-interactive]`, forwarding `--non-interactive` only when the orchestrator received it. Invoke it **without** `--suggestions` first — the flag is only meaningful once a `ywc-spec-ready` Result exists. Only when that Result reports Suggestions does the `--suggestions` preflight run, immediately before the amendment call; under `--non-interactive` a missing `--suggestions` there returns bounded `NEEDS_CONTEXT: --suggestions` with only the count and invokes no further callee. Continue only when its single Result is `Status: DONE`; otherwise propagate its parseable terminal status or return bounded `BLOCKED`.
+   - **Medium / Large** → pass the resolved candidate Artifact verbatim to `ywc-spec-ready --spec <artifact>`; forward an explicit `--suggestions apply|defer` on the initial ready call and `--non-interactive` exactly when received. An invalid explicit value returns `NEEDS_CONTEXT`; absence uses the owner default. Continue only on its verified single `Status: DONE` Result; propagate other attributable terminal statuses unchanged or invalid evidence as `BLOCKED`.
 
 **Re-plan — iteration N > 1 after an Evaluate Fail:**
 
@@ -154,7 +154,7 @@ Artifact: <repository-relative regular Markdown file>
 
 Agentic never treats a human handoff, log entry, requested output, basename, or raw response as authority. A Result parser rejects unknown/duplicate/missing fields, out-of-root or escaping paths, stale candidates, and non-regular/non-Markdown files. It returns only bounded status, producer, failed field, candidate count, path digest, and reason. No raw response, transcript, tool output, generated source, full diff, or other sensitive diagnostic field may be persisted or forwarded. A producer `NEEDS_CONTEXT`, `BLOCKED`, or other parseable terminal status is propagated unchanged; absent or malformed status is `BLOCKED` and prevents downstream invocation.
 
-For `ywc-spec-ready`, Suggestions are a preflight boundary: no `--suggestions` is needed when none are reported; `apply` permits exactly one amendment/re-validation and residual Suggestions return `NEEDS_CONTEXT: --suggestions` with only the count; `defer` records the deferral and permits a `DONE` handoff. `--non-interactive` never prompts.
+For `ywc-spec-ready`, consume the bounded owner policy: no Suggestions means no pass; default or explicit apply permits one amendment/revalidation; explicit defer records deferral without amendment against a valid reviewed artifact. Residual advisory Suggestions never trigger another policy preflight. New Critical/Warning or malformed evidence retains blocking/failure routing. Preserve closed Result parsing and final artifact authority.
 
 ### Step 4: Task Phase (FR-4)
 
@@ -168,7 +168,7 @@ Medium/Large goals only. Skipped on the Small Path.
    **Preview coverage gate** — Immediately validate this call's terminal Status and
    coverage summary against the current ready spec and returned preview identity,
    using the coverage rules below. An unresolved preview permits zero consume calls.
-   This first call writes only the persisted preview artifact. Validate and capture the returned `preview_path`, `preview_revision`, and `preview_digest`, then append them to the UTC iteration log before making the second call:
+   This first call writes only the persisted preview artifact. Validate and capture the returned `preview_path`, `preview_revision`, and `preview_digest`, then append them to the UTC iteration log. **Approval evidence gate** — A fresh preview requires explicit user approval of that concrete preview before making the second call. Approval must cover the exact spec/tasks-dir/language/mode/path/revision/digest identity; never treat preview generation, reuse, or `--approve-preview` itself as approval. In interactive mode, present the persisted preview and obtain approval once; under `--non-interactive`, require existing attributable approval evidence. Without approval, return `NEEDS_CONTEXT` with zero consume and executor calls. An already-approved unchanged preview passes without another confirmation:
    ```text
    ywc-task-generator --spec <ready-artifact> --tasks-dir <tasks-dir> --mode <mode> --approve-preview --preview-path <preview-path> --non-interactive
    ```

@@ -56,3 +56,13 @@ Routing rules:
 - Continue normal Completion Status routing when the upstream status means budget remains usable, budget is disabled, or budget was exhausted after a deterministic report.
 - Stop with final action `stop-advisor-required` only when the upstream status means advisor escalation is required and the validation Completion Status is `BLOCKED` or `NEEDS_CONTEXT`.
 - If the upstream status is absent or unparsable, assume the full per-iteration budget was consumed and continue only if the validation Completion Status is parseable.
+
+## Single Suggestion allowance
+
+The owner is Step 7 of `ywc-spec-ready/SKILL.md`. Explicit user instructions and
+apply/defer override the default; with no blocking findings and Suggestions present,
+at most one amendment/revalidation is attempted in either mode. No Suggestions
+means no pass; explicit defer means no amendment. Residual advisory Suggestions
+never restart this allowance or create another prompt/missing-policy status.
+New Critical/Warning findings return to the existing bounded blocking convergence
+with no ready handoff; limits and malformed-evidence failures remain effective.

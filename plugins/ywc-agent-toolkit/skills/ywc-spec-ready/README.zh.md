@@ -37,3 +37,5 @@ $ywc-spec-ready --spec docs/ywc-plans/example.md --dry-run
 ## Agentic artifact profile
 
 使用 `--artifact-profile agentic` 时，成功只返回一个 Result 块，其中只有 `Status: DONE` 和 `Artifact: <path>`。Artifact 必须是已验证候选根目录内已存在的普通仓库相对 Markdown 文件；拒绝 `Scale` 以及 prose/basename/raw-response 回退。
+
+仅剩 Suggestions 时，默认在任一模式下尝试一次修订和复核。显式 apply/defer 及用户指示优先；剩余建议不会再次触发询问。defer 记录在有效的已审查成果上且不修订。新的 Critical/Warning 或无效证据仍阻止移交。
