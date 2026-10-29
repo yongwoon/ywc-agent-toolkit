@@ -23,8 +23,8 @@ Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니�
 
 | 도구        | Skills | Custom Agents | 설치 경로                                 |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -130,7 +130,7 @@ Resolution 순서는 explicit `--lang` > project `.codex/ywc.json` > project gui
 
 ## Custom Agent
 
-Claude Code에는 worker, reviewer, specialist dispatch용 12개의 custom agent가 포함되어 있습니다. `~/.claude/agents/`에 설치되며, 자세한 내용은 [`claude-code/agents/README.md`](claude-code/agents/README.md)를 참조하세요.
+Claude Code에는 worker, reviewer, specialist dispatch용 13개의 custom agent가 포함되어 있습니다. `~/.claude/agents/`에 설치되며, 자세한 내용은 [`claude-code/agents/README.md`](claude-code/agents/README.md)를 참조하세요.
 
 Codex에는 read-only specialist agent 8개와 quality-gate bounded worker 2개가 `~/.codex/agents/`(`CODEX_HOME`으로 재정의 가능)에 agent당 TOML 파일 하나씩 설치됩니다:
 

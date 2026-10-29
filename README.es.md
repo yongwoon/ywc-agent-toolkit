@@ -23,8 +23,8 @@ Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de
 
 | Herramienta | Skills | Custom Agents | Ruta de instalación                      |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -130,7 +130,7 @@ Skills compatibles y detalles: [`references/html-output.md`](claude-code/skills/
 
 ## Agentes personalizados
 
-Claude Code incluye 12 agentes personalizados para despacho de tipo worker, reviewer y specialist, instalados en `~/.claude/agents/` y documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
+Claude Code incluye 13 agentes personalizados para despacho de tipo worker, reviewer y specialist, instalados en `~/.claude/agents/` y documentados en [`claude-code/agents/README.md`](claude-code/agents/README.md).
 
 Codex incorpora ocho agentes especialistas de solo lectura y dos bounded workers de quality gate, instalados en `~/.codex/agents/` (configurable con `CODEX_HOME`) como un archivo TOML por agente:
 

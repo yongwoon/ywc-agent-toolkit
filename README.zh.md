@@ -23,8 +23,8 @@
 
 | 工具        | Skills | Custom Agents | 安装路径                                  |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 42     | 12            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 53     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -130,7 +130,7 @@ ywc-setup --scope user --lang ja
 
 ## Custom Agent
 
-Claude Code 提供 12 个用于 worker、reviewer 与 specialist dispatch 的 custom agent，安装至 `~/.claude/agents/`，详见 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
+Claude Code 提供 13 个用于 worker、reviewer 与 specialist dispatch 的 custom agent，安装至 `~/.claude/agents/`，详见 [`claude-code/agents/README.md`](claude-code/agents/README.md)。
 
 Codex 提供 8 个只读 specialist agent 和 2 个质量门控 bounded worker，安装至 `~/.codex/agents/`（可用 `CODEX_HOME` 覆盖），每个 agent 一个 TOML 文件:
 
