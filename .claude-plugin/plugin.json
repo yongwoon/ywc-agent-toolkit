@@ -1,7 +1,7 @@
 {
   "name": "ywc-agent-toolkit",
   "version": "1.39.0",
-  "description": "YWC skill distribution toolkit for Claude Code — 26 skills covering planning, commits, PR creation, spec writing, code review, security audit, and development workflows",
+  "description": "YWC skill distribution toolkit for Claude Code — skills covering planning, commits, PR creation, spec writing, code review, security audit, and development workflows",
   "author": {
     "name": "yongwoon"
   },
