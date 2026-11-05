@@ -50,6 +50,9 @@ skill は runtime dispatch ではなく **design inspiration** としてのみ�
 
 ## Root メンテナンス
 
-この skill は universal worktree management 機能のため、claude-code と
-codex-skill 両方に同一内容で維持します。auto-sync は廃止され、各 root を
-独立して管理します。
+Claude Code と Codex の worktree 指示は各ソース root で独立管理します。
+プラットフォーム間の自動同期はなく、Codex 配布物は Codex ソースから生成します。
+
+## 既存ブランチと PR worktree
+
+`create` は `--base-branch` または `--existing-branch <H>` の一方だけを受け取ります。正確な local/origin ref を使い、不在・通信失敗・checkout 済み・dirty・locked を区別して停止します。

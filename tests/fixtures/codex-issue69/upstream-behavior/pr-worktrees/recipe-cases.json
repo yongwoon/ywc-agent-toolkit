@@ -1,0 +1,155 @@
+{
+  "provider": [
+    {
+      "id": "local",
+      "setup": "local",
+      "exit": 0,
+      "diagnostic": "DONE:"
+    },
+    {
+      "id": "remote-only",
+      "setup": "remote",
+      "exit": 0,
+      "diagnostic": "DONE:"
+    },
+    {
+      "id": "absent",
+      "setup": "absent",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: branch absent"
+    },
+    {
+      "id": "network",
+      "setup": "remote",
+      "fail": "ls-remote",
+      "exit": 1,
+      "diagnostic": "BLOCKED: remote lookup failed"
+    },
+    {
+      "id": "fetch-failure",
+      "setup": "remote",
+      "fail": "fetch",
+      "exit": 1,
+      "diagnostic": "BLOCKED: exact fetch failed"
+    },
+    {
+      "id": "checked-out",
+      "setup": "checked-out",
+      "exit": 1,
+      "diagnostic": "existing branch checked out"
+    },
+    {
+      "id": "dirty",
+      "setup": "dirty",
+      "exit": 1,
+      "diagnostic": "matching worktree dirty"
+    },
+    {
+      "id": "locked",
+      "setup": "locked",
+      "exit": 1,
+      "diagnostic": "matching worktree locked"
+    },
+    {
+      "id": "base-conflict",
+      "setup": "remote",
+      "base": "main",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: require equal"
+    },
+    {
+      "id": "branch-mismatch",
+      "setup": "remote",
+      "branch": "feature/other",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: require equal"
+    },
+    {
+      "id": "unsafe-head",
+      "setup": "remote",
+      "head": "feature/a;touch sentinel",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: invalid"
+    },
+    {
+      "id": "dotdot-head",
+      "setup": "remote",
+      "head": "feature/../bad",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: invalid"
+    },
+    {
+      "id": "leading-option",
+      "setup": "remote",
+      "head": "--bad",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: invalid"
+    },
+    {
+      "id": "existing-target",
+      "setup": "existing-target",
+      "exit": 1,
+      "diagnostic": "BLOCKED: target path exists"
+    },
+    {
+      "id": "wrong-remote-ref",
+      "setup": "remote",
+      "lookup_rows": "wrong",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: ambiguous exact remote ref"
+    },
+    {
+      "id": "duplicate-remote-ref",
+      "setup": "remote",
+      "lookup_rows": "duplicate",
+      "exit": 1,
+      "diagnostic": "NEEDS_CONTEXT: ambiguous exact remote ref"
+    }
+  ],
+  "refresh": [
+    {
+      "id": "fast-forward",
+      "setup": "remote-ahead",
+      "exit": 0,
+      "diagnostic": "DONE:"
+    },
+    {
+      "id": "local-ahead",
+      "setup": "local-ahead",
+      "exit": 1,
+      "diagnostic": "BLOCKED: local-ahead"
+    },
+    {
+      "id": "diverged",
+      "setup": "diverged",
+      "exit": 1,
+      "diagnostic": "BLOCKED: local-ahead"
+    },
+    {
+      "id": "dirty",
+      "setup": "dirty",
+      "exit": 1,
+      "diagnostic": "BLOCKED: worktree dirty"
+    },
+    {
+      "id": "fetch-failure",
+      "setup": "clean",
+      "fail": "fetch",
+      "exit": 1,
+      "diagnostic": "BLOCKED: exact fetch failed"
+    },
+    {
+      "id": "wrong-branch",
+      "setup": "clean",
+      "head": "feature/other",
+      "exit": 1,
+      "diagnostic": "BLOCKED: worktree identity mismatch"
+    },
+    {
+      "id": "locked",
+      "setup": "locked",
+      "exit": 1,
+      "diagnostic": "BLOCKED: worktree identity mismatch"
+    }
+  ]
+}

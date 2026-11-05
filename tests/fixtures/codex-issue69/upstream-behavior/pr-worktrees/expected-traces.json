@@ -1,0 +1,112 @@
+[
+  {
+    "id": "invalid-pr",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/SKILL.md",
+    "source_clause": "With `--worktree`, require an explicit positive PR number",
+    "input": "Worktree mode without positive explicit PR number",
+    "expected_trace": "NEEDS_CONTEXT before lookup or mutation",
+    "expected_status": "NEEDS_CONTEXT"
+  },
+  {
+    "id": "foreign-closed",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "Require matching number, open state and `isCrossRepository=false`",
+    "input": "Closed, cross-repository or mismatched PR",
+    "expected_trace": "BLOCKED before worktree mutation",
+    "expected_status": "BLOCKED"
+  },
+  {
+    "id": "invalid-head",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "require `^[A-Za-z0-9._/-]+$`, reject leading `-` and",
+    "input": "Unsafe head name or failed check-ref-format",
+    "expected_trace": "BLOCKED before branch-specific mutation",
+    "expected_status": "BLOCKED"
+  },
+  {
+    "id": "selection",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "The matching current registered path is `in-place`",
+    "input": "Clean registered canonical in-place, reused or absent head",
+    "expected_trace": "Select in-place/reused or create through provider and verify registration",
+    "expected_status": "DONE"
+  },
+  {
+    "id": "cwd-once",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "one invocation-wide cwd re-entry",
+    "input": "First cwd reset then valid re-entry",
+    "expected_trace": "Consume one invocation-wide re-entry and recheck identity",
+    "expected_status": "DONE"
+  },
+  {
+    "id": "cwd-repeat",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "Any second mismatch or failed identity check is `BLOCKED`",
+    "input": "Second cwd reset or failed identity check",
+    "expected_trace": "BLOCKED before further reads/mutations/API",
+    "expected_status": "BLOCKED"
+  },
+  {
+    "id": "head-move",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "Any later PR metadata response with a changed number/head/repository/open",
+    "input": "PR head changes during invocation",
+    "expected_trace": "BLOCKED; do not replace pinned number/head",
+    "expected_status": "BLOCKED"
+  },
+  {
+    "id": "push",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/SKILL.md",
+    "source_clause": "git push origin \"HEAD:refs/heads/$H\"",
+    "input": "Valid guarded commit ready for push",
+    "expected_trace": "Use HEAD:refs/heads/$H only",
+    "expected_status": "DONE"
+  },
+  {
+    "id": "required-failure",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "A failed required command stops later edits, commits, API writes, pushes and",
+    "input": "Required fetch/commit/push/CI command fails",
+    "expected_trace": "Stop later mutations/retries and report prior side effects",
+    "expected_status": "BLOCKED"
+  },
+  {
+    "id": "cleanup",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "Only created worktrees get branch-preserving prune guidance in a separate",
+    "input": "Review work ends with created/reused/in-place state",
+    "expected_trace": "Only created gets branch-preserving prune guidance",
+    "expected_status": "DONE"
+  },
+  {
+    "id": "audit",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED — instruction contract only",
+    "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+    "source_clause": "unchanged Drift/Missing/Leaked audit classifications.",
+    "input": "Retained review worktree appears in executor audit",
+    "expected_trace": "Keep Leaked/Drift/Missing classifications unchanged",
+    "expected_status": "DONE"
+  }
+]
