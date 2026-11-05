@@ -16,8 +16,10 @@ $ywc-auth-implement
 
 技能先完成只读预检和九部分策略访谈，然后只打印以下路线，不会自动执行任务生成：
 
+Small 工作遵循 ywc-plan 现有的 Small-path handoff；不运行 ywc-spec-ready 或 ywc-task-generator。以下路线仅适用于 Medium/Large。
+
 ```text
-$ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
+$ywc-plan --no-converge → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
 出现 Critical/High 审计结果时，会跳过 E2E、PR 建议和缓存。法律文案始终标记为 `법적 검토 전 임시본`。

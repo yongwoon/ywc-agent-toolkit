@@ -24,8 +24,10 @@ $ywc-auth-implement
 
 Skill은 읽기 전용 preflight, 9개 정책 인터뷰, evidence-based 추천을 수행한 뒤 아래 경로를 출력합니다. task generation은 자동 실행하지 않습니다.
 
+Small 작업은 ywc-plan의 기존 Small-path handoff를 따르며 ywc-spec-ready와 ywc-task-generator를 실행하지 않습니다. 아래 route는 Medium/Large 전용입니다.
+
 ```text
-$ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
+$ywc-plan --no-converge → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
 Critical/High 보안 감사 결과가 있으면 E2E, PR 제안, 캐시를 건너뜁니다. 법률 문서는 항상 `법적 검토 전 임시본`입니다.

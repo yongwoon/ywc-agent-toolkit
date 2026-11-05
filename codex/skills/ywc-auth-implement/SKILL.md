@@ -55,13 +55,13 @@ Use stack evidence plus approved or explicitly deferred-with-risk decisions to r
 
 ## Step 4: Plan and Implementation Route
 
-Pass the approved policy and recommendation to `$ywc-plan`. Medium and large work must reach `DONE` in `$ywc-spec-ready`. Then print, but never automatically invoke, this required route:
+Pass the approved policy and recommendation to `$ywc-plan --no-converge` so this auth-owned route controls readiness. If the planner returns Small, follow its existing Small-path handoff; this route does not run `$ywc-spec-ready` or `$ywc-task-generator` for Small work. The following route applies only to Medium/Large: it includes exactly one `$ywc-spec-ready --spec <path>` step, and work must reach `DONE` there before the task route is exposed. Then print, but never automatically invoke task generation or implementation, this required route:
 
 ```text
-$ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
+$ywc-plan --no-converge → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
-Do not print `$ywc-task-generator` until `$ywc-spec-ready` is `DONE`; never skip decomposition. `$ywc-code-gen` owns application implementation and its critical-path security review. Documentation-only work may use one bounded general subagent with target, oracle, stop condition, evidence required, legal warning when relevant, and [the shared status actions](../references/subagent-status-actions.md). Do not copy that shared contract.
+**Medium/Large route only.** Do not print `$ywc-task-generator` until `$ywc-spec-ready` is `DONE`; never skip decomposition. `$ywc-code-gen` owns application implementation and its critical-path security review. Documentation-only work may use one bounded general subagent with target, oracle, stop condition, evidence required, legal warning when relevant, and [the shared status actions](../references/subagent-status-actions.md). Do not copy that shared contract.
 
 ## Step 5: Security Gate
 
