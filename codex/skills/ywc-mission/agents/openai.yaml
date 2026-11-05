@@ -1,0 +1,4 @@
+interface:
+  display_name: "YWC Mission"
+  short_description: "Maintain durable project mission state"
+  default_prompt: "Use $ywc-mission to read, update, or curate docs/mission.md so future Codex sessions preserve the project's mission, success criteria, rejected approaches, and optional Non-goals and Constraints with required Reason/Rationale fields. Keep NG/CN sections optional for legacy files and update them only through a user-confirmed CHANGESET."
