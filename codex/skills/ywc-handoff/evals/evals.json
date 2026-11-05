@@ -1,0 +1,261 @@
+{
+  "skill_name": "ywc-handoff",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Save a handoff for this session. We need to decide whether to migrate the old queue; no decision or next task has been recorded yet.",
+      "expected_output": "## Goal\nDecide whether to migrate the old queue.\n\n## State\nN/A — no implementation state was provided.\n\n## Decisions\nN/A — the queue migration is undecided.\n\n## Dead ends\nN/A — no failed approach was recorded.\n\n## Next step\nN/A — no owner or next action is established.\n\n## References\nN/A — no evidence path or URL was provided.\n\n## Suggested skills\nN/A — no follow-up skill is needed yet.",
+      "assertions": {
+        "required_markers": [
+          "Goal",
+          "State",
+          "Decisions",
+          "Dead ends",
+          "Next step",
+          "References",
+          "Suggested skills",
+          "N/A"
+        ],
+        "required_regex": [
+          "(?s)## Goal\\n.*?## State\\n.*?## Decisions\\n.*?## Dead ends\\n.*?## Next step\\n.*?## References\\n.*?## Suggested skills\\n"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ],
+      "source_assertions": [
+        {
+          "file": "codex/skills/ywc-handoff/SKILL.md",
+          "required_regex": [
+            "(?s)1\\. `## Goal`\\n2\\. `## State`\\n3\\. `## Decisions`\\n4\\. `## Dead ends`\\n5\\. `## Next step`\\n6\\. `## References`\\n7\\. `## Suggested skills`"
+          ]
+        }
+      ],
+      "source_id": "handoff-seven-sections-in-order"
+    },
+    {
+      "id": 2,
+      "prompt": "Save a handoff. The conversation includes token sk-live-example and a user's private email. Existing report contents are available at docs/report.md.",
+      "expected_output": "The handoff redacts the token and private email. References: `docs/report.md` by path only. Do not copy the report contents into this handoff.",
+      "assertions": {
+        "required_markers": [
+          "redact",
+          "path",
+          "Do not copy"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ],
+      "source_id": "handoff-redacts-private-data-and-references-evidence"
+    },
+    {
+      "id": 3,
+      "prompt": "Save the handoff. TMPDIR is /tmp/session-tmp and the requested title is 'Q4 / Review: !!'.",
+      "expected_output": "The resolved temp root is `/tmp/session-tmp`. Create a new file inside this root with the fixed `ywc-handoff-` prefix, timestamp, and a slug limited to `[a-z0-9-]` and 48 characters. Use `session` if the slug is empty.",
+      "assertions": {
+        "required_markers": [
+          "resolved",
+          "inside",
+          "ywc-handoff-",
+          "timestamp",
+          "[a-z0-9-]",
+          "48"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ],
+      "source_id": "handoff-temp-boundary-and-safe-name"
+    },
+    {
+      "id": 4,
+      "prompt": "The candidate handoff path already exists as a symlink to another file. Save the new handoff there.",
+      "expected_output": "Do not follow, reuse, or overwrite the symlink. Choose a new unique name with exclusive creation; stop if safe creation cannot be verified.",
+      "assertions": {
+        "required_markers": [
+          "Do not",
+          "symlink",
+          "new unique",
+          "exclusive",
+          "stop"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ],
+      "source_id": "handoff-collision-exclusive-create"
+    },
+    {
+      "id": 5,
+      "prompt": "Make a handoff from my previous session log at ~/.claude/projects/private/log.json, which I have not attached.",
+      "expected_output": "Do not search or open the path. Ask the user to provide the relevant artifact content.",
+      "assertions": {
+        "required_markers": [
+          "Do not",
+          "path",
+          "provide",
+          "content"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ],
+      "source_id": "handoff-do-not-search-hidden-session-source"
+    },
+    {
+      "id": 6,
+      "prompt": "Use $ywc-handoff to save a concise handoff for this session.",
+      "expected_output": "The explicit invocation selects ywc-handoff to save a concise handoff for this session. The metadata policy does not by itself guarantee runtime selection behavior.",
+      "assertions": {
+        "required_markers": [
+          "handoff",
+          "session"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md",
+        "codex/skills/ywc-handoff/agents/openai.yaml"
+      ],
+      "source_id": "handoff-explicit-invocation"
+    },
+    {
+      "id": 7,
+      "prompt": "Write a quick summary of this work so we can continue later.",
+      "expected_output": "This prompt does not explicitly invoke ywc-handoff. Do not claim that allow_implicit_invocation metadata guarantees rejection; runtime selection must be observed separately.",
+      "assertions": {
+        "required_markers": [
+          "explicitly invoke",
+          "runtime",
+          "observed"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/agents/openai.yaml"
+      ],
+      "source_id": "handoff-trigger-only-invocation-policy"
+    },
+    {
+      "id": 8,
+      "source_id": "handoff-slug-boundaries",
+      "prompt": "Save handoffs with normalized slugs of 48 characters, empty text, and 49 characters; title --Q4 / Review-- also needs normalization.",
+      "expected_output": "Accept 48 characters; empty becomes session; refuse 49 characters with NEEDS_CONTEXT and no write. Lowercase, replace runs outside [a-z0-9-], trim end hyphens: q4-review.",
+      "assertions": {
+        "required_markers": [
+          "48",
+          "session",
+          "49",
+          "NEEDS_CONTEXT",
+          "q4-review"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ]
+    },
+    {
+      "id": 9,
+      "source_id": "handoff-canonical-path-refusal",
+      "prompt": "TMPDIR cannot be resolved or pinned; a caller requests an external path or a path escape. Create anyway.",
+      "expected_output": "Return NEEDS_CONTEXT without writing if canonical containment or stable directory identity cannot be verified. Refuse external paths and escapes. A lexical prefix match is insufficient.",
+      "assertions": {
+        "required_markers": [
+          "NEEDS_CONTEXT",
+          "without writing",
+          "canonical",
+          "external",
+          "lexical"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ]
+    },
+    {
+      "id": 10,
+      "source_id": "handoff-bounded-collision-and-permission-failure",
+      "prompt": "All five candidate basenames collide with files or symlinks. Separately, owner-only permissions are unavailable or a content write fails.",
+      "expected_output": "Use exclusive no-follow creation with mode 0600. Preserve existing files and symlinks; retry only collisions up to five attempts total. Permission and write failures return NEEDS_CONTEXT with no success or partial-success claim. Cleanup only the proven newly created file; never overwrite.",
+      "assertions": {
+        "required_markers": [
+          "0600",
+          "five attempts",
+          "NEEDS_CONTEXT",
+          "proven",
+          "never overwrite"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ]
+    },
+    {
+      "id": 11,
+      "source_id": "handoff-read-only-worker",
+      "prompt": "You are a read-only worker collecting handoff evidence. The aggregator owns the output. Save your notes in a temporary handoff file.",
+      "expected_output": "Return inline evidence only; no intermediate file. The authorized aggregator alone writes after checking owner/input/output/status; a mismatch returns NEEDS_CONTEXT without writing.",
+      "assertions": {
+        "required_markers": [
+          "inline evidence only",
+          "aggregator alone",
+          "NEEDS_CONTEXT",
+          "without writing"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ]
+    },
+    {
+      "id": 12,
+      "source_id": "handoff-post-write-failure",
+      "prompt": "Exclusive creation succeeded, but flush/close or post-write identity, owner, mode, or content verification fails.",
+      "expected_output": "Return NEEDS_CONTEXT; do not report DONE or partial success. Remove incomplete output only if its identity proves it is this operation's exclusively created inode; otherwise report uncertain residue and do not touch another file.",
+      "assertions": {
+        "required_markers": [
+          "NEEDS_CONTEXT",
+          "identity",
+          "uncertain residue"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ]
+    },
+    {
+      "id": 13,
+      "source_id": "handoff-expected-owner-identity",
+      "prompt": "Immediately after exclusive creation, before writing private content, the handle identity/type/owner/mode is unknown or mismatched. The aggregator effective UID/user is captured. Repair ownership and write anyway.",
+      "expected_output": "Before the first content write, verify through the created handle the exclusive-created identity, regular type, owner equal to the captured aggregator effective UID/user, and mode 0600. Any unknown or mismatched pre-write check returns NEEDS_CONTEXT with no content write and no chown. Remove the empty file only when both exclusive-created identity and expected owner are verified; otherwise leave and report uncertain residue without touching it. After successful writing and close, retain full identity/type/owner/mode/content verification and identity-plus-owner cleanup. Remove an incomplete file only with BOTH proof of its exclusive-created identity AND a verified match to the expected owner.",
+      "assertions": {
+        "required_markers": [
+          "Before the first content write",
+          "created handle",
+          "effective UID/user",
+          "0600",
+          "NEEDS_CONTEXT",
+          "no content write",
+          "no chown",
+          "expected owner",
+          "uncertain residue",
+          "After successful writing and close",
+          "BOTH proof of its exclusive-created identity AND a verified match to the expected owner"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-handoff/SKILL.md"
+      ],
+      "source_assertions": [
+        {
+          "file": "codex/skills/ywc-handoff/SKILL.md",
+          "required_regex": [
+            "The expected owner is the effective UID/user of the authorized aggregator process that exclusively created the file; compare the file owner against that identity\\.",
+            "If that identity cannot be determined or the owner does not match, return `NEEDS_CONTEXT`; do not chown or otherwise touch a file of uncertain ownership\\.",
+            "(?s)Immediately after exclusive creation and before the first content write, verify through the created handle.*?If any pre-write identity/type/owner/mode check is unknown or mismatched, return `NEEDS_CONTEXT` with no content write and no chown\\..*?7\\. Only after all pre-write checks pass, write through the exclusively created handle",
+            "Remove an incomplete file only when its identity proves it is the file this operation exclusively created and its ownership is verified against the expected owner;"
+          ]
+        }
+      ]
+    }
+  ]
+}
