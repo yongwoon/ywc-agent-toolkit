@@ -87,7 +87,7 @@ Before proposing **any** fix:
 
 Phase 1 exit condition: you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
 
-When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent `ywc-root-cause-analyst` pass. Send `Caller: ywc-debug-rootcause`, `analysis_mode=debug_hypotheses`, and only a bounded packet: failure symptom, timeline, stack trace or logs, recent diff, rejected hypotheses, relevant code snippet, and current candidate cause. Ask for `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>` plus 3–5 ranked, falsifiable hypotheses with evidence-for / evidence-against and confidence per item. Validate the analyst contract before consuming advice. If no delegation tool is available, rank the same 3–5 falsifiable candidates inline; do not attempt tool-specific named-agent syntax from another runtime.
+When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent `ywc-root-cause-analyst` pass. Send `Caller: ywc-debug-rootcause`, `analysis_mode=debug_hypotheses`, and only a bounded packet: failure symptom, timeline, stack trace or logs, recent diff, rejected hypotheses, relevant code snippet, and current candidate cause. Ask for `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>` plus ranked, falsifiable hypotheses (3–5 when evidence supports that many; fewer evidence-backed candidates are valid, never padded) with evidence-for / evidence-against and confidence per item. Validate the analyst contract before consuming advice. If no delegation tool is available, rank the same evidence-backed candidates inline; do not attempt tool-specific named-agent syntax from another runtime.
 
 ### Phase 2: Pattern Analysis
 
@@ -103,7 +103,7 @@ Phase 2 exit condition: a concrete diff between the broken and working version, 
 
 Apply the scientific method.
 
-1. **Rank 3–5 falsifiable candidate hypotheses** after reproduction and pattern analysis, each with evidence for and against. If evidence cannot support the candidates, return `NEEDS_CONTEXT` with the highest-information probe rather than padding the list. Show the ranking before testing; non-interactive execution selects the highest-ranked candidate without waiting.
+1. **Rank 3–5 falsifiable candidate hypotheses** after reproduction and pattern analysis, each with evidence for and against. When evidence supports fewer than three, rank only the evidence-backed candidates and never pad the list: a single evidence-backed candidate is enough to proceed. Return `NEEDS_CONTEXT` with the highest-information probe only when no candidate is evidence-backed. Show the ranking before testing; non-interactive execution selects the highest-ranked candidate without waiting.
 2. **Test one hypothesis at a time.** State "X is the root cause because Y; minimal change Z should fix it." Change one variable per experiment. Do not layer a new fix on a failed one.
 3. **Update the ranking from evidence.** Pass → Phase 4; fail → reject or refine the hypothesis and record the result. After two rejected hypotheses, re-investigate before testing a third. A reverted falsification experiment is not a failed fix; count an attempted fix when it fails to resolve the confirmed reproduction or introduces a regression.
 4. **Stop after three failed fixes on the same surface.** The architecture-suspicion gate may request one independent analyst pass, when delegation is available, using `Caller: ywc-debug-rootcause`, `analysis_mode=debug_hypotheses`, the bounded packet, ranked hypotheses and failed-fix log. Require `Fix #4 signal: fix harder` and `Next fix worth attempting: <one concrete minimal change>`. Allow exactly one final fourth fix only when both fields are present, separate, evidence-linked, and returned for the valid debug pair. One missing or unlinked field, a different mode, malformed output or unavailable analyst keeps the stop in force. After a failed fourth fix, stop; do not reset the counter or attempt a fifth fix. Route architectural concerns to `ywc-architect`; the analyst recommends review and never makes the final architecture decision.
@@ -155,7 +155,7 @@ Surface the investigation in this shape, in order:
 - **Symptom:** <one-line observed behavior>
 - **Reproduction:** <exact command(s), or manual evidence and constraints>
 - **Feedback loop / Catches / Misses:** <minimal observation and limits>
-- **Ranked candidates:** <3–5 falsifiable hypotheses, evidence for/against>
+- **Ranked candidates:** <1–5 evidence-backed falsifiable hypotheses (3–5 when evidence supports), evidence for/against>
 - **Root cause (Phase 1):** <one-sentence why, with file:line citation>
 - **Working reference (Phase 2):** <path:line of a working sibling, if applicable; "N/A — no sibling pattern exists" otherwise>
 - **Hypothesis (Phase 3):** "<X is the root cause because Y. Minimal change Z should fix it.>"

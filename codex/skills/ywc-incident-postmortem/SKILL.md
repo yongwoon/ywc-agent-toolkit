@@ -48,7 +48,7 @@ git describe --tags --abbrev=0 2>/dev/null || echo "(no tags)"
 
 ## Analyst contract
 
-Every analyst packet carries `Caller: ywc-incident-postmortem` and `analysis_mode=incident_five_whys` plus bounded evidence. Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode. Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`. An analyst refusal consumes the existing dispatch budget; preserve the caller's original gate and surface the missing evidence instead of re-dispatching or falling through. The analyst returns inline advice and never writes the caller's report or runs probes. Unavailable delegation uses the documented inline path; unavailable live runtime evidence is `UNVERIFIED — instruction contract only`.
+Every analyst packet carries `Caller: ywc-incident-postmortem` and `analysis_mode=incident_five_whys` plus bounded evidence. Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode. Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`. An analyst refusal consumes the existing Step 4 analyst dispatch budget (separate from the Step 4.5 security advisor budget); preserve the caller's original gate and surface the missing evidence instead of re-dispatching or falling through. The analyst returns inline advice and never writes the caller's report or runs probes. Unavailable delegation uses the documented inline path; unavailable live runtime evidence is `UNVERIFIED — instruction contract only`.
 
 ## Workflow (--draft mode)
 
@@ -77,7 +77,7 @@ Procedure:
    - Prevention Action Items (Step 6) cite the advisor's concrete remediation steps, not generic "improve security"
    - Client report (Step 8 if `--client`) keeps the redaction discipline: never expose the exploit chain, only the user-facing impact + the prevention class
 
-Budget: at most **1** dispatch per postmortem. A second security question signals scope split — file a follow-up postmortem.
+Budget: at most **1** security advisor dispatch per postmortem, counted separately from the Step 4 analyst dispatch (an analyst dispatch or refusal never consumes it). If delegation is unavailable, the inline analysis in procedure item 3 applies. A second security question signals scope split — file a follow-up postmortem.
 
 **Step 5 — Actions taken during incident**
 List mitigation steps taken in real time (rollback, hotfix, manual data correction).

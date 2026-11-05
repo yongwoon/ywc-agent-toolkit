@@ -38,7 +38,7 @@
 - Severity: row-local exceptions, item 2 no downgrade. Explicit-invocation
   preference is metadata, not a runtime enforcement guarantee.
 - Shared hardening guidance read from installed reference:
-  `/Users/yongwoon.kim/.codex/skills/references/data-integrity-hardening.md`.
+  `$CODEX_HOME/skills/references/data-integrity-hardening.md`.
   It is absent from this repository; no shared file is copied or added.
 
 ## Evidence classes

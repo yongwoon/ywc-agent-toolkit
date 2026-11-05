@@ -276,6 +276,14 @@
       "name": "bound-scope-missing-content",
       "prompt": "Existing scoped paths infra/app/main.tf have evidence_type=apply_record, binding_target=[infra/app/main.tf], applied=yes; IaC content is absent.",
       "expected_output": "Status: NEEDS_CONTEXT. Scope evidence records the valid binding and missing path; zero reviewer calls. Attestation is not a substitute for content.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "Scope evidence",
+          "zero reviewer calls",
+          "Attestation is not a substitute for content"
+        ]
+      },
       "files": [
         "codex/skills/ywc-infra-review/SKILL.md"
       ]
@@ -285,6 +293,14 @@
       "name": "bound-scope-truncated-content",
       "prompt": "The exact existing scoped paths are bound by a state_backend attestation with applied=yes, but submitted IaC is truncated.",
       "expected_output": "Status: NEEDS_CONTEXT. Name the truncated scoped content; zero reviewer calls and no inferred findings.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "truncated scoped content",
+          "zero reviewer calls",
+          "no inferred findings"
+        ]
+      },
       "files": [
         "codex/skills/ywc-infra-review/SKILL.md"
       ]
@@ -294,6 +310,15 @@
       "name": "mixed-eligible-truncated",
       "prompt": "A complete fresh diff is supplied with validly bound existing scoped content marked truncated=true and another unapplied set.",
       "expected_output": "Status: NEEDS_CONTEXT. Record eligible and excluded paths/binding statuses in Scope evidence. Zero reviewer calls; do not drop the eligible incomplete set or use an excluded set as fallback.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "Scope evidence",
+          "Zero reviewer calls",
+          "do not drop the eligible incomplete set",
+          "use an excluded set as fallback"
+        ]
+      },
       "files": [
         "codex/skills/ywc-infra-review/SKILL.md"
       ]
@@ -303,6 +328,13 @@
       "name": "fresh-only-header",
       "prompt": "Review a complete fresh Terraform plan/diff without an existing scoped file set.",
       "expected_output": "Scope evidence: N/A — fresh plan/diff only. All three lenses receive the same supplied fresh packet; no attestation or provider lookup is required.",
+      "assertions": {
+        "required_markers": [
+          "Scope evidence: N/A — fresh plan/diff only",
+          "same supplied fresh packet",
+          "no attestation or provider lookup is required"
+        ]
+      },
       "files": [
         "codex/skills/ywc-infra-review/SKILL.md"
       ]
@@ -312,6 +344,13 @@
       "name": "topology-only-header",
       "prompt": "Review only the existing bounded topology packet with complete supplied service configuration.",
       "expected_output": "Scope evidence: N/A — topology packet only. Preserve topology input support and send the same packet to all three lenses.",
+      "assertions": {
+        "required_markers": [
+          "Scope evidence: N/A — topology packet only",
+          "Preserve topology input support",
+          "same packet to all three lenses"
+        ]
+      },
       "files": [
         "codex/skills/ywc-infra-review/SKILL.md"
       ]
@@ -321,6 +360,14 @@
       "name": "bound-scope-complete",
       "prompt": "Review supplied complete IaC for exactly infra/app/main.tf. One-time user attestation: evidence_type=apply_record, binding_target=[infra/app/main.tf], applied=yes. No fresh plan/diff is present. No provider query is authorized.",
       "expected_output": "Scope evidence records apply_record, exact submitted path, and applied=yes. Admit the complete scoped content to all three lenses with identical eligible surface; do not query a provider/state/apply system or require repository/revision fields.",
+      "assertions": {
+        "required_markers": [
+          "Scope evidence records apply_record",
+          "applied=yes",
+          "identical eligible surface",
+          "do not query a provider/state/apply system"
+        ]
+      },
       "files": [
         "codex/skills/ywc-infra-review/SKILL.md"
       ]

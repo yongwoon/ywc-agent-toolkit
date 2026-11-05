@@ -335,6 +335,7 @@ ywc-worktrees --mode prune --task-name <task-name>
 - Merge: <commit-sha-or-"deferred">
 - Mark Complete commit: <commit-sha-or-"skipped">
 - Local branch: <"deleted"|"preserved">
+- Remote branch: <"deleted"|"retained"|"already-absent"|"uncertain">
 
 ### Verification
 - Post-merge gate: <passed|skipped|failed>
@@ -350,8 +351,8 @@ ywc-worktrees --mode prune --task-name <task-name>
 |---|---|
 | `DONE` | All applicable steps for the chosen mode succeeded; verification gates passed |
 | `DONE_WITH_CONCERNS` | Delivery succeeded but with caveats (e.g., advisor budget exceeded for the bot-polling loop, or `--defer-push` was set and the caller now owns the push) |
-| `BLOCKED` | Cannot proceed — merge conflict, CI failure unfixable in 2 attempts, push rejected, or post-merge verification failed |
-| `NEEDS_CONTEXT` | One of `--branch`, `--base-branch`, `--task-name`, `--tasks-dir`, or `--mode` was missing or invalid; no work was performed |
+| `BLOCKED` | Cannot proceed — merge conflict, CI failure unfixable in 2 attempts, push rejected, post-merge verification failed, or a remote deletion guard command failed or the final lease-protected delete failed or had an uncertain result (report `Remote branch: uncertain` — the remote ref may already have changed) |
+| `NEEDS_CONTEXT` | One of `--branch`, `--base-branch`, `--task-name`, `--tasks-dir`, or `--mode` was missing or invalid; no work was performed. A remote deletion guard that finds missing or ambiguous evidence before the delete is attempted also returns this, with `Remote branch: retained` |
 
 ## Validation
 

@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "Review this conversation. It took three attempts to find the setup guide because navigation links were stale. Identify supported retro candidates.",
-      "expected_output": "Categories reviewed: Navigation, Automated checks, Coding standards, Steering files, Tool economy, No-ops, Information access. Evidence-backed candidate — priority: MEDIUM (three attempts caused concrete delay); category: Navigation; redacted evidence: “three attempts to find the setup guide; links were stale”; proposed change: validate maintained navigation links; owner: Unassigned — owner not established from available evidence. No candidate was found in the other six categories.",
+      "expected_output": "Categories reviewed: Navigation, Automated checks, Coding standards, Steering files, Tool economy, No-ops, Information access. Evidence-backed candidate — priority: MEDIUM (three attempts caused concrete delay); category: Navigation; redacted evidence: “three attempts to find the setup guide because navigation links were stale”; proposed change: validate maintained navigation links; owner: Unassigned — owner not established from available evidence. No candidate was found in the other six categories.",
       "assertions": {
         "required_markers": [
           "Navigation",

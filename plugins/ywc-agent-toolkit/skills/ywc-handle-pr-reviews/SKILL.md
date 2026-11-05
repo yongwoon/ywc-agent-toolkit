@@ -222,8 +222,10 @@ For `--worktree`, retain pinned `PR_NUMBER`/`H`, apply the guard before every AP
 > **Action required**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) before proceeding — it defines the `mergeable` / `mergeStateStatus` semantics and the merge-not-rebase update procedure.
 
 ```bash
-gh pr view "$PR_NUMBER" --repo "$REPOSITORY" --json mergeable,mergeStateStatus --jq '{mergeable, mergeStateStatus}'
+gh pr view "$PR_NUMBER" --repo "$REPOSITORY" --json number,state,headRefName,mergeable,mergeStateStatus --jq '{number, state, headRefName, mergeable, mergeStateStatus}'
 ```
+
+With `--worktree`, a `state` other than `OPEN` or a `headRefName` other than the pinned `H` is `BLOCKED` before any merge-readiness action or push.
 
 - `MERGEABLE` / `CLEAN` → proceed to Step 7.
 - `BEHIND` → the branch is merely out of date (no textual conflict). Follow **Update Branch From Base** (merge the base into the feature branch — never rebase, since that orphans the review threads you just replied to), push, and re-verify CI (one additional cycle).

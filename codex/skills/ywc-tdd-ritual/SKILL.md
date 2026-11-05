@@ -66,7 +66,7 @@ If no existing seam observes the behavior, preserve reproduction evidence and it
 - **One behavior per test.** If the test name contains "and", split it.
 - **Clear, intention-revealing name.** "`rejects offset > total with 400`" beats "`pagination test 3`".
 - **Real code paths.** Mocks are allowed only for boundaries the test cannot cross (network, clock, file system). Mocking the unit under test is forbidden — it tests the mock, not the code.
-- **No production code yet.** If a symbol does not exist, fix the test setup until the failure reaches a behavior assertion. Collection or import errors do not prove RED.
+- **No production behavior yet.** If a symbol does not exist, first fix the test setup. If the language cannot compile or import the test without the symbol (for example a new Go function), add a minimal behavior-free production stub before RED: signature only, returning a zero value or a "not implemented" error. Run the test through that stub so the failure reaches a behavior assertion, and implement the real behavior only in GREEN. Collection, compile, or import errors do not prove RED.
 
 ### Step 2: Verify RED — Watch it fail
 

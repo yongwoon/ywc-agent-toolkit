@@ -75,7 +75,7 @@ The diff list has at least one row marked "matters" with a hypothesis attached, 
 
 ### Rank candidates, then select one
 
-- [ ] Rank 3–5 falsifiable candidates with evidence for and against before selecting one
+- [ ] Rank 3–5 falsifiable candidates with evidence for and against before selecting one (fewer evidence-backed candidates are valid and one is enough to proceed; never pad)
 
 - [ ] Hypothesis written in the shape: **"X is the root cause because Y; the minimal change Z should fix it."**
 - [ ] X names a specific identifier (file, function, variable), not a vague area
@@ -129,8 +129,8 @@ A passing test confirming the hypothesis, with exactly one variable changed from
 - [ ] After three failed fixes, stop by default; any analyst packet includes `Caller: ywc-debug-rootcause` and `analysis_mode=debug_hypotheses`
 - [ ] Allow one fourth fix only with both separate evidence-linked debug-mode fields; stop after a failed fourth fix
 - [ ] Required fields: `Fix #4 signal: fix harder` and `Next fix worth attempting: <one concrete minimal change>`; missing/unknown/mismatched pair returns `NEEDS_CONTEXT`
-- [ ] Surface the situation to the user with: (a) summary of attempted fixes, (b) why each failed, (c) architectural concern, (d) proposed redesign
-- [ ] Transfer the decision to the user — this is not a Phase 4 outcome but a Phase 4 escape
+- [ ] Only when the fourth fix is not permitted or fails: surface the situation to the user with (a) summary of attempted fixes, (b) why each failed, (c) architectural concern, (d) proposed redesign
+- [ ] Only in that same case: transfer the decision to the user — this is not a Phase 4 outcome but a Phase 4 escape. A successful permitted fourth fix completes Phase 4 through the normal exit condition instead
 
 ### Exit condition
 

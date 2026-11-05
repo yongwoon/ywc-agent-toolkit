@@ -7,9 +7,9 @@ Walk through the per-step entry / exit conditions during the cycle. Each step ha
 ### Entry conditions
 
 - [ ] The behavior to implement is named in one sentence
-- [ ] Name the existing public seam and record its catches/misses before writing the test.
-- [ ] If no existing seam observes the behavior, preserve reproduction evidence and surface the smallest interface decision; do not expose a helper only for testing.
-- [ ] No production code for this behavior exists yet (search the codebase before writing the test)
+- [ ] Name the existing public seam and record its catches/misses before writing the test. This applies only when such a seam exists; otherwise follow the next item.
+- [ ] If no existing seam observes the behavior, preserve reproduction evidence and surface the smallest interface decision; do not expose a helper only for testing. Record the approved new interface as the seam for this test.
+- [ ] No production implementation of this behavior exists yet (search the codebase before writing the test); a behavior-free stub that only lets the test compile is allowed
 - [ ] If exploration was needed, the spike was discarded — no carry-over code
 
 ### The test

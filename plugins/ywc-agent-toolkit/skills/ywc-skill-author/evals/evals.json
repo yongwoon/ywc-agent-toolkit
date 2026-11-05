@@ -31,7 +31,7 @@
       "id": 4,
       "name": "remove-no-op-without-weakening-guardrails",
       "prompt": "Review a draft instruction: 'If there is nothing to change, do nothing. Never write secrets to logs.' Apply the no-op writing lever without weakening the security boundary.",
-      "expected_output": "Remove the inert instruction only if it adds no decision, action, or output requirement; retain the explicit secret-redaction guardrail. Do not treat safety constraints as no-ops.",
+      "expected_output": "Retain the conditional stop rule 'If there is nothing to change, do nothing.' because it is an explicit condition-dependent action (it prevents unnecessary writes), and retain the explicit secret-redaction guardrail. Remove an instruction only if it adds no decision, action, stop condition, or output requirement. Do not treat safety, scope, or stop constraints as no-ops.",
       "files": [
         "codex/skills/ywc-skill-author/SKILL.md"
       ],

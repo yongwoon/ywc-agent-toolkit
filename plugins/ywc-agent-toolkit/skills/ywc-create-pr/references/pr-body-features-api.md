@@ -77,7 +77,10 @@ Add this section only when the diff adds, changes, or removes an HTTP endpoint. 
 route definition in the diff — a router call (`app.get(...)`, `router.post(...)`), a Next.js
 `route.ts` exporting `GET`/`POST`/..., a controller decorator, or an OpenAPI path — or a change
 to a handler, controller, request/response schema, or middleware that the repository's route
-definition ties to a specific endpoint (the route line itself may be unchanged). If no endpoint
+definition ties to a specific endpoint (the route line itself may be unchanged). When such a
+schema or handler change appears in the diff but its route definition does not, read the existing
+route definition (search the repository for the handler or schema name) to resolve the bound
+Method+Path before deciding whether to include the row. If no endpoint
 changed, omit the section entirely — no empty heading, no "N/A".
 
 ```markdown

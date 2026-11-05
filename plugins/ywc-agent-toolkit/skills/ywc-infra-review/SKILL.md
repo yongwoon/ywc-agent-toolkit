@@ -36,7 +36,7 @@ When tempted to bypass a rule, check this table first:
 
 | Parameter | Format | Example | Description |
 |-----------|--------|---------|-------------|
-| `--scope` | `--scope <path>` | `--scope infra/modules/network` | Restrict the review fan-out to a single Terraform module or path instead of the whole IaC tree. |
+| `--scope` | `--scope <path>` | `--scope infra/modules/network` | Names an existing IaC path set to review. Requires an applied-state attestation (`evidence_type`, `binding_target`, `applied`) and the complete file content; a path alone returns `BLOCKED` or `NEEDS_CONTEXT`. When omitted, the review covers only the submitted fresh plan/diff or topology packet — the whole IaC tree is never scanned implicitly. |
 | `--skip-optimize-recommendation` | flag | `--skip-optimize-recommendation` | Skip the closing `ywc-infra-optimize` recommendation. Only valid when the upstream caller already schedules remediation itself. |
 
 ## Workflow
@@ -68,7 +68,7 @@ Dispatch a Codex worker carrying the `ywc-performance-engineer` persona, the fro
 
 For an escalated FinOps comparison, include exactly one finding's Evidence Snapshot v1 performance lane slice: finding ID and summary, affected resource or workload, evidence source and timestamp, supplied cost/usage metrics, and applicable budget or constraints. Keep the analysis in this caller's report: options, each option's cost/risk trade-off, and a recommended option. This bounded analysis does not replace the shared eligible scope or hand the finding away from the caller.
 
-Missing or truncated required evidence returns `NEEDS_CONTEXT` naming the exact input. Do not estimate missing prices or savings, and do not run a provider lookup, apply, or applied-environment sweep. Keep missing values `unknown`, name the missing evidence and next recheck. Use supplied usage, region, currency, price date/source, and calculation assumptions where relevant; distinguish immediate from commitment savings and name reliability effects. Route a requested environment-wide optimization sweep to `ywc-infra-optimize`.
+Missing or truncated required evidence returns `NEEDS_CONTEXT` naming the exact input. This rule takes precedence over `../references/finops.md`: its order-of-magnitude guidance applies only to figures derivable from the supplied evidence, never to fill a missing price, usage, or savings value. Do not estimate missing prices or savings, and do not run a provider lookup, apply, or applied-environment sweep. Keep missing values `unknown`, name the missing evidence and next recheck. Use supplied usage, region, currency, price date/source, and calculation assumptions where relevant; distinguish immediate from commitment savings and name reliability effects. Route a requested environment-wide optimization sweep to `ywc-infra-optimize`.
 
 ### Step 4: Reliability lens
 

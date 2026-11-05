@@ -360,13 +360,13 @@ Output this block first:
 ✅ Spec drafted: <path>
 ```
 
-After writing a fresh Medium/Large spec, invoke `ywc-spec-ready --spec <path>` exactly once by default, using the path just written. Do not invoke it when `--no-converge` or `--non-interactive` is set. In either suppressed case, print the manual handoff:
+After writing a fresh Medium/Large spec, invoke `ywc-spec-ready --spec <path>` exactly once by default, using the path just written. Do not invoke it when `--no-converge` or `--non-interactive` is set, or when `<path>` is outside `docs/ywc-plans/` (for example a custom `--output docs/specs/feature.md`), because `ywc-spec-ready` rejects spec paths outside that root unless the repository documents another spec directory. In any of these suppressed cases, print the manual handoff:
 
 1. `ywc-spec-validate --spec <path>`
 2. (after review passes) `ywc-task-generator <path>`
 3. (after task generation) `ywc-sequential-executor` or `ywc-parallel-executor`
 
-If readiness returns verified `DONE`, report it and print the next-step handoff using the ready Result's Artifact; do not invoke task generation. Propagate a valid non-`DONE` terminal status unchanged and stop, or return `BLOCKED` for invalid/missing status. The fresh Medium/Large path stops after this single readiness call and never invokes an executor. Small and Re-plan paths do not invoke automatic readiness. Use the bounded Suggestion owner policy in `ywc-spec-ready`: explicit apply/defer wins, otherwise one amendment/revalidation when needed; residual advisory Suggestions alone do not create another prompt or another readiness pass, and do not block a valid handoff.
+If readiness returns verified `DONE`, report it and print the next-step handoff using the spec path just written (`ywc-spec-ready --spec` updates that file in place and emits no `Artifact` field without `--artifact-profile agentic`); do not invoke task generation. Propagate a valid non-`DONE` terminal status unchanged and stop, or return `BLOCKED` for invalid/missing status. The fresh Medium/Large path stops after this single readiness call and never invokes an executor. Small and Re-plan paths do not invoke automatic readiness. Use the bounded Suggestion owner policy in `ywc-spec-ready`: explicit apply/defer wins, otherwise one amendment/revalidation when needed; residual advisory Suggestions alone do not create another prompt or another readiness pass, and do not block a valid handoff.
 
 ### Agentic artifact profile
 

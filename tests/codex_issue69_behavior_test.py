@@ -17,8 +17,19 @@ FIXTURE = ROOT / 'tests/fixtures/codex-issue69/upstream-adoption/operational-saf
 SETUP = ROOT / 'codex/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh'
 
 
+GIT_LOCATION_VARS = (
+    'GIT_DIR', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_INDEX_FILE',
+    'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_PREFIX',
+)
+
+
 def run(argv, **kwargs):
-    return subprocess.run(argv, text=True, capture_output=True, **kwargs)
+    # Scrub inherited repository-location vars so git hooks or `git rebase --exec`
+    # cannot redirect these temporary-repo commands onto the active checkout.
+    env = dict(kwargs.pop('env', None) or os.environ)
+    for name in GIT_LOCATION_VARS:
+        env.pop(name, None)
+    return subprocess.run(argv, text=True, capture_output=True, env=env, **kwargs)
 
 
 class OperationalSafetyTests(unittest.TestCase):

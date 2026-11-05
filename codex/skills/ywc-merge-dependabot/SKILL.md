@@ -160,11 +160,11 @@ Choose the flow based on the execution flag from Mode Selection. Both flows pres
 
 For every rebase/CI wait and the parallel lane polling session below, set one deadline at the start (`started_at + 1800` seconds). Each polling chunk is bounded by the lesser of that deadline and its tool time budget. Never recompute the original 1800-second deadline on chunk resume; sleeps and API timeouts must fit the remaining total budget. A completion response received at or after the deadline cannot turn that wait into success.
 
-Persist `deadline`, `active`, `lanes`, `status`, and `rebase_commented` together with the bound repository/invocation identity and pending PR head/CI run identity. For a sequential wait, `active` contains its one PR and `lanes` its pending queue. Acquire an exclusive per-repository/queue lock; a competing owner must stop before mutation. Save a complete snapshot by atomic replacement of a private state file under that serialized invocation owner after every chunk and before handoff; never evaluate state as shell source. Persistence failure is `BLOCKED`: retain the previous snapshot and stop subsequent merge/comment requests. Validate identity and state on resume; missing or malformed state returns `NEEDS_CONTEXT` without further merge/comment requests. An in-memory original deadline can reconstruct lost state only after reconciliation, never extend the budget.
+Persist `deadline`, `active`, `lanes`, `status`, and `rebase_commented` (plus `rebase_intent`, below) together with the bound repository/invocation identity and pending PR head/CI run identity. For a sequential wait, `active` contains its one PR and `lanes` its pending queue. Acquire an exclusive per-repository/queue lock; a competing owner must stop before mutation. Save a complete snapshot by atomic replacement of a private state file under that serialized invocation owner after every chunk and before handoff; never evaluate state as shell source. Persistence failure is `BLOCKED`: retain the previous snapshot and stop subsequent merge/comment requests. Validate identity and state on resume; missing or malformed state returns `NEEDS_CONTEXT` without further merge/comment requests. An in-memory original deadline can reconstruct lost state only after reconciliation, never extend the budget.
 
-Only a successful rebase comment sets `rebase_commented[pr]`; persist that marker before another chunk. Reconcile an uncertain transport result against existing PR comments before retrying, so an accepted comment is not duplicated. Reuse successful markers across retries. Rebase completion must be tied to the resulting head and its fresh CI run: stale green CI on the old head is not success.
+Only a successful rebase comment sets `rebase_commented[pr]`; persist that marker before another chunk. Because the process can end after GitHub accepts the comment but before the marker is saved, atomically persist a `rebase_intent[pr]` entry (with the pending PR head) **before** sending the comment. On resume, an intent without a marker means the comment may already exist: list the PR's comments first, set the marker if a matching `@dependabot rebase` comment is found, and send only if none is. Reconcile an uncertain transport result against existing PR comments the same way before retrying, so an accepted comment is not duplicated. Reuse successful markers across retries. Rebase completion must be tied to the resulting head and its fresh CI run: stale green CI on the old head is not success.
 
-At `now < deadline`, a nonempty queue may save state and resume; a chunk boundary is not terminal success or failure. At `now >= deadline`, incomplete work is failed, never successful. Mark remaining PRs failed/stalled, disable their pending auto-merge, and report a disable failure as auto-merge possibly still enabled. Stop subsequent merge or mixed-queue advancement after timeout. Empty queues succeed only after verified completion before the deadline. These polling instructions and the lane illustration are source/expected-trace contracts; no live polling helper is provided.
+At `now < deadline`, a nonempty queue may save state and resume; a chunk boundary is not terminal success or failure. At `now >= deadline`, incomplete work is failed, never successful. Mark remaining PRs failed/stalled, disable their pending auto-merge, and report a disable failure as auto-merge possibly still enabled. Stop subsequent merge or mixed-queue advancement after timeout. A PR whose state is read as `MERGED` or `CLOSED` at or after the deadline is recorded with its actual outcome (`merged`, reported as `Merged`, or `closed`) rather than left `active` as `lane-stalled`; the wait itself still counts as timed out, so the next PR in its lane is never started. Empty queues succeed only after verified completion before the deadline. These polling instructions and the lane illustration are source/expected-trace contracts; no live polling helper is provided.
 
 #### 3a. Sequential Flow (default)
 
@@ -228,13 +228,21 @@ declare -A lanes
 lanes[npm]="101 105 107"
 lanes[github-actions]="203 209"
 active=(101 203)   # first PR from each non-empty lane
-declare -A status rebase_commented
+declare -A status rebase_intent rebase_commented
 while [ ${#active[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ] && [ "$(date +%s)" -lt "$chunk_deadline" ]; do
   next=()
   for pr in "${active[@]}"; do
     pr_state=$(gh pr view "$pr" --json state --jq '.state' 2>/dev/null || echo UNKNOWN)
     merge_status=$(gh pr view "$pr" --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
-    if [ "$(date +%s)" -ge "$deadline" ]; then next+=("$pr"); continue; fi
+    if [ "$(date +%s)" -ge "$deadline" ]; then
+      # Past the deadline: record the real terminal state, never start the next lane PR.
+      case "$pr_state" in
+        MERGED) status[$pr]="merged" ;;
+        CLOSED) status[$pr]="closed" ;;
+        *) next+=("$pr") ;;
+      esac
+      continue
+    fi
     if [ "$pr_state" = "MERGED" ]; then
       status[$pr]="merged"
       # Remove this PR from active. Then start the next unprocessed PR from

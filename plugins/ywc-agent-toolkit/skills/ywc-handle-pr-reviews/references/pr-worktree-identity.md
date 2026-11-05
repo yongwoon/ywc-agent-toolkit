@@ -46,7 +46,7 @@ source recipe, not an installed dispatcher or a live agent trace.
 
 <!-- pr-worktrees:refresh:start -->
 ```bash
-set -uo pipefail
+set -euo pipefail
 verify_identity() {
   [ "$(pwd -P)" = "$WT_PATH" ] &&
   [ "$(git -C "$WT_PATH" rev-parse --show-toplevel)" = "$WT_PATH" ] &&
@@ -78,6 +78,13 @@ or merge-readiness check, confirm `pwd -P == WT_PATH`, canonical repository root
 budget: on the first mismatch consume it, re-enter `WT_PATH` once and recheck all
 three conditions. Any second mismatch or failed identity check is `BLOCKED`
 before that operation. Never mutate from the main checkout as fallback.
+
+Before every PR API write (reply, comment) and every push, also re-query the
+pinned PR with `gh pr view "$PR_NUMBER" --repo "$REPOSITORY" --json
+number,state,headRefName,isCrossRepository` and require the pinned number,
+`OPEN`, `headRefName == H` and `isCrossRepository=false`. A PR closed or
+re-pointed mid-run is `BLOCKED` before that write; local path and branch checks
+alone cannot detect it.
 
 A failed required command stops later edits, commits, API writes, pushes and
 retries. Report the failed gate and every completed commit/push; preserve worktree
