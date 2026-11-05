@@ -44,3 +44,7 @@ Trigger conditions for this Skill are defined in the `description` field of [SKI
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+## Operational safety
+
+Apply severity adjustments only when the individual checklist row condition holds. Internal-only alone does not downgrade any item; item 2 always remains Critical.

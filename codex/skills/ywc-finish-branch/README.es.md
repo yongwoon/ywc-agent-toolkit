@@ -92,3 +92,7 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 - **Upstream**: `ywc-sequential-executor` (reemplaza sus Pasos 5–8), `ywc-parallel-executor` (reemplaza la porción de merge + mark-complete de los Pasos 4e–4f)
 - **Delegación interna**: `ywc-create-pr` (Paso 2), `ywc-handle-pr-reviews` (bucle de polling del Paso 4)
+
+## Seguridad operativa
+
+La eliminación remota independiente exige una rama válida entre comillas y una consulta de PR abiertos exitosa, analizada y vacía. Si se basa en un merge, deben coincidir la base prevista y el tip remoto actual; un lease del tip exacto rechaza pushes concurrentes.

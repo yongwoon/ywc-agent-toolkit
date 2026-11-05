@@ -44,3 +44,7 @@ Critical / High / Medium / Low の重大度別に分類されます。各発見�
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+## 運用の安全性
+
+Severity の調整は各 checklist row の条件を満たす場合だけ適用します。Internal-only だけでは downgrade せず、item 2 は常に Critical です。

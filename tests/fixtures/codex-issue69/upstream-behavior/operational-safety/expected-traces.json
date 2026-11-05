@@ -1,0 +1,521 @@
+[
+  {
+    "id": "empty-open-pr",
+    "input": {
+      "branch": "feature/safe",
+      "open_query": {
+        "exit": 0,
+        "json": []
+      },
+      "reason": "explicit deletion"
+    },
+    "expected_trace": [
+      "validate branch",
+      "open query parsed empty",
+      "read exact tip",
+      "tip-bound delete"
+    ],
+    "expected_status": "ALLOWED",
+    "source_clause": "only a successful, parseable, empty result allows deletion",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 1
+  },
+  {
+    "id": "open-pr",
+    "input": {
+      "open_query": {
+        "exit": 0,
+        "json": [
+          {
+            "number": 12
+          }
+        ]
+      }
+    },
+    "expected_trace": [
+      "retain remote",
+      "report refusal"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "only a successful, parseable, empty result allows deletion",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "nonparseable",
+    "input": {
+      "open_query": {
+        "exit": 0,
+        "raw": "not JSON"
+      }
+    },
+    "expected_trace": [
+      "retain remote",
+      "report refusal"
+    ],
+    "expected_status": "NEEDS_CONTEXT",
+    "source_clause": "only a successful, parseable, empty result allows deletion",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "api-failure",
+    "input": {
+      "open_query": {
+        "exit": 1,
+        "raw": ""
+      }
+    },
+    "expected_trace": [
+      "retain remote",
+      "report refusal"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "only a successful, parseable, empty result allows deletion",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "invalid-branch",
+    "input": {
+      "branch": "--bad",
+      "check_ref_format_exit": 1
+    },
+    "expected_trace": [
+      "reject branch",
+      "no lookup or deletion"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "git check-ref-format --branch \"$branch\"",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "wrong-base",
+    "input": {
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "integration",
+        "headRefOid": "aaa"
+      },
+      "open_query": [],
+      "local_merged": true
+    },
+    "expected_trace": [
+      "parsed empty open query",
+      "match actual base and remote tip",
+      "retain remote"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "baseRefName` is the intended base and `headRefOid` equals the current remote tip",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "moved-tip",
+    "input": {
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "bbb"
+      },
+      "open_query": [],
+      "local_merged": true
+    },
+    "expected_trace": [
+      "parsed empty open query",
+      "match actual base and remote tip",
+      "retain remote"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "baseRefName` is the intended base and `headRefOid` equals the current remote tip",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "matching-merge",
+    "input": {
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaa"
+      },
+      "open_query": [],
+      "local_merged": true
+    },
+    "expected_trace": [
+      "parsed empty open query",
+      "match actual base and remote tip",
+      "delete exact tip"
+    ],
+    "expected_status": "ALLOWED",
+    "source_clause": "baseRefName` is the intended base and `headRefOid` equals the current remote tip",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 1
+  },
+  {
+    "id": "local-only-merge",
+    "input": {
+      "local_merged": true,
+      "merged_rows": []
+    },
+    "expected_trace": [
+      "local HEAD is insufficient",
+      "retain remote"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "Never infer a merge from `git branch -r --merged HEAD`",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "lease-race",
+    "input": {
+      "validated_tip": "aaa",
+      "tip_before_delete": "bbb"
+    },
+    "expected_trace": [
+      "exact-tip lease rejected",
+      "retain new tip"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "tip-bound lease",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "delete-retry-absent",
+    "input": {
+      "prior_delete_response": "uncertain",
+      "remote_ref": "absent"
+    },
+    "expected_trace": [
+      "reconcile exact remote",
+      "report already absent",
+      "no duplicate write"
+    ],
+    "expected_status": "ALREADY_ABSENT",
+    "source_clause": "tip-bound lease",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "isolation-0",
+    "input": {
+      "setup_exit": 0
+    },
+    "expected_trace": [
+      "inspect setup status",
+      "worker admitted"
+    ],
+    "expected_status": "ALLOWED",
+    "source_clause": "Only exit 0 permits a worker for that task",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "worker_starts": 1
+  },
+  {
+    "id": "isolation-1",
+    "input": {
+      "setup_exit": 1
+    },
+    "expected_trace": [
+      "inspect setup status",
+      "preserve branch/worktree; no worker"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "Only exit 0 permits a worker for that task",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "worker_starts": 0
+  },
+  {
+    "id": "isolation-2",
+    "input": {
+      "setup_exit": 2
+    },
+    "expected_trace": [
+      "inspect setup status",
+      "preserve branch/worktree; no worker"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "Only exit 0 permits a worker for that task",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "worker_starts": 0
+  },
+  {
+    "id": "isolation-127",
+    "input": {
+      "setup_exit": 127
+    },
+    "expected_trace": [
+      "inspect setup status",
+      "preserve branch/worktree; no worker"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "Only exit 0 permits a worker for that task",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "worker_starts": 0
+  },
+  {
+    "id": "chunk-resume",
+    "input": {
+      "start": 0,
+      "chunks": [
+        50,
+        1000,
+        1799
+      ]
+    },
+    "expected_trace": [
+      "save deadline 1800 and complete queue/marker state",
+      "resume with original deadline",
+      "completion before deadline"
+    ],
+    "expected_status": "COMPLETED",
+    "source_clause": "Never recompute the original 1800-second deadline on chunk resume",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "deadlines": [
+      1800,
+      1800,
+      1800
+    ]
+  },
+  {
+    "id": "chunk-incomplete",
+    "input": {
+      "now": 50,
+      "deadline": 1800,
+      "active": [
+        12
+      ]
+    },
+    "expected_trace": [
+      "save complete snapshot",
+      "resume pending PR",
+      "no final success"
+    ],
+    "expected_status": "PENDING",
+    "source_clause": "Persist `deadline`, `active`, `lanes`, `status`, and `rebase_commented`",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "deadline-exact",
+    "input": {
+      "now": 1800,
+      "deadline": 1800,
+      "completion_response": "MERGED"
+    },
+    "expected_trace": [
+      "reject late completion as wait success",
+      "fail remaining wait",
+      "disable pending auto-merge",
+      "stop advancement"
+    ],
+    "expected_status": "FAILED",
+    "source_clause": "A completion response received at or after the deadline cannot turn that wait into success",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "deadline-late",
+    "input": {
+      "now": 1801,
+      "deadline": 1800,
+      "completion_response": "MERGED"
+    },
+    "expected_trace": [
+      "reject late completion as wait success",
+      "fail remaining wait",
+      "disable pending auto-merge",
+      "stop advancement"
+    ],
+    "expected_status": "FAILED",
+    "source_clause": "A completion response received at or after the deadline cannot turn that wait into success",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "state-corrupt",
+    "input": {
+      "state": "malformed"
+    },
+    "expected_trace": [
+      "no reset of original deadline",
+      "no merge/comment request"
+    ],
+    "expected_status": "NEEDS_CONTEXT",
+    "source_clause": "missing or malformed state returns `NEEDS_CONTEXT`",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "rebase-retry-success",
+    "input": {
+      "rebase_comment_exit": 0,
+      "marker": false
+    },
+    "expected_trace": [
+      "post once",
+      "persist success marker",
+      "resume without repost"
+    ],
+    "expected_status": "PENDING",
+    "source_clause": "Only a successful rebase comment sets `rebase_commented[pr]`",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "rebase-uncertain",
+    "input": {
+      "transport": "uncertain"
+    },
+    "expected_trace": [
+      "reconcile existing comments",
+      "persist accepted comment identity",
+      "no duplicate rebase comment"
+    ],
+    "expected_status": "NEEDS_CONTEXT",
+    "source_clause": "Only a successful rebase comment sets `rebase_commented[pr]`",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "state-write-failure",
+    "input": {
+      "state_rename_exit": 1
+    },
+    "expected_trace": [
+      "retain previous complete snapshot",
+      "stop resumable mutation",
+      "report failure"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "atomic replacement",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-internal-only",
+    "input": {
+      "item": 1,
+      "internal_only": true,
+      "audited": false
+    },
+    "expected_trace": [
+      "Critical"
+    ],
+    "expected_status": "CRITICAL",
+    "source_clause": "internal-only does not by itself lower any item",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-row-1-exception",
+    "input": {
+      "item": 1,
+      "internal_only": true,
+      "audited": true
+    },
+    "expected_trace": [
+      "High"
+    ],
+    "expected_status": "HIGH",
+    "source_clause": "Downgrade to High only if surface is internal-only and audited",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-row-2",
+    "input": {
+      "item": 2,
+      "internal_only": true,
+      "audited": true
+    },
+    "expected_trace": [
+      "Critical; no downgrade"
+    ],
+    "expected_status": "CRITICAL",
+    "source_clause": "item 2 is never downgraded",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-row-3-exception",
+    "input": {
+      "item": 3,
+      "independent_rate_limit": true,
+      "audit_log": true
+    },
+    "expected_trace": [
+      "Medium"
+    ],
+    "expected_status": "MEDIUM",
+    "source_clause": "Downgrade to Medium if surface has independent rate limit + audit log",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-row-3-no-exception",
+    "input": {
+      "item": 3,
+      "independent_rate_limit": false,
+      "audit_log": true
+    },
+    "expected_trace": [
+      "High"
+    ],
+    "expected_status": "HIGH",
+    "source_clause": "Adjust severity only by the condition stated in the item's own row",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-row-4-exception",
+    "input": {
+      "item": 4,
+      "source_read_only": true,
+      "trusted_authors": true
+    },
+    "expected_trace": [
+      "High"
+    ],
+    "expected_status": "HIGH",
+    "source_clause": "Downgrade to High if external source is read-only by trusted authors",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  },
+  {
+    "id": "severity-row-4-no-exception",
+    "input": {
+      "item": 4,
+      "internal_only": true,
+      "trusted_authors": false
+    },
+    "expected_trace": [
+      "Critical"
+    ],
+    "expected_status": "CRITICAL",
+    "source_clause": "internal-only does not by itself lower any item",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only"
+  }
+]
