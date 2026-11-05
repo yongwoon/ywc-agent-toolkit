@@ -32,3 +32,13 @@ Timeline再構成、Root Cause分析（5 Whys）、影響範囲の評価、再�
 - `ywc-security-audit` — インシデント**予防**のためのセキュリティ監査（事前）
 - `ywc-impl-review` — 一般的なコード品質Review
 - `ywc-changelog-release-notes` — Patch Release後の変更履歴ドキュメント作成
+
+## Analyst contract
+
+`Caller: ywc-incident-postmortem` · `analysis_mode=incident_five_whys`
+
+Caller と analysis_mode を明示します。欠落・unknown・不一致は推測せず `NEEDS_CONTEXT`。Status → Summary → Finding counts → Analysis mode を検証し、既存 caller gate を維持します。
+
+各段階に証拠を示した正確に五つの Why を返し、primary root cause と contributing factors を分離します。証拠不足は段階を捏造せず `NEEDS_CONTEXT` です。
+
+Live runtime: `UNVERIFIED — instruction contract only`.

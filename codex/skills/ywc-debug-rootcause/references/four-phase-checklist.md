@@ -6,9 +6,12 @@ Concrete per-phase checklist to walk through during a debugging session. Each ph
 
 ### Pre-flight
 
+- [ ] Record Feedback loop, Catches, Misses and the observed failure before any fix
+- [ ] If automation is unavailable, record manual evidence and constraints; no fabricated RED or execution PASS
+
 - [ ] Symptom is captured verbatim (exact error message, exact failing assertion)
 - [ ] Reproduction is consistent — running it 3 times produces the same failure each time
-- [ ] If not reproducible, gather data (logs, traces, env dump) — do not advance until reproducible
+- [ ] If not reproducible, gather bounded evidence and record constraints; do not propose a speculative fix
 
 ### Investigation
 
@@ -70,7 +73,9 @@ The diff list has at least one row marked "matters" with a hypothesis attached, 
 
 ## Phase 3: Hypothesis and Testing
 
-### Form a single hypothesis
+### Rank candidates, then select one
+
+- [ ] Rank 3–5 falsifiable candidates with evidence for and against before selecting one
 
 - [ ] Hypothesis written in the shape: **"X is the root cause because Y; the minimal change Z should fix it."**
 - [ ] X names a specific identifier (file, function, variable), not a vague area
@@ -121,7 +126,9 @@ A passing test confirming the hypothesis, with exactly one variable changed from
 
 ### 3+ failure escape hatch
 
-- [ ] If three fixes on the same surface have failed, do NOT attempt fix #4
+- [ ] After three failed fixes, stop by default; any analyst packet includes `Caller: ywc-debug-rootcause` and `analysis_mode=debug_hypotheses`
+- [ ] Allow one fourth fix only with both separate evidence-linked debug-mode fields; stop after a failed fourth fix
+- [ ] Required fields: `Fix #4 signal: fix harder` and `Next fix worth attempting: <one concrete minimal change>`; missing/unknown/mismatched pair returns `NEEDS_CONTEXT`
 - [ ] Surface the situation to the user with: (a) summary of attempted fixes, (b) why each failed, (c) architectural concern, (d) proposed redesign
 - [ ] Transfer the decision to the user — this is not a Phase 4 outcome but a Phase 4 escape
 

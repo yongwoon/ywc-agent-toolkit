@@ -7,7 +7,11 @@
       "agent": "ywc-complexity-cleaner",
       "expected_status": "NEEDS_CONTEXT",
       "prompt": "Dispatch without a complete packet or exact production Ownership.",
-      "expectations": ["No edit", "No fabricated command", "No worker dispatch after missing context"]
+      "expectations": [
+        "No edit",
+        "No fabricated command",
+        "No worker dispatch after missing context"
+      ]
     },
     {
       "name": "cleaner-scope-boundary",
@@ -16,7 +20,11 @@
       "contract_state": "advisory",
       "requested_path_class": "test-fixture",
       "prompt": "With a complete advisory packet, request an edit to a test or fixture path.",
-      "expectations": ["Production-only boundary", "No edit", "NEEDS_CONTEXT"]
+      "expectations": [
+        "Production-only boundary",
+        "No edit",
+        "NEEDS_CONTEXT"
+      ]
     },
     {
       "name": "cleaner-unavailable-advisory",
@@ -25,7 +33,10 @@
       "expected_status": "DONE_WITH_CONCERNS",
       "unavailable_tool": true,
       "prompt": "With a complete advisory packet, make the approved complexity tool unavailable.",
-      "expectations": ["State-specific unavailable-tool result", "No mutation"]
+      "expectations": [
+        "State-specific unavailable-tool result",
+        "No mutation"
+      ]
     },
     {
       "name": "cleaner-unavailable-enforced",
@@ -34,7 +45,10 @@
       "expected_status": "BLOCKED",
       "unavailable_tool": true,
       "prompt": "With a complete enforced packet, make the approved complexity tool unavailable.",
-      "expectations": ["State-specific unavailable-tool result", "No mutation"]
+      "expectations": [
+        "State-specific unavailable-tool result",
+        "No mutation"
+      ]
     },
     {
       "name": "hardener-residual-cap",
@@ -42,7 +56,12 @@
       "contract_state": "advisory",
       "expected_status": "DONE_WITH_CONCERNS",
       "prompt": "Provide three approved hardening attempts with residual mutation survivors.",
-      "expectations": ["Test/fixture-only boundary", "At most three attempts", "Every residual reported", "No equivalence claim"]
+      "expectations": [
+        "Test/fixture-only boundary",
+        "At most three attempts",
+        "Every residual reported",
+        "No equivalence claim"
+      ]
     },
     {
       "name": "hardener-scope-and-status",
@@ -51,7 +70,11 @@
       "expected_status": "NEEDS_CONTEXT",
       "requested_path_class": "production",
       "prompt": "With a complete enforced packet, request a production edit.",
-      "expectations": ["No edit", "Canonical status", "No later DONE masking"]
+      "expectations": [
+        "No edit",
+        "Canonical status",
+        "No later DONE masking"
+      ]
     },
     {
       "name": "no-contract-compatibility",
@@ -59,14 +82,227 @@
       "contract_state": "N/A — no quality gate contract",
       "expected_dispatch": "none",
       "prompt": "Provide the exact no-contract sentinel.",
-      "expectations": ["Neither worker is selected", "Existing workflow remains unchanged", "No placeholder packet", "Not a worker terminal status"]
+      "expectations": [
+        "Neither worker is selected",
+        "Existing workflow remains unchanged",
+        "No placeholder packet",
+        "Not a worker terminal status"
+      ]
     },
     {
       "name": "typescript-reviewer-mobile-first-ui",
       "agent": "ywc-typescript-reviewer",
       "expected_status": "DONE_WITH_CONCERNS",
       "prompt": "Review a bounded TSX diff whose evidence packet explicitly identifies a new end-user UI layout/style surface and redesign scope. The diff uses a desktop-first base with max-width claw-back. Read the shared mobile-first policy, return one Framework idiom finding with file:line evidence, preserve the read-only/no-delivery contract, and return NEEDS_CONTEXT instead when target-surface evidence is missing.",
-      "expectations": ["Shared policy read", "Framework idiom finding for the scoped violation", "NEEDS_CONTEXT for missing target-surface evidence", "Legacy UI skipped without redesign scope", "Read-only and no delivery"]
+      "expectations": [
+        "Shared policy read",
+        "Framework idiom finding for the scoped violation",
+        "NEEDS_CONTEXT for missing target-surface evidence",
+        "Legacy UI skipped without redesign scope",
+        "Read-only and no delivery"
+      ]
+    },
+    {
+      "name": "analyst-debug_hypotheses",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-debug-rootcause",
+      "analysis_mode": "debug_hypotheses",
+      "expected_status": "DONE",
+      "prompt": "Analyze the supplied complete bounded causal evidence in the declared mode.",
+      "expectations": [
+        "Ordered Status/Summary/Finding counts/Analysis mode envelope",
+        "3–5 ranked falsifiable hypotheses with evidence for and against; one-variable falsification experiment",
+        "Read-only inline advice; original caller owns gate; no final architecture verdict"
+      ]
+    },
+    {
+      "name": "analyst-debug_hypotheses-refuse-missing",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-debug-rootcause",
+      "analysis_mode": null,
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-debug_hypotheses-refuse-unknown_mode",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-debug-rootcause",
+      "analysis_mode": "unknown_mode",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-debug_hypotheses-refuse-incident_five_whys",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-debug-rootcause",
+      "analysis_mode": "incident_five_whys",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-incident_five_whys",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-incident-postmortem",
+      "analysis_mode": "incident_five_whys",
+      "expected_status": "DONE",
+      "prompt": "Analyze the supplied complete bounded causal evidence in the declared mode.",
+      "expectations": [
+        "Ordered Status/Summary/Finding counts/Analysis mode envelope",
+        "Exactly five numbered evidence-linked Why steps; separate primary cause and contributing factors",
+        "Read-only inline advice; original caller owns gate; no final architecture verdict"
+      ]
+    },
+    {
+      "name": "analyst-incident_five_whys-refuse-missing",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-incident-postmortem",
+      "analysis_mode": null,
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-incident_five_whys-refuse-unknown_mode",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-incident-postmortem",
+      "analysis_mode": "unknown_mode",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-incident_five_whys-refuse-debug_hypotheses",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-incident-postmortem",
+      "analysis_mode": "debug_hypotheses",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-confidence_root_cause",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-confidence-gate",
+      "analysis_mode": "confidence_root_cause",
+      "expected_status": "DONE",
+      "prompt": "Analyze the supplied complete bounded causal evidence in the declared mode.",
+      "expectations": [
+        "Ordered Status/Summary/Finding counts/Analysis mode envelope",
+        "Exactly one cause candidate with evidence for and against; no ranked alternatives or 5 Whys",
+        "Read-only inline advice; original caller owns gate; no final architecture verdict"
+      ]
+    },
+    {
+      "name": "analyst-confidence_root_cause-refuse-missing",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-confidence-gate",
+      "analysis_mode": null,
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-confidence_root_cause-refuse-unknown_mode",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-confidence-gate",
+      "analysis_mode": "unknown_mode",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-confidence_root_cause-refuse-debug_hypotheses",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-confidence-gate",
+      "analysis_mode": "debug_hypotheses",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Reject the missing, unknown or cross-paired analyst mode.",
+      "expectations": [
+        "NEEDS_CONTEXT; name missing/unknown/mismatched field",
+        "No inferred mode or fallback; no edit or probe",
+        "Ordered Status/Summary/Finding counts envelope; no guessed Analysis mode"
+      ]
+    },
+    {
+      "name": "analyst-caller-missing",
+      "agent": "ywc-root-cause-analyst",
+      "caller": null,
+      "analysis_mode": "debug_hypotheses",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Analyze with absent or unknown Caller.",
+      "expectations": [
+        "NEEDS_CONTEXT without inferring caller",
+        "No edit/probe; no mode fallthrough"
+      ]
+    },
+    {
+      "name": "analyst-caller-unknown",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "unknown_caller",
+      "analysis_mode": "debug_hypotheses",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Analyze with absent or unknown Caller.",
+      "expectations": [
+        "NEEDS_CONTEXT without inferring caller",
+        "No edit/probe; no mode fallthrough"
+      ]
+    },
+    {
+      "name": "analyst-fourth-fix-gate",
+      "agent": "ywc-root-cause-analyst",
+      "caller": "ywc-debug-rootcause",
+      "analysis_mode": "debug_hypotheses",
+      "prompt": "Three failed fixes; compare both evidence-linked fields, a single field, missing evidence and failed fourth attempt.",
+      "expectations": [
+        "Fix #4 signal: fix harder and Next fix worth attempting: <one concrete minimal change> are separate fields only when both justified by cited evidence",
+        "Caller permits one final fourth fix only after valid debug response; missing field/evidence or other mode retains stop",
+        "No fifth attempt, counter reset or final architecture verdict"
+      ]
+    },
+    {
+      "name": "analyst-runtime-unavailable",
+      "agent": "ywc-root-cause-analyst",
+      "unavailable_tool": true,
+      "prompt": "No live model trace is available.",
+      "expectations": [
+        "UNVERIFIED — instruction contract only",
+        "No execution PASS claim or fabricated evidence"
+      ]
     }
   ]
 }

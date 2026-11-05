@@ -18,6 +18,40 @@
       "prompt": "The root cause was human error. Finish the postmortem.",
       "expected_output": "Rejects human error as terminal root cause and continues asking why the system allowed the error to cause impact.",
       "files": []
+    },
+    {
+      "id": 4,
+      "name": "analyst-valid-mode",
+      "prompt": "Use ywc-incident-postmortem with an available read-only analyst and bounded causal evidence.",
+      "expected_behavior": [
+        "Dispatch Caller: ywc-incident-postmortem and analysis_mode=incident_five_whys.",
+        "Validate Status/Summary/Finding counts and matching Analysis mode before consuming advice.",
+        "Retain the caller decision gate; analyst returns inline advice only."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 5,
+      "name": "analyst-refuses-invalid-contract",
+      "prompt": "The analyst packet has an omitted or unknown caller/mode, a cross-paired valid mode, or a malformed output envelope.",
+      "expected_behavior": [
+        "Return NEEDS_CONTEXT; no inference, mode fallthrough or repeated dispatch.",
+        "Retain original caller gate and dispatch budget.",
+        "Record UNVERIFIED — instruction contract only without a live trace."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 6,
+      "name": "five-whys-evidence",
+      "prompt": "Reconstruct an incident with five supplied causal links.",
+      "expected_behavior": [
+        "Exactly five numbered Why steps with evidence cited at each step.",
+        "Separate primary root cause and contributing factors; missing causal evidence returns NEEDS_CONTEXT.",
+        "No debug ranking or fourth-fix fields."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
     }
-  ]
+  ],
+  "last_updated": "2026-11-05"
 }

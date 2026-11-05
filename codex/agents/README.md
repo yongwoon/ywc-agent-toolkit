@@ -33,3 +33,15 @@
 - `tools`, `permissionMode`, `Task(subagent_type=...)` 같은 Claude Code 전용 필드를 Codex TOML에 복사하지 않습니다.
 - Codex CLI `0.144.0` 이상에서는 GPT-5.6 Terra profile을 설치합니다. 더 이전 버전이거나 버전을 확인할 수 없으면 installer가 agent 복사본의 model만 GPT-5.4로 낮춰 설치합니다.
 - Skills는 모델을 직접 고정하지 않습니다. 이 agent profile은 specialist delegation에만 적용되며, 일반 skill 실행은 호출한 Codex 세션의 model과 reasoning effort를 따릅니다.
+
+## Root-cause analyst 계약
+
+| Caller | analysis_mode | Inline evidence |
+| --- | --- | --- |
+| `ywc-debug-rootcause` | `debug_hypotheses` | 3–5개 ranked falsifiable 가설, 각각 찬반 근거; 한 번에 한 변수 실험 |
+| `ywc-incident-postmortem` | `incident_five_whys` | 근거를 인용한 정확히 다섯 Why, primary cause와 contributing factors 분리 |
+| `ywc-confidence-gate` | `confidence_root_cause` | 단일 cause candidate의 찬반 근거; 최종 band는 caller 소유 |
+
+`Caller`와 `analysis_mode`를 명시하며 누락/unknown/mismatch는 추론 없이 `NEEDS_CONTEXT`입니다. 응답은 Status → Summary → Finding counts → 유효한 Analysis mode 순서이며 각 finding은 severity와 근거를 포함합니다. Caller는 owner/input/output/status 불일치를 `NEEDS_CONTEXT`로 처리하고 기존 판정 gate와 dispatch budget을 유지합니다. Analyst는 inline read-only이며 파일 작성, probe 실행, 최종 architecture 판정을 하지 않습니다.
+
+Debug는 최소 feedback loop와 catches/misses를 먼저 기록합니다. 세 번의 fix 실패 후 기본 중단하며, 유효한 debug 응답의 별도 evidence-linked `Fix #4 signal: fix harder`와 `Next fix worth attempting: <one concrete minimal change>`가 모두 있을 때만 마지막 한 번을 허용합니다. 한 필드 누락·근거 없음·다른 mode·analyst 사용 불가는 중단을 유지하며, 네 번째 실패 후 추가 시도는 없습니다. 실제 runtime trace가 없으면 `UNVERIFIED — instruction contract only`입니다.
