@@ -127,14 +127,14 @@ check_task_generator_output_guard() {
   local evals="$ROOT/codex/skills/ywc-task-generator/evals/evals.json"
 
   require_tokens "$skill" \
-    'Resolve the default `tasks/` from the repository root.' \
-    'never infer `<tasks-dir>` from the parent directory of `--spec`.' \
-    'may write its preview artifact but must not create `<tasks-dir>` or task files.' \
+    "Resolve the default \`tasks/\` from the repository root." \
+    "never infer \`<tasks-dir>\` from the parent directory of \`--spec\`." \
+    "may write its preview artifact but must not create \`<tasks-dir>\` or task files." \
     'Create the task output directory only after an approved preview passes all' \
-    'Before returning `DONE`, verify every emitted task directory contains `README.md` and `task.md`, and `<tasks-dir>/dependency-graph.md` exists.'
+    "Before returning \`DONE\`, verify every emitted task directory contains \`README.md\` and \`task.md\`, and \`<tasks-dir>/dependency-graph.md\` exists."
   require_tokens "$evals" \
     'default-output-root-independent-of-spec-location' \
-    'repository root `tasks/`' \
+    "repository root \`tasks/\`" \
     'Preview-only writes no task directories or dependency graph.' \
     'No task output directory is created before matching preview digest approval.' \
     'matching preview digest' \
