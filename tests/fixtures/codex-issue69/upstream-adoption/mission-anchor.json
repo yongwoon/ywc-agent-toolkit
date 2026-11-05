@@ -76,7 +76,12 @@
         "기존 text, Reason/Rationale, Provenance도 함께 보존합니다.",
         "선택 섹션에 활성 행이 남지 않으면 빈 상태로 두지 말고 섹션과 표를 제거합니다.",
         "do not update `<!-- updated: YYYY-MM-DD -->`",
-        "do not append `## Change log`"
+        "do not append `## Change log`",
+        "| ID | Kind | Text | Original Reason / Rationale | Original Provenance | Deprecated | Reason / Superseded-by |",
+        "Copy each original Reason/Rationale and Provenance verbatim into the corresponding Original columns; keep the deprecation reason separate.",
+        "| SC002 | Success Criterion | ~~Five sample jobs are preloaded for every account~~ | Reduce initial setup effort | user, 2026-06-22 | 2026-06-23 | Superseded by SC004; sample jobs are optional seed data |",
+        "| NG001 | Non-goal | Migrate every legacy project Mission file | Migration is not needed to support the optional format | user, 2026-06-22 | 2026-06-23 | Superseded by a user-confirmed migration plan |",
+        "| CN001 | Constraint | Keep Claude Code and Codex Mission guidance independent | The two runtimes have separate activation and maintenance contracts | user, 2026-06-22 | 2026-06-23 | Superseded by a user-confirmed shared activation contract |"
       ],
       "forbidden": [
         "Delete deprecated rows."
@@ -129,6 +134,11 @@
       "id": "stale-retry-and-write-failure",
       "input": "Baseline changes after confirmation, same confirmed request is retried, or replacement fails.",
       "expected": "Stale baseline requires a new proposal/confirmation; applied retry is no-op; failed write cannot claim success or partial durable completion."
+    },
+    {
+      "id": "deprecated-lossless-schema",
+      "input": "Deprecate SC002, NG001 and CN001 with known original rationale/reason and provenance plus a new deprecation reason.",
+      "expected": "Deprecated rows retain original text, original explanation and original provenance in separate Original columns; dated deprecation reason is recorded separately without overwriting the source explanation or provenance."
     }
   ]
 }

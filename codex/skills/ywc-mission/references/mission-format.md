@@ -26,8 +26,8 @@ Short instruction explaining that Codex sessions should read this file before pl
 | RA001 | Approach considered | Why it was rejected | active | user, YYYY-MM-DD |
 
 ## Deprecated
-| ID | Kind | Text | Deprecated | Reason / Superseded-by |
-|---|---|---|---|---|
+| ID | Kind | Text | Original Reason / Rationale | Original Provenance | Deprecated | Reason / Superseded-by |
+|---|---|---|---|---|---|---|
 
 ## Change log
 - YYYY-MM-DD - <summary>
@@ -96,14 +96,16 @@ Example:
 
 ## Deprecated Entries
 
-Never hard-delete Mission history, `SC###`, `RA###`, `NG###`, or `CN###` entries. Move stale or superseded content into `## Deprecated` with dated reasons. Preserve the original text, Reason/Rationale, and Provenance in that history, extending legacy history rows with this information when available; do not invent missing provenance. IDs are retired forever.
+Never hard-delete Mission history, `SC###`, `RA###`, `NG###`, or `CN###` entries. Move stale or superseded content into `## Deprecated` with dated reasons. Preserve the original text, Reason/Rationale, and Provenance in that history, extending legacy history rows with this information when available; do not invent missing provenance. Copy each original Reason/Rationale and Provenance verbatim into the corresponding Original columns; keep the deprecation reason separate. IDs are retired forever.
 
 Example:
 
 ```markdown
-| ID | Kind | Text | Deprecated | Reason / Superseded-by |
-|---|---|---|---|---|
-| SC002 | Success Criterion | ~~Five sample jobs are preloaded for every account~~ | 2026-06-23 | Superseded by SC004; sample jobs are optional seed data |
+| ID | Kind | Text | Original Reason / Rationale | Original Provenance | Deprecated | Reason / Superseded-by |
+|---|---|---|---|---|---|---|
+| SC002 | Success Criterion | ~~Five sample jobs are preloaded for every account~~ | Reduce initial setup effort | user, 2026-06-22 | 2026-06-23 | Superseded by SC004; sample jobs are optional seed data |
+| NG001 | Non-goal | Migrate every legacy project Mission file | Migration is not needed to support the optional format | user, 2026-06-22 | 2026-06-23 | Superseded by a user-confirmed migration plan |
+| CN001 | Constraint | Keep Claude Code and Codex Mission guidance independent | The two runtimes have separate activation and maintenance contracts | user, 2026-06-22 | 2026-06-23 | Superseded by a user-confirmed shared activation contract |
 ```
 
 ## Change Log
