@@ -71,18 +71,25 @@ common Git directory. The lock is a repository-wide generator lock shared by
 all linked worktrees (not a per-initials lock and not a worktree-private
 `.git` lock).
 
-The lock covers this complete critical section, in this order:
+For direct generation and `--preview-only`, the lock covers this allocation
+transaction, in this order:
 
 1. Scan the resolved graph, active/completed task directories, and linked
    worktree sources.
 2. Select the next candidate using the initials-scoped maximum.
 3. Compare-and-create the candidate reservation ref.
-4. Write the complete task artifact batch and dependency-graph update while
-   holding the same lock.
+4. Write the task batch and graph, or persist the preview with its reservation
+   identity, while holding the same lock.
 
-Do not release the lock between scan, reservation, and graph/artifact writes.
-If reservation creation collides, keep the lock, select the next candidate,
-and retry. If any complete-batch write fails, report the failure while the
+For `--approve-preview`, acquire the same lock, verify the approved preview's
+phase and reservation ref, check that its task rows remain collision-free, then
+reuse that reserved phase for the complete task/graph write. Do not rescan for a
+new maximum, select another phase, or compare-and-create another reservation.
+
+In either flow, hold the lock from its path-specific validation through the
+final task, graph, or preview write.
+If a new reservation creation collides, keep the lock, select the next
+candidate, and retry. If any complete-batch write fails, report the failure while the
 reservation remains consumed; never unlock and retry a partial graph update as
 if the transaction had completed. A future implementation may use a portable
 atomic lock primitive (for example, an exclusive lock directory or a
@@ -92,9 +99,9 @@ is not satisfied by distinct refs alone.
 
 ## Durable reservation
 
-Before creating any task directory or graph/preview artifact, reserve the
-candidate using the repository common Git directory (not a worktree-private
-`.git` path):
+For direct generation and `--preview-only`, reserve the candidate before
+creating any task directory or graph/preview artifact. Use the repository
+common Git directory (not a worktree-private `.git` path):
 
 ```text
 refs/ywc/task-phase/<initials>/<phase>
@@ -109,10 +116,14 @@ write no duplicate task directory. Reservations are never released during
 normal operation; they are the durable consumed-phase ledger.
 
 Only after reservation succeeds, and while the common-Git exclusive lock is
-still held, may generation create the prefixed task names, write the complete
-dependency graph, or persist a preview. A preview-only operation follows the
-same scan/selection/reservation ordering if it consumes a phase; a
-`NEEDS_CONTEXT` result consumes neither a reservation nor an artifact path.
+still held, may direct generation write tasks/graph or preview generation
+persist the preview. The preview identity and digest must include the reserved
+phase and exact reservation ref. On approved consumption, verify under the
+lock that the ref still has the fixed reservation value and matches that
+preview identity; reuse the same phase and task IDs without a new reservation
+attempt. A missing/mismatched reservation returns `NEEDS_CONTEXT`, writes no
+task artifacts, and does not release the existing ref. Before initial
+reservation, `NEEDS_CONTEXT` consumes neither a ref nor an artifact path.
 Existing legacy names and references are never renamed.
 
 ## Evidence expected from a generator run
