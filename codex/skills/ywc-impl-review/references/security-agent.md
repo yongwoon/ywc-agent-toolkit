@@ -94,3 +94,20 @@ Before finalizing, run [`recurring-defects.md` §4 (Security specifics)](./recur
 - **Supply chain & secrets** — pin third-party GitHub Actions by commit SHA; new secrets/env vars must be in the secret inventory and `.env.example` (A05/A06).
 
 Map each to its OWASP category in the finding. Skip any item that does not apply (single-owner, no rendered output) and say so. Severity follows this file's rubric — and note the slightly more permissive escalation bar below for Critical/High candidates.
+
+## Additional recurring defects and prompt-injection severity
+
+Apply **A-005** checkout credential persistence (OWASP A05/A08) and **A-006**
+Promise permission/auth conditions (A01) from
+[recurring-defects.md](./recurring-defects.md). Trace later untrusted-code or
+artifact exposure before confirming A-005; preserve explicit scoped push auth
+requirements. Use installed [targeted rules](./coderabbit-methodology.md#targeted-rules-for-recurring-defects)
+as evidence and verify each candidate before surfacing it.
+
+For LLM surfaces, apply the individual rows in the
+[prompt-injection severity reference](../../ywc-security-audit/references/prompt-injection-checklist.md#severity-reference).
+Internal-only status alone never globally downgrades prompt-injection severity.
+Item 2 (single-string prompt without role separation) remains Critical: no downgrade.
+Item 1 permits High only when the surface is both internal-only and audited.
+Apply any other exception only when that row's complete condition is established;
+a general project-context severity adjustment cannot override a row prohibition.

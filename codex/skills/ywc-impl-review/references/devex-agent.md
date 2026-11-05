@@ -162,3 +162,12 @@ Reason for escalation: (one sentence stating which of the three properties is at
 ```
 
 Do not paste full files, full log dumps, or full configs. The smaller the payload, the cheaper and sharper the Phase 2 verdict.
+
+## Additional recurring defects and targeted evidence
+
+Apply **A-006** (unawaited or boolean Promise) and **A-007** (discarded error)
+from [recurring-defects.md](./recurring-defects.md). A rejection handler does not
+prove ordering is safe; `void p` does not handle rejection. Trace actual error
+return types and recognize justified, commented best-effort cleanup.
+Use the [targeted rules](./coderabbit-methodology.md#targeted-rules-for-recurring-defects)
+only when installed and appropriate; every hit remains a candidate until verified.
