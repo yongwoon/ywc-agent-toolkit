@@ -64,7 +64,7 @@ non-interactive generation returns `NEEDS_CONTEXT` without downstream work.
 ---
 
 ## Preview Approval Gate
-For persisted previews and approved-preview writes, `--spec` must resolve under `docs/`; `--preview-only` and `--approve-preview` are mutually exclusive. The preview identity binds the reserved phase and reservation ref; see [wide-refactor-decomposition.md](references/wide-refactor-decomposition.md).
+For persisted previews and approved-preview writes, `--spec` must resolve inside a project-declared safe spec root; absent a project declaration, use `docs/`. `--preview-only` and `--approve-preview` are mutually exclusive. The preview identity binds the reserved phase and reservation ref; see [wide-refactor-decomposition.md](references/wide-refactor-decomposition.md).
 `--preview-only` returns `DONE` with its path/revision/digest and phase reservation for a separate caller approval step; it writes no task directory or graph.
 `--approve-preview` consumes only an explicitly approved preview whose spec,
 tasks dir, language, mode, path, revision, digest, and phase reservation all

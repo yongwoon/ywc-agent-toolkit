@@ -24,8 +24,9 @@ consumed by `--approve-preview`.
 ## Safe Path Rules
 
 - `--spec` is mandatory for persisted previews and approved-preview task writes. Direct generation without preview flags retains Step 1 input forms, including inline specs, and does not require `--spec`.
-- `--spec` must be repository-relative, must stay under `docs/`, and must not
-  resolve through `..` traversal or symlink escape.
+- `--spec` must be repository-relative, must stay under a project-declared
+  safe spec root (default `docs/`), and must not resolve through `..` traversal
+  or symlink escape.
 - `--preview-path` must be repository-relative Markdown and stay under
   `docs/ywc-plans/` unless the project defines another safe root explicitly.
 - Absolute paths, parent-directory escape, symlink escape, and non-Markdown
