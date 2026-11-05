@@ -2,6 +2,8 @@
 
 이 디렉터리는 portable `ywc-*` skills를 보완하는 Codex custom agent 정의를 담습니다.
 
+Codex package inventory: 54 skills and 10 custom agents. See [codex/README.md](../README.md) for the full catalog and installation commands.
+
 이 파일들은 `scripts/install.sh --codex` 실행 시 skills와 함께
 `${CODEX_HOME:-~/.codex}/agents`에 설치됩니다. Agents만 설치하려면
 `scripts/install.sh --codex-agents`를 사용합니다.

@@ -24,7 +24,7 @@ Claude Code 및 Codex 용 개발 워크플로우 자동화 스킬 모음입니�
 | 도구        | Skills | Custom Agents | 설치 경로                                 |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 54     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -108,8 +108,13 @@ Resolution 순서는 explicit `--lang` > project `.codex/ywc.json` > project gui
 | QA 테스트 시트 생성 | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
 | 릴리스 노트 작성 | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
 | 새 `ywc-*` skill 작성 | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
+| project mission anchor 유지 | [ywc-mission](codex/skills/ywc-mission/README.md) |
+| session evidence 기반 workflow 개선 회고 | [ywc-retro](codex/skills/ywc-retro/README.md) |
+| 안전한 session handoff 작성 | [ywc-handoff](codex/skills/ywc-handoff/README.md) |
 
 모든 skill 디렉터리는 [`claude-code/skills/`](claude-code/skills)와 [`codex/skills/`](codex/skills)에서 확인하실 수 있으며, 각각 자체 README를 가지고 있습니다.
+
+Codex 패키지 카탈로그의 skill·agent 수와 설치 명령은 [codex/README.md](codex/README.md)에서 확인하세요.
 
 **연결 관계:** `ywc-plan` → (Medium/Large) `ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`가 각 task를 end-to-end로 전달합니다. Ad-hoc 변경은 executor를 건너뛰고 `ywc-create-pr` → `ywc-handle-pr-reviews`로 진행합니다. 각 경로의 명령과 flag는 [핵심 pipeline 가이드](https://yongwoon.github.io/ywc-agent-toolkit-lp/ko/guidebook/02-core-concepts/)에서 다룹니다.
 
@@ -140,6 +145,7 @@ Codex에는 read-only specialist agent 8개와 quality-gate bounded worker 2개�
 | [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | 정적 보안 리뷰 및 threat model 분류 |
 | [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | 근본 원인 및 장애 원인 분석 |
 | [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | 성능 리뷰 및 프로파일링 권장사항 |
+| [ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml) | Terraform 기반 IaC 안정성과 클라우드 오구성 검토 |
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 언어별 리뷰 |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 언어별 리뷰 |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 언어별 리뷰 |

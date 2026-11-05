@@ -364,5 +364,81 @@ class PrWorktreeTests(unittest.TestCase):
                 self.assertEqual(trace['live_evidence'], 'UNVERIFIED — instruction contract only')
 
 
+class CodexDistributionTests(unittest.TestCase):
+    def test_catalog_counts_match_source_inventory(self):
+        skills = sorted(p.parent.name for p in (ROOT / 'codex/skills').glob('*/SKILL.md'))
+        agents = sorted(p.stem for p in (ROOT / 'codex/agents').glob('*.toml'))
+        self.assertEqual(len(skills), 54)
+        self.assertEqual(len(agents), 10)
+        catalog = (ROOT / 'codex/README.md').read_text()
+        for name in skills:
+            self.assertEqual(catalog.count(f'[{name}](skills/{name}/README.md)'), 1)
+        for name in agents:
+            self.assertEqual(catalog.count(f'[{name}](agents/{name}.toml)'), 1)
+        for locale in ('README.md', 'README.ko.md', 'README.es.md', 'README.ja.md', 'README.zh.md'):
+            text = (ROOT / locale).read_text()
+            self.assertIn('| Codex       | 54     | 10', text)
+            for name in ('ywc-mission', 'ywc-retro', 'ywc-handoff', 'ywc-cloud-engineer'):
+                self.assertIn(f'[{name}](', text)
+            self.assertIn('[codex/README.md](codex/README.md)', text)
+
+    def test_selected_skill_installs_use_temporary_codex_home(self):
+        for name in ('ywc-mission', 'ywc-retro', 'ywc-handoff'):
+            with self.subTest(skill=name), tempfile.TemporaryDirectory(prefix='ywc-codex-selected-') as raw:
+                home = Path(raw)
+                result = run(['bash', 'scripts/install.sh', '--codex', name], cwd=ROOT,
+                             env=dict(os.environ, CODEX_HOME=str(home)))
+                self.assertEqual(result.returncode, 0, result.stderr)
+                installed = home / 'skills'
+                self.assertTrue((installed / name / 'SKILL.md').is_file())
+                self.assertEqual(sorted(p.name for p in installed.iterdir()
+                                         if p.is_dir() and p.name.startswith('ywc-')), [name])
+
+    def test_agent_only_install_uses_temporary_codex_home(self):
+        with tempfile.TemporaryDirectory(prefix='ywc-codex-agents-') as raw:
+            home = Path(raw)
+            result = run(['bash', 'scripts/install.sh', '--codex-agents'], cwd=ROOT,
+                         env=dict(os.environ, CODEX_HOME=str(home)))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(sorted(p.name for p in (home / 'agents').glob('*.toml')),
+                             sorted(p.name for p in (ROOT / 'codex/agents').glob('*.toml')))
+            self.assertFalse((home / 'skills').exists())
+
+    def test_skill_eval_ids_and_upstream_source_ids(self):
+        for bundle in (ROOT / 'codex/skills').glob('*/evals/evals.json'):
+            cases = json.loads(bundle.read_text()).get('evals', [])
+            ids = [str(case.get('id', '')) for case in cases]
+            with self.subTest(bundle=bundle.parent.parent.name):
+                self.assertTrue(all(value.isdigit() for value in ids))
+                self.assertEqual(len(ids), len(set(ids)))
+        for agent in (ROOT / 'codex/agents').glob('*.toml'):
+            text = agent.read_text()
+            self.assertIn('description', text)
+            self.assertIn('developer_instructions', text)
+        for fixture in (ROOT / 'tests/fixtures/codex-issue69/upstream-adoption').glob('*.json'):
+            data = json.loads(fixture.read_text())
+            for check in data.get('checks', []):
+                for source_id in (found for clause in check.get('required', [])
+                                 for found in re.findall(r'"source_id"\s*:\s*"([^"]+)"', clause)):
+                    match = re.search(r'codex/skills/([^/]+)/evals/evals\.json', check.get('source', ''))
+                    if match:
+                        bundle = json.loads((ROOT / 'codex/skills' / match.group(1) / 'evals/evals.json').read_text())
+                        self.assertIn(source_id, {str(item.get('source_id')) for item in bundle.get('evals', [])})
+
+    def test_generated_plugin_skill_inventory_matches_source(self):
+        source = ROOT / 'codex/skills'
+        generated = ROOT / 'plugins/ywc-agent-toolkit/skills'
+        names = sorted(p.parent.name for p in source.glob('*/SKILL.md'))
+        self.assertEqual(names, sorted(p.parent.name for p in generated.glob('*/SKILL.md')))
+        for name in names:
+            source_text = (source / name / 'SKILL.md').read_text()
+            expected = re.sub(
+                r'(?m)(bash|python|cp) codex/skills/([^\s]+)',
+                lambda match: f'{match.group(1)} "${{CODEX_HOME:-$HOME/.codex}}/skills/{match.group(2)}"',
+                source_text,
+            )
+            self.assertEqual(expected, (generated / name / 'SKILL.md').read_text())
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

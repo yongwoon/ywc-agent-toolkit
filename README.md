@@ -18,7 +18,7 @@ A collection of skills for **Claude Code** and **Codex** that automates the full
 | Tool        | Skills | Custom Agents | Install path                             |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 54     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -102,8 +102,13 @@ Most `ywc-*` skills are available for both Claude Code and Codex. The full catal
 | Generate a QA test sheet | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
 | Write release notes | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
 | Author a new `ywc-*` skill | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
+| Maintain the project mission anchor | [ywc-mission](codex/skills/ywc-mission/README.md) |
+| Review session evidence for workflow improvements | [ywc-retro](codex/skills/ywc-retro/README.md) |
+| Create a safe session handoff | [ywc-handoff](codex/skills/ywc-handoff/README.md) |
 
 Browse every skill directory under [`claude-code/skills/`](claude-code/skills) and [`codex/skills/`](codex/skills); each has its own README.
+
+For the Codex package catalog, skill and agent counts, and installation commands, see [codex/README.md](codex/README.md).
 
 **How they fit together:** `ywc-plan` → (Medium/Large) `ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`, which delivers each task end to end. Ad-hoc changes skip the executor: `ywc-create-pr` then `ywc-handle-pr-reviews`. The [core pipeline guides](https://yongwoon.github.io/ywc-agent-toolkit-lp/en/guidebook/02-core-concepts/) walk through each path with commands and flags.
 
@@ -134,6 +139,7 @@ Codex gets eight read-only specialist agents plus two bounded quality-gate worke
 | [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | Static security review and threat-model triage |
 | [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | Root-cause and incident-cause analysis |
 | [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | Performance review and profiling recommendations |
+| [ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml) | Terraform-based IaC reliability and cloud misconfiguration review |
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript language-specific review |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python language-specific review |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go language-specific review |
