@@ -129,7 +129,7 @@ check_task_generator_output_guard() {
   require_tokens "$skill" \
     "Resolve the default \`tasks/\` from the repository root." \
     "never infer \`<tasks-dir>\` from the parent directory of \`--spec\`." \
-    '`--preview-only` returns `DONE` with its persisted path/revision/digest' \
+    "\`--preview-only\` returns \`DONE\` with its persisted path/revision/digest" \
     'Without either preview flag, preserve the existing' \
     'defer this graph mutation until approved-preview consumption' \
     'For preview-only, verify the persisted preview artifact and its identity' \
