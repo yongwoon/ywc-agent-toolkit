@@ -1,0 +1,119 @@
+{
+  "id": "codex-bundle-distribution-ac10",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-10",
+    "AC-10"
+  ],
+  "live_evidence": "UNVERIFIED — installer behavior is exercised in temporary CODEX_HOME; live skill/model invocation is not executed",
+  "scenarios": [
+    {
+      "id": "actual-catalog-counts-and-new-skills",
+      "input": "Compare the root localized catalog, Codex package index, source inventory and agent inventory.",
+      "expected": "All root locale tables report the actual 54 Codex skills and 10 agents. The Codex index lists every skill and agent exactly once and includes ywc-mission, ywc-retro and ywc-handoff. The root agent catalog includes the Codex-only ywc-cloud-engineer."
+    },
+    {
+      "id": "eval-provenance-and-plugin-sync",
+      "input": "Validate source eval bundles and the generated plugin against their source directories.",
+      "expected": "Skill eval IDs are numeric and unique within each bundle; source-derived cases retain source_id; agent expectations are nonempty. The generated plugin contains the source skill inventory and synchronized files."
+    },
+    {
+      "id": "temporary-selected-and-agent-only-installs",
+      "input": "Selected-install the three Codex-only skills and install agents alone using temporary CODEX_HOME values.",
+      "expected": "Selected installs populate only the requested skill under the temporary destination. Agent-only installation copies all 10 TOML agents and does not create a skills directory. No user installation directory is touched."
+    }
+  ],
+  "checks": [
+    {
+      "source": "README.md",
+      "required": [
+        "| Codex       | 54     | 10",
+        "[ywc-mission](codex/skills/ywc-mission/README.md)",
+        "[ywc-retro](codex/skills/ywc-retro/README.md)",
+        "[ywc-handoff](codex/skills/ywc-handoff/README.md)",
+        "[ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml)",
+        "[codex/README.md](codex/README.md)"
+      ]
+    },
+    {
+      "source": "README.ko.md",
+      "required": [
+        "| Codex       | 54     | 10",
+        "[ywc-mission](codex/skills/ywc-mission/README.md)",
+        "[ywc-retro](codex/skills/ywc-retro/README.md)",
+        "[ywc-handoff](codex/skills/ywc-handoff/README.md)",
+        "[ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml)",
+        "[codex/README.md](codex/README.md)"
+      ]
+    },
+    {
+      "source": "README.es.md",
+      "required": [
+        "| Codex       | 54     | 10",
+        "[ywc-mission](codex/skills/ywc-mission/README.md)",
+        "[ywc-retro](codex/skills/ywc-retro/README.md)",
+        "[ywc-handoff](codex/skills/ywc-handoff/README.md)",
+        "[ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml)",
+        "[codex/README.md](codex/README.md)"
+      ]
+    },
+    {
+      "source": "README.ja.md",
+      "required": [
+        "| Codex       | 54     | 10",
+        "[ywc-mission](codex/skills/ywc-mission/README.md)",
+        "[ywc-retro](codex/skills/ywc-retro/README.md)",
+        "[ywc-handoff](codex/skills/ywc-handoff/README.md)",
+        "[ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml)",
+        "[codex/README.md](codex/README.md)"
+      ]
+    },
+    {
+      "source": "README.zh.md",
+      "required": [
+        "| Codex       | 54     | 10",
+        "[ywc-mission](codex/skills/ywc-mission/README.md)",
+        "[ywc-retro](codex/skills/ywc-retro/README.md)",
+        "[ywc-handoff](codex/skills/ywc-handoff/README.md)",
+        "[ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml)",
+        "[codex/README.md](codex/README.md)"
+      ]
+    },
+    {
+      "source": "codex/README.md",
+      "required": [
+        "The Codex bundle contains **54 skills** and **10 custom agents**.",
+        "## Skill Catalog",
+        "## Custom Agents",
+        "[ywc-mission](skills/ywc-mission/README.md)",
+        "[ywc-retro](skills/ywc-retro/README.md)",
+        "[ywc-handoff](skills/ywc-handoff/README.md)",
+        "[ywc-cloud-engineer](agents/ywc-cloud-engineer.toml)",
+        "Evaluation files are included where maintained."
+      ],
+      "forbidden": [
+        "51 skills",
+        "9 custom agents"
+      ]
+    },
+    {
+      "source": "codex/agents/README.md",
+      "required": [
+        "54 skills and 10 custom agents",
+        "ywc-cloud-engineer"
+      ]
+    },
+    {
+      "source": "tests/codex_issue69_behavior_test.py",
+      "required": [
+        "class CodexDistributionTests",
+        "test_catalog_counts_match_source_inventory",
+        "test_selected_skill_installs_use_temporary_codex_home",
+        "test_agent_only_install_uses_temporary_codex_home",
+        "test_skill_eval_ids_and_upstream_source_ids",
+        "test_generated_plugin_skill_inventory_matches_source",
+        "if __name__ == '__main__':\n    unittest.main(verbosity=2)"
+      ]
+    }
+  ]
+}

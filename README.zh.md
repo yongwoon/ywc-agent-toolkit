@@ -24,7 +24,7 @@
 | 工具        | Skills | Custom Agents | 安装路径                                  |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 54     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -108,8 +108,13 @@ ywc-setup --scope user --lang ja
 | 生成 QA 测试单 | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
 | 撰写发布说明 | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
 | 编写新的 `ywc-*` skill | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
+| 维护项目 mission anchor | [ywc-mission](codex/skills/ywc-mission/README.md) |
+| 基于会话证据回顾工作流改进 | [ywc-retro](codex/skills/ywc-retro/README.md) |
+| 创建安全的会话 handoff | [ywc-handoff](codex/skills/ywc-handoff/README.md) |
 
 所有 skill 目录位于 [`claude-code/skills/`](claude-code/skills) 与 [`codex/skills/`](codex/skills)，每个都有各自的 README。
+
+Codex 包目录、skill 与 agent 数量及安装命令请参阅 [codex/README.md](codex/README.md)。
 
 **它们如何衔接:** `ywc-plan` → （Medium/Large）`ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`，由 executor 端到端交付每个任务。临时性改动不经过 executor: `ywc-create-pr` → `ywc-handle-pr-reviews`。各路径的命令与标志详见 [核心 pipeline 指南](https://yongwoon.github.io/ywc-agent-toolkit-lp/zh/guidebook/02-core-concepts/)。
 
@@ -140,6 +145,7 @@ Codex 提供 8 个只读 specialist agent 和 2 个质量门控 bounded worker�
 | [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | 静态安全评审与 threat model 分级 |
 | [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | 根因与故障原因分析 |
 | [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | 性能评审与性能分析建议 |
+| [ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml) | 基于 Terraform 的 IaC 可靠性与云配置错误审查 |
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 语言专项评审 |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 语言专项评审 |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 语言专项评审 |
