@@ -76,13 +76,13 @@
     {
       "id": 13,
       "prompt": "Use --spec docs/ywc-plans/billing.md --preview-only --preview-path docs/ywc-plans/billing.task-preview.md --mode llm to prepare a preview for a wide refactor task set.",
-      "expected_output": "Writes only the preview artifact and does not write task directories or dependency-graph.md. The preview includes spec_path, tasks_dir, lang, mode, preview_path, preview_revision, and preview_digest. Wide-refactor rows preserve Refactor Phase, Batch ID, and Depends On metadata.",
+      "expected_output": "Writes the preview and its durable phase reservation, but no task directories or dependency-graph.md. The digest-bound identity includes spec_path, tasks_dir, lang, mode, initials, reserved_phase, phase_reservation_ref, preview_path, preview_revision, and preview_digest. Wide-refactor rows preserve Refactor Phase, Batch ID, and Depends On metadata.",
       "files": []
     },
     {
       "id": 14,
       "prompt": "Use --spec docs/ywc-plans/billing.md --approve-preview --preview-path docs/ywc-plans/billing.task-preview.md --non-interactive to generate tasks from an approved preview.",
-      "expected_output": "Consumes the approved preview without re-decomposition. Requires an exact identity match on preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, and mode. Writes task artifacts only from the approved preview.",
+      "expected_output": "Consumes the approved preview without re-decomposition or selecting another phase. Under the common-Git lock, verifies the digest-bound reservation ref and reuses its reserved_phase and task IDs; it creates no second reservation. Requires an exact identity match on preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, mode, initials, reserved_phase, and phase_reservation_ref. Writes task artifacts only from the approved preview.",
       "files": []
     },
     {
@@ -132,9 +132,9 @@
     {
       "id": 20,
       "name": "non-interactive-context-matrix",
-      "prompt": "Run non-interactive task generation from a validated final spec with no preview flags involved, while independently omitting --mode or leaving --lang unresolved.",
+      "prompt": "Run non-interactive task generation from either a validated final spec path or an inline spec, with no preview flags involved, while independently omitting --mode or leaving --lang unresolved.",
       "input": {
-        "accepted": "Final DONE spec artifact with an explicit --mode and a resolved language chain",
+        "accepted": "Either a Final DONE spec artifact or inline spec, with an explicit --mode and a resolved language chain",
         "rejected": [
           "missing --mode with no resolvable value",
           "unresolved --lang after the full resolution chain"
@@ -146,7 +146,7 @@
         "rejected": 0
       },
       "expected_handoff": "accepted only after all deterministic inputs are verified; rejected without task artifact handoff",
-      "expected_output": "Names the missing or unresolved argument and never prompts or guesses a default. Preview identity is not evaluated on this path because no preview flags are supplied, so a normal non-interactive run is never rejected for absent preview fields."
+      "expected_output": "Names the missing or unresolved argument and never prompts or guesses a default. With no preview flags, direct generation accepts inline or persisted specs and does not require --spec or preview identity fields."
     },
     {
       "id": 21,
@@ -165,13 +165,15 @@
       "name": "approve-preview-identity-mismatch",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/billing.md --approve-preview --preview-path docs/ywc-plans/billing.task-preview.md --non-interactive against an approved persisted preview, with exactly one preview identity field missing or mismatched.",
       "input": {
-        "accepted": "Approved preview whose preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, and mode all match exactly",
+        "accepted": "Approved preview whose preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, mode, initials, reserved_phase, and phase_reservation_ref all match exactly",
         "rejected": [
           "missing preview_digest",
           "mismatched preview_revision",
           "mismatched tasks_dir",
           "mismatched lang",
-          "mismatched mode"
+          "mismatched mode",
+          "missing reserved_phase",
+          "mismatched phase_reservation_ref"
         ]
       },
       "expected_status": "DONE for the exact-match fixture; NEEDS_CONTEXT for every single-field mismatch",
@@ -180,7 +182,7 @@
         "rejected": 0
       },
       "expected_handoff": "task artifacts handed off only from the exactly matching approved preview; no handoff on any mismatch",
-      "expected_output": "Per the Preview Approval Gate, exact preview identity match is required only on the --approve-preview path. Names the specific missing or mismatched identity field, never re-decomposes, never silently refreshes the preview, and writes no task artifacts on mismatch.",
+      "expected_output": "Per the Preview Approval Gate, exact preview and reservation identity match is required only on the --approve-preview path. Names the specific missing or mismatched identity field, never re-decomposes, refreshes, re-reserves, or advances phase, and writes no task artifacts on mismatch.",
       "files": []
     },
     {
@@ -188,11 +190,12 @@
       "name": "initials-allocation-contract",
       "prompt": "Run non-interactive task generation with explicit --initials yk in a repository with yk and js tasks, completed tasks, dependency-graph entries, and linked worktrees.",
       "expected_status": "DONE",
-      "expected_output": "Resolves and validates initials before any scan. New IDs use yk-000001-010-...; js IDs are ignored for yk allocation, while legacy numeric IDs remain readable. The maximum is taken from graph, active, completed, and corresponding linked-worktree task directories. The selected phase is compare-and-create reserved under refs/ywc/task-phase/yk/<phase> in the repository common Git directory before any artifact write.",
+      "expected_output": "Resolves and validates initials before any scan. Direct generation and --preview-only reserve a selected phase under refs/ywc/task-phase/yk/<phase> in the common Git directory. Approved consumption verifies the digest-bound reservation and reuses its phase/task IDs under the lock without a second reservation or phase advance. New IDs use yk-000001-010-...; js IDs are ignored for yk allocation, while legacy numeric IDs remain readable. The maximum is taken from graph, active, completed, and corresponding linked-worktree task directories.",
       "expectations": [
         "Absolute or escaping --tasks-dir returns NEEDS_CONTEXT before writes",
         "Inaccessible or mismatched linked-worktree sources are reported",
         "A reservation collision retries the next phase and preserves the consumed ref",
+        "Approved consumption verifies and reuses the reservation recorded in the exact preview identity",
         "Legacy directories are not renamed or counted as another namespace"
       ],
       "files": [
@@ -428,6 +431,17 @@
       "files": [
         "references/task-metadata-rules.md",
         "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 41,
+      "name": "approved-preview-reuses-phase-reservation",
+      "source_id": "local-ac1-approved-preview-reuses-phase-reservation",
+      "prompt": "Create a persisted preview that reserves a phase, then approve and consume it after another task-generator invocation has advanced the repository phase ledger.",
+      "expected_output": "The preview identity and digest bind initials, reserved_phase, and phase_reservation_ref. Under the common-Git lock, verify the same reservation remains valid and reuse its phase and task IDs; do not select a new phase or compare-and-create a second reservation. Missing or mismatched reservation identity returns NEEDS_CONTEXT before task writes and never releases the durable ref.",
+      "files": [
+        "references/collaborator-initials.md",
+        "references/wide-refactor-decomposition.md"
       ]
     }
   ]
