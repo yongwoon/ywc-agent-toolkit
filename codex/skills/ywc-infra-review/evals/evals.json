@@ -1,0 +1,329 @@
+{
+  "skill_name": "ywc-infra-review",
+  "harness": "output-contract",
+  "description": "Source prompts and expected instruction traces; structural validation is not live model execution. Imported cases retain frozen upstream source_id.",
+  "evals": [
+    {
+      "id": 1,
+      "source_id": "infra-review-severity-1",
+      "name": "unresolved HIGH finding blocks apply",
+      "prompt": "Fresh plan/diff review packet (no existing scoped set): Review this bounded Terraform plan packet: public admin ingress remains unresolved (HIGH); usage window and cost rate source are missing; reliability evidence is unchanged.",
+      "expected_output": "Status: NEEDS_CONTEXT\nOrder findings CRITICAL, HIGH, MEDIUM, LOW. Classify unresolved public admin ingress as HIGH and recommend blocking apply. Keep cost estimate unknown; list missing usage window and rate source with a next recheck. Go/no-go: NO-GO until the HIGH finding is remediated and re-reviewed.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "CRITICAL",
+          "HIGH",
+          "MEDIUM",
+          "LOW",
+          "public admin ingress",
+          "blocking apply",
+          "unknown",
+          "missing usage window and rate source",
+          "NO-GO"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 2,
+      "source_id": "infra-review-insufficient-cost-evidence",
+      "name": "missing-cost-basis-remains-unknown",
+      "prompt": "Fresh plan/diff review packet (no existing scoped set): Review a bounded packet that names an idle instance but has no usage window, region, currency, price date/source, or calculation basis. The requester asks for a savings percentage and an apply recommendation.",
+      "expected_output": "Status: NEEDS_CONTEXT\nKeep usage, price basis, estimate, and savings unknown. Name the missing evidence and next recheck; do not invent prices or a savings percentage or recommend apply without the decision-critical cost inputs.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "unknown",
+          "missing evidence",
+          "next recheck",
+          "do not invent prices",
+          "decision-critical cost inputs"
+        ],
+        "banned_patterns": [
+          "(?i)estimated savings:\\s*\\d+(\\.\\d+)?\\s*%",
+          "(?i)price is (approximately|about|around)\\s*[$¥€]?\\s*\\d"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 3,
+      "source_id": "infra-review-clean-packet",
+      "name": "complete-clean-packet-supports-go",
+      "prompt": "Fresh plan/diff review packet (no existing scoped set): Review a bounded Terraform packet with security, cost, and reliability evidence complete. It contains no findings; the supplied bill and rate basis are current for the stated date and the documented rollback test passed.",
+      "expected_output": "Status: DONE\nConfirm no CRITICAL or HIGH findings in the supplied packet. Cite the security, cost, and reliability lenses, distinguish the supplied price basis from live lookup, and give a GO recommendation limited to the reviewed scope.",
+      "assertions": {
+        "required_markers": [
+          "Status: DONE",
+          "no CRITICAL or HIGH findings",
+          "supplied packet",
+          "security, cost, and reliability",
+          "supplied price basis",
+          "GO",
+          "reviewed scope"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 4,
+      "source_id": "infra-review-finops-inline-result-1",
+      "name": "FinOps escalation returns trade-offs to caller",
+      "prompt": "Fresh plan/diff review packet (no existing scoped set): Review one cost finding F-17 for an idle worker pool. The Evidence Snapshot v1 performance lane slice includes affected resource/workload, a 30-day billing export and utilization report timestamped 2026-10-01, 8% average CPU usage during the window and current cost of $900/month, and the weekday peak-capacity budget constraint. Escalate for bounded trade-off analysis and return the result in this report. Do not apply changes. The supplied dated billing worksheet is in USD for us-east-1: keep current capacity at $900/month; schedule off-hours capacity at $450/month using the same rate basis; or reserve the existing size at $600/month with a one-year commitment. These are supplied alternative estimates, not values to look up. Preserve weekday peak capacity.",
+      "expected_output": "Status: DONE_WITH_CONCERNS\nInclude the performance engineer's options, cost/risk trade-offs, and recommended option inline in this caller report. Name the supplied evidence and the weekday peak-capacity constraint. State that no apply or full-environment sweep was performed.",
+      "assertions": {
+        "required_markers": [
+          "Status: DONE_WITH_CONCERNS",
+          "options",
+          "cost/risk trade-offs",
+          "recommended option inline",
+          "weekday peak-capacity constraint",
+          "no apply",
+          "full-environment sweep"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 5,
+      "source_id": "infra-review-post-apply-sweep-routing-1",
+      "name": "applied-environment sweep routes to optimization skill",
+      "prompt": "The requested work is a full sweep of an already-applied environment to identify optimization opportunities. Route it without performing the sweep or applying changes.",
+      "expected_output": "Status: DONE_WITH_CONCERNS\nNext action: Route the applied-environment sweep to ywc-infra-optimize. This review does not perform an apply or full-environment sweep.",
+      "assertions": {
+        "required_markers": [
+          "Status: DONE_WITH_CONCERNS",
+          "applied-environment sweep",
+          "ywc-infra-optimize",
+          "does not perform an apply",
+          "full-environment sweep"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 6,
+      "source_id": "infra-review-scoped-valid-binding-1",
+      "name": "applied commit attestation binds the submitted file set",
+      "prompt": "Review only the existing scoped file set `infra/app/main.tf` and `infra/app/variables.tf`. The user attests that evidence type is applied commit SHA `abc123` and that the applied commit contains both exact submitted paths. No fresh plan or diff is supplied. The one-time attestation explicitly states applied=yes.",
+      "expected_output": "Status: NEEDS_CONTEXT\nScope evidence: applied commit SHA `abc123`; binding: `infra/app/main.tf`, `infra/app/variables.tf`.\nThe attestation is valid, but no IaC file content was supplied for review. Do not claim independent cloud or state verification.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "Scope evidence:",
+          "applied commit SHA",
+          "abc123",
+          "infra/app/main.tf",
+          "infra/app/variables.tf",
+          "no IaC file content was supplied",
+          "Do not claim independent cloud or state verification"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 7,
+      "source_id": "infra-review-scoped-no-evidence-1",
+      "name": "scoped-only input without evidence blocks dispatch",
+      "prompt": "Review only the existing scoped file set `infra/network/main.tf`. The user provides no applied evidence and no fresh plan or diff. State whether a reviewer can be dispatched.",
+      "expected_output": "Status: BLOCKED\nScope evidence: missing — no evidence type or binding target was attested for `infra/network/main.tf`.\nDo not dispatch any reviewer.",
+      "assertions": {
+        "required_markers": [
+          "Status: BLOCKED",
+          "Scope evidence:",
+          "missing",
+          "infra/network/main.tf",
+          "Do not dispatch any reviewer"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 8,
+      "source_id": "infra-review-scoped-unbound-state-1",
+      "name": "state existence without path binding blocks dispatch",
+      "prompt": "Review only the existing scoped file set `infra/db/main.tf`. The user attests that an existing state backend is present but cannot identify these exact paths in the state evidence or provide an applied commit SHA containing them. No fresh plan or diff is supplied.",
+      "expected_output": "Status: BLOCKED\nScope evidence: existing state backend; unbound to `infra/db/main.tf`. State existence alone does not establish that this file was applied.\nDo not dispatch any reviewer.",
+      "assertions": {
+        "required_markers": [
+          "Status: BLOCKED",
+          "Scope evidence:",
+          "existing state backend",
+          "unbound",
+          "infra/db/main.tf",
+          "State existence alone does not establish",
+          "Do not dispatch any reviewer"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 9,
+      "source_id": "infra-review-scoped-unapplied-attestation-1",
+      "name": "user-attested-unapplied-scoped-only input blocks dispatch",
+      "prompt": "Review only the existing scoped file set `infra/app/main.tf`. The user attests that the file is unapplied; an existing state backend is present but does not include this path. No fresh plan or diff is supplied. State whether a reviewer can be dispatched.",
+      "expected_output": "Status: BLOCKED\nScope evidence: existing state backend; `infra/app/main.tf` is explicitly attested as unapplied and has no applied binding.\nDo not dispatch any reviewer.",
+      "assertions": {
+        "required_markers": [
+          "Status: BLOCKED",
+          "Scope evidence:",
+          "infra/app/main.tf",
+          "unapplied",
+          "Do not dispatch any reviewer"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 10,
+      "source_id": "infra-review-mixed-plan-scope-exclusion-1",
+      "name": "fresh plan continues while unbound scoped files are excluded",
+      "prompt": "Review this fresh Terraform plan: `# aws_instance.app will be updated in-place; instance_type changes from t3.micro to t3.small`. The plan changes `infra/app/main.tf`. Also consider the existing scoped file set `infra/legacy/worker.tf`; the user has no applied evidence binding that path. Continue reviewing the supplied fresh plan and state what is excluded.",
+      "expected_output": "Status: DONE\nScope evidence: `infra/legacy/worker.tf` excluded — no applied evidence is bound to the submitted path.\nReview the supplied fresh plan for `infra/app/main.tf` only. Do not include the excluded scoped file in any reviewer packet.",
+      "assertions": {
+        "required_markers": [
+          "Status: DONE",
+          "Scope evidence:",
+          "infra/legacy/worker.tf",
+          "excluded",
+          "no applied evidence",
+          "supplied fresh plan",
+          "infra/app/main.tf",
+          "Do not include the excluded scoped file"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 11,
+      "source_id": "infra-review-mixed-plan-valid-scope-binding-1",
+      "name": "fresh plan and validly bound scoped files remain reviewable",
+      "prompt": "Review this fresh Terraform plan: `# aws_instance.app will be updated in-place; instance_type changes from t3.micro to t3.small`. The plan changes `infra/app/main.tf`. Also review this existing scoped file set: `infra/app/main.tf` containing `resource \"aws_instance\" \"app\" { instance_type = \"t3.micro\" }`. The user attests that applied commit SHA `abc123` contains the exact submitted path `infra/app/main.tf`. Confirm which inputs can be included in the reviewer packet. The one-time attestation explicitly states applied=yes.",
+      "expected_output": "Status: DONE\nScope evidence: applied commit SHA `abc123`; binding: `infra/app/main.tf` (valid).\nReview the supplied fresh plan and the supplied content for `infra/app/main.tf`; both are eligible for the reviewer packet.",
+      "assertions": {
+        "required_markers": [
+          "Status: DONE",
+          "Scope evidence:",
+          "applied commit SHA",
+          "abc123",
+          "infra/app/main.tf",
+          "valid",
+          "fresh plan",
+          "supplied content",
+          "eligible for the reviewer packet"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 12,
+      "source_id": "infra-review-mixed-plan-missing-payload-1",
+      "name": "mixed input without fresh plan payload requests context",
+      "prompt": "Review a fresh Terraform plan affecting `infra/app/main.tf` plus the existing scoped file set `infra/legacy/worker.tf`. The user has no applied evidence bound to the scoped path, but provides no plan content. State whether review can proceed and whether the scoped file may be used as a fallback.",
+      "expected_output": "Status: NEEDS_CONTEXT\nScope evidence: `infra/legacy/worker.tf` excluded — no applied evidence is bound to the submitted path.\nRequest the missing fresh plan payload for `infra/app/main.tf`. Do not dispatch the excluded scoped file as a fallback.",
+      "assertions": {
+        "required_markers": [
+          "Status: NEEDS_CONTEXT",
+          "Scope evidence:",
+          "infra/legacy/worker.tf",
+          "excluded",
+          "infra/app/main.tf",
+          "missing fresh plan payload",
+          "Do not dispatch the excluded scoped file as a fallback"
+        ]
+      },
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md",
+        "codex/agents/ywc-performance-engineer.toml"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "bound-scope-missing-content",
+      "prompt": "Existing scoped paths infra/app/main.tf have evidence_type=apply_record, binding_target=[infra/app/main.tf], applied=yes; IaC content is absent.",
+      "expected_output": "Status: NEEDS_CONTEXT. Scope evidence records the valid binding and missing path; zero reviewer calls. Attestation is not a substitute for content.",
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "bound-scope-truncated-content",
+      "prompt": "The exact existing scoped paths are bound by a state_backend attestation with applied=yes, but submitted IaC is truncated.",
+      "expected_output": "Status: NEEDS_CONTEXT. Name the truncated scoped content; zero reviewer calls and no inferred findings.",
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "mixed-eligible-truncated",
+      "prompt": "A complete fresh diff is supplied with validly bound existing scoped content marked truncated=true and another unapplied set.",
+      "expected_output": "Status: NEEDS_CONTEXT. Record eligible and excluded paths/binding statuses in Scope evidence. Zero reviewer calls; do not drop the eligible incomplete set or use an excluded set as fallback.",
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "fresh-only-header",
+      "prompt": "Review a complete fresh Terraform plan/diff without an existing scoped file set.",
+      "expected_output": "Scope evidence: N/A — fresh plan/diff only. All three lenses receive the same supplied fresh packet; no attestation or provider lookup is required.",
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "topology-only-header",
+      "prompt": "Review only the existing bounded topology packet with complete supplied service configuration.",
+      "expected_output": "Scope evidence: N/A — topology packet only. Preserve topology input support and send the same packet to all three lenses.",
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "bound-scope-complete",
+      "prompt": "Review supplied complete IaC for exactly infra/app/main.tf. One-time user attestation: evidence_type=apply_record, binding_target=[infra/app/main.tf], applied=yes. No fresh plan/diff is present. No provider query is authorized.",
+      "expected_output": "Scope evidence records apply_record, exact submitted path, and applied=yes. Admit the complete scoped content to all three lenses with identical eligible surface; do not query a provider/state/apply system or require repository/revision fields.",
+      "files": [
+        "codex/skills/ywc-infra-review/SKILL.md"
+      ]
+    }
+  ]
+}

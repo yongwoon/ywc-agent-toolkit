@@ -1,4 +1,4 @@
 interface:
   display_name: "Infra Review"
-  short_description: "Review IaC / cloud configuration across security, cost, and reliability lenses before apply"
-  default_prompt: "Use $ywc-infra-review to fan out an already-authored Terraform change to the security, cost, and reliability lenses, aggregate the findings by severity, and recommend blocking apply on any CRITICAL/HIGH finding."
+  short_description: "Review evidence-bound IaC across security, cost, and reliability lenses"
+  default_prompt: "Use $ywc-infra-review to distinguish fresh plan/diff, existing scoped IaC, and topology inputs; validate one-time applied-scope attestation before any reviewer calls; send identical eligible content to all three lenses and aggregate inline findings with bounded, evidence-backed FinOps trade-offs."
