@@ -47,6 +47,10 @@ Korean / Japanese / Chinese / Spanish で書く場合も、Technical terms は E
 
 数値は reviewability の advisory であり、自動的な bundling 許可ではありません。LLM bundling は 1 つの feature、exclusive Ownership、明示的な Shared Surfaces の範囲に限ります。Safety Invariants (DB migration 分離、Library 導入分離、Phase hard gate、single phase per task、完了時 buildable) は両 mode で同一で、数値内でも feature / Ownership 境界を越える場合は分割します。詳細は [references/granularity-modes.md](./references/granularity-modes.md) を参照してください。
 
+## Model Hint
+
+各タスクには根拠付きの参考情報 `Model Hint` (`economy`、`standard`、`advanced`) が必要です。狭く明確で非クリティカルな作業は economy、既存パターンの通常作業や難易度の根拠不足は standard、アーキテクチャ判断やクリティカル領域は advanced です。不明確な要件は NEEDS_CONTEXT を返します。preview・README・最終 summary の tier と根拠を一致させ、欠落・無効値・不一致は書き込み前に拒否します。セッションのモデル選択・specialist pin・installer fallback を維持します。
+
 ## Preview Approval Workflow
 
 `ywc-task-generator` は persisted preview approval flow もサポートします。

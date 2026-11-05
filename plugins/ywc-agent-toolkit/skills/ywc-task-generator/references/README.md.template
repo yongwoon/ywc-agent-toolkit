@@ -146,6 +146,11 @@ canonical preview identity and any wide-refactor invalidation fields here.
 
 ## Parallel Execution Metadata
 
+- Model Hint: `[economy|standard|advanced]` — [task-specific scope/criticality evidence; advisory only]
+
+<!-- Replace the alternatives with exactly one tier and a concrete rationale using
+     task-metadata-rules.md. Never emit placeholders or a model ID. -->
+
 ### Ownership
 Files, directories, modules, or contracts this task is allowed to modify.
 - `path/to/module/**`

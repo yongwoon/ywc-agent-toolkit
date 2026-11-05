@@ -385,6 +385,50 @@
       "files": [
         "SKILL.md"
       ]
+    },
+    {
+      "id": 37,
+      "name": "advisory-model-hint-tiers",
+      "source_id": "local-ac1-advisory-model-hint-tiers",
+      "prompt": "Generate narrow clear non-critical work, an ordinary feature slice, insufficient difficulty evidence, and architecture-critical work.",
+      "expected_output": "Use economy, standard, standard, advanced respectively with scope/criticality evidence; preserve current-session model, specialist pins and installer fallback.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 38,
+      "name": "model-hint-preview-summary-consistency",
+      "source_id": "local-ac1-model-hint-preview-summary-consistency",
+      "prompt": "Generate a preview, then consume the matching approved preview and show the final summary.",
+      "expected_output": "Every preview, README and final summary row has exactly one matching advisory Model Hint tier and rationale; preserve identity/digest/approval gates.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 39,
+      "name": "model-hint-invalid-refusal",
+      "source_id": "local-ac1-model-hint-invalid-refusal",
+      "prompt": "Try missing or duplicate hints, invalid tier, empty or unsupported rationale, mismatched preview/README/summary, or an effective specialist model ID in Model Hint.",
+      "expected_output": "Return NEEDS_CONTEXT before preview or task-artifact writes; do not silently repair the approved preview, change specialist pins or report clean DONE.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 40,
+      "name": "model-hint-unclear-and-unverified",
+      "source_id": "local-ac1-model-hint-unclear-and-unverified",
+      "prompt": "Requirements remain unclear; propose advanced to avoid clarification and claim runtime behavior from source checks.",
+      "expected_output": "Return NEEDS_CONTEXT for unclear requirements, without escalation or artifact writes. Live evidence remains UNVERIFIED — instruction contract only. Do not introduce runtime routing or claim executed model selection.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
     }
   ]
 }

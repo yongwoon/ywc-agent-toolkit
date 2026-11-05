@@ -51,6 +51,10 @@ La Habilidad admite dos modos de granularidad de tareas. La opción canónica es
 
 Los límites numéricos son una guía advisory de reviewability, no una autorización automática para agrupar tareas. El bundling de LLM se limita a una sola feature con Ownership exclusivo y Shared Surfaces explícitas. Las Invariantes de Seguridad (separación de migración de BD, separación de introducción de librería, puerta de fase, single phase per task, compilabilidad post-tarea) aplican de forma idéntica en ambos modos; aunque se cumpla el límite numérico, hay que dividir al cruzar una frontera de feature u Ownership. Consulte [references/granularity-modes.md](./references/granularity-modes.md) para la especificación completa.
 
+## Model Hint
+
+Cada tarea requiere un `Model Hint` orientativo (`economy`, `standard` o `advanced`) con evidencia de alcance y criticidad. Economy corresponde a trabajo acotado, claro y no crítico; standard a patrones habituales o evidencia insuficiente de dificultad; advanced a decisiones de arquitectura o superficies críticas. Los requisitos ambiguos devuelven NEEDS_CONTEXT. Preview, README y summary final deben coincidir en nivel y motivo; los valores ausentes, inválidos o contradictorios se rechazan antes de escribir. Se conservan la selección del modelo de sesión, los specialist pins y el installer fallback.
+
 ## Preview Approval Workflow
 
 `ywc-task-generator` también soporta un flujo de persisted preview approval.

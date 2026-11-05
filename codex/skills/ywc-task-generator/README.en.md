@@ -47,6 +47,10 @@ The Skill supports two task granularity modes. The canonical option is `--mode h
 
 Numeric limits are advisory reviewability guidance, not automatic bundling authorization. LLM bundling is limited to one feature with exclusive Ownership and explicit Shared Surfaces. Safety Invariants (DB migration separation, Library introduction separation, Phase hard gate, single phase per task, post-task buildability) apply identically in both modes; split any feature or Ownership boundary even when the numeric limit is met. See [references/granularity-modes.md](./references/granularity-modes.md) for the full specification.
 
+## Model Hint
+
+Each task has one advisory `Model Hint` (`economy`, `standard`, or `advanced`) with scope/criticality evidence. Economy covers narrow, clear, non-critical work; standard covers ordinary existing-pattern work or insufficient difficulty evidence; advanced covers architecture judgment or critical surfaces. Unclear requirements return NEEDS_CONTEXT. Preview, README, and final summary must agree on tier and rationale; missing/invalid hints and mismatches are rejected before writes. Session model selection, specialist pins, and installer fallback are preserved.
+
 ## Preview Approval Workflow
 
 `ywc-task-generator` also supports a persisted preview approval flow.

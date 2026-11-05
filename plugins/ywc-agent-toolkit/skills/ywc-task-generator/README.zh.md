@@ -53,6 +53,10 @@ Skill 支持两种任务粒度模式。标准 option 是 `--mode human|llm`；`-
 
 数字限制只是 reviewability 指南，不是自动 bundling 授权。LLM bundling 仅限于单一 feature，并且必须具有 exclusive Ownership 和明确的 Shared Surfaces。安全不变量（DB 迁移分离、库引入分离、阶段硬门控、single phase per task、任务后可构建性）在两种模式下均相同适用；即使未超过数字限制，只要跨越 feature 或 Ownership 边界也必须拆分。完整规范请参见 [references/granularity-modes.md](./references/granularity-modes.md)。
 
+## Model Hint
+
+每个任务必须有一个附带范围及关键性依据的建议性 `Model Hint`（`economy`、`standard` 或 `advanced`）。狭窄、明确、非关键任务使用 economy；常规既有模式任务或难度证据不足使用 standard；架构判断或关键领域使用 advanced。需求不明确时返回 NEEDS_CONTEXT。preview、README 和最终 summary 的 tier 及依据必须一致；缺失、无效值或不一致在写入前拒绝。保留会话模型选择、specialist pin 和 installer fallback。
+
 ## Preview Approval Workflow
 
 `ywc-task-generator` 也支持 persisted preview approval flow。
