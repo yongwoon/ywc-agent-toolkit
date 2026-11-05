@@ -7,6 +7,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 
 ## Phase yk-000001 — Source contracts and focused evaluations
 
+- Completed: `yk-000001-010-domain-model-hints`, `yk-000001-060-domain-review-defects`, `yk-000001-080-domain-mission-anchor`
+
 - `yk-000001-010-domain-model-hints` → (root)
 - `yk-000001-020-domain-analyst-modes` → depends on `yk-000001-010-domain-model-hints`
 - `yk-000001-030-domain-authoring-feedback` → depends on `yk-000001-020-domain-analyst-modes`
