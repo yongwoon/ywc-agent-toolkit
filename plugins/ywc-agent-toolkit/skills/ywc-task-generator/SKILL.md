@@ -64,16 +64,12 @@ non-interactive generation returns `NEEDS_CONTEXT` without downstream work.
 ---
 
 ## Preview Approval Gate
-For persisted preview and auditable task writes, `--spec` is mandatory and must
-resolve to a project-relative path under `docs/`. `--preview-only` and
-`--approve-preview` are mutually exclusive. `--preview-only` may write only the
-preview artifact; it must not write task directories or the dependency graph.
-`--approve-preview` requires `--preview-path` plus an exact identity match on
-spec path, tasks dir, language, mode, preview path, revision, and digest, and
-it is consume-only: no re-decomposition, no silent refresh, no write on
-mismatch. Unsafe `--spec` / `--preview-path` inputs (absolute paths, `..`
-escape, symlink escape, non-Markdown preview paths) return `NEEDS_CONTEXT`
-before any artifact write. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved; reuse never supplies missing approval. Retain all existing containment, spec/tasks-dir/language/mode/path/revision/digest checks, consume-only semantics, and preview-only zero-task-write boundaries; an unapproved, stale or escaping preview cannot inherit approval.
+For persisted previews and approved-preview writes, `--spec` must resolve under `docs/`; `--preview-only` and `--approve-preview` are mutually exclusive.
+`--preview-only` returns `DONE` with its persisted path/revision/digest for a separate caller approval step, and writes no task directory or graph.
+`--approve-preview` consumes only an explicitly approved preview whose spec,
+tasks dir, language, mode, path, revision, and digest all match; it never
+re-decomposes or refreshes the preview. Missing approval, identity mismatch, or
+unsafe paths return `NEEDS_CONTEXT` before task writes. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved. Without either preview flag, preserve the existing direct-generation path without requiring preview approval.
 
 For the canonical preview identity fields, wide-refactor digest invalidation
 rules (`Refactor Phase`, `Batch ID`, `Depends On`), and the consume-only
@@ -145,7 +141,7 @@ Gather project context for task verification commands, ownership paths, and cate
 
 **When existing tasks are present:**
 - Determine the next initials-scoped PHASE by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`, plus corresponding linked-worktree sources. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. For resolved `yk`, only `yk-<six-digit-phase>-<sequence>-...` candidates contribute to the maximum; legacy and other-initials IDs remain readable but do not advance `yk`. An empty owned scope starts at `yk-000001-010`. If the graph and directory scan disagree, continue with the union-based next owned PHASE and report the mismatch as a concern.
-- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
+- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Do not run compaction during `--preview-only`; defer this graph mutation until approved-preview consumption. Direct generation without preview flags and approved-preview consumption may compact before writing tasks. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
 - Enumerate `git worktree list --porcelain`; inspect the same relative path in graph, active, and completed sources, reporting inaccessible/mismatched paths.
 - Scope the union maximum to prefixed IDs matching validated initials; keep legacy IDs readable without claiming another namespace. Empty owned scope starts at `<initials>-000001-010`, with sequence `010`.
 - Hold one exclusive lock rooted in the repository common Git directory across scan, candidate selection, compare-and-create reservation, and complete task-artifact/dependency-graph writes. While holding it, compare-and-create `refs/ywc/task-phase/<initials>/<phase>` using the zero object ID; collisions retry bounded candidates, retain refs, and report deterministic conflict without duplicate output. Distinct reservation refs without this transaction-wide lock do not prevent graph lost updates.
@@ -322,7 +318,7 @@ legacy directories or count them as another collaborator's prefixed namespace.
 - Criterion for splitting phases: "Do all outputs from this stage need to be in place for the next stage's work to be meaningful?"
 
 ### Step 9: Directory and File Generation
-Use the pre-resolved `--tasks-dir` path for every output. If omitted, use the repository-root `tasks/`; never derive it from the spec's parent. Preview-only may write its preview artifact but must not create `<tasks-dir>` or task files. Create the task output directory only after an approved preview passes all identity, revision, digest, authorization, and containment checks.
+Use the pre-resolved `--tasks-dir` path for every task output. If omitted, use the repository-root `tasks/`; never derive it from the spec's parent. With `--preview-only`, write only the preview artifact and do not create `<tasks-dir>` or task files. With `--approve-preview`, create the task output directory only after explicit approval and all identity, revision, digest, authorization, and containment checks pass. When neither preview flag is supplied, preserve direct generation: after the existing input and output validation, write tasks under the resolved `<tasks-dir>` without requiring preview approval.
 
 Generate the following structure for each task:
 
@@ -416,13 +412,13 @@ Write structured scenario-based tests (Steps + Expected Result).
 - Library introduction tasks (import and basic operation verified via Verification)
 
 ### Step 10: Generate Dependency Graph
-After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order.
+After generating tasks in direct-generation or approved-consumption mode, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order. Preview-only stops after writing and validating its preview artifact; it does not create or modify the dependency graph.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 This graph must be consistent with the Dependencies sections in individual README.md files.
 Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
-Before returning either a preview or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md), including its attributable coverage summary and interface/verification mapping. Then verify the following:
+Before returning a preview, direct task set, or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md), including its attributable coverage summary and interface/verification mapping. A clean preview returns `DONE` with its preview identity; approval is a separate caller step. Then verify the following, applying task-artifact checks only to direct generation or approved consumption:
 
 **Dependency & Structure:**
 - [ ] No forward dependencies (earlier tasks do not depend on later tasks)
@@ -465,9 +461,11 @@ Before returning either a preview or consumed task set, apply [requirement cover
 
 The final output includes:
 
-1. **Task list summary** organized by phase with Task ID, Title, and Model Hint (tier plus rationale) for every task, matching the approved preview and generated README
+1. **Task list summary** organized by phase with Task ID, Title, and Model Hint (tier plus rationale) for every task, matching the preview when used and every generated README
 2. **Directory generation** under `<tasks-dir>/`
 3. **Dependency Graph** at `<tasks-dir>/dependency-graph.md`, including Parallel Execution Notes when needed
+
+Preview-only returns the task summary and persisted preview identity; it does not claim that task directories or a dependency graph were generated. Items 2 and 3 apply only to direct generation or approved consumption.
 
 When parallel execution is expected, verify that each task is safe for isolated worktree or agent execution.
 
@@ -489,9 +487,10 @@ reservations, and missing-initials `NEEDS_CONTEXT` before any write.
 Before returning `DONE`, verify:
 
 - [ ] The spec or plan source was read and each task traces to a source requirement.
-- [ ] Before returning `DONE`, verify every emitted task directory contains `README.md` and `task.md`, and `<tasks-dir>/dependency-graph.md` exists. All artifacts must be under the pre-resolved `<tasks-dir>`; never beside the spec unless explicitly selected.
+- [ ] For preview-only, verify the persisted preview artifact and its identity, and verify that no task directory or dependency graph was created or modified.
+- [ ] For direct generation or approved consumption, verify every emitted task directory contains `README.md` and `task.md`, and `<tasks-dir>/dependency-graph.md` exists. All task artifacts must be under the pre-resolved `<tasks-dir>`; never beside the spec unless explicitly selected.
 - [ ] UI or behavior-changing tasks have a `test.md` or an explicit test exception.
-- [ ] `dependency-graph.md` exists and matches the generated task directories.
+- [ ] For direct generation or approved consumption, `dependency-graph.md` exists and matches the generated task directories.
 - [ ] Parallel Execution Notes are present when tasks are intended for parallel execution.
 - [ ] The selected output language matches `--lang` or the shared YWC language resolution result.
 - [ ] The selected Granularity Mode matches `--mode`, `--granularity`, or the user's explicit confirmation.
