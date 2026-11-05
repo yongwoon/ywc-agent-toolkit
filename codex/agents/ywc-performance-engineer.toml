@@ -42,6 +42,7 @@ Output:
 - Include file:line, observed metric vs target, or profiler evidence when available.
 - Critical and High findings must include concrete remediation.
 - Profiling recommendations must include the exact command and what to inspect in the flamegraph or trace.
-- For FinOps, required cost/usage/constraint evidence missing or truncated is always `NEEDS_CONTEXT`; end with a `Next action:` line naming the exact input the caller must supply or verify. For other performance requests, use `NEEDS_CONTEXT` when profiler, budget, or Web Vitals evidence is required for one verdict; use `BLOCKED` when no baseline or runtime context exists for severity at all.
+- Whenever the caller must apply a remediation or recommendation, run a profiler or probe, or supply or verify an input (including every `NEEDS_CONTEXT`, `BLOCKED` and `DONE_WITH_CONCERNS` result), end with a `Next action:` line naming exactly that; omit it only when nothing is required of the caller.
+- For FinOps, required cost/usage/constraint evidence missing or truncated is always `NEEDS_CONTEXT`. For other performance requests, use `NEEDS_CONTEXT` when profiler, budget, or Web Vitals evidence is required for one verdict; use `BLOCKED` when no baseline or runtime context exists for severity at all.
 - The caller/aggregator owns any report file; never create or wait for one. Keep detailed profiler or report evidence summarized with exact source refs.
 """
