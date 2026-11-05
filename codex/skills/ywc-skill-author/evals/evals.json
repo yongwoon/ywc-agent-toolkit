@@ -26,6 +26,59 @@
         "Moves report-only audit behavior or canonical rules behind the authoring reference."
       ],
       "files": []
+    },
+    {
+      "id": 4,
+      "name": "remove-no-op-without-weakening-guardrails",
+      "prompt": "Review a draft instruction: 'If there is nothing to change, do nothing. Never write secrets to logs.' Apply the no-op writing lever without weakening the security boundary.",
+      "expected_output": "Remove the inert instruction only if it adds no decision, action, or output requirement; retain the explicit secret-redaction guardrail. Do not treat safety constraints as no-ops.",
+      "files": [
+        "codex/skills/ywc-skill-author/SKILL.md"
+      ],
+      "source_id": "skill-author-writing-lever-remove-noop"
+    },
+    {
+      "id": 5,
+      "name": "state-desired-action-positively",
+      "prompt": "Rewrite this instruction for a new skill: 'Don't be vague and don't skip verification.' Apply the positive-goal lever, preserving the verification requirement.",
+      "expected_output": "State the desired behavior directly: name the observable decision or output, then run the named verification command and report its result. Keep a negative prohibition only when it expresses a necessary safety or boundary constraint.",
+      "files": [
+        "codex/skills/ywc-skill-author/SKILL.md"
+      ],
+      "source_id": "skill-author-writing-lever-positive-goal"
+    },
+    {
+      "id": 6,
+      "name": "front-load-action-and-condition",
+      "prompt": "Tighten the instruction: 'When a generated file would exceed the approved path, it may be useful to ask the user before proceeding.' Apply the leading-words lever.",
+      "expected_output": "Lead with the condition and action: 'If the output path is outside the approved scope, stop and ask the user before writing.' Keep the operative words at the start and preserve the trust boundary.",
+      "files": [
+        "codex/skills/ywc-skill-author/SKILL.md"
+      ],
+      "source_id": "skill-author-writing-lever-leading-words"
+    },
+    {
+      "id": 7,
+      "name": "make-completion-observable",
+      "prompt": "A skill step currently ends with 'finish the review carefully.' Apply the completion-criteria lever.",
+      "expected_output": "Replace the vague ending with an observable exit condition that names the artifact or decision, required evidence, and status/result that proves the step is complete. Reuse the existing canonical Validation/Output Format structure when it fits.",
+      "files": [
+        "codex/skills/ywc-skill-author/SKILL.md",
+        "codex/skills/ywc-skill-author/references/skill-template.md"
+      ],
+      "source_id": "skill-author-writing-lever-completion-criteria"
+    },
+    {
+      "id": 8,
+      "name": "reference-canonical-rules-instead-of-copying",
+      "prompt": "A new skill needs the standard frontmatter, README, A6/A7 conditional rules, and eval structure. Should you copy all of those rules into its own SKILL.md?",
+      "expected_output": "Use the existing canonical skill template, authoring-rules reference, audit workflow, and inline A1-A16 index as the source of truth. Add only a direct pointer or skill-specific delta instead of copying shared rules; preserve the current bundle conventions.",
+      "files": [
+        "codex/skills/ywc-skill-author/SKILL.md",
+        "codex/skills/ywc-skill-author/references/skill-template.md",
+        "codex/skills/ywc-skill-author/references/audit-workflow.md"
+      ],
+      "source_id": "skill-author-writing-lever-single-source"
     }
   ]
 }

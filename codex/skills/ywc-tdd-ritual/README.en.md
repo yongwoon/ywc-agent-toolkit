@@ -43,3 +43,7 @@ Full cycle rules, Rationalization Defense, and output format are in [SKILL.md](.
 - [한국어 (default)](./README.md)
 - [日本語](./README.ja.md)
 - [한국어 (full)](./README.ko.md)
+
+## Authoring feedback contract
+
+Name an existing public test seam and its catches/misses. Complete one behavior through RED/GREEN/REFACTOR before starting the next; preserve reproduction evidence when no suitable seam exists.

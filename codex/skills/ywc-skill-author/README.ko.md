@@ -60,3 +60,7 @@ removal → same-prompt comparison 후 retain, revert, 또는 escalate하며 tar
 - `references/rationalization-defense-cookbook.md` — Rationalization Defense table 작성 가이드
 - `references/description-anti-patterns.md` — Description field 작성 시 금지 패턴
 - `references/cross-skill-graph.md` — ywc-* skill 간 prerequisite + cross-reference 그래프
+
+## 작성 피드백 계약
+
+Writing Levers 다섯 원칙을 적용합니다: no-op 제거, 긍정 목표, 조건·행동 우선, 관측 가능한 완료, canonical 참조. 안전·report-only audit 경계를 유지합니다.
