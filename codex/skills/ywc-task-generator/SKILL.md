@@ -353,6 +353,7 @@ Each README.md must include the following:
 - **Notes**: Important considerations, design decisions
 - **Out of Scope**: What is intentionally excluded
 - **Parallel Execution Metadata**:
+  - **Model Hint**: Exactly one advisory tier and evidence-based rationale per task; use [task-metadata-rules.md](references/task-metadata-rules.md) as the canonical tier definition.
   - **Ownership**: Files, directories, modules, contracts this task may modify
   - **Shared Surfaces**: Shared boundaries that may cause merge or design conflicts
   - **Conflicts With**: Tasks that must not run in parallel
@@ -370,6 +371,8 @@ Every task's README.md must include a `## Spec Reference` section with three sub
 For the full structure, the external-URL policy, the link-vs-summary drift protocol, and the cross-task scope-handoff convention, **read [references/spec-reference-rules.md](references/spec-reference-rules.md)**.
 
 #### Parallel Execution Metadata Rules
+
+Read [references/task-metadata-rules.md](references/task-metadata-rules.md) for advisory tier selection and its runtime boundaries. Every task requires a Model Hint, including tasks that will not run in parallel.
 
 When tasks may be executed via `git worktree`, Codex, or other isolated worker setups, every task's README.md must declare:
 
@@ -437,7 +440,7 @@ Before returning either a preview or consumed task set, apply [requirement cover
 - [ ] Selected Granularity Mode applied consistently (bundling, Implementation Steps depth, Ownership scope)
 **README.md Quality:**
 - [ ] Both "Depends On" and "Depended By" included
-- [ ] Parallel Execution Metadata included (Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
+- [ ] Parallel Execution Metadata included (Model Hint, Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
 - [ ] Ownership is narrow enough to serve as an actual edit boundary, not just a restatement of Key Files
 - [ ] **Spec Reference** section included — Primary Sources, Summary, and Out of Scope (from spec) all filled in or explicitly marked `N/A`
 - [ ] If Primary Sources include external URLs, only if the project allows it (default is project-relative paths only)
@@ -450,6 +453,7 @@ Before returning either a preview or consumed task set, apply [requirement cover
 - [ ] Duplicate-sensitive write tasks include concrete concurrent request, rollback, and idempotency retry verification or a named no-harness exception with replacement evidence
 
 **Consistency:**
+- [ ] Every task has a valid advisory Model Hint and rationale; preview, README, and final summary agree before writes.
 - [ ] Dependency Graph Summary matches individual README.md files
 - [ ] If the task set is intended for parallel execution, Dependency Graph includes Parallel Execution Notes
 - [ ] Codebase is buildable after each task completes
@@ -461,7 +465,7 @@ Before returning either a preview or consumed task set, apply [requirement cover
 
 The final output includes:
 
-1. **Task list summary** organized by phase
+1. **Task list summary** organized by phase with Task ID, Title, and Model Hint (tier plus rationale) for every task, matching the approved preview and generated README
 2. **Directory generation** under `<tasks-dir>/`
 3. **Dependency Graph** at `<tasks-dir>/dependency-graph.md`, including Parallel Execution Notes when needed
 

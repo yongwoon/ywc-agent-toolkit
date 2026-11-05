@@ -32,3 +32,20 @@ evidence when correctness depends on it. Each task maps covered AC IDs to verifi
 files/scenarios. Existing tests may use a documented mapping instead of inline comments.
 Command-bearing AC baselines remain recorded evidence or explicit unmeasured gaps;
 validation never executes commands copied from the input spec.
+
+## Model Hint consistency
+
+Both the preview table and final task list summary must include a `Model Hint` column for every task, organized by phase with Task ID and Title.
+
+Copy the same tier and rationale into the approved preview, generated README, and final summary; do not infer a different hint during consumption.
+Validate each task against the canonical tiers in
+[task-metadata-rules.md](task-metadata-rules.md) before persisting the preview,
+and again before consuming the approved preview. An unresolved metadata mismatch
+must not trigger re-decomposition, silent preview repair, or partial task writes;
+preserve the existing preview identity/digest and approval gates.
+
+Missing or duplicate hints, invalid tiers, empty or unsupported rationales, model-ID pins, and preview/README/summary mismatches fail validation and return `NEEDS_CONTEXT` before preview or task-artifact writes.
+Do not report clean DONE for a failed hint check. Keep hint validation independent
+of the conditional Quality Gate Contract and preserve existing Status semantics.
+
+Unavailable live runtime evidence is `UNVERIFIED — instruction contract only`; source assertions and expected traces are not live model behavior.

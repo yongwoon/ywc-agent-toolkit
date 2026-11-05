@@ -5,6 +5,25 @@ executor. They supplement [quality-gates.md](../../references/quality-gates.md)
 and the parallel-execution metadata rules; the shared quality-gate reference is
 the source of truth for field names and allowed values.
 
+## Advisory Model Hint
+
+Exactly one advisory `Model Hint` is required for every task: `economy`, `standard`, or `advanced`, followed by a concise evidence-based rationale tied to scope and criticality.
+
+- `economy`: narrow, clear, non-critical work with evidence that the change follows a known pattern.
+- `standard`: ordinary existing-pattern work, or insufficient difficulty evidence to justify another tier.
+- `advanced`: architecture judgment or critical-surface work; name the relevant decision or surface in the rationale.
+
+Unclear requirements return `NEEDS_CONTEXT`; raising the tier is not a substitute for clarification.
+
+Preserve current-session model selection, specialist model pins, and installer fallback. Do not pin an effective model ID in task metadata or introduce task-aware runtime routing.
+The hint supplies review metadata only; it does not promise executor model selection.
+This reference owns the tier definitions independently of the quality-gate packet.
+
+Provenance: adapted from `yongwoon/develop-with-llm` #338 merge
+`0622ba580d2ad2bf8c8936726dd400c00752ab3e`,
+`tools/codex-skill/skills/ywc-task-generator/{SKILL.md,references/task-metadata-rules.md,references/README.md.template,references/output-and-validation.md}`.
+The approved adoption specification FR-1 excludes upstream runtime routing claims.
+
 ## Conditional Quality Gate Contract
 
 The packet is opt-in and task-local. Render the complete conditional packet in
