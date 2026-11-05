@@ -81,11 +81,11 @@ Ported from `yongwoon/develop-with-llm` PR #348, frozen merge `29068f9f690fbf09e
 10. If `--dry-run` is set, stop after showing the CHANGESET, before requesting confirmation.
 11. If the proposed CHANGESET has no ADD, MODIFY, or DEPRECATE items, report a no-op without requesting confirmation or writing. For a non-empty CHANGESET, request confirmation of the exact changes before writing; preserve the existing date/history behavior for any confirmed change, including one that only modifies or deprecates existing entries. The shared write protocol below also applies to curate.
 12. Write only after explicit user confirmation of the exact CHANGESET.
-13. On first file creation, print a Codex-native activation reminder:
+13. On first file creation, print a Codex-native activation reminder with the actual resolved `--output` path inserted:
 
 ```text
 To activate this mission anchor for future Codex sessions, add a short
-instruction to AGENTS.md or CODEX.md telling agents to read docs/mission.md
+instruction to AGENTS.md or CODEX.md telling agents to read <resolved --output path>
 before planning or implementation work.
 ```
 
