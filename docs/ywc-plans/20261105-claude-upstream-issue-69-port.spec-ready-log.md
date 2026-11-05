@@ -1,0 +1,147 @@
+# spec-ready log: 20261105-claude-upstream-issue-69-port
+
+## Iteration 1/5 — 2026-11-05T04:38:00Z
+- spec: docs/ywc-plans/20261105-claude-upstream-issue-69-port.md
+- status: DONE_WITH_CONCERNS
+- findings: Critical 7 / Warning 14 / Suggestion 9
+- advisor: used 0 / remaining 4
+- action: replan
+- signatures:
+  - Critical spec:47 — completeness:gitignore-site-omitted (parallel-executor/SKILL.md:131)
+  - Critical spec:57 — consistency:b2-file-list-wrong
+  - Critical spec:35 — completeness:a1-wrong-caller (auth-implement vs ywc-agentic)
+  - Critical spec:105 — feasibility:fr6-invariant-missing
+  - Critical spec:151 — compat:ci-score-gate
+  - Critical spec:133 — completeness:security-ac-missing
+  - Critical spec:7 — completeness:upstream-unavailable-prerequisite
+  - Warning spec:91 — consistency:ac12-phase-order
+  - Warning spec:104 — consistency:shared-file-ordering
+  - Warning spec:80 — consistency:ac-coverage-gaps
+  - Warning spec:64 — consistency:c1-impl-review-already-done
+  - Warning spec:109 — completeness:nfr1-line-budget
+  - Warning spec:37 — feasibility:finish-branch-guard-ambiguous
+  - Warning spec:38 — feasibility:appendix-id-gap
+  - Warning spec:56 — feasibility:skill-author-b10-gap
+  - Warning spec:56 — compat:install-pairs
+  - Warning spec:60 — compat:count-locations
+  - Warning spec:52 — compat:already-done
+  - Warning spec:51 — compat:scan-secrets-exit2
+  - Warning repo — completeness:script-path-non-matching-forms
+  - Warning spec:64 — compat:c1-trigger-cases-stale
+
+## Iteration 2/5 — 2026-11-05T04:49:00Z
+- spec: docs/ywc-plans/20261105-claude-upstream-issue-69-port.md
+- status: DONE_WITH_CONCERNS
+- findings: Critical 3 / Warning 13 / Suggestion 8
+- advisor: used 0 / remaining 4
+- action: replan
+- note: guards passed — Critical 7→3 (decreasing), no repeated Critical signature, amendment scope differs from iteration 1
+- signatures:
+  - Critical spec:63 — completeness:b4-scripts-omitted
+  - Critical spec:64 — completeness:retro-references-omitted
+  - Critical spec:77 — completeness:dangling-skill-refs
+  - Warning spec:122 — consistency:fr5-table-incomplete
+  - Warning spec:130 — consistency:fr5-claudemd-row
+  - Warning spec:60 — consistency:b1e-before-b2
+  - Warning spec:5 — consistency:header-scope-stale
+  - Warning spec:55 — compat:shellcheck-list-misread
+  - Warning spec:62 — compat:trigger-cases-incomplete
+  - Warning spec:140 — compat:nfr1-wrong-gate
+  - Warning spec:62 — compat:validator-line-drift
+  - Warning spec:64 — completeness:readme-locales-not-in-snapshot
+  - Warning spec:60 — completeness:onboard-repo-path-form
+  - Warning spec:63 — completeness:b4-no-behavior-ac
+  - Warning spec:66 — completeness:graph-omits-new-skills
+  - Warning spec:100 — feasibility:ac4-ordering-ambiguous
+
+## Iteration 3/5 — 2026-11-05T04:55:00Z
+- spec: docs/ywc-plans/20261105-claude-upstream-issue-69-port.md
+- status: DONE_WITH_CONCERNS
+- findings: Critical 3 / Warning 13 / Suggestion 6
+- advisor: used 0 / remaining 4
+- action: replan
+- note: guards passed — Critical 7→3→3 (first adjacent pair decreasing, so non-decreasing guard needs one more flat/up report); no Critical signature repeated (iteration-2 Criticals resolved; new ones are distinct sites); amendment scope differs
+- signatures:
+  - Critical spec:64 — completeness:dangling-legibility-audit
+  - Critical spec:51 — completeness:completion-report-site-undefined
+  - Critical spec:45 — completeness:ac7b-not-from-snapshot
+  - Warning spec:64 — completeness:handoff-untrusted-output
+  - Warning spec:55 — completeness:blocked-sentence-no-ac
+  - Warning spec:63 — completeness:b4-readme-omitted
+  - Warning spec:62 — completeness:ac13-no-test-score-ac
+  - Warning spec:51 — completeness:weak-verifiability
+  - Warning spec:5 — consistency:header-scope-stale
+  - Warning spec:133 — consistency:fr5-claudemd-row
+  - Warning spec:115 — consistency:ac17-baseline-once
+  - Warning spec:62 — compat:baseline-regen-impossible-on-drop
+  - Warning spec:55 — compat:scan-secrets-test-scope
+  - Warning spec:63 — feasibility:b4-py310-requirement
+  - Warning spec:63 — feasibility:b4-validate-sh-site
+  - Warning spec:62 — compat:trigger-cases-schema-gate
+
+## Iteration 4/5 — 2026-11-05T05:02:00Z
+- spec: docs/ywc-plans/20261105-claude-upstream-issue-69-port.md
+- status: DONE
+- findings: Critical 0 / Warning 14 / Suggestion 14
+- advisor: used 0 / remaining 4
+- action: apply-suggestions
+- note: DONE with non-unverifiable-ac Suggestions remaining → one suggestion-focused pass (not counted toward --max-iterations); pre-existing Warnings not chased
+- signatures:
+  - Warning spec:134 — consistency:fr5-claudemd-order
+  - Warning spec:135 — consistency:history-json-task-set
+  - Warning spec:116 — consistency:baseline-regen-stale
+  - Warning spec:5 — consistency:header-aux-scope
+  - Warning spec:44 — completeness:scope-without-ac
+  - Warning spec:69 — completeness:agents-readme-catalog
+  - Warning spec:64 — completeness:b4-security-surface
+  - Warning spec:72 — completeness:c3-step9-prune-absent
+  - Warning score.py:447 — compat:a14-new-refs-unlinked
+  - Warning validate.sh:739 — compat:reference-link-resolution
+  - Warning score.py:457 — compat:s4-small-ref
+  - Warning spec:52 — feasibility:a8-batch-oversize
+  - Warning spec:148 — feasibility:nfr1-extraction-unowned
+  - Warning spec:69 — feasibility:c1-trigger-cases-churn
+
+## Iteration 4 (post-suggestion re-validation) — 2026-11-05T05:07:00Z
+- spec: docs/ywc-plans/20261105-claude-upstream-issue-69-port.md
+- status: DONE
+- findings: Critical 0 / Warning 15 / Suggestion 10
+- advisor: used 0 / remaining 4
+- action: repair-suggestion-regression
+- note: 10 Warnings whose dimension:slug + section key is not in the pre-pass set → one repair pass scoped to those only; pre-existing Warnings (a8 size, executor extraction, history-json task set, baseline-regen wording, A14 ref links, agents README, header scope) not chased
+- signatures:
+  - Warning spec:41 — feasibility:a3-guard-scope-ambiguous
+  - Warning spec:64 — completeness:b4-baseref-unvalidated
+  - Warning spec:56 — completeness:scan-secrets-committed-base-arg
+  - Warning spec:150 — completeness:nfr1-other-files
+  - Warning spec:39 — completeness:a1-readme-ko-site
+  - Warning spec:65 — completeness:b5-ac14c-pipeline
+  - Warning spec:45 — consistency:a7-sentence-missing
+  - Warning spec:150 — compat:score-anchors-drift
+  - Warning spec:56 — compat:precommit-git-env
+  - Warning spec:105 — compat:ac10-self-collision
+
+## Iteration 4 (post-repair re-validation) — 2026-11-05T05:09:00Z
+- spec: docs/ywc-plans/20261105-claude-upstream-issue-69-port.md
+- status: DONE
+- findings: Critical 0 / Warning 16 / Suggestion 9
+- advisor: used 0 / remaining 4
+- action: handoff
+- note: Critical 0 after the single repair-suggestion-regression pass → handoff with residual warnings; no further suggestion or repair pass; ywc-task-generator not invoked
+- signatures:
+  - Warning spec:35 — completeness:t0-snapshot-dir-predictable
+  - Warning spec:116 — completeness:ac16b-no-branch-validation-grep
+  - Warning spec:97 — completeness:ac4-guard-semantics-unverified
+  - Warning spec:110 — completeness:ac13b-script-input-validation
+  - Warning spec:102 — completeness:ac8-outside-worktree-unrunnable
+  - Warning spec:150 — feasibility:nfr1-executor-headroom
+  - Warning spec:104 — feasibility:ac9-compound-grep
+  - Warning spec:102 — feasibility:ac8-baseline-partial
+  - Warning spec:135 — consistency:fr5-claudemd-order-vs-global
+  - Warning spec:5 — consistency:history-json-task-list
+  - Warning spec:138 — consistency:cross-skill-graph-row-missing-B1
+  - Warning spec:117 — consistency:baseline-regen-wording
+  - Warning spec:44 — compat:a14-feedback-loop-pointer
+  - Warning spec:56 — compat:test-scan-secrets-shellcheck
+  - Warning spec:65 — compat:retro-reference-link-resolution
+  - Warning spec:62 — compat:b2-pointer-and-line-regression

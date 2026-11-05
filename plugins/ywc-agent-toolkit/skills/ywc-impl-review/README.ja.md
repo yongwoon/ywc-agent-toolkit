@@ -6,6 +6,8 @@ Worker の実行前に、空の対象または 200 ファイルを超える対�
 
 Phase 1 後、Critical/High の finding は `file:line` と主張された重大度だけを渡す blind 独立検証を受けます。結果は `reproduced`、`verification-failed`、`verification-error`、`cap-unverified` に分け、検証呼び出しは Phase 2 Advisor の budget を消費しません。`[P1]`/`[P2]` の provenance と検証状態は別の情報です。
 
+A-005 checkout 認証情報の永続化、A-006 未 await／真偽値として使われる Promise、A-007 エラー戻り値の破棄を、出典と重大度の根拠付きで確認します。適切なインストール済み linter のみ変更ファイルに使用し、各検出を検証してから報告します。未導入ツールはその旨を報告し、インストールや lint 設定変更は行いません。
+
 ## 使用方法
 
 ```text

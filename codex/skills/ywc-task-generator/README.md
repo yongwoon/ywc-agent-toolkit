@@ -55,6 +55,10 @@ Skill 은 두 가지 task granularity mode 를 지원합니다. 표준 option �
 
 숫자 기준은 reviewability advisory일 뿐 자동 bundling 허가가 아닙니다. `llm` mode bundling은 하나의 feature, exclusive Ownership, 명시적인 Shared Surfaces 안에서만 허용됩니다. 두 mode 모두 Safety Invariants (DB migration 분리, Library 도입 분리, Phase hard gate, single phase per task, 완료 시 buildable) 를 동일하게 유지하며, feature/Ownership 경계를 넘으면 숫자 안에 들어와도 분리합니다. 상세 규칙은 [references/granularity-modes.md](./references/granularity-modes.md) 를 참조하십시오.
 
+## Model Hint
+
+각 task는 근거가 있는 advisory `Model Hint` (`economy`, `standard`, `advanced`)를 갖습니다. 좁고 명확한 non-critical 작업은 economy, 일반적인 기존 패턴 작업이나 난이도 근거 부족은 standard, 아키텍처 판단이나 critical surface는 advanced입니다. 불명확한 요구는 NEEDS_CONTEXT입니다. preview·README·최종 summary의 tier와 근거는 일치해야 하며 누락·잘못된 tier·불일치는 쓰기 전에 거부됩니다. 세션 모델·specialist pin·installer fallback은 유지됩니다.
+
 ## Preview Approval Workflow
 
 `ywc-task-generator` 는 persisted preview approval flow 도 지원합니다.

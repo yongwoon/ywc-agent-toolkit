@@ -1,0 +1,104 @@
+{
+  "tasks": [
+    "yk-000001-010-domain-model-hints",
+    "yk-000001-020-domain-analyst-modes",
+    "yk-000001-030-domain-authoring-feedback",
+    "yk-000001-040-domain-session-retro",
+    "yk-000001-050-domain-session-handoff",
+    "yk-000001-060-domain-review-defects",
+    "yk-000001-070-domain-operational-safety",
+    "yk-000001-080-domain-mission-anchor",
+    "yk-000001-090-domain-infra-evidence",
+    "yk-000001-100-domain-pr-worktrees",
+    "yk-000001-110-domain-convergence-callers",
+    "yk-000001-120-domain-pr-body",
+    "yk-000002-010-infra-distribution"
+  ],
+  "waves": [
+    [
+      "yk-000001-010-domain-model-hints",
+      "yk-000001-060-domain-review-defects",
+      "yk-000001-080-domain-mission-anchor",
+      "yk-000001-120-domain-pr-body"
+    ],
+    [
+      "yk-000001-020-domain-analyst-modes",
+      "yk-000001-070-domain-operational-safety",
+      "yk-000001-090-domain-infra-evidence"
+    ],
+    [
+      "yk-000001-030-domain-authoring-feedback",
+      "yk-000001-100-domain-pr-worktrees"
+    ],
+    [
+      "yk-000001-040-domain-session-retro",
+      "yk-000001-110-domain-convergence-callers"
+    ],
+    [
+      "yk-000001-050-domain-session-handoff"
+    ],
+    [
+      "yk-000002-010-infra-distribution"
+    ]
+  ],
+  "completed": [],
+  "unresolved": [],
+  "diagnostics": [
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-020-domain-analyst-modes",
+        "yk-000001-090-domain-infra-evidence"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-020-domain-analyst-modes",
+        "yk-000002-010-infra-distribution"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-030-domain-authoring-feedback",
+        "yk-000001-110-domain-convergence-callers"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-040-domain-session-retro",
+        "yk-000001-050-domain-session-handoff"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-070-domain-operational-safety",
+        "yk-000001-100-domain-pr-worktrees"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-070-domain-operational-safety",
+        "yk-000002-010-infra-distribution"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-090-domain-infra-evidence",
+        "yk-000002-010-infra-distribution"
+      ]
+    },
+    {
+      "code": "declared_conflict",
+      "tasks": [
+        "yk-000001-100-domain-pr-worktrees",
+        "yk-000002-010-infra-distribution"
+      ]
+    }
+  ]
+}

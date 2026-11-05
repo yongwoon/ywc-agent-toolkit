@@ -122,6 +122,45 @@ check_preview_contracts() {
   fi
 }
 
+check_task_generator_output_guard() {
+  local skill="$ROOT/codex/skills/ywc-task-generator/SKILL.md"
+  local evals="$ROOT/codex/skills/ywc-task-generator/evals/evals.json"
+  local preview_contract="$ROOT/codex/skills/ywc-task-generator/references/wide-refactor-decomposition.md"
+  local reservation_contract="$ROOT/codex/skills/ywc-task-generator/references/collaborator-initials.md"
+
+  require_tokens "$skill" \
+    "Resolve the default \`tasks/\` from the repository root." \
+    "never infer \`<tasks-dir>\` from the parent directory of \`--spec\`." \
+    "\`--preview-only\` returns \`DONE\` with its path/revision/digest" \
+    'direct-generation path without' \
+    'Skip compaction during' \
+    'defer it until the approved reservation is verified during consumption' \
+    'For preview-only, verify the persisted preview artifact and its identity' \
+    'For direct generation or approved consumption, verify every emitted task directory' \
+    'under the lock, verify and reuse that reservation without selecting or' \
+    'Direct generation retains Step 1 inputs, including inline specs'
+  require_tokens "$preview_contract" \
+    'phase_reservation_ref' \
+    'including reservation ownership' \
+    'Do not compare-and-create another ref or advance to another phase'
+  require_tokens "$reservation_contract" \
+    'verify the approved preview' \
+    'reuse that reserved phase' \
+    'does not release the existing ref'
+  require_tokens "$evals" \
+    'default-output-root-independent-of-spec-location' \
+    "repository root \`tasks/\`" \
+    'Preview-only writes no task directories or dependency graph.' \
+    'A clean preview returns DONE with its identity while creating or modifying no task output directory or dependency graph.' \
+    'A preview result never implies approval; a consume attempt without explicit matching approval returns NEEDS_CONTEXT and writes no task artifacts.' \
+    'phase_reservation_ref' \
+    'reuses its reserved_phase and task IDs' \
+    'approved-preview-reuses-phase-reservation' \
+    'direct generation accepts inline or persisted specs' \
+    'matching preview digest' \
+    'dependency-graph.md'
+}
+
 check_wayfinder_contracts() {
   local wayfinder_dir="$ROOT/codex/skills/ywc-wayfinder"
   local wayfinder_evals="$wayfinder_dir/evals/evals.json"
@@ -198,6 +237,7 @@ fi
 check_all_eval_json
 check_wayfinder_contracts
 check_preview_contracts
+check_task_generator_output_guard
 check_research_persistence_contracts
 check_mobile_first_ui_contract
 

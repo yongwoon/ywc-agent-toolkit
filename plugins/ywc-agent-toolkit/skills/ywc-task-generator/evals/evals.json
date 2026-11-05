@@ -76,13 +76,13 @@
     {
       "id": 13,
       "prompt": "Use --spec docs/ywc-plans/billing.md --preview-only --preview-path docs/ywc-plans/billing.task-preview.md --mode llm to prepare a preview for a wide refactor task set.",
-      "expected_output": "Writes only the preview artifact and does not write task directories or dependency-graph.md. The preview includes spec_path, tasks_dir, lang, mode, preview_path, preview_revision, and preview_digest. Wide-refactor rows preserve Refactor Phase, Batch ID, and Depends On metadata.",
+      "expected_output": "Writes the preview and its durable phase reservation, but no task directories or dependency-graph.md. The digest-bound identity includes spec_path, tasks_dir, lang, mode, initials, reserved_phase, phase_reservation_ref, preview_path, preview_revision, and preview_digest. Wide-refactor rows preserve Refactor Phase, Batch ID, and Depends On metadata.",
       "files": []
     },
     {
       "id": 14,
       "prompt": "Use --spec docs/ywc-plans/billing.md --approve-preview --preview-path docs/ywc-plans/billing.task-preview.md --non-interactive to generate tasks from an approved preview.",
-      "expected_output": "Consumes the approved preview without re-decomposition. Requires an exact identity match on preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, and mode. Writes task artifacts only from the approved preview.",
+      "expected_output": "Consumes the approved preview without re-decomposition or selecting another phase. Under the common-Git lock, verifies the digest-bound reservation ref and reuses its reserved_phase and task IDs; it creates no second reservation. Requires an exact identity match on preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, mode, initials, reserved_phase, and phase_reservation_ref. Writes task artifacts only from the approved preview.",
       "files": []
     },
     {
@@ -96,7 +96,11 @@
       "name": "architecture-packet-positive",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json --architecture-evidence .ywc-architecture-invariants-evidence.json with a valid bounded audit.",
       "expected_output": "Records a sanitized packet: contract_state VALIDATED, component ownership, rule IDs projected from rule_results, invariant_verdict projected from aggregate_verdict, and the evidence artifact path. Helper status, aggregate verdict, rule results, and evidence paths remain distinct.",
-      "expectations": ["Emits component_ids from the helper bounded changed-path mapping", "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json", "Does not copy raw evidence, transcripts, command-like fields, or full diffs into task metadata; evidence paths remain bounded citations"],
+      "expectations": [
+        "Emits component_ids from the helper bounded changed-path mapping",
+        "Emits contract_state VALIDATED and evidence_artifact_path .ywc-architecture-invariants-evidence.json",
+        "Does not copy raw evidence, transcripts, command-like fields, or full diffs into task metadata; evidence paths remain bounded citations"
+      ],
       "files": []
     },
     {
@@ -104,7 +108,11 @@
       "name": "architecture-packet-no-evidence",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --manifest architecture-invariants.json without --architecture-evidence.",
       "expected_output": "Preserves existing task generation and writes no architecture packet; missing evidence is not converted into VIOLATED.",
-      "expectations": ["No generated README.md contains an `## Architecture Contract Packet` heading", "No generated task.md contains an `## Architecture Contract Packet` heading", "No placeholder packet fields (Contract State, Component IDs, Rule IDs, Verifier Requirement, Invariant Verdict, Evidence Artifact Path) are emitted"],
+      "expectations": [
+        "No generated README.md contains an `## Architecture Contract Packet` heading",
+        "No generated task.md contains an `## Architecture Contract Packet` heading",
+        "No placeholder packet fields (Contract State, Component IDs, Rule IDs, Verifier Requirement, Invariant Verdict, Evidence Artifact Path) are emitted"
+      ],
       "files": []
     },
     {
@@ -124,30 +132,57 @@
     {
       "id": 20,
       "name": "non-interactive-context-matrix",
-      "prompt": "Run non-interactive task generation from a validated final spec with no preview flags involved, while independently omitting --mode or leaving --lang unresolved.",
-      "input": {"accepted": "Final DONE spec artifact with an explicit --mode and a resolved language chain", "rejected": ["missing --mode with no resolvable value", "unresolved --lang after the full resolution chain"]},
+      "prompt": "Run non-interactive task generation from either a validated final spec path or an inline spec, with no preview flags involved, while independently omitting --mode or leaving --lang unresolved.",
+      "input": {
+        "accepted": "Either a Final DONE spec artifact or inline spec, with an explicit --mode and a resolved language chain",
+        "rejected": [
+          "missing --mode with no resolvable value",
+          "unresolved --lang after the full resolution chain"
+        ]
+      },
       "expected_status": "DONE for the accepted fixture; NEEDS_CONTEXT for every rejected fixture",
-      "expected_downstream_calls": {"accepted": 0, "rejected": 0},
+      "expected_downstream_calls": {
+        "accepted": 0,
+        "rejected": 0
+      },
       "expected_handoff": "accepted only after all deterministic inputs are verified; rejected without task artifact handoff",
-      "expected_output": "Names the missing or unresolved argument and never prompts or guesses a default. Preview identity is not evaluated on this path because no preview flags are supplied, so a normal non-interactive run is never rejected for absent preview fields."
+      "expected_output": "Names the missing or unresolved argument and never prompts or guesses a default. With no preview flags, direct generation accepts inline or persisted specs and does not require --spec or preview identity fields."
     },
     {
       "id": 21,
       "name": "architecture-evidence-without-manifest",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/feature.md --architecture-evidence .ywc-architecture-invariants-evidence.json with no --manifest at all.",
       "expected_output": "Per SKILL.md Step 5.5, evidence without a valid manifest is NEEDS_CONTEXT. Returns NEEDS_CONTEXT before any artifact write and never falls back to root-only manifest discovery in order to accept the supplied evidence.",
-      "expectations": ["Returns NEEDS_CONTEXT and names the missing --manifest", "Creates or writes no preview artifact, no task directories, no dependency-graph.md, and no architecture packet", "Does not copy or expose the supplied evidence content in the response"],
+      "expectations": [
+        "Returns NEEDS_CONTEXT and names the missing --manifest",
+        "Creates or writes no preview artifact, no task directories, no dependency-graph.md, and no architecture packet",
+        "Does not copy or expose the supplied evidence content in the response"
+      ],
       "files": []
     },
     {
       "id": 22,
       "name": "approve-preview-identity-mismatch",
       "prompt": "Use $ywc-task-generator --spec docs/ywc-plans/billing.md --approve-preview --preview-path docs/ywc-plans/billing.task-preview.md --non-interactive against an approved persisted preview, with exactly one preview identity field missing or mismatched.",
-      "input": {"accepted": "Approved preview whose preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, and mode all match exactly", "rejected": ["missing preview_digest", "mismatched preview_revision", "mismatched tasks_dir", "mismatched lang", "mismatched mode"]},
+      "input": {
+        "accepted": "Approved preview whose preview_path, preview_revision, preview_digest, spec_path, tasks_dir, lang, mode, initials, reserved_phase, and phase_reservation_ref all match exactly",
+        "rejected": [
+          "missing preview_digest",
+          "mismatched preview_revision",
+          "mismatched tasks_dir",
+          "mismatched lang",
+          "mismatched mode",
+          "missing reserved_phase",
+          "mismatched phase_reservation_ref"
+        ]
+      },
       "expected_status": "DONE for the exact-match fixture; NEEDS_CONTEXT for every single-field mismatch",
-      "expected_downstream_calls": {"accepted": 0, "rejected": 0},
+      "expected_downstream_calls": {
+        "accepted": 0,
+        "rejected": 0
+      },
       "expected_handoff": "task artifacts handed off only from the exactly matching approved preview; no handoff on any mismatch",
-      "expected_output": "Per the Preview Approval Gate, exact preview identity match is required only on the --approve-preview path. Names the specific missing or mismatched identity field, never re-decomposes, never silently refreshes the preview, and writes no task artifacts on mismatch.",
+      "expected_output": "Per the Preview Approval Gate, exact preview and reservation identity match is required only on the --approve-preview path. Names the specific missing or mismatched identity field, never re-decomposes, refreshes, re-reserves, or advances phase, and writes no task artifacts on mismatch.",
       "files": []
     },
     {
@@ -155,9 +190,18 @@
       "name": "initials-allocation-contract",
       "prompt": "Run non-interactive task generation with explicit --initials yk in a repository with yk and js tasks, completed tasks, dependency-graph entries, and linked worktrees.",
       "expected_status": "DONE",
-      "expected_output": "Resolves and validates initials before any scan. New IDs use yk-000001-010-...; js IDs are ignored for yk allocation, while legacy numeric IDs remain readable. The maximum is taken from graph, active, completed, and corresponding linked-worktree task directories. The selected phase is compare-and-create reserved under refs/ywc/task-phase/yk/<phase> in the repository common Git directory before any artifact write.",
-      "expectations": ["Absolute or escaping --tasks-dir returns NEEDS_CONTEXT before writes", "Inaccessible or mismatched linked-worktree sources are reported", "A reservation collision retries the next phase and preserves the consumed ref", "Legacy directories are not renamed or counted as another namespace"],
-      "files": ["references/collaborator-initials.md", "scripts/test-initials-allocation.sh"]
+      "expected_output": "Resolves and validates initials before any scan. Direct generation and --preview-only reserve a selected phase under refs/ywc/task-phase/yk/<phase> in the common Git directory. Approved consumption verifies the digest-bound reservation and reuses its phase/task IDs under the lock without a second reservation or phase advance. New IDs use yk-000001-010-...; js IDs are ignored for yk allocation, while legacy numeric IDs remain readable. The maximum is taken from graph, active, completed, and corresponding linked-worktree task directories.",
+      "expectations": [
+        "Absolute or escaping --tasks-dir returns NEEDS_CONTEXT before writes",
+        "Inaccessible or mismatched linked-worktree sources are reported",
+        "A reservation collision retries the next phase and preserves the consumed ref",
+        "Approved consumption verifies and reuses the reservation recorded in the exact preview identity",
+        "Legacy directories are not renamed or counted as another namespace"
+      ],
+      "files": [
+        "references/collaborator-initials.md",
+        "scripts/test-initials-allocation.sh"
+      ]
     },
     {
       "id": 24,
@@ -174,8 +218,15 @@
       "prompt": "Run the bounded task-generator initials contract fixture with malformed config tiers, an empty or invalid interactive derivation, a safe repository-relative tasks path, linked graph/active/completed sources, initials-scoped maxima, and two concurrent reservations.",
       "expected_status": "DONE",
       "expected_output": "The fixture proves explicit > project > user precedence, malformed tiers fall through without mutation, invalid or empty interactive derivation remains unresolved, absolute/escaping tasks paths are rejected, legacy and other-initials IDs do not advance the selected namespace, linked sources contribute to the owned maximum, collisions retry with consumed refs, and NEEDS_CONTEXT occurs before any artifact write.",
-      "expectations": ["The contract explicitly requires one common-Git exclusive lock from scan through complete graph/artifact writes", "The fixture does not claim a runtime generator implementation that is absent", "Concurrent distinct reservations are deterministic and bounded"],
-      "files": ["references/collaborator-initials.md", "scripts/test-initials-allocation.sh"]
+      "expectations": [
+        "The contract explicitly requires one common-Git exclusive lock from scan through complete graph/artifact writes",
+        "The fixture does not claim a runtime generator implementation that is absent",
+        "Concurrent distinct reservations are deterministic and bounded"
+      ],
+      "files": [
+        "references/collaborator-initials.md",
+        "scripts/test-initials-allocation.sh"
+      ]
     },
     {
       "id": 26,
@@ -183,8 +234,16 @@
       "prompt": "Generate a task from a complete advisory Quality Gate Contract declaration with exact production/test Ownership, opaque approved command IDs and matching digests, bounded sanitized evidence paths, thresholds, attempt_cap 3, and residual survivor handling.",
       "expected_status": "DONE",
       "expected_output": "Emits the conditional Quality Gate Contract/Owned Interface section in README.md and task.md with only the sanitized per-task packet and exact task Ownership.",
-      "expectations": ["Preserves all required packet fields", "Does not emit executable command text, raw output, transcripts, secrets, full diffs, or placeholders", "Keeps Task Verify commands separate from packet command identities"],
-      "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
+      "expectations": [
+        "Preserves all required packet fields",
+        "Does not emit executable command text, raw output, transcripts, secrets, full diffs, or placeholders",
+        "Keeps Task Verify commands separate from packet command identities"
+      ],
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/README.md.template",
+        "references/task.md.template"
+      ]
     },
     {
       "id": 27,
@@ -192,8 +251,16 @@
       "prompt": "Generate a task whose specification contains the exact sentinel N/A — no quality gate contract.",
       "expected_status": "DONE",
       "expected_output": "Preserves the existing workflow and omits the entire Quality Gate Contract section from generated README.md and task.md.",
-      "expectations": ["No worker is selected", "No packet heading or packet field is emitted", "No placeholder packet is emitted"],
-      "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
+      "expectations": [
+        "No worker is selected",
+        "No packet heading or packet field is emitted",
+        "No placeholder packet is emitted"
+      ],
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/README.md.template",
+        "references/task.md.template"
+      ]
     },
     {
       "id": 28,
@@ -201,8 +268,14 @@
       "prompt": "Generate a task from a declaration missing an approved command digest, a changed-function Ownership boundary, or a sanitized evidence destination.",
       "expected_status": "NEEDS_CONTEXT",
       "expected_output": "Returns NEEDS_CONTEXT before preview or task-artifact writes and does not infer or fill the missing field.",
-      "expectations": ["No downstream handoff", "No packet is written", "No fabricated digest, threshold, path, or symbol appears in output"],
-      "files": ["references/task-metadata-rules.md"]
+      "expectations": [
+        "No downstream handoff",
+        "No packet is written",
+        "No fabricated digest, threshold, path, or symbol appears in output"
+      ],
+      "files": [
+        "references/task-metadata-rules.md"
+      ]
     },
     {
       "id": 29,
@@ -210,8 +283,16 @@
       "prompt": "Generate a task from a declaration containing raw executable command text, raw output, a transcript, a full diff, or placeholder packet values.",
       "expected_status": "NEEDS_CONTEXT",
       "expected_output": "Rejects the declaration before writing and never copies or exposes the raw command-like content.",
-      "expectations": ["No raw command/output/transcript/secret/full diff is emitted", "No placeholder value is emitted", "Task Verify remains independent of packet authorization"],
-      "files": ["references/task-metadata-rules.md", "references/README.md.template", "references/task.md.template"]
+      "expectations": [
+        "No raw command/output/transcript/secret/full diff is emitted",
+        "No placeholder value is emitted",
+        "Task Verify remains independent of packet authorization"
+      ],
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/README.md.template",
+        "references/task.md.template"
+      ]
     },
     {
       "id": 30,
@@ -224,7 +305,10 @@
         "Uses the llm guideline ~35 files / ~1,200 LOC",
         "Preserves DB migration, Library introduction, Phase hard gate, post-task buildability, and single-phase invariants"
       ],
-      "files": ["SKILL.md", "references/granularity-modes.md"]
+      "files": [
+        "SKILL.md",
+        "references/granularity-modes.md"
+      ]
     },
     {
       "id": 31,
@@ -236,7 +320,10 @@
         "Treats unsafe or shared boundaries as split reasons",
         "Does not reintroduce the superseded ~25 files / ~800 LOC rule"
       ],
-      "files": ["SKILL.md", "references/granularity-modes.md"]
+      "files": [
+        "SKILL.md",
+        "references/granularity-modes.md"
+      ]
     },
     {
       "id": 32,
@@ -248,7 +335,10 @@
         "Uses the human guideline ~15 files / ~500 LOC",
         "Does not reintroduce the superseded ~10 files / ~300 LOC rule"
       ],
-      "files": ["SKILL.md", "references/granularity-modes.md"]
+      "files": [
+        "SKILL.md",
+        "references/granularity-modes.md"
+      ]
     },
     {
       "id": 33,
@@ -260,7 +350,9 @@
         "Advisor evaluates exactly the matching guideline rather than both thresholds",
         "Advisor retains boundary-based split reasons and the one-advisor budget"
       ],
-      "files": ["SKILL.md"]
+      "files": [
+        "SKILL.md"
+      ]
     },
     {
       "id": 34,
@@ -278,6 +370,78 @@
       "expected_output": "Use spec-ready owner default once in either mode, explicit policy wins, defer never amends, residual advisory findings do not ask again; blocking/malformed failures remain. Reuse only matching already-approved unchanged preview without another confirmation; never invent approval or weaken containment/identity/consume-only/preview-only write boundaries.",
       "files": [
         "SKILL.md"
+      ]
+    },
+    {
+      "id": 36,
+      "name": "default-output-root-independent-of-spec-location",
+      "prompt": "The spec is docs/ywc-plans/feature.md. Generate task documents with the default output location. First produce the persisted preview. Do not assume preview approval; consume only after the user approves the matching preview digest. Show what happens before approval and after approval.",
+      "expected_output": "Resolve the default output to repository root `tasks/` regardless of the spec parent. A clean --preview-only call writes and validates only the persisted preview, returns DONE with its path/revision/digest, does not imply approval, and does not create or modify task artifacts. An attempted --approve-preview consume without explicit approval returns NEEDS_CONTEXT and writes no task artifacts. After explicit approval of the matching preview identity, consume-only writes task directories and dependency-graph.md under the resolved tasks/ and verifies each emitted README.md/task.md and the graph before DONE.",
+      "expectations": [
+        "Default output is repository root `tasks/`, independent of `docs/ywc-plans/` spec location.",
+        "Preview-only writes no task directories or dependency graph.",
+        "A clean preview returns DONE with its identity while creating or modifying no task output directory or dependency graph.",
+        "A preview result never implies approval; a consume attempt without explicit matching approval returns NEEDS_CONTEXT and writes no task artifacts.",
+        "Approved consumption writes only under the resolved task directory and verifies task files plus dependency-graph.md before DONE.",
+        "Previously resolved mode, initials, and destination are not requested again without a genuine conflict."
+      ],
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "id": 37,
+      "name": "advisory-model-hint-tiers",
+      "source_id": "local-ac1-advisory-model-hint-tiers",
+      "prompt": "Generate narrow clear non-critical work, an ordinary feature slice, insufficient difficulty evidence, and architecture-critical work.",
+      "expected_output": "Use economy, standard, standard, advanced respectively with scope/criticality evidence; preserve current-session model, specialist pins and installer fallback.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 38,
+      "name": "model-hint-preview-summary-consistency",
+      "source_id": "local-ac1-model-hint-preview-summary-consistency",
+      "prompt": "Generate a preview, then consume the matching approved preview and show the final summary.",
+      "expected_output": "Every preview, README and final summary row has exactly one matching advisory Model Hint tier and rationale; preserve identity/digest/approval gates.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 39,
+      "name": "model-hint-invalid-refusal",
+      "source_id": "local-ac1-model-hint-invalid-refusal",
+      "prompt": "Try missing or duplicate hints, invalid tier, empty or unsupported rationale, mismatched preview/README/summary, or an effective specialist model ID in Model Hint.",
+      "expected_output": "Return NEEDS_CONTEXT before preview or task-artifact writes; do not silently repair the approved preview, change specialist pins or report clean DONE.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 40,
+      "name": "model-hint-unclear-and-unverified",
+      "source_id": "local-ac1-model-hint-unclear-and-unverified",
+      "prompt": "Requirements remain unclear; propose advanced to avoid clarification and claim runtime behavior from source checks.",
+      "expected_output": "Return NEEDS_CONTEXT for unclear requirements, without escalation or artifact writes. Live evidence remains UNVERIFIED — instruction contract only. Do not introduce runtime routing or claim executed model selection.",
+      "files": [
+        "references/task-metadata-rules.md",
+        "references/output-and-validation.md"
+      ]
+    },
+    {
+      "id": 41,
+      "name": "approved-preview-reuses-phase-reservation",
+      "source_id": "local-ac1-approved-preview-reuses-phase-reservation",
+      "prompt": "Create a persisted preview that reserves a phase, then approve and consume it after another task-generator invocation has advanced the repository phase ledger.",
+      "expected_output": "The preview identity and digest bind initials, reserved_phase, and phase_reservation_ref. Under the common-Git lock, verify the same reservation remains valid and reuse its phase and task IDs; do not select a new phase or compare-and-create a second reservation. Missing or mismatched reservation identity returns NEEDS_CONTEXT before task writes and never releases the durable ref.",
+      "files": [
+        "references/collaborator-initials.md",
+        "references/wide-refactor-decomposition.md"
       ]
     }
   ]

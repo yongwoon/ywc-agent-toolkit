@@ -281,3 +281,41 @@ point the async result is applied is a finding.
 **Severity guide:** the stale response drives a user-facing data-corruption or
 wrong-target action (e.g. provisioning, deploying, or submitting against the
 wrong entity) → High; display-only stale render with no side effect → Medium.
+
+## Appended defect entries
+
+### A-005: CI checkout persists the job token into a workspace that untrusted code or an artifact can read (Security / Supply chain)
+
+`actions/checkout` writes the job's `GITHUB_TOKEN` into `.git/config` by default (`persist-credentials: true`). Any later step that runs PR-author-controllable code (install scripts, tests, E2E, build tools), can then read that token; an artifact upload can publish it only if the uploaded contents actually include the credential. The class recurs because the default is invisible in the YAML: the dangerous line is the one that is *not* written. Apply the *why* — a credential should be present only in the steps that need it — not just this one action.
+
+**Scan cue:** for every changed workflow, enumerate each `actions/checkout` step and confirm `with: persist-credentials: false` when the job runs PR-controlled code, runs E2E, or uploads a workspace-derived artifact. A job that must `git push` afterwards needs an explicit, scoped auth step instead of the persisted default — flag the missing design, do not just flip the flag. Trace uploaded paths, hidden-file inclusion, and token permissions. If `.git/config` is absent from the artifact, that artifact exposure path is not established. Independently check whether later PR-controlled code can read the persisted token; artifact exclusion does not eliminate that code-execution path. Deterministic check: zizmor `artipacked` (its confidence is Low because real exposure depends on later steps — verify actual credential access before surfacing).
+
+**Severity guide:** verified token exposure through later PR-controlled code or credential-bearing artifact contents → High, with the token permissions and resulting impact recorded; trusted-only/no actual exposure → Low/Medium. Workspace artifact upload alone is insufficient for High; do not confirm token disclosure when the artifact excludes the credential.
+
+> Provenance — source: `mining`; date: `2026-10-20`; origin: `bulk mining (3 PRs, 2018-08..2026-10)` (fix diff confirmed in all 3 PRs; review-history linter report, PR #339).
+
+### A-006: Promise not awaited, or a Promise used as a boolean condition (Devex / Security)
+
+An async call whose result is neither awaited, returned, nor given a rejection handler loses both its failure and its ordering: the next step runs before the write finishes, and a rejection disappears. The sharper variant is a Promise in a condition — `if (!isEnabled(id)) throw …` where `isEnabled` is async. A Promise object is always truthy, so the guard never fires and an authorization or feature gate silently passes. The class recurs because the code type-checks and the happy-path test usually resolves fast enough to hide the ordering gap. Apply the *why* — any async result that a later step or a decision depends on must be awaited — not only in TypeScript.
+
+**Scan cue:** in changed code, find calls to async functions used as statements (no `await` / `return` / `.catch`), as `void p` (which does not handle rejection), or inside `if` / `!` / `&&` / `?:` / `.filter()` predicates, and async functions passed where a sync callback is expected. A `.catch()` already present is not this finding — check instead whether ordering still matters. Deterministic check: typescript-eslint `no-floating-promises` (with `ignoreVoid: false`) and `no-misused-promises`, which need a type-aware config.
+
+**Severity guide:** Promise used as an auth/permission/feature-gate condition → Critical; unawaited write that a later step depends on → High; fire-and-forget with a rejection handler and no ordering dependency → not a finding.
+
+> Provenance — source: `mining`; date: `2026-10-20`; origin: `bulk mining (3 PRs, 2018-08..2026-10)` (recurrence confirmed in 3 PRs, fix confirmed in some; review-history linter report, PR #339).
+
+### A-007: Error return value discarded instead of handled (Devex)
+
+The return-value counterpart of §2's swallowing catch. In Go, where an error is an ordinary return value, assigning it to `_`, calling a function as a bare statement, or an unchecked type assertion (`v := x.(T)`) erases the failure with no visible `catch` to review. The class recurs because the discarded value is one character (`_`) and the code still compiles. A known misconfiguration form: the linter is enabled by name but a project-wide exclusion (e.g. golangci-lint `text: "Error return value"`) disables it entirely.
+
+**Scan cue:** in changed Go code, grep `_ =`, `, _ :=`, `, _ =` where the dropped value is an `error`, bare call statements of error-returning functions, and single-value type assertions. In changed lint config, check for an exclusion that disables errcheck wholesale. Deliberate best-effort discards (rollback, `Close` in a cleanup `defer`) are acceptable only with a comment naming why. Deterministic check: golangci-lint `errcheck` (`check-blank`, `check-type-assertions`).
+
+**Severity guide:** discarded error on a write / money / auth path → High; on a read path whose result is used anyway → Medium; commented best-effort cleanup → not a finding.
+
+> Provenance — source: `mining`; date: `2026-10-20`; origin: `bulk mining (3 PRs, 2018-08..2026-10)` (omission flagged in 3 PRs, fix confirmed in some; review-history linter report, PR #339).
+
+**Frozen port source:** `yongwoon/develop-with-llm` PR #340, merge
+`2b7c54058da6f15f6c16b9aee5de021fac35f42f`,
+`tools/claude-code/skills/ywc-impl-review/references/recurring-defects.md`.
+The mining provenance above is upstream-reported history, not a new mining or
+live-review result in this repository. Preserve the existing catalog sections.

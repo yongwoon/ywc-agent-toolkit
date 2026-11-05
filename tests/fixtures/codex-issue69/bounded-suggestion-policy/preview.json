@@ -25,7 +25,10 @@
       "required": [
         "matching already-approved unchanged preview consumes once without another confirmation",
         "Newly generated previews remain unapproved",
-        "all existing containment, spec/tasks-dir/language/mode/path/revision/digest checks"
+        "phase reservation all",
+        "direct-generation path without",
+        "requiring preview approval.",
+        "unsafe paths return `NEEDS_CONTEXT` before task writes"
       ]
     }
   ]

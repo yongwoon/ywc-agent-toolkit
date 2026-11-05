@@ -40,8 +40,8 @@ When tempted to bend a rule, check this table first:
 | `--granularity <mode>` | _(alias)_ | Backward-compatible alias for `--mode`; accept `human` \| `llm`. If both flags are present and conflict, stop and ask the user to resolve the conflict. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 | `--initials <value>` | _(resolved or asked)_ | Collaborator namespace for new task phases. Must match `^[a-z0-9]{2,4}$`; explicit invalid values are rejected. |
-| `--spec <path>` | _(required for preview/write gate)_ | Project-relative spec path for persisted preview and auditable task writes. Must stay under `docs/` unless the project defines another safe root explicitly. |
-| `--preview-only` | off | Write only the canonical preview artifact. Do not write task directories or `dependency-graph.md`. |
+| `--spec <path>` | required for preview flags; optional for direct generation | Project-relative path for persisted previews and approved consumption. Direct generation retains Step 1 inputs, including inline specs. Preview specs must stay under `docs/` unless the project defines another safe root explicitly. |
+| `--preview-only` | off | Persist the canonical preview and its reservation identity/ref. Do not write task directories or `dependency-graph.md`. |
 | `--preview-path <path>` | `docs/ywc-plans/<slug>.task-preview.md` | Persisted preview artifact path. Must be repository-relative Markdown under a safe root. |
 | `--approve-preview` | off | Consume a previously approved persisted preview with matching identity. Never re-decompose on this path. |
 | `--non-interactive` | off | Required when an autonomous caller consumes a previously approved preview without interactive confirmation. |
@@ -49,17 +49,10 @@ When tempted to bend a rule, check this table first:
 | `--architecture-evidence <path>` | off | Optional normalized evidence artifact; paired with `--manifest`, never raw evidence text. |
 
 ## Language Option
-When `--lang` is not specified, resolve task document language using the shared
-Codex YWC policy:
-[`../references/language-resolution.md`](../references/language-resolution.md).
-The order is explicit `--lang` > project `.codex/ywc.json` > project guidance
-(`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
+When `--lang` is not specified, resolve task document language using the shared Codex YWC policy:
+[`../references/language-resolution.md`](../references/language-resolution.md). The order is explicit `--lang` > project `.codex/ywc.json` > project guidance (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
 
-This skill supports canonical language codes `ko` | `ja` | `en` | `es` | `zh`
-for task document output. It also accepts backward-compatible long aliases
-`korean` | `japanese` | `english` | `spanish` | `chinese`; treat `zh` /
-`chinese` as Simplified Chinese unless the user explicitly asks for another
-Chinese locale. There is no skill-level output-language default; for non-English output rules, read [references/language-policy.md](references/language-policy.md).
+This skill supports `ko` | `ja` | `en` | `es` | `zh` and backward-compatible aliases `korean` | `japanese` | `english` | `spanish` | `chinese`. Treat `zh` / `chinese` as Simplified Chinese unless the user explicitly asks for another Chinese locale. There is no skill-level output-language default; for non-English output rules, read [references/language-policy.md](references/language-policy.md).
 
 ### Collaborator Initials Gate
 Read [references/collaborator-initials.md](references/collaborator-initials.md)
@@ -71,16 +64,15 @@ non-interactive generation returns `NEEDS_CONTEXT` without downstream work.
 ---
 
 ## Preview Approval Gate
-For persisted preview and auditable task writes, `--spec` is mandatory and must
-resolve to a project-relative path under `docs/`. `--preview-only` and
-`--approve-preview` are mutually exclusive. `--preview-only` may write only the
-preview artifact; it must not write task directories or the dependency graph.
-`--approve-preview` requires `--preview-path` plus an exact identity match on
-spec path, tasks dir, language, mode, preview path, revision, and digest, and
-it is consume-only: no re-decomposition, no silent refresh, no write on
-mismatch. Unsafe `--spec` / `--preview-path` inputs (absolute paths, `..`
-escape, symlink escape, non-Markdown preview paths) return `NEEDS_CONTEXT`
-before any artifact write. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved; reuse never supplies missing approval. Retain all existing containment, spec/tasks-dir/language/mode/path/revision/digest checks, consume-only semantics, and preview-only zero-task-write boundaries; an unapproved, stale or escaping preview cannot inherit approval.
+For persisted previews and approved-preview writes, `--spec` must resolve inside a project-declared safe spec root; absent a project declaration, use `docs/`. `--preview-only` and `--approve-preview` are mutually exclusive. The preview identity binds the reserved phase and reservation ref; see [wide-refactor-decomposition.md](references/wide-refactor-decomposition.md).
+`--preview-only` returns `DONE` with its path/revision/digest and phase reservation for a separate caller approval step; it writes no task directory or graph.
+`--approve-preview` consumes only an explicitly approved preview whose spec,
+tasks dir, language, mode, path, revision, digest, and phase reservation all
+match; under the lock, verify and reuse that reservation without selecting or
+creating another phase. It never re-decomposes or refreshes the preview. Missing
+approval, identity mismatch, or unsafe paths return `NEEDS_CONTEXT` before task writes. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved. Without
+either preview flag, preserve the existing direct-generation path without
+requiring preview approval.
 
 For the canonical preview identity fields, wide-refactor digest invalidation
 rules (`Refactor Phase`, `Batch ID`, `Depends On`), and the consume-only
@@ -145,16 +137,17 @@ Gather project context for task verification commands, ownership paths, and cate
 - `package.json`, `Makefile`, `pyproject.toml`, etc. — actual lint/test/build commands
 - Project directory structure — `src/` layout, monorepo status, existing module placement
 - Resolve `--tasks-dir` as a repository-relative path; reject absolute, escaping, or symlink-escaping paths with `NEEDS_CONTEXT`.
+- Resolve the default `tasks/` from the repository root. The default is independent of `--spec` location and the current subdirectory; never infer `<tasks-dir>` from the parent directory of `--spec`. Resolve the output directory once and use that same path for preview analysis, approved consumption, writes, and validation.
 - Existing resolved `<tasks-dir>` and `<tasks-dir>/dependency-graph.md` — whether tasks already exist, numbering collision check
 - Docker environment — whether commands require a `docker exec` prefix
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
 
 **When existing tasks are present:**
 - Determine the next initials-scoped PHASE by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`, plus corresponding linked-worktree sources. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. For resolved `yk`, only `yk-<six-digit-phase>-<sequence>-...` candidates contribute to the maximum; legacy and other-initials IDs remain readable but do not advance `yk`. An empty owned scope starts at `yk-000001-010`. If the graph and directory scan disagree, continue with the union-based next owned PHASE and report the mismatch as a concern.
-- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
+- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Skip compaction during `--preview-only`; defer it until the approved reservation is verified during consumption. Direct generation and approved consumption may compact before task writes. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
 - Enumerate `git worktree list --porcelain`; inspect the same relative path in graph, active, and completed sources, reporting inaccessible/mismatched paths.
 - Scope the union maximum to prefixed IDs matching validated initials; keep legacy IDs readable without claiming another namespace. Empty owned scope starts at `<initials>-000001-010`, with sequence `010`.
-- Hold one exclusive lock rooted in the repository common Git directory across scan, candidate selection, compare-and-create reservation, and complete task-artifact/dependency-graph writes. While holding it, compare-and-create `refs/ywc/task-phase/<initials>/<phase>` using the zero object ID; collisions retry bounded candidates, retain refs, and report deterministic conflict without duplicate output. Distinct reservation refs without this transaction-wide lock do not prevent graph lost updates.
+- For direct generation and `--preview-only`, hold one common-Git lock across scan, selection, reservation, and task/preview writes. For `--approve-preview`, verify and reuse its digest-bound reservation under the lock; do not select or reserve another phase.
 - Identify dependency relationships with existing tasks, preferring `dependency-graph.md` when present, and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -328,7 +321,7 @@ legacy directories or count them as another collaborator's prefixed namespace.
 - Criterion for splitting phases: "Do all outputs from this stage need to be in place for the next stage's work to be meaningful?"
 
 ### Step 9: Directory and File Generation
-Use the path specified by the user for output. If not specified, default to `tasks/`.
+Use the pre-resolved `--tasks-dir` path for every task output. If omitted, use the repository-root `tasks/`; never derive it from the spec's parent. With `--preview-only`, write the preview and its digest-bound reservation ref, but no task files or graph. With `--approve-preview`, create task files only after explicit approval and identity, reservation, authorization, and containment checks pass. Without preview flags, preserve direct generation after existing validation; no preview approval is required.
 
 Generate the following structure for each task:
 
@@ -359,6 +352,7 @@ Each README.md must include the following:
 - **Notes**: Important considerations, design decisions
 - **Out of Scope**: What is intentionally excluded
 - **Parallel Execution Metadata**:
+  - **Model Hint**: Exactly one advisory tier and evidence-based rationale per task; use [task-metadata-rules.md](references/task-metadata-rules.md) as the canonical tier definition.
   - **Ownership**: Files, directories, modules, contracts this task may modify
   - **Shared Surfaces**: Shared boundaries that may cause merge or design conflicts
   - **Conflicts With**: Tasks that must not run in parallel
@@ -376,6 +370,8 @@ Every task's README.md must include a `## Spec Reference` section with three sub
 For the full structure, the external-URL policy, the link-vs-summary drift protocol, and the cross-task scope-handoff convention, **read [references/spec-reference-rules.md](references/spec-reference-rules.md)**.
 
 #### Parallel Execution Metadata Rules
+
+Read [references/task-metadata-rules.md](references/task-metadata-rules.md) for advisory tier selection and its runtime boundaries. Every task requires a Model Hint, including tasks that will not run in parallel.
 
 When tasks may be executed via `git worktree`, Codex, or other isolated worker setups, every task's README.md must declare:
 
@@ -419,13 +415,13 @@ Write structured scenario-based tests (Steps + Expected Result).
 - Library introduction tasks (import and basic operation verified via Verification)
 
 ### Step 10: Generate Dependency Graph
-After generating all tasks, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order.
+After generating tasks in direct-generation or approved-consumption mode, create `<tasks-dir>/dependency-graph.md` at the top level (where `<tasks-dir>` is the value of `--tasks-dir`, defaulting to `tasks/`). This file serves as the single source of truth for execution order. Preview-only stops after writing and validating its preview artifact; it does not create or modify the dependency graph.
 
 Refer to `references/dependency-graph.md.template` for format. List tasks by phase and express each task's dependencies using arrow notation.
 This graph must be consistent with the Dependencies sections in individual README.md files.
 Once every task in a phase reaches `<tasks-dir>/completed/`, the shared completion marker automatically compacts that phase (see `codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py`) — no special markup is required; the script reads the `## Phase NNNNNN`, `## Parallel Execution Notes`, and `## Visual Dependency Graph` headings directly.
 ### Step 11: Final Validation
-Before returning either a preview or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md), including its attributable coverage summary and interface/verification mapping. Then verify the following:
+Before returning a preview, direct task set, or consumed task set, apply [requirement coverage and output validation](references/output-and-validation.md), including its attributable coverage summary and interface/verification mapping. A clean preview returns `DONE` with its preview identity; approval is a separate caller step. Then verify the following, applying task-artifact checks only to direct generation or approved consumption:
 
 **Dependency & Structure:**
 - [ ] No forward dependencies (earlier tasks do not depend on later tasks)
@@ -436,14 +432,14 @@ Before returning either a preview or consumed task set, apply [requirement cover
 - [ ] Graph/directory numbering mismatches reported as concerns (if any)
 **Naming & Size:**
 - [ ] Naming convention followed (`[INITIALS:2-4]-[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
-- [ ] A common-Git exclusive lock covered scan, candidate selection, reservation, and complete artifact/graph writes; compare-and-create succeeded before any task artifact write
+- [ ] Direct/preview generation reserves under the common-Git lock; approved consumption verifies and reuses the preview's exact phase reservation under that lock without selecting another phase.
 - [ ] PHASE is 6 digits, SEQUENCE is 3 digits, separated by hyphen
 - [ ] No task name contains "and" (single concern check)
 - [ ] Each task fits within the selected Granularity Mode's size guideline
 - [ ] Selected Granularity Mode applied consistently (bundling, Implementation Steps depth, Ownership scope)
 **README.md Quality:**
 - [ ] Both "Depends On" and "Depended By" included
-- [ ] Parallel Execution Metadata included (Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
+- [ ] Parallel Execution Metadata included (Model Hint, Ownership, Shared Surfaces, Conflicts With, Parallelizable After, Task Verify)
 - [ ] Ownership is narrow enough to serve as an actual edit boundary, not just a restatement of Key Files
 - [ ] **Spec Reference** section included — Primary Sources, Summary, and Out of Scope (from spec) all filled in or explicitly marked `N/A`
 - [ ] If Primary Sources include external URLs, only if the project allows it (default is project-relative paths only)
@@ -456,6 +452,7 @@ Before returning either a preview or consumed task set, apply [requirement cover
 - [ ] Duplicate-sensitive write tasks include concrete concurrent request, rollback, and idempotency retry verification or a named no-harness exception with replacement evidence
 
 **Consistency:**
+- [ ] Every task has a valid advisory Model Hint and rationale; preview, README, and final summary agree before writes.
 - [ ] Dependency Graph Summary matches individual README.md files
 - [ ] If the task set is intended for parallel execution, Dependency Graph includes Parallel Execution Notes
 - [ ] Codebase is buildable after each task completes
@@ -467,9 +464,11 @@ Before returning either a preview or consumed task set, apply [requirement cover
 
 The final output includes:
 
-1. **Task list summary** organized by phase
+1. **Task list summary** organized by phase with Task ID, Title, and Model Hint (tier plus rationale) for every task, matching the preview when used and every generated README
 2. **Directory generation** under `<tasks-dir>/`
 3. **Dependency Graph** at `<tasks-dir>/dependency-graph.md`, including Parallel Execution Notes when needed
+
+Preview-only returns the task summary and persisted preview identity; it does not claim that task directories or a dependency graph were generated. Items 2 and 3 apply only to direct generation or approved consumption.
 
 When parallel execution is expected, verify that each task is safe for isolated worktree or agent execution.
 
@@ -491,9 +490,10 @@ reservations, and missing-initials `NEEDS_CONTEXT` before any write.
 Before returning `DONE`, verify:
 
 - [ ] The spec or plan source was read and each task traces to a source requirement.
-- [ ] Each generated task has a `README.md` and `task.md`.
+- [ ] For preview-only, verify the persisted preview artifact and its identity, and verify that no task directory or dependency graph was created or modified.
+- [ ] For direct generation or approved consumption, verify every emitted task directory contains `README.md` and `task.md`, and `<tasks-dir>/dependency-graph.md` exists. All task artifacts must be under the pre-resolved `<tasks-dir>`; never beside the spec unless explicitly selected.
 - [ ] UI or behavior-changing tasks have a `test.md` or an explicit test exception.
-- [ ] `dependency-graph.md` exists and matches the generated task directories.
+- [ ] For direct generation or approved consumption, `dependency-graph.md` exists and matches the generated task directories.
 - [ ] Parallel Execution Notes are present when tasks are intended for parallel execution.
 - [ ] The selected output language matches `--lang` or the shared YWC language resolution result.
 - [ ] The selected Granularity Mode matches `--mode`, `--granularity`, or the user's explicit confirmation.

@@ -1,0 +1,97 @@
+{
+  "id": "upstream-adoption-model-hints-ac1",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-1",
+    "AC-1",
+    "Failure Mode: upstream path/locale provenance"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_sha": "0622ba580d2ad2bf8c8936726dd400c00752ab3e",
+    "paths": [
+      "tools/codex-skill/skills/ywc-task-generator/SKILL.md",
+      "tools/codex-skill/skills/ywc-task-generator/references/task-metadata-rules.md",
+      "tools/codex-skill/skills/ywc-task-generator/references/README.md.template",
+      "tools/codex-skill/skills/ywc-task-generator/references/output-and-validation.md"
+    ],
+    "adaptation": "Approved spec FR-1 keeps tiers advisory and defines them locally; upstream runtime routing is excluded."
+  },
+  "scenarios": [
+    {
+      "input": "Narrow clear non-critical existing-pattern copy change",
+      "expected": "economy with scope/criticality rationale; matching preview/README/summary"
+    },
+    {
+      "input": "Ordinary existing-pattern feature slice or insufficient difficulty evidence",
+      "expected": "standard with scope/criticality rationale; matching preview/README/summary"
+    },
+    {
+      "input": "Architecture decision or critical surface",
+      "expected": "advanced with named decision/surface rationale; matching preview/README/summary"
+    },
+    {
+      "input": "Unclear requirement",
+      "expected": "NEEDS_CONTEXT; zero artifact writes; no tier escalation"
+    },
+    {
+      "input": "Missing, duplicate, invalid tier, unsupported rationale, mismatched hint, or specialist model pin copied as a hint",
+      "expected": "NEEDS_CONTEXT; zero artifact writes; preserve specialist configuration"
+    },
+    {
+      "input": "No live runtime trace",
+      "expected": "UNVERIFIED — instruction contract only; preserve session model, specialist pins and installer fallback"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-task-generator/references/task-metadata-rules.md",
+      "required": [
+        "Exactly one advisory `Model Hint` is required for every task: `economy`, `standard`, or `advanced`, followed by a concise evidence-based rationale tied to scope and criticality.",
+        "`economy`: narrow, clear, non-critical work with evidence that the change follows a known pattern.",
+        "`standard`: ordinary existing-pattern work, or insufficient difficulty evidence to justify another tier.",
+        "`advanced`: architecture judgment or critical-surface work; name the relevant decision or surface in the rationale.",
+        "Unclear requirements return `NEEDS_CONTEXT`; raising the tier is not a substitute for clarification.",
+        "Preserve current-session model selection, specialist model pins, and installer fallback. Do not pin an effective model ID in task metadata or introduce task-aware runtime routing."
+      ],
+      "forbidden": [
+        "executor automatically selects a model from Model Hint",
+        "../../references/subagent-model-routing.md"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-task-generator/references/README.md.template",
+      "required": [
+        "- Model Hint: `[economy|standard|advanced]` — [task-specific scope/criticality evidence; advisory only]"
+      ],
+      "forbidden": [
+        "executor automatically selects a model from Model Hint",
+        "../../references/subagent-model-routing.md"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-task-generator/references/output-and-validation.md",
+      "required": [
+        "The preview table and final task list summary must include a `Model Hint` column for every task, organized by phase with Task ID and Title. Direct generation must include the hint in each README and the final summary without requiring a preview table.",
+        "Copy the same tier and rationale into the preview, generated README, and final summary; do not infer a different hint during consumption. Direct generation must use one validated value in its README and final summary.",
+        "Missing or duplicate hints, invalid tiers, empty or unsupported rationales, model-ID pins, and preview/README/summary mismatches fail validation and return `NEEDS_CONTEXT` before preview or task-artifact writes.",
+        "Unavailable live runtime evidence is `UNVERIFIED — instruction contract only`; source assertions and expected traces are not live model behavior."
+      ],
+      "forbidden": [
+        "executor automatically selects a model from Model Hint",
+        "../../references/subagent-model-routing.md"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-task-generator/SKILL.md",
+      "required": [
+        "**Model Hint**: Exactly one advisory tier and evidence-based rationale per task; use [task-metadata-rules.md](references/task-metadata-rules.md) as the canonical tier definition.",
+        "Every task has a valid advisory Model Hint and rationale; preview, README, and final summary agree before writes."
+      ],
+      "forbidden": [
+        "executor automatically selects a model from Model Hint",
+        "../../references/subagent-model-routing.md"
+      ]
+    }
+  ]
+}

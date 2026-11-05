@@ -1,0 +1,134 @@
+{
+  "id": "upstream-adoption-review-defects",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-5",
+    "AC-5"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_sha": "2b7c54058da6f15f6c16b9aee5de021fac35f42f",
+    "source_prefix": "tools/claude-code/skills/ywc-impl-review/",
+    "port_scope": "Approved FR-5 behavior only; no Claude routing copied"
+  },
+  "live_evidence": "UNVERIFIED — instruction contract only",
+  "scenarios": [
+    {
+      "input": "PR workflow persists checkout token; compare later PR-controlled code, artifact containing .git/config, and artifact excluding .git/config",
+      "expected": "High only after verifying token exposure and token permissions. Trace uploaded paths and hidden-file inclusion; artifact excluding .git/config does not establish that artifact exposure path. Later PR-controlled code may independently establish High; trusted-only/no actual exposure Low/Medium; explicit scoped push auth design required"
+    },
+    {
+      "input": "Async permission predicate used as boolean; write not awaited before dependent operation",
+      "expected": "A-006 Critical gate / High ordering; handled fire-and-forget without ordering dependency is no finding"
+    },
+    {
+      "input": "Go discarded write error; read result used despite failure; commented best-effort Close",
+      "expected": "A-007 High / Medium / no finding respectively"
+    },
+    {
+      "input": "Each Python/workflow/TypeScript/Go tool is installed and stack appropriate",
+      "expected": "Changed-file evidence only; typed TS rules must already exist; Go package output filtered to changed files and uncovered blank/type assertions scanned manually"
+    },
+    {
+      "input": "Each tool absent or typed TypeScript config absent",
+      "expected": "Report unavailable and scan manually; no install/config mutation and no unrelated review block"
+    },
+    {
+      "input": "Linter flags broad except that logs and re-raises",
+      "expected": "Verify and reject candidate; never emit raw hit as verdict"
+    },
+    {
+      "input": "Internal-only prompt-injection item 2; item 1 internal-only without audit",
+      "expected": "Both remain Critical; internal-only alone permits no global downgrade"
+    },
+    {
+      "input": "Item 1 internal-only and audited",
+      "expected": "Only that row permits downgrade to High"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-impl-review/references/recurring-defects.md",
+      "required": [
+        "### A-005:",
+        "### A-006:",
+        "### A-007:",
+        "Promise used as an auth/permission/feature-gate condition → Critical",
+        "fire-and-forget with a rejection handler and no ordering dependency → not a finding",
+        "commented best-effort cleanup → not a finding",
+        "2b7c54058da6f15f6c16b9aee5de021fac35f42f",
+        "source: `mining`; date: `2026-10-20`",
+        "verified token exposure through later PR-controlled code or credential-bearing artifact contents → High",
+        "trusted-only/no actual exposure → Low/Medium",
+        "Trace uploaded paths, hidden-file inclusion, and token permissions.",
+        "If `.git/config` is absent from the artifact, that artifact exposure path is not established."
+      ],
+      "forbidden": [
+        "Automatically install missing linters",
+        "A linter hit alone confirms a finding",
+        "PR-triggered job that runs PR-controlled code or uploads the workspace → High"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-impl-review/references/coderabbit-methodology.md",
+      "required": [
+        "ruff check --select S110,BLE001,B904",
+        "zizmor --offline",
+        "artipacked",
+        "unpinned-uses",
+        "no-floating-promises",
+        "no-misused-promises",
+        "ignoreVoid: false",
+        "golangci-lint run --enable-only errcheck",
+        "check-blank",
+        "check-type-assertions",
+        "Never install a tool or change lint configuration during review.",
+        "Report each unavailable tool as `unavailable` without blocking unrelated review scope.",
+        "Every linter hit must pass §2 verify-before-surface before becoming a finding.",
+        "No hit does not prove the defect class absent."
+      ],
+      "forbidden": [
+        "Automatically install missing linters",
+        "A linter hit alone confirms a finding"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-impl-review/references/security-agent.md",
+      "required": [
+        "A-005",
+        "A-006",
+        "Internal-only status alone never globally downgrades prompt-injection severity.",
+        "Item 2 (single-string prompt without role separation) remains Critical: no downgrade.",
+        "Item 1 permits High only when the surface is both internal-only and audited."
+      ],
+      "forbidden": [
+        "Automatically install missing linters",
+        "A linter hit alone confirms a finding"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-impl-review/references/devex-agent.md",
+      "required": [
+        "A-006",
+        "A-007",
+        "targeted rules"
+      ],
+      "forbidden": [
+        "Automatically install missing linters",
+        "A linter hit alone confirms a finding"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-impl-review/SKILL.md",
+      "required": [
+        "A-005",
+        "A-006",
+        "A-007"
+      ],
+      "forbidden": [
+        "Automatically install missing linters",
+        "A linter hit alone confirms a finding"
+      ]
+    }
+  ]
+}
