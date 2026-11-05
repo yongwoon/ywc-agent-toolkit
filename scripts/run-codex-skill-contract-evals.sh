@@ -129,14 +129,17 @@ check_task_generator_output_guard() {
   require_tokens "$skill" \
     "Resolve the default \`tasks/\` from the repository root." \
     "never infer \`<tasks-dir>\` from the parent directory of \`--spec\`." \
-    "may write its preview artifact but must not create \`<tasks-dir>\` or task files." \
-    'Create the task output directory only after an approved preview passes all' \
-    "Before returning \`DONE\`, verify every emitted task directory contains \`README.md\` and \`task.md\`, and \`<tasks-dir>/dependency-graph.md\` exists."
+    '`--preview-only` returns `DONE` with its persisted path/revision/digest' \
+    'Without either preview flag, preserve the existing' \
+    'defer this graph mutation until approved-preview consumption' \
+    'For preview-only, verify the persisted preview artifact and its identity' \
+    'For direct generation or approved consumption, verify every emitted task directory'
   require_tokens "$evals" \
     'default-output-root-independent-of-spec-location' \
     "repository root \`tasks/\`" \
     'Preview-only writes no task directories or dependency graph.' \
-    'No task output directory is created before matching preview digest approval.' \
+    'A clean preview returns DONE with its identity while creating or modifying no task output directory or dependency graph.' \
+    'A preview result never implies approval; a consume attempt without explicit matching approval returns NEEDS_CONTEXT and writes no task artifacts.' \
     'matching preview digest' \
     'dependency-graph.md'
 }
