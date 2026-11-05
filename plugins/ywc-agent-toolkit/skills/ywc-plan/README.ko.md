@@ -40,7 +40,7 @@ Rough idea 를 구현 직전 상태(Small path 직접 실행 plan, 또는 Medium
 2. **Investigate** — `AGENTS.md` / `CODEX.md` / `CLAUDE.md`, `package.json`, `docs/architecture/` 등 핵심 file 만 read
 3. **Assess Scale** — Small / Medium / Large 중 정확히 하나 선택 (모호하면 Medium default)
 4. **Branch** — Small 이면 `plan.md`, Medium/Large 면 spec 문서 작성
-5. **Handoff** — `ywc-spec-ready` 자동 수렴 shortcut 또는 수동 다음 단계 Skill 명시 (실행은 사용자가 결정)
+5. **Handoff** — 새 Medium/Large spec 작성 후 기본적으로 `ywc-spec-ready --spec <path>`를 정확히 한 번 실행합니다. `--no-converge`와 `--non-interactive`는 수동 handoff를 출력하며, Small과 Re-plan은 자동 수렴하지 않습니다.
 
 ## Safety Invariants
 
@@ -56,7 +56,7 @@ Rough idea 를 구현 직전 상태(Small path 직접 실행 plan, 또는 Medium
 
 - `ywc-tech-research` — Technology 선택이 미정일 때 ywc-plan 보다 먼저
 - `ywc-product-review` — Product / business framing 이 불명확할 때 ywc-plan 보다 먼저
-- `ywc-spec-ready` — Medium/Large path 에서 사용자가 승인한 validate -> DONE 자동 수렴 shortcut
+- `ywc-spec-ready` — 새 Medium/Large spec의 기본 자동 수렴 (정확히 1회); `--no-converge` 또는 `--non-interactive`이면 수동 호출
 - `ywc-spec-validate` — Medium/Large path 의 다음 단계
 - `ywc-task-generator` — Spec review 통과 후 task 분해
 - `ywc-code-gen` — Small path 의 직접 실행 옵션

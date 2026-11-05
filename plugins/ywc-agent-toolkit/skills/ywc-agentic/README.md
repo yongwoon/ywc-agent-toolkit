@@ -38,8 +38,8 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 
 1. Goal 수신·검증
 2. 프로젝트 컨텍스트 탐지 → Resume / Full Mode 결정
-3. Plan Phase — `ywc-plan` 호출 (Re-plan 시 `--update-spec`)
-4. Task Phase — Medium/Large 는 `ywc-task-generator` 를 두 번 호출 (`--preview-only` 후 동일 `--spec` 기반 `--approve-preview --non-interactive`)
+3. Plan Phase — `ywc-plan --no-converge --artifact-profile agentic` 호출 (Re-plan 시 `--update-spec`; `--non-interactive`는 입력된 경우에만 전달)
+4. Task Phase — Medium/Large 는 검증된 artifact로 `ywc-spec-ready`를 정확히 한 번 호출하고, `DONE` 이후 `ywc-task-generator` preview/approval을 진행
 5. Execute Phase — Executor `--local-merge` 실행 (Small Path 는 `ywc-code-gen`)
 6. Evaluate Phase — `ywc-impl-review --git-range` 로 원본 spec 대비 평가
 7. Loop Control — Pass 종료 / Fail 재계획 / 반복 한도 도달 시 부분 완료 report
@@ -51,11 +51,11 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | 경로              | 조건                            | 실행                                                  |
 | ----------------- | ------------------------------- | ----------------------------------------------------- |
 | Small Path        | `ywc-plan` 이 Small 판정        | `ywc-code-gen` 직접 호출 (Task Phase·Executor 생략)   |
-| Medium/Large Path | `ywc-plan` 이 Medium/Large 판정 | `ywc-spec-validate` → `ywc-task-generator` → Executor |
+| Medium/Large Path | `ywc-plan` 이 Medium/Large 판정 | `ywc-spec-ready` 1회 → `ywc-task-generator` → Executor |
 
 ## 오케스트레이션 대상 Skill
 
-`ywc-plan` · `ywc-spec-validate` · `ywc-task-generator` · `ywc-sequential-executor` / `ywc-parallel-executor` · `ywc-impl-review` · `ywc-code-gen`
+`ywc-plan` · `ywc-spec-ready` · `ywc-spec-validate` · `ywc-task-generator` · `ywc-sequential-executor` / `ywc-parallel-executor` · `ywc-impl-review` · `ywc-code-gen`
 
 ## Triggering
 

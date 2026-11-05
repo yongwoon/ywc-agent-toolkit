@@ -38,8 +38,8 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 
 1. Receive and validate the goal
 2. Detect project context → decide Resume / Full Mode
-3. Plan Phase — invoke `ywc-plan` (`--update-spec` on Re-plan)
-4. Task Phase — invoke `ywc-task-generator` twice for Medium/Large: `--preview-only` first, then `--approve-preview --non-interactive` with the same fixed `--spec`
+3. Plan Phase — invoke `ywc-plan --no-converge --artifact-profile agentic` (use `--update-spec` on Re-plan; forward `--non-interactive` only when received)
+4. Task Phase — for Medium/Large, invoke `ywc-spec-ready` exactly once with the verified Artifact; after `DONE`, run the task-generator preview and approval flow
 5. Execute Phase — run executor with `--local-merge` (Small Path uses `ywc-code-gen`)
 6. Evaluate Phase — `ywc-impl-review --git-range` against the original spec
 7. Loop Control — Pass exits / Fail re-plans / partial-completion report at the ceiling
@@ -51,11 +51,11 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | Path              | Condition                                 | Execution                                             |
 | ----------------- | ----------------------------------------- | ----------------------------------------------------- |
 | Small Path        | `ywc-plan` returns a Small verdict        | `ywc-code-gen` directly (no Task Phase or executor)   |
-| Medium/Large Path | `ywc-plan` returns a Medium/Large verdict | `ywc-spec-validate` → `ywc-task-generator` → executor |
+| Medium/Large Path | `ywc-plan` returns a Medium/Large verdict | `ywc-spec-ready` once → `ywc-task-generator` → executor |
 
 ## Orchestrated Skills
 
-`ywc-plan` · `ywc-spec-validate` · `ywc-task-generator` · `ywc-sequential-executor` / `ywc-parallel-executor` · `ywc-impl-review` · `ywc-code-gen`
+`ywc-plan` · `ywc-spec-ready` · `ywc-spec-validate` · `ywc-task-generator` · `ywc-sequential-executor` / `ywc-parallel-executor` · `ywc-impl-review` · `ywc-code-gen`
 
 ## Triggering
 

@@ -54,6 +54,34 @@ Standalone / parallel skills (no strict pipeline prerequisite):
 - `ywc-project-docs` — independent documentation utility
 - `ywc-skill-author` — meta-skill for authoring other skills
 
+## Spec Convergence Ownership
+
+Fresh Medium/Large specs converge through one readiness owner. Keep the planner's
+automatic call off when a caller already owns readiness:
+
+| Caller | Readiness owner | Planner boundary | Ready boundary |
+|---|---|---|---|
+| `ywc-plan` | Planner for fresh Medium/Large specs | Automatically invokes readiness once by default; `--no-converge` and `--non-interactive` suppress it. Small and Re-plan paths skip automatic readiness. | Stops after its single ready call and reports the bounded terminal status; never starts task generation or an executor. |
+| `ywc-auth-implement` | Auth route for Medium/Large | Calls `ywc-plan --no-converge` to prevent a nested readiness call. | Medium/Large requires one `ywc-spec-ready` pass to return `DONE` before exposing task generation. Small follows the planner's Small-path handoff and skips readiness and task generation. |
+| `ywc-agentic` | Agentic orchestrator | Calls `ywc-plan --no-converge --artifact-profile agentic`, forwarding `--non-interactive` only when received. | Verifies the planner Result, then calls readiness once for Medium/Large; preserve the agentic artifact profile and Result/Status/Scale/Artifact authority. |
+
+For direct `ywc-plan` calls on fresh Medium/Large specs, task generation may
+follow either a verified `DONE` readiness Result or, when `--no-converge` or
+`--non-interactive` suppresses readiness, a passing `ywc-spec-validate`
+handoff. Auth and agentic keep their caller-owned readiness rules above. Small
+follows the planner's Small-path handoff and skips task generation. A planner
+Result, a ready Result, and a validation handoff have different owners and
+schemas; do not treat them as interchangeable evidence.
+
+## PR Worktree Boundaries
+
+The worktree producer and its PR review consumer have distinct jobs:
+
+| Producer → consumer | Boundary |
+|---|---|
+| `ywc-worktrees` → `ywc-handle-pr-reviews` | The producer may create a new worktree for a specified existing branch; it never reuses an existing target path. The consumer pins an open PR/head identity, selects an exact clean registered `in-place` or `reused` worktree when available, and otherwise asks the producer to create one for that exact branch. |
+| `ywc-handle-pr-reviews` | Fix the repository, PR number, head branch, and worktree identity for the invocation. A mismatch or failed required command blocks later mutations; never fall back to the main checkout. |
+
 ## Cross-Reference Table (`Do not use for ... (use ywc-X)`)
 
 When skill A and skill B share trigger vocabulary, A's description should explicitly point to B for the case A does not handle. The pairs below are the existing cross-pointers documented in production:

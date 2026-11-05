@@ -44,7 +44,7 @@
 2. **调查** — 只读取必要文件：`CLAUDE.md`、`package.json`、`docs/architecture/` 等
 3. **评估规模** — 从 Small / Medium / Large 中选择一个（模糊时默认为 Medium）
 4. **分支** — Small 写 `plan.md`；Medium/Large 写 Spec 文档
-5. **交接** — 明确打印 `ywc-spec-ready` 自动收敛捷径或手动后续 Skill（执行是用户的决定，不是此 Skill 的）
+5. **交接** — 新建 Medium/Large Spec 后，默认且仅调用一次 `ywc-spec-ready --spec <path>`。使用 `--no-converge` 或 `--non-interactive` 时打印手动流程；Small 和 Re-plan 不会自动收敛。
 
 ## 安全不变量
 
@@ -60,7 +60,7 @@
 
 - `ywc-tech-research` — 技术选型未定时，在 `ywc-plan` 之前运行
 - `ywc-product-review` — 产品/业务框架不清晰时，在 `ywc-plan` 之前运行
-- `ywc-spec-ready` — Medium/Large 路径中经用户批准的 validate -> DONE 自动收敛捷径
+- `ywc-spec-ready` — 新 Medium/Large Spec 默认只运行一次的自动收敛；使用 `--no-converge` 或 `--non-interactive` 时手动运行
 - `ywc-spec-validate` — Medium/Large 路径的下一步
 - `ywc-task-generator` — 审查通过后将 Spec 分解为任务
 - `ywc-code-gen` — Small 路径的直接执行选项
