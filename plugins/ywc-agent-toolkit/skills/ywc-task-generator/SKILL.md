@@ -40,8 +40,8 @@ When tempted to bend a rule, check this table first:
 | `--granularity <mode>` | _(alias)_ | Backward-compatible alias for `--mode`; accept `human` \| `llm`. If both flags are present and conflict, stop and ask the user to resolve the conflict. |
 | `--tasks-dir <path>` | `tasks/` | Root directory where task directories are written. Override to support re-plan iteration in a separate directory (e.g., `--tasks-dir tasks-v2/`). |
 | `--initials <value>` | _(resolved or asked)_ | Collaborator namespace for new task phases. Must match `^[a-z0-9]{2,4}$`; explicit invalid values are rejected. |
-| `--spec <path>` | _(required for preview/write gate)_ | Project-relative spec path for persisted preview and auditable task writes. Must stay under `docs/` unless the project defines another safe root explicitly. |
-| `--preview-only` | off | Write only the canonical preview artifact. Do not write task directories or `dependency-graph.md`. |
+| `--spec <path>` | required for preview flags; optional for direct generation | Project-relative path for persisted previews and approved consumption. Direct generation retains Step 1 inputs, including inline specs. Preview specs must stay under `docs/` unless the project defines another safe root explicitly. |
+| `--preview-only` | off | Persist the canonical preview and its reservation identity/ref. Do not write task directories or `dependency-graph.md`. |
 | `--preview-path <path>` | `docs/ywc-plans/<slug>.task-preview.md` | Persisted preview artifact path. Must be repository-relative Markdown under a safe root. |
 | `--approve-preview` | off | Consume a previously approved persisted preview with matching identity. Never re-decompose on this path. |
 | `--non-interactive` | off | Required when an autonomous caller consumes a previously approved preview without interactive confirmation. |
@@ -64,12 +64,15 @@ non-interactive generation returns `NEEDS_CONTEXT` without downstream work.
 ---
 
 ## Preview Approval Gate
-For persisted previews and approved-preview writes, `--spec` must resolve under `docs/`; `--preview-only` and `--approve-preview` are mutually exclusive.
-`--preview-only` returns `DONE` with its persisted path/revision/digest for a separate caller approval step, and writes no task directory or graph.
+For persisted previews and approved-preview writes, `--spec` must resolve under `docs/`; `--preview-only` and `--approve-preview` are mutually exclusive. The preview identity binds the reserved phase and reservation ref; see [wide-refactor-decomposition.md](references/wide-refactor-decomposition.md).
+`--preview-only` returns `DONE` with its path/revision/digest and phase reservation for a separate caller approval step; it writes no task directory or graph.
 `--approve-preview` consumes only an explicitly approved preview whose spec,
-tasks dir, language, mode, path, revision, and digest all match; it never
-re-decomposes or refreshes the preview. Missing approval, identity mismatch, or
-unsafe paths return `NEEDS_CONTEXT` before task writes. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved. Without either preview flag, preserve the existing direct-generation path without requiring preview approval.
+tasks dir, language, mode, path, revision, digest, and phase reservation all
+match; under the lock, verify and reuse that reservation without selecting or
+creating another phase. It never re-decomposes or refreshes the preview. Missing
+approval, identity mismatch, or unsafe paths return `NEEDS_CONTEXT` before task writes. A matching already-approved unchanged preview consumes once without another confirmation. Newly generated previews remain unapproved. Without
+either preview flag, preserve the existing direct-generation path without
+requiring preview approval.
 
 For the canonical preview identity fields, wide-refactor digest invalidation
 rules (`Refactor Phase`, `Batch ID`, `Depends On`), and the consume-only
@@ -141,10 +144,10 @@ Gather project context for task verification commands, ownership paths, and cate
 
 **When existing tasks are present:**
 - Determine the next initials-scoped PHASE by parsing `tasks/dependency-graph.md` first when it exists, then scanning **both** `tasks/` and `tasks/completed/`, plus corresponding linked-worktree sources. Completed tasks are moved out of `tasks/` into `tasks/completed/` by the executors (`ywc-sequential-executor` / `ywc-parallel-executor`), so scanning `tasks/` alone misses them and risks reusing a number that already exists. For resolved `yk`, only `yk-<six-digit-phase>-<sequence>-...` candidates contribute to the maximum; legacy and other-initials IDs remain readable but do not advance `yk`. An empty owned scope starts at `yk-000001-010`. If the graph and directory scan disagree, continue with the union-based next owned PHASE and report the mismatch as a concern.
-- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Do not run compaction during `--preview-only`; defer this graph mutation until approved-preview consumption. Direct generation without preview flags and approved-preview consumption may compact before writing tasks. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
+- **Proactive compaction gate**: after resolving the starting number above, check the resolved `<tasks-dir>/dependency-graph.md` line count (`wc -l`; `<tasks-dir>` defaults to `tasks`). If it exceeds **300 lines**, run `python3 codex/skills/ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` before generating any new task. Skip compaction during `--preview-only`; defer it until the approved reservation is verified during consumption. Direct generation and approved consumption may compact before task writes. Report the before/after line count; if it remains above 300, active/planned work accounts for the size and no further action is needed. The gate only removes phases whose every task is in `<tasks-dir>/completed/` and never touches a phase with outstanding or unresolvable work.
 - Enumerate `git worktree list --porcelain`; inspect the same relative path in graph, active, and completed sources, reporting inaccessible/mismatched paths.
 - Scope the union maximum to prefixed IDs matching validated initials; keep legacy IDs readable without claiming another namespace. Empty owned scope starts at `<initials>-000001-010`, with sequence `010`.
-- Hold one exclusive lock rooted in the repository common Git directory across scan, candidate selection, compare-and-create reservation, and complete task-artifact/dependency-graph writes. While holding it, compare-and-create `refs/ywc/task-phase/<initials>/<phase>` using the zero object ID; collisions retry bounded candidates, retain refs, and report deterministic conflict without duplicate output. Distinct reservation refs without this transaction-wide lock do not prevent graph lost updates.
+- For direct generation and `--preview-only`, hold one common-Git lock across scan, selection, reservation, and task/preview writes. For `--approve-preview`, verify and reuse its digest-bound reservation under the lock; do not select or reserve another phase.
 - Identify dependency relationships with existing tasks, preferring `dependency-graph.md` when present, and reflect them in the new tasks' `Depends On`
 
 ### Step 3: Spec Review
@@ -318,7 +321,7 @@ legacy directories or count them as another collaborator's prefixed namespace.
 - Criterion for splitting phases: "Do all outputs from this stage need to be in place for the next stage's work to be meaningful?"
 
 ### Step 9: Directory and File Generation
-Use the pre-resolved `--tasks-dir` path for every task output. If omitted, use the repository-root `tasks/`; never derive it from the spec's parent. With `--preview-only`, write only the preview artifact and do not create `<tasks-dir>` or task files. With `--approve-preview`, create the task output directory only after explicit approval and all identity, revision, digest, authorization, and containment checks pass. When neither preview flag is supplied, preserve direct generation: after the existing input and output validation, write tasks under the resolved `<tasks-dir>` without requiring preview approval.
+Use the pre-resolved `--tasks-dir` path for every task output. If omitted, use the repository-root `tasks/`; never derive it from the spec's parent. With `--preview-only`, write the preview and its digest-bound reservation ref, but no task files or graph. With `--approve-preview`, create task files only after explicit approval and identity, reservation, authorization, and containment checks pass. Without preview flags, preserve direct generation after existing validation; no preview approval is required.
 
 Generate the following structure for each task:
 
@@ -429,7 +432,7 @@ Before returning a preview, direct task set, or consumed task set, apply [requir
 - [ ] Graph/directory numbering mismatches reported as concerns (if any)
 **Naming & Size:**
 - [ ] Naming convention followed (`[INITIALS:2-4]-[PHASE:6]-[SEQUENCE:3]-[CATEGORY]-[SHORT-DESCRIPTION]`)
-- [ ] A common-Git exclusive lock covered scan, candidate selection, reservation, and complete artifact/graph writes; compare-and-create succeeded before any task artifact write
+- [ ] Direct/preview generation reserves under the common-Git lock; approved consumption verifies and reuses the preview's exact phase reservation under that lock without selecting another phase.
 - [ ] PHASE is 6 digits, SEQUENCE is 3 digits, separated by hyphen
 - [ ] No task name contains "and" (single concern check)
 - [ ] Each task fits within the selected Granularity Mode's size guideline
