@@ -36,3 +36,13 @@
 - `ywc-security-audit` — 在事故*发生前*主动进行安全审计
 - `ywc-impl-review` — 通用代码质量审查
 - `ywc-changelog-release-notes` — 补丁发布后记录更改
+
+## Analyst contract
+
+`Caller: ywc-incident-postmortem` · `analysis_mode=incident_five_whys`
+
+明确提供 Caller 和 analysis_mode。缺失、未知或不匹配时返回 `NEEDS_CONTEXT`，不得推断。验证 Status → Summary → Finding counts → Analysis mode，并保留调用方原有 gate。
+
+返回恰好五个编号的 Why 步骤，每步引用证据，并分别说明主要根因和促成因素。因果证据不足时返回 `NEEDS_CONTEXT`，不编造步骤。
+
+Live runtime: `UNVERIFIED — instruction contract only`.

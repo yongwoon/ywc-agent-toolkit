@@ -36,3 +36,13 @@ elementos de acción de prevención y, opcionalmente, un informe sanitizado para
 - `ywc-security-audit` — Auditoría de seguridad proactiva *antes* de los incidentes
 - `ywc-impl-review` — Revisión general de calidad de código
 - `ywc-changelog-release-notes` — Documentar cambios tras un lanzamiento de parche
+
+## Analyst contract
+
+`Caller: ywc-incident-postmortem` · `analysis_mode=incident_five_whys`
+
+Indica Caller y analysis_mode explícitamente. La ausencia, un valor desconocido o una pareja incorrecta devuelve `NEEDS_CONTEXT` sin inferencias. Valida Status → Summary → Finding counts → Analysis mode y conserva el gate original del caller.
+
+Devuelve exactamente cinco pasos Why numerados con evidencia en cada uno; separa la causa primaria de los factores contribuyentes. Si falta evidencia causal, devuelve `NEEDS_CONTEXT` sin inventar pasos.
+
+Live runtime: `UNVERIFIED — instruction contract only`.

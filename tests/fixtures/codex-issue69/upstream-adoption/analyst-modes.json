@@ -1,0 +1,292 @@
+{
+  "id": "upstream-adoption-analyst-modes-ac2",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-2",
+    "AC-2"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_sha": "2ddca68bcbf49fa7152e7c97184ab3f99cae710f",
+    "paths": [
+      "tools/codex-skill/agents/ywc-root-cause-analyst.toml",
+      "tools/codex-skill/skills/ywc-debug-rootcause/SKILL.md",
+      "tools/codex-skill/skills/ywc-debug-rootcause/references/architectural-stop-signals.md",
+      "tools/codex-skill/skills/ywc-debug-rootcause/references/four-phase-checklist.md",
+      "tools/codex-skill/skills/ywc-incident-postmortem/SKILL.md",
+      "tools/codex-skill/skills/ywc-confidence-gate/SKILL.md"
+    ],
+    "adaptation": "Keep local model/effort, read-only boundaries and original caller gates; port only FR-2. Feedback-loop contract follows approved FR-2."
+  },
+  "evidence": {
+    "baseline": {
+      "python3 tests/codex_issue69_contract_test.py": "PASS: 3 tests",
+      "bash scripts/run-codex-skill-contract-evals.sh": "PASS",
+      "bash scripts/check-codex-agent-evals.sh": "PASS"
+    },
+    "rewrite_level_ambiguities": [],
+    "interface": "Input: explicit Caller + analysis_mode and bounded evidence. Output: ordered Status/Summary/Finding counts, valid Analysis mode and mode-specific evidence. Owner/input/output/status mismatch: NEEDS_CONTEXT; original caller owns final gate.",
+    "data_integrity": "Read-only analyst emits inline evidence; caller owns existing writes. All three caller contracts and analyst are reviewed together; no runtime dispatcher, remote action or artifact write added. Fix attempts stay sequential, failed changes are isolated, and a failed fourth attempt never retries. Pure source assertions: locking/idempotency/failure-injection writes N/A.",
+    "live_runtime": "UNVERIFIED — instruction contract only",
+    "red_first": {
+      "command": "python3 tests/codex_issue69_contract_test.py",
+      "exit": 1,
+      "failure": "analyst TOML missing Require explicit Caller and analysis_mode on every request; baseline existing 3 tests passed before fixture addition",
+      "recorded_before_source_changes": true
+    },
+    "negative_controls": {
+      "command": "Import existing ContractTests.test_source_contract_scenarios; run against isolated canonical temporary source/fixture copies; remove every required clause in turn and inject every forbidden clause",
+      "required_clause_removals_caught": 47,
+      "forbidden_clause_injections_caught": 4,
+      "positive_and_restored_controls": "PASS",
+      "evidence_kind": "source assertion / fixture expectation; not live model execution"
+    }
+  },
+  "scenarios": [
+    {
+      "input": {
+        "Caller": "ywc-debug-rootcause",
+        "analysis_mode": "debug_hypotheses"
+      },
+      "expected": "3–5 ranked, falsifiable hypotheses; one variable per experiment"
+    },
+    {
+      "input": {
+        "Caller": "ywc-debug-rootcause",
+        "analysis_mode": null
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-debug-rootcause",
+        "analysis_mode": "unknown_mode"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-debug-rootcause",
+        "analysis_mode": "incident_five_whys"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-incident-postmortem",
+        "analysis_mode": "incident_five_whys"
+      },
+      "expected": "exactly five numbered evidence-linked Why steps; primary root cause and contributing factors separately"
+    },
+    {
+      "input": {
+        "Caller": "ywc-incident-postmortem",
+        "analysis_mode": null
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-incident-postmortem",
+        "analysis_mode": "unknown_mode"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-incident-postmortem",
+        "analysis_mode": "debug_hypotheses"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-confidence-gate",
+        "analysis_mode": "confidence_root_cause"
+      },
+      "expected": "exactly one cause candidate with evidence for and against; caller retains scoring gate"
+    },
+    {
+      "input": {
+        "Caller": "ywc-confidence-gate",
+        "analysis_mode": null
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-confidence-gate",
+        "analysis_mode": "unknown_mode"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": "ywc-confidence-gate",
+        "analysis_mode": "debug_hypotheses"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough; no inferred replacement or redispatch"
+    },
+    {
+      "input": {
+        "Caller": null,
+        "analysis_mode": "debug_hypotheses"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough"
+    },
+    {
+      "input": {
+        "Caller": "unknown_caller",
+        "analysis_mode": "debug_hypotheses"
+      },
+      "expected": "NEEDS_CONTEXT; zero mode fallthrough"
+    },
+    {
+      "input": "three failed fixes; neither signal",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; Fix #4 signal only",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; Next fix worth attempting only",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; both fields without evidence",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; signals from incident or confidence mode",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; analyst unavailable",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; malformed output envelope",
+      "expected": "STOP; no fourth fix"
+    },
+    {
+      "input": "three failed fixes; valid debug pair; both separate evidence-linked fields",
+      "expected": "one final minimal fourth fix; one variable changed; original caller verifies outcome"
+    },
+    {
+      "input": "failed fourth fix; both signals repeated",
+      "expected": "STOP; zero fifth attempts; architecture review handoff"
+    },
+    {
+      "input": "automated reproduction unavailable",
+      "expected": "record manual observation, constraints and catches/misses; no fabricated RED or test execution PASS"
+    },
+    {
+      "input": "no live model trace",
+      "expected": "UNVERIFIED — instruction contract only"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/agents/ywc-root-cause-analyst.toml",
+      "required": [
+        "Require explicit `Caller` and `analysis_mode` on every request.",
+        "`ywc-debug-rootcause` / `debug_hypotheses`",
+        "`ywc-incident-postmortem` / `incident_five_whys`",
+        "`ywc-confidence-gate` / `confidence_root_cause`",
+        "Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode.",
+        "Immediately after Status, emit exactly one `Summary: <one sentence>` line and exactly one `Finding counts: Critical=<n>, High=<n>, Medium=<n>, Low=<n>, Info=<n>` line, in that order.",
+        "`debug_hypotheses`: return 3–5 ranked, falsifiable hypotheses with evidence for and against each.",
+        "`incident_five_whys`: return exactly five numbered Why steps with evidence cited at each step, then identify the primary root cause and contributing factors separately.",
+        "`confidence_root_cause`: return exactly one cause candidate with evidence for and against; do not add ranked alternatives or a 5 Whys chain.",
+        "Fix #4 signal: fix harder",
+        "Next fix worth attempting: <one concrete minimal change>",
+        "Do not run tests, probes, or the application.",
+        "Do not render final architecture redesign verdicts; recommend ywc-architect when the cause is architectural."
+      ],
+      "forbidden": [
+        "Return the top three hypotheses",
+        "Include only the top three hypotheses"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-debug-rootcause/SKILL.md",
+      "required": [
+        "`Caller: ywc-debug-rootcause`",
+        "`analysis_mode=debug_hypotheses`",
+        "Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode.",
+        "Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`.",
+        "UNVERIFIED — instruction contract only"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-incident-postmortem/SKILL.md",
+      "required": [
+        "`Caller: ywc-incident-postmortem`",
+        "`analysis_mode=incident_five_whys`",
+        "Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode.",
+        "Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`.",
+        "UNVERIFIED — instruction contract only"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-confidence-gate/SKILL.md",
+      "required": [
+        "`Caller: ywc-confidence-gate`",
+        "`analysis_mode=confidence_root_cause`",
+        "Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode.",
+        "Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`.",
+        "UNVERIFIED — instruction contract only"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-debug-rootcause/SKILL.md",
+      "required": [
+        "**Establish the smallest feedback loop first.**",
+        "Record `Feedback loop`, `Catches`, `Misses`, and the observed failure before any fix.",
+        "If automated reproduction is unavailable, record manual evidence and constraints; do not fabricate RED or claim execution PASS.",
+        "**Rank 3–5 falsifiable candidate hypotheses**",
+        "Change one variable per experiment.",
+        "Allow exactly one final fourth fix only when both fields are present, separate, evidence-linked, and returned for the valid debug pair.",
+        "After a failed fourth fix, stop; do not reset the counter or attempt a fifth fix."
+      ],
+      "forbidden": [
+        "ranked top-3 hypothesis list",
+        "the investigation halted and surfaced an architectural concern instead of attempting a 4th fix"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-debug-rootcause/references/architectural-stop-signals.md",
+      "required": [
+        "Fix #4 signal: fix harder",
+        "Next fix worth attempting: <one concrete minimal change>",
+        "If either signal is absent, unlinked, from another mode, or the analyst is unavailable, keep the stop in force.",
+        "After a failed fourth fix, stop; no fifth attempt."
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-debug-rootcause/references/four-phase-checklist.md",
+      "required": [
+        "Record Feedback loop, Catches, Misses and the observed failure before any fix",
+        "Rank 3–5 falsifiable candidates with evidence for and against before selecting one",
+        "Allow one fourth fix only with both separate evidence-linked debug-mode fields; stop after a failed fourth fix"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/agents/README.md",
+      "required": [
+        "`ywc-debug-rootcause` | `debug_hypotheses`",
+        "`ywc-incident-postmortem` | `incident_five_whys`",
+        "`ywc-confidence-gate` | `confidence_root_cause`",
+        "`NEEDS_CONTEXT`",
+        "UNVERIFIED — instruction contract only"
+      ],
+      "forbidden": []
+    }
+  ]
+}

@@ -15,7 +15,7 @@ Phase 1 (Investigation) を通過するまではいかなる fix も提案でき
 3. **Phase 3 — Hypothesis and testing** — 「X が root cause; 最小変更 Z で解決する」形式の単一仮説、一度に一変数のみ変更
 4. **Phase 4 — Implementation** — Regression test → 単一 fix → red-green-red 検証 → `ywc-verify-done` で gating
 
-**同じ surface で 3 回以上 fix が失敗した場合**、それは "fix harder" ではなく "architecture wrong" の signal です。4 回目を試さず、ユーザーに設計再検討を surface します。
+最小 feedback loop の失敗と catches/misses を記録し、3–5 個の反証可能な候補を順位付けして一度に一変数を試します。自動再現不可なら手動の証拠と制約を示し、RED を捏造しません。3 回失敗後は停止。正しい debug 応答に別々の evidence-linked `Fix #4 signal: fix harder` と `Next fix worth attempting: <one concrete minimal change>` が両方ある場合だけ最後の 4 回目を一度許可し、失敗後の 5 回目は禁止です。
 
 ## いつ trigger されるか
 
@@ -40,3 +40,13 @@ Phase ごとの checklist と Rationalization Defense は [SKILL.md](./SKILL.md)
 - [한국어 (default)](./README.md)
 - [English](./README.en.md)
 - [한국어 (full)](./README.ko.md)
+
+## Analyst contract
+
+`Caller: ywc-debug-rootcause` · `analysis_mode=debug_hypotheses`
+
+Caller と analysis_mode を明示します。欠落・unknown・不一致は推測せず `NEEDS_CONTEXT`。Status → Summary → Finding counts → Analysis mode を検証し、既存 caller gate を維持します。
+
+最小 feedback loop の失敗と catches/misses を記録し、3–5 個の反証可能な候補を順位付けして一度に一変数を試します。自動再現不可なら手動の証拠と制約を示し、RED を捏造しません。3 回失敗後は停止。正しい debug 応答に別々の evidence-linked `Fix #4 signal: fix harder` と `Next fix worth attempting: <one concrete minimal change>` が両方ある場合だけ最後の 4 回目を一度許可し、失敗後の 5 回目は禁止です。
+
+Live runtime: `UNVERIFIED — instruction contract only`.
