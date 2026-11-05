@@ -1,0 +1,138 @@
+{
+  "id": "convergence-callers",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-10",
+    "AC-10"
+  ],
+  "upstream": {
+    "pr": 372,
+    "merge_sha": "90d8f066178f2328a36dac4b6ab9f2c68f32989a",
+    "paths": [
+      "tools/codex-skill/skills/ywc-plan/SKILL.md",
+      "tools/codex-skill/skills/ywc-auth-implement/SKILL.md"
+    ]
+  },
+  "live_evidence": "UNVERIFIED — instruction contract and expected traces only; no live model invocation was run",
+  "scenarios": [
+    {
+      "id": "planner-default-auto-ready",
+      "input": "Draft a fresh Medium or Large spec without exclusions.",
+      "expected": "ywc-plan automatically invokes ywc-spec-ready exactly once for the generated artifact before returning the bounded final result."
+    },
+    {
+      "id": "planner-exclusions",
+      "input": "Draft with --no-converge or --non-interactive; also exercise Small and Re-plan paths.",
+      "expected": "Automatic readiness runs zero times for each excluded path; the documented manual handoff remains available for a fresh Medium/Large spec."
+    },
+    {
+      "id": "auth-single-owner",
+      "input": "Run the auth orchestration through its Medium/Large spec route.",
+      "expected": "Auth passes --no-converge to ywc-plan, owns one subsequent ywc-spec-ready pass, and prints task generation only after verified DONE."
+    },
+    {
+      "id": "agentic-single-owner",
+      "input": "Run agentic Full Mode with Medium/Large scale in interactive and non-interactive modes.",
+      "expected": "Agentic calls ywc-plan with --no-converge and --artifact-profile agentic, forwarding --non-interactive only when received, then owns exactly one readiness call while preserving artifact profile and producer-owned result sections."
+    },
+    {
+      "id": "caller-graph",
+      "input": "Inspect planner, auth, and agentic readiness ownership relationships.",
+      "expected": "The cross-skill graph documents planner auto-convergence boundaries and the auth/agentic suppression plus single-owner readiness edges."
+    },
+    {
+      "id": "auth-small-path-skip-readiness",
+      "input": "Run the auth route when ywc-plan returns Scale: Small.",
+      "expected": "Follow the planner's existing Small-path handoff; invoke ywc-spec-ready zero times and do not expose ywc-task-generator."
+    },
+    {
+      "id": "direct-planner-suppressed-manual-validation",
+      "input": "Use ywc-plan --no-converge or --non-interactive for a fresh Medium/Large spec.",
+      "expected": "Do not invoke ywc-spec-ready; task generation follows only after the documented ywc-spec-validate gate passes."
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-plan/SKILL.md",
+      "required": [
+        "`--no-converge`",
+        "`--non-interactive`",
+        "exactly once",
+        "Re-plan Mode",
+        "Small path",
+        "ywc-spec-ready --spec <path>",
+        "Suppressed paths use `ywc-spec-validate` before task generation."
+      ],
+      "forbidden": [
+        "If the user responds **y**",
+        "opt-in shortcut"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-auth-implement/SKILL.md",
+      "required": [
+        "ywc-plan --no-converge",
+        "ywc-spec-ready",
+        "`DONE`",
+        "If the planner returns Small, follow its existing Small-path handoff",
+        "does not run `$ywc-spec-ready` or `$ywc-task-generator` for Small work",
+        "The following route applies only to Medium/Large",
+        "**Medium/Large route only.**"
+      ],
+      "forbidden": [
+        "$ywc-plan → $ywc-spec-ready"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-agentic/SKILL.md",
+      "required": [
+        "ywc-plan --no-converge [--non-interactive] --artifact-profile agentic",
+        "exactly one",
+        "Continue only on its verified single `Status: DONE` Result",
+        "Status: DONE",
+        "Scale: Small | Medium | Large",
+        "Artifact: <repository-relative regular Markdown file>"
+      ],
+      "forbidden": [
+        "ywc-plan [--non-interactive] --artifact-profile agentic"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-skill-author/references/cross-skill-graph.md",
+      "required": [
+        "| Caller | Readiness owner | Planner boundary | Ready boundary |",
+        "ywc-plan",
+        "ywc-auth-implement",
+        "ywc-agentic",
+        "--no-converge",
+        "Small follows the planner's Small-path handoff and skips readiness and task generation.",
+        "a passing `ywc-spec-validate`",
+        "Auth and agentic keep their caller-owned readiness rules above."
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-plan/agents/openai.yaml",
+      "required": [
+        "--no-converge",
+        "--non-interactive"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-auth-implement/agents/openai.yaml",
+      "required": [
+        "--no-converge"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-agentic/agents/openai.yaml",
+      "required": [
+        "--no-converge --artifact-profile agentic",
+        "single ywc-spec-ready call"
+      ],
+      "forbidden": []
+    }
+  ]
+}

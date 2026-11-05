@@ -8,8 +8,8 @@
       "prompt": "Use ywc-auth-implement for a project with clear stack evidence and an approved authentication policy. The work is medium-sized and uses an approved OAuth provider with non-secret readiness evidence.",
       "expected_behavior": [
         "Uses the approved policy and project evidence to recommend an established library or managed service without prescribing a fixed stack.",
-        "Routes medium work through $ywc-plan and $ywc-spec-ready before printing $ywc-task-generator.",
-        "Prints the required $ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review route without automatically invoking task generation.",
+        "Routes medium work through $ywc-plan --no-converge and one $ywc-spec-ready pass before printing $ywc-task-generator.",
+        "Prints the required $ywc-plan --no-converge → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review route without automatically invoking task generation.",
         "Uses the clean security gate before policy-conditioned E2E and offers a PR only after applicable E2E passes and the user opts in."
       ],
       "anti_behavior": [
@@ -76,6 +76,34 @@
         "Running E2E after a Critical or High finding.",
         "Offering a PR proposal or marking the recommendation cache eligible after a Critical or High finding.",
         "Reporting DONE while an unresolved High finding remains."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "auth-owned-readiness-suppresses-planner-auto-call",
+      "prompt": "Use ywc-auth-implement for a Medium/Large auth change with settled policy and evidence.",
+      "expected_behavior": [
+        "Passes --no-converge to ywc-plan so planner readiness cannot run as a nested call.",
+        "The auth route requires one ywc-spec-ready DONE result before exposing task generation.",
+        "Preserves the existing rule that task generation and implementation are not automatically invoked."
+      ],
+      "anti_behavior": [
+        "Calls the planner without --no-converge and duplicates readiness.",
+        "Exposes ywc-task-generator before readiness returns DONE."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "small-auth-route-follows-planner-handoff",
+      "prompt": "Use ywc-auth-implement for a narrow auth documentation change that ywc-plan classifies as Small.",
+      "expected_behavior": [
+        "Follows ywc-plan's existing Small-path handoff.",
+        "Runs ywc-spec-ready zero times and does not expose ywc-task-generator for the Small route.",
+        "Keeps the Medium/Large readiness route conditional on the planner's Scale result."
+      ],
+      "anti_behavior": [
+        "Routes Small work through ywc-spec-ready or the Medium/Large task-generation sequence.",
+        "Invents a new Small-path handoff instead of preserving ywc-plan's existing route."
       ]
     }
   ]

@@ -38,8 +38,8 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 
 1. Goal の受信・検証
 2. プロジェクト context の検出 → Resume / Full Mode の決定
-3. Plan Phase — `ywc-plan` を呼び出し (Re-plan 時は `--update-spec`)
-4. Task Phase — `ywc-task-generator` を呼び出し (Medium/Large のみ)
+3. Plan Phase — `ywc-plan --no-converge --artifact-profile agentic` を呼び出し (Re-plan 時は `--update-spec`; `--non-interactive` は受け取った場合のみ転送)
+4. Task Phase — Medium/Large では検証済み Artifact に対して `ywc-spec-ready` を正確に 1 回呼び出し、`DONE` 後に task generator を実行
 5. Execute Phase — Executor を `--local-merge` で実行 (Small Path は `ywc-code-gen`)
 6. Evaluate Phase — `ywc-impl-review --git-range` で元の spec に対し評価
 7. Loop Control — Pass で終了 / Fail で再計画 / 反復上限到達時は部分完了 report
@@ -51,11 +51,11 @@ User → Goal → Agent [Plan → Execute → Evaluate → Repeat] → Result
 | Path              | 条件                              | 実行                                                        |
 | ----------------- | --------------------------------- | ----------------------------------------------------------- |
 | Small Path        | `ywc-plan` が Small と判定        | `ywc-code-gen` を直接呼び出し (Task Phase・Executor を省略) |
-| Medium/Large Path | `ywc-plan` が Medium/Large と判定 | `ywc-spec-validate` → `ywc-task-generator` → Executor       |
+| Medium/Large Path | `ywc-plan` が Medium/Large と判定 | `ywc-spec-ready` 1 回 → `ywc-task-generator` → Executor       |
 
 ## オーケストレーション対象 Skill
 
-`ywc-plan` · `ywc-spec-validate` · `ywc-task-generator` · `ywc-sequential-executor` / `ywc-parallel-executor` · `ywc-impl-review` · `ywc-code-gen`
+`ywc-plan` · `ywc-spec-ready` · `ywc-spec-validate` · `ywc-task-generator` · `ywc-sequential-executor` / `ywc-parallel-executor` · `ywc-impl-review` · `ywc-code-gen`
 
 ## Triggering
 
