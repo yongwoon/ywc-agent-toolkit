@@ -46,6 +46,9 @@ self-contained runtime 정책이므로 superpowers skill 은 runtime dispatch �
 
 ## Root 관리
 
-이 skill 은 universal worktree management 기능이므로 claude-code 와 codex-skill
-양쪽에 동일 내용으로 유지합니다. 자동 sync 는 폐지되었으며 각 root 를 독립적으로
-관리합니다.
+Claude Code와 Codex의 worktree 지침은 각 소스 루트에서 독립적으로 관리합니다.
+자동 플랫폼 간 동기화는 없으며, Codex 배포 패키지는 Codex 소스에서 생성합니다.
+
+## 기존 브랜치와 PR worktree
+
+`create`는 `--base-branch` 또는 `--existing-branch <H>` 중 하나를 받습니다. 기존 브랜치는 정확한 local/origin ref만 사용하고, 미존재와 전송 실패·다른 checkout·dirty·locked 상태를 구분해 중단합니다.

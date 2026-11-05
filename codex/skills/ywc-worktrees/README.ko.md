@@ -28,3 +28,7 @@ lifecycle 관리 skill 의 한국어 요약본. 전체 문서는 [SKILL.md](./SK
 - `ywc-parallel-executor`: Pre-flight audit / Step 4 per-task create /
   Step 4g prune
 - `ywc-finish-branch`: Step 5 / 8 cleanup (post-merge)
+
+## 기존 브랜치와 PR worktree
+
+`create`는 `--base-branch` 또는 `--existing-branch <H>` 중 하나를 받습니다. 기존 브랜치는 정확한 local/origin ref만 사용하고, 미존재와 전송 실패·다른 checkout·dirty·locked 상태를 구분해 중단합니다.

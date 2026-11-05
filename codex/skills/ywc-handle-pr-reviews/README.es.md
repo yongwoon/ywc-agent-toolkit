@@ -38,3 +38,7 @@ Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
 - [Chino simplificado](./README.zh.md)
+
+## Ramas existentes y worktrees de PR
+
+`--worktree 123` fija un PR abierto del mismo repositorio y su head. Usa fetch/fast-forward exactos, verifica cwd/root/rama antes de cada operación y permite una sola reentrada. Tras un fallo obligatorio detiene las mutaciones; solo recomienda limpieza con `--keep-branch` para worktrees creados en esta invocación.
