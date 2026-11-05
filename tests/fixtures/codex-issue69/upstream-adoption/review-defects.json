@@ -14,8 +14,8 @@
   "live_evidence": "UNVERIFIED — instruction contract only",
   "scenarios": [
     {
-      "input": "PR workflow checkout persists token then executes PR code or uploads workspace",
-      "expected": "A-005 High after tracing token exposure; trusted-only/no upload Low/Medium; explicit scoped push auth design required"
+      "input": "PR workflow persists checkout token; compare later PR-controlled code, artifact containing .git/config, and artifact excluding .git/config",
+      "expected": "High only after verifying token exposure and token permissions. Trace uploaded paths and hidden-file inclusion; artifact excluding .git/config does not establish that artifact exposure path. Later PR-controlled code may independently establish High; trusted-only/no actual exposure Low/Medium; explicit scoped push auth design required"
     },
     {
       "input": "Async permission predicate used as boolean; write not awaited before dependent operation",
@@ -53,16 +53,20 @@
         "### A-005:",
         "### A-006:",
         "### A-007:",
-        "PR-triggered job that runs PR-controlled code or uploads the workspace → High",
         "Promise used as an auth/permission/feature-gate condition → Critical",
         "fire-and-forget with a rejection handler and no ordering dependency → not a finding",
         "commented best-effort cleanup → not a finding",
         "2b7c54058da6f15f6c16b9aee5de021fac35f42f",
-        "source: `mining`; date: `2026-10-20`"
+        "source: `mining`; date: `2026-10-20`",
+        "verified token exposure through later PR-controlled code or credential-bearing artifact contents → High",
+        "trusted-only/no actual exposure → Low/Medium",
+        "Trace uploaded paths, hidden-file inclusion, and token permissions.",
+        "If `.git/config` is absent from the artifact, that artifact exposure path is not established."
       ],
       "forbidden": [
         "Automatically install missing linters",
-        "A linter hit alone confirms a finding"
+        "A linter hit alone confirms a finding",
+        "PR-triggered job that runs PR-controlled code or uploads the workspace → High"
       ]
     },
     {

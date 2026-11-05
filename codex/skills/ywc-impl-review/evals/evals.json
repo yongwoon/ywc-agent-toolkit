@@ -338,8 +338,8 @@
     {
       "id": 33,
       "source_id": "upstream-340-A-005",
-      "prompt": "Review a changed PR workflow with default checkout credentials then PR-controlled tests or workspace artifact upload; compare a trusted-only job without upload and a job needing git push.",
-      "expected_output": "Trace the later credential exposure before reporting A-005 High; trusted-only/no upload is Low/Medium. Require explicit scoped auth design for push, not a blind flag flip; cite primary path and frozen catalog provenance.",
+      "prompt": "Review a changed PR workflow with persisted checkout credentials then PR-controlled tests or workspace artifact upload; compare artifacts including versus excluding .git/config, a trusted-only job without actual exposure, and a job needing git push.",
+      "expected_output": "Trace uploaded paths, hidden-file inclusion and token permissions before reporting A-005 High for actual token exposure. Artifact upload alone is insufficient; if .git/config is excluded, that artifact exposure path is not established, while later PR-controlled code may independently expose the token. Trusted-only/no actual exposure is Low/Medium. Require explicit scoped auth design for push; cite primary path and frozen catalog provenance.",
       "expectations": [
         "Source assertions and expected traces are instruction contracts; live behavior is UNVERIFIED without observed execution."
       ],
