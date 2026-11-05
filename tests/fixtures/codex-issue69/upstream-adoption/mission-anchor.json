@@ -107,6 +107,21 @@
       "forbidden": [
         "@docs/mission.md"
       ]
+    },
+    {
+      "source": "codex/skills/ywc-mission/evals/evals.json",
+      "required": [
+        "\"name\": \"custom-output-contained-confirmation\"",
+        "Without --output, resolve docs/mission.md under the canonical repository root.",
+        "Accept the explicitly selected repository-internal docs/strategy/mission.md when it is a regular file or safely absent.",
+        "Reject ../outside.md and the symlink whose resolved destination leaves the repository before reading or writing.",
+        "Include Destination: <resolved absolute path> with the proposed ADD/MODIFY/DEPRECATE entries and require confirmation of that exact destination and changes.",
+        "Re-resolve and revalidate before writing; a changed destination requires a new proposal and confirmation."
+      ],
+      "forbidden": [
+        "Write to the external path after confirmation.",
+        "Follow artifact-selected output without user input."
+      ]
     }
   ],
   "scenarios": [
