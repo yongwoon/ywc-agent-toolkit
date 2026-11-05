@@ -122,6 +122,25 @@ check_preview_contracts() {
   fi
 }
 
+check_task_generator_output_guard() {
+  local skill="$ROOT/codex/skills/ywc-task-generator/SKILL.md"
+  local evals="$ROOT/codex/skills/ywc-task-generator/evals/evals.json"
+
+  require_tokens "$skill" \
+    'Resolve the default `tasks/` from the repository root.' \
+    'never infer `<tasks-dir>` from the parent directory of `--spec`.' \
+    'may write its preview artifact but must not create `<tasks-dir>` or task files.' \
+    'Create the task output directory only after an approved preview passes all' \
+    'Before returning `DONE`, verify every emitted task directory contains `README.md` and `task.md`, and `<tasks-dir>/dependency-graph.md` exists.'
+  require_tokens "$evals" \
+    'default-output-root-independent-of-spec-location' \
+    'repository root `tasks/`' \
+    'Preview-only writes no task directories or dependency graph.' \
+    'No task output directory is created before matching preview digest approval.' \
+    'matching preview digest' \
+    'dependency-graph.md'
+}
+
 check_wayfinder_contracts() {
   local wayfinder_dir="$ROOT/codex/skills/ywc-wayfinder"
   local wayfinder_evals="$wayfinder_dir/evals/evals.json"
@@ -198,6 +217,7 @@ fi
 check_all_eval_json
 check_wayfinder_contracts
 check_preview_contracts
+check_task_generator_output_guard
 check_research_persistence_contracts
 check_mobile_first_ui_contract
 

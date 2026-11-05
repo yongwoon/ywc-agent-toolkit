@@ -49,17 +49,10 @@ When tempted to bend a rule, check this table first:
 | `--architecture-evidence <path>` | off | Optional normalized evidence artifact; paired with `--manifest`, never raw evidence text. |
 
 ## Language Option
-When `--lang` is not specified, resolve task document language using the shared
-Codex YWC policy:
-[`../references/language-resolution.md`](../references/language-resolution.md).
-The order is explicit `--lang` > project `.codex/ywc.json` > project guidance
-(`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
+When `--lang` is not specified, resolve task document language using the shared Codex YWC policy:
+[`../references/language-resolution.md`](../references/language-resolution.md). The order is explicit `--lang` > project `.codex/ywc.json` > project guidance (`AGENTS.md`, `CODEX.md`, `CLAUDE.md`) > user `~/.codex/ywc.json` > ask user.
 
-This skill supports canonical language codes `ko` | `ja` | `en` | `es` | `zh`
-for task document output. It also accepts backward-compatible long aliases
-`korean` | `japanese` | `english` | `spanish` | `chinese`; treat `zh` /
-`chinese` as Simplified Chinese unless the user explicitly asks for another
-Chinese locale. There is no skill-level output-language default; for non-English output rules, read [references/language-policy.md](references/language-policy.md).
+This skill supports `ko` | `ja` | `en` | `es` | `zh` and backward-compatible aliases `korean` | `japanese` | `english` | `spanish` | `chinese`. Treat `zh` / `chinese` as Simplified Chinese unless the user explicitly asks for another Chinese locale. There is no skill-level output-language default; for non-English output rules, read [references/language-policy.md](references/language-policy.md).
 
 ### Collaborator Initials Gate
 Read [references/collaborator-initials.md](references/collaborator-initials.md)
@@ -145,6 +138,7 @@ Gather project context for task verification commands, ownership paths, and cate
 - `package.json`, `Makefile`, `pyproject.toml`, etc. — actual lint/test/build commands
 - Project directory structure — `src/` layout, monorepo status, existing module placement
 - Resolve `--tasks-dir` as a repository-relative path; reject absolute, escaping, or symlink-escaping paths with `NEEDS_CONTEXT`.
+- Resolve the default `tasks/` from the repository root. The default is independent of `--spec` location and the current subdirectory; never infer `<tasks-dir>` from the parent directory of `--spec`. Resolve the output directory once and use that same path for preview analysis, approved consumption, writes, and validation.
 - Existing resolved `<tasks-dir>` and `<tasks-dir>/dependency-graph.md` — whether tasks already exist, numbering collision check
 - Docker environment — whether commands require a `docker exec` prefix
 - `docs/ubiquitous-language.md` (if it exists) — canonical domain terms and "Synonyms to Avoid"; task names, Implementation Steps, and Ownership paths must use canonical terms and never use synonym identifiers
@@ -328,7 +322,7 @@ legacy directories or count them as another collaborator's prefixed namespace.
 - Criterion for splitting phases: "Do all outputs from this stage need to be in place for the next stage's work to be meaningful?"
 
 ### Step 9: Directory and File Generation
-Use the path specified by the user for output. If not specified, default to `tasks/`.
+Use the pre-resolved `--tasks-dir` path for every output. If omitted, use the repository-root `tasks/`; never derive it from the spec's parent. Preview-only may write its preview artifact but must not create `<tasks-dir>` or task files. Create the task output directory only after an approved preview passes all identity, revision, digest, authorization, and containment checks.
 
 Generate the following structure for each task:
 
@@ -491,7 +485,7 @@ reservations, and missing-initials `NEEDS_CONTEXT` before any write.
 Before returning `DONE`, verify:
 
 - [ ] The spec or plan source was read and each task traces to a source requirement.
-- [ ] Each generated task has a `README.md` and `task.md`.
+- [ ] Before returning `DONE`, verify every emitted task directory contains `README.md` and `task.md`, and `<tasks-dir>/dependency-graph.md` exists. All artifacts must be under the pre-resolved `<tasks-dir>`; never beside the spec unless explicitly selected.
 - [ ] UI or behavior-changing tasks have a `test.md` or an explicit test exception.
 - [ ] `dependency-graph.md` exists and matches the generated task directories.
 - [ ] Parallel Execution Notes are present when tasks are intended for parallel execution.
