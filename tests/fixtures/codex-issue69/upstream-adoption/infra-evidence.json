@@ -1,0 +1,340 @@
+{
+  "id": "upstream-adoption-infra-evidence-ac8",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-8",
+    "AC-8"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_sha": "29068f9f690fbf09e0ace8d562e4fb846b4d1339",
+    "paths": [
+      "tools/codex-skill/skills/ywc-infra-review/SKILL.md",
+      "tools/codex-skill/agents/ywc-performance-engineer.toml",
+      "tools/codex-skill/skills/ywc-infra-review/evals/evals.json"
+    ],
+    "adaptation": "Keep the local three-lens fan-out, local model/effort pins, read-only boundaries and repository Tier 1 locales; adopt only approved FR-8."
+  },
+  "evidence": {
+    "baseline": {
+      "python3 tests/codex_issue69_contract_test.py": "PASS: 3 tests",
+      "bash scripts/run-codex-skill-contract-evals.sh": "PASS"
+    },
+    "red_first": {
+      "command": "python3 tests/codex_issue69_contract_test.py",
+      "exit": 1,
+      "failure": "new infra-evidence fixture: missing evidence_type=state_backend|apply_record|applied_commit",
+      "recorded_before_source_changes": true
+    },
+    "interface": "User attestation and bounded submitted content -> zero calls with BLOCKED/NEEDS_CONTEXT or one identical eligible packet to all three lenses. Specialist advice is inline; aggregator owns report files.",
+    "data_integrity": "All-or-nothing admission before reviewer dispatch. This task adds no writer, runtime dispatcher, provider query, apply, or retry path; file locking/idempotency are N/A for pure source assertions.",
+    "live_runtime": "UNVERIFIED — instruction contract only",
+    "negative_controls": {
+      "command": "Import unchanged ContractTests.test_source_contract_scenarios with canonical ROOT/FIXTURES bound to isolated temporary copies; remove each required clause and inject each forbidden clause; restore sources between mutations.",
+      "required_clause_removals_caught": 66,
+      "forbidden_clause_injections_caught": 3,
+      "scenario_to_required_clause_bindings_checked": 18,
+      "positive_and_restored_controls": "PASS",
+      "evidence_kind": "source assertion / fixture expectation; not live reviewer or model execution"
+    },
+    "manual_review": "PASS: FR-8/AC-8 admission/status matrix, identical eligible packet to each lens, no provider/apply path, read-only inline ownership, model/effort/sandbox pins and Tier 1 metadata checked; not a live runtime trace."
+  },
+  "scenarios": [
+    {
+      "id": "scoped-missing-evidence",
+      "input": "existing paths, no attestation",
+      "expected_status": "BLOCKED",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "Scoped-only: missing, unbound, or unapplied evidence returns `BLOCKED` with zero reviewer calls."
+      ]
+    },
+    {
+      "id": "scoped-unbound-evidence",
+      "input": "general state backend statement or another path set",
+      "expected_status": "BLOCKED",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "`binding_target` is the exact submitted path set or an applied commit SHA attested to include those paths",
+        "Scoped-only: missing, unbound, or unapplied evidence returns `BLOCKED` with zero reviewer calls."
+      ]
+    },
+    {
+      "id": "scoped-unapplied",
+      "input": "exact target with applied=no",
+      "expected_status": "BLOCKED",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "applied=yes|no",
+        "Scoped-only: missing, unbound, or unapplied evidence returns `BLOCKED` with zero reviewer calls."
+      ]
+    },
+    {
+      "id": "bound-missing-content",
+      "input": "valid path binding with absent IaC",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "Valid binding with absent or truncated IaC content returns `NEEDS_CONTEXT` with zero reviewer calls."
+      ]
+    },
+    {
+      "id": "bound-truncated-content",
+      "input": "valid commit binding with truncated IaC",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "Valid binding with absent or truncated IaC content returns `NEEDS_CONTEXT` with zero reviewer calls."
+      ]
+    },
+    {
+      "id": "bound-paths",
+      "input": "valid exact paths, applied=yes, complete content",
+      "expected_status": "DONE or DONE_WITH_CONCERNS",
+      "expected_reviewer_calls": 3,
+      "source_clauses": [
+        "`binding_target` is the exact submitted path set or an applied commit SHA attested to include those paths",
+        "Freeze one eligible input packet and pass the identical fresh-plus-eligible content to all three lenses."
+      ]
+    },
+    {
+      "id": "bound-commit",
+      "input": "applied commit SHA attested to include all submitted paths, complete content",
+      "expected_status": "DONE or DONE_WITH_CONCERNS",
+      "expected_reviewer_calls": 3,
+      "source_clauses": [
+        "`binding_target` is the exact submitted path set or an applied commit SHA attested to include those paths",
+        "Freeze one eligible input packet and pass the identical fresh-plus-eligible content to all three lenses."
+      ]
+    },
+    {
+      "id": "mixed-eligible-excluded",
+      "input": "fresh diff, eligible bound set, unbound or unapplied set",
+      "expected_status": "DONE or DONE_WITH_CONCERNS",
+      "expected_reviewer_calls": 3,
+      "source_clauses": [
+        "Exclude only scoped sets with missing, unbound, or unapplied evidence from every lens",
+        "Freeze one eligible input packet and pass the identical fresh-plus-eligible content to all three lenses.",
+        "carrying the `ywc-security-engineer` persona, the frozen eligible input packet from Step 1",
+        "carrying the `ywc-performance-engineer` persona, the frozen eligible input packet from Step 1",
+        "carry the frozen eligible input packet from Step 1 and an explicit instruction that this dispatch is read-only diagnosis"
+      ]
+    },
+    {
+      "id": "mixed-missing-fresh",
+      "input": "mixed intent with absent fresh payload",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "Mixed input requires a reviewable, complete fresh plan/diff payload and complete content for every validly bound scoped set.",
+        "Missing or truncated fresh payload or eligible scoped content returns `NEEDS_CONTEXT` with zero reviewer calls.",
+        "Never use an excluded set as fallback"
+      ]
+    },
+    {
+      "id": "mixed-truncated-fresh",
+      "input": "mixed intent with truncated fresh payload",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "Missing or truncated fresh payload or eligible scoped content returns `NEEDS_CONTEXT` with zero reviewer calls.",
+        "Never use an excluded set as fallback"
+      ]
+    },
+    {
+      "id": "mixed-incomplete-eligible",
+      "input": "complete fresh diff with truncated validly bound scoped content",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "Mixed input requires a reviewable, complete fresh plan/diff payload and complete content for every validly bound scoped set.",
+        "Missing or truncated fresh payload or eligible scoped content returns `NEEDS_CONTEXT` with zero reviewer calls."
+      ]
+    },
+    {
+      "id": "fresh-only",
+      "input": "complete fresh plan/diff without scoped sets",
+      "expected_status": "DONE or DONE_WITH_CONCERNS",
+      "expected_reviewer_calls": 3,
+      "source_clauses": [
+        "N/A — fresh plan/diff only"
+      ]
+    },
+    {
+      "id": "topology-only",
+      "input": "complete existing topology packet",
+      "expected_status": "DONE or DONE_WITH_CONCERNS",
+      "expected_reviewer_calls": 3,
+      "source_clauses": [
+        "N/A — topology packet only"
+      ]
+    },
+    {
+      "id": "no-provider-query",
+      "input": "one-time attestation without repository/revision fields",
+      "expected_status": "source contract",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "evidence_type=state_backend|apply_record|applied_commit",
+        "Do not query a cloud provider, state backend, or apply system",
+        "Do not require additional repository or revision fields."
+      ]
+    },
+    {
+      "id": "finops-options",
+      "input": "one finding with bounded alternatives, usage/cost basis and constraints",
+      "expected_status": "DONE or DONE_WITH_CONCERNS",
+      "expected_reviewer_calls": "inline performance response",
+      "source_clauses": [
+        "For an escalated FinOps finding, accept exactly one finding and its Evidence Snapshot v1 performance lane slice.",
+        "finding ID and summary, affected resource or workload, evidence source and timestamp, supplied cost/usage metrics, and applicable budget or constraints",
+        "Return bounded options, each option's cost/risk trade-off, and a recommended option inline to the caller."
+      ]
+    },
+    {
+      "id": "finops-missing-cost-basis",
+      "input": "remove required cost basis or truncate source",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": "no fabricated comparison",
+      "source_clauses": [
+        "Missing or truncated required evidence returns `NEEDS_CONTEXT` naming the exact input.",
+        "Do not estimate missing prices, utilization, savings, or savings percentages."
+      ]
+    },
+    {
+      "id": "inline-report-owner",
+      "input": "read-only specialist called by aggregator",
+      "expected_status": "source contract",
+      "expected_reviewer_calls": "no specialist file writes",
+      "source_clauses": [
+        "Read-only lenses return bounded findings inline; they never create report files.",
+        "The aggregator owns any report file",
+        "The caller/aggregator owns any report file; never create or wait for one."
+      ]
+    },
+    {
+      "id": "contract-mismatch",
+      "input": "owner/input/output/status mismatch",
+      "expected_status": "NEEDS_CONTEXT",
+      "expected_reviewer_calls": 0,
+      "source_clauses": [
+        "owner/input/output/status mismatch returns `NEEDS_CONTEXT`"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-infra-review/SKILL.md",
+      "required": [
+        "evidence_type=state_backend|apply_record|applied_commit",
+        "`binding_target` is the exact submitted path set or an applied commit SHA attested to include those paths",
+        "applied=yes|no",
+        "Do not query a cloud provider, state backend, or apply system",
+        "Do not require additional repository or revision fields.",
+        "Scoped-only: missing, unbound, or unapplied evidence returns `BLOCKED` with zero reviewer calls.",
+        "Valid binding with absent or truncated IaC content returns `NEEDS_CONTEXT` with zero reviewer calls.",
+        "Mixed input requires a reviewable, complete fresh plan/diff payload and complete content for every validly bound scoped set.",
+        "Missing or truncated fresh payload or eligible scoped content returns `NEEDS_CONTEXT` with zero reviewer calls.",
+        "Exclude only scoped sets with missing, unbound, or unapplied evidence from every lens",
+        "Never use an excluded set as fallback",
+        "Freeze one eligible input packet and pass the identical fresh-plus-eligible content to all three lenses.",
+        "N/A — fresh plan/diff only",
+        "N/A — topology packet only",
+        "Read-only lenses return bounded findings inline; they never create report files.",
+        "The aggregator owns any report file",
+        "finding ID and summary, affected resource or workload, evidence source and timestamp, supplied cost/usage metrics, and applicable budget or constraints",
+        "options, each option's cost/risk trade-off, and a recommended option",
+        "Missing or truncated required evidence returns `NEEDS_CONTEXT` naming the exact input",
+        "Do not estimate missing prices or savings",
+        "owner/input/output/status mismatch returns `NEEDS_CONTEXT`",
+        "Always emit one `Scope evidence:` header naming the evidence type, binding target, applied status, and any rejection reason",
+        "a `NEEDS_CONTEXT` result is not a clean lens or a successful full review",
+        "carrying the `ywc-security-engineer` persona, the frozen eligible input packet from Step 1",
+        "carrying the `ywc-performance-engineer` persona, the frozen eligible input packet from Step 1",
+        "carry the frozen eligible input packet from Step 1 and an explicit instruction that this dispatch is read-only diagnosis"
+      ],
+      "forbidden": [
+        "with full findings written to a file whose path is returned",
+        "or the full IaC tree when `--scope` is omitted"
+      ]
+    },
+    {
+      "source": "codex/agents/ywc-performance-engineer.toml",
+      "required": [
+        "For an escalated FinOps finding, accept exactly one finding and its Evidence Snapshot v1 performance lane slice.",
+        "finding ID and summary, affected resource or workload, evidence source and timestamp, supplied cost/usage metrics, and applicable budget or constraints",
+        "Return bounded options, each option's cost/risk trade-off, and a recommended option inline to the caller.",
+        "Missing or truncated required evidence returns `NEEDS_CONTEXT` naming the exact input.",
+        "Do not estimate missing prices, utilization, savings, or savings percentages.",
+        "Do not apply, query a provider/state/apply system, or sweep an applied environment.",
+        "The caller/aggregator owns any report file; never create or wait for one.",
+        "FinOps-RightSizing, FinOps-IdleResource, FinOps-TransferCost, Cost-Regression",
+        "model = \"gpt-5.6-terra\"",
+        "model_reasoning_effort = \"high\"",
+        "sandbox_mode = \"read-only\"",
+        "Never request unrelated full diffs, raw collector payloads, command transcripts, or secrets"
+      ],
+      "forbidden": [
+        "Size each finding by magnitude (order-of-magnitude monthly cost delta)"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-infra-review/README.md",
+      "required": [
+        "evidence_type=state_backend|apply_record|applied_commit",
+        "binding_target",
+        "applied=yes|no",
+        "Scope evidence:",
+        "NEEDS_CONTEXT",
+        "N/A — topology packet only"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-infra-review/README.en.md",
+      "required": [
+        "evidence_type=state_backend|apply_record|applied_commit",
+        "binding_target",
+        "applied=yes|no",
+        "Scope evidence:",
+        "NEEDS_CONTEXT",
+        "N/A — topology packet only"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-infra-review/README.ja.md",
+      "required": [
+        "evidence_type=state_backend|apply_record|applied_commit",
+        "binding_target",
+        "applied=yes|no",
+        "Scope evidence:",
+        "NEEDS_CONTEXT",
+        "N/A — topology packet only"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-infra-review/README.ko.md",
+      "required": [
+        "evidence_type=state_backend|apply_record|applied_commit",
+        "binding_target",
+        "applied=yes|no",
+        "Scope evidence:",
+        "NEEDS_CONTEXT",
+        "N/A — topology packet only"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-infra-review/agents/openai.yaml",
+      "required": [
+        "validate one-time applied-scope attestation before any reviewer calls",
+        "identical eligible content to all three lenses"
+      ]
+    },
+    {
+      "source": "codex/agents/README.md",
+      "required": [
+        "## Bounded FinOps 계약",
+        "보고서 파일은 caller/aggregator 소유입니다."
+      ]
+    }
+  ]
+}

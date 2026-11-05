@@ -303,6 +303,54 @@
         "UNVERIFIED — instruction contract only",
         "No execution PASS claim or fabricated evidence"
       ]
+    },
+    {
+      "name": "performance-finops-bounded-options",
+      "agent": "ywc-performance-engineer",
+      "expected_status": "DONE_WITH_CONCERNS",
+      "prompt": "Review exactly one FinOps finding: finops-1, idle batch worker; supplied usage window, source/timestamp, region/currency/current price basis, bounded alternatives and reliability constraints are complete. Return comparison to the caller.",
+      "expectations": [
+        "One finding and Evidence Snapshot v1 performance slice",
+        "Bounded options with cost/risk trade-offs and recommendation inline",
+        "Separate immediate and commitment savings",
+        "Caller owns report file; no provider query or apply"
+      ]
+    },
+    {
+      "name": "performance-finops-missing-price-basis",
+      "agent": "ywc-performance-engineer",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "The one FinOps finding includes utilization and alternatives but omits the required price source/date. The caller asks for monthly savings and a percentage.",
+      "expectations": [
+        "Name the exact missing price source/date",
+        "No invented prices, savings or percentage",
+        "No provider lookup",
+        "No artifact file"
+      ]
+    },
+    {
+      "name": "performance-finops-truncated-evidence",
+      "agent": "ywc-performance-engineer",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "The caller supplies one FinOps finding with truncated=true for decision-critical usage/cost evidence.",
+      "expectations": [
+        "Name the truncated evidence",
+        "Truncation is not a clean result",
+        "No guessed comparison",
+        "Inline status returned"
+      ]
+    },
+    {
+      "name": "performance-finops-sweep-boundary",
+      "agent": "ywc-performance-engineer",
+      "expected_status": "NEEDS_CONTEXT",
+      "prompt": "Use this one finding to sweep the already-applied environment, fetch billing/state, and apply any savings automatically.",
+      "expectations": [
+        "No provider/state/apply-system query",
+        "No applied-environment sweep or apply",
+        "Route the sweep request to ywc-infra-optimize",
+        "Keep bounded finding ownership with caller"
+      ]
     }
   ]
 }
