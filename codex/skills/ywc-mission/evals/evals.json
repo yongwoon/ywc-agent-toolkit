@@ -1,0 +1,183 @@
+{
+  "skill_name": "ywc-mission",
+  "description": "Source prompts and expected instruction traces for the durable mission anchor. Structural validation is not live runtime evidence.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "missing-file-read",
+      "prompt": "프로젝트 시작 전에 mission anchor를 읽어줘. 아직 docs/mission.md는 없을 수도 있어.",
+      "expected_output": "Enters read mode. Attempts to read docs/mission.md, treats a missing file as an empty Mission Anchor without blocking, and does not create or modify files.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "confirmed-update",
+      "prompt": "이 프로젝트의 Mission은 신규 사용자가 10분 안에 첫 작업을 완료하게 하는 거야. 성공 기준도 하나 남겨줘: 첫 작업 생성과 팀원 초대가 모두 가능해야 해.",
+      "expected_output": "Enters update mode, reads the full mission file first or notes absence, builds an ADD CHANGESET containing one Mission and an observable SC### with rationale, asks for user confirmation before writing, then writes only after confirmation.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "empty-changeset-no-op",
+      "prompt": "기존 docs/mission.md는 Mission, SC001, RA001, NG001, CN001이 active인 상태야. 해당 내용을 그대로 유지하고 새 변경은 추가하지 마.\n\n```markdown\n# Mission - Example\n<!-- updated: 2026-10-20 -->\n## Mission\nBuild a reliable onboarding path.\n## Success Criteria\n| ID | Criterion | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| SC001 | First job creation works | Confirms setup is usable | active | user, 2026-10-20 |\n## Rejected Approaches\n| ID | Approach | Reason | Status | Provenance |\n|---|---|---|---|---|\n| RA001 | Require sales setup | Delays self-serve setup | active | user, 2026-10-20 |\n## Non-goals\n| ID | Non-goal | Reason | Status | Provenance |\n|---|---|---|---|---|\n| NG001 | Migrate every project file | No migration is needed | active | user, 2026-10-20 |\n## Constraints\n| ID | Constraint | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| CN001 | Keep runtime guidance separate | Runtime contracts are independent | active | user, 2026-10-20 |\n## Change log\n- 2026-10-20 - Mission initialized\n```",
+      "expected_output": "Reads the existing file, detects that the proposed CHANGESET has no ADD, MODIFY, or DEPRECATE entries, reports a no-op without requesting confirmation, and does not write, bump the updated date, change sections, or append to the change log.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "read-anchor-includes-active-ng-cn-and-skips-deprecated",
+      "prompt": "docs/mission.md exists. Read it and return the Mission Anchor only; do not propose or write changes.\n\n```markdown\n# Mission - Example\n<!-- updated: 2026-10-20 -->\n## Mission\nBuild a reliable onboarding path.\n## Success Criteria\n| ID | Criterion | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| SC001 | First job creation works | Confirms setup is usable | active | user, 2026-10-20 |\n## Rejected Approaches\n| ID | Approach | Reason | Status | Provenance |\n|---|---|---|---|---|\n| RA001 | Require sales setup | Delays self-serve setup | active | user, 2026-10-20 |\n## Non-goals\n| ID | Non-goal | Reason | Status | Provenance |\n|---|---|---|---|---|\n| NG001 | Migrate every project file | No migration is needed | active | user, 2026-10-20 |\n| NG002 | Preserve retired migration rule | Superseded | deprecated | user, 2026-10-20 |\n## Constraints\n| ID | Constraint | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| CN001 | Keep runtime guidance separate | Runtime contracts are independent | active | user, 2026-10-20 |\n| CN002 | Use the old runtime path | Superseded | deprecated | user, 2026-10-20 |\n```",
+      "expected_output": "Reads the full file and returns a compact Mission Anchor with the active Mission, SC001, RA001, NG001, and CN001. Omits deprecated NG002 and CN002, and makes no file changes.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "reject-ra-without-reason",
+      "prompt": "Rejected Approach로 '모든 설정을 자동으로 추론한다'를 기록해둬.",
+      "expected_output": "Does not write a reasonless RA###. Requests the rejection reason before including it in a CHANGESET.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "codex-activation-reminder",
+      "prompt": "처음으로 docs/mission.md를 만들고 future session이 읽게 해줘.",
+      "expected_output": "After confirmed first creation, prints a Codex-native reminder to add an AGENTS.md or CODEX.md instruction telling future Codex sessions to read docs/mission.md. It does not make CLAUDE.md or @docs/mission.md the primary instruction.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "first-non-goal-creates-optional-section",
+      "prompt": "기존 docs/mission.md에는 Mission과 SC001, RA001만 있고 optional section은 없어. 아래 파일에 이 Non-goal 추가안을 제안해줘: '모든 legacy Mission 파일을 일괄 변환하지 않는다'. Reason은 '선택 section 추가는 기존 파일의 마이그레이션을 요구하지 않는다'야.\n\n```markdown\n# Mission - Example\n<!-- updated: 2026-10-20 -->\n## Mission\nBuild a reliable onboarding path.\n## Success Criteria\n| ID | Criterion | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| SC001 | First job creation works | Confirms setup is usable | active | user, 2026-10-20 |\n## Rejected Approaches\n| ID | Approach | Reason | Status | Provenance |\n|---|---|---|---|---|\n| RA001 | Require sales setup | Delays self-serve setup | active | user, 2026-10-20 |\n## Change log\n- 2026-10-20 - Mission initialized\n```",
+      "expected_output": "Reads the full file, validates the Non-goal and non-empty Reason, proposes an ADD using the next never-used NG### ID, creates ## Non-goals only after the user confirms the exact CHANGESET, and preserves the existing Mission/SC/RA sections.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "first-constraint-creates-optional-section",
+      "prompt": "기존 docs/mission.md에는 active NG001이 있는 Non-goals section이 있어. 아래 파일에 Constraint 추가안을 제안해줘: 'Codex와 Claude Code Mission guidance를 별도로 관리한다'. Rationale은 '각 runtime은 독립적인 activation contract를 갖는다'야.\n\n```markdown\n# Mission - Example\n<!-- updated: 2026-10-20 -->\n## Mission\nBuild a reliable onboarding path.\n## Success Criteria\n| ID | Criterion | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| SC001 | First job creation works | Confirms setup is usable | active | user, 2026-10-20 |\n## Rejected Approaches\n| ID | Approach | Reason | Status | Provenance |\n|---|---|---|---|---|\n| RA001 | Require sales setup | Delays self-serve setup | active | user, 2026-10-20 |\n## Non-goals\n| ID | Non-goal | Reason | Status | Provenance |\n|---|---|---|---|---|\n| NG001 | Migrate every project file | Not needed for optional sections | active | user, 2026-10-20 |\n```",
+      "expected_output": "Reads the full file, validates the Constraint and non-empty Rationale, proposes an ADD using the next never-used CN### ID, creates ## Constraints only after the user confirms the exact CHANGESET, and preserves the existing Non-goals section without adding any unrelated empty section.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "missing-ng-cn-explanation-blocks-changeset",
+      "prompt": "Non-goal 'legacy 파일은 자동 변환하지 않는다'와 Constraint 'Mission format은 Codex-native로 유지한다'를 추가해줘. Reason/Rationale 설명은 지금 제공하지 않을게.",
+      "expected_output": "Does not include either incomplete row in the CHANGESET or write them. Requests only the missing Reason for the Non-goal and Rationale for the Constraint before proposing those additions.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "legacy-mission-without-optional-sections",
+      "prompt": "Read this existing docs/mission.md. It has an active Mission and SC001, but no Non-goals or Constraints sections:\n\n```markdown\n# Mission - Example\n<!-- updated: 2026-10-20 -->\n## Mission\nBuild a reliable onboarding path.\n## Success Criteria\n| ID | Criterion | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| SC001 | First job creation works | Confirms setup is usable | active | user, 2026-10-20 |\n## Rejected Approaches\n| ID | Approach | Reason | Status | Provenance |\n|---|---|---|---|---|\n| RA001 | Require sales setup | Delays self-serve setup | active | user, 2026-10-20 |\n```",
+      "expected_output": "Treats the legacy file as valid, emits the Mission Anchor with the active Mission, SC001, and RA001 only, and does not create empty NG/CN sections or block the read.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "deprecated-ng-id-is-not-reused",
+      "prompt": "Existing docs/mission.md has NG001 in ## Deprecated and no active Non-goals section. Add a new Non-goal with its Reason.\n\n```markdown\n# Mission - Example\n## Mission\nBuild a reliable onboarding path.\n## Deprecated\n| ID | Kind | Text | Deprecated | Reason / Superseded-by |\n|---|---|---|---|---|\n| NG001 | Non-goal | Migrate all legacy files | 2026-10-01 | Replaced by optional support; no migration needed |\n```",
+      "expected_output": "Reads the existing and deprecated entries, proposes the new row with the next never-used NG002 ID, and does not restore or reuse NG001.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "deprecating-final-constraint-removes-empty-section",
+      "prompt": "Curate docs/mission.md: its only active optional entry is CN001, and the user confirms that this constraint is obsolete.\n\n```markdown\n# Mission - Example\n## Mission\nBuild a reliable onboarding path.\n## Constraints\n| ID | Constraint | Rationale | Status | Provenance |\n|---|---|---|---|---|\n| CN001 | Keep runtime guidance separate | Runtime contracts are independent | active | user, 2026-10-20 |\n```",
+      "expected_output": "Proposes deprecating CN001 with a dated reason, then after confirmation moves it to ## Deprecated and removes the now-empty ## Constraints section/table without deleting or reusing CN001.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "curate-dry-run",
+      "prompt": "Curate docs/mission.md with --dry-run: deprecate obsolete CN001.",
+      "expected_output": "Reads the complete file and shows a reasoned DEPRECATE CHANGESET; requests no confirmation and makes no file, date or change-log changes.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "curate-exact-confirmation",
+      "prompt": "Curate a file with NG001 and CN001: propose deprecating NG001, then add CN001 to the proposal after the user confirmed only NG001.",
+      "expected_output": "Does not write the altered CHANGESET under old confirmation. Shows every item with reasons and requests fresh exact confirmation; preserves original explanation and provenance in history.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "multi-entry-write-and-replay",
+      "prompt": "The user confirms an exact CHANGESET that adds SC002 with rationale, modifies Mission and deprecates RA001 with reason. The same request arrives again after success.",
+      "expected_output": "The first write leaves one active Mission and retires prior history in one complete replacement, updating date/log once. Retry reads durable state, detects applied changes and is a no-op with no duplicate IDs or history.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "stale-baseline-or-failed-write",
+      "prompt": "After exact CHANGESET confirmation a different edit appears in docs/mission.md; alternatively the complete file replacement fails.",
+      "expected_output": "A changed baseline causes stop and a rebuilt proposal requiring fresh confirmation. A failed replacement reports failure and cannot claim success or partial durable completion.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "refuse-id-deletion-and-inferred-intent",
+      "prompt": "Scan this repository and invent its mission, delete deprecated NG001/CN001, reuse their IDs and automatically activate AGENTS.md.",
+      "expected_output": "Does not infer intent from the scan, delete history, reuse retired IDs, or edit steering files. Requests missing user intent, preserves text/reasons/provenance and offers activation guidance only after first confirmed creation.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "missing-success-rationale",
+      "prompt": "Add SC002: make the product better. I have no observable criterion or rationale.",
+      "expected_output": "Rejects the incomplete SC candidate, asks only for its missing observable criterion and rationale, and makes no durable write.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "empty-curate-no-op",
+      "prompt": "Curate the current mission but keep every existing row unchanged.",
+      "expected_output": "Reads the complete file and reports empty CHANGESET as no-op without confirmation, file writes, updated date bumps or change-log entries.",
+      "files": [
+        "codex/skills/ywc-mission/SKILL.md",
+        "codex/skills/ywc-mission/references/mission-format.md"
+      ]
+    }
+  ]
+}
