@@ -74,6 +74,8 @@ Before the first question, read enough to ground the conversation in current sta
 - Recent commits on the affected surface (`git log --oneline -20 -- <area>`)
 - The exact files the user named, if any
 
+Check repository-resolvable facts in relevant code, configuration, tests, and maintained docs before asking the user. State verified facts with source paths; distinguish missing evidence from established facts. Do not ask the user to repeat a fact the repository answers. If relevant evidence is absent, reserve that uncertainty for the appropriate user question.
+
 The point is not to read the whole repo — it is to avoid asking questions whose answers are already in the codebase, and to detect collisions with in-flight work.
 
 If this exploration surfaces an existing problem that affects the work at hand — a file that has grown too large, an unclear module boundary, a tangled responsibility the new work must cross — fold a *targeted* improvement into the design's "Where it lives" (Step 5). Do not propose unrelated refactoring that merely lives nearby; anything not blocking the current work is named once and routed to Step 3's Out of Scope, not built into the design.
@@ -102,6 +104,8 @@ Cover the four anchors (the same anchors `ywc-plan` will need downstream — col
 | **Done When** | "How will we know this is done? What observable outcome counts as success?" |
 
 If the initial request already answers one of these, do not re-ask — confirm in one sentence and move to the next.
+
+Ask only the earliest unresolved prerequisite needed for the next decision. Defer downstream choices until their upstream purpose, users, or scope is settled. After each answer, update the remaining question frontier and ask only the next single question. Never prefill a user-owned choice or bundle unresolved prerequisites. Existing approach and detailed-design approval gates remain required.
 
 ### Step 4: Propose 2–3 approaches with trade-offs
 

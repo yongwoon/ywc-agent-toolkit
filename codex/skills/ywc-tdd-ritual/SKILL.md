@@ -55,12 +55,18 @@ Each transition has a verification step that **must** be executed in the current
 
 Write one minimal test that captures **one** behavior the production code is required to exhibit.
 
+### Public seam and feedback
+
+Name the existing public boundary (seam) the test observes in one sentence. Prefer an existing seam; a new boundary needs an explicit interface decision. Record a minimal feedback note: `Seam`, `Catches`, `Misses`, and the reproduction or test evidence. A unit seam cannot claim effects beyond its boundary.
+
+If no existing seam observes the behavior, preserve reproduction evidence and its catches/misses, then surface the smallest interface/design decision. Do not expose a private helper only for testing or invent a misleading test. If multiple seams are plausible, resolve the public-interface ambiguity before writing the test.
+
 **Requirements:**
 
 - **One behavior per test.** If the test name contains "and", split it.
 - **Clear, intention-revealing name.** "`rejects offset > total with 400`" beats "`pagination test 3`".
 - **Real code paths.** Mocks are allowed only for boundaries the test cannot cross (network, clock, file system). Mocking the unit under test is forbidden — it tests the mock, not the code.
-- **No production code yet.** If the test references a function that does not exist, that is fine — the import error counts as failure.
+- **No production code yet.** If a symbol does not exist, fix the test setup until the failure reaches a behavior assertion. Collection or import errors do not prove RED.
 
 ### Step 2: Verify RED — Watch it fail
 
@@ -127,6 +133,8 @@ Now, and only now, improve the implementation:
 Re-run the suite after the refactor. If it stays green, the cycle is complete. If a test breaks, treat as Step 5 violation.
 
 ### Step 7: Loop or hand off
+
+Complete one behavior's RED → GREEN → REFACTOR cycle before starting the next behavior. Do not batch all tests, all implementation, or all refactoring into horizontal phases.
 
 If there are more behaviors to implement, return to Step 1 with the next test.
 When all required behaviors are implemented, hand off to `ywc-verify-done` for the completion claim (build + lint + full test suite + per-claim evidence block).

@@ -7,6 +7,8 @@ Walk through the per-step entry / exit conditions during the cycle. Each step ha
 ### Entry conditions
 
 - [ ] The behavior to implement is named in one sentence
+- [ ] Name the existing public seam and record its catches/misses before writing the test.
+- [ ] If no existing seam observes the behavior, preserve reproduction evidence and surface the smallest interface decision; do not expose a helper only for testing.
 - [ ] No production code for this behavior exists yet (search the codebase before writing the test)
 - [ ] If exploration was needed, the spike was discarded — no carry-over code
 
@@ -152,6 +154,8 @@ A second verification block (per `ywc-verify-done`) is surfaced showing the suit
 ## Step 7 — Loop or hand off
 
 ### Loop
+
+Finish this behavior's RED/GREEN/REFACTOR cycle before starting another behavior.
 
 If there are more behaviors required for the feature, return to Step 1 with the next behavior. Each behavior gets its own RED-GREEN-REFACTOR cycle; do not combine.
 

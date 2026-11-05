@@ -42,3 +42,7 @@ Full workflow and Rationalization Defense are in [SKILL.md](./SKILL.md). Underly
 - [한국어 (default)](./README.md)
 - [日本語](./README.ja.md)
 - [한국어 (full)](./README.ko.md)
+
+## Authoring feedback contract
+
+Verify repository facts and cite their paths before asking only the earliest unresolved prerequisite. Preserve approach and detailed-design approval.

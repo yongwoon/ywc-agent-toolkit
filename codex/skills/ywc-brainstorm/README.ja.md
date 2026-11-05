@@ -42,3 +42,7 @@
 - [한국어 (default)](./README.md)
 - [English](./README.en.md)
 - [한국어 (full)](./README.ko.md)
+
+## 作成フィードバック契約
+
+リポジトリの事実と根拠パスを先に確認し、次の判断に必要な最初の未解決 prerequisite だけを質問します。方針と詳細設計の承認を維持します。

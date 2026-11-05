@@ -43,3 +43,7 @@
 - [한국어 (default)](./README.md)
 - [English](./README.en.md)
 - [日本語](./README.ja.md)
+
+## 작성 피드백 계약
+
+기존 public test seam의 catches/misses를 기록하고 한 behavior의 RED/GREEN/REFACTOR를 마친 뒤 다음으로 진행합니다. 적절한 seam이 없으면 재현 근거와 필요한 interface 결정을 남깁니다.

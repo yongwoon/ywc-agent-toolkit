@@ -58,6 +58,37 @@
         "Skipping or commenting out the test.",
         "Claiming TDD completion without a passing behavior test."
       ]
+    },
+    {
+      "id": 4,
+      "name": "state-regression-seam-coverage-boundary",
+      "prompt": "A refund service has a public `RefundService.refund` method and a separate provider adapter. A test at the service boundary can verify a request is accepted and exactly one command is issued, but cannot prove the remote provider settles it. Before writing a test, name the seam and what it catches and misses.",
+      "expected_output": "Use the existing RefundService.refund public boundary. State that the test catches request validation/routing and duplicate command issuance at this boundary, but misses provider-side settlement and downstream effects; name a separate integration seam if that behavior is required. Do not imply the unit seam proves remote settlement.",
+      "files": [
+        "codex/skills/ywc-tdd-ritual/SKILL.md",
+        "codex/skills/ywc-tdd-ritual/references/test-shape-cookbook.md"
+      ],
+      "source_id": "tdd-seam-catches-and-misses"
+    },
+    {
+      "id": 5,
+      "name": "do-not-invent-a-regression-seam",
+      "prompt": "The reported behavior crosses an undocumented boundary, and no existing public seam can observe the required outcome. The only possible test would expose an internal helper solely for testing. What is the TDD next step?",
+      "expected_output": "Do not invent a public seam or write a misleading test. Record what the reproduction evidence catches and misses, surface the missing boundary as an architecture/design decision, and ask for the smallest decision needed before changing the interface.",
+      "files": [
+        "codex/skills/ywc-tdd-ritual/SKILL.md"
+      ],
+      "source_id": "tdd-no-suitable-seam-boundary"
+    },
+    {
+      "id": 6,
+      "name": "finish-one-behavior-slice-before-next",
+      "prompt": "Implement invite and resend behaviors across the UI, API, storage, and mailer. How should the TDD work be sliced?",
+      "expected_output": "Choose one user-visible behavior and trace it vertically through the necessary layers. Complete that behavior's RED, GREEN, REFACTOR, verification, and checkpoint commit before starting the next behavior; do not implement all UI, then all API, or combine invite and resend in one test/cycle.",
+      "files": [
+        "codex/skills/ywc-tdd-ritual/SKILL.md"
+      ],
+      "source_id": "tdd-vertical-slice-one-behavior"
     }
   ]
 }

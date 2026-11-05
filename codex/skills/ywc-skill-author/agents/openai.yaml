@@ -1,4 +1,4 @@
 interface:
   display_name: "YWC Skill Author"
   short_description: "Author and run report-only audits for ywc-* Codex skills"
-  default_prompt: "Use $ywc-skill-author to create or audit a ywc-* Codex skill. For an audit, run the bounded report-only workflow, inspect mechanical evidence before judgment, and never auto-delete a target skill."
+  default_prompt: "Use $ywc-skill-author to create or audit a ywc-* Codex skill, inspect repository facts first, apply the five Writing Levers, and preserve canonical rules and report-only audit boundaries."
