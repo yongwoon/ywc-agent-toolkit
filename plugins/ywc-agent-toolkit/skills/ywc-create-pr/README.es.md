@@ -12,6 +12,7 @@ Una vez completado el trabajo en una rama de feature, este Skill automatiza el f
 
 ### Características principales
 
+- Describe cambios por función con qué, dónde y por qué respaldados por evidencia; añade una tabla Method+Path solo para cambios de endpoint o contratos de solicitud, respuesta, autenticación o estado vinculados a una ruta. Omite refactorizaciones internas y conserva las plantillas y la omisión del Step 7 al actualizar un PR existente.
 - Detecta automáticamente la rama base en el orden `develop` → `main` → `master`
 - Ejecuta una verificación de seguridad para archivos sensibles como `.env`, `*.key` y `*.pem`
 - Admite verificaciones de CI previas al push como lint, format, typecheck y test

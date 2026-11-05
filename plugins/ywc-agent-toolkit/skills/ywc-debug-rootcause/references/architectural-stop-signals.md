@@ -2,7 +2,7 @@
 
 Decision aid for the Phase 4 §5 escape hatch: when 3+ fixes on the same surface have failed, is the next fix worth attempting, or is the architecture wrong?
 
-The default answer after 3 failures is **architecture is wrong**. This document lists the specific signals to confirm that diagnosis and the shape of the surface-to-user that follows.
+After three failed fixes, stop for architecture review by default. The analyst recommends escalation; the final architecture decision belongs to `ywc-architect` and the caller/user.
 
 ## Signals that the architecture (not the next fix) is the problem
 
@@ -25,7 +25,7 @@ When ≥2 of these signals fire, treat the situation as architectural.
 | **The defect surface has not moved** through the prior fixes | Same line, same condition, same value — the bug is local; the prior fixes simply did not match the actual cause. |
 | **A new piece of evidence has surfaced** since fix #3 (new log line, new reproduction step, new dependency change) | The hypothesis space has changed; the next attempt is not "fix harder", it is "investigate with new data". |
 
-If none of these apply, do not attempt fix #4.
+Only a valid `Caller: ywc-debug-rootcause` / `analysis_mode=debug_hypotheses` analyst response may justify one final fourth fix. Require both separate evidence-linked fields: `Fix #4 signal: fix harder` and `Next fix worth attempting: <one concrete minimal change>`. Supporting signals in this table alone do not authorize another fix; validate the response envelope and failed-fix log first. If either signal is absent, unlinked, from another mode, or the analyst is unavailable, keep the stop in force. After a failed fourth fix, stop; no fifth attempt.
 
 ## Surface-to-user shape
 

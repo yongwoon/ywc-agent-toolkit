@@ -44,3 +44,7 @@ Critical / High / Medium / Low 심각도별 분류, 각 발견 사항에 file:li
 - [English](./README.en.md)
 - [Japanese](./README.ja.md)
 - [Korean](./README.ko.md)
+
+## 운영 안전성
+
+Severity 조정은 각 checklist row의 조건을 충족할 때만 적용합니다. Internal-only만으로 downgrade하지 않으며 item 2는 항상 Critical입니다.

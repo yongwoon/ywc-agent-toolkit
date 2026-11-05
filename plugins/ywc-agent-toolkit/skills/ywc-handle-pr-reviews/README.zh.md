@@ -38,3 +38,7 @@
 - [日语](./README.ja.md)
 - [韩语](./README.ko.md)
 - [西班牙语](./README.es.md)
+
+## 现有分支与 PR worktree
+
+`--worktree 123` 固定同一仓库的开放 PR 编号及 head。只允许精确 fetch/fast-forward，每次操作前检查 cwd/root/branch，且只允许一次重新进入；必需命令失败后停止修改。仅对本次创建的 worktree 提供 `--keep-branch` 清理建议。

@@ -49,3 +49,13 @@
 - [한국어 (default)](./README.md)
 - [English](./README.en.md)
 - [한국어 (full)](./README.ko.md)
+
+## Analyst contract
+
+`Caller: ywc-confidence-gate` · `analysis_mode=confidence_root_cause`
+
+Caller と analysis_mode を明示します。欠落・unknown・不一致は推測せず `NEEDS_CONTEXT`。Status → Summary → Finding counts → Analysis mode を検証し、既存 caller gate を維持します。
+
+単一 cause candidate の賛否の証拠を返し、ranked alternatives や 5 Whys は追加しません。拒否でも一回の dispatch budget を消費し、採点と band 判定は caller が保持します。
+
+Live runtime: `UNVERIFIED — instruction contract only`.

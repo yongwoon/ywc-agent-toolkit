@@ -42,3 +42,7 @@
 - [English](./README.en.md)
 - [日本語](./README.ja.md)
 - [한국어](./README.ko.md)
+
+## 작성 피드백 계약
+
+저장소 사실과 근거 경로를 먼저 확인한 뒤 다음 결정에 필요한 첫 미해결 prerequisite 하나만 질문합니다. 접근법·상세 설계 승인 gate를 유지합니다.

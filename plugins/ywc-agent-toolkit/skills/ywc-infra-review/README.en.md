@@ -43,3 +43,11 @@ Or in natural language:
 - `ywc-security-engineer` / `ywc-performance-engineer` / `ywc-cloud-engineer` (review mode) personas — the per-lens fan-out workers
 - `ywc-security-audit` — handles app-code auth/injection review (not IaC misconfiguration)
 - `ywc-impl-review` — handles general application code review (not infrastructure)
+
+## Applied scope and FinOps
+
+Existing scoped IaC needs a one-time user attestation: `evidence_type=state_backend|apply_record|applied_commit`, exact `binding_target`, and `applied=yes|no`. No provider/state/apply-system query or additional repository/revision field is required. Missing, unbound, or unapplied scoped-only evidence returns `BLOCKED`; valid binding with missing/truncated content returns `NEEDS_CONTEXT`. Both dispatch zero reviewers.
+
+Mixed input sends the same complete fresh plan/diff plus eligible scoped content to all three lenses. Record excluded paths and reasons in `Scope evidence:` and never use excluded sets as fallback. Fresh-only/topology-only headers are `N/A — fresh plan/diff only` / `N/A — topology packet only`.
+
+FinOps returns bounded options, cost/risk trade-offs, and a recommendation inline from supplied cost/usage/alternative evidence. Missing required evidence returns `NEEDS_CONTEXT`; prices and savings are never invented. The aggregator owns report files. Source assertions and expected traces are not live execution: unavailable runtime evidence is `UNVERIFIED — instruction contract only`.

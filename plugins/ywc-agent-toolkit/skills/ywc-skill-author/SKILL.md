@@ -44,6 +44,7 @@ detailed reference before edits.
 
 1. Identify mode and scope. Ask only for genuine interface, naming, or behavior
    ambiguity that repository files cannot resolve.
+   Check repository facts first; ask only one unresolved prerequisite needed for the next authoring decision.
 2. **RED:** capture a representative failure/rationalization or name existing
    coverage for a refactor.
 3. **GREEN:** make the smallest change that meets A1–A16. Create/restructure
@@ -54,6 +55,16 @@ detailed reference before edits.
 5. Review `agents/openai.yaml` interface fields, run the validator, and check
    the required locale files, references, evals, and no unintended catalog or
    routing drift.
+
+## Writing Levers
+
+Apply these five levers to rules and examples justified by RED evidence:
+
+1. **Remove no-ops.** Keep instructions that change a decision, action, or required output. Preserve safety, scope, and stop constraints.
+2. **State the positive goal.** Describe the desired action or result directly; retain negative wording for necessary trust boundaries and forbidden actions.
+3. **Lead with the condition or action.** Put operative words first and rationale after them; replace hedged openings with the decision rule.
+4. **Make completion observable.** Name the artifact or decision, evidence, and exit result. Reuse canonical Validation and Output Format contracts instead of inventing a competing completion schema.
+5. **Keep one source of truth.** Link directly to canonical templates and rule references; add only the skill-specific delta rather than copying shared boilerplate.
 
 ## Validation
 

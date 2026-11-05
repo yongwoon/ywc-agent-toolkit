@@ -43,3 +43,7 @@
 - [한국어 (default)](./README.md)
 - [English](./README.en.md)
 - [한국어 (full)](./README.ko.md)
+
+## 作成フィードバック契約
+
+既存 public test seam の catches/misses を記録し、1 behavior の RED/GREEN/REFACTOR 完了後に次へ進みます。適切な seam がなければ再現根拠と必要な interface 判断を提示します。

@@ -60,3 +60,7 @@ See `SKILL.md` and the four reference documents under `references/` for the full
 - `references/rationalization-defense-cookbook.md` — guide for writing the Rationalization Defense table.
 - `references/description-anti-patterns.md` — anti-patterns to avoid in the description field.
 - `references/cross-skill-graph.md` — prerequisite and cross-reference graph for ywc-* skills.
+
+## Authoring feedback contract
+
+Apply five Writing Levers: remove no-ops, state positive goals, lead with conditions/actions, make completion observable, and link canonical rules. Preserve safety and report-only audit boundaries.

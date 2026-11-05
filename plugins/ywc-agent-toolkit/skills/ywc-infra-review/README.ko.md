@@ -43,3 +43,11 @@ $ywc-infra-review --scope infra/modules/network
 - `ywc-security-engineer` / `ywc-performance-engineer` / `ywc-cloud-engineer`(Review Mode) Persona — 각 Lens 의 Fan-out Worker
 - `ywc-security-audit` — App-code Auth/Injection Review 담당 (IaC 오구성 아님)
 - `ywc-impl-review` — 일반 Application Code Review 담당 (Infrastructure 아님)
+
+## 적용 증거와 FinOps
+
+기존 scoped IaC는 one-time attestation의 `evidence_type=state_backend|apply_record|applied_commit`, 정확한 `binding_target`, `applied=yes|no`를 요구합니다. provider/state/apply system 조회나 추가 repository/revision 필드는 요구하지 않습니다. 누락·unbound·unapplied scoped-only 입력은 `BLOCKED`, 유효 binding의 content 누락·truncation은 `NEEDS_CONTEXT`이며 reviewer는 모두 0회입니다.
+
+Mixed 입력은 완전한 fresh plan/diff와 적격 scoped content만 세 lens에 동일 전달하고, 부적격 set은 `Scope evidence:`에 제외 이유를 기록합니다. 제외 set을 fallback으로 쓰지 않습니다. Fresh-only/topology-only header는 각각 `N/A — fresh plan/diff only` / `N/A — topology packet only`입니다.
+
+FinOps는 제공된 비용/사용량/대안 근거로 option별 cost/risk와 권고를 inline 반환합니다. 필수 근거 누락은 `NEEDS_CONTEXT`, 가격·절약률 추정은 금지이며 report 파일은 aggregator 소유입니다. 실제 runtime 근거가 없으면 `UNVERIFIED — instruction contract only`입니다.

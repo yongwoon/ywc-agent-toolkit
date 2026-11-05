@@ -1,21 +1,21 @@
 ---
 name: ywc-infra-review
 description: >-
-  (ywc) Use when reviewing IaC or cloud configuration for misconfiguration,
-  least privilege, cost, and reliability before apply across AWS, GCP, Azure,
-  or K8s Terraform. Fans out to security, cost, and reliability lenses.
-  Triggers: "인프라 리뷰", "IaC 리뷰", "infra review",
-  "インフラレビュー", "ywc-infra-review". Do not use for app-code
-  auth/injection review (use ywc-security-audit), writing IaC (use
-  ywc-iac-author), drift remediation (use ywc-infra-optimize), or
-  general app code review (use ywc-impl-review).
+  (ywc) Use when reviewing bounded Terraform plans, diffs, topology packets,
+  or applied scoped IaC for security, cost, and reliability.
+  Triggers: "인프라 리뷰", "IaC 리뷰", "infra review", "インフラレビュー".
+  Do not use for app-code auth/injection review (use ywc-security-audit),
+  writing IaC (use ywc-iac-author), or applied-environment optimization
+  sweeps (use ywc-infra-optimize).
 ---
 
 # ywc-infra-review
 
-**Announce at start:** "I'm using the ywc-infra-review skill to review this IaC / cloud configuration across the security, cost, and reliability lenses before it is applied."
+**Announce at start:** "I'm using the ywc-infra-review skill to review the supplied infrastructure evidence across security, cost, and reliability before any apply decision."
 
 This skill is the standalone review-phase counterpart to `ywc-iac-author`: it fans an already-authored Terraform change out to three independent lenses — security (misconfiguration, least-privilege), cost (right-sizing, waste), and reliability (SPOF, backups, health) — then aggregates every finding into one severity-rated report. **This skill never writes or modifies IaC.** Terraform is the single fixed IaC tool for this toolkit; provider coverage is AWS/GCP/Azure/K8s expressed through the Terraform providers, the same scope `ywc-iac-author` authors against.
+
+The applied-scope and bounded FinOps contracts are adapted from `yongwoon/develop-with-llm` #348, frozen merge `29068f9f690fbf09e0ace8d562e4fb846b4d1339`; retain this bundle's three-lens fan-out and read-only agent boundaries.
 
 ## Rationalization Defense
 
@@ -23,7 +23,7 @@ When tempted to bypass a rule, check this table first:
 
 | Excuse | Reality |
 |---|---|
-| "We're short on time, I'll skip the cost lens and just run security + reliability" | All three lenses run every pass — a CRITICAL security finding does not excuse missing a HIGH-severity idle-resource waste or an over-provisioned instance. Each lens covers a non-overlapping taxonomy; skipping one blinds the review to that entire dimension. |
+| "We're short on time, I'll skip the cost lens and just run security + reliability" | Every admitted review runs all three lenses — a CRITICAL security finding does not excuse missing a HIGH-severity idle-resource waste or an over-provisioned instance. Rejected or incomplete inputs stop before all lens calls. |
 | "This is really an application-security question, I'll route it to ywc-security-audit instead" | `ywc-security-audit` reviews app-code auth/injection (OWASP Top 10 on source). This skill's security lens reviews IaC misconfiguration (security groups, IAM policies, public exposure, secrets in state) — a different taxonomy entirely, defined in `references/iac-security.md`. |
 | "I found a CRITICAL finding, I'll just fix the `.tf` file inline instead of routing to infra-optimize" | This skill is diagnosis-only — it has no write access to IaC. Auto-fixing here bypasses the `terraform validate`/`plan` discipline that the `ywc-cloud-engineer` persona and `ywc-infra-optimize` own. Report the finding; route remediation downstream. |
 | "The plan output was clean, I'll recommend apply even though a lens flagged CRITICAL" | A clean `terraform plan` only proves syntactic validity, not policy safety. Every CRITICAL/HIGH finding recommends **blocking** apply regardless of plan success — the two signals answer different questions. |
@@ -43,25 +43,42 @@ When tempted to bypass a rule, check this table first:
 
 ### Step 1: Determine review scope
 
-Identify the Terraform files/modules under review: a staged or committed diff, the `terraform plan` output if the caller already has one, or the full IaC tree when `--scope` is omitted. Record the scope so all three lens dispatches review the identical surface — a lens reviewing a narrower scope than another produces findings that cannot be cross-checked.
+Separate submitted fresh plan/diff input, existing scoped IaC file sets (including `--scope` paths), and the existing topology-packet input before any lens dispatch. A path alone is not reviewable content; do not infer findings from a filename or attestation.
 
-> **Fan-out return contract**: this skill dispatches three workers. Each lens worker (Steps 2–4) must return the bounded status payload from `../references/subagent-status-actions.md` §3.5 — `Status | 1-line summary | artifact path | Concerns (<=10 lines)`, with full findings written to a file whose path is returned. Three verbose lens dumps would otherwise saturate this skill's context before aggregation (Step 5).
+Always emit one `Scope evidence:` header naming the evidence type, binding target, applied status, and any rejection reason; for mixed input list every eligible and excluded scoped path with its binding status. Attestation does not require raw state, credentials, or an apply-command transcript. Keep forwarded evidence sanitized.
+
+- For each existing scoped set, request a one-time user attestation with `evidence_type=state_backend|apply_record|applied_commit`, `binding_target`, and `applied=yes|no`. `binding_target` is the exact submitted path set or an applied commit SHA attested to include those paths. A general statement that a state backend exists is not path binding.
+- Do not query a cloud provider, state backend, or apply system to verify this attestation. Do not require additional repository or revision fields.
+- Scoped-only: missing, unbound, or unapplied evidence returns `BLOCKED` with zero reviewer calls. Name the evidence type, target, and rejection reason in `Scope evidence:`.
+- Valid binding with absent or truncated IaC content returns `NEEDS_CONTEXT` with zero reviewer calls. Name the missing paths; binding metadata never substitutes for content.
+- Mixed input requires a reviewable, complete fresh plan/diff payload and complete content for every validly bound scoped set. Exclude only scoped sets with missing, unbound, or unapplied evidence from every lens, recording each excluded path and binding status in `Scope evidence:` even when another required input is incomplete.
+- Missing or truncated fresh payload or eligible scoped content returns `NEEDS_CONTEXT` with zero reviewer calls. Never use an excluded set as fallback, and do not silently drop a validly bound set whose content is incomplete.
+- Fresh-only and topology-only requests retain their existing input paths. Require their supplied content before dispatch and use `Scope evidence: N/A — fresh plan/diff only` or `Scope evidence: N/A — topology packet only`, respectively.
+- Freeze one eligible input packet and pass the identical fresh-plus-eligible content to all three lenses. For scoped-only, use the complete bound scoped content; for topology-only, use the same supplied topology packet. Lens-specific references may differ, but the eligible surface must not.
+
+**Fan-out return contract**: dispatch the three lenses only after this admission gate passes. Read-only lenses return bounded findings inline; they never create report files. Require Status, Summary, Finding counts, and evidence-linked findings/concerns. The aggregator owns any report file and retains a specialist's options and recommendation in that report. An owner/input/output/status mismatch returns `NEEDS_CONTEXT`; do not treat missing or truncated evidence as a clean review. This read-only return boundary takes precedence over artifact-path examples in the general status reference.
 
 ### Step 2: Security lens
 
-Dispatch a Codex worker carrying the `ywc-security-engineer` persona, carrying the scoped Terraform files and an explicit pointer to `../references/infra/lenses/security.md` and `../references/iac-security.md`. This lens covers: security groups / firewall rules, IAM / RBAC over-permission, public exposure (buckets, endpoints, load balancers), and secrets committed to code or state.
+Dispatch a Codex worker carrying the `ywc-security-engineer` persona, the frozen eligible input packet from Step 1, and an explicit pointer to `../references/infra/lenses/security.md` and `../references/iac-security.md`. This lens covers: security groups / firewall rules, IAM / RBAC over-permission, public exposure (buckets, endpoints, load balancers), and secrets committed to code or state.
 
 ### Step 3: Cost lens
 
-Dispatch a Codex worker carrying the `ywc-performance-engineer` persona, carrying the scoped Terraform files and an explicit pointer to `../references/infra/lenses/cost.md` and `../references/finops.md`. This lens covers: compute right-sizing against observed/expected utilization, idle or orphaned resources, and pricing model fit (on-demand vs reserved vs spot).
+Dispatch a Codex worker carrying the `ywc-performance-engineer` persona, the frozen eligible input packet from Step 1, and an explicit pointer to `../references/infra/lenses/cost.md` and `../references/finops.md`. This lens covers: compute right-sizing against observed/expected utilization, idle or orphaned resources, and pricing model fit (on-demand vs reserved vs spot).
+
+For an escalated FinOps comparison, include exactly one finding's Evidence Snapshot v1 performance lane slice: finding ID and summary, affected resource or workload, evidence source and timestamp, supplied cost/usage metrics, and applicable budget or constraints. Keep the analysis in this caller's report: options, each option's cost/risk trade-off, and a recommended option. This bounded analysis does not replace the shared eligible scope or hand the finding away from the caller.
+
+Missing or truncated required evidence returns `NEEDS_CONTEXT` naming the exact input. Do not estimate missing prices or savings, and do not run a provider lookup, apply, or applied-environment sweep. Keep missing values `unknown`, name the missing evidence and next recheck. Use supplied usage, region, currency, price date/source, and calculation assumptions where relevant; distinguish immediate from commitment savings and name reliability effects. Route a requested environment-wide optimization sweep to `ywc-infra-optimize`.
 
 ### Step 4: Reliability lens
 
-Dispatch a Codex worker carrying the `ywc-cloud-engineer` persona in **review mode** — carry the scoped Terraform files and an explicit instruction that this dispatch is read-only diagnosis: it authors nothing, runs no `terraform apply`, and confines itself to the reliability lens at `../references/infra/lenses/reliability.md`. This lens covers: single points of failure, missing backups / point-in-time recovery, missing resource limits or autoscaling floors, and missing health/readiness checks.
+Dispatch a Codex worker carrying the `ywc-cloud-engineer` persona in **review mode** — carry the frozen eligible input packet from Step 1 and an explicit instruction that this dispatch is read-only diagnosis: it authors nothing, runs no `terraform apply`, and confines itself to the reliability lens at `../references/infra/lenses/reliability.md`. This lens covers: single points of failure, missing backups / point-in-time recovery, missing resource limits or autoscaling floors, and missing health/readiness checks.
 
 ### Step 5: Aggregate severity-rated findings
 
 Collect all three lenses' findings into one report. Deduplicate a finding that two lenses independently flag on the same resource (e.g., a public DB is both a security and a reliability concern — report once, tag both lenses). Rate every finding Critical / High / Medium / Low using each lens reference's severity guidance. Any **CRITICAL or HIGH** finding recommends **blocking** the apply until remediated.
+
+Preserve a required lens's missing-evidence status in the aggregate: a `NEEDS_CONTEXT` result is not a clean lens or a successful full review. Name its exact missing input while retaining other evidence-backed findings and any apply-blocking recommendation. Never let successful lenses mask an owner/input/output/status mismatch.
 
 ### Step 6: Recommend `ywc-infra-optimize` for remediation
 
@@ -72,8 +89,10 @@ Unless `--skip-optimize-recommendation` was passed, close the review by recommen
 ```text
 Infra Review Report
 ─────────────────────────────────────────────────
-Scope:        infra/modules/network  (or "full IaC tree")
-Lenses run:   Security | Cost | Reliability  (all three, every pass)
+Status:       <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>
+Scope:        <submitted eligible scope>
+Scope evidence: <evidence type, binding target, applied status; eligible/excluded paths and reasons, or the applicable N/A header>
+Lenses run:   Security | Cost | Reliability  (all three after admission; zero on rejected/incomplete input)
 
 Findings (severity-rated):
 CRITICAL
@@ -92,7 +111,12 @@ Recommended next step: $ywc-infra-optimize (cost/drift remediation), or $ywc-iac
 
 Before declaring the review pass complete, verify:
 
+For rejected or incomplete admission, return the status, `Scope evidence:` header, and zero reviewer calls before this completion checklist.
+
 - [ ] All three lenses (security, cost, reliability) were dispatched against the identical scope — none skipped
+- [ ] Scoped evidence admission was decided before dispatch; BLOCKED/NEEDS_CONTEXT admission returned zero reviewer calls
+- [ ] `Scope evidence:` names each eligible/excluded binding or the fresh-only/topology-only N/A header
+- [ ] FinOps comparisons use supplied complete evidence, return bounded options inline, and leave report-file ownership with the aggregator
 - [ ] Every finding is severity-rated (Critical / High / Medium / Low), not left unrated
 - [ ] Every CRITICAL/HIGH finding includes a concrete remediation and the report states an explicit BLOCK recommendation
 - [ ] A finding flagged by more than one lens on the same resource is reported once, with both lens tags
@@ -126,4 +150,4 @@ Before declaring the review pass complete, verify:
 | `../references/infra/providers/gcp.md` | Scoped IaC targets GCP — provider-specific misconfiguration/cost/reliability signals |
 | `../references/infra/providers/azure.md` | Scoped IaC targets Azure — provider-specific misconfiguration/cost/reliability signals |
 | `../references/infra/providers/k8s.md` | Scoped IaC includes Kubernetes/Helm (via Terraform providers) |
-| `../references/subagent-status-actions.md` | Steps 2–4 — the §3.5 bounded status-return contract each lens worker must follow so three fan-out returns stay bounded |
+| `../references/subagent-status-actions.md` | General status actions; the read-only inline fan-out contract above owns this skill's return shape |
