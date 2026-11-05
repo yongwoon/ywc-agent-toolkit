@@ -14,7 +14,7 @@
         "Includes a Co-Authored-By trailer in the commit message",
         "Pushes with git push -u origin HEAD",
         "Creates the PR with gh pr create --draft",
-        "Passes the PR body via HEREDOC",
+        "Passes the PR body via a temp file and --body-file; never a heredoc",
         "Displays the PR URL and a change summary upon completion"
       ]
     },
@@ -75,6 +75,66 @@
       "prompt": "Write a localized PR body for a behavior diff, then for docs-only, using the repository template.",
       "expected_output": "Uses already-read diff for optional affected scope and concrete Before/After; localizes to resolved language and respects template. Docs-only omits Impact. No extra acquisition, screenshot or authority change.",
       "files": []
+    },
+    {
+      "id": 7,
+      "source_id": "fr10-pr-body-feature-intent",
+      "prompt": "Create a new PR for a feature diff; one change has a route and sourced intent, another has neither.",
+      "expected_output": "Write capability-based Changes with supported Where/Why only. Group internal changes in one closing item; omit API section for feature-only changes.",
+      "files": [],
+      "expectations": [
+        "Write capability-based Changes with supported Where/Why only. Group internal changes in one closing item; omit API section for feature-only changes."
+      ]
+    },
+    {
+      "id": 8,
+      "source_id": "fr10-pr-body-api-contract",
+      "prompt": "Diff removes DELETE /old, changes auth/schema bound to unchanged GET /items/:id, and adds POST /items. Also refactors a handler internally.",
+      "expected_output": "Write Removed, Changed, New rows in that order, one Method+Path pair each; omit handler-only refactor rows. Never include hosts, tokens, or query values.",
+      "files": [],
+      "expectations": [
+        "Write Removed, Changed, New rows in that order, one Method+Path pair each; omit handler-only refactor rows. Never include hosts, tokens, or query values."
+      ]
+    },
+    {
+      "id": 9,
+      "source_id": "fr10-pr-body-api-rename",
+      "prompt": "Diff renames GET /old to POST /new and changes response/status of GET /status.",
+      "expected_output": "Represent rename as Removed GET /old then Changed GET /status then New POST /new. Include route-bound request/response/auth/status changes; omit API heading entirely when none exists.",
+      "files": [],
+      "expectations": [
+        "Represent rename as Removed GET /old then Changed GET /status then New POST /new. Include route-bound request/response/auth/status changes; omit API heading entirely when none exists."
+      ]
+    },
+    {
+      "id": 10,
+      "source_id": "fr10-pr-body-template-fallback",
+      "prompt": "Create bodies using a template with Impact, one lacking Changes and Impact, and default body with Design Background.",
+      "expected_output": "Preserve required template sections. Use matching Changes section or append localized Changes; API follows Impact, otherwise template/default body and any Design Background.",
+      "files": [],
+      "expectations": [
+        "Preserve required template sections. Use matching Changes section or append localized Changes; API follows Impact, otherwise template/default body and any Design Background."
+      ]
+    },
+    {
+      "id": 11,
+      "source_id": "fr10-pr-body-update-skip",
+      "prompt": "Update an existing PR after commit/push; optionally edit its description.",
+      "expected_output": "Skip Step 7 and pr-body-features-api.md; retain Step 8 remote checks. Do not activate new-body rules on update.",
+      "files": [],
+      "expectations": [
+        "Skip Step 7 and pr-body-features-api.md; retain Step 8 remote checks. Do not activate new-body rules on update."
+      ]
+    },
+    {
+      "id": 12,
+      "source_id": "fr10-pr-body-body-languages",
+      "prompt": "Create API-changing PR bodies in each resolved language en, ko, ja, zh, es.",
+      "expected_output": "Localize Changes/API headings, Where/Why, prose and change values per reference; preserve Method, Path and machine identifiers. Keep required template sections intact.",
+      "files": [],
+      "expectations": [
+        "Localize Changes/API headings, Where/Why, prose and change values per reference; preserve Method, Path and machine identifiers. Keep required template sections intact."
+      ]
     }
   ]
 }

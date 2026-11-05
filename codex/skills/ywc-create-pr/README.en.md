@@ -8,6 +8,7 @@ After work on a feature branch is complete, this Skill automates the flow from c
 
 ### Key Features
 
+- Writes feature Changes with supported what/where/why; adds a Method+Path API table only for endpoint or route-bound request/response/auth/status contract changes. Omits internal refactors and preserves templates and the existing-PR Step 7 skip.
 - Automatically detects the base branch in the order `develop` → `main` → `master`
 - Runs a security check for sensitive files such as `.env`, `*.key`, and `*.pem`
 - Supports pre-push CI checks such as lint, format, typecheck, and test

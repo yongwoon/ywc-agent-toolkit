@@ -8,6 +8,7 @@ Feature Branch での作業完了後、Commit 作成から Draft PR 作成まで
 
 ### 主な機能
 
+- 機能ごとに根拠のある変更内容・適用箇所・意図を記載し、endpoint または route に紐づくリクエスト・レスポンス・認証・ステータス契約の変更時だけ Method+Path API 表を追加します。内部リファクタリングは除外し、テンプレートと既存 PR 更新時の Step 7 skip を維持します。
 - `develop` → `main` → `master` の順で Base Branch を自動判定
 - `.env`、`*.key`、`*.pem` などの機密ファイルを Security Check
 - push 前に lint、format、typecheck、test などの CI Check を実行
