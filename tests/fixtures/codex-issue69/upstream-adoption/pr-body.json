@@ -1,0 +1,98 @@
+{
+  "id": "upstream-adoption-pr-body",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-10",
+    "AC-10"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_sha": "fbcfcd166415fe6a521e65d529ebde4d0d7970b8",
+    "source_prefix": "tools/codex-skill/skills/ywc-create-pr/",
+    "port_scope": "Feature Changes and conditional API table only; preserve local gates"
+  },
+  "live_evidence": "UNVERIFIED — instruction contract only",
+  "scenarios": [
+    {
+      "input": "Feature-only diff with sourced behavior, location, intent; another item lacks location/intent evidence",
+      "expected": "Write supported what/where/why; omit unsupported Where and Why; omit API section entirely"
+    },
+    {
+      "input": "Endpoint addition, deletion, or method/path change",
+      "expected": "One Method+Path row per affected pair; method/path change is Removed old pair then New pair"
+    },
+    {
+      "input": "Request/response/auth/status change; auth/schema-only diff tied to unchanged route definition",
+      "expected": "Changed rows only for route-bound contract changes; route line need not change"
+    },
+    {
+      "input": "Handler-internal refactor without contract change; docs/config/test-only changes",
+      "expected": "No API heading or N/A; internal changes grouped in a closing feature item"
+    },
+    {
+      "input": "Removed, Changed, New routes with hosts, tokens, query values in source",
+      "expected": "Rows ordered Removed, Changed, New; retain code path parameters; exclude hosts, tokens, query values"
+    },
+    {
+      "input": "Template with Impact; fallback without Impact with or without Design Background; template lacking Changes",
+      "expected": "Preserve required section order; use matching Changes or append localized Changes; API after Impact otherwise after body and any Design Background"
+    },
+    {
+      "input": "Existing PR update",
+      "expected": "Step 7 and reference skipped; optional description edit does not activate new-body rules"
+    },
+    {
+      "input": "Resolved output language en, ko, ja, zh, es",
+      "expected": "Localized prose, headings, Where/Why and row values; Method/Path and machine identifiers unchanged"
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-create-pr/SKILL.md",
+      "required": [
+        "[Feature list: what / where / why per item — see references/pr-body-features-api.md]",
+        "**Feature list and API table**",
+        "On the existing-PR update path, Step 7 and this reference remain skipped."
+      ],
+      "forbidden": [
+        "Always generate an API table"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-create-pr/references/pr-body-features-api.md",
+      "required": [
+        "**What** is phrased as a capability or behavior, not a file name.",
+        "If the\n  diff shows no location, omit the Where line",
+        "If\n  no source states the reason, omit the Why line.",
+        "Group pure internal changes",
+        "Never reorder or\n  remove the template's own sections.",
+        "the route line itself may be unchanged",
+        "no empty heading, no \"N/A\"",
+        "List Removed rows first, then Changed, then New",
+        "A handler-internal change that keeps the contract is not a row.",
+        "Never\n  include hosts, tokens, or query values.",
+        "A method/path change is a Removed row for the old pair and a New row for the new pair.",
+        "Placement: append after the Impact section (or after the template/default body and any Design\nBackground when Impact is omitted).",
+        "| en | `Where` | `Why` |",
+        "| ko | `적용 위치` | `의도` |",
+        "| ja | `適用箇所` | `意図` |",
+        "| zh | `适用位置` | `目的` |",
+        "| es | `Dónde` | `Por qué` |",
+        "Base What, Where, and the API table on the diff Step 6.5 already read — do not fetch it again.",
+        "commit messages, the Step 6.6 Design Background result",
+        "Include auth/schema-only changes when repository route definitions bind them to a specific endpoint; exclude unbound internal changes.",
+        "**Changed** means the request or response contract, auth requirement, or status codes\n  changed.",
+        "One row per method + path pair.",
+        "| en | `## API Changes`",
+        "| ko | `## API 변경 (API Changes)`",
+        "| ja | `## API 変更 (API Changes)`",
+        "| zh | `## API 变更 (API Changes)`",
+        "| es | `## Cambios de API (API Changes)`"
+      ],
+      "forbidden": [
+        "Always generate an API table",
+        "Read the Review Guide before writing the body"
+      ]
+    }
+  ]
+}
