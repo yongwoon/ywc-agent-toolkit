@@ -38,3 +38,7 @@ Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
 - [Coreano (Principal)](./README.md)
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
+
+## Seguridad operativa
+
+Detecta FROM modificados solo en hunks de Dockerfile; los errores de consulta o análisis quedan sin resolver. El polling de rebase/CI conserva todo el estado y un único límite total de 1800 segundos entre bloques; un timeout es un fallo. La preferencia de invocación explícita en metadata no garantiza su imposición en runtime.

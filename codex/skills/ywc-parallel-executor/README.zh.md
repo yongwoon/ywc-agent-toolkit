@@ -60,3 +60,7 @@ Wave planning 会把共享公共契约视为 Shared Surfaces，而不只是文�
 `--non-interactive` 运行不会等待提示，而是返回有界的终端状态。Parallel run 只在根 `.ywc-run-state.json` 旁原子地写入一个 aggregate `.ywc-context-handoff.json`；worker 没有 handoff 权限，也不会传递 peer conclusion。无效 handoff 按 checkpoint、当前 `README.md`、`task.md` 顺序重建。
 
 可归属于 canonical target 的终态事件可省略立即重复的 roster 查询。其他任务继续计时；模糊证据和最终结束仍须完整核对。源码及 fixture 检查不代表实际模型观测。
+
+## 操作安全
+
+Docker isolation setup 的所有非零状态（包括 127）都在 worker 启动前将该 task 标记为 BLOCKED，并保留 branch/worktree。只有 exit 0 才允许 worker。

@@ -92,3 +92,7 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 - **上游**：`ywc-sequential-executor`（替换其步骤 5–8）、`ywc-parallel-executor`（替换步骤 4e–4f 的合并 + 标记完成部分）
 - **内部委托**：`ywc-create-pr`（步骤 2）、`ywc-handle-pr-reviews`（步骤 4 Bot 轮询循环）
+
+## 操作安全
+
+单独删除 remote 分支前，必须验证并引用 branch，且 open-PR 查询成功、解析成功并返回空数组。以 merge 为依据时，还须匹配目标 base 与当前 remote tip；exact-tip lease 拒绝并发 push 后的删除。

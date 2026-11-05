@@ -90,3 +90,7 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 - **Upstream**: `ywc-sequential-executor` (Steps 5–8 위임), `ywc-parallel-executor` (Step 4e–4f 일부 위임)
 - **Internal delegation**: `ywc-create-pr` (Step 2), `ywc-handle-pr-reviews` (Step 4 bot polling 내부)
+
+## 운영 안전성
+
+별도 remote 삭제는 유효한 quoted branch와 성공적으로 파싱한 빈 open-PR 조회 결과가 필요합니다. Merge 근거 삭제는 의도한 base와 현재 remote tip까지 일치해야 하며, exact-tip lease로 동시 push를 거부합니다.

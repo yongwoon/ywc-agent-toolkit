@@ -60,3 +60,7 @@ Este skill sigue el formato de reportes, artefactos y estados definido en [SKILL
 Las ejecuciones `--non-interactive` devuelven estados terminales acotados sin prompts. Una ejecución paralela escribe atómicamente un único `.ywc-context-handoff.json` agregado junto a `.ywc-run-state.json` en la raíz; los workers no tienen autoridad de handoff y se excluyen las conclusiones de pares. Los handoffs inválidos se reconstruyen desde el checkpoint y luego `README.md`/`task.md` actuales.
 
 Un evento terminal atribuible al destino canónico permite omitir la consulta redundante inmediata del roster. Los demás temporizadores siguen activos; la ambigüedad y el cierre exigen reconciliación completa. Las comprobaciones de fuente y fixtures no son observaciones del modelo en vivo.
+
+## Seguridad operativa
+
+Cualquier estado distinto de cero del setup de aislamiento Docker, incluido 127, marca la tarea como BLOCKED antes de iniciar el worker y conserva su rama/worktree. Solo exit 0 permite iniciar el worker.
