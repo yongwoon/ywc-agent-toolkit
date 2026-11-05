@@ -10,6 +10,8 @@ Antes de distribuir el trabajo, se rechaza un objetivo vacío o con más de 200 
 
 Después de Phase 1, cada finding Critical o High elegible recibe una verificación independiente blind usando solo `file:line` y la severidad declarada. El informe distingue `reproduced`, `verification-failed`, `verification-error` y `cap-unverified`. Estas llamadas no consumen el budget del Advisor de Phase 2, y la procedencia `[P1]`/`[P2]` permanece separada del estado de verificación.
 
+La revisión incluye A-005 persistencia de credenciales de checkout, A-006 Promises sin await o usadas como booleanos y A-007 errores descartados, con procedencia y justificación de severidad. Solo se usan linters instalados y adecuados sobre archivos cambiados; cada resultado se verifica antes de publicarlo. Se informa de herramientas ausentes sin instalarlas ni cambiar la configuración.
+
 ## Uso
 
 ```text

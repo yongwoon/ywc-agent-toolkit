@@ -6,6 +6,8 @@ Worker 실행 전에 빈 대상 또는 200개를 초과하는 파일 대상은 �
 
 Phase 1 이후 Critical/High finding은 `file:line`과 주장된 심각도만 전달하는 blind 독립 검증을 거칩니다. 결과는 `reproduced`, `verification-failed`, `verification-error`, `cap-unverified`로 구분하며, 이 검증 호출은 Phase 2 Advisor budget을 줄이지 않습니다. `[P1]`/`[P2]` provenance와 검증 상태는 별도 차원입니다.
 
+A-005 checkout 자격 증명 유지, A-006 await 누락/불리언 Promise, A-007 오류 반환값 폐기를 출처와 심각도 근거와 함께 검토합니다. 설치된 적합한 linter만 변경 파일에 사용하고 각 결과를 검증한 뒤 보고합니다. 미설치 도구는 보고하며 설치나 lint 설정 변경은 하지 않습니다.
+
 ## 사용 방법
 
 ```text

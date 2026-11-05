@@ -6,6 +6,8 @@ Before worker fan-out, the selected target is refused when it is empty or exceed
 
 After Phase 1, every eligible Critical or High finding receives a blind independent verification using only its `file:line` and claimed severity. The report distinguishes `reproduced`, `verification-failed`, `verification-error`, and `cap-unverified` outcomes. These verifier calls do not consume the Phase 2 advisor budget, and `[P1]`/`[P2]` provenance remains separate from verification status.
 
+Review also covers A-005 checkout credential persistence, A-006 unawaited/boolean Promises, and A-007 discarded errors with provenance and severity rationale. Installed, stack-appropriate linters check changed files; every hit is verified before surfacing. Missing tools are reported without installation or lint configuration changes.
+
 ## Usage
 
 ```text

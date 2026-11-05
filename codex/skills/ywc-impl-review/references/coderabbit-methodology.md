@@ -69,6 +69,35 @@ and assign severity — not to re-derive what a deterministic tool already prove
 A finding backed by a tool hit plus an explanation is higher-signal than either
 alone. Never let a tool's raw output *be* the review; never ignore it either.
 
+### Targeted rules for recurring defects
+
+Use only already installed, stack-appropriate tools on changed files. Check the
+installed version's supported flags and existing project configuration first.
+Never install a tool or change lint configuration during review.
+Report each unavailable tool as `unavailable` without blocking unrelated review scope.
+Missing required configuration or unsupported flags are verification gaps; record
+why the targeted check cannot run, then apply the catalog scan cues manually.
+
+| Changed files | Installed check (read-only) | Scope / limitations |
+|---|---|---|
+| `*.py` | `ruff check --select S110,BLE001,B904 <changed-files>` | §2 swallowed/broad exceptions and exception chaining; no fix mode |
+| `.github/workflows/*` | `zizmor --offline <changed-workflows>` | Inspect `artipacked` and `unpinned-uses`; A-005 requires a later exposure step |
+| `*.ts` / `*.tsx` | Project ESLint on changed files | Only if existing type-aware configuration enables `no-floating-promises` and `no-misused-promises`; check `ignoreVoid: false` coverage, otherwise scan `void p` manually |
+| `*.go` | `golangci-lint run --enable-only errcheck <changed-pkgs>` | If supported by installed version; package analysis is necessary, but retain only hits in changed files. `_ =` and unchecked assertions require existing `check-blank` / `check-type-assertions`; otherwise apply A-007 scan cues manually |
+
+Every linter hit must pass §2 verify-before-surface before becoming a finding.
+Trace the affected operation, callers, handling and severity rationale; broad
+`except` that logs and re-raises is legitimate. A tool hit alone never decides a
+finding. No hit does not prove the defect class absent.
+Record tool/version, checked paths, rule, output location and verification result;
+keep unavailable checks separate from confirmed findings. Finding provenance also
+retains primary `file:line` or fresh scoped output and the relevant catalog ID.
+
+Frozen behavioral source: PR #340 at
+`2b7c54058da6f15f6c16b9aee5de021fac35f42f`,
+`tools/claude-code/skills/ywc-impl-review/references/coderabbit-methodology.md`.
+These instructions and offline fixtures are not live linter/model execution evidence.
+
 ## 5. Every comment is a patch
 
 A finding lands better as a concrete, committable suggestion plus a one-line

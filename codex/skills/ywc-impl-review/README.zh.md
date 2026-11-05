@@ -10,6 +10,8 @@
 
 Phase 1 之后，每个符合条件的 Critical/High finding 都会进行 blind 独立验证，只传递 `file:line` 和声明的严重性。报告区分 `reproduced`、`verification-failed`、`verification-error` 和 `cap-unverified`。这些验证调用不消耗 Phase 2 Advisor budget，`[P1]`/`[P2]` provenance 与验证状态保持为不同维度。
 
+审查还覆盖 A-005 checkout 凭据持久化、A-006 未 await／作为布尔值使用的 Promise，以及 A-007 丢弃错误返回值，并提供来源和严重性依据。仅使用已安装且适合技术栈的 linter 检查变更文件；每条命中均验证后再报告。缺失工具只报告，不安装或修改 lint 配置。
+
 ## 使用方法
 
 ```text

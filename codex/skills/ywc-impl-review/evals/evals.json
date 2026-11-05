@@ -334,6 +334,86 @@
       "prompt": "Check whether this completed implementation conforms to its approved specification.",
       "expected_output": "Selects ywc-impl-review, not ywc-code-gen, for this collision-pair request; preserves existing positive triggers and scope boundaries.",
       "files": []
+    },
+    {
+      "id": 33,
+      "source_id": "upstream-340-A-005",
+      "prompt": "Review a changed PR workflow with default checkout credentials then PR-controlled tests or workspace artifact upload; compare a trusted-only job without upload and a job needing git push.",
+      "expected_output": "Trace the later credential exposure before reporting A-005 High; trusted-only/no upload is Low/Medium. Require explicit scoped auth design for push, not a blind flag flip; cite primary path and frozen catalog provenance.",
+      "expectations": [
+        "Source assertions and expected traces are instruction contracts; live behavior is UNVERIFIED without observed execution."
+      ],
+      "files": [
+        "SKILL.md",
+        "references/recurring-defects.md",
+        "references/coderabbit-methodology.md",
+        "references/devex-agent.md",
+        "references/security-agent.md"
+      ]
+    },
+    {
+      "id": 34,
+      "source_id": "upstream-340-A-006",
+      "prompt": "Review a Promise permission gate, an unawaited dependent write, void p, and fire-and-forget with rejection handler and no ordering dependency.",
+      "expected_output": "A-006 is Critical for boolean auth/permission/feature gate and High for dependent write ordering. void does not catch rejection. Handled fire-and-forget with no ordering dependency is not a finding.",
+      "expectations": [
+        "Source assertions and expected traces are instruction contracts; live behavior is UNVERIFIED without observed execution."
+      ],
+      "files": [
+        "SKILL.md",
+        "references/recurring-defects.md",
+        "references/coderabbit-methodology.md",
+        "references/devex-agent.md",
+        "references/security-agent.md"
+      ]
+    },
+    {
+      "id": 35,
+      "source_id": "upstream-340-A-007",
+      "prompt": "Review Go discarded write errors, read results used after discarded errors, unchecked assertions, and commented best-effort cleanup.",
+      "expected_output": "A-007 High on write/money/auth and Medium on used read result; justified commented cleanup is no finding. Check actual return type and project-wide errcheck exclusions; do not change config.",
+      "expectations": [
+        "Source assertions and expected traces are instruction contracts; live behavior is UNVERIFIED without observed execution."
+      ],
+      "files": [
+        "SKILL.md",
+        "references/recurring-defects.md",
+        "references/coderabbit-methodology.md",
+        "references/devex-agent.md",
+        "references/security-agent.md"
+      ]
+    },
+    {
+      "id": 36,
+      "source_id": "upstream-340-targeted-tools",
+      "prompt": "For changed Python, workflow, TS and Go files compare each tool installed/absent, missing typed ESLint rules, and missing errcheck blank/assertion configuration. Ruff reports broad except that logs and re-raises.",
+      "expected_output": "Run only installed stack-appropriate changed-file checks: ruff S110/BLE001/B904; offline zizmor artipacked/unpinned-uses; existing typed no-floating-promises/no-misused-promises; Go errcheck. Filter package hits to changed files; manually cover missing rule subsets. Report unavailable without blocking unrelated scope; never install or modify config. Every hit passes verify-before-surface; legitimate re-raise is rejected. No hit does not prove absence.",
+      "expectations": [
+        "Source assertions and expected traces are instruction contracts; live behavior is UNVERIFIED without observed execution."
+      ],
+      "files": [
+        "SKILL.md",
+        "references/recurring-defects.md",
+        "references/coderabbit-methodology.md",
+        "references/devex-agent.md",
+        "references/security-agent.md"
+      ]
+    },
+    {
+      "id": 37,
+      "source_id": "upstream-341-row-severity",
+      "prompt": "Review internal-only prompt injection: item 2 lacks role separation; item 1 is internal-only but not audited. Compare item 1 internal-only and audited.",
+      "expected_output": "Item 2 stays Critical with no downgrade. Item 1 stays Critical unless both internal-only and audited, then its row permits High. Internal-only alone never globally downgrades; apply other row exceptions only under their full conditions.",
+      "expectations": [
+        "Source assertions and expected traces are instruction contracts; live behavior is UNVERIFIED without observed execution."
+      ],
+      "files": [
+        "SKILL.md",
+        "references/recurring-defects.md",
+        "references/coderabbit-methodology.md",
+        "references/devex-agent.md",
+        "references/security-agent.md"
+      ]
     }
   ]
 }
