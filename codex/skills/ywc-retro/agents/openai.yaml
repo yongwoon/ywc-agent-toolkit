@@ -1,0 +1,7 @@
+interface:
+  display_name: "Retro"
+  short_description: "Find evidence-backed workflow improvements"
+  default_prompt: "Use $ywc-retro to review the current conversation or user-provided session artifact for evidence-backed workflow improvements. Do not read local paths or apply changes."
+policy:
+  # Advisory for direct CODEX_HOME skill installs; runtime enforcement is unverified.
+  allow_implicit_invocation: false
