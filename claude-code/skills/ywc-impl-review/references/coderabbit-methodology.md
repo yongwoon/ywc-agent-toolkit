@@ -65,6 +65,26 @@ and assign severity — not to re-derive what a deterministic tool already prove
 A finding backed by a tool hit plus an explanation is higher-signal than either
 alone. Never let a tool's raw output *be* the review; never ignore it either.
 
+**Targeted rules for recurring defect classes.** The rules below catch the
+deterministic subset of a [`recurring-defects.md`](./recurring-defects.md)
+class. If the tool is already installed, run it **on the changed files only**,
+even when the project config does not enable the rule. Never install a tool and
+never edit the project's lint config during a review.
+
+| Changed files | Command (read-only) | Catalog class |
+|---|---|---|
+| `*.py` | `ruff check --select S110,BLE001,B904 <files>` | §2 swallowing catch |
+| `.github/workflows/*` | `zizmor --offline <files>` (`artipacked`, `unpinned-uses`) | A-005, §4 supply chain |
+| `*.go` | `golangci-lint run --enable-only errcheck <changed-pkgs>` — catches bare unchecked calls only; `_ =` and type assertions need `check-blank` / `check-type-assertions` in the project config, otherwise apply A-007's scan cue by hand | A-007 |
+| `*.ts` / `*.tsx` | the project's ESLint, only if it already runs typed `no-floating-promises` / `no-misused-promises`; otherwise apply A-006's scan cue by hand | A-006 |
+
+A hit is a candidate that still has to pass §2 verify-before-surface (broad
+`except` that logs and re-raises is legitimate). No hit does not mean the class
+is absent — each rule checks only a syntactic subset. If a confirmed hit comes
+from a rule the project does not enable, you may add one `Info` Devex finding
+recommending the rule be **merged into** the existing config (`extend-select`,
+not `select`) with a baseline for existing violations.
+
 The same verify-before-surface principle (§2) applies to a **third-party library's
 exception taxonomy**: when a diff's classification logic (log severity, retry
 eligibility, alerting) branches on `instanceof`/error-code checks against an

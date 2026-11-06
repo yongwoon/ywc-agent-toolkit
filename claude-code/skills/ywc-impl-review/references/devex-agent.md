@@ -133,6 +133,8 @@ Before finalizing, run the resilience items from [`recurring-defects.md` §2 (Er
 - **Resource lifecycle** — a client/connection created (e.g. a fresh ORM instance per call) must be closed/disconnected on every exit path, including error paths, or the pool exhausts.
 - **Convention & Language-Policy exhaustiveness** — run dimension 7 (above) against every newly-added or changed comment and user-facing string in the diff and report every violation found, not a sample. This is the recurring bot-review pattern this check exists to catch before the PR opens: the identical convention violation (e.g. a non-English comment, or a hardcoded string that should be externalized) recurring across several sibling files within one PR, each flagged separately by a bot reviewer instead of caught once locally.
 
+Also check mined entries **A-006** (a Promise not awaited, or used as a boolean condition) and **A-007** (an error return value discarded with `_` or a bare call) in [`recurring-defects.md`](./recurring-defects.md#appendix--mined-entries). Both hide a failure without a visible `catch`, so §2's swallowing-catch check alone does not find them. Deterministic pre-checks: the targeted-rules table in [`coderabbit-methodology.md`](./coderabbit-methodology.md#4-static-analysis-as-evidence-not-verdict).
+
 Skip any item that does not apply and say so — do not invent a finding to satisfy the list. Severity follows this file's rubric.
 
 ## Advisor Candidate Criteria (Phase 2 Escalation)
