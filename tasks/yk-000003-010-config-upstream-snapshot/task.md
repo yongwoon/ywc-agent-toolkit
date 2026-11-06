@@ -55,3 +55,9 @@ Covers: AC0
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- MANIFEST: `/var/folders/18/70q6vz3x36j5_n7fd3gvv5xc0000gp/T/ywc-issue69-snapshot/MANIFEST.md` (outside repo; TMPDIR may be cleaned — re-run this task if missing).
+- Counts: 129 files total — ok via `gh api @2e323a97`: 129; installed bundle (in place): 0; BLOCKED: 0 (`grep -c BLOCKED MANIFEST.md` = 0).
+- Layout: upstream keeps the `tools/claude-code/` prefix at `2e323a97`; snapshot mirrors it. Fetched SKILL.md + references/ + scripts/ only (no README locales, evals, prompts). `ywc-task-generator/SKILL.md` added beyond Scope because A2 edits it. `ywc-setup` = local `ywc-setup-language`.
+- Anchors verified in snapshot: `pr-body-features-api.md` 107 lines; `ywc-finish-branch` Remote deletion guard at `:369`; `ywc-auth-implement` `--no-converge` at `:120`; `ywc-debug-rootcause/references/feedback-loop.md` present.
+- Task Verify: all three commands passed (exit 0).
