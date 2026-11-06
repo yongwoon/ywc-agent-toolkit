@@ -40,7 +40,7 @@ Rough idea 를 구현 직전 상태(Small path 직접 실행 plan, 또는 Medium
 2. **Investigate** — `CLAUDE.md`, `package.json`, `docs/architecture/` 등 핵심 file 만 read
 3. **Assess Scale** — Small / Medium / Large 중 정확히 하나 선택 (모호하면 Medium default)
 4. **Branch** — Small 이면 `plan.md`, Medium/Large 면 spec 문서 작성
-5. **Handoff** — 다음 단계 Skill 명시 (실행은 사용자가 결정)
+5. **Handoff** — 다음 단계 Skill 명시 (Medium/Large 는 `--no-converge` / `--non-interactive` 가 아니면 `ywc-spec-ready` 자동 실행)
 
 ## Safety Invariants
 

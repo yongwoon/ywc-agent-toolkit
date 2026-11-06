@@ -40,7 +40,7 @@ Scale に応じて以下のいずれか:
 2. **Investigate** — `CLAUDE.md`, `package.json`, `docs/architecture/` などの essential file のみ read
 3. **Assess Scale** — Small / Medium / Large から 1 つ選択 (曖昧なら Medium default)
 4. **Branch** — Small なら `plan.md`、Medium/Large なら spec document を作成
-5. **Handoff** — 次の Skill を明示的に表示 (実行は user が決定)
+5. **Handoff** — 次の Skill を明示的に表示 (Medium/Large は `--no-converge` / `--non-interactive` でなければ `ywc-spec-ready` を自動実行)
 
 ## Safety Invariants
 
