@@ -13,7 +13,8 @@ This Skill detects Dependabot PRs, applies pre-merge safety checks, and processe
 - Batch-detects and merges Dependabot PRs
 - Supports a security-only merge mode
 - Checks Dockerfile base image changes, major-version upgrades, and CI status before merge
-- Attempts conflict resolution when possible
+- On conflict, posts a single `@dependabot rebase` comment and waits for Dependabot's rebase; major-version bumps are always skipped for human review
+- Parallel-auto queues a PR with `--auto` only when its base branch has a confirmed required status check (the base branch name is validated first); the queue is polled in bounded chunks, and PRs still pending at the 30-minute deadline are reported as stalled
 - **Parallel-auto mode**: groups PRs by lockfile ecosystem and delegates serialization to GitHub's auto-merge queue, reducing wall-clock time for large batches
 - Generates a summary report at the end
 

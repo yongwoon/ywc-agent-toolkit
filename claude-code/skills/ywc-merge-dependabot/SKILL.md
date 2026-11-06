@@ -27,7 +27,7 @@ When tempted to skip a step, check this table first:
 | "Just queue everything with `--auto` and walk away" | The polling loop and final summary are non-optional. Without them users have no audit trail of which PRs failed, why, or whether the queue stalled. |
 | "Repo doesn't have auto-merge enabled, fall through silently" | If `parallel-auto` is requested but `gh repo view --json autoMergeAllowed` returns `false`, fall back to sequential mode and tell the user — never pretend the queue is running. |
 | "CI is green but lockfile shows different hash, merge anyway" | Lockfile mismatch indicates dirty working state. Stop and rebase the PR first. |
-| "Major version bump looks safe, just merge" | Major bumps need explicit user confirmation. Default action: skip and report for human review. |
+| "Major version bump looks safe, just merge" | Major bumps are always skipped and reported; this skill never merges them. Report them for human review. |
 | "Conflicts with main, force-push my own resolution" | Use Dependabot's `@dependabot rebase` comment instead. Hand-resolved conflicts in dep PRs hide breaking changes. |
 | "Security mode, but PR has no CVE link" | If `security` mode is requested and CVE/advisory is missing, skip the PR and report it. |
 | "All passed, no need for a final summary" | Always emit a per-PR result table (merged / skipped / failed) at the end. |
@@ -74,6 +74,20 @@ gh repo view --json autoMergeAllowed --jq .autoMergeAllowed
 
 If the value is `false`, announce the fallback ("Auto-merge is not enabled on this repository — falling back to sequential mode") and proceed as if `parallel-auto` were absent. Never silently skip the queueing and pretend the work is in progress.
 
+Also verify that each PR's own **base branch** has at least one **required** status check. Dependabot PRs may target a branch other than the default one, and `gh pr merge --auto` on a PR that is already mergeable (`CLEAN`/`UNSTABLE`) merges immediately, so without a required check a PR whose CI is still pending would merge before CI finishes.
+
+`baseRefName` is set by the remote, so treat it as hostile input: never paste it into a command line, a shell variable, or a `gh api` path yourself. The bundled script reads it from the PR number and only uses it after it matches `^[A-Za-z0-9._/-]+$`, does not start with `-`, contains no `..`, and passes `git check-ref-format --branch`; it is passed only as a quoted variable to `gh api "repos/{owner}/{repo}/branches/$base/protection/required_status_checks"` and, as a fallback, `gh api "repos/{owner}/{repo}/rules/branches/$base"` (rulesets of type `required_status_checks`):
+
+```bash
+bash "${CLAUDE_SKILL_DIR}/scripts/check-base-required-checks.sh" {number}
+# last stdout line: CONFIRMED=<0|1> BASE=<validated base, empty when invalid>
+# exit 0 = confirmed (at least one required check), 1 = cannot confirm, 2 = usage error
+```
+
+If you Read this SKILL.md directly, `${CLAUDE_SKILL_DIR}` is unsubstituted — replace it with the directory containing this SKILL.md; if the script then fails with `No such file or directory`, `can't open file`, or exit `127`, stop with `BLOCKED: unresolved skill path`.
+
+A base branch is confirmed only on exit 0. A 404, a permission error, any other failure, zero required checks, or a `baseRefName` that cannot be read or fails validation means "cannot confirm": that PR is excluded from the `--auto` queue and handled in the Stage 3 sequential pass (Step 3b) instead (report it as `Skipped (no required check confirmed on <base>)` if the sequential pass skips it; use `<base>` only from a `BASE=` value the script printed). If no PR's base branch is confirmed at all, announce the sequential fallback ("No required status checks confirmed on the base branch — falling back to sequential mode") and proceed as if `parallel-auto` were absent.
+
 ## Task
 
 ### 1. List Dependabot PRs
@@ -81,7 +95,7 @@ If the value is `false`, announce the fallback ("Auto-merge is not enabled on th
 Retrieve all open PRs created by Dependabot:
 
 ```bash
-gh pr list --author "app/dependabot" --state open --json number,title,labels,body --limit 100
+gh pr list --author "app/dependabot" --state open --json number,title,labels,body,baseRefName --limit 100
 ```
 
 If in **security-only mode**, filter to PRs that match any of:
@@ -93,33 +107,42 @@ Sort the resulting list by PR number ascending — processing order matters beca
 
 ### 2. Pre-Merge Checks
 
-For each PR, run these checks **before** attempting to merge. If any check fails, skip the PR.
+For each PR, run these checks **before** attempting to merge. If any check fails, skip the PR (a `pending` CI status is the one exception in parallel-auto mode, below).
 
 | Check | Skip condition | Skip label |
 | --- | --- | --- |
 | **Dockerfile FROM change** | PR modifies a `FROM` image version in any Dockerfile | `Skipped (Dockerfile)` |
 | **Major version upgrade** | PR bumps a major version (e.g. 2.x → 3.x), which risks breaking changes | `Skipped (Major version upgrade)` |
-| **CI status** | Required CI checks have not all passed | `Failed (CI not passing)` |
+| **CI status: failed** | A required CI check has failed | `Failed (CI not passing)` |
+| **CI status: pending** | Required CI checks are still running or queued (none failed) | parallel-auto with a confirmed base branch: hand to the Stage 1 `--auto` queue; every other case: `Skipped (CI pending)` |
 
-To detect a Dockerfile FROM change:
+To detect a Dockerfile `FROM` change, match the `FROM` line only inside the hunks of a changed `Dockerfile*` / `*.dockerfile` file — a `FROM` added to a README or shell file must not trigger the skip. The bundled script fetches the patch first so a `gh` failure is reported as unresolved (exit 3), never mistaken for "no match", then scans it by file header:
 
 ```bash
-gh pr diff {number} --name-only | grep -qE '(^|/)(Dockerfile|Dockerfile\.[^/]*)$' && \
-  gh pr diff {number} | grep -qE '^[-+]FROM ' && \
-  echo "Dockerfile FROM change detected — skip"
+bash "${CLAUDE_SKILL_DIR}/scripts/detect-dockerfile-from.sh" {number}
+# exit 0 = FROM change in a Dockerfile (skip), 1 = none,
+# 3 = unresolved (gh failed — never "none"), 2 = usage error
 ```
 
-To detect major version bumps, compare the version numbers in the PR title (Dependabot titles typically follow the pattern "Bump X from A to B"). A major bump means the leftmost non-zero version segment changed.
+Exit 3 skips the PR as `Skipped (Dockerfile check unresolved)` — an unresolved check is never treated as "no `FROM` change".
+
+To detect major version bumps, run the bundled classifier instead of comparing versions by hand — the "leftmost non-zero segment" rule mis-fires easily in the 0.x range (`0.2.0 → 0.3.0` IS breaking, `1.2.0 → 1.3.0` is not), and a wrong call here merges a breaking change to main.
+
+```bash
+gh pr list --author "app/dependabot" --state open --json number,title \
+  --jq '.[] | "\(.number)\t\(.title)"' \
+  | python3 "${CLAUDE_SKILL_DIR}/scripts/detect-major-bump.py"
+```
+
+Each output line is one JSON object: `{"number":130,"name":"webpack","from":"4.46.0","to":"5.90.0","major_bump":true,"reason":"..."}`. Treat `"major_bump": true` as the skip condition — major bumps are always skipped, never merged. `"major_bump": null` (group updates, git-sha action bumps, unparseable titles) means the script could not decide — fall back to reading the PR diff and judging manually.
 
 ### 2.5. Ecosystem Grouping (parallel-auto mode only)
 
 Skip this step in sequential mode. In parallel-auto mode, classify the eligible PR list by lockfile ecosystem using the bundled script. Resolve the script path relative to this skill folder (the directory containing this `SKILL.md`), not relative to the target repository.
 
 ```bash
-python3 /path/to/ywc-merge-dependabot/scripts/group-by-ecosystem.py {pr_numbers...}
+python3 "${CLAUDE_SKILL_DIR}/scripts/group-by-ecosystem.py" {pr_numbers...}
 ```
-
-Replace `/path/to/ywc-merge-dependabot` with the actual skill directory path.
 
 The script returns single-line JSON of the shape `{"groups": {ecosystem: [pr...]}, "errors": [...]}`. Recognised ecosystems: `npm`, `github-actions`, `python`, `go`, `cargo`, `maven`, `gradle`, `docker`. PRs touching no recognised marker, or markers from two or more ecosystems, land in the `mixed` group.
 
@@ -149,41 +172,55 @@ Process PRs one at a time in ascending PR number order. This is important becaus
 For each PR that passes pre-merge checks:
 
 ```bash
-# Check CI status
-gh pr checks {number} --required
+# Record the head CI will verify; anything but a 40-char hex SHA stops here
+HEAD_SHA=$(gh pr view {number} --json headRefOid --jq .headRefOid) || HEAD_SHA=""
+[[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Skipped (head unreadable)"; exit 1; }
 
-# Attempt merge
-gh pr merge {number} --merge
+# Merge only when the required checks pass (non-zero exit = failed or pending)
+gh pr checks {number} --required || { echo "CI not passing"; exit 1; }
+
+# Attempt merge, pinned to the head CI verified
+gh pr merge {number} --merge --match-head-commit "$HEAD_SHA"
 ```
 
-**If a merge conflict occurs**, resolve it in this order. First, comment `@dependabot rebase` on the PR, then poll for the rebase to land (consistent with the Rationalization Defense above) — do not guess at how long to wait:
+Gate the merge on the exit status of `gh pr checks --required`: a non-zero exit is `Failed (CI not passing)` (failed) or `Skipped (CI pending)` (pending), never a merge. Pin the merge to the recorded head: if Dependabot pushes a new commit between the CI check and the merge, GitHub refuses the merge instead of landing an unverified head. Shell state does not persist between Bash calls, so substitute the literal recorded SHA into the merge command when the CI check runs in a separate call. Output that does not match `^[0-9a-f]{40}$` (empty, `null`, a failed query) means the head is unreadable: skip the PR as `Skipped (head unreadable)` rather than merging without a pin.
+
+If the merge is refused, read `headRefOid` again and apply the same `^[0-9a-f]{40}$` check — an unreadable re-read is `Skipped (head unreadable)`, never a moved head. When a valid re-read differs from the recorded SHA, the head moved: record the new head, re-run the Dockerfile and major-bump checks (Step 2) on it, and restart the CI check on it — at most 2 restarts per PR, then record `Failed (head kept moving)` and move on. When it still matches, the refusal has another cause: record `Failed (merge refused)` with the error. Never retry the merge unpinned.
+
+**If a merge conflict occurs:**
+
+Never hand-resolve a Dependabot PR's conflict — a hand-merged lockfile can mask a
+breaking transitive bump (this is the Rationalization Defense rule above). Let
+Dependabot regenerate the PR against the fresh base instead:
+
+1. Record the current head (`gh pr view {number} --json headRefOid --jq .headRefOid`),
+   then comment `@dependabot rebase` on the PR exactly once (the script below does both) —
+   Dependabot rebuilds the branch and lockfile against the current base
+2. Poll for the rebase with the bundled bounded, query-first loop below (one Bash call with an
+   explicit `timeout: 600000`; up to 9 queries, 60 s apart). The rebase counts as done
+   only when `headRefOid` differs from the recorded value **and** `mergeable` is neither
+   `CONFLICTING` nor `UNKNOWN`. Empty output, a failed query, or `UNKNOWN` is unresolved — keep
+   polling; it is never evidence of a finished rebase. Once done, wait for the rebased
+   branch's CI to re-run and pass — bounded to 30 minutes in chunks of at most 540 s
+   (`gh pr checks {number} --watch --fail-fast`); past that, report `Failed (CI timeout)`
+   and move on
+3. Re-run the Dockerfile and major-bump checks (Step 2) on `NEW_HEAD` — the rebase can
+   change the diff — then, if CI passes, merge with
+   `gh pr merge {number} --merge --match-head-commit "<NEW_HEAD>"` (the literal SHA).
+   A refused merge means the head moved: re-read it and restart the checks and CI wait
+   on the new head (the same at-most-2-restarts rule as above); never retry unpinned
+4. If the loop is exhausted, the new head is still `CONFLICTING`, or CI is red, skip the
+   PR and surface it for human review — do not force-push a resolution
 
 ```bash
-gh pr comment {number} --body "@dependabot rebase"
-# Wait up to 10 minutes for Dependabot's rebase, polling every 30 seconds.
-deadline=$(( $(date +%s) + 600 ))
-lookup_failures=0
-while [ "$(date +%s)" -lt "$deadline" ]; do
-  merge_status=$(gh pr view {number} --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null)
-  if [ -z "$merge_status" ]; then
-    lookup_failures=$((lookup_failures + 1))
-    sleep 30
-    continue
-  fi
-  lookup_failures=0
-  if [ "$merge_status" != "CONFLICTING" ] && [ "$merge_status" != "DIRTY" ] && [ "$merge_status" != "UNKNOWN" ]; then
-    echo "rebase landed, mergeStateStatus=$merge_status"
-    break
-  fi
-  sleep 30
-done
+bash "${CLAUDE_SKILL_DIR}/scripts/wait-dependabot-rebase.sh" {number}
+# last stdout line: REBASED=<0|1> ATTEMPTS=<n> NEW_HEAD=<sha>
+# exit 0 (REBASED=1) → re-check NEW_HEAD, wait for CI on it, then merge pinned with
+#   --match-head-commit "<NEW_HEAD>" (step 3)
+# exit 1 (REBASED=0) → step 4 (skip + surface for human review) — also returned, before any
+#   rebase wait, when the current head cannot be read or the rebase comment cannot be
+#   posted; exit 2 = usage error
 ```
-
-A failed `gh pr view` lookup (empty output) is **not** evidence of a resolved conflict — it continues polling rather than exiting the loop. If lookups keep failing, treat it as a degraded/unknown state, not a safe merge signal.
-
-If the loop exits at the deadline still `CONFLICTING`/`DIRTY`/`UNKNOWN`, or lookups kept failing, the rebase did **not** confirm-clear the conflict — fall back to the manual path.
-
-> **Action required**: Read [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md) and follow **Update Branch From Base** for the manual fallback — merge the base into the Dependabot branch (never rebase, it orphans review threads), push, and re-verify CI before merging. Do not inline or approximate that procedure here.
 
 **If CI fails** after conflict resolution or at any point, skip the PR and record the failure.
 
@@ -195,54 +232,41 @@ In parallel-auto mode the client offloads serialization to GitHub's auto-merge q
 
 **Stage 1 — Queue every non-mixed PR for auto-merge:**
 
-For each ecosystem group's PRs (the order across groups does not matter — they are non-conflicting by construction), queue them all at once:
+For each ecosystem group's PRs whose base branch is confirmed (exit 0 from the required-check script in Mode Selection; every other PR goes to the sequential pass), queue them all at once — the order across groups does not matter, they are non-conflicting by construction:
 
 ```bash
-gh pr merge {number} --auto --merge
+gh pr merge {number} --auto --merge --match-head-commit "<HEAD_SHA>"
 ```
+
+Record `<HEAD_SHA>` per PR exactly as in 3a (`headRefOid`, must match `^[0-9a-f]{40}$`, else the PR goes to the Stage 3 pass) and write it as a literal. The pin only guards the queueing call; heads Dependabot pushes later are guarded by the confirmed required checks, which GitHub evaluates on the head it actually merges. A refused queue call means the head moved: hand the PR to the Stage 3 sequential pass — never re-queue it unpinned.
 
 This sets the PR to merge automatically as soon as its CI is green and the branch is up to date. PRs sharing a lockfile (same ecosystem) automatically serialize because each merge invalidates the next PR's branch state, and Dependabot rebases the affected PRs; PRs in different ecosystems progress in parallel because GitHub processes them independently.
 
 **Stage 2 — Poll the queue until it drains:**
 
-Track each queued PR's state until it reaches a terminal state. Use a single bounded loop (do not spin in tight retries):
+Track each queued PR's state until it reaches a terminal state with the bundled bounded poller (do not spin in tight retries). One call = one chunk of at most 540 s, so give every call an explicit `timeout: 600000`:
 
 ```bash
-# Wait up to 30 minutes total, polling every 60 seconds.
-deadline=$(( $(date +%s) + 1800 ))
-remaining=(101 105 107 203 209 204 208)   # queued PR numbers
-declare -A status
-while [ ${#remaining[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ]; do
-  next=()
-  for pr in "${remaining[@]}"; do
-    pr_state=$(gh pr view "$pr" --json state --jq '.state' 2>/dev/null || echo UNKNOWN)
-    merge_status=$(gh pr view "$pr" --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
-    if [ "$pr_state" = "MERGED" ]; then
-      status[$pr]="merged"
-    elif [ "$pr_state" = "CLOSED" ]; then
-      status[$pr]="closed"
-    elif [ "$merge_status" = "CONFLICTING" ] || [ "$merge_status" = "DIRTY" ]; then
-      # Stay in queue — Dependabot or a maintainer may rebase before the deadline.
-      next+=("$pr")
-    else
-      next+=("$pr")
-    fi
-  done
-  remaining=("${next[@]}")
-  [ ${#remaining[@]} -gt 0 ] && sleep 60
-done
-
-# Any PR still in `remaining` after the loop is recorded as queue-stalled.
-for pr in "${remaining[@]}"; do
-  status[$pr]="stalled"
-done
+# First chunk: the 30-minute deadline is computed ONCE here and stored in the state file.
+# <state-file> must be a fresh path for this run (e.g. STATE_FILE=$(mktemp)) — --prs with existing state exits 2.
+# Shell variables do not persist between Bash calls: print the path once, then write that
+# literal path (never "$STATE_FILE") into this and every later chunk call.
+python3 "${CLAUDE_SKILL_DIR}/scripts/poll-merge-queue.py" --state <state-file> --prs 101 105 107 203
+# Every later chunk: same state file, never new --prs (the deadline is never recomputed).
+python3 "${CLAUDE_SKILL_DIR}/scripts/poll-merge-queue.py" --state <state-file>
+# stdout: {"done": bool, "deadline": <epoch>, "remaining": [...], "status": {"<pr>": "merged|closed|stalled"}}
+# exit 0 = finished (queue drained, or deadline passed and remaining PRs marked stalled)
+# exit 3 = chunk ended before the deadline — run the next chunk
+# exit 2 = usage error, no usable state, or --prs given while <state-file> already holds state
 ```
 
-PRs that reach `MERGED` are recorded as `Merged`. PRs still in the `remaining` list after the deadline are recorded as `Failed (queue stalled)` so the user can investigate. Do not extend the deadline silently — if the queue genuinely needs more time, the user can rerun the skill.
+**Chunking:** a single Bash call is capped at 600000 ms, so the poller runs one chunk (`chunk_deadline` = 540 s) per call and persists `deadline`, `remaining`, `rebase_commented`, and `status` to `<state-file>` after every chunk. Each poll issues one `gh pr view --json state,mergeStateStatus` per PR (bounded to 20 s); the 60 s sleep between polls is clamped so it never runs past the chunk. `MERGED` → merged, `CLOSED` → closed, `CONFLICTING`/`DIRTY` → one `@dependabot rebase` comment per PR (recorded only when it posted, so a failed post is retried) and re-queue. Resume condition: exit 3 — run the next chunk with the same `<state-file>`. If the file is missing or unparsable, restart from the PR list with `--prs ... --deadline <original epoch>` when the original deadline is known — never start a fresh 30 minutes. A chunk that ends before the deadline never marks PRs stalled; when the overall deadline passes, the poller marks every remaining PR `stalled` and exits 0 — then run the stalled-PR step below.
 
-**Stage 3 — Final sequential pass for the mixed bucket:**
+PRs that reach `MERGED` are recorded as `Merged`; PRs whose status is `closed` (closed without merging, e.g. superseded by Dependabot) are recorded as `Skipped (closed without merge)`. PRs whose status is `stalled` (still remaining at the deadline) are recorded as `Failed (queue stalled)` so the user can investigate. Before reporting a stalled PR, disable its auto-merge so it cannot merge later unattended: `gh pr merge "$pr" --disable-auto`. If that command fails, still report the PR as `Failed (queue stalled)` and add "auto-merge still enabled" so the user can disable it manually. Do not extend the deadline silently — if the queue genuinely needs more time, the user can rerun the skill.
 
-After the parallel queue has drained (Stage 2 returned), process the `mixed` group using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
+**Stage 3 — Final sequential pass for the mixed bucket and unconfirmed-base PRs:**
+
+After the parallel queue has drained (Stage 2 returned), process the `mixed` group and every non-mixed PR excluded from the `--auto` queue (base branch not confirmed) using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
 
 ### 4. Final Summary
 
@@ -258,7 +282,7 @@ Ecosystem groups processed: npm (3), github-actions (2), python (2), mixed (1)
 - ✅ Merged    (npm)            : #125 Bump lodash from 4.17.20 to 4.17.21
 - ✅ Merged    (github-actions) : #129 Bump actions/checkout from 4.1.1 to 4.2.0
 - ⏭️ Skipped   (Dockerfile)     : #127 Bump node from 18 to 20
-- ⏭️ Skipped   (Major version)  : #130 Bump webpack from 4.46.0 to 5.90.0
+- ⏭️ Skipped   (Major version upgrade) : #130 Bump webpack from 4.46.0 to 5.90.0
 - ❌ Failed    (queue stalled)  : #132 Bump express from 4.18.0 to 4.19.2 — CONFLICTING after 30 min
 - ❌ Failed    (mixed pass)     : #135 Bump aws-sdk + boto3 — manual conflict resolution required
 
