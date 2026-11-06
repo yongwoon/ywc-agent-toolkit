@@ -7,8 +7,9 @@ Concrete per-phase checklist to walk through during a debugging session. Each ph
 ### Pre-flight
 
 - [ ] Symptom is captured verbatim (exact error message, exact failing assertion)
-- [ ] Reproduction is consistent — running it 3 times produces the same failure each time
-- [ ] If not reproducible, gather data (logs, traces, env dump) — do not advance until reproducible
+- [ ] One red-capable loop command exists and has been run (see [feedback-loop.md](feedback-loop.md)) — deterministic bug: 3 runs produce the same verdict; non-deterministic bug: the reproduction rate is measured, pinned, and high enough to debug against
+- [ ] Scenario minimised — removing any remaining element turns the loop green
+- [ ] If no loop can be built, the tried loop types are listed and the user is asked for access / an artifact / instrumentation permission — do not advance
 
 ### Investigation
 
@@ -70,9 +71,11 @@ The diff list has at least one row marked "matters" with a hypothesis attached, 
 
 ## Phase 3: Hypothesis and Testing
 
-### Form a single hypothesis
+### Rank 3–5 hypotheses
 
-- [ ] Hypothesis written in the shape: **"X is the root cause because Y; the minimal change Z should fix it."**
+- [ ] 3–5 hypotheses ranked before any is tested, each with the prediction that would falsify it
+- [ ] Ranked list shown to the user (proceed with your ranking if they are not responding)
+- [ ] Each hypothesis written in the shape: **"X is the root cause because Y; the minimal change Z should fix it."**
 - [ ] X names a specific identifier (file, function, variable), not a vague area
 - [ ] Y explains the causal chain in one sentence
 - [ ] Z is a single-variable change (one edit site, not "refactor module Q")
@@ -85,8 +88,8 @@ The diff list has at least one row marked "matters" with a hypothesis attached, 
 ### Verify
 
 - [ ] Pass → advance to Phase 4
-- [ ] Fail → **form a new hypothesis**; do NOT add another fix on top of the failed one
-- [ ] After 2 failed hypotheses, stop and read more before forming a 3rd
+- [ ] Fail → revert, then test the next ranked hypothesis (or form a new one); do NOT add another fix on top of the failed one
+- [ ] After every ranked hypothesis has failed, stop and read more before forming new ones
 
 ### Exit condition
 
@@ -121,8 +124,8 @@ A passing test confirming the hypothesis, with exactly one variable changed from
 
 ### 3+ failure escape hatch
 
-- [ ] If three fixes on the same surface have failed, do NOT attempt fix #4
-- [ ] Surface the situation to the user with: (a) summary of attempted fixes, (b) why each failed, (c) architectural concern, (d) proposed redesign
+- [ ] If three fixes on the same surface have failed, dispatch the analyst (SKILL.md Phase 3 §4); do NOT attempt fix #4 unless it returns "fix harder" and a "worth attempting" signal in [architectural-stop-signals.md](architectural-stop-signals.md) applies — fix #4 is the last attempt
+- [ ] On an "architecture is wrong" verdict, a failed fix #4, or no analyst available: surface the situation to the user with: (a) summary of attempted fixes, (b) why each failed, (c) architectural concern, (d) proposed redesign
 - [ ] Transfer the decision to the user — this is not a Phase 4 outcome but a Phase 4 escape
 
 ### Exit condition

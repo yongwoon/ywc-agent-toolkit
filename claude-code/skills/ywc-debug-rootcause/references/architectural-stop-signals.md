@@ -21,11 +21,11 @@ When ≥2 of these signals fire, treat the situation as architectural.
 
 | Signal | Why it might justify fix #4 |
 |---|---|
-| **Each prior fix tested a different hypothesis and was correctly rejected** (not abandoned without verification) | The investigation is converging — the *next* hypothesis genuinely narrows the search space. |
+| **Each prior failed fix targeted a different confirmed hypothesis** (each was verified against the Phase 1 loop, not abandoned without verification) | The investigation is converging — the *next* hypothesis genuinely narrows the search space. |
 | **The defect surface has not moved** through the prior fixes | Same line, same condition, same value — the bug is local; the prior fixes simply did not match the actual cause. |
 | **A new piece of evidence has surfaced** since fix #3 (new log line, new reproduction step, new dependency change) | The hypothesis space has changed; the next attempt is not "fix harder", it is "investigate with new data". |
 
-If none of these apply, do not attempt fix #4.
+If none of these apply, do not attempt fix #4. When one applies, fix #4 still requires the analyst's "fix harder" verdict (SKILL.md Phase 3 §4), and it is the last attempt: if it fails, the situation is architectural.
 
 ## Surface-to-user shape
 
@@ -39,6 +39,7 @@ When the diagnosis is architectural, the message to the user has these parts in 
 1. <commit hash / file:line> — <one-line description>. Result: <how it failed and what new symptom appeared>.
 2. <commit hash / file:line> — <one-line description>. Result: <how it failed and what new symptom appeared>.
 3. <commit hash / file:line> — <one-line description>. Result: <how it failed and what new symptom appeared>.
+4. (only if the analyst-gated fix #4 ran) <commit hash / file:line> — <one-line description>. Result: <how it failed>.
 
 **Pattern observed:** <which of the signals above fired; quote the specific behavior>
 

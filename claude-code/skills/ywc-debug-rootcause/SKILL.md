@@ -82,12 +82,12 @@ Complete each phase before proceeding to the next.
 Before proposing **any** fix:
 
 1. **Read error messages carefully.** Read the full stack trace, every line. Note file paths, line numbers, error codes. Errors often contain the exact name of the missing thing.
-2. **Reproduce consistently.** Run the failing case until you can predict the outcome before pressing enter. If you cannot reproduce, gather more data — never propose a fix for a non-reproducible bug.
+2. **Build a red-capable feedback loop, then minimise it.** Construct one command that goes *red* on this exact symptom — deterministic, fast, agent-runnable — and run it at least once with its output shown (secrets as `<REDACTED>`). Then cut the scenario one element at a time until every remaining element is load-bearing. **Action required**: Read [references/feedback-loop.md](references/feedback-loop.md) now for the ten loop types in order, tightening, non-deterministic bugs, the four-box completion criterion, and the no-loop escape. No red-capable command, no Phase 3: reading code to build a theory before the loop exists is the exact failure this step prevents.
 3. **Check recent changes.** Run `git log --oneline -20`, `git diff HEAD~1`, check dependency bumps, environment changes, config changes since the last known-good state.
 4. **Add diagnostic instrumentation at component boundaries.** For multi-component systems, the failure is almost always at a boundary, not inside a component. Log what each component receives and what it emits. Run once to gather evidence. **Read the evidence before forming a hypothesis.**
 5. **Trace data flow upstream.** Where does the bad value originate? What called the failing function with that value? Keep tracing until the *origin* is found; fix at the origin, not at the symptom.
 
-Phase 1 exit condition: you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
+Phase 1 exit condition: a minimised, red-capable loop command exists and has been run, **and** you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
 
 When local evidence cannot produce a confident initial hypothesis and the Claude Code runtime is in use with the named-agent catalog at `claude-code/agents/` installed, dispatch `Task(subagent_type: ywc-root-cause-analyst)` with the bounded packet (failure symptom + stack trace + recent diff + relevant code snippet) so an Opus-tier analyst returns a ranked top-3 hypothesis list with evidence-for / evidence-against per item (`claude-code/agents/ywc-root-cause-analyst.md`). The dispatch is conditional and at most one per Phase 1; runtimes without named-agent dispatch use the inline procedure above.
 
@@ -105,12 +105,12 @@ Phase 2 exit condition: a concrete diff between the broken and working version, 
 
 Apply the scientific method.
 
-1. **Form a single hypothesis.** Write it down in the shape: "X is the root cause because Y; if I change Z minimally, the test should pass." Vague hypotheses do not survive Step 2.
-2. **Test the smallest possible change.** Change one variable. Do not bundle "while I'm here" edits. **If the bug is automatable, the failing test from Phase 4 §1 must already exist and be confirmed RED before this change is applied** — pull the regression test ahead of the first fix so the reproduction is machine-checkable, not a manual observation a fix can accidentally mask.
+1. **Rank 3–5 falsifiable hypotheses before testing any.** A single hypothesis anchors on the first plausible idea. Write each in the shape: "X is the root cause because Y; if I change Z minimally, the loop goes green" — plus the prediction that would falsify it. A hypothesis with no stateable prediction is discarded or sharpened. Show the ranked list to the user before testing (they often re-rank instantly from domain knowledge, e.g. "we just deployed a change to #3"); proceed with your ranking without waiting when invoked from an executor or non-interactive run, or when the user is not responding.
+2. **Test the top hypothesis with the smallest possible change.** Change one variable and re-run the Phase 1 loop. Do not bundle "while I'm here" edits. Tag every temporary debug log with a unique prefix (e.g. `[DEBUG-a4f2]`) so cleanup is a single grep. **If the bug is automatable, the failing test from Phase 4 §1 must already exist and be confirmed RED before this change is applied** — pull the regression test ahead of the first fix so the reproduction is machine-checkable, not a manual observation a fix can accidentally mask.
 3. **Verify the result.**
    - Pass → proceed to Phase 4.
-   - Fail → form a **new** hypothesis. Do **not** layer another fix on top of the failed one.
-4. **Stop and admit when stuck.** If you have run two hypotheses and both failed, the model of the system is wrong. Read more before forming a third hypothesis. After 3+ failed fixes on the same surface, fire the **architecture-suspicion gate**: when the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-root-cause-analyst)` with the bounded packet plus the failed-fix log. The analyst returns either "architecture is wrong — dispatch ywc-architect with [framed decision]" or "fix harder — next surgical attempt is [specific change]" — never an ambiguous verdict. Runtimes without named-agent dispatch read this gate as "stop and surface to the user instead of attempting a 4th fix".
+   - Fail → revert the change and move to the next ranked hypothesis (or form a **new** one). Do **not** layer another fix on top of the failed one.
+4. **Stop and admit when stuck.** Working down the ranked list is the normal path. If every ranked hypothesis has failed, the model of the system is wrong: read more before forming new ones. A **failed fix** is a change applied as the root-cause fix after its hypothesis was confirmed, with the Phase 1 loop still red; a reverted hypothesis test is a rejected hypothesis, not a failed fix. After 3+ failed fixes on the same surface, fire the **architecture-suspicion gate**: when the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-root-cause-analyst)` with the bounded packet plus the failed-fix log. The analyst returns either "architecture is wrong — dispatch ywc-architect with [framed decision]" or "fix harder — next surgical attempt is [specific change]" — never an ambiguous verdict. A "fix harder" verdict permits exactly one more attempt (fix #4), and only when a "next fix is worth attempting" signal in [references/architectural-stop-signals.md](references/architectural-stop-signals.md) applies; if fix #4 also fails, stop per Phase 4 §5. Runtimes without named-agent dispatch read this gate as "stop and surface to the user instead of attempting a 4th fix".
 
 Phase 3 exit condition: a passing test that confirms the hypothesis, with one and only one variable changed.
 
@@ -129,7 +129,7 @@ Fix the root cause, not the symptom.
    - Each fix requires "massive refactoring" to implement cleanly.
    - The pattern itself does not match the requirement.
 
-   At this point, **do not attempt fix #4**. Surface the situation to the user with: (a) the three attempted fixes and why each failed, (b) the architectural concern, (c) a proposed redesign or pattern change. Continuing to fix is not perseverance — it is sunk-cost thrashing. See [references/architectural-stop-signals.md](references/architectural-stop-signals.md) for the surface format.
+   At this point, **do not attempt fix #4** — the single exception is an analyst "fix harder" verdict per Phase 3 §4, and a failure after that exception is final. Surface the situation to the user with: (a) the three attempted fixes and why each failed, (b) the architectural concern, (c) a proposed redesign or pattern change. Continuing to fix is not perseverance — it is sunk-cost thrashing. See [references/architectural-stop-signals.md](references/architectural-stop-signals.md) for the surface format.
 
 #### §6 — Systemic Prevention (emit)
 
@@ -153,7 +153,7 @@ If you catch yourself doing any of these, stop and restart from Phase 1.
 | "Probably X, let me fix that" | "Probably" is forbidden by `ywc-verify-done`. State the hypothesis precisely or do not state it. |
 | "Pattern says X but I'll adapt differently" | Partial understanding of a pattern guarantees a bug. Read it completely before adapting. |
 | "Here are the main problems: [list of fixes]" | Listing fixes without investigation = guessing in bulk. |
-| "One more fix attempt" (after 2+) | 3+ attempts = architectural problem. Stop and discuss, do not fix again. |
+| "One more fix attempt" (after 3 failed fixes) | 3 failed fixes = architectural suspicion. Only an analyst "fix harder" verdict (Phase 3 §4) permits fix #4; otherwise stop and discuss. |
 | Each fix surfaces a new defect elsewhere | The pattern is wrong, not the latest line. |
 
 ## Output Format
@@ -164,10 +164,10 @@ Surface the investigation in this shape, in order:
 ### Investigation summary
 
 - **Symptom:** <one-line observed behavior>
-- **Reproduction:** <exact command(s)>
+- **Feedback loop (Phase 1):** <the one red-capable command, already run; minimised scenario in one line>
 - **Root cause (Phase 1):** <one-sentence why, with file:line citation>
 - **Working reference (Phase 2):** <path:line of a working sibling, if applicable; "N/A — no sibling pattern exists" otherwise>
-- **Hypothesis (Phase 3):** "<X is the root cause because Y. Minimal change Z should fix it.>"
+- **Hypotheses (Phase 3):** <ranked 3–5, each with its falsifying prediction; mark the confirmed one>
 - **Fix attempted:** <commit hash or file:line of the change>
 - **Regression test:** <test path:name>
 
@@ -189,9 +189,9 @@ When the investigation reveals an architectural concern (Phase 4 §5), the outpu
 Before concluding the investigation, verify:
 
 - [ ] Phase 1 produced a one-sentence root-cause statement with `file:line` citation
-- [ ] Reproduction command is concrete and deterministic (not "sometimes it fails")
+- [ ] Phase 1 loop is one command, already run, red-capable on the user's exact symptom, deterministic, fast, and minimised (every remaining element load-bearing)
 - [ ] Phase 2 found at least one working reference, OR explicitly recorded `N/A — no sibling pattern exists`
-- [ ] Hypothesis (Phase 3) is in the shape "X is the root cause because Y; minimal change Z fixes it"
+- [ ] Phase 3 ranked 3–5 hypotheses, each in the shape "X is the root cause because Y; minimal change Z fixes it" with a falsifying prediction
 - [ ] The fix changed exactly one variable; no bundled cleanup
 - [ ] A regression test was added before the fix and verified red-green-red
 - [ ] `ywc-verify-done` block was surfaced for the final passing test
@@ -209,5 +209,6 @@ Before concluding the investigation, verify:
 | Reference | Use when |
 |---|---|
 | [references/four-phase-checklist.md](references/four-phase-checklist.md) | Walking through the 4 phases with concrete checklists per phase |
+| [references/feedback-loop.md](references/feedback-loop.md) | Phase 1 step 2 — choosing, tightening, and minimising the red-capable loop; the no-loop escape |
 | [references/architectural-stop-signals.md](references/architectural-stop-signals.md) | Deciding whether the situation is "next fix is right" vs "architecture is wrong" |
 | [../references/non-stop-execution.md](../references/non-stop-execution.md) | Routing the investigation result back into the executor loop without halting the workflow unnecessarily |
