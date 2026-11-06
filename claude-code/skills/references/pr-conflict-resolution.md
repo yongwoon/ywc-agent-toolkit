@@ -74,7 +74,7 @@ in fact no conflict (the merge becomes a fast no-op).
 When the PR conflicts with (or is behind) the base, bring the base into the
 feature branch by **merging**, not rebasing.
 
-`<base-branch>` usually comes from the PR's `baseRefName`, which is remote-controlled. Validate it before any git command, in this order (the same rule as `ywc-worktrees --existing-branch`): (1) in-process, without interpolating it into any shell command, it must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`; (2) only then `git check-ref-format --branch "$BASE"` must succeed. On any failure stop with `BLOCKED: invalid base branch name`. Then hold it in a variable and quote every use:
+`<base-branch>` usually comes from the PR's `baseRefName`, which is remote-controlled. Validate it before any git command, in this order (the same rule as `ywc-worktrees --existing-branch`): (1) in-process, without interpolating it into any shell command, it must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`; (2) only then `git check-ref-format "refs/heads/$BASE"` must succeed. On any failure stop with `BLOCKED: invalid base branch name`. Then hold it in a variable and quote every use:
 
 ```bash
 BASE='<base-branch>'                       # validated value only

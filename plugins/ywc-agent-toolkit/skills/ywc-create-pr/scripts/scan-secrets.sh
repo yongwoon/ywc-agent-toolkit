@@ -26,7 +26,9 @@ BASE_BRANCH=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --staged)    MODE="staged"; shift ;;
+    # Phases 1-2 always run; --staged must never downgrade an earlier
+    # --committed, or Phase 3 is skipped and committed secrets report as OK.
+    --staged)    shift ;;
     # A missing value must reach the usage check (exit 2); `shift 2` would
     # fail under set -e and exit 1, which callers read as "secrets found".
     --committed) MODE="committed"; BASE_BRANCH="${2:-}"; shift $(( $# >= 2 ? 2 : 1 )) ;;
@@ -40,6 +42,13 @@ if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" != "true" ]; then
   echo "ERROR: not inside a git work tree; nothing was scanned" >&2
   exit 2
 fi
+
+# diff.relative=true limits every diff to the current directory, so scan from
+# the top of the work tree.
+TOP=$(git rev-parse --show-toplevel) && cd "$TOP" || {
+  echo "ERROR: cannot enter the work tree root; nothing was scanned" >&2
+  exit 2
+}
 
 if [ "$MODE" = "committed" ] && [ -z "$BASE_BRANCH" ]; then
   echo "Usage: scan-secrets.sh --committed <base-branch>" >&2
@@ -62,10 +71,24 @@ fi
 
 FOUND=0
 
+# The user's git config must not change what is scanned: color codes before
+# "+" defeat the `^+` match, and an external diff driver or textconv replaces
+# the patch text; `--text` keeps paths marked binary (`-diff`) from collapsing
+# to "Binary files differ". `--porcelain` is never colored, and
+# `--untracked-files=all` overrides status.showUntrackedFiles=no.
+DIFF_OPTS=(--no-color --no-ext-diff --no-textconv --text)
+
 # ── Phase 1: dangerous file names ────────────────────────────────────────────
-DANGEROUS=$(git status --short 2>/dev/null \
-  | awk '{print $NF}' \
-  | grep -iE '(^|\/)\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$' \
+# A failing git call means nothing was scanned (exit 2); `|| true` is kept only
+# on grep, where exit 1 just means "no match". `-z` disables path quoting
+# (spaces, non-ASCII), so each entry is matched as written; a name is matched
+# after the status field's space or after a `/`.
+STATUS=$(git status --porcelain -z --untracked-files=all | tr '\0' '\n') || {
+  echo "ERROR: git status failed; nothing was scanned" >&2
+  exit 2
+}
+DANGEROUS=$(printf '%s\n' "$STATUS" \
+  | grep -iE '(^|[/ ])\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$' \
   || true)
 
 if [ -n "$DANGEROUS" ]; then
@@ -75,14 +98,20 @@ if [ -n "$DANGEROUS" ]; then
 fi
 
 # ── Phase 2: diff content (staged + unstaged) ─────────────────────────────────
-DIFF_STAGED=$(git diff --cached 2>/dev/null || true)
-DIFF_UNSTAGED=$(git diff 2>/dev/null || true)
+DIFF_STAGED=$(git diff "${DIFF_OPTS[@]}" --cached) || {
+  echo "ERROR: git diff --cached failed; nothing was scanned" >&2
+  exit 2
+}
+DIFF_UNSTAGED=$(git diff "${DIFF_OPTS[@]}") || {
+  echo "ERROR: git diff failed; nothing was scanned" >&2
+  exit 2
+}
 DIFF_CONTENT="$DIFF_STAGED
 $DIFF_UNSTAGED"
 
 # ── Phase 3: committed diff vs base branch ────────────────────────────────────
 if [ "$MODE" = "committed" ]; then
-  DIFF_COMMITTED=$(git diff "${BASE_BRANCH}...HEAD") || {
+  DIFF_COMMITTED=$(git diff "${DIFF_OPTS[@]}" "${BASE_BRANCH}...HEAD") || {
     echo "ERROR: git diff ${BASE_BRANCH}...HEAD failed; committed changes were not scanned" >&2
     exit 2
   }

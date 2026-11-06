@@ -83,7 +83,7 @@ critical — secret-detection exit contract and remote-controlled branch names r
 - `cmp codex/skills/ywc-create-pr/scripts/scan-secrets.sh plugins/ywc-agent-toolkit/skills/ywc-create-pr/scripts/scan-secrets.sh`
 - `[ "$(grep -c '2>/dev/null || true' claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh | tr -d ' ')" = 0 ]`
 - `[ "$(grep -c 'check-ref-format --branch' claude-code/skills/ywc-finish-branch/SKILL.md claude-code/skills/references/pr-conflict-resolution.md | awk -F: '{s+=$2} END{print s}')" = 0 ]`
-- `[ "$(grep -c 'worktree-<task-name>' claude-code/skills/ywc-parallel-executor/SKILL.md | tr -d ' ')" = 0 ]`
+- `[ "$(grep -c 'git -C ../worktree-<task-name>' claude-code/skills/ywc-parallel-executor/SKILL.md | tr -d ' ')" = 0 ]`
 - `grep -qF 'git fetch origin "$BASE"' claude-code/skills/ywc-parallel-executor/SKILL.md`
 - `bash scripts/validate.sh`
 - `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci`

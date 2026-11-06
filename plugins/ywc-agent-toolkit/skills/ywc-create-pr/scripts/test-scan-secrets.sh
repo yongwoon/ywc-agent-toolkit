@@ -82,6 +82,10 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=faildiff  — only the Phase 3 `git diff <base>...HEAD` fails
 #   SHIM_MODE=passdiff  — only that diff always succeeds (empty output)
 #   SHIM_MODE=passall   — `rev-parse --verify` and that diff always succeed
+# Phase 1/2 git failures must not read as "clean" either:
+#   SHIM_MODE=failstatus   — `git status` fails
+#   SHIM_MODE=failcached   — `git diff --cached` fails
+#   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
 SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
 REAL_GIT="$(command -v git)"
 cat > "$SHIM/git" <<EOF
@@ -90,18 +94,29 @@ case "\${SHIM_MODE:-}:\$1:\$*" in
   faildiff:diff:*...HEAD*) exit 1 ;;
   passall:diff:*...HEAD*|passdiff:diff:*...HEAD*) exit 0 ;;
   passall:rev-parse:*--verify*) exit 0 ;;
+  failstatus:status:*) exit 1 ;;
+  failcached:diff:*--cached*) exit 1 ;;
+  failworktree:diff:*--cached*) ;;
+  failworktree:diff:*) exit 1 ;;
 esac
 exec "$REAL_GIT" "\$@"
 EOF
 chmod +x "$SHIM/git"
 
 ERR="$TMP_ROOT/scan.err"
-# run_committed <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
-run_committed() {
+# run_args <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
+run_args() {
   local mode="$1"; shift
   (cd "$REPO" && SHIM_MODE="$mode" PATH="$SHIM:$PATH" GIT_CEILING_DIRECTORIES="$TMP_ROOT" \
-    no_git_env bash "$TARGET" --committed "$@" >/dev/null 2>"$ERR")
+    no_git_env bash "$TARGET" "$@" >/dev/null 2>"$ERR")
   echo $?
+}
+run_committed() { local mode="$1"; shift; run_args "$mode" --committed "$@"; }
+assert_args() {
+  local desc="$1" expected="$2"; shift 2
+  local before=$FAIL
+  assert_eq "$desc" "$expected" "$(run_args "$@")"
+  [ "$FAIL" -eq "$before" ] || sed 's/^/    stderr: /' "$ERR" >&2
 }
 assert_committed() {
   local desc="$1" expected="$2"; shift 2
@@ -126,6 +141,72 @@ assert_committed "--committed shell-metachar base" "2" passall 'main$(id)'
 assert_committed "--committed secret vs valid base" "1" "" main
 g checkout -q clean-feat
 assert_committed "--committed clean vs valid base" "0" "" main
+
+# Flag order: a later --staged must not downgrade --committed (Phase 3 would be
+# skipped and the committed key reported as OK).
+g checkout -q feat
+assert_args "--committed then --staged keeps the committed scan" "1" "" --committed main --staged
+assert_args "--staged then --committed" "1" "" --staged --committed main
+# Phase 1/2: a failing git call means nothing was scanned (exit 2), not "clean".
+g checkout -q clean-feat
+assert_args "git status failure" "2" failstatus --staged
+assert_args "git diff --cached failure" "2" failcached --staged
+assert_args "unstaged git diff failure" "2" failworktree --staged
+
+# The user's git config must not hide changes from the scan.
+g checkout -q feat
+# Color codes before "+" stop the `^+` match.
+g config color.ui always
+assert_args "--committed with color.ui=always" "1" "" --committed main
+g config --unset color.ui
+# An external diff driver replaces the patch text.
+g config diff.external true
+assert_args "--committed with diff.external" "1" "" --committed main
+g config --unset diff.external
+# A textconv driver rewrites the file content before diffing.
+echo "b.txt diff=hide" > "$REPO/.git/info/attributes"
+g config diff.hide.textconv "sh -c :"
+assert_args "--committed with a textconv driver" "1" "" --committed main
+g config --remove-section diff.hide
+: > "$REPO/.git/info/attributes"
+g checkout -q clean-feat
+# A staged secret, scanned with color forced on.
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/c.txt"; g add c.txt
+g config color.diff always
+assert_args "--staged with color.diff=always" "1" "" --staged
+g rm -q --cached c.txt; rm -f "$REPO/c.txt"
+# An unstaged secret in a tracked file, same config.
+echo "key=AKIA""ABCDEFGHIJKLMNOP" >> "$REPO/a.txt"
+assert_args "unstaged change with color.diff=always" "1" "" --staged
+g config --unset color.diff
+g checkout -q -- a.txt
+# Hidden untracked files would hide a new .env from Phase 1.
+: > "$REPO/.env"
+g config status.showUntrackedFiles no
+assert_args "untracked .env with status.showUntrackedFiles=no" "1" "" --staged
+g config --unset status.showUntrackedFiles
+rm -f "$REPO/.env"
+# A path marked binary (-diff) prints "Binary files differ" with no "+" lines.
+echo "c.json -diff" > "$REPO/.git/info/attributes"
+echo "{\"key\": \"AKIA""ABCDEFGHIJKLMNOP\"}" > "$REPO/c.json"; g add c.json
+assert_args "--staged secret in a -diff (binary) path" "1" "" --staged
+g rm -q --cached c.json; rm -f "$REPO/c.json"; : > "$REPO/.git/info/attributes"
+# Quoted paths (space, non-ASCII) must still match the dangerous-name patterns.
+mkdir -p "$REPO/x y"; : > "$REPO/x y/server.pem"
+assert_args "untracked dangerous file under a path with a space" "1" "" --staged
+rm -rf "$REPO/x y"
+mkdir -p "$REPO/日本"; : > "$REPO/日本/.env"
+assert_args "untracked .env under a non-ASCII path" "1" "" --staged
+rm -rf "${REPO:?}/日本"
+# diff.relative=true limits every diff to the current directory.
+g checkout -q feat
+mkdir -p "$REPO/sub"
+g config diff.relative true
+assert_eq "--committed from a subdirectory with diff.relative=true" "1" \
+  "$( (cd "$REPO/sub" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --committed main >/dev/null 2>&1); echo $?)"
+g config --unset diff.relative
+rmdir "$REPO/sub"
+g checkout -q clean-feat
 
 echo ""
 echo "test-scan-secrets.sh: $PASS passed, $FAIL failed"

@@ -32,7 +32,7 @@ Covers: Scope 1-6
 - [ ] `cmp codex/skills/ywc-create-pr/scripts/scan-secrets.sh plugins/ywc-agent-toolkit/skills/ywc-create-pr/scripts/scan-secrets.sh`
 - [ ] `[ "$(grep -c '2>/dev/null || true' claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh | tr -d ' ')" = 0 ]`
 - [ ] `[ "$(grep -c 'check-ref-format --branch' claude-code/skills/ywc-finish-branch/SKILL.md claude-code/skills/references/pr-conflict-resolution.md | awk -F: '{s+=$2} END{print s}')" = 0 ]`
-- [ ] `[ "$(grep -c 'worktree-<task-name>' claude-code/skills/ywc-parallel-executor/SKILL.md | tr -d ' ')" = 0 ]`
+- [ ] `[ "$(grep -c 'git -C ../worktree-<task-name>' claude-code/skills/ywc-parallel-executor/SKILL.md | tr -d ' ')" = 0 ]`
 - [ ] `grep -qF 'git fetch origin "$BASE"' claude-code/skills/ywc-parallel-executor/SKILL.md`
 - [ ] `bash scripts/validate.sh`
 - [ ] `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci`
@@ -48,3 +48,14 @@ Covers: Scope 1-6
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- RED: of the 5 new cases, 4 failed against the old script (`--committed main --staged` → 0; `git status` / `git diff --cached` / unstaged `git diff` failure → 0). `--staged --committed main` already passed and is kept as a regression guard for the fixed flag order.
+- Mutation check (scratch copies): restoring `MODE="staged"` on `--staged`, or `|| true` on any of the three Phase 1/2 git calls, turns the suite red (4/4 killed). The suite has 17 cases and is byte-identical in the Claude Code and Codex copies.
+- `--staged` is now a no-op flag: Phases 1-2 always run, and no caller combines the two flags (grep of `claude-code/skills` and `codex/skills`).
+- Review follow-up (critical review, same files and same "never report clean when it did not scan" goal): the scanner's git calls trusted user/repo config. `color.ui` / `color.diff=always`, `diff.external` and a textconv driver hid committed or staged secrets (exit 0), and `status.showUntrackedFiles=no` hid an untracked `.env`. Fixed with `git diff --no-color --no-ext-diff --no-textconv` at all three calls and `git status --porcelain --untracked-files=all`. 6 new cases were RED first; removing each new flag turns the 23-case suite red (7/7 killed). The parallel-executor Ownership gate used `$WT` before Step 4e defined it, so `WT` is now set in Step 4a.
+- Security re-review follow-up: three more pre-existing "clean when not scanned" paths were fixed, each with a test that was RED first (27 cases; 6/6 mutants killed).
+  - Paths marked `-diff` printed "Binary files differ". Fixed with `--text`.
+  - `diff.relative=true` limited the diff to the current directory. Fixed by `cd` to `git rev-parse --show-toplevel`, which works on any git version, unlike `--no-relative`.
+  - Quoted paths (space, non-ASCII) defeated the anchored `.env` / `.pem` / `.key` patterns. Fixed with `git status --porcelain -z`, matching the whole entry after a space or `/`, without `awk '{print $NF}'`.
+  - Deferred: an added line that itself starts with `++` is dropped by `grep -v '^+++'`. Fixing that needs a hunk-aware filter.
+- Scope 5 premise correction: this repo's `ywc-parallel-executor/SKILL.md` still names the task worktree `../worktree-<task-name>` everywhere (Step 4a creates it there), so `<worktree-path>` would be undefined in this file. The base-refresh block holds that path in `WT` and quotes it. The stale-path Task Verify was narrowed from any `worktree-<task-name>` to the unquoted `git -C ../worktree-<task-name>` form.
