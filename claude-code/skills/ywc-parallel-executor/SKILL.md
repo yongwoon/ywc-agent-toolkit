@@ -116,10 +116,10 @@ Verify the following conditions before starting:
    # exit 0 = clean; exit 1 = stale worktrees detected — details on stdout
    ```
 
-   If exit 1, resolve per worktree listed in the output:
+   If exit 1, resolve per worktree listed in the output (check the first bullet before the others):
+   - The worktree basename is `pr-<N>` → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish or prune it via `ywc-handle-pr-reviews` (`--mode prune --keep-branch`) before the run
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
-   - The worktree basename is `pr-<N>` → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch. Stop and ask the user to finish or prune it via `ywc-handle-pr-reviews` (`--mode prune --keep-branch`) before the run
 
    Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/audit-docker-stacks.sh" --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
 
