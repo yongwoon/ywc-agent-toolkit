@@ -368,6 +368,41 @@ skill that needs deterministic parsing or a bounded wait loop, add a script
 to `<skill>/scripts/` and reference it with a one-line Bash invocation in the
 SKILL.md body rather than describing the logic inline.
 
+The table above ("relative to the repository root") applies only to `shared`
+scripts. Skill-local scripts follow
+[Skill-local script paths](#skill-local-script-paths) below.
+
+## Skill-local script paths
+
+A skill that calls its own script by a repo-relative script path does not resolve once the skill is installed under `~/.claude/skills`. LLM-executed Markdown therefore uses the forms below. This section is the only place the rule is defined; `ywc-skill-author` rule B9 points here.
+
+**(a) SKILL.md** — Claude Code substitutes `${CLAUDE_SKILL_DIR}` when the skill loads.
+
+- Own script: `"${CLAUDE_SKILL_DIR}/scripts/<name>"`
+- Another skill's script: `"${CLAUDE_SKILL_DIR}/../ywc-x/scripts/<name>"`
+
+**(b) Per-skill `references/*.md` and `*.md.template`** — these are not substituted, so they use a placeholder.
+
+- Own script: `"<skill-base-dir>/scripts/<name>"`
+- Another skill's script: `"<skill-base-dir>/../ywc-x/scripts/<name>"`
+- Define the placeholder once per file, at first use, with this sentence: "`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads)".
+- Repeating that sentence in every reference file is an explicit exception to "define in one place": a reference can be Read on its own, without its SKILL.md.
+- The name is `<skill-base-dir>`, not `<skill-dir>`, because `ywc-skill-author/SKILL.md` already uses `<skill-dir>` for the installed skill directory.
+
+**(c) Fallback** — if the model Reads SKILL.md directly, `${CLAUDE_SKILL_DIR}` appears unsubstituted. Replace it with the directory that contains that SKILL.md. If the script then fails with `No such file or directory`, `can't open file`, or exit `127`, stop with `BLOCKED: unresolved skill path`. Do not interpret the result with the skill's own exit-code table: an empty path makes python exit `2`, which collides with skill-defined exit `2` values.
+
+**(c2) Quoting** — always double-quote the expanded path, e.g. `"${CLAUDE_SKILL_DIR}/scripts/x.sh"`, so a space in `$HOME` or a plugin cache path stays one argument.
+
+**(d) Out of scope** — the shared scripts (`resolve-language.sh`, `poll-pr-reviews.sh`, `mark-complete.sh`, `update-state.py`) and the `"${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/…"` form keep their existing contract. README files and the maintainer tables in this file stay repo-relative because humans read them.
+
+**(e) Skills that must be installed together** — a cross-skill script path resolves only when both skills sit side by side, so a partial install (`install_selected()` in `scripts/install.sh`) must include both. A skill-invocation dependency (the caller invokes the callee by name, no script path) still needs the callee installed, so it is listed separately.
+
+| Caller | Callee (script path) | Callee (skill invocation only) |
+|---|---|---|
+| `ywc-parallel-executor` | `ywc-worktrees`, `ywc-docker-isolate` | — |
+| `ywc-finish-branch` | `ywc-task-generator` | `ywc-worktrees` |
+| `ywc-sequential-executor` | — | `ywc-worktrees` |
+
 ## HTML Output Mode
 
 Nine review and report skills (`ywc-impl-review`, `ywc-security-audit`,

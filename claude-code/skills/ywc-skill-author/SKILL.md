@@ -107,6 +107,7 @@ These improve quality but are not strictly required.
 | B6 | Reference an Advisor Pattern (A / B / C) from the bundle-level `references/advisor-pattern.md` | Skill uses an advisor/escalation pass for cost-bounded review |
 | B7 | Add `## Banned Output Patterns` table | Skill generates code or other parseable artifacts |
 | B8 | Define a `--skip-<side-effect>` flag and document propagation in `## Arguments` + `## Integration` + the relevant bundle instruction file | Skill performs a side effect (UL update, CI check, etc.) that an upstream caller may have already performed. See [references/cross-skill-graph.md#flag-propagation-patterns](references/cross-skill-graph.md) for the canonical pattern. |
+| B9 | Call a skill's scripts by the skill-local path form in `claude-code/skills/CLAUDE.md` "Skill-local script paths", never by a repo-relative script path | Skill ships a `scripts/` directory or calls another skill's script |
 
 ## Format Conventions
 

@@ -132,6 +132,8 @@ If the side effect is **only ever skipped** because a specific upstream skill ra
    - The Dependency Graph (placement based on `requires:`)
    - The Cross-Reference Table (one row, listing each anti-trigger pointer)
 
+5. **Check script paths and co-install pairs.** If your skill calls another skill's script, use the skill-local path form (rule B9, `claude-code/skills/CLAUDE.md` "Skill-local script paths" — never a repo-relative script path) and add the pair to that section's "must be installed together" table.
+
 ## Spotting Overlap (Avoid Creating Duplicate Skills)
 
 If the new skill matches one of these patterns, it is overlap with an existing skill — reconsider:
