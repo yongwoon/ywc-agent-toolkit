@@ -48,7 +48,8 @@ When tempted to skip a step, check this table first:
 | `--mode` | `<mode>` | `--mode create` | One of `create`, `audit`, `prune`, `resolve`. See [Modes](#modes). |
 | `--task-name` | `<task-name>` | `--task-name yk-000001-010-db-create-users` | The task this worktree belongs to. Required for `create` and `prune`; optional for `audit`. |
 | `--branch` | `<branch-name>` | `--branch feature/yk-000001-010-db-create-users` | The branch to associate with the worktree. Required for `create`; optional for `prune` (defaults to `feature/<task-name>`). |
-| `--base-branch` | `<branch-name>` | `--base-branch develop` | The starting point for the new branch. Required for `create` (no default). |
+| `--base-branch` | `<branch-name>` | `--base-branch develop` | The starting point for the new branch. Required for `create` unless `--existing-branch` is set (no default). Mutually exclusive with `--existing-branch`. |
+| `--existing-branch` | flag | | (Create only) Check out the branch named by `--branch` instead of creating a new one: a local branch as-is, or a branch that exists only on `origin` as a new tracking branch. Replaces `--base-branch`; passing both is a usage error. |
 | `--root` | `<path>` | `--root .worktrees` | Fallback worktree root when the project has neither `.worktrees/` nor `CLAUDE.md` `worktree_root`. Project-level configuration wins over this value. |
 | `--expect` | `<task1,task2,...>` | `--expect yk-000001-010,yk-000001-020` | (Audit only) Comma-separated list of task names that should currently have a worktree. Any extra or missing worktree fails the audit. |
 | `--force` | flag | | (Prune only) Pass `--force` to `git worktree remove` even if the worktree is dirty. Use only when the caller has confirmed the worktree's contents are disposable. |
@@ -61,7 +62,7 @@ When tempted to skip a step, check this table first:
 | Mode | Reads | Writes | Use case |
 |---|---|---|---|
 | `resolve` | `.worktrees/` presence, CLAUDE.md `worktree_root`, `--root` | nothing | Caller wants to know where a worktree would land before committing to create. Returns the resolved path on stdout. |
-| `create` | resolved root + `--task-name` + `--branch` + `--base-branch` | `git worktree add` | Per-task worktree creation. Called by `ywc-parallel-executor` Step 4 for each in-wave task. |
+| `create` | resolved root + `--task-name` + `--branch` + (`--base-branch` or `--existing-branch`) | `git worktree add` | Per-task worktree creation. Called by `ywc-parallel-executor` Step 4 for each in-wave task. |
 | `audit` | resolved root contents + `--expect` (optional) | nothing (read-only) | Pre-flight or wave-end audit. Reports stale, leaked, or unexpected worktrees. |
 | `prune` | resolved root + `--task-name` + optional `--branch` + optional `--keep-branch` | `git worktree remove` + local branch delete (skipped when `--keep-branch`) + `git worktree prune` | Post-merge cleanup. Called by `ywc-finish-branch` Step 5/8 and `ywc-parallel-executor` Step 4g. `--keep-branch` preserves the branch (e.g. `ywc-sequential-executor --worktree` non-aggregate teardown). |
 
@@ -92,12 +93,17 @@ No side effects. Safe to call from `--dry-run` paths in upstream skills.
 
 1. Run `--mode resolve` internally to get the worktree root.
 2. Verify the target path `<root>/<task-name>` does not already exist. If it does, exit 1 with a descriptive error — never overwrite.
-3. Run `git worktree add <resolved-path> -b <branch> <base-branch>`.
+3. Add the worktree. `--base-branch` and `--existing-branch` are mutually exclusive: passing both exits 1 with a `mutually exclusive` usage error, and passing neither is also a usage error (exit 1). This procedure is prose, so a usage error exits 1, unlike the bundled scripts' exit 2 convention.
+   - Without `--existing-branch`: run `git worktree add <resolved-path> -b <branch> <base-branch>`.
+   - With `--existing-branch`, validate `<branch>` first, in this order. (1) Without interpolating it into any shell command (hold it in a variable or check it in-process; never line-oriented `grep -E`, where `$` matches per line), it must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`. (2) Only after (1) passes, `git check-ref-format "refs/heads/<branch>"` must succeed — it is itself a shell call. On any failure exit 1 with `invalid branch name` **before** running `ls-remote`, `fetch`, or `worktree add`. The allowlist is the shell-metacharacter boundary (a double-quoted `$(…)` or backtick still executes when the caller pastes `<branch>` literally), so branch names that git accepts but that contain `+`, `@`, `#`, or `~` are rejected on purpose. Then quote every branch argument:
+     1. `git show-ref --verify --quiet "refs/heads/<branch>"` succeeds (local branch) → `git worktree add "<resolved-path>" "<branch>"`.
+     2. Otherwise run `git ls-remote --exit-code origin "refs/heads/<branch>"` (the full ref avoids tail matches such as `x/<branch>`). Exit 2 → exit 1 with `branch <branch> not found locally or on origin`. Any other non-zero exit (network, authentication) → print git's stderr as-is and exit 1; never report it as "not found".
+     3. If the branch exists on `origin`, run `git fetch origin "+refs/heads/<branch>:refs/remotes/origin/<branch>"` (the explicit refspec also works in single-branch clones). On failure print git's stderr and exit 1. Then run `git worktree add --track -b "<branch>" "<resolved-path>" "refs/remotes/origin/<branch>"` (the full ref avoids a same-named local tag).
 4. Verify the worktree was registered: `git worktree list --porcelain | grep <resolved-path>` returns a row.
 5. Print the resolved worktree path on stdout for the caller to capture.
 6. Exit 0 on success.
 
-Error handling: if `git worktree add` fails (locked, branch already exists elsewhere, etc.), surface the exact git error and exit 1. Never retry; the caller decides whether the failure is recoverable.
+Error handling: if `git worktree add` fails (locked, branch already exists elsewhere, etc.), surface the exact git error and exit 1. This includes `--existing-branch` when the branch is already checked out in another worktree — deciding whether to reuse that worktree is the caller's job. Never retry; the caller decides whether the failure is recoverable.
 
 ### `--mode audit`
 

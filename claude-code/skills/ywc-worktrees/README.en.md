@@ -9,7 +9,13 @@ priority resolution (`.worktrees/` > CLAUDE.md `worktree_root` >
 
 - `--mode resolve` — print the path where a worktree would land (no side
   effects)
-- `--mode create` — run `git worktree add` and verify registration
+- `--mode create` — run `git worktree add` and verify registration. Pass
+  `--existing-branch` (instead of `--base-branch`) to check out the branch named
+  by `--branch`: a local branch as-is, or an origin-only branch as a new tracking
+  branch. The two flags are mutually exclusive (exit 1), and the branch name is
+  validated (`^[A-Za-z0-9._/-]+$`, no leading `-`, no `..`,
+  `git check-ref-format`) before any git call; failures exit 1 with
+  `invalid branch name`.
 - `--mode audit` — detect stale / leaked / missing worktrees (Pre-flight or
   wave-end)
 - `--mode prune` — post-merge cleanup (`git worktree remove` + local branch

@@ -7,7 +7,12 @@ lifecycle 管理 skill。Worktree priority resolution (`.worktrees/` > CLAUDE.md
 ## Modes
 
 - `--mode resolve` — worktree が land する path のみ出力 (side effect なし)
-- `--mode create` — `git worktree add` 実行 + path 検証
+- `--mode create` — `git worktree add` 実行 + path 検証。`--base-branch` の代わりに
+  `--existing-branch` を渡すと、`--branch` で指定した既存 branch を checkout します
+  (local branch はそのまま、origin のみの branch は tracking branch を作成)。2 つの
+  flag は排他的で (exit 1)、branch 名は git 呼び出しの前に検証されます
+  (`^[A-Za-z0-9._/-]+$`、先頭 `-` 禁止、`..` 禁止、`git check-ref-format`)。
+  失敗時は `invalid branch name` で exit 1。
 - `--mode audit` — Stale / leaked / missing worktree の検出 (Pre-flight
   または wave 終了時)
 - `--mode prune` — Post-merge cleanup (`git worktree remove` + local branch
