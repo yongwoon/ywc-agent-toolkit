@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Mechanical authoring gate for a single ywc-* skill directory — the
-# deterministic subset of the ywc-skill-author A1–A15 checklist. Complements the
+# deterministic subset of the ywc-skill-author A1–A16 checklist. Complements the
 # repo-wide scripts/validate.sh (which only checks frontmatter presence + README
 # set across all skills) by enforcing the per-skill authoring rules at edit time.
 # Exit 1 on any failure.
@@ -64,9 +64,15 @@ esac
 # match, not "Use before/after/during"). Anti-trigger must match
 # "Do not use (for|during|when|in)" — "Do not invoke" is no longer accepted;
 # it passed here previously but always failed score.py's A3.
-case "$desc_text" in "(ywc) Use when"*) ;; *) fail "description does not start with '(ywc) Use when' (A2)" ;; esac
-printf '%s' "$desc_text" | grep -qE 'Do not use (for|during|when|in)\b' \
-  || fail "description missing 'Do not use (for|during|when|in) ...' anti-trigger (A3)"
+#
+# A16: a skill with `disable-model-invocation: true` is user-invoked and pays no
+# Tier-1 routing cost, so A2/A3 (and A4) do not apply — mirrors score.py.
+if ! awk '/^---[[:space:]]*$/ { infm++; if (infm == 2) { exit }; next } infm == 1' "$SKILL" \
+    | grep -qE '^disable-model-invocation:[[:space:]]*true[[:space:]]*$'; then
+  case "$desc_text" in "(ywc) Use when"*) ;; *) fail "description does not start with '(ywc) Use when' (A2)" ;; esac
+  printf '%s' "$desc_text" | grep -qE 'Do not use (for|during|when|in)\b' \
+    || fail "description missing 'Do not use (for|during|when|in) ...' anti-trigger (A3)"
+fi
 
 # A15 (description word cap, FR-5/AC12 — 000059-020). Boundary inclusive:
 # 80 PASS, 81 FAIL. Word count via bash IFS splitting (locale-independent,

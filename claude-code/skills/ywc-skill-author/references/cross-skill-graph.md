@@ -49,7 +49,7 @@ Standalone / parallel skills (no requires):
 - `ywc-e2e-test-strategy` — runs after implementation; not pipeline-bound (init / audit / flow modes)
 - `ywc-incident-postmortem` — runs reactively after production incidents; not part of dev pipeline
 - `ywc-changelog-release-notes` — runs at release time; soft dependency on ywc-release-pr-list output
-- `ywc-merge-dependabot` — independent of feature pipeline
+- `ywc-merge-dependabot` — independent of feature pipeline; user-invoked — not a model-routing target
 - `ywc-project-scaffold` — pre-pipeline (used at project start)
 - `ywc-project-docs` — independent documentation utility
 - `ywc-skill-author` — meta-skill for authoring other skills
@@ -75,7 +75,7 @@ When skill A and skill B share trigger vocabulary, A's description should explic
 | `ywc-parallel-executor` | Sequential tasks → `ywc-sequential-executor` |
 | `ywc-gen-testcase` | Automated unit/integration tests → (none, dev-domain skill) |
 | `ywc-e2e-test-strategy` | Manual verification test sheets → `ywc-gen-testcase`; security penetration testing → `ywc-security-audit`; unit/integration test generation → (none, dev-domain) |
-| `ywc-merge-dependabot` | Feature PR merge → `ywc-create-pr` (or platform tools) |
+| `ywc-merge-dependabot` | Feature PR merge → `ywc-create-pr` (or platform tools); user-invoked — not a model-routing target |
 | `ywc-release-pr-list` | Feature PR creation → `ywc-create-pr`; review comment handling → `ywc-handle-pr-reviews` |
 | `ywc-project-scaffold` | Existing project modification → (none); task creation → `ywc-task-generator` |
 | `ywc-project-docs` | Code comments → (none, in-source); root README → (none); implementation tasks → `ywc-task-generator` |
@@ -156,7 +156,7 @@ Pattern: `ywc-<verb-or-domain-noun>` — short, kebab-case, descriptive.
 
 | Style | Examples (existing) | Use for |
 |---|---|---|
-| Verb-led | `ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-merge-dependabot` | Action-oriented skills |
+| Verb-led | `ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-merge-dependabot` (user-invoked — not a model-routing target) | Action-oriented skills |
 | Domain noun + suffix | `ywc-impl-review`, `ywc-spec-validate`, `ywc-security-audit` | Review / audit skills |
 | Compound noun | `ywc-task-generator`, `ywc-tech-research`, `ywc-gen-testcase` | Generator / produce-X skills |
 | Executor pattern | `ywc-sequential-executor`, `ywc-parallel-executor` | Multi-task orchestration |

@@ -1,5 +1,7 @@
 # Merge Dependabot Skill
 
+> **User-invoked skill** — run it directly with `/ywc-merge-dependabot`. The model does not route to it automatically (`disable-model-invocation: true`), and other skills cannot call it through the Skill tool.
+
 A Claude Code Skill for safely batch-merging Pull Requests created by Dependabot.
 
 ## Overview

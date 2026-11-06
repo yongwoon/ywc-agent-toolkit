@@ -80,7 +80,10 @@ When creating a new `ywc-*` skill or modifying an existing skill's structure
 `ywc-*` skills:
 
 - Frontmatter format (description must start with `(ywc) Use when...` and end
-  with `Do not use for ...` anti-triggers; multilingual triggers required)
+  with `Do not use for ...` anti-triggers; multilingual triggers required).
+  Exception: user-invoked skills (`disable-model-invocation: true`, rule A16) are
+  exempt from trigger / anti-trigger rules and carry a one-line description
+  instead — currently `ywc-setup-language` and `ywc-merge-dependabot`
 - Body structure (`**Announce at start:**` line, `## Rationalization Defense`
   table with ≥5 domain-specific Excuse / Reality pairs)
 - Filesystem (Tier 1 README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`; generated Tier 2 `.zh.md` / `.es.md` where present;

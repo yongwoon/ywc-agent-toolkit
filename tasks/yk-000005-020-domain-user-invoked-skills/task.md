@@ -69,4 +69,9 @@ Covers: AC12 (2 skills), AC13, FR8
 
 ## Implementation Notes (optional)
 
+- BEFORE `score.py --ci`: PASS (62 items, 2 coverage items below minimum). AFTER: PASS (62 items, 3 coverage items below minimum — the two skills' independent positives became negatives; coverage is informational, not a gate).
+- `history.mechanical.json` was rewritten by `--ci` but is byte-identical (no axis changed), so there is nothing to stage.
+- `language-resolution.md` lives at `claude-code/skills/references/`, outside the declared Ownership; edited one line because Scope names it.
+- Snapshot Writing Levers hunk: dropped "See Semantic Packing above for the boundary" (no such section locally, FR3).
+
 <!-- Starts empty at generation time. -->
