@@ -14,9 +14,10 @@ This skill converts a rough idea, vague request, or partially-formed change desc
 
 | Flag | Type | Description |
 |---|---|---|
-| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
+| `--non-interactive` | flag | Skip `AskUserQuestion` calls in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Also skips the Step 5 `ywc-spec-ready` auto-run (the caller owns the next step). |
 | `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used with `--failure-context`. Mutually exclusive with normal spec generation. |
 | `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec` to identify which parts of the spec need amendment. |
+| `--no-converge` | flag | Medium/Large only (ignored on the Small path): stop at the drafted spec instead of auto-running `ywc-spec-ready` in Step 5. Callers that run their own convergence (e.g. `ywc-auth-implement`) pass this. |
 | `--output <path>` | string | Explicit output path for the generated spec or plan (e.g., `--output docs/ywc-plans/agentic-iteration-1.md`). When omitted, defaults to `./plan.md` (Small) or `docs/ywc-plans/<slug>.md` (Medium/Large). |
 
 ## Rationalization Defense
@@ -40,6 +41,8 @@ When tempted to bypass a rule, check this table first:
 | "While I'm reading this code anyway, I'll fold in the adjacent cleanup/refactor" | Thoroughness in *investigation* must not become expansion of the *change scope*. A plan that enumerates a related site (a parameter, a sibling method, a rename opportunity) and then proposes changing it — when the request did not ask for it — adds surface that becomes new Critical findings. The measured regression: a `generatedHtml`-drop plan proactively proposed a `composeHtml` refactor and shipped a build-break Critical the narrower plan never risked. Enumerate everything; change only what the request requires; record the rest as "no change needed" under Existing Constraints Touched. |
 | "AC and the API Contract probably agree, I won't cross-check" | Cross-section drift between AC, FR, Data Model, and API Contract is the #2 source of Critical findings (after Code Compatibility). Step 4b.5 is mandatory for Medium/Large precisely because authors trust their own consistency and reviewers find it broken. Run the cross-check; the cost is ~5 minutes, the cost of skipping it is one full re-plan iteration. |
 | "Validation came back DONE_WITH_CONCERNS, I'll rewrite the spec from scratch and re-run" | Use **Re-plan Mode** (`--update-spec <path> --failure-context "<findings>"`) instead. Re-plan appends an `## Iteration N Amendments` section that addresses only the failing items, preserving the rest of the spec verbatim. Rewriting from scratch loses the validated portions and produces cosmetic diffs that reviewers must re-validate. |
+| "Re-plan Mode finished and the spec is Medium/Large scale, so Step 5 should auto-run ywc-spec-ready like a fresh draft" | Re-plan Mode (Step 4c) always ends at its own Step 4c.7 compact confirmation, never at Step 5. Its caller (`ywc-spec-ready`, `ywc-agentic`) is already mid-loop and does not pass `--non-interactive` on this call — reaching Step 5 here would start `ywc-spec-ready` from inside `ywc-spec-ready`, recursively, on every iteration. |
+| "Medium/Large spec drafted — ask the user whether to converge it first" | Step 5 runs `ywc-spec-ready` by default; asking every time is the friction this default removes. Skip only on `--no-converge`, `--non-interactive`, or Re-plan Mode. |
 
 **Violating the letter of these rules is violating the spirit.** Safety Invariants (DB migration separation, library introduction separation, mandatory spec review for Medium/Large) have no exceptions, regardless of urgency.
 
@@ -242,6 +245,13 @@ Activated when `--update-spec <path>` and `--failure-context <text>` are both pr
 4.5. **Mark superseded originals (the one permitted in-place edit).** When the amendment scopes out or changes an instruction that an original section still states literally — e.g., an original migration SQL block that drops a column the amendment now defers — prepend a single inline marker line at the head of that original section: `> ⚠️ SUPERSEDED by Iteration N — see §<amendment-anchor>`. Do not edit the section's body, only prepend the marker. Then ensure a top-of-file **Operative Sections** pointer names which sections `ywc-task-generator` should treat as authoritative. This removes the precedence-only resolution that otherwise leaves a copy-faithful implementer acting on the superseded original — the exact residual Warning in the LP column-drop re-validation, where the original §1 SQL still dropped `errorMessage` after the amendment deferred it.
 5. The appended section must include: which requirements failed (from `--failure-context`), the amended approach, and updated Acceptance Criteria for the affected items only.
 6. **Re-run Step 4b.5 on the whole spec** (original sections + the new amendment) before printing the handoff. An amendment frequently introduces fresh drift — a new status code that conflicts with an original AC, a new field absent from the original API Contract, a new state value without a write site. Without the re-run, that drift surfaces as a *fresh* Critical at the next `ywc-spec-validate` pass and forces yet another iteration. Re-running 4b.5 here is what makes Re-plan Mode actually converge.
+7. **Handoff (Re-plan Mode only)** — print a compact confirmation and **stop**. Do **not** proceed to Step 5 (the `ywc-spec-ready` auto-run). `Iteration N` is the section number from step 2.
+
+   ```text
+   ✅ Spec amended: <path> (Iteration N)
+   ```
+
+   Re-plan Mode is always invoked programmatically by an orchestrating skill (`ywc-spec-ready` Step 2.4, `ywc-agentic`'s re-plan call) that already owns the next-step decision — it called `ywc-plan --update-spec` as one step inside its own loop. Falling through to Step 5's `ywc-spec-ready` auto-run here would start the caller's loop again from inside itself, recursively, on every single iteration regardless of whether `--non-interactive` was passed.
 
 **Constraints:**
 
@@ -304,6 +314,8 @@ If any pass surfaces ≥1 issue, fix and re-run **that pass**. The loop terminat
 
 ### Step 5: Handoff
 
+Applies to fresh spec generation only — Steps 4a (Small) and 4b (Medium/Large). Re-plan Mode (Step 4c) never reaches this step; it prints its own compact confirmation per Step 4c.7 and stops there.
+
 Always end with an explicit handoff instruction matching the path taken.
 
 **Small path handoff:**
@@ -330,19 +342,18 @@ This plan finalized N new durable success criterion(s). Add to docs/project-miss
 
 On acceptance, invoke `ywc-project-mission --mode update --source plan` (its CHANGESET confirmation gate still applies). On decline or silence, it is a clean no-op — never write the mission file unasked, and never block the handoff on the answer. Skip the offer entirely when the plan introduces no new durable criterion (the common case for small/feature plans).
 
-Then ask the user (skip when `--non-interactive` is set):
+Then, unless `--no-converge` or `--non-interactive` is set, invoke `/ywc-spec-ready --spec <path>` immediately without asking — convergence to `ywc-spec-validate` DONE is the default for a fresh Medium/Large spec. `ywc-spec-ready` owns the loop, its caps, and its final handoff; it never invokes `ywc-task-generator`, so this default stops before decomposition. If it ends `BLOCKED`, `NEEDS_CONTEXT`, or `DONE_WITH_CONCERNS` (cap or stall), surface its Completion Report verbatim and stop with the spec left drafted — no retry, no auto-fix.
 
-> The spec draft is complete. Run `ywc-spec-ready` to drive the validate → converge loop (Critical **and** Warning findings resolved, then DONE) automatically?
-> - **y** → run `/ywc-spec-ready <path>` now.
-> - **n** → proceed manually with the steps below:
->   1. `/ywc-spec-validate --spec <path>`
->   2. (after review passes) `/ywc-task-generator <path>`
->   3. (after tasks are generated) `/ywc-sequential-executor` or `/ywc-parallel-executor`
+When `--no-converge` or `--non-interactive` is set, stop here and print the manual steps:
 
-If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <path>` immediately.
-If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
+```text
+Next:
+  1. /ywc-spec-ready --spec <path>   (or a one-shot /ywc-spec-validate --spec <path>)
+  2. /ywc-task-generator <path>      (after DONE)
+  3. /ywc-sequential-executor or /ywc-parallel-executor
+```
 
-The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. When `ywc-spec-ready` reaches zero Critical and zero Warning findings with only Suggestion findings left, it automatically runs exactly one suggestion-focused amendment pass (without asking) and then hands off to `ywc-task-generator`; any Suggestions that remain after that pass are listed in the handoff, not chased.
+`--non-interactive` callers (`ywc-agentic`) already own the next step, so the auto-run never fires for them.
 
 ## Output Format
 
@@ -378,7 +389,8 @@ Before declaring the skill's task complete, verify:
 - [ ] Output file written at a concrete path (no `<placeholder>` slugs)
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
-- [ ] Did not auto-execute downstream — invoked `ywc-spec-ready` **only** on an explicit **y**; for an **n** answer, a skipped prompt, or `--non-interactive`, ran no downstream skill at all
+- [ ] Medium/Large fresh spec: invoked `ywc-spec-ready` unless `--no-converge` or `--non-interactive` was set; never invoked `ywc-task-generator` or an executor directly
+- [ ] If Re-plan Mode (Step 4c) ran, printed only the Step 4c.7 compact amendment confirmation — never reached Step 5's `ywc-spec-ready` auto-run
 - [ ] If scale = Medium/Large, the spec's **Global Constraints** section is populated from Step 2 findings (or `N/A` after active consideration)
 - [ ] If the Small plan touches ≥2 files sharing a function/type signature, an **Interfaces** block declares each side's exact signature
 
@@ -394,7 +406,7 @@ Before declaring the skill's task complete, verify:
 
 - **Upstream**: `ywc-tech-research` (when technology choice is unsettled before planning)
 - **Downstream (Small path)**: `ywc-code-gen`, `ywc-sequential-executor`
-- **Downstream (Medium/Large path)**: `ywc-spec-ready` (auto-converge shortcut) or `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
+- **Downstream (Medium/Large path)**: `ywc-spec-ready` (auto-run by default; `--no-converge` or `--non-interactive` skips it) or `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
 - **Pairs with**: `ywc-product-review` (run before `ywc-plan` when business framing is unclear), `ywc-project-docs` (run after if `docs/` set is missing)
 - **Reads / writes-back**: `ywc-project-mission` — Step 1 reads `docs/project-mission.md` (best-effort) to frame clarification and seed Acceptance Criteria; Step 5 offers an opt-in `update --source plan` write-back when the plan finalizes ≥1 new durable success criterion. Both are no-ops on absence / decline (NFR2).
 - **Reads / writes-back**: `ywc-adr` — Step 2 reads `docs/adr/` (best-effort) so the plan does not contradict a settled decision; Step 3.5 offers an opt-in `new --source plan` write-back when the Architectural Advisor Gate's verdict meets the three-part offer test. Both are no-ops on absence / decline, and Step 3.5 itself is skipped entirely on the Small path or when no architectural ambiguity surfaced.

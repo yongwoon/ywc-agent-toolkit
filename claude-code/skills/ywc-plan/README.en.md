@@ -56,7 +56,7 @@ Any of the following auto-escalates to Medium scale or higher:
 
 - `ywc-tech-research` — Run before `ywc-plan` when technology choice is unsettled
 - `ywc-product-review` — Run before `ywc-plan` when product/business framing is unclear
-- `ywc-spec-ready` — Auto-converge shortcut for the Medium/Large path (offered via opt-in prompt after spec draft)
+- `ywc-spec-ready` — Auto-converge shortcut for the Medium/Large path (runs automatically after the spec draft; skip with `--no-converge` or `--non-interactive`)
 - `ywc-spec-validate` — Manual next step on the Medium/Large path
 - `ywc-task-generator` — Decomposes the Spec into tasks after review passes
 - `ywc-code-gen` — Direct execution option for the Small path

@@ -56,6 +56,8 @@ Recommend battle-tested libraries or managed services using only stack evidence 
 
 > **Action required when stack evidence is insufficient for a direct recommendation**: Read [references/generic-fallback.md](references/generic-fallback.md) for the fallback research procedure and playbook-caching mechanics.
 
+Pass the policy interview and library recommendation results to `/ywc-plan --no-converge` to generate a plan/spec (this skill owns the convergence decision: converge a Medium/Large spec with `/ywc-spec-ready`; use a Small `plan.md` as-is).
+
 ## Implementation Dispatch
 
 Dispatch, do not implement. Each direct-dispatch prompt below instructs the agent to follow the `ywc-tdd-ritual` cycle and to run `ywc-verify-done` before claiming completion. `ywc-tdd-ritual` is a discipline the dispatched agent follows, not a nested dispatcher this skill calls.
