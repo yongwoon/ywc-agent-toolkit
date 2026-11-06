@@ -1,4 +1,4 @@
-**Next PHASE (yk): `000007`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yk): `000008`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 **Next PHASE (yw): `000005`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 # Codex Issue 69 — task dependency graph
@@ -22,6 +22,9 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 
 ## Phase yk-000006 — done
 - Completed: `yk-000006-010-domain-agent-description-alignment`, `yk-000006-020-domain-worktrees-existing-branch`, `yk-000006-030-domain-handle-pr-reviews-worktree`
+
+## Phase yk-000007 — pending
+- `yk-000007-010-domain-security-guard-followups` — no dependencies (follow-up to the Issue 69 port final review)
 
 ## Task Summary
 
@@ -58,6 +61,7 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 | yk-000006-010-domain-agent-description-alignment | C1 (#345) | sonnet |
 | yk-000006-020-domain-worktrees-existing-branch | C2 (#347) | sonnet |
 | yk-000006-030-domain-handle-pr-reviews-worktree | C3 (#347) | opus |
+| yk-000007-010-domain-security-guard-followups | Final review M1/M2/M4/M5 | opus |
 
 ## Spec Coverage
 
@@ -81,6 +85,7 @@ Failure Modes: provenance/locale gaps → every source task + distribution; anal
 
 - AC0 → `yk-000003-010`; AC1/AC2/AC2b/AC2c, FR6, FR7 → `yk-000004-010`; AC4 → `yk-000004-020`; AC9, NFR1 → `yk-000004-030`; AC6 → `yk-000004-040`; AC8 → `yk-000004-050`; AC3, AC8b → `yk-000004-060`; AC5 → `yk-000004-070`; AC7 → `yk-000004-080`; AC7b → `yk-000004-090`.
 - AC11b → `yk-000005-010`; AC12 (2 skills), AC13, FR8 → `yk-000005-020`; AC10, AC11 → `yk-000005-030`; AC13b → `yk-000005-040`; AC12 (4 skills), AC14, AC14b, AC14c → `yk-000005-050`; AC15 → `yk-000006-010`; AC16 → `yk-000006-020`; AC16b, AC17 → `yk-000006-030`.
+- Final-review follow-up (security Mediums M1, M2, M4, M5) → `yk-000007-010`. M3, M6 and the Lows stay deferred.
 - FR1–FR4 apply to every task; FR5 is the graph above; the NFR1 body-line check is in every task that edits a `SKILL.md`; NFR2 follows from B3/B5.
 - Failure Modes: `${CLAUDE_SKILL_DIR}` / partial install → B1; user-invoked → B3; malicious branch / PR number / fork PR → C2, C3; recursion / double run / non-DONE → A1; handoff secret → B5; remote deletion → A3; CI red → B3; upstream unavailable → T0; required-check gate → B4.
 
