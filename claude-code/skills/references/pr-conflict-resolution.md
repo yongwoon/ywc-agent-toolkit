@@ -79,8 +79,9 @@ feature branch by **merging**, not rebasing.
 ```bash
 BASE='<base-branch>'                       # validated value only
 git fetch origin "$BASE"
-git checkout feature/<task-name>          # skip if the branch is in a worktree — use git -C <worktree>
-git merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into feature/<task-name>"
+BRANCH='feature/<task-name>'
+git checkout "$BRANCH"                    # skip if the branch is in a worktree — use git -C <worktree>
+git merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into $BRANCH"
 ```
 
 **Why merge, not rebase:** rebasing rewrites the feature branch's commit SHAs,

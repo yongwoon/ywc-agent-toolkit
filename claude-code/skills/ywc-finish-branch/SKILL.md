@@ -221,12 +221,16 @@ gh pr merge <pr-number> --delete-branch
 For `--mode local-merge`:
 ```bash
 # Caller has already verified its Step 4 (Task Verification); this skill does not re-verify.
-git checkout <base-branch>
-git pull origin <base-branch>
-git merge --no-ff feature/<task-name> -m "Merge branch 'feature/<task-name>'"
-git push origin <base-branch>          # omit when --defer-push is set
-git branch -d feature/<task-name>      # omit when --keep-branch is set (parallel wave loop case)
+BASE='<base-branch>'                   # validated value only (Remote deletion guard rule above)
+BRANCH='feature/<task-name>'           # validated value only (same rule)
+git checkout "$BASE"
+git pull origin "$BASE"
+git merge --no-ff "$BRANCH" -m "Merge branch '$BRANCH'"
+git push origin "$BASE"                # omit when --defer-push is set
+git branch -d "$BRANCH"                # omit when --keep-branch is set (parallel wave loop case)
 ```
+
+Both `BASE` and `BRANCH` must pass the validation order from the Remote deletion guard rule above before the block runs (on failure return `BLOCKED: invalid branch name` and run no git command); quote every use.
 
 When `--worktree-path <path>` is set, prefix every git command above with `-C <path>` (e.g. `git -C <path> checkout <base-branch>`, `git -C <path> merge --no-ff feature/<task-name> …`, `git -C <path> branch -d feature/<task-name>`); here `<base-branch>` is the run's integration branch (the worktree's checkout). Per the [Worktree-path mode](#worktree-path-mode) HEAD invariant, the integration branch is checked out before the per-task `feature/<task-name>` is deleted, so the delete succeeds.
 
