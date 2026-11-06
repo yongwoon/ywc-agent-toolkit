@@ -48,7 +48,19 @@ A handoff carries what a fresh session cannot recover by looking: the goal, the 
 
 3. **Redact** before anything is written to disk. Replace every credential and secret with `<REDACTED>` — API keys, passwords, tokens, private keys, cloud credentials, OAuth client secrets, cookies, session IDs, connection strings, and auth headers — plus every piece of personal data. Check prose, code blocks, log excerpts, URLs (query strings and userinfo), filenames, and the task name (the step 1 focus, or a short name for the open thread) alike. Step 4 consumes only this redacted output: the document body and the task name it turns into the file name.
 
-4. **Save outside the workspace**: `${TMPDIR:-/tmp}/handoff-<YYYYMMDD-HHMM>-<slug>.<random>` (`%TEMP%` on Windows). Never inside the repository: resolve `${TMPDIR:-/tmp}` to its canonical path (`cd "${TMPDIR:-/tmp}" && pwd -P`, so symlinks are followed before the comparison) and compare it with the canonical `git rev-parse --show-toplevel`; if it is the repository root or under it, use `/tmp` instead and apply the same canonical check to `/tmp` (the repository itself may live under `/tmp`); if no safe directory remains, stop without saving and report that to the user. Create the file with `mktemp "${TMPDIR:-/tmp}/handoff-<YYYYMMDD-HHMM>-<slug>.XXXXXX"` — an exclusive create that yields a new mode-`0600` file — and check the mode is `0600` before writing. Never use a predictable name or a plain redirect: in the shared temp directory (readable by other local users) another user could pre-create the path or plant a symlink there, and `umask 077` does not change an existing file's mode. Write only the redacted document from step 3.
+4. **Save outside the workspace**: `${TMPDIR:-/tmp}/handoff-<YYYYMMDD-HHMM>-<slug>.<random>` (`%TEMP%` on Windows). Never inside the repository: resolve `${TMPDIR:-/tmp}` to its canonical path (`cd "${TMPDIR:-/tmp}" && pwd -P`, so symlinks are followed before the comparison) and compare it with the canonical `git rev-parse --show-toplevel`; if it is the repository root or under it, use `/tmp` instead and apply the same canonical check to `/tmp` (the repository itself may live under `/tmp`); if no safe directory remains, stop without saving and report that to the user. Create the file with the block below, which applies that check and runs `mktemp "$SAFE_DIR/handoff-<YYYYMMDD-HHMM>-<slug>.XXXXXX"` — an exclusive create that yields a new mode-`0600` file — and check the mode is `0600` before writing. Never pass `${TMPDIR:-/tmp}` to `mktemp` directly. Never use a predictable name or a plain redirect: in the shared temp directory (readable by other local users) another user could pre-create the path or plant a symlink there, and `umask 077` does not change an existing file's mode. Write only the redacted document from step 3.
+
+   ```bash
+   TOP=$(git rev-parse --show-toplevel 2>/dev/null || true)
+   [ -n "$TOP" ] && TOP=$(cd "$TOP" && pwd -P)
+   safe() { D=$(cd "$1" 2>/dev/null && pwd -P) || return 1; [ -n "$TOP" ] && case "$D/" in "$TOP"/*) return 1;; esac; SAFE_DIR=$D; }
+   safe "${TMPDIR:-/tmp}" || safe /tmp || { echo "BLOCKED: no save directory outside the repository" >&2; exit 1; }
+   FILE=$(mktemp "$SAFE_DIR/handoff-<YYYYMMDD-HHMM>-<slug>.XXXXXX") || exit 1
+   [ "$(stat -c %a "$FILE" 2>/dev/null || stat -f %Lp "$FILE")" = 600 ] || { echo "BLOCKED: $FILE is not mode 0600" >&2; exit 1; }
+   echo "$FILE"
+   ```
+
+   If the block prints `BLOCKED`, stop without saving and report the cause to the user. Write the document to the printed path only.
 
    `<slug>` is built from the redacted name — the task name after step 3, never the raw one, so a secret such as URL userinfo in the task name cannot leak into the file name. Convert it to kebab-case, keep only `[a-z0-9-]` characters, cut it to at most 40 characters, then strip leading and trailing hyphens. If the result is empty (for example an all non-ASCII name, or only hyphens), fall back: empty → `handoff`.
 
@@ -64,5 +76,6 @@ A handoff carries what a fresh session cannot recover by looking: the goal, the 
 - [ ] Every State thread carries exactly one status tag verified against git/gh, or `[unverified]`
 - [ ] No content duplicated from an artifact that a path or URL could reference
 - [ ] File saved under the OS temp directory, not the repository
+- [ ] File created by the `mktemp "$SAFE_DIR/…"` block and its mode checked as `0600` before writing
 - [ ] No secret or personal data remains in the body or the file name
 - [ ] The absolute path was reported to the user

@@ -47,7 +47,7 @@ Write exactly this structure to `<OUTPUT_PATH>`. No preamble, no narration.
 - Evidence: <redacted transcript reference + minimal excerpt>
 - Proposed change: <one sentence>
 - Owner: <repository-relative path | downstream skill>
-- Note: <already-covered: unverifiable | convergence: N lenses | omit>
+- Note: <already-covered: unverifiable | convergence: N lenses | omit> (one `- Note:` line per note; both may appear)
 
 ## Rejected
 

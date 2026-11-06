@@ -75,7 +75,7 @@ The retrospective improves the **environment** future runs work in — pointers,
 
    ```bash
    perl -i -ne '
-     BEGIN { $pem = 0; $re = qr{(?:ghp_|github_pat_|(?<![A-Za-z0-9_-])sk-)[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[abprs]-[A-Za-z0-9-]{10,}|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+|Bearer [A-Za-z0-9._-]{20,}|[a-z][a-z0-9+.-]*://[^\s/:@]+:[^\s/@]+@\S+|(?:set-cookie|cookie|authorization):\s*\S.*|(?:password|passwd|secret|token|api[_-]?key|access[_-]?key)\s*[=:]\s*\S+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}}i }
+     BEGIN { $pem = 0; $re = qr{(?:gh[opusr]_|github_pat_|glpat-|npm_|(?<![A-Za-z0-9_-])(?:sk-|[sr]k_(?:live|test)_))[A-Za-z0-9_-]{20,}|(?-i:A(?:KIA|SIA)[0-9A-Z]{16})|AIza[0-9A-Za-z_-]{35}|(?:xox[abprs]|xapp)-[A-Za-z0-9-]{10,}|hooks\.slack\.com/services/[A-Za-z0-9/_-]+|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+|Bearer [A-Za-z0-9._-]{20,}|[a-z][a-z0-9+.-]*://[^\s/:@]+:[^\s/@]+@\S+|(?:set-cookie|cookie|authorization):\s*\S.*|(?:password|passwd|secret|token|api[_-]?key|access[_-]?key)["\x27]?\s*[=:]\s*["\x27]?\S+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}}i }
      $hit = 0;
      if ($pem) { if (s/^.*?-----END [A-Z0-9 ]+-----//) { $pem = 0 } else { $_ = "" } }
      unless ($pem) {
@@ -89,11 +89,13 @@ The retrospective improves the **environment** future runs work in — pointers,
    ' "<run>"/*.md
    ```
 
-   The patterns cover common tokens and keys (the `sk-` prefix must not follow a letter, digit, `-`, or `_`, so words such as `task-…` are left alone), JWTs, PEM blocks (the whole `BEGIN` to `END` block, or from `BEGIN` to the end of the file when it is unterminated), connection-string credentials, cookie and `Authorization` lines, `password`/`secret`/`token`/`api_key` assignments, and email addresses. They are a floor, not proof of absence: names and free-form personal data cannot be matched. Present any excerpt you cannot show to be free of personal data as a reference only (tool name, timestamp, file), and state in the report that excerpts were withheld.
+   `"<run>"` is the scratchpad path the Step 3 block printed.
+
+   The patterns cover common tokens and keys (GitHub `gh[opusr]_`, Stripe `[sr]k_live_` / `[sr]k_test_`, GitLab `glpat-`, npm `npm_`, Slack `xox*-` / `xapp-` and webhook URLs, AWS `AKIA` / `ASIA`; the `sk-` prefix must not follow a letter, digit, `-`, or `_`, so words such as `task-…` are left alone), JWTs, PEM blocks (the whole `BEGIN` to `END` block, or from `BEGIN` to the end of the file when it is unterminated), connection-string credentials, cookie and `Authorization` lines, `password`/`secret`/`token`/`api_key` assignments (including JSON or quoted keys such as `"token": "…"`), and email addresses. They are a floor, not proof of absence: names and free-form personal data cannot be matched. Present any excerpt you cannot show to be free of personal data as a reference only (tool name, timestamp, file), and state in the report that excerpts were withheld.
 
    Present the Accepted candidates ranked by the severity scale (High, then Medium, then Low). For each, give the category, the redacted session evidence (tool call or message), the proposed change, its owner (see Integration), and any `already-covered: unverifiable` note. Summarize the Rejected list as one line per entry with its reason code. End the report with the four scratchpad paths. Done when every presented candidate has all four fields (category, evidence, proposed change, owner); drop any candidate missing one. If no lens produced a candidate, report "no candidates".
 
-   **Fallback**: if one or two lens files are missing or empty, run the synthesizer on the files that exist and name the missing lenses in the report; convergence then counts only the lenses that returned output. If there are no lens files, if the runtime cannot dispatch subagents, or if the synthesizer fails, times out, or writes malformed output, collect candidates in a single pass yourself using the Step 3 table. In that case, report `fan-out unavailable — single-pass` together with the cause. Still redact before presenting.
+   **Fallback**: if one or two lens files are missing or empty, run the synthesizer on the files that exist and name the missing lenses in the report; convergence then counts only the lenses that returned output. If there are no lens files, if the runtime cannot dispatch subagents, or if the synthesizer fails, times out, or writes malformed output, collect candidates in a single pass yourself using the Step 3 table, then apply the criteria in [references/synthesizer.md](references/synthesizer.md) and write its Accepted / Rejected output format (one reason code per Rejected entry) to `<run>/synthesis.md`. In that case, report `fan-out unavailable — single-pass` together with the cause. Still redact before presenting.
 
 5. **Stop.** Apply nothing. The user picks which candidates to act on.
 

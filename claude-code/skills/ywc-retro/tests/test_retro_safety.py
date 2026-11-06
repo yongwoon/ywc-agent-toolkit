@@ -32,8 +32,24 @@ SECRETS = {
     "password assignment": "password=hunter2",
     "api key assignment": "API_KEY=abc123",
     "email": "alice@example.com",
+    "github oauth token": "gho_" + "C" * 36,
+    "github server token": "ghs_" + "D" * 36,
+    "stripe live key": "sk_live_" + "c" * 24,
+    "stripe restricted test key": "rk_test_" + "d" * 24,
+    "gitlab pat": "glpat-" + "e" * 20,
+    "npm token": "npm_" + "f" * 36,
+    "slack app token": "xapp-1-A0B1C2D3E4-1234567890-" + "a1" * 10,
+    "aws session key": "ASIA" + "QRSTUVWXYZ012345",
+    "slack webhook": "https://hooks.slack.com/services/T00000000/B00000000/" + "X" * 24,
+}
+# JSON / quoted-key lines (transcripts are JSONL): line -> secret value that must disappear.
+QUOTED = {
+    '{"token": "s3cretTokenValue"}': "s3cretTokenValue",
+    '{"password":"hunter2json"}': "hunter2json",
+    "{'secret': 'singleQuotedVal'}": "singleQuotedVal",
 }
 BENIGN = "task-" + "a" * 30
+BENIGN_WORD = "Asiapacificregionalhub"
 
 
 def check(name: str, ok: bool) -> None:
@@ -74,8 +90,8 @@ def redaction_case(block: str) -> None:
         run = Path(tmp)
         secrets_file = run / "judgment.md"
         secrets_file.write_text(
-            "\n".join(f"{name}: {value}" for name, value in SECRETS.items())
-            + f"\nbenign: {BENIGN}\nCookie: session=abc\nAuthorization: Basic Zm9vOmJhcg==\n"
+            "\n".join(SECRETS.values()) + "\n" + "\n".join(QUOTED)
+            + f"\nbenign: {BENIGN} {BENIGN_WORD}\nCookie: session=abc\nAuthorization: Basic Zm9vOmJhcg==\n"
             "inline -----BEGIN RSA PRIVATE KEY----- AAAA -----END RSA PRIVATE KEY----- tail\n"
             "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXk\n-----END OPENSSH PRIVATE KEY-----\n"
             "after pem\n-----BEGIN EC PRIVATE KEY-----\nunterminated-body\n",
@@ -90,6 +106,8 @@ def redaction_case(block: str) -> None:
         # Each fails if its pattern is removed from the perl regex.
         for name, value in SECRETS.items():
             check(f"redacted: {name}", value not in out)
+        for line, value in QUOTED.items():
+            check(f"redacted: quoted key {line}", value not in out)
         check("redacted: cookie line", "session=abc" not in out)
         check("redacted: authorization line", "Zm9vOmJhcg" not in out)
         check("redacted: inline PEM", "AAAA" not in out and "tail" in out)
@@ -97,6 +115,8 @@ def redaction_case(block: str) -> None:
         check("redacted: unterminated PEM to EOF", "unterminated-body" not in out)
         # Fails if the `sk-` lookbehind is dropped.
         check("benign task- word kept", BENIGN in out)
+        # Fails if the AWS prefix match becomes case-insensitive.
+        check("benign Asia… word kept", BENIGN_WORD in out)
         # Fails if the per-file `$pem = 0` reset at eof is dropped.
         check("PEM state reset per file", next_file.read_text(encoding="utf-8") == "next file survives\n")
         check("hits reported on stderr", "judgment.md" in done.stderr)
