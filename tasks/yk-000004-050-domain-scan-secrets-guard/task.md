@@ -60,3 +60,8 @@ Covers: AC8
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+- AC8 baseline (pre-change, scratchpad temp dir, `GIT_CEILING_DIRECTORIES` set): outside work tree → exit 0 ("OK: No secrets detected"); bare repo → exit 0; unresolved path → exit 127; `test-scan-secrets.sh` → exit 127 (missing); `grep -c BLOCKED SKILL.md` = 2; registration greps 0 / 0.
+- RED: new test before the guard → 1 passed, 2 failed (outside / bare got 0). GREEN after guard → 3 passed.
+- Guard hunk ported from snapshot (`rev-parse --is-inside-work-tree` = "true"), placed after arg parsing; local `set -euo pipefail` kept (snapshot's `-uo` switch is out of scope).
+- `env -u GIT_DIR -u GIT_INDEX_FILE -u GIT_WORK_TREE` wraps every git and scan call in the test (`no_git_env`), not only repo creation, because an inherited `GIT_DIR` would also make the scan itself see the hook's repo. Verified by running the test with all three vars set → 3 passed.
+- Mutation: removing `exit 2` from the guard → `validate.sh` reports "scan-secrets test suite failed"; restored.
