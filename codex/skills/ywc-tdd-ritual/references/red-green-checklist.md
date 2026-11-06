@@ -41,7 +41,7 @@ The test file exists, asserts the desired behavior, and references symbols (func
 - [ ] The test actually ran (not skipped, not collection-error)
 - [ ] The failure originated at the assertion line, not at imports / setup
 - [ ] The failure message matches the expected mismatch (got X, expected Y)
-- [ ] If a compile-only stub was added, the test cannot pass against it: a value-returning stub fails by construction (not-implemented error or a sentinel distinct from every expected value), a state-mutating stub with no return value is an empty no-op and RED is confirmed through the failing state assertion (no `panic`); a zero-value expectation stays unchanged and is never satisfied by a stub that already returns that zero value
+- [ ] If a compile-only stub was added, the test cannot pass against it: a value-returning stub returns a not-implemented error or a placeholder that makes the test fail at a behavior assertion (it need not differ from every expected value), a state-mutating stub with no return value is an empty no-op and RED is confirmed through the failing state assertion (no `panic`); a zero-value expectation stays unchanged and is never satisfied by a stub that already returns that zero value
 - [ ] No other test broke as a side effect
 
 ### Decision
