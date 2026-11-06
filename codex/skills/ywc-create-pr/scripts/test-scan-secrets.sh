@@ -191,6 +191,15 @@ echo "c.json -diff" > "$REPO/.git/info/attributes"
 echo "{\"key\": \"AKIA""ABCDEFGHIJKLMNOP\"}" > "$REPO/c.json"; g add c.json
 assert_args "--staged secret in a -diff (binary) path" "1" "" --staged
 g rm -q --cached c.json; rm -f "$REPO/c.json"; : > "$REPO/.git/info/attributes"
+# An added line whose content starts with "++" reads "+++" in the diff; a
+# filter that drops every "+++" line as a file header misses it.
+echo "++key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt
+assert_args "--staged secret on a line starting with ++" "1" "" --staged
+g rm -q --cached d.txt; rm -f "$REPO/d.txt"
+g checkout -q -b plusplus main
+echo "++key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt; g commit -q -m plusplus
+assert_args "--committed secret on a line starting with ++" "1" "" --committed main
+g checkout -q clean-feat
 # Quoted paths (space, non-ASCII) must still match the dangerous-name patterns.
 mkdir -p "$REPO/x y"; : > "$REPO/x y/server.pem"
 assert_args "untracked dangerous file under a path with a space" "1" "" --staged
