@@ -731,14 +731,17 @@ check_cc_support_dirs() {
   done
 
   # The secret scan must never report "clean" when it could not scan.
-  local scan_test=claude-code/skills/ywc-create-pr/scripts/test-scan-secrets.sh
-  if [ ! -f "$scan_test" ]; then
-    echo "ERROR: scan-secrets test suite is missing: $scan_test"
-    ERRORS=$((ERRORS + 1))
-  elif ! bash "$scan_test" >/dev/null 2>&1; then
-    echo "ERROR: scan-secrets test suite failed: $scan_test"
-    ERRORS=$((ERRORS + 1))
-  fi
+  local scan_test
+  for scan_test in claude-code/skills/ywc-create-pr/scripts/test-scan-secrets.sh \
+                   codex/skills/ywc-create-pr/scripts/test-scan-secrets.sh; do
+    if [ ! -f "$scan_test" ]; then
+      echo "ERROR: scan-secrets test suite is missing: $scan_test"
+      ERRORS=$((ERRORS + 1))
+    elif ! bash "$scan_test" >/dev/null 2>&1; then
+      echo "ERROR: scan-secrets test suite failed: $scan_test"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
 
   # merge-dependabot scripts gate `--auto` merges on a remote-controlled
   # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
