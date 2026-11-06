@@ -113,9 +113,9 @@ if ! EXCL="$(git rev-parse --git-path info/exclude)"; then
 fi
 mkdir -p "$(dirname "$EXCL")"
 for f in .ywc-run-state.json .ywc-learnings.jsonl; do
-  if ! grep -qxF "$f" "$EXCL" 2>/dev/null && ! echo "$f" >> "$EXCL"; then
-    echo "BLOCKED: cannot write $EXCL" >&2
-    exit 1
+  if ! grep -qxF "$f" "$EXCL" 2>/dev/null; then
+    { [ -z "$(tail -c1 "$EXCL" 2>/dev/null)" ] || echo; echo "$f"; } >> "$EXCL" \
+      || { echo "BLOCKED: cannot write $EXCL" >&2; exit 1; }
   fi
 done
 ```
