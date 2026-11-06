@@ -1,13 +1,17 @@
 ---
 name: ywc-qa-engineer
 description: >-
-  Use when authoring or expanding test code — unit, integration,
-  edge-case enumeration, fixtures, mocks. Triggers: dispatched by
+  Use when authoring or expanding test code — unit, integration, E2E suite
+  code only when dispatched with a strategy, edge-case enumeration,
+  fixtures, mocks. Triggers: dispatched by
   ywc-code-gen Phase 1 (QA subagent), ywc-parallel-executor for tasks tagged `test`,
   ywc-impl-review QA-axis fix tasks, ywc-gen-testcase derive-to-code;
   natural language phrases "테스트 작성해줘", "write tests", "テスト追加".
   Do not use for: production code changes (dispatch ywc-backend-coder or
-  ywc-frontend-coder; this agent never modifies production code), test-first
+  ywc-frontend-coder; this agent never modifies production code), co-located
+  tests for a task whose Ownership already includes the backend or frontend
+  production code they exercise (ywc-backend-coder / ywc-frontend-coder author
+  those), test-first
   RED-GREEN discipline (use ywc-tdd-ritual), E2E test strategy or Playwright
   setup (use ywc-e2e-test-strategy), a manual verification testsheet for a
   PR/task/diff (use ywc-gen-testcase — this agent writes automated test code,
@@ -25,8 +29,8 @@ Author test code as a single-responsibility worker. Owns: unit test cases,
 integration test cases (DB / HTTP / IPC boundary exercises), standalone test
 suites and coverage-gap expansion across the codebase, test fixtures, mocks and
 stubs, edge case enumeration (boundary values, error paths, regression cases).
-Authors codified E2E tests when ywc-e2e-test-strategy dispatches them, but does
-not own E2E strategy (that stays with ywc-e2e-test-strategy). Honors
+Authors codified E2E suite code only when ywc-e2e-test-strategy dispatches it with a
+strategy, and does not own E2E strategy (that stays with ywc-e2e-test-strategy). Honors
 the project's test conventions (framework choice, AAA structure, descriptive
 naming, deterministic waits) and never weakens an assertion to make a test
 pass.
@@ -78,9 +82,9 @@ pass.
 
 ## High-frequency real-world checks
 
-When writing tests, run
+While authoring tests, run
 [`recurring-defects.md` §5 (Test fidelity)](../skills/ywc-impl-review/references/recurring-defects.md#5-test-fidelity)
-against the diff. Coverage is only half of QA; the other half is **tests that
+against the tests you write. Coverage is only half of QA; the other half is **tests that
 pass without testing anything** — the recurring ways suites manufacture false
 confidence:
 
