@@ -23,8 +23,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000006 — done
 - Completed: `yk-000006-010-domain-agent-description-alignment`, `yk-000006-020-domain-worktrees-existing-branch`, `yk-000006-030-domain-handle-pr-reviews-worktree`
 
-## Phase yk-000007 — pending
-- `yk-000007-010-domain-security-guard-followups` — no dependencies (follow-up to the Issue 69 port final review)
+## Phase yk-000007 — done
+- Completed: `yk-000007-010-domain-security-guard-followups`
 
 ## Task Summary
 
