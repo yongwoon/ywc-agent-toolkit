@@ -83,7 +83,8 @@ When creating a new `ywc-*` skill or modifying an existing skill's structure
   with `Do not use for ...` anti-triggers; multilingual triggers required).
   Exception: user-invoked skills (`disable-model-invocation: true`, rule A16) are
   exempt from trigger / anti-trigger rules and carry a one-line description
-  instead — currently `ywc-setup-language` and `ywc-merge-dependabot`
+  instead — currently `ywc-setup-language`, `ywc-merge-dependabot`,
+  `ywc-handoff`, and `ywc-retro`
 - Body structure (`**Announce at start:**` line, `## Rationalization Defense`
   table with ≥5 domain-specific Excuse / Reality pairs)
 - Filesystem (Tier 1 README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`; generated Tier 2 `.zh.md` / `.es.md` where present;
@@ -333,7 +334,7 @@ a same-line `Release … TaskStop` clause, enforced by
 `tests/named_agent_release_test.py`): `ywc-impl-review`, `ywc-spec-validate`,
 `ywc-parallel-executor`, `ywc-code-gen`, `ywc-product-review`,
 `ywc-security-audit`, `ywc-ui-ux-review`, `ywc-tech-research`,
-`ywc-iac-author`, `ywc-infra-review`. `ywc-sequential-executor` is the
+`ywc-iac-author`, `ywc-infra-review`, `ywc-retro`. `ywc-sequential-executor` is the
 single-bounded-dispatch consumer (prose citation, no batch, no callout).
 
 ## Bundled Execution Scripts
