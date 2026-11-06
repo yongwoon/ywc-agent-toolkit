@@ -24,6 +24,8 @@ PR을 "대응"한다는 것은 단순히 Comment에 답변하는 것이 아니�
 /handle-pr-reviews 123
 ```
 
+`--worktree`를 붙이면(`/handle-pr-reviews 123 --worktree`) PR의 Head Branch를 `ywc-worktrees --mode create --existing-branch`로 만든 전용 Worktree에서 처리하며, 호출한 Checkout은 건드리지 않습니다. 단, Head Branch가 이미 Main Checkout에 Checkout되어 있으면(`in-place`) 그 Checkout에서 직접 fetch, fast-forward, commit을 수행합니다. PR 번호는 필수이고 `^[0-9]+$`만 허용합니다. Fork PR(`isCrossRepository`)과 OPEN이 아닌 PR은 `BLOCKED`이며, Head Branch 이름은 Shell에서 사용하기 전에 Allowlist와 `git check-ref-format`으로 검증합니다. 이미 Checkout된 Worktree가 있으면 재사용합니다. 정리 시에는 `--keep-branch`를 붙인 `ywc-worktrees --mode prune`을 안내하여 PR Head Branch를 삭제하지 않습니다.
+
 자연어 Trigger는 [SKILL.md](./SKILL.md)에 정의되어 있습니다.
 
 ## 전제 조건

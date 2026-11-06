@@ -412,6 +412,7 @@ A skill that calls its own script by a repo-relative script path does not resolv
 | `ywc-parallel-executor` | `ywc-worktrees`, `ywc-docker-isolate` | — |
 | `ywc-finish-branch` | `ywc-task-generator` | `ywc-worktrees` |
 | `ywc-sequential-executor` | — | `ywc-worktrees` |
+| `ywc-handle-pr-reviews` | — | `ywc-worktrees` (`--worktree` only) |
 
 ## HTML Output Mode
 

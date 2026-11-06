@@ -63,3 +63,9 @@ Covers: AC16b, AC17
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- Head-branch lookup and validation moved into `ywc-handle-pr-reviews/scripts/resolve-pr-head.sh` (upstream does it in prose with `gh pr view` + placeholder substitution). The raw `headRefName` is never on a command line; the script captures it via `gh --jq ... | @tsv` (escapes tab/newline) and validates in-process before `git check-ref-format`. Security tests: `tests/resolve-pr-head-test.sh` (stub `gh` + real `jq`, PWNED-file canary).
+- `isCrossRepository` is compared with `tojson`: `tostring` maps the string `"false"` to `false`, which the first test run caught.
+- The `..` check is redundant with `git check-ref-format` (removing it leaves the suite green); kept because the C2 rules require it.
+- The upstream wording "inline `git worktree add`" was rephrased so the Task Verify zero-hit gate holds.
+- Ported with Step 1.5 because it depends on them: Step 4 explicit push target `HEAD:<H>`, Step 7 `PR_NUMBER=<N>` in worktree mode, Context note, Step 1 bullet, Integration downstream.

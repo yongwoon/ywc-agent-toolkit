@@ -2,7 +2,7 @@
 name: ywc-handle-pr-reviews
 description: >-
   (ywc) Use when handling an open PR's review feedback — addressing comments, replying to review threads, and leaving the PR mergeable by clearing CI failures and base-branch conflicts too. Triggers: "handle PR reviews", "fix PR CI", "resolve PR conflict", "PR CI 고쳐줘", "PR conflict 해결", "리뷰 대응", "レビュー対応". Do not use for creating a new PR (use ywc-create-pr), reviewing code yourself (use ywc-impl-review), verify-before-agreeing on feedback (use ywc-receive-review), storing durable review learnings (use ywc-review-learnings), or work outside an open PR.
-allowed-tools: Bash, Read, Edit, Write, Glob, Grep, Agent
+allowed-tools: Bash, Read, Edit, Write, Glob, Grep, Agent, Skill
 ---
 
 # Handle PR Review Comments
@@ -29,6 +29,8 @@ When tempted to skip a step, check this table first:
 | "The PR conflicts with base — rebase the branch to clear it" | Rebasing rewrites SHAs and orphans the very review threads you are replying to. Merge the base *into* the feature branch (`git merge --no-ff origin/<base>`) instead. See `references/pr-conflict-resolution.md`. |
 | "No unresolved comments — nothing to handle, the PR is done" | Zero comments clears only the first of three gates. CI may be red and the base may have advanced into a conflict regardless of whether anyone commented. The CI gate (Step 7) and merge-readiness gate (Step 8) are **mandatory on every invocation** — never report done from an empty comment array without running both. |
 | "Nitpick items have no thread to reply to, so I'll just fix them silently without posting anything" | Nitpick items still need a consolidated PR-level reply. Skipping it leaves no `nitpick-addressed` marker, so the fetch script's dedup never excludes them and the same items resurface on every future run. |
+| "I'll add a worktree for the PR branch myself — it's one command" | An inline worktree lands outside the location convention that `ywc-worktrees` resolves and that its audit and prune tooling scan, and skips its branch-name validation. Use `ywc-worktrees --mode create --existing-branch`; if that skill is missing, `BLOCKED`. |
+| "I `cd`'d into the worktree, so the file paths I already know still work" | Read, Edit and Write ignore the Bash cwd, so a path under the invoking checkout silently edits the wrong tree. Build every path from `$WT_PATH`. |
 
 **Violating the letter of these rules is violating the spirit.** Code review is a conversation, not a checklist.
 
@@ -46,10 +48,19 @@ These gates are **independent**. A PR with every comment answered but red CI, or
 
 **Before touching the PR, create a TodoWrite list with all three gates** so none is silently skipped. Do not report the run complete until all three are cleared, or explicitly surfaced to the user as blocked.
 
+## Arguments
+
+| Parameter | Format | Example | Description |
+|---|---|---|---|
+| `<pr-number>` | positional, optional | `123` | The PR to handle. Without `--worktree` it defaults to the current branch's PR (Step 1). |
+| `--worktree` | flag | `123 --worktree` | Handle the PR's head branch in a dedicated worktree instead of the invoking checkout (Step 1.5). If the head branch is already checked out somewhere, that worktree is reused; when it is the main checkout (`in-place`), the main checkout itself is refreshed and edited. The PR number is required. Fork PRs are not supported. |
+
 ## Context
 
 - Current branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -5`
+
+With `--worktree`, these values describe the invoking checkout, not the PR branch.
 
 ## Task
 
@@ -60,12 +71,58 @@ Follow the steps below to handle PR review comments.
 - If a PR number is specified in `$ARGUMENTS`, use it
 - Otherwise, identify the current branch's PR with `gh pr view --json number`
 - If no PR exists for the current branch, stop and notify the user rather than proceeding blindly
+- `--worktree` without a PR number → stop and ask for the number, before any worktree work
 
 Resolve `{owner}/{repo}` dynamically at this stage — it's used throughout the workflow:
 
 ```bash
 gh repo view --json nameWithOwner --jq .nameWithOwner
 ```
+
+### Step 1.5: Worktree Setup (only with --worktree)
+
+Skip this step unless `--worktree` is set. Otherwise handle the PR head branch `H` in a worktree so the invoking checkout stays untouched. The one exception is `in-place`: when `H` is already checked out in the main checkout, that checkout becomes the working location, so sub-step 5 (fetch, `merge --ff-only`, upstream setting) and every later commit act on it. Each failure below stops with `BLOCKED: <cause>`; nothing is repaired silently. Bash variables do not survive between calls, so every command below that shows `$MAIN`, `$WT_PATH` or `<H>` is a placeholder: substitute the literal value you recorded, never an unset shell variable (an empty `$MAIN` would turn `cd "$MAIN"` into `cd ""`). Double-quote the substituted value, and treat the validation in sub-steps 0–1 as the injection boundary, since double quotes alone do not stop `$(…)` or backticks.
+
+0. **Validate `<N>`** yourself, before any Bash call that contains it: it must match `^[0-9]+$` over the whole string, because it becomes the path `pr-<N>`; otherwise `BLOCKED: PR number must be numeric`.
+1. **Resolve `H`** with the bundled script. GitHub returns the head branch name, but whoever pushed the branch chose it. The script reads it into a variable and never puts it on a command line, so it is validated before any shell use:
+
+   ```bash
+   bash "${CLAUDE_SKILL_DIR}/scripts/resolve-pr-head.sh" "<N>"
+   # exit 0 → stdout line 1 is the validated head branch H, line 2 the
+   #          validated head commit SHA O (record both verbatim)
+   # exit 1 → BLOCKED; relay the stderr line verbatim and stop
+   # exit 2 → usage error
+   ```
+
+   The script re-checks `<N>` against `^[0-9]+$`, then runs `gh pr view <N> --json headRefName,headRefOid,isCrossRepository,state` and fails closed:
+   - `gh` fails (no such PR, authentication) → `BLOCKED` with gh's stderr.
+   - `state` is not `OPEN` → `BLOCKED: PR is <state>` (the head branch of a merged or closed PR may be gone from the remote).
+   - `isCrossRepository` is anything but the JSON boolean `false` (a fork PR, or a missing value) → `BLOCKED: --worktree does not support fork PRs`. Cloning the fork is not supported.
+   - `headRefName` must match `^[A-Za-z0-9._/-]+$` over the whole string, not start with `-`, not contain `..`, and only then pass `git check-ref-format "refs/heads/<H>"` (the same rules as `ywc-worktrees --existing-branch`); otherwise `BLOCKED: invalid head branch name`.
+   - `headRefOid` must be a full SHA matching `^[0-9a-f]{40}$`; otherwise `BLOCKED: invalid head commit`.
+
+   Never run `gh pr view` yourself to obtain `H`, and never paste an unvalidated `headRefName` into a command. If the script cannot be found, follow the Skill-local script path fallback and stop with `BLOCKED: unresolved skill path`.
+2. **Locate an existing worktree.** Run `git worktree list --porcelain`.
+   - The first `worktree <path>` line is the main checkout `MAIN`; always derive it, because the Step 9 prune guidance uses it for every state. A `bare` line in that first entry → `BLOCKED: bare repository`.
+   - Check `MAIN` and any candidate `WT_PATH` for `"`, `$`, a backtick, `\` or a newline first, before using either in a command → `BLOCKED: unsafe path`.
+   - Find the entry whose `branch refs/heads/<H>` line equals the whole line (not a prefix). If the entry has `prunable` or `locked`, or its directory does not exist → `BLOCKED` with a `git worktree prune` (prunable) or `git worktree unlock` (locked) hint; for a missing directory that is neither, name the path and suggest `git worktree prune`.
+   - Otherwise its path is `WT_PATH`: `in-place` when it equals `MAIN`, else `reused`. Skip sub-step 3 and do not call `ywc-worktrees`.
+3. **Create when no entry exists.**
+   - In a separate Bash call run `cd "$MAIN" && pwd -P`; in the next call confirm `[ "$(pwd -P)" = "<that canonical path>" ]`, otherwise `BLOCKED: run from the main checkout`. A session started inside a linked worktree can have its cwd reset, and `ywc-worktrees` resolves the repository root from the current checkout, so a linked-worktree cwd yields the wrong root.
+   - Invoke `/ywc-worktrees --mode create --task-name pr-<N> --branch <H> --existing-branch` with the Skill tool. If that skill cannot be found → `BLOCKED: ywc-worktrees not installed`; never fall back to creating the worktree inline with git.
+   - Do not trust the path the skill prints. Repeat sub-step 2's lookup and take `WT_PATH` from the `branch refs/heads/<H>` entry, applying the same path-character check; record `created`.
+   - If create fails, repeat the lookup once, since a concurrent run on the same PR may have created it: found → `reused`; still absent → `BLOCKED` carrying the `ywc-worktrees` message verbatim.
+4. **Require a clean tree.** `git -C "$WT_PATH" status --porcelain` must be empty, otherwise `BLOCKED: worktree has uncommitted changes`, so unrelated work never lands in a review-fix commit.
+5. **Refresh from the remote** (review line numbers refer to the remote head; this also applies to `in-place`):
+   - `git -C "$WT_PATH" fetch origin "+refs/heads/<H>:refs/remotes/origin/<H>"`; a failure → `BLOCKED` quoting git's stderr.
+   - `git -C "$WT_PATH" rev-parse "refs/remotes/origin/<H>"` must print exactly `O`; otherwise `BLOCKED: origin/<H> is not the head of PR <N>`. `gh` resolves the PR in its default repository while fetch and push use the `origin` remote, so this ties them together (and catches a head that moved after the lookup).
+   - `git -C "$WT_PATH" rev-list --count "origin/<H>..HEAD"` not `0` → `BLOCKED: <H> has unpushed local commits` (`merge --ff-only` succeeds when local is merely ahead, so this check is separate).
+   - Otherwise `git -C "$WT_PATH" merge --ff-only "origin/<H>"`; a failure → `BLOCKED: local <H> diverged from origin/<H>`.
+   - If `git -C "$WT_PATH" rev-parse --abbrev-ref "<H>@{upstream}"` fails or prints anything other than `origin/<H>`, run `git -C "$WT_PATH" branch --set-upstream-to="origin/<H>" "<H>"`, so that status and pull reflect the PR branch. A branch checked out with `--existing-branch` keeps whatever upstream or `pushRemote` it already had, so Step 4 does not rely on either (see the explicit push target there).
+
+**Switch the working directory.** In a separate Bash call run `cd "$WT_PATH"`, then confirm `git branch --show-current` prints `H`; otherwise `BLOCKED: worktree branch mismatch`. Record `pwd -P` as the canonical `WT_PATH`. From here on, every Read, Edit and Write path is an absolute path under `$WT_PATH`.
+
+**Re-check the working directory.** The harness can reset the Bash cwd (for example when the worktree root lies outside the project). With `--worktree`, before the first Bash call of Step 2, Step 4 (commit and push), Step 6 (re-push after a rejection), Step 7 and Step 8, confirm `[ "$(pwd -P)" = "<canonical WT_PATH>" ]`. If it differs, run `cd "<canonical WT_PATH>" && [ "$(pwd -P)" = "<canonical WT_PATH>" ]` as one Bash call; still failing → `BLOCKED: working directory left the worktree`. Every later git command in worktree mode either uses `git -C "<canonical WT_PATH>"` or repeats that `cd` in the same Bash call.
 
 ### Step 2: Retrieve and Filter Comments
 
@@ -137,6 +194,7 @@ For each comment, classify it into one of four categories:
 
 - One commit per file (group all fixes for the same file into a single commit)
 - Use commit message format: `fix: summary of the fix`
+- With `--worktree`, push with the explicit target `git push origin "HEAD:<H>"` (the re-push in Step 6 and the base-merge push in Step 8 as well) instead of a plain `git push`, so a different upstream or a configured `pushRemote` cannot redirect it.
 - Push to remote after all commits are ready — pushing once at the end is cleaner than pushing after each commit
 
 ### Step 5: Reply to Comments
@@ -192,6 +250,8 @@ Things can go wrong during the process. Handle these gracefully:
 
 **Always run this gate — including when Step 2 found zero comments and your replies pushed no code.** A PR review thread and CI status are two independent blockers on the same PR. Addressing every comment but leaving CI red still leaves the PR unmergeable, so handling a PR means checking both. This gate covers two cases at once: CI regressions introduced by the fixes in Step 4, **and** pre-existing CI failures that were already red before you touched the PR (a flaky earlier push, a base-branch change, a broken dependency).
 
+With `--worktree`, skip the lookup below and write the literal `<N>` validated in Step 1.5 wherever a Step 7 or Step 8 `gh` command shows `$PR_NUMBER` (including `--watch` and the Step 8 `gh pr view`): a shell variable does not survive into a later Bash call, and an empty one falls back to the current branch's PR. That lookup follows the current branch of the working directory, so it can resolve a different PR if the cwd drifted or several PRs share the head branch.
+
 ```bash
 PR_NUMBER=$(gh pr view --json number --jq .number)
 gh pr checks $PR_NUMBER
@@ -242,6 +302,11 @@ Report the results so the user has a clear picture of what happened. **Report th
 - **CI (Step 7)**: final check status — `green`, or the failing check names + outcome (`DONE_WITH_CONCERNS`)
 - **Merge-readiness (Step 8)**: `MERGEABLE`, or the conflicting files surfaced + outcome (`BLOCKED`)
 - Any errors encountered during the process
+- **Worktree** (only with `--worktree`): `Worktree: <WT_PATH> (created | reused | in-place)`. This skill never runs a cleanup command; report guidance by state:
+  - `created`, or `reused` where the basename of `WT_PATH` is `pr-<N>` (made by an earlier run of this skill): from the main checkout `<MAIN>` run `/ywc-worktrees --mode prune --task-name pr-<N> --branch <H> --keep-branch`. Run it there because `cleanup-worktree.sh` resolves the root from `git rev-parse --show-toplevel` and inside a linked worktree would not find `.worktrees/`. `--keep-branch` is mandatory: without it prune deletes the local PR head branch while the PR is still open. Add that while this worktree exists, the `ywc-parallel-executor` pre-flight audit reports it as LEAKED.
+  - any other `reused`: report "not created by this skill, so not cleaned up" (another executor may own it).
+  - `in-place`: no cleanup guidance.
+  - If local verification (tests, lint) could not run in the worktree (a Docker bind-mount pointing at the main checkout, gitignored `.env` or `node_modules` missing), report `local verification not performed in the worktree: <reason>` and state that only CI results were used.
 
 ## Notes
 
@@ -251,4 +316,4 @@ Report the results so the user has a clear picture of what happened. **Report th
 ## Integration
 
 - **upstream**: ywc-create-pr (a PR must exist before review comments can be handled); ywc-sequential-executor / ywc-parallel-executor (executors that generate the PRs being reviewed)
-- **downstream**: None — this skill closes the PR review loop; subsequent work is driven by the reviewer's approval or further comments
+- **downstream**: `ywc-worktrees` (`--mode create --existing-branch`, only with `--worktree`); otherwise none — this skill closes the PR review loop and subsequent work is driven by the reviewer's approval or further comments
