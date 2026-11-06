@@ -208,7 +208,8 @@ Repeat the following for each wave. **Each task must have its own independent wo
 
 **4a. Create Worktrees** — For each task in the wave:
 ```bash
-git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
+WT='../worktree-<task-name>'           # this task's worktree; every later "$WT" means this path
+git worktree add "$WT" -b feature/<task-name> <base-branch>
 ```
 
 **4a-verify (mechanical gate — do not skip)**: before Step 4b, confirm each task's worktree physically exists. Implementing a task on the base/aggregate branch working tree (the `aggregate-branch-serial` deviation) violates the isolation contract regardless of wave width. Re-run Step 4a on failure — never reach 4b without one isolated worktree per task:
@@ -253,7 +254,7 @@ The named worker subagents return payloads per [../references/subagent-status-ac
 **4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`. Then run two gates before the task is eligible for 4e Wave Delivery:
 
 - **Regression layer (closes the depth asymmetry with `ywc-sequential-executor` Step 4 layer 3).** Task Verify alone proves the task's own behavior, not that it left shared code intact. After Task Verify passes, run the **full project test suite** (or, when a full run is impractical inside the worktree, the impacted-scope subset — and document why the scope was narrowed). A wave task can pass its own Task Verify and still regress shared state / types / schema / runtime wiring; without this layer that regression reaches the base branch (and in `--local-merge` is never caught at all). Long suites may run in the background.
-- **Ownership-scope gate.** Run `git -C "$WT" diff --name-only` and confirm every changed path is within the task's declared Ownership. An out-of-Ownership file is a scope-creep signal — a missed dependency (return `BLOCKED`) or a drive-by edit (revert it), never a silent merge.
+- **Ownership-scope gate.** Run `git -C "$WT" diff --name-only` (`WT` as set in Step 4a — never empty, since `git -C ""` would inspect the current directory instead) and confirm every changed path is within the task's declared Ownership. An out-of-Ownership file is a scope-creep signal — a missed dependency (return `BLOCKED`) or a drive-by edit (revert it), never a silent merge.
 
 **4c.5. Cleaner (CRAP gate, per-task)** — Runs per-task (parallel-safe) and dispatches to `ywc-refactor-cleaner` via the Task tool if the task declares a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the per-task subagent return payload — never in `.ywc-run-state.json`. 
 
@@ -303,7 +304,7 @@ For each task in the wave **sequentially** (topological order within the wave) �
    ```bash
    BASE='<base-branch>'                   # validated value only
    BRANCH='feature/<task-name>'           # validated value only
-   WT='../worktree-<task-name>'           # the worktree Step 4a created
+   WT='../worktree-<task-name>'           # same path as Step 4a
    git fetch origin "$BASE"
    if ! git merge-base --is-ancestor "origin/$BASE" "$BRANCH"; then
      git -C "$WT" merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into $BRANCH"
