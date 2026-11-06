@@ -122,4 +122,4 @@ See [references/release-notes-format.md](references/release-notes-format.md) for
 | Commit hashes in user-facing notes | Users don't use git | PR numbers or feature names |
 | Internal code names or module paths | Users don't know internal structure | User-visible feature names |
 | Security entries only in user notes | Developers need CVE details | CVE reference in CHANGELOG; plain summary in release notes |
-| Refactor/chore entries in user notes | Not relevant to users | Omit from release notes; include only in CHANGELOG |
+| Refactor/chore entries in user notes | Not relevant to users | Omit from release notes (internal; also omitted from CHANGELOG per `references/changelog-format.md`), but log each as `Omitted: <short-sha> <subject>` in the run summary |
