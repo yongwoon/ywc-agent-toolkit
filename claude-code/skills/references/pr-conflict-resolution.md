@@ -13,7 +13,7 @@ Do not confuse these — they have different causes and different fixes.
 
 | Situation | Cause | Symptom | Fix |
 |---|---|---|---|
-| **Feature-branch push rejection** | The **remote feature branch** advanced (a teammate pushed, or a prior push you did not pull) | `git push` rejected as `non-fast-forward` | `git pull --rebase origin <feature-branch>` (rebase onto the *same* branch is safe here — you own those commits), then re-push. Never force-push without explicit user approval. |
+| **Feature-branch push rejection** | The **remote feature branch** advanced (a teammate pushed, or a prior push you did not pull) | `git push` rejected as `non-fast-forward` | `git pull --rebase origin "$BRANCH"` with `BRANCH` holding the feature branch name (rebase onto the *same* branch is safe here — you own those commits), then re-push. Never force-push without explicit user approval. |
 | **PR-vs-base conflict** | The **base branch** advanced and now textually conflicts with the PR | `gh pr view --json mergeable` returns `CONFLICTING`; `gh pr merge` fails | Merge base into the feature branch (procedure below). This is the common gap — CI can be green while the PR is unmergeable. |
 
 A PR that **passed CI** can still be **unmergeable** against the base. CI status
@@ -95,6 +95,7 @@ the final base merge.
 The branch was merely out of date. Push and re-verify CI:
 
 ```bash
+BRANCH='feature/<task-name>'               # same value as in Update Branch From Base
 git push origin "$BRANCH"
 ```
 
