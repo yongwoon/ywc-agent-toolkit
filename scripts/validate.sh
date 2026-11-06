@@ -716,6 +716,26 @@ check_cc_support_dirs() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  # Every ../references/<file> link must resolve relative to the file that
+  # contains it. From a SKILL.md this points at the shared references dir; from
+  # a skill-local references/*.md it points back at that same local dir. We
+  # resolve per-source-file so both cases are validated without false positives.
+  # This catches the broken-link regression class that frontmatter checks miss.
+  local file link target
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    while IFS= read -r link; do
+      [ -n "$link" ] || continue
+      target="$(dirname "$file")/$link"
+      if [ ! -f "$target" ]; then
+        echo "ERROR: broken reference link in ${file#./}: $link"
+        ERRORS=$((ERRORS + 1))
+      fi
+    done < <(grep -oE '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$file" | sort -u)
+  done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
+}
+
+run_script_test_suites() {
   # The poll script is a merge gate: a wrong verdict lets an unreviewed PR
   # merge. Both suites stub `gh` and need no network.
   local poll_test
@@ -775,24 +795,6 @@ check_cc_support_dirs() {
       ERRORS=$((ERRORS + 1))
     }
   done
-
-  # Every ../references/<file> link must resolve relative to the file that
-  # contains it. From a SKILL.md this points at the shared references dir; from
-  # a skill-local references/*.md it points back at that same local dir. We
-  # resolve per-source-file so both cases are validated without false positives.
-  # This catches the broken-link regression class that frontmatter checks miss.
-  local file link target
-  while IFS= read -r file; do
-    [ -n "$file" ] || continue
-    while IFS= read -r link; do
-      [ -n "$link" ] || continue
-      target="$(dirname "$file")/$link"
-      if [ ! -f "$target" ]; then
-        echo "ERROR: broken reference link in ${file#./}: $link"
-        ERRORS=$((ERRORS + 1))
-      fi
-    done < <(grep -oE '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$file" | sort -u)
-  done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
 }
 
 check_loop_only_tool_calls() {
@@ -872,6 +874,7 @@ done
 echo "==> Validating claude-code agents..."
 check_cc_agents
 check_cc_support_dirs
+run_script_test_suites
 check_loop_only_tool_calls claude-code/skills
 
 echo "==> Running named-agent release gate..."
