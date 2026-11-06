@@ -24,6 +24,9 @@ BASE_CHECK = HERE / "check-base-required-checks.sh"
 QUEUE = HERE / "poll-merge-queue.py"
 MAJOR = HERE / "detect-major-bump.py"
 
+OLD_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+NEW_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
 GH_STUB = r"""#!/usr/bin/env bash
 echo "$*" >> "$GH_STUB_LOG"
 case "$GH_STUB_MODE:$*" in
@@ -37,20 +40,28 @@ case "$GH_STUB_MODE:$*" in
     printf 'diff --git a/build/app.dockerfile b/build/app.dockerfile\n-FROM alpine:3.19\n' ;;
   diff-fail:"pr diff"*)
     exit 1 ;;
-  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*)
-    echo oldsha ;;
+  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*|nullnew:"pr view "*"--json headRefOid --jq"*|shortnew:"pr view "*"--json headRefOid --jq"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  nullhead:"pr view "*"--json headRefOid --jq"*)
+    echo null ;;
+  shorthead:"pr view "*"--json headRefOid --jq"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  nullnew:"pr view "*"headRefOid,mergeable"*)
+    echo "null MERGEABLE" ;;
+  shortnew:"pr view "*"headRefOid,mergeable"*)
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb MERGEABLE" ;;
   no-head:"pr view "*"--json headRefOid --jq"*)
     exit 1 ;;
   rebased:"pr view "*"headRefOid,mergeable"*)
-    echo "newsha MERGEABLE" ;;
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb MERGEABLE" ;;
   stuck:"pr view "*"headRefOid,mergeable"*)
-    echo "oldsha CONFLICTING" ;;
+    echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa CONFLICTING" ;;
   unknown:"pr view "*"headRefOid,mergeable"*)
-    echo "newsha UNKNOWN" ;;
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb UNKNOWN" ;;
   emptyhead:"pr view "*"headRefOid,mergeable"*)
     echo " MERGEABLE" ;;
   newconflict:"pr view "*"headRefOid,mergeable"*)
-    echo "newsha CONFLICTING" ;;
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb CONFLICTING" ;;
   commentfail:"pr comment"*)
     exit 1 ;;
   *:"pr comment"*)
@@ -129,7 +140,7 @@ class WaitDependabotRebaseTest(StubbedTest):
     def test_new_head_and_mergeable_counts_as_rebased(self):
         r = self.run_cmd("rebased", "bash", REBASE, "7")
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=1 ATTEMPTS=1 NEW_HEAD=newsha")
+        self.assertEqual(r.stdout.strip().splitlines()[-1], f"REBASED=1 ATTEMPTS=1 NEW_HEAD={NEW_SHA}")
         self.assertEqual(self.gh_calls("pr comment 7 --body @dependabot rebase"), 1)
 
     def test_unchanged_head_exhausts_nine_attempts(self):
@@ -159,6 +170,26 @@ class WaitDependabotRebaseTest(StubbedTest):
         self.assertEqual(r.returncode, 1)
         self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=0 NEW_HEAD=")
         self.assertEqual(self.gh_calls("pr comment"), 0)
+
+    def test_non_sha_recorded_head_fails_before_requesting_rebase(self):
+        # Fails if OLD_HEAD is accepted without the 40-hex check: "null" or a 39-char value would
+        # be recorded and any later head would look "new".
+        for mode in ("nullhead", "shorthead"):
+            with self.subTest(mode=mode):
+                r = self.run_cmd(mode, "bash", REBASE, "7")
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=0 NEW_HEAD=")
+                self.assertIn("cannot read the current head", r.stderr)
+                self.assertEqual(self.gh_calls("pr comment"), 0)
+
+    def test_non_sha_polled_head_is_not_rebased(self):
+        # Fails if NEW_HEAD is accepted without the 40-hex check: "null" or a 39-char value differs
+        # from the recorded head and would be reported as a finished rebase.
+        for mode in ("nullnew", "shortnew"):
+            with self.subTest(mode=mode):
+                r = self.run_cmd(mode, "bash", REBASE, "7")
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
 
     def test_failed_rebase_comment_exits_before_polling(self):
         r = self.run_cmd("commentfail", "bash", REBASE, "7")

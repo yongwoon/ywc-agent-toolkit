@@ -43,3 +43,7 @@ Covers: the Scope bullets above
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+- `gh pr checks --required`, no required checks — evidence (rung 4): installed `gh version 2.102.0 (2026-09-30)`; `gh pr checks --help` lists only `8: Checks pending` as an extra exit code. On this repo (`main` unprotected: `branches/main/protection/required_status_checks` → 404, `rules/branches/main` → `[]`), `gh pr checks 213 --required` printed `no required checks reported on the 'feature/improvement-20261105' branch` and exited 1. The message names the PR's **head** branch, not the base. The gh binary also carries `no checks reported on the '%s' branch` (no checks at all). Exit 1 is shared with real check failures, so SKILL.md tells the cases apart by that message. Fallback: `gh pr checks` without `--required`, result tagged `no required checks`; `Skipped (no CI checks)` when that run also reports no checks.
+- Test stub: `oldsha`/`newsha` were not 40-hex values, so the new hex guard would have rejected them. Switched them to `a*40`/`b*40` first (32/32 green on unfixed code), then added `null` / 39-char cases — RED 4/4 subtests on unfixed code, GREEN 34/34 after the fix.
+- Exit contract of `wait-dependabot-rebase.sh` unchanged (non-hex OLD_HEAD uses the existing exit-1 "head unreadable" path), so `claude-code/skills/CLAUDE.md` needs no edit.
+- Not in Scope, left as is: SKILL.md 3a conflict-path step 3 still says "A refused merge means the head moved" (same over-attribution as the Stage 1 wording fixed here).

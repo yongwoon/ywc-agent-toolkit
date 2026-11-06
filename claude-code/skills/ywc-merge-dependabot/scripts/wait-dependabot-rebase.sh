@@ -6,9 +6,10 @@
 # (up to 9 queries, 60 s apart — issue as one Bash call with `timeout: 600000`).
 #
 # The rebase counts as done only when `headRefOid` differs from the recorded
-# value AND `mergeable` is neither CONFLICTING nor UNKNOWN. Empty output or a
-# failed query is unresolved — polling continues; it is never evidence of a
-# finished rebase.
+# value AND `mergeable` is neither CONFLICTING nor UNKNOWN. Both heads must
+# match ^[0-9a-f]{40}$: a recorded head that does not (empty, `null`, a failed
+# query) exits as "head unreadable"; a polled head that does not is unresolved —
+# polling continues; it is never evidence of a finished rebase.
 #
 # stdout (last line): REBASED=<0|1> ATTEMPTS=<n> NEW_HEAD=<sha or empty>
 #
@@ -28,7 +29,7 @@ POLL_SECONDS=60
 PR="$1"
 
 OLD_HEAD="$(gh pr view "$PR" --json headRefOid --jq .headRefOid)" || OLD_HEAD=""
-if [ -z "$OLD_HEAD" ]; then
+if [[ ! "$OLD_HEAD" =~ ^[0-9a-f]{40}$ ]]; then
   # Without a recorded head, any later head would look "new" — never report a rebase on that.
   echo "cannot read the current head of PR $PR — not requesting a rebase" >&2
   echo "REBASED=0 ATTEMPTS=0 NEW_HEAD="
@@ -45,7 +46,7 @@ until [ "$REBASED" -eq 1 ] || [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; do
   ATTEMPT=$((ATTEMPT + 1))
   STATE="$(gh pr view "$PR" --json headRefOid,mergeable --jq '"\(.headRefOid) \(.mergeable)"' 2>/dev/null || true)"
   NEW_HEAD="${STATE%% *}"; MERGEABLE="${STATE##* }"
-  if [ -n "$NEW_HEAD" ] && [ "$NEW_HEAD" != "$OLD_HEAD" ] \
+  if [[ "$NEW_HEAD" =~ ^[0-9a-f]{40}$ ]] && [ "$NEW_HEAD" != "$OLD_HEAD" ] \
      && [ "$MERGEABLE" != "CONFLICTING" ] && [ "$MERGEABLE" != "UNKNOWN" ]; then
     REBASED=1
   elif [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; then

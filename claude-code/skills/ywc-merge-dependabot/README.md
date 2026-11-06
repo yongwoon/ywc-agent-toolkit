@@ -93,7 +93,7 @@ Security 관련 PR 만 선별하여 Merge 합니다. 다음 조건으로 Securit
 다수 PR (≥ 5) 이 여러 ecosystem 에 걸쳐 누적되어 wall-clock CI 대기가 병목인 경우 사용합니다. 동작 방식:
 
 1. 모든 eligible PR 을 `npm`, `github-actions`, `python`, `go`, `cargo`, `maven`, `gradle`, `docker` group 으로 분류 (`scripts/group-by-ecosystem.py` 사용)
-2. 각 PR 에 대해 `gh pr merge --auto` 로 auto-merge 예약
+2. 각 PR 에 대해 `gh pr merge --auto --merge --match-head-commit "<HEAD_SHA>"` 로 auto-merge 예약 (기록한 head SHA 에 pin)
 3. GitHub Server 측에서 동일 ecosystem 은 직렬 merge, 서로 다른 ecosystem 은 병렬 merge 수행
 4. Client 는 polling 으로 queue 상태 추적 (최대 30분)
 5. Mixed-ecosystem PR (둘 이상의 lockfile 을 동시 변경) 은 마지막에 sequential pass 로 처리
