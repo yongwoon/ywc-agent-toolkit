@@ -752,6 +752,27 @@ check_cc_support_dirs() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  # Security suites for remote-controlled PR head names and for the handoff /
+  # retro artifact writes; all run offline (stubbed `gh`, temp dirs).
+  local sec_test sec_out
+  for sec_test in claude-code/skills/ywc-handle-pr-reviews/tests/resolve-pr-head-test.sh \
+                  claude-code/skills/ywc-handoff/tests/test_handoff_safety.py \
+                  claude-code/skills/ywc-retro/tests/test_retro_safety.py; do
+    if [ ! -f "$sec_test" ]; then
+      echo "ERROR: security test suite is missing: $sec_test"
+      ERRORS=$((ERRORS + 1))
+      continue
+    fi
+    case "$sec_test" in
+      *.py) sec_out=$(python3 "$sec_test" 2>&1) ;;
+      *)    sec_out=$(bash "$sec_test" 2>&1) ;;
+    esac || {
+      echo "ERROR: security test suite failed: $sec_test"
+      printf '%s\n' "$sec_out" | tail -n 30
+      ERRORS=$((ERRORS + 1))
+    }
+  done
+
   # Every ../references/<file> link must resolve relative to the file that
   # contains it. From a SKILL.md this points at the shared references dir; from
   # a skill-local references/*.md it points back at that same local dir. We
