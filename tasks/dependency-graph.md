@@ -62,24 +62,6 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 | yk-000006-020-domain-worktrees-existing-branch | C2 (#347) | sonnet |
 | yk-000006-030-domain-handle-pr-reviews-worktree | C3 (#347) | opus |
 
-## Parallel Execution Notes
-
-Root-ready tasks: model hints, review defects, mission anchor and PR body. PR worktrees depends on operational safety because it extends the behavior runner introduced there. Other edges follow the specification feature dependencies. Conflicts are edit scheduling restrictions, not extra functional dependencies; serialize overlapping agent evals, cross-skill graph and behavior runner changes. No task may run alongside an explicitly conflicting task. Phase 2 begins only after every Phase 1 task is merged, because counts, catalogs and generated plugin copies require all completed source contracts. Analyzer waves are dependency candidates only.
-
-### Claude Code Issue 69 port (plan: `docs/ywc-plans/20261105-claude-upstream-issue-69-port.md`)
-
-Mode: llm; language: en; initials: yk (phases `yk-000003`–`yk-000006`). This batch is independent of the Codex batch above (`yk-000001`/`yk-000002`); the only shared surface is the root skill/agent counts (see conflict below).
-
-Phase gates: `yk-000003` (snapshot) gates everything. Phase `yk-000004` (A) tasks are mutually parallel except `yk-000004-050` after `yk-000004-040` (both edit `ywc-create-pr/SKILL.md`). Phase `yk-000005` (B) is a strict chain B1 → B3 → B2 → B4 → B5 because of shared files (`claude-code/skills/CLAUDE.md`, `ywc-skill-author/SKILL.md`, `history.mechanical.json`, `scripts/validate.sh`). Phase `yk-000006` (C) is a chain C1 → C2 → C3.
-
-Spec inconsistency resolved: FR5's `claude-code/skills/CLAUDE.md` row lists B2 before B3, while the global order and the `ywc-skill-author/SKILL.md` row list B3 before B2. The global order (B1 → B3 → B2 → B4 → B5) is used.
-
-Conflict with the Codex batch: `yk-000005-050-domain-handoff-retro-skills` and `yk-000002-010-infra-distribution` both edit root `CLAUDE.md` / `README*.md` counts; do not run them concurrently. Because both batches share the `yk` namespace, an executor that treats `yk-000002` as a hard gate for `yk-000003` will wait for the Codex distribution task; that ordering is not a functional dependency.
-
-`history.mechanical.json`: Phase A tasks run `score.py --ci` but restore the file so parallel merges do not conflict; Phase B/C tasks commit the auto-updated file.
-
-Inferred criticality: `yk-000004-010-domain-plan-auto-converge` is `critical` only by the keyword heuristic (Ownership contains `ywc-auth-implement`); downgrade to `normal` if desired. `yk-000006-020-domain-worktrees-existing-branch` is `normal` per the spec's Critical Surfaces but defines the branch-name validation C3 relies on.
-
 ## Spec Coverage
 
 - FR-1 / AC-1: `yk-000001-010-domain-model-hints` owns advisory tier/rationale and matching preview/summary; `test.md` provides clause-level expected outcomes.
