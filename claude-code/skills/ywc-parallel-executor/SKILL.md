@@ -299,11 +299,15 @@ For each task in the wave **sequentially** (topological order within the wave) �
    Categorize failures as lint/format (run the project's auto-fix command first), type, test, or build — fix on the worktree branch, commit, `git push origin feature/<task-name>`, then re-poll. After 2 failed fix cycles, mark the task `BLOCKED`, preserve its worktree and branch (skip Step 4g for it), and record it for the Completion Report.
 3. **Handle automated PR reviews**: run the polling loop in [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews` for this task's PR, then **re-verify CI (step 2)** — bot fixes push new commits that trigger a fresh CI run — then re-poll. Repeat until CI is green and no new comments arrive within the polling window. Bot reviews across tasks in the same wave are processed **one task at a time** so each task's review commits land before its merge.
 4. **Refresh the PR branch against the latest base if another task already advanced it** — this is the canonical merge-not-rebase procedure in [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md). This matters when branch protection requires PR branches to be up to date, or when a previous task in the same wave already merged and pushed its completion marker:
+   Validate `<base-branch>` and `feature/<task-name>` first, with the same rule and order as `pr-conflict-resolution.md` (whole-string `^[A-Za-z0-9._/-]+$`, no leading `-`, no `..`, checked in-process; only then `git check-ref-format "refs/heads/…"`). On any failure mark the task `BLOCKED: invalid branch name` and run no git command. Then hold them in variables and quote every use:
    ```bash
-   git fetch origin <base-branch>
-   if ! git merge-base --is-ancestor origin/<base-branch> feature/<task-name>; then
-     git -C ../worktree-<task-name> merge --no-ff origin/<base-branch> -m "Merge origin/<base-branch> into feature/<task-name>"
-     git -C ../worktree-<task-name> push origin feature/<task-name>
+   BASE='<base-branch>'                   # validated value only
+   BRANCH='feature/<task-name>'           # validated value only
+   WT='../worktree-<task-name>'           # the worktree Step 4a created
+   git fetch origin "$BASE"
+   if ! git merge-base --is-ancestor "origin/$BASE" "$BRANCH"; then
+     git -C "$WT" merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into $BRANCH"
+     git -C "$WT" push origin "$BRANCH"
      # The branch now has a new commit; return to step 2 and re-verify CI.
    fi
    ```

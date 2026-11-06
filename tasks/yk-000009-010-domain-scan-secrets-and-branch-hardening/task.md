@@ -32,7 +32,7 @@ Covers: Scope 1-6
 - [ ] `cmp codex/skills/ywc-create-pr/scripts/scan-secrets.sh plugins/ywc-agent-toolkit/skills/ywc-create-pr/scripts/scan-secrets.sh`
 - [ ] `[ "$(grep -c '2>/dev/null || true' claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh | tr -d ' ')" = 0 ]`
 - [ ] `[ "$(grep -c 'check-ref-format --branch' claude-code/skills/ywc-finish-branch/SKILL.md claude-code/skills/references/pr-conflict-resolution.md | awk -F: '{s+=$2} END{print s}')" = 0 ]`
-- [ ] `[ "$(grep -c 'worktree-<task-name>' claude-code/skills/ywc-parallel-executor/SKILL.md | tr -d ' ')" = 0 ]`
+- [ ] `[ "$(grep -c 'git -C ../worktree-<task-name>' claude-code/skills/ywc-parallel-executor/SKILL.md | tr -d ' ')" = 0 ]`
 - [ ] `grep -qF 'git fetch origin "$BASE"' claude-code/skills/ywc-parallel-executor/SKILL.md`
 - [ ] `bash scripts/validate.sh`
 - [ ] `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci`
@@ -48,3 +48,8 @@ Covers: Scope 1-6
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- RED: of the 5 new cases, 4 failed against the old script (`--committed main --staged` → 0; `git status` / `git diff --cached` / unstaged `git diff` failure → 0). `--staged --committed main` already passed and is kept as a regression guard for the fixed flag order.
+- Mutation check (scratch copies): restoring `MODE="staged"` on `--staged`, or `|| true` on any of the three Phase 1/2 git calls, turns the suite red (4/4 killed). The suite has 17 cases and is byte-identical in the Claude Code and Codex copies.
+- `--staged` is now a no-op flag: Phases 1-2 always run, and no caller combines the two flags (grep of `claude-code/skills` and `codex/skills`).
+- Scope 5 premise correction: this repo's `ywc-parallel-executor/SKILL.md` still names the task worktree `../worktree-<task-name>` everywhere (Step 4a creates it there), so `<worktree-path>` would be undefined in this file. The base-refresh block holds that path in `WT` and quotes it. The stale-path Task Verify was narrowed from any `worktree-<task-name>` to the unquoted `git -C ../worktree-<task-name>` form.
