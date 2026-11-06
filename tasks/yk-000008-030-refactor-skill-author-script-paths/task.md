@@ -41,3 +41,5 @@ Covers: the Scope bullets above
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+- Sweep (`bash +"?scripts/` over `claude-code/skills/*/SKILL.md` and `references/*.md`): the only hits were the two Scope lines in `ywc-skill-author`; both fixed (SKILL.md -> `${CLAUDE_SKILL_DIR}`, audit-workflow.md -> `<skill-base-dir>` plus the defining sentence). No other skill's `bash scripts/<name>` found.
+- Not edited (outside Scope, same defect class, prose mentions without `bash`): `ywc-skill-author/SKILL.md` lines ~214 (`scripts/enumerate-rd-rows.sh`), ~227 and ~268 (`scripts/build-variant.sh`, `scripts/enumerate-rd-rows.sh`) still use bare repo-relative skill-local paths; `claude-code/skills/CLAUDE.md` says the rule covers prose too. Candidate for a follow-up.

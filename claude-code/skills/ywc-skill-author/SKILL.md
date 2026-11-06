@@ -191,7 +191,7 @@ skill's own mode flag — it is not a flag the bundled script accepts. Translate
 it into the script's actual CLI before running:
 
 ```bash
-bash scripts/audit-skills.sh --root <skill-or-bundle-dir> --counterpart-root <counterpart-dir> [--near-line-cap <1..500>]
+bash "${CLAUDE_SKILL_DIR}/scripts/audit-skills.sh" --root <skill-or-bundle-dir> --counterpart-root <counterpart-dir> [--near-line-cap <1..500>]
 ```
 
 Run the mechanical report before making any model judgment. Its findings are
