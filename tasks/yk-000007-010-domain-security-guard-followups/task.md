@@ -60,3 +60,8 @@ Covers: final-review M1, M2, M4, M5; closes the yk-000004-050 deferral (missing 
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- The three `--committed` guards (allowlist, `rev-parse --verify`, checked diff) back each other up, so plain inputs could not show any single guard was needed. A `git` shim on PATH (`SHIM_MODE=faildiff|passdiff|passall`) isolates each one. Removing any one guard, or restoring `shift 2` / `|| true`, now turns the suite red: all 6 mutants were checked by hand.
+- `--committed` with no value hit `shift 2` under `set -e` and exited 1 ("secrets found") instead of 2. The line predates this task but sits inside the exit contract this task owns, so it was fixed (impl-review M2).
+- `--committed <base>` now exits 2 when `<base>` has no local ref (e.g. only `origin/develop` exists); before, it silently reported clean. `ywc-create-pr` already treats exit 2 as BLOCKED, so no caller change was needed.
+- `history.mechanical.json` did not change: `score.py --ci` produced an identical baseline, so there was nothing to stage.

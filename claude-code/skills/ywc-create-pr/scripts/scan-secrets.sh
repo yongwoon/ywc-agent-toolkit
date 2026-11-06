@@ -27,7 +27,9 @@ BASE_BRANCH=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --staged)    MODE="staged"; shift ;;
-    --committed) MODE="committed"; BASE_BRANCH="${2:-}"; shift 2 ;;
+    # A missing value must reach the usage check (exit 2); `shift 2` would
+    # fail under set -e and exit 1, which callers read as "secrets found".
+    --committed) MODE="committed"; BASE_BRANCH="${2:-}"; shift $(( $# >= 2 ? 2 : 1 )) ;;
     *)           echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
