@@ -1,5 +1,7 @@
 # Merge Dependabot Skill
 
+> **ユーザー起動専用 Skill** — `/ywc-merge-dependabot` で直接実行します。モデルは自動的に選択せず(`disable-model-invocation: true`)、他の Skill が Skill tool 経由で呼び出すこともできません。
+
 Dependabot が作成した Pull Request を安全に一括 Merge する Claude Code Skill です。
 
 ## 概要

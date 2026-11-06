@@ -83,6 +83,38 @@ class S5LocaleTest(unittest.TestCase):
             self.assertEqual(r["axes"]["S5"], 0)
 
 
+class UserInvokedSkillTest(unittest.TestCase):
+    """A16 — `disable-model-invocation: true` skills are exempt from A2/A3/A4 only."""
+
+    def _score(self, flag: str) -> dict:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n" + flag +
+                "description: (ywc) Merges things on request.\n---\n\n"
+                "**Announce at start:** x\n\n## Rationalization Defense\n\n"
+                "| Excuse | Reality |\n|---|---|\n| a | b |\n| c | d |\n"
+                "| e | f |\n| g | h |\n| i | j |\n", encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+            return score.score_skill(d, {}, {})
+
+    # Fails if score_skill stops reading disable-model-invocation: S2 drops to 4.
+    def test_user_invoked_skips_trigger_checks_and_keeps_s2(self) -> None:
+        r = self._score("disable-model-invocation: true\n")
+        self.assertEqual(r["axes"]["S2"], 5)
+        for check in ("A2_use_when", "A3_anti_trigger", "A4_multilingual"):
+            self.assertNotIn(check, r["signals"]["structure_checks"])
+
+    # Fails if the exemption becomes global: the same description without the flag must drop.
+    def test_model_invoked_skill_is_still_checked(self) -> None:
+        r = self._score("")
+        self.assertLess(r["axes"]["S2"], 5)
+        self.assertFalse(r["signals"]["structure_checks"]["A3_anti_trigger"])
+
+
 class A5HeuristicTest(unittest.TestCase):
     """FR3 — A5 model-tier band derives from role keywords in the NAME."""
 

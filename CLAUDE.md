@@ -85,7 +85,7 @@ Every skill directory must contain:
 2. `README.md`, `README.en.md`, `README.ja.md`, and `README.ko.md` (Tier 1, CI-enforced); generated `README.zh.md` / `README.es.md` (Tier 2) are additionally maintained on skills that ship them
 3. Codex skills must also contain `agents/openai.yaml`
 
-The `description:` field drives activation — it must include trigger phrases users will type AND explicit "Do not use for..." anti-triggers to prevent false matches against sibling skills.
+The `description:` field drives activation — it must include trigger phrases users will type AND explicit "Do not use for..." anti-triggers to prevent false matches against sibling skills. Exception: user-invoked skills (`disable-model-invocation: true`) are exempt from trigger / anti-trigger rules and carry a one-line description instead.
 
 Skill names follow `ywc-<kebab-case>` for all distributed skills. Keep SKILL.md under ~500 lines; extract long sections to `references/`.
 

@@ -418,23 +418,26 @@
     {
       "id": "merge-dependabot-pos-1",
       "prompt": "디펜다봇 PR 모아서 머지해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-2",
       "prompt": "batch merge all pending dependabot PRs with CI verification",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-3",
       "prompt": "依存関係更新のDependabot PRをマージしてください",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "onboard-repo-pos-1",
@@ -1463,11 +1466,10 @@
     {
       "id": "merge-dependabot-vs-create-pr-1",
       "prompt": "pending Dependabot PR 모두 CI 확인하고 merge해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-create-pr",
-      "note": "merge-dependabot specifically handles dependabot PRs; create-pr is for opening new PRs"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "release-pr-list-vs-changelog-1",
@@ -1508,11 +1510,10 @@
     {
       "id": "merge-dependabot-vs-finish-branch-1",
       "prompt": "dependency security updates PR들 CI 확인하고 merge해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-finish-branch",
-      "note": "merge-dependabot handles dependabot/security update PRs; finish-branch handles feature branch delivery"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "plan-vs-brainstorm-1",
@@ -2332,41 +2333,42 @@
     {
       "id": "setup-language-pos-1",
       "prompt": "출력 언어를 한국어로 기본 설정해줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-2",
       "prompt": "stop making me pass --lang on every call — default all ywc output to English from now on",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-3",
       "prompt": "生成物の出力言語を日本語に既定設定して",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-vs-project-mission-1",
       "prompt": "이 프로젝트 산출물 기본 언어를 정해서 설정으로 영속화해줘",
-      "expected": "ywc-setup-language",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-project-mission",
-      "note": "both persist project-level config as committed memory; project-mission owns the durable why/mission / success-criteria, but this asks to fix the default output language — owned by setup-language"
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-vs-project-mission-2",
       "prompt": "persist this project's setup so all future ywc output is written in English",
-      "expected": "ywc-setup-language",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-project-mission",
-      "note": "'persist project setup' overlaps project-mission's durable-memory surface, but the concrete ask fixes the output-language default, so setup-language wins"
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "auth-implement-pos-1",
@@ -3747,23 +3749,26 @@
     {
       "id": "merge-dependabot-pos-4",
       "prompt": "쌓여있는 의존성 업데이트들 한번에 처리해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-5",
       "prompt": "봇이 열어놓은 패키지 업데이트 관련 요청들 확인하고 정리해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-6",
       "prompt": "자동으로 올라온 보안 패치 관련 요청들 있으면 검토하고 합쳐줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "changelog-pos-5",
@@ -3867,20 +3872,18 @@
     {
       "id": "merge-dependabot-vs-create-pr-2",
       "prompt": "새로 짠 기능 PR 얘기 아니고, 자동으로 열린 업데이트들 정리해서 머지해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "user-prompt",
-      "impostor": "ywc-create-pr",
-      "note": "merge-dependabot wins for batch-processing Dependabot PRs; its own anti-trigger defers feature-PR creation to create-pr"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-vs-create-pr-3",
       "prompt": "이건 사람이 짠 코드 PR이 아니라, 봇이 연 의존성 업데이트들 얘기야, 그것들만 정리해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "user-prompt",
-      "impostor": "ywc-create-pr",
-      "note": "merge-dependabot wins for bot-opened dependency-update PRs specifically, distinct from a human feature PR handled by create-pr"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "receive-review-vs-impl-review-1",
@@ -4197,23 +4200,26 @@
     {
       "id": "setup-language-pos-4",
       "prompt": "이제부터 매번 지정 안 해도 되게, 기본 출력 쓰는 말 하나로 고정해줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-5",
       "prompt": "지금 고정돼 있는 기본 언어가 뭔지 보여줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-6",
       "prompt": "앞으로 생성되는 문서, PR, 커밋 메시지 전부 한국어로 고정해줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "skill-author-pos-5",

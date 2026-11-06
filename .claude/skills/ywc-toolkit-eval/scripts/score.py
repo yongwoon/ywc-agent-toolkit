@@ -383,6 +383,10 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
         "A11_locales": all((d / loc).exists() for loc in REQUIRED_LOCALES),
         "A14_ref_pointers": _refs_have_pointers(d, body),
     }
+    # A16: a user-invoked skill pays no Tier-1 routing cost, so trigger rules do not apply.
+    if fm.get("disable-model-invocation") == "true":
+        for trigger_check in ("A2_use_when", "A3_anti_trigger", "A4_multilingual"):
+            del checks[trigger_check]
     s2 = round(sum(checks.values()) / len(checks) * 5)
     signals["structure_checks"] = {k: bool(v) for k, v in checks.items()}
 

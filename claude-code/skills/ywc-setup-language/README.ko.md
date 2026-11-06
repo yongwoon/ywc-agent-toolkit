@@ -1,5 +1,7 @@
 # Setup Language Skill (ywc-setup-language)
 
+> **사용자 호출 전용 Skill** — `/ywc-setup-language` 으로 직접 실행합니다. 모델이 자동으로 선택하지 않으며(`disable-model-invocation: true`), 다른 Skill 이 Skill tool 로 호출할 수 없습니다.
+
 Project 또는 user 단위 **output language** 를 저장해, 모든 language-aware `ywc-*` skill 이
 per-call `--lang` flag 이나 prompt 없이 해당 언어로 document, PR text, commit message 를
 생성하도록 하는 Claude Code Skill.

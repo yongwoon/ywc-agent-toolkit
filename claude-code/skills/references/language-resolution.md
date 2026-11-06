@@ -105,7 +105,7 @@ section **coexists with and takes precedence over** those:
   and wins.
 - When it is **absent**, a consuming skill MAY still honor its own pre-existing looser cue as
   a fallback **before** its hardcoded default. This preserves no-regression behavior for
-  projects that configured language the old way and have not yet run `ywc-setup-language`.
+  projects that configured language the old way and have not yet run `/ywc-setup-language`.
 
 ## Edge Cases
 
