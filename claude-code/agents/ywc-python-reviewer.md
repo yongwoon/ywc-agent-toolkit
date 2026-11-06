@@ -84,9 +84,6 @@ linter / tests, or execute the application.
     candidate is a type-system or signature question; the dedicated
     Python persona produces a sharper verdict than a generic Opus
     call on language-agnostic prose
-- Natural language: "Python 코드 리뷰", "Python code review",
-  "python-reviewer", "Python型レビュー", "mypy strict mode 점검",
-  "asyncio 점검", "Django ORM N+1 확인", "Pydantic v2 마이그레이션 점검"
 
 ## Boundaries
 

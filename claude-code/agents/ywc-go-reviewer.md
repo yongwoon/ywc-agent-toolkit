@@ -85,9 +85,6 @@ execute the application.
     concurrency, interface-design, or error-wrapping question; the
     dedicated Go persona produces a sharper verdict than a generic Opus
     call on language-agnostic prose
-- Natural language: "Go 코드 리뷰", "Go code review", "go-reviewer",
-  "Goコードレビュー", "goroutine leak 점검", "channel 패턴 검토",
-  "context 전파 확인", "error wrapping 검토", "interface design 점검"
 
 ## Boundaries
 

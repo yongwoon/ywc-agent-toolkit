@@ -65,9 +65,6 @@ compiler, or execute the application.
     the generic Opus advisor when a flagged Design candidate is a type-
     system or signature question; the dedicated TS persona produces a
     sharper verdict than a generic Opus call on language-agnostic prose
-- Natural language: "TypeScript 코드 리뷰", "TS code review",
-  "typescript-reviewer", "TypeScript型レビュー", "tsc strict mode 점검",
-  "React hooks rules 위반 확인"
 
 ## Boundaries
 

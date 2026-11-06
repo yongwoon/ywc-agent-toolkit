@@ -1,7 +1,7 @@
 ---
 name: ywc-impl-review
 description: >-
-  (ywc) Use when implementation is complete and before creating a PR, to validate code against the spec or run a comprehensive quality review. Triggers: "구현 검증", "impl review", "implementation review", "사양 적합성", "코드 리뷰", "구현 리뷰", "PR 전 검증", "check my implementation", "実装レビュー". Do not use for active code generation, spec-only review (use ywc-spec-validate), product/business review (use ywc-product-review), durable review-preference capture (use ywc-review-learnings), or a security-only audit of auth/external-input/sensitive-data code (use ywc-security-audit).
+  (ywc) Use when implementation is complete and before creating a PR, to validate code against the spec or run a comprehensive or language-specific quality review; dispatches ywc-typescript-reviewer / ywc-python-reviewer / ywc-go-reviewer for language depth. Triggers: "구현 검증", "impl review", "implementation review", "사양 적합성", "코드 리뷰", "구현 리뷰", "PR 전 검증", "check my implementation", "実装レビュー", "TypeScript 코드 리뷰", "Python 코드 리뷰", "Go 코드 리뷰", "コードレビュー". Do not use for active code generation, spec-only review (use ywc-spec-validate), product/business review (use ywc-product-review), durable review-preference capture (use ywc-review-learnings), or a security-only audit of auth/external-input/sensitive-data code (use ywc-security-audit).
 ---
 
 # ywc-impl-review
