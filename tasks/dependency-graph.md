@@ -17,13 +17,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000004 — done
 - Completed: `yk-000004-010-domain-plan-auto-converge`, `yk-000004-020-domain-finish-branch-remote-guard`, `yk-000004-030-domain-executor-local-exclude`, `yk-000004-040-domain-create-pr-features-api`, `yk-000004-050-domain-scan-secrets-guard`, `yk-000004-060-domain-skill-contradiction-fixes`, `yk-000004-070-domain-impl-review-linter-defects`, `yk-000004-080-domain-debug-feedback-loop`, `yk-000004-090-domain-brainstorm-tdd-rules`
 
-## Phase yk-000005 — Claude Code Issue 69 — cross-cutting conventions (Phase B)
-
-- `yk-000005-010-domain-skill-path-convention` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000004-050-domain-scan-secrets-guard`
-- `yk-000005-020-domain-user-invoked-skills` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-010-domain-skill-path-convention`
-- `yk-000005-030-refactor-skill-script-paths` → depends on `yk-000005-020-domain-user-invoked-skills`
-- `yk-000005-040-domain-merge-dependabot-workflow` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-030-refactor-skill-script-paths`
-- `yk-000005-050-domain-handoff-retro-skills` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-040-domain-merge-dependabot-workflow`, `yk-000005-020-domain-user-invoked-skills`
+## Phase yk-000005 — done
+- Completed: `yk-000005-010-domain-skill-path-convention`, `yk-000005-020-domain-user-invoked-skills`, `yk-000005-030-refactor-skill-script-paths`, `yk-000005-040-domain-merge-dependabot-workflow`, `yk-000005-050-domain-handoff-retro-skills`
 
 ## Phase yk-000006 — Claude Code Issue 69 — agents and worktrees (Phase C)
 
