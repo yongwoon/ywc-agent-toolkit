@@ -48,4 +48,5 @@ Review of `claude-code/skills/ywc-finish-branch/SKILL.md:215` (Step 5 Remote del
 - M4 (Medium, fixed) :215 — TOCTOU: a push between the tip comparison and the deletion was lost. Now deletion uses `git push --force-with-lease="refs/heads/$branch:$tip" origin --delete "refs/heads/$branch"`; reproduced locally: stale lease rejected (exit 1, "stale info"), matching lease deleted (exit 0).
 - L1 (Low, no change) — `--limit` default 30: truncation cannot turn a non-empty open result into `0`; on the merged query it can only hide a matching row, which yields "stop and report" (fail-safe).
 - L2 (Low, no change) — fork PRs with the same head name (`--head` matches name only): on the open check they cause a false stop (fail-safe); on the merged check a matching row also requires `headRefOid` == origin tip, so the tip commit really was merged into the intended base.
+- M1 also applied to the Rationalization Defense row at :28, which restated the old check.
 - L3 (Low, no change) — multiple PRs per head: the guard already requires "a row" matching both base and tip, and states `gh pr view` cannot settle it.
