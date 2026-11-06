@@ -41,3 +41,6 @@ Covers: the Scope bullets above
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+- Sweep (`bash +"?scripts/` over `claude-code/skills/*/SKILL.md` and `references/*.md`): the only hits were the two Scope lines in `ywc-skill-author`; both fixed (SKILL.md -> `${CLAUDE_SKILL_DIR}`, audit-workflow.md -> `<skill-base-dir>` plus the defining sentence). No other skill's `bash scripts/<name>` found.
+- Also fixed on lead's instruction (prose mentions, same defect class; `claude-code/skills/CLAUDE.md` covers prose): `ywc-skill-author/SKILL.md` lines ~214, ~227, ~268 (`enumerate-rd-rows.sh` x2, `build-variant.sh` x2) now use `"${CLAUDE_SKILL_DIR}/scripts/<name>"`.
+- Ruling: yk-000008-030 — fixed the prose script mentions in SKILL.md — lead directed it; file is in Ownership and the rule covers prose — cost if wrong: none beyond a wider diff — evidence: rung 4: grep for bare `scripts/(enumerate-rd-rows|build-variant)` returns nothing — result: applied
