@@ -80,7 +80,7 @@ A `--mode normal-pr` or `--mode local-merge` invocation is **done** only when al
 2. **Merge succeeded**: either the PR was merged via `gh pr merge --delete-branch` (normal-pr) or `git merge --no-ff` succeeded locally and was pushed (local-merge).
 3. **Post-merge verification passed**: `git log -1 --format="%s"` on the base branch begins with `Merge branch 'feature/`.
 4. **Task directory moved**: `git mv <tasks-dir>/<task-name> <tasks-dir>/completed/<task-name>` and the `chore: mark <task-name> as completed` commit was created.
-5. **Local feature branch deleted**: `git branch -d feature/<task-name>` succeeded (refuses to delete an unmerged branch — that is the safety check).
+5. **Local feature branch deleted**: `git branch -d "$BRANCH"` (`BRANCH` as validated in Step 1) succeeded (refuses to delete an unmerged branch — that is the safety check).
 
 For `--mode draft` and `--mode skip-ci-wait`, conditions 2–5 are intentionally not performed; the skill's responsibility ends at PR creation (and ready-marking for `skip-ci-wait`). For `--mode per-task-pr`, only the PR creation portion runs; the caller handles the rest within the wave loop.
 
@@ -88,8 +88,9 @@ For `--mode draft` and `--mode skip-ci-wait`, conditions 2–5 are intentionally
 
 ### Step 1: Validate Inputs
 
-- Confirm `--branch` exists locally (`git branch --list <branch>` returns the branch).
-- Confirm `--base-branch` is reachable (`git rev-parse --verify <base-branch>` succeeds).
+- Hold `--branch` in `BRANCH` and `--base-branch` in `BASE`, and validate both per the Step 5 Remote deletion guard rule before any git command below (on failure return `BLOCKED: invalid branch name`). Every later step reuses these validated variables.
+- Confirm `--branch` exists locally (`git branch --list "$BRANCH"` returns the branch).
+- Confirm `--base-branch` is reachable (`git rev-parse --verify "$BASE"` succeeds).
 - Confirm `--task-name` matches an entry under `<tasks-dir>/` (not under `<tasks-dir>/completed/`).
 - For PR-based modes: confirm `gh auth status` succeeds.
 
@@ -221,14 +222,18 @@ gh pr merge <pr-number> --delete-branch
 For `--mode local-merge`:
 ```bash
 # Caller has already verified its Step 4 (Task Verification); this skill does not re-verify.
-git checkout <base-branch>
-git pull origin <base-branch>
-git merge --no-ff feature/<task-name> -m "Merge branch 'feature/<task-name>'"
-git push origin <base-branch>          # omit when --defer-push is set
-git branch -d feature/<task-name>      # omit when --keep-branch is set (parallel wave loop case)
+BASE='<base-branch>'                   # validated value only (Remote deletion guard rule above)
+BRANCH='feature/<task-name>'           # validated value only (same rule)
+git checkout "$BASE"
+git pull origin "$BASE"
+git merge --no-ff "$BRANCH" -m "Merge branch '$BRANCH'"
+git push origin "$BASE"                # omit when --defer-push is set
+git branch -d "$BRANCH"                # omit when --keep-branch is set (parallel wave loop case)
 ```
 
-When `--worktree-path <path>` is set, prefix every git command above with `-C <path>` (e.g. `git -C <path> checkout <base-branch>`, `git -C <path> merge --no-ff feature/<task-name> …`, `git -C <path> branch -d feature/<task-name>`); here `<base-branch>` is the run's integration branch (the worktree's checkout). Per the [Worktree-path mode](#worktree-path-mode) HEAD invariant, the integration branch is checked out before the per-task `feature/<task-name>` is deleted, so the delete succeeds.
+Both `BASE` and `BRANCH` must pass the validation order from the Remote deletion guard rule above before the block runs (on failure return `BLOCKED: invalid branch name` and run no git command); quote every use.
+
+When `--worktree-path <path>` is set, prefix every git command above with `-C <path>` (e.g. `git -C <path> checkout "$BASE"`, `git -C <path> merge --no-ff "$BRANCH" …`, `git -C <path> branch -d "$BRANCH"`); here `<base-branch>` is the run's integration branch (the worktree's checkout). Per the [Worktree-path mode](#worktree-path-mode) HEAD invariant, the integration branch is checked out before the per-task `feature/<task-name>` is deleted, so the delete succeeds.
 
 For all other modes: skip — merge happens later (manual for `draft`, caller for `skip-ci-wait` and `per-task-pr`).
 
@@ -268,10 +273,14 @@ For `--mode draft`, `--mode skip-ci-wait`, `--mode per-task-pr`: skip Step 7 ent
 
 For `--mode normal-pr`:
 ```bash
-git checkout <base-branch>
-git pull origin <base-branch>
-git branch -d feature/<task-name>      # omit when --keep-branch is set
+BASE='<base-branch>'                   # validated value only (Remote deletion guard rule, Step 5)
+BRANCH='feature/<task-name>'           # validated value only (same rule)
+git checkout "$BASE"
+git pull origin "$BASE"
+git branch -d "$BRANCH"                # omit when --keep-branch is set
 ```
+Validate `BASE` and `BRANCH` per the Step 5 Remote deletion guard rule before this block (on failure return `BLOCKED: invalid branch name` and run no git command); quote every use.
+
 The local branch must be deleted explicitly because `gh pr merge --delete-branch` only removes the remote. Skip the deletion when `--keep-branch` is set — the caller (typically `ywc-parallel-executor`) will release the worktree and delete the branch in its own cleanup step. When `--worktree-path <path>` is set, run all three commands as `git -C <path> …` (here `<base-branch>` is the run's integration branch); the per-task `feature/<task-name>` deletion is safe because the worktree HEAD is on the integration branch per the [Worktree-path mode](#worktree-path-mode) invariant.
 
 For `--mode local-merge`: already handled inside Step 5's command sequence (which honors `--keep-branch` likewise).
