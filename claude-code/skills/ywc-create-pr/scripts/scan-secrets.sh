@@ -43,6 +43,13 @@ if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" != "true" ]; then
   exit 2
 fi
 
+# diff.relative=true limits every diff to the current directory, so scan from
+# the top of the work tree.
+TOP=$(git rev-parse --show-toplevel) && cd "$TOP" || {
+  echo "ERROR: cannot enter the work tree root; nothing was scanned" >&2
+  exit 2
+}
+
 if [ "$MODE" = "committed" ] && [ -z "$BASE_BRANCH" ]; then
   echo "Usage: scan-secrets.sh --committed <base-branch>" >&2
   exit 2
@@ -66,20 +73,22 @@ FOUND=0
 
 # The user's git config must not change what is scanned: color codes before
 # "+" defeat the `^+` match, and an external diff driver or textconv replaces
-# the patch text. `--porcelain` is never colored, and `--untracked-files=all`
-# overrides status.showUntrackedFiles=no.
-DIFF_OPTS=(--no-color --no-ext-diff --no-textconv)
+# the patch text; `--text` keeps paths marked binary (`-diff`) from collapsing
+# to "Binary files differ". `--porcelain` is never colored, and
+# `--untracked-files=all` overrides status.showUntrackedFiles=no.
+DIFF_OPTS=(--no-color --no-ext-diff --no-textconv --text)
 
 # ── Phase 1: dangerous file names ────────────────────────────────────────────
 # A failing git call means nothing was scanned (exit 2); `|| true` is kept only
-# on grep, where exit 1 just means "no match".
-STATUS=$(git status --porcelain --untracked-files=all) || {
+# on grep, where exit 1 just means "no match". `-z` disables path quoting
+# (spaces, non-ASCII), so each entry is matched as written; a name is matched
+# after the status field's space or after a `/`.
+STATUS=$(git status --porcelain -z --untracked-files=all | tr '\0' '\n') || {
   echo "ERROR: git status failed; nothing was scanned" >&2
   exit 2
 }
 DANGEROUS=$(printf '%s\n' "$STATUS" \
-  | awk '{print $NF}' \
-  | grep -iE '(^|\/)\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$' \
+  | grep -iE '(^|[/ ])\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$' \
   || true)
 
 if [ -n "$DANGEROUS" ]; then

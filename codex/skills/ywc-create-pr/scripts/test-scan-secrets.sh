@@ -186,6 +186,27 @@ g config status.showUntrackedFiles no
 assert_args "untracked .env with status.showUntrackedFiles=no" "1" "" --staged
 g config --unset status.showUntrackedFiles
 rm -f "$REPO/.env"
+# A path marked binary (-diff) prints "Binary files differ" with no "+" lines.
+echo "c.json -diff" > "$REPO/.git/info/attributes"
+echo "{\"key\": \"AKIA""ABCDEFGHIJKLMNOP\"}" > "$REPO/c.json"; g add c.json
+assert_args "--staged secret in a -diff (binary) path" "1" "" --staged
+g rm -q --cached c.json; rm -f "$REPO/c.json"; : > "$REPO/.git/info/attributes"
+# Quoted paths (space, non-ASCII) must still match the dangerous-name patterns.
+mkdir -p "$REPO/x y"; : > "$REPO/x y/server.pem"
+assert_args "untracked dangerous file under a path with a space" "1" "" --staged
+rm -rf "$REPO/x y"
+mkdir -p "$REPO/日本"; : > "$REPO/日本/.env"
+assert_args "untracked .env under a non-ASCII path" "1" "" --staged
+rm -rf "${REPO:?}/日本"
+# diff.relative=true limits every diff to the current directory.
+g checkout -q feat
+mkdir -p "$REPO/sub"
+g config diff.relative true
+assert_eq "--committed from a subdirectory with diff.relative=true" "1" \
+  "$( (cd "$REPO/sub" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --committed main >/dev/null 2>&1); echo $?)"
+g config --unset diff.relative
+rmdir "$REPO/sub"
+g checkout -q clean-feat
 
 echo ""
 echo "test-scan-secrets.sh: $PASS passed, $FAIL failed"
