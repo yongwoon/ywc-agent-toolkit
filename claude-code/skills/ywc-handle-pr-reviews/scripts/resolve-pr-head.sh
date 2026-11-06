@@ -6,7 +6,8 @@
 # whoever pushed it, so it is held in a variable and validated in-process
 # before it reaches any command line.
 #
-# stdout: the validated head branch name (only on exit 0)
+# stdout (only on exit 0): line 1 the validated head branch name, line 2 the
+# validated head commit SHA (headRefOid) that the caller pins origin/<H> to
 # exit 0 = validated; 1 = BLOCKED (reason on stderr); 2 = usage error
 set -euo pipefail
 
@@ -24,11 +25,13 @@ pr_re='^[0-9]+$'
 
 # @tsv escapes tab, newline and backslash inside headRefName, so a hostile
 # value cannot add fields or lines; the escapes then fail the allowlist below.
-if ! fields="$(gh pr view "$pr" --json headRefName,isCrossRepository,state \
-    --jq '[.state, (.isCrossRepository | tojson), .headRefName] | @tsv')"; then
+# tojson keeps a missing headRefOid a non-empty field: adjacent tabs would
+# otherwise collapse under IFS and shift headRefName into its place.
+if ! fields="$(gh pr view "$pr" --json headRefName,headRefOid,isCrossRepository,state \
+    --jq '[.state, (.isCrossRepository | tojson), (.headRefOid | tojson), .headRefName] | @tsv')"; then
   blocked "gh pr view failed for PR $pr"
 fi
-IFS=$'\t' read -r state cross head <<<"$fields" || true
+IFS=$'\t' read -r state cross oid head <<<"$fields" || true
 
 [ "$state" = "OPEN" ] || blocked "PR is ${state:-unknown}"
 # Fail closed: anything but the JSON boolean false (true, null, "false").
@@ -37,8 +40,12 @@ IFS=$'\t' read -r state cross head <<<"$fields" || true
 # Whole-string allowlist first (no shell call), then git's own ref rules.
 head_re='^[A-Za-z0-9._/-]+$'
 if [[ ! "$head" =~ $head_re ]] || [[ "$head" == -* ]] || [[ "$head" == *..* ]]; then
-  blocked "invalid head branch name"
+  blocked "invalid head branch name (allowlist ^[A-Za-z0-9._/-]+\$, no leading '-', no '..')"
 fi
 git check-ref-format "refs/heads/$head" || blocked "invalid head branch name"
 
-printf '%s\n' "$head"
+oid_re='^"[0-9a-f]{40}"$'
+[[ "$oid" =~ $oid_re ]] || blocked "invalid head commit"
+oid="${oid//\"/}"
+
+printf '%s\n%s\n' "$head" "$oid"

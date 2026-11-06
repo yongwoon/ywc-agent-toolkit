@@ -24,7 +24,7 @@ PR を「対応」するとは、単に Comment へ返信することではな�
 /handle-pr-reviews 123
 ```
 
-`--worktree` を付けると（`/handle-pr-reviews 123 --worktree`）、PR の Head Branch を `ywc-worktrees --mode create --existing-branch` で作成した専用 Worktree で処理し、呼び出し元の Checkout には触れません。PR 番号は必須で、`^[0-9]+$` のみ許可します。Fork PR（`isCrossRepository`）と OPEN 以外の PR は `BLOCKED` となり、Head Branch 名は Shell で使う前に Allowlist と `git check-ref-format` で検証します。既に Checkout 済みの Worktree があれば再利用します。後片付けでは `--keep-branch` 付きの `ywc-worktrees --mode prune` を案内し、PR Head Branch を削除しません。
+`--worktree` を付けると（`/handle-pr-reviews 123 --worktree`）、PR の Head Branch を `ywc-worktrees --mode create --existing-branch` で作成した専用 Worktree で処理し、呼び出し元の Checkout には触れません。ただし Head Branch が既に Main Checkout で Checkout されている場合（`in-place`）は、その Checkout で直接 fetch、fast-forward、commit を行います。PR 番号は必須で、`^[0-9]+$` のみ許可します。Fork PR（`isCrossRepository`）と OPEN 以外の PR は `BLOCKED` となり、Head Branch 名は Shell で使う前に Allowlist と `git check-ref-format` で検証します。既に Checkout 済みの Worktree があれば再利用します。後片付けでは `--keep-branch` 付きの `ywc-worktrees --mode prune` を案内し、PR Head Branch を削除しません。
 
 自然言語 Trigger は [SKILL.md](./SKILL.md) に定義されています。
 

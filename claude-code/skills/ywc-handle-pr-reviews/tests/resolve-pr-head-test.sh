@@ -49,9 +49,12 @@ run() {
   err="$(cat "$tmpdir/stderr")"
 }
 
-fixture() { # fixture <state> <isCrossRepository-json> <headRefName-json>
+good_oid='0123456789abcdef0123456789abcdef01234567'
+
+fixture() { # fixture <state> <isCrossRepository-json> <headRefName-json> [headRefOid-json]
   rm -f "$STUB_FAIL_FILE"
-  printf '{"state":"%s","isCrossRepository":%s,"headRefName":%s}\n' "$1" "$2" "$3" > "$STUB_JSON_FILE"
+  printf '{"state":"%s","isCrossRepository":%s,"headRefName":%s,"headRefOid":%s}\n' \
+    "$1" "$2" "$3" "${4:-\"$good_oid\"}" > "$STUB_JSON_FILE"
 }
 
 expect_ok() { # expect_ok <expected-head>
@@ -66,11 +69,11 @@ expect_blocked() { # expect_blocked <stderr-substring>
   [ ! -e "$tmpdir/work/PWNED" ] || fail "hostile input was executed"
 }
 
-# 1. Happy path: a same-repo OPEN PR prints its validated head branch.
-# Fails if: the script stops printing the head or rejects a legal name.
+# 1. Happy path: a same-repo OPEN PR prints its validated head branch and SHA.
+# Fails if: the script stops printing the head or SHA, or rejects a legal name.
 fixture OPEN false '"feature/yk-000006-030-x.y_z"'
 run 42
-expect_ok "feature/yk-000006-030-x.y_z"
+expect_ok "feature/yk-000006-030-x.y_z"$'\n'"$good_oid"
 
 # 2. Non-numeric PR numbers are refused before gh is ever called.
 # Fails if: the ^[0-9]+$ check is removed or moved after the gh call.
@@ -86,6 +89,9 @@ done
 run
 [ "$code" -eq 2 ] || fail "expected usage exit 2 with no args, got $code"
 [ ! -e "$STUB_CALLS_FILE" ] || fail "gh was called without a PR number"
+run 42 43
+[ "$code" -eq 2 ] || fail "expected usage exit 2 with two args, got $code"
+[ ! -e "$STUB_CALLS_FILE" ] || fail "gh was called with two PR numbers"
 
 # 4. Fork PRs are refused, and so is a missing/non-boolean flag (fail closed).
 # Fails if: the isCrossRepository check is removed or only rejects literal true.
@@ -96,10 +102,12 @@ for cross in true null '"false"'; do
 done
 
 # 5. Non-OPEN PRs are refused with their state.
-# Fails if: the state check is removed.
-fixture MERGED false '"main"'
-run 42
-expect_blocked "BLOCKED: PR is MERGED"
+# Fails if: the state check is removed or narrowed to one state (!= MERGED).
+for state in MERGED CLOSED; do
+  fixture "$state" false '"main"'
+  run 42
+  expect_blocked "BLOCKED: PR is $state"
+done
 
 # 6. A gh failure fails closed and surfaces gh's stderr.
 # Fails if: the gh exit status is ignored.
@@ -110,12 +118,13 @@ expect_blocked "Could not resolve to a PullRequest"
 expect_blocked "BLOCKED: gh pr view failed"
 
 # 7. Hostile head branch names are rejected and never executed.
-# Fails if: the allowlist, the leading '-' check, the '..' check or the
-# check-ref-format call is removed, or the name is evaluated by a shell.
+# Fails if: the allowlist, the leading '-' check or the check-ref-format call
+# is removed, or the name is evaluated by a shell. Removing only the '..' check
+# keeps the suite green: check-ref-format rejects 'a..b' too (kept per C2).
 hostile=(
   '"$(touch PWNED)"'        # command substitution
   '"`touch PWNED`"'         # backtick substitution
-  '"$(id)"'                 # passes git check-ref-format; only the allowlist stops it
+  '"$(id>PWNED)"'           # passes git check-ref-format; only the allowlist stops it
   '"a;touch PWNED"'         # command separator
   '"main\ntouch PWNED"'     # embedded newline (jq @tsv escapes it to \n)
   '"main\t$(touch PWNED)"'  # embedded tab
@@ -131,6 +140,23 @@ for name in "${hostile[@]}"; do
   fixture OPEN false "$name"
   run 42
   expect_blocked "BLOCKED: invalid head branch name"
+done
+# Legal git names outside the allowlist say so, so the refusal is not a mystery.
+# Fails if: the allowlist rejection stops naming the allowlist.
+for name in '"fix/a+b"' '"feature/#1"'; do
+  fixture OPEN false "$name"
+  run 42
+  expect_blocked "allowlist ^[A-Za-z0-9._/-]+$"
+done
+
+# 8. The head commit must be a full lowercase 40-hex SHA; the caller pins
+# origin/<H> to it, so a malformed value must not reach the caller.
+# Fails if: the headRefOid validation is removed or loosened.
+for oid in null '""' '"0123456"' '"0123456789ABCDEF0123456789ABCDEF01234567"' \
+    '"0123456789abcdef0123456789abcdef01234567\n"' '"$(touch PWNED)"'; do
+  fixture OPEN false '"main"' "$oid"
+  run 42
+  expect_blocked "BLOCKED: invalid head commit"
 done
 
 echo "PASS: resolve-pr-head-test.sh"

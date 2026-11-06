@@ -24,7 +24,7 @@ This Skill automates the repetitive work after a PR review arrives. Clear change
 /handle-pr-reviews 123
 ```
 
-With `--worktree` (`/handle-pr-reviews 123 --worktree`), the PR's head branch is handled in a dedicated worktree created by `ywc-worktrees --mode create --existing-branch`, leaving the invoking checkout untouched. The PR number is required and must match `^[0-9]+$`. Fork PRs (`isCrossRepository`) and non-OPEN PRs are `BLOCKED`, and the head branch name is validated with an allowlist and `git check-ref-format` before any shell use. An existing worktree for the branch is reused. Cleanup guidance uses `ywc-worktrees --mode prune` with `--keep-branch`, so the PR head branch is not deleted.
+With `--worktree` (`/handle-pr-reviews 123 --worktree`), the PR's head branch is handled in a dedicated worktree created by `ywc-worktrees --mode create --existing-branch`, leaving the invoking checkout untouched. The exception is `in-place`: when the head branch is already checked out in the main checkout, fetch, fast-forward and commits happen directly in that checkout. The PR number is required and must match `^[0-9]+$`. Fork PRs (`isCrossRepository`) and non-OPEN PRs are `BLOCKED`, and the head branch name is validated with an allowlist and `git check-ref-format` before any shell use. An existing worktree for the branch is reused. Cleanup guidance uses `ywc-worktrees --mode prune` with `--keep-branch`, so the PR head branch is not deleted.
 
 Natural-language triggers are defined in [SKILL.md](./SKILL.md).
 
