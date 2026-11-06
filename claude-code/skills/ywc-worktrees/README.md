@@ -7,7 +7,12 @@ lifecycle 관리 skill. Worktree priority resolution (`.worktrees/` > CLAUDE.md
 ## Modes
 
 - `--mode resolve` — Worktree 가 land 할 path 만 출력 (side effect 없음)
-- `--mode create` — `git worktree add` 실행 + path 검증
+- `--mode create` — `git worktree add` 실행 + path 검증. `--base-branch` 대신
+  `--existing-branch` 를 주면 `--branch` 로 지정한 기존 branch 를 checkout 합니다
+  (local branch 는 그대로, origin 에만 있는 branch 는 tracking branch 생성). 두
+  flag 는 상호 배타적이며 (exit 1), branch 이름은 git 호출 전에 검증됩니다
+  (`^[A-Za-z0-9._/-]+$`, 선행 `-` 금지, `..` 금지, `git check-ref-format`).
+  실패 시 `invalid branch name` 과 함께 exit 1.
 - `--mode audit` — Stale / leaked / missing worktree 탐지 (Pre-flight 또는
   wave 종료 시)
 - `--mode prune` — Post-merge cleanup (`git worktree remove` + local branch

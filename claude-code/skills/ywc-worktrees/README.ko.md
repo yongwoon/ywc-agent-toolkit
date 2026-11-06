@@ -8,6 +8,10 @@ lifecycle 관리 skill 의 한국어 요약본. 전체 문서는 [SKILL.md](./SK
 
 - 4 modes: `resolve` (path만 계산) / `create` (생성+검증) / `audit`
   (drift/leak 탐지) / `prune` (cleanup+검증)
+- `create` 의 `--existing-branch`: `--base-branch` 대신 사용하며 (상호 배타적, exit 1)
+  `--branch` 의 기존 branch 를 checkout 합니다 (origin 전용이면 tracking branch 생성).
+  branch 이름은 git 호출 전에 검증되고 (`^[A-Za-z0-9._/-]+$`, 선행 `-`/`..` 금지,
+  `git check-ref-format`), 실패 시 `invalid branch name` 으로 exit 1.
 - Priority resolution chain: `.worktrees/` > CLAUDE.md `worktree_root` >
   `--root` fallback > legacy `../worktree-<task-name>` fallback
 - 3-root sync (claude-code / codex-skill / pi-skills) — `is_diverged()`
