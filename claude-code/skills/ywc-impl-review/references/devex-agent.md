@@ -167,3 +167,5 @@ Reason for escalation: (one sentence stating which of the three properties is at
 ```
 
 Do not paste full files, full log dumps, or full configs. The smaller the payload, the cheaper and sharper the Phase 2 verdict.
+
+Also check mined entries **A-006** (a Promise not awaited, or used as a boolean condition) and **A-007** (an error return value discarded with `_` or a bare call) in [`recurring-defects.md`](./recurring-defects.md#appendix--mined-entries). Both hide a failure without a visible `catch`, so §2's swallowing-catch check alone does not find them. Deterministic pre-checks: the targeted-rules table in [`coderabbit-methodology.md`](./coderabbit-methodology.md#4-static-analysis-as-evidence-not-verdict).

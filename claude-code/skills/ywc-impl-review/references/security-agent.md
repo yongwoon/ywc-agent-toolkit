@@ -57,6 +57,8 @@ Before finalizing, run [`recurring-defects.md` §4 (Security specifics)](./recur
 - **No identity decisions on mutable labels** — authorization keyed on a display name or other editable string is bypassable; key on stable IDs (A01/A07).
 - **Durable idempotency** — an in-process `Set`/flag cannot prevent duplicate provisioning, double-charge, or replay across instances/restarts; require a unique constraint, DB lock, or idempotency key (A04).
 - **Supply chain & secrets** — pin third-party GitHub Actions by commit SHA; new secrets/env vars must be in the secret inventory and `.env.example` (A05/A06).
+- **Checkout credential persistence** — mined entry **A-005** in [`recurring-defects.md`](./recurring-defects.md#appendix--mined-entries): an `actions/checkout` in a job that runs PR-controlled code or uploads the workspace must set `persist-credentials: false` (A05/A08). Deterministic pre-check: `zizmor` row of the targeted-rules table in [`coderabbit-methodology.md`](./coderabbit-methodology.md#4-static-analysis-as-evidence-not-verdict).
+- **Promise as a gate condition** — mined entry **A-006**: an async check used without `await` in an auth/permission condition is always truthy, so the gate never fires (A01).
 
 Map each to its OWASP category in the finding. Skip any item that does not apply (single-owner, no rendered output) and say so. Severity follows this file's rubric.
 
