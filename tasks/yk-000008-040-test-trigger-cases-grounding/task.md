@@ -41,4 +41,14 @@ Covers: the Scope bullets above
 
 ## Implementation Notes (optional)
 
-<!-- Starts empty at generation time. -->
+Basis: `ywc-impl-review`'s own `Do not use for` clause names only ywc-spec-validate, ywc-product-review, ywc-review-learnings, ywc-security-audit (SKILL.md frontmatter line 4) -- no language reviewer and no ywc-performance-engineer. Per L006 the winner of every user-typed review prompt below is `ywc-impl-review` (each reviewer's own clause says "a user-typed code review request ... ywc-impl-review owns it"); per L003 the reverse direction (reviewer as `expected`) is untruthful and impl-review as `expected` is ungrounded for these impostors. Agent body trigger lists checked per L005: only ywc-performance-engineer has a body `Natural language:` list, and none of its phrases appear in the touched prompts.
+
+Positives (verbatim ywc-impl-review trigger phrase removed, L001/L004; expected unchanged): go-reviewer-pos-1 ("Go 코드 리뷰"), python-reviewer-pos-1 ("Python 코드 리뷰"), typescript-reviewer-pos-1 ("TypeScript 코드 리뷰"), impl-review-pos-1 ("구현 검증", "코드 리뷰"), impl-review-pos-2 ("implementation review"), impl-review-pos-3 ("実装レビュー"); collisions impl-review-vs-security-audit-1 ("구현 리뷰", impostor security-audit is grounded) and impl-review-vs-typescript-reviewer-1 ("구현 리뷰").
+
+Collision decisions (merge 7b23a3bf; all 13 DROPPED -- no reviewer can win a user-typed prompt, impl-review's clause does not name the impostor):
+- typescript-reviewer-vs-impl-review-1 / go-reviewer-vs-impl-review-1 / python-reviewer-vs-impl-review-1: drop -- impl-review wins but its clause names no language reviewer (L003); reviewer-as-expected would be backwards (L006).
+- go-reviewer-vs-python-reviewer-1, python-reviewer-vs-typescript-reviewer-1, typescript-reviewer-vs-python-reviewer-1, go-reviewer-vs-typescript-reviewer-1, agent-tsreviewer-vs-pyreviewer-1: drop -- user-typed language review, true winner impl-review, impostor (other language reviewer) unnamed in impl-review's clause.
+- go-reviewer-vs-typescript-reviewer-2, go-reviewer-vs-python-reviewer-2, typescript-reviewer-vs-python-reviewer-2, typescript-reviewer-vs-go-reviewer-1: drop -- same; prompts are verbatim user prompts so they cannot be rewritten without losing `user-prompt` provenance.
+- python-reviewer-vs-performance-engineer-1: drop -- prompt explicitly negates speed measurement and asks an idiom review, so winner is impl-review (impostor performance-engineer unnamed in its clause); reversing to python-reviewer or performance-engineer would contradict the prompt. Floor impact: ywc-performance-engineer independent collisions 2 -> 1 (a rewrite cannot keep it: any rewritten prompt is no longer a verbatim user prompt).
+
+Left untouched (outside the 7b23a3bf set): impl-review-vs-typescript-reviewer-1 still has the same L003 ungrounded impostor (typescript-reviewer); only its L001 phrase was fixed.
