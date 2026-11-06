@@ -110,6 +110,11 @@ Cover the four anchors (the same anchors `ywc-plan` will need downstream — col
 
 If the initial request already answers one of these, do not re-ask — confirm in one sentence and move to the next.
 
+Two ordering rules keep each question worth the user's turn:
+
+- **Facts are your job; decisions are the user's.** Before asking, check whether the answer lives in the environment (files, git history, config, existing docs). If it does, look it up yourself — dispatch an exploration subagent for a broad lookup — and ask the user only for what is genuinely their call. A pending lookup blocks only the questions that depend on it; keep asking the independent ones meanwhile.
+- **Ask from the frontier.** Pick the next question only from those whose prerequisite decisions are already settled. A question whose answer depends on another still-open question waits — asking it now forces the user to guess, and the guess silently becomes a requirement.
+
 ### Step 4: Propose 2–3 approaches with trade-offs
 
 Once intent is clear, present 2 or 3 approaches in conversational prose. For each: one-sentence summary, the trade-offs, and an explicit "fits this case because…" or "less fit because…".
