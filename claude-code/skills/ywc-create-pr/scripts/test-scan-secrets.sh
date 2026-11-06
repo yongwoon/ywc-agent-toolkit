@@ -60,6 +60,36 @@ assert_eq "bare repository" "2" "$(run_scan "$BARE/r.git")"
 UNRESOLVED="$TMP_ROOT/unresolved-skill-dir"
 assert_eq "unresolved script path" "127" "$( (no_git_env bash "$UNRESOLVED/scan-secrets.sh" --staged >/dev/null 2>&1); echo $?)"
 
+# --committed <base>: a base that cannot be scanned must exit 2, never "OK".
+# Fixture: main has a clean commit; branch "feat" adds an AWS-key-shaped line
+# (assembled at runtime so this file itself never contains the pattern).
+REPO="$(mktemp -d "$TMP_ROOT/repo.XXXXXX")"
+g() { (cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env git -c user.name=t -c user.email=t@example.invalid "$@" >/dev/null 2>&1); }
+g init -q -b main
+echo clean > "$REPO/a.txt"; g add a.txt; g commit -q -m base
+g checkout -q -b clean-feat
+echo "still clean" >> "$REPO/a.txt"; g commit -q -am clean
+g checkout -q -b feat main
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m secret
+
+run_committed() {
+  (cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --committed "$1" >/dev/null 2>&1)
+  echo $?
+}
+
+# Fails if Phase 3 swallows the diff error (`|| true`): the committed key is
+# never seen and the scan reports OK / exit 0.
+assert_eq "--committed unknown base" "2" "$(run_committed no-such-branch)"
+# Fails if the base is not allowlisted: git reads it as an option.
+assert_eq "--committed option-like base" "2" "$(run_committed --output=x)"
+# shellcheck disable=SC2016  # the literal `$(id)` is the input under test
+assert_eq "--committed shell-metachar base" "2" "$(run_committed 'main$(id)')"
+assert_eq "--committed dot-dot base" "2" "$(run_committed 'main..feat')"
+# Positive cases: a resolvable base still detects (1) and still passes (0).
+assert_eq "--committed secret vs valid base" "1" "$(run_committed main)"
+g checkout -q clean-feat
+assert_eq "--committed clean vs valid base" "0" "$(run_committed main)"
+
 echo ""
 echo "test-scan-secrets.sh: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]
