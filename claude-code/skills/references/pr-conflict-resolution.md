@@ -72,12 +72,15 @@ in fact no conflict (the merge becomes a fast no-op).
 ## Update Branch From Base
 
 When the PR conflicts with (or is behind) the base, bring the base into the
-feature branch by **merging**, not rebasing:
+feature branch by **merging**, not rebasing.
+
+`<base-branch>` usually comes from the PR's `baseRefName`, which is remote-controlled. Validate it before any git command, in this order (the same rule as `ywc-worktrees --existing-branch`): (1) in-process, without interpolating it into any shell command, it must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`; (2) only then `git check-ref-format --branch "$BASE"` must succeed. On any failure stop with `BLOCKED: invalid base branch name`. Then hold it in a variable and quote every use:
 
 ```bash
-git fetch origin <base-branch>
+BASE='<base-branch>'                       # validated value only
+git fetch origin "$BASE"
 git checkout feature/<task-name>          # skip if the branch is in a worktree — use git -C <worktree>
-git merge --no-ff origin/<base-branch> -m "Merge origin/<base-branch> into feature/<task-name>"
+git merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into feature/<task-name>"
 ```
 
 **Why merge, not rebase:** rebasing rewrites the feature branch's commit SHAs,
