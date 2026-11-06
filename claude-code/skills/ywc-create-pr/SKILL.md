@@ -254,13 +254,14 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
 
     ## Changes
 
-    [List of specific changes made]
+    [Feature list: one item per user- or operator-visible change, written as a capability]
 
     ## Test Plan
 
     [How to verify the changes]
     ```
 
+- **Changes section (new PR body only)**: **Action required: Read `references/pr-body-features-api.md`** and write the Changes content as a feature list, plus an API table when an HTTP endpoint changed. Skip this on the update path, where Step 7 does not run.
 - Write each section based on all commits from the base branch (`git log <base-branch>..HEAD`)
 - Review the full diff already read in Step 6.5 to ensure the description accurately reflects the changes
 - **Design Background (optional, appended)**: if Step 6.6 held a result, **append** a Design Background section after the template/default body above — this augments the body, it never replaces or reorders the project's own template structure (same rule as the `.github/pull_request_template.md` precedence above). Localize the heading and intro line to the language chosen in Step 0 — do not hardcode a single language:

@@ -12,6 +12,7 @@ After work on a feature branch is complete, this Skill automates the flow from c
 - Runs a security check for sensitive files such as `.env`, `*.key`, and `*.pem`
 - Supports pre-push CI checks such as lint, format, typecheck, and test
 - Runs a mandatory author self-review of the full diff before filing (catches scope creep, leftover debug output, and secrets)
+- Writes Changes as a feature list, and adds an API changes table only when an HTTP endpoint changed
 - Applies `.github/pull_request_template.md` when available
 - Cites the related design document in the PR body: the branch's task `## Spec Reference` first, then a best-effort match under `docs/ywc-plans/` (non-blocking)
 - Creates every PR as a draft
