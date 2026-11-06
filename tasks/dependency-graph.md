@@ -29,8 +29,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000008 — done
 - Completed: `yk-000008-010-domain-security-doc-followups`, `yk-000008-020-domain-codex-scan-secrets-guard`, `yk-000008-030-refactor-skill-author-script-paths`, `yk-000008-040-test-trigger-cases-grounding`, `yk-000008-050-docs-low-followups`
 
-## Phase yk-000009 — pending
-- `yk-000009-010-domain-scan-secrets-and-branch-hardening` — no dependencies (security follow-up to yk-000008)
+## Phase yk-000009 — done
+- Completed: `yk-000009-010-domain-scan-secrets-and-branch-hardening`
 
 ## Task Summary
 
