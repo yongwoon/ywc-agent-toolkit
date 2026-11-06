@@ -95,7 +95,7 @@ the final base merge.
 The branch was merely out of date. Push and re-verify CI:
 
 ```bash
-git push origin feature/<task-name>
+git push origin "$BRANCH"
 ```
 
 The new merge commit triggers a fresh CI run. **Re-verify CI** before merging —

@@ -44,4 +44,5 @@ Covers: the Scope bullets above
 
 ## Implementation Notes (optional)
 
-<!-- Starts empty at generation time. -->
+- Orchestrator extended Scope: also quoted every remaining branch placeholder on git command lines in `ywc-finish-branch/SKILL.md` (Step 8 normal-pr block, preflight/post-condition inline commands, worktree `-C` examples) and `pr-conflict-resolution.md` Outcome A push (`"$BRANCH"`, reusing the variable defined in the Update Branch snippet).
+- Ruling: yk-000008-010 — reused the Step 5 Remote deletion guard validation sentence/fail text (`BLOCKED: invalid branch name`) for BASE/BRANCH instead of a new rule — task says "validated by the Step 5 Remote deletion guard rule" — low, wording-only — rung 2: `ywc-finish-branch/SKILL.md` Step 5 — applied
