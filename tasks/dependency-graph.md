@@ -20,11 +20,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000005 — done
 - Completed: `yk-000005-010-domain-skill-path-convention`, `yk-000005-020-domain-user-invoked-skills`, `yk-000005-030-refactor-skill-script-paths`, `yk-000005-040-domain-merge-dependabot-workflow`, `yk-000005-050-domain-handoff-retro-skills`
 
-## Phase yk-000006 — Claude Code Issue 69 — agents and worktrees (Phase C)
-
-- `yk-000006-010-domain-agent-description-alignment` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-050-domain-handoff-retro-skills`
-- `yk-000006-020-domain-worktrees-existing-branch` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000006-010-domain-agent-description-alignment`
-- `yk-000006-030-domain-handle-pr-reviews-worktree` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000006-020-domain-worktrees-existing-branch`
+## Phase yk-000006 — done
+- Completed: `yk-000006-010-domain-agent-description-alignment`, `yk-000006-020-domain-worktrees-existing-branch`, `yk-000006-030-domain-handle-pr-reviews-worktree`
 
 ## Task Summary
 
@@ -93,92 +90,3 @@ No unjustified requirements emitted. Live runtime availability remains an execut
 
 Claude Code Issue 69 port: no requirement was dropped for lacking an Acceptance Criterion. Items verified by review only (no grep AC): brainstorm ordering rules and tdd seam line (`yk-000004-090`), fix #4 / checklist alignment (`yk-000004-080`), refactor-clean and security-audit sentence corrections (`yk-000004-060`), advisor-escalation / aggregate-pr / worktree-run corrections (`yk-000004-030`). The spec's Open Questions 1–6 keep their stated defaults.
 
-## Visual Dependency Graph
-
-```mermaid
-graph TD
-  N0["yk-000001-010-domain-model-hints"]
-  N1["yk-000001-020-domain-analyst-modes"]
-  N2["yk-000001-030-domain-authoring-feedback"]
-  N3["yk-000001-040-domain-session-retro"]
-  N4["yk-000001-050-domain-session-handoff"]
-  N5["yk-000001-060-domain-review-defects"]
-  N6["yk-000001-070-domain-operational-safety"]
-  N7["yk-000001-080-domain-mission-anchor"]
-  N8["yk-000001-090-domain-infra-evidence"]
-  N9["yk-000001-100-domain-pr-worktrees"]
-  N10["yk-000001-110-domain-convergence-callers"]
-  N11["yk-000001-120-domain-pr-body"]
-  N12["yk-000002-010-infra-distribution"]
-  N0 --> N1
-  N1 --> N2
-  N2 --> N3
-  N3 --> N4
-  N5 --> N6
-  N7 --> N8
-  N6 --> N9
-  N2 --> N10
-  N9 --> N10
-  N0 --> N12
-  N1 --> N12
-  N2 --> N12
-  N3 --> N12
-  N4 --> N12
-  N5 --> N12
-  N6 --> N12
-  N7 --> N12
-  N8 --> N12
-  N9 --> N12
-  N10 --> N12
-  N11 --> N12
-```
-
-### Claude Code Issue 69 port
-
-```mermaid
-graph TD
-  C0["yk-000003-010-config-upstream-snapshot"]
-  C1["yk-000004-010-domain-plan-auto-converge"]
-  C2["yk-000004-020-domain-finish-branch-remote-guard"]
-  C3["yk-000004-030-domain-executor-local-exclude"]
-  C4["yk-000004-040-domain-create-pr-features-api"]
-  C5["yk-000004-050-domain-scan-secrets-guard"]
-  C6["yk-000004-060-domain-skill-contradiction-fixes"]
-  C7["yk-000004-070-domain-impl-review-linter-defects"]
-  C8["yk-000004-080-domain-debug-feedback-loop"]
-  C9["yk-000004-090-domain-brainstorm-tdd-rules"]
-  C10["yk-000005-010-domain-skill-path-convention"]
-  C11["yk-000005-020-domain-user-invoked-skills"]
-  C12["yk-000005-030-refactor-skill-script-paths"]
-  C13["yk-000005-040-domain-merge-dependabot-workflow"]
-  C14["yk-000005-050-domain-handoff-retro-skills"]
-  C15["yk-000006-010-domain-agent-description-alignment"]
-  C16["yk-000006-020-domain-worktrees-existing-branch"]
-  C17["yk-000006-030-domain-handle-pr-reviews-worktree"]
-  C0 --> C1
-  C0 --> C2
-  C0 --> C3
-  C0 --> C4
-  C0 --> C5
-  C4 --> C5
-  C0 --> C6
-  C0 --> C7
-  C0 --> C8
-  C0 --> C9
-  C0 --> C10
-  C5 --> C10
-  C0 --> C11
-  C10 --> C11
-  C11 --> C12
-  C0 --> C13
-  C12 --> C13
-  C0 --> C14
-  C13 --> C14
-  C11 --> C14
-  C0 --> C15
-  C14 --> C15
-  C0 --> C16
-  C15 --> C16
-  C0 --> C17
-  C16 --> C17
-```
