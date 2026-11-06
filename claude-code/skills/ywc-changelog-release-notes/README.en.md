@@ -14,7 +14,7 @@ This skill produces **two documents with different purposes**.
 | Audience | Developers, maintainers | End users, customers |
 | Includes | All changes, CVEs, PR numbers | User-visible changes only |
 | Tone | Technical, concise | Plain language, benefit-oriented |
-| refactor/chore | Included | Omitted |
+| refactor/chore | Omitted (logged as `Omitted:` in the run summary) | Omitted |
 
 ## Usage scenarios
 

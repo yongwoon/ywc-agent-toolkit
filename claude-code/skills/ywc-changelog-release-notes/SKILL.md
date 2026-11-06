@@ -62,13 +62,13 @@ gh pr list --state merged --limit 30 --json number,title,mergedAt,labels 2>/dev/
 Determine `from` (last tag or `--from`) and `to` (HEAD or `--to`). If no prior tag exists (first release), set `from` to the repository's root commit (`git rev-list --max-parents=0 HEAD`) so the range spans the entire history. If `--version` is not provided, use AskUserQuestion to ask for it, then **immediately continue to Step 2 in the same turn** — do not end the turn or wait for further input after receiving the answer.
 
 **Step 2 — Parse commits**
-Group by conventional commit type: `feat` → Added, `fix` → Fixed, `refactor`/`chore` → internal (omit from user notes), `security` → Security, `BREAKING CHANGE` → Changed.
+Group by conventional commit type: `feat` → Added, `fix` → Fixed, `refactor`/`chore` → internal (omit from user notes and the CHANGELOG entry, but log each as `Omitted: <short-sha> <subject>` in the run summary), `security` → Security, `BREAKING CHANGE` → Changed.
 
 **Step 3 — Enrich from PRs**
 If gh CLI is available or `--pr-list` is provided, use PR titles and labels for richer descriptions than raw commit messages.
 
 **Step 4 — Generate CHANGELOG entry**
-Keep a Changelog format: Added / Changed / Deprecated / Removed / Fixed / Security. Prepend to CHANGELOG.md (or `--dry-run` to stdout).
+Keep a Changelog format: Added / Changed / Deprecated / Removed / Fixed / Security. Insert below `## [Unreleased]`, above the previous release, in CHANGELOG.md (or `--dry-run` to stdout).
 
 **Step 5 — Generate release notes (if --release or --both)**
 Plain language summary: remove technical jargon, omit internal refactors and dependency bumps, frame features from user perspective.

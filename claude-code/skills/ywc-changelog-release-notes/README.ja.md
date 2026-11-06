@@ -14,7 +14,7 @@ Keep a Changelog形式の技術文書と、非技術User向けのPlain Language�
 | 対象読者 | 開発者、メンテナー | 最終User、顧客 |
 | 含む内容 | 全変更、CVE、PR番号 | User可視の変更のみ |
 | 文体 | 技術的、簡潔 | Plain Language、恩恵中心 |
-| refactor/chore | 含む | 除外 |
+| refactor/chore | 除外（実行サマリーに `Omitted:` として記録） | 除外 |
 
 ## 実際の使用シナリオ
 

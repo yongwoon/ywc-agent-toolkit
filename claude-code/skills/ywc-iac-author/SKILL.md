@@ -9,8 +9,9 @@ description: >-
   "author IaC", "provision infrastructure", "IaC を書いて", "ywc-iac-author".
   Do not use for app logic (ywc-backend-coder), topology design
   (ywc-infra-design), IaC review (ywc-infra-review), cost remediation
-  (ywc-infra-optimize), or local docker port collisions (ywc-docker-isolate —
-  dev-only, not prod infra).
+  (ywc-infra-optimize), a per-module Terraform authoring dispatch from an
+  orchestrator (ywc-infra-engineer), or local docker port collisions
+  (ywc-docker-isolate — dev-only, not prod infra).
 category: implement
 phase: implementation
 requires: []

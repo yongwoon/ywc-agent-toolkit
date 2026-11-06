@@ -12,7 +12,6 @@ description: >-
   codebase exploration before planning (use ywc-plan).
 category: discipline
 phase: pre-handoff
-requires: []
 ---
 
 # ywc-verify-done
