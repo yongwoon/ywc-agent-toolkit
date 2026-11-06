@@ -35,7 +35,7 @@ ywc-commit                      (standalone)
 ywc-create-pr                   (no formal requires; calls ywc-commit internally)
         │
         ▼
-ywc-handle-pr-reviews           (requires: [ywc-create-pr])
+ywc-handle-pr-reviews           (requires: [ywc-create-pr]; --worktree invokes ywc-worktrees --existing-branch)
         │
         ▼
 ywc-release-pr-list             (release flow; no formal requires)
