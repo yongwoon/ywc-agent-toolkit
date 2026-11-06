@@ -1,4 +1,4 @@
-**Next PHASE (yk): `000009`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yk): `000010`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 **Next PHASE (yw): `000005`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 # Codex Issue 69 — task dependency graph
@@ -28,6 +28,9 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 
 ## Phase yk-000008 — done
 - Completed: `yk-000008-010-domain-security-doc-followups`, `yk-000008-020-domain-codex-scan-secrets-guard`, `yk-000008-030-refactor-skill-author-script-paths`, `yk-000008-040-test-trigger-cases-grounding`, `yk-000008-050-docs-low-followups`
+
+## Phase yk-000009 — pending
+- `yk-000009-010-domain-scan-secrets-and-branch-hardening` — no dependencies (security follow-up to yk-000008)
 
 ## Task Summary
 
@@ -70,6 +73,7 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 | yk-000008-030-refactor-skill-author-script-paths | follow-up | sonnet |
 | yk-000008-040-test-trigger-cases-grounding | follow-up | sonnet |
 | yk-000008-050-docs-low-followups | follow-up | sonnet |
+| yk-000009-010-domain-scan-secrets-and-branch-hardening | security follow-up | opus |
 
 ## Spec Coverage
 
