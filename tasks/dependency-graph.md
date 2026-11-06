@@ -14,17 +14,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000003 — done
 - Completed: `yk-000003-010-config-upstream-snapshot`
 
-## Phase yk-000004 — Claude Code Issue 69 — single-skill ports (Phase A)
-
-- `yk-000004-010-domain-plan-auto-converge` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-020-domain-finish-branch-remote-guard` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-030-domain-executor-local-exclude` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-040-domain-create-pr-features-api` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-050-domain-scan-secrets-guard` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000004-040-domain-create-pr-features-api`
-- `yk-000004-060-domain-skill-contradiction-fixes` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-070-domain-impl-review-linter-defects` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-080-domain-debug-feedback-loop` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-090-domain-brainstorm-tdd-rules` → depends on `yk-000003-010-config-upstream-snapshot`
+## Phase yk-000004 — done
+- Completed: `yk-000004-010-domain-plan-auto-converge`, `yk-000004-020-domain-finish-branch-remote-guard`, `yk-000004-030-domain-executor-local-exclude`, `yk-000004-040-domain-create-pr-features-api`, `yk-000004-050-domain-scan-secrets-guard`, `yk-000004-060-domain-skill-contradiction-fixes`, `yk-000004-070-domain-impl-review-linter-defects`, `yk-000004-080-domain-debug-feedback-loop`, `yk-000004-090-domain-brainstorm-tdd-rules`
 
 ## Phase yk-000005 — Claude Code Issue 69 — cross-cutting conventions (Phase B)
 
