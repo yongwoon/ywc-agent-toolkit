@@ -211,7 +211,7 @@ The "compare" step above is not free-form judgment — it follows this 8-step
 procedure so a proposed Rationalization Defense row removal is judged the
 same way every time, never by the agent grading its own prose.
 
-1. **Enumerate** candidates via `scripts/enumerate-rd-rows.sh`. One candidate
+1. **Enumerate** candidates via `"${CLAUDE_SKILL_DIR}/scripts/enumerate-rd-rows.sh"`. One candidate
    = one data row, keyed `<file>:<start>-<end>`.
 2. **Draw the stratified sample**: `min(40, available)` from Stratum A (row
    positions 1–4) and `min(40, available)` from Stratum B (positions 5+), at
@@ -224,7 +224,7 @@ same way every time, never by the agent grading its own prose.
 3. **Bind a scenario**: reuse an `evals/evals.json` `prompt` verbatim if one
    exists, else synthesize from the skill's `description` triggers. Record
    it for reproducibility. Never read `expected_output`.
-4. **Build the variant** via `scripts/build-variant.sh` only — never
+4. **Build the variant** via `"${CLAUDE_SKILL_DIR}/scripts/build-variant.sh"` only — never
    hand-edited; an incidental edit invalidates the contrast.
 5. **Dispatch 3 + 3, blind**: 3 subagents against the original body, 3
    against the deleted body, all on the same scenario. No subagent is told
@@ -265,7 +265,7 @@ Run the bundled mechanical gate first — it enforces the deterministic subset o
 bash "${CLAUDE_SKILL_DIR}/scripts/validate-skill.sh" <skill-dir>
 ```
 
-For work on the "## Rationalization Defense" table specifically (deletion testing, row sampling), use the row-range enumerator and the variant builder — `scripts/enumerate-rd-rows.sh <skill-dir>` prints one `<start>-<end>` line range per data row (`--self-check` asserts parity against the canonical row counter across all 46 skills), and `scripts/build-variant.sh <skill-dir> <start> <end>` writes a temp-path copy of `SKILL.md` with that inclusive range deleted, refusing to write on an inverted/out-of-bounds range or a header-orphaning deletion.
+For work on the "## Rationalization Defense" table specifically (deletion testing, row sampling), use the row-range enumerator and the variant builder — `"${CLAUDE_SKILL_DIR}/scripts/enumerate-rd-rows.sh" <skill-dir>` prints one `<start>-<end>` line range per data row (`--self-check` asserts parity against the canonical row counter across all 46 skills), and `"${CLAUDE_SKILL_DIR}/scripts/build-variant.sh" <skill-dir> <start> <end>` writes a temp-path copy of `SKILL.md` with that inclusive range deleted, refusing to write on an inverted/out-of-bounds range or a header-orphaning deletion.
 
 Then verify the judgment-based items the script cannot check, before merging a new or modified ywc-* skill:
 
