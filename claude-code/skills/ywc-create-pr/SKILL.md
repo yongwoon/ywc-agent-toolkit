@@ -109,7 +109,7 @@ bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
 bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
 ```
 
-Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout.
+Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout. Any other result (exit 2 = usage error or not a git work tree, exit 127 = script path did not resolve, or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
 
 If either scan returns exit 1, warn the user and show the script output. Do not include flagged files in the commit unless the user explicitly confirms. For committed secrets (second scan), require explicit confirmation before proceeding to PR creation.
 

@@ -9,7 +9,7 @@
 # Exit codes:
 #   0  No secrets detected
 #   1  Secrets or dangerous files found (details on stdout)
-#   2  Usage error
+#   2  Usage error, or not inside a git work tree (nothing was scanned)
 #
 # Usage:
 #   # Scan staged + unstaged changes
@@ -30,6 +30,13 @@ while [[ $# -gt 0 ]]; do
     *)           echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
+
+# Outside a work tree every git call below fails silently and reports "clean".
+# A bare repository exits 0 but prints "false", so the output is checked too.
+if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" != "true" ]; then
+  echo "ERROR: not inside a git work tree; nothing was scanned" >&2
+  exit 2
+fi
 
 if [ "$MODE" = "committed" ] && [ -z "$BASE_BRANCH" ]; then
   echo "Usage: scan-secrets.sh --committed <base-branch>" >&2

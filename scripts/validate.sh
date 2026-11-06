@@ -730,6 +730,16 @@ check_cc_support_dirs() {
     fi
   done
 
+  # The secret scan must never report "clean" when it could not scan.
+  local scan_test=claude-code/skills/ywc-create-pr/scripts/test-scan-secrets.sh
+  if [ ! -f "$scan_test" ]; then
+    echo "ERROR: scan-secrets test suite is missing: $scan_test"
+    ERRORS=$((ERRORS + 1))
+  elif ! bash "$scan_test" >/dev/null 2>&1; then
+    echo "ERROR: scan-secrets test suite failed: $scan_test"
+    ERRORS=$((ERRORS + 1))
+  fi
+
   # Every ../references/<file> link must resolve relative to the file that
   # contains it. From a SKILL.md this points at the shared references dir; from
   # a skill-local references/*.md it points back at that same local dir. We
