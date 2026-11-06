@@ -64,10 +64,16 @@ fi
 
 FOUND=0
 
+# The user's git config must not change what is scanned: color codes before
+# "+" defeat the `^+` match, and an external diff driver or textconv replaces
+# the patch text. `--porcelain` is never colored, and `--untracked-files=all`
+# overrides status.showUntrackedFiles=no.
+DIFF_OPTS=(--no-color --no-ext-diff --no-textconv)
+
 # ── Phase 1: dangerous file names ────────────────────────────────────────────
 # A failing git call means nothing was scanned (exit 2); `|| true` is kept only
 # on grep, where exit 1 just means "no match".
-STATUS=$(git status --short) || {
+STATUS=$(git status --porcelain --untracked-files=all) || {
   echo "ERROR: git status failed; nothing was scanned" >&2
   exit 2
 }
@@ -83,11 +89,11 @@ if [ -n "$DANGEROUS" ]; then
 fi
 
 # ── Phase 2: diff content (staged + unstaged) ─────────────────────────────────
-DIFF_STAGED=$(git diff --cached) || {
+DIFF_STAGED=$(git diff "${DIFF_OPTS[@]}" --cached) || {
   echo "ERROR: git diff --cached failed; nothing was scanned" >&2
   exit 2
 }
-DIFF_UNSTAGED=$(git diff) || {
+DIFF_UNSTAGED=$(git diff "${DIFF_OPTS[@]}") || {
   echo "ERROR: git diff failed; nothing was scanned" >&2
   exit 2
 }
@@ -96,7 +102,7 @@ $DIFF_UNSTAGED"
 
 # ── Phase 3: committed diff vs base branch ────────────────────────────────────
 if [ "$MODE" = "committed" ]; then
-  DIFF_COMMITTED=$(git diff "${BASE_BRANCH}...HEAD") || {
+  DIFF_COMMITTED=$(git diff "${DIFF_OPTS[@]}" "${BASE_BRANCH}...HEAD") || {
     echo "ERROR: git diff ${BASE_BRANCH}...HEAD failed; committed changes were not scanned" >&2
     exit 2
   }

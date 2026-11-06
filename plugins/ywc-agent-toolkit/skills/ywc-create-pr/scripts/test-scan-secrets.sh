@@ -153,6 +153,40 @@ assert_args "git status failure" "2" failstatus --staged
 assert_args "git diff --cached failure" "2" failcached --staged
 assert_args "unstaged git diff failure" "2" failworktree --staged
 
+# The user's git config must not hide changes from the scan.
+g checkout -q feat
+# Color codes before "+" stop the `^+` match.
+g config color.ui always
+assert_args "--committed with color.ui=always" "1" "" --committed main
+g config --unset color.ui
+# An external diff driver replaces the patch text.
+g config diff.external true
+assert_args "--committed with diff.external" "1" "" --committed main
+g config --unset diff.external
+# A textconv driver rewrites the file content before diffing.
+echo "b.txt diff=hide" > "$REPO/.git/info/attributes"
+g config diff.hide.textconv "sh -c :"
+assert_args "--committed with a textconv driver" "1" "" --committed main
+g config --remove-section diff.hide
+: > "$REPO/.git/info/attributes"
+g checkout -q clean-feat
+# A staged secret, scanned with color forced on.
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/c.txt"; g add c.txt
+g config color.diff always
+assert_args "--staged with color.diff=always" "1" "" --staged
+g rm -q --cached c.txt; rm -f "$REPO/c.txt"
+# An unstaged secret in a tracked file, same config.
+echo "key=AKIA""ABCDEFGHIJKLMNOP" >> "$REPO/a.txt"
+assert_args "unstaged change with color.diff=always" "1" "" --staged
+g config --unset color.diff
+g checkout -q -- a.txt
+# Hidden untracked files would hide a new .env from Phase 1.
+: > "$REPO/.env"
+g config status.showUntrackedFiles no
+assert_args "untracked .env with status.showUntrackedFiles=no" "1" "" --staged
+g config --unset status.showUntrackedFiles
+rm -f "$REPO/.env"
+
 echo ""
 echo "test-scan-secrets.sh: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]
