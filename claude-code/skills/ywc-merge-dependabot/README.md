@@ -11,7 +11,8 @@
 - Dependabot PR 자동 탐지 및 일괄 Merge
 - Security 관련 PR만 선별 Merge하는 모드 지원
 - Pre-Merge 안전 검증 (Dockerfile, Major Version, CI Status)
-- Merge Conflict 자동 해결 시도
+- Merge Conflict 시 `@dependabot rebase` Comment 를 1회만 남기고 Dependabot 의 rebase 를 대기. Major Version 업그레이드는 항상 Skip 하고 수동 Review 로 넘김
+- Parallel-auto 는 Base Branch 에 required status check 가 확인된 PR 만 `--auto` 에 등록 (Base Branch 이름은 사전 검증). Queue 는 bounded chunk 로 polling 하며, 30분 deadline 경과 후 남은 PR 만 stalled 로 보고
 - PR 번호 오름차순 순차 처리 (이전 Merge가 이후 PR에 미치는 영향 고려)
 - **Parallel-auto Mode** — 다수 PR 처리 시 lockfile ecosystem 별로 grouping 한 뒤 GitHub auto-merge queue 에 위임하여 wall-clock 시간을 단축
 - 처리 결과 Summary Report 자동 생성

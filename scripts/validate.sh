@@ -740,6 +740,17 @@ check_cc_support_dirs() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  # merge-dependabot scripts gate `--auto` merges on a remote-controlled
+  # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
+  local dependabot_test=claude-code/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py
+  if [ ! -f "$dependabot_test" ]; then
+    echo "ERROR: merge-dependabot test suite is missing: $dependabot_test"
+    ERRORS=$((ERRORS + 1))
+  elif ! python3 "$dependabot_test" >/dev/null 2>&1; then
+    echo "ERROR: merge-dependabot test suite failed: $dependabot_test"
+    ERRORS=$((ERRORS + 1))
+  fi
+
   # Every ../references/<file> link must resolve relative to the file that
   # contains it. From a SKILL.md this points at the shared references dir; from
   # a skill-local references/*.md it points back at that same local dir. We

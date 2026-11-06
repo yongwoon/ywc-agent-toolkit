@@ -13,7 +13,8 @@ Dependabot PR を検出し、事前の安全確認を行ったうえで、PR 番
 - Dependabot PR をまとめて検出して Merge
 - Security 関連 PR のみを対象にする Mode を提供
 - Dockerfile Base Image 変更、Major Version 更新、CI Status を事前確認
-- 可能な場合は Conflict 解決を試行
+- Conflict 時は `@dependabot rebase` Comment を 1 回だけ投稿して Dependabot の rebase を待機。Major Version 更新は常に Skip して人手 Review に回す
+- Parallel-auto は Base Branch に required status check が確認できた PR のみ `--auto` に登録 (Base Branch 名は事前に検証)。Queue は bounded chunk で polling し、30 分の deadline 経過後に残った PR のみ stalled と報告
 - **Parallel-auto mode**: lockfile ecosystem ごとに PR を grouping し、GitHub auto-merge queue に直列化を委譲することで大量 PR の wall-clock 時間を短縮
 - 処理後に Summary Report を生成
 
