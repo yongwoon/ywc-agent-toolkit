@@ -746,8 +746,9 @@ check_cc_support_dirs() {
   if [ ! -f "$dependabot_test" ]; then
     echo "ERROR: merge-dependabot test suite is missing: $dependabot_test"
     ERRORS=$((ERRORS + 1))
-  elif ! python3 "$dependabot_test" >/dev/null 2>&1; then
+  elif ! dependabot_out=$(python3 "$dependabot_test" 2>&1); then
     echo "ERROR: merge-dependabot test suite failed: $dependabot_test"
+    printf '%s\n' "$dependabot_out" | tail -n 30
     ERRORS=$((ERRORS + 1))
   fi
 

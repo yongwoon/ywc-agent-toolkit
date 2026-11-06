@@ -139,10 +139,12 @@ PR 번호 **오름차순**으로 하나씩 처리합니다. 이전 PR 의 Merge 
 Merge 시도
 ├── 성공 → ✅ Merged
 └── Conflict 발생
-    ├── Branch Checkout → Conflict 해결 → Push → CI 재실행
-    │   ├── CI 통과 → Merge → ✅ Merged
-    │   └── CI 실패 → ❌ Failed
-    └── 자동 해결 불가 → ❌ Failed
+    ├── `@dependabot rebase` Comment 1회 → Rebase 대기 (최대 9회 × 60초)
+    │   ├── 새 Head 확인 → Dockerfile / Major Version 재검사 → CI 대기
+    │   │   ├── CI 통과 → 새 Head 에 고정 (`--match-head-commit`) 하여 Merge → ✅ Merged
+    │   │   └── CI 실패 → ❌ Failed
+    │   └── Rebase 미완료 또는 여전히 CONFLICTING → ⏭️ Skip 후 사람의 Review 로 전달
+    └── Conflict 를 직접 해결하거나 Push 하지 않음
 ```
 
 ---
@@ -326,9 +328,9 @@ Major Version Upgrade 는 Breaking Change 가능성이 높으므로, Skill 이 �
 
 **A**: Security PR 식별은 Label, Title/Body 키워드 기반입니다. Dependabot이 `security` Label을 붙이지 않는 경우, Title에 "CVE-" 또는 "GHSA-" 키워드가 포함되어야 합니다.
 
-### Q: Conflict 해결 후에도 Merge가 실패합니다
+### Q: `@dependabot rebase` 후에도 Merge가 실패합니다
 
-**A**: Conflict 해결 후 CI가 재실행되며, CI가 실패하면 Merge도 실패합니다. CI 실패 원인을 확인하고 수동으로 대응하세요.
+**A**: Skill 은 Conflict 를 직접 해결하거나 Push 하지 않습니다. `@dependabot rebase` Comment 를 1회 남긴 뒤 Rebase 가 끝나지 않거나, 새 Head 가 여전히 CONFLICTING 이거나, 새 Head 의 CI 가 실패하면 해당 PR 은 Skip 되어 사람의 Review 로 넘어갑니다. CI 실패 원인 또는 Conflict 내용을 확인하고 수동으로 대응하세요.
 
 ### Q: Parallel-auto 를 호출했는데 sequential 로 fallback 되었습니다
 

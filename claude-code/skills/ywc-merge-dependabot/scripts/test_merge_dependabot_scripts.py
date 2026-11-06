@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import importlib.util
 import unittest
 from pathlib import Path
 
@@ -21,6 +22,7 @@ DOCKER = HERE / "detect-dockerfile-from.sh"
 REBASE = HERE / "wait-dependabot-rebase.sh"
 BASE_CHECK = HERE / "check-base-required-checks.sh"
 QUEUE = HERE / "poll-merge-queue.py"
+MAJOR = HERE / "detect-major-bump.py"
 
 GH_STUB = r"""#!/usr/bin/env bash
 echo "$*" >> "$GH_STUB_LOG"
@@ -35,7 +37,7 @@ case "$GH_STUB_MODE:$*" in
     printf 'diff --git a/build/app.dockerfile b/build/app.dockerfile\n-FROM alpine:3.19\n' ;;
   diff-fail:"pr diff"*)
     exit 1 ;;
-  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*)
+  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*)
     echo oldsha ;;
   no-head:"pr view "*"--json headRefOid --jq"*)
     exit 1 ;;
@@ -45,6 +47,10 @@ case "$GH_STUB_MODE:$*" in
     echo "oldsha CONFLICTING" ;;
   unknown:"pr view "*"headRefOid,mergeable"*)
     echo "newsha UNKNOWN" ;;
+  emptyhead:"pr view "*"headRefOid,mergeable"*)
+    echo " MERGEABLE" ;;
+  newconflict:"pr view "*"headRefOid,mergeable"*)
+    echo "newsha CONFLICTING" ;;
   commentfail:"pr comment"*)
     exit 1 ;;
   *:"pr comment"*)
@@ -136,6 +142,18 @@ class WaitDependabotRebaseTest(StubbedTest):
         self.assertEqual(r.returncode, 1)
         self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
 
+    def test_empty_polled_head_is_not_rebased(self):
+        # Fails if the non-empty NEW_HEAD guard is dropped: "" differs from the recorded head.
+        r = self.run_cmd("emptyhead", "bash", REBASE, "7")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
+
+    def test_new_head_still_conflicting_is_not_rebased(self):
+        # Fails if the CONFLICTING guard is dropped: the head moved but the conflict remains.
+        r = self.run_cmd("newconflict", "bash", REBASE, "7")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
+
     def test_unreadable_head_fails_before_requesting_rebase(self):
         r = self.run_cmd("no-head", "bash", REBASE, "7")
         self.assertEqual(r.returncode, 1)
@@ -148,6 +166,28 @@ class WaitDependabotRebaseTest(StubbedTest):
         self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=0 NEW_HEAD=")
         self.assertIn("failed to post", r.stderr)
         self.assertEqual(self.gh_calls("headRefOid,mergeable"), 0)
+
+
+class DetectMajorBumpClassifyTest(unittest.TestCase):
+    """The leftmost-non-zero rule decides which PRs are never merged."""
+
+    @classmethod
+    def setUpClass(cls):
+        spec = importlib.util.spec_from_file_location("detect_major_bump", MAJOR)
+        cls.mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.mod)
+
+    def test_classify_table(self):
+        table = [
+            ("1.2.3", "2.0.0", True), ("1.2.3", "1.3.0", False),
+            ("0.2.0", "0.3.0", True), ("0.2.0", "0.2.5", False),
+            ("0.9.0", "1.0.0", True), ("0.0.3", "0.0.4", True),
+            ("v4.46.0", "v5.90.0", True), ("1.2", "1.2.1", False),
+            ("1.2.0-rc.1", "1.2.0", False), ("abc1234", "def5678", None),
+        ]
+        for from_v, to_v, expected in table:
+            with self.subTest(from_v=from_v, to_v=to_v):
+                self.assertIs(self.mod.classify(from_v, to_v)[0], expected)
 
 
 class CheckBaseRequiredChecksTest(StubbedTest):
