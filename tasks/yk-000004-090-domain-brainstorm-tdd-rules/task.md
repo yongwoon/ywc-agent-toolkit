@@ -51,3 +51,9 @@ Covers: AC7b
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- `ywc-tdd-ritual/SKILL.md` already had a verbose "test setup is so big" row (200-line wording), so the ~50-line threshold replaced that number in place instead of adding a duplicate row. Row now reads: "Unit test setup over ~50 lines signals the design is wrong. Listen to the test: …".
+- Added the horizontal-slicing row (verbatim from the snapshot) and extended the "Write the seam first" bullet with the catches/misses line.
+- `ywc-brainstorm/SKILL.md` Step 3, added after "If the initial request already answers one of these…":
+  - "**Facts are your job; decisions are the user's.** Before asking, check whether the answer lives in the environment …"
+  - "**Ask from the frontier.** Pick the next question only from those whose prerequisite decisions are already settled. …"
