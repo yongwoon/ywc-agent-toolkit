@@ -50,6 +50,8 @@ Standalone / parallel skills (no requires):
 - `ywc-incident-postmortem` — runs reactively after production incidents; not part of dev pipeline
 - `ywc-changelog-release-notes` — runs at release time; soft dependency on ywc-release-pr-list output
 - `ywc-merge-dependabot` — independent of feature pipeline; user-invoked — not a model-routing target
+- `ywc-handoff` — runs at the end of a session to brief the next one; user-invoked — not a model-routing target
+- `ywc-retro` — runs after a session to propose environment improvements; user-invoked — not a model-routing target
 - `ywc-project-scaffold` — pre-pipeline (used at project start)
 - `ywc-project-docs` — independent documentation utility
 - `ywc-skill-author` — meta-skill for authoring other skills

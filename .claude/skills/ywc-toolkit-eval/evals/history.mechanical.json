@@ -79,6 +79,11 @@
     "S4": 5,
     "S5": 5
   },
+  "claude-code/skills/ywc-handoff": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
   "claude-code/skills/ywc-iac-author": {
     "S2": 5,
     "S4": 5,
@@ -165,6 +170,11 @@
     "S5": 5
   },
   "claude-code/skills/ywc-release-pr-list": {
+    "S2": 5,
+    "S4": 5,
+    "S5": 5
+  },
+  "claude-code/skills/ywc-retro": {
     "S2": 5,
     "S4": 5,
     "S5": 5

@@ -23,7 +23,7 @@ Colección de skills para **Claude Code** y **Codex** que automatiza el flujo de
 
 | Herramienta | Skills | Custom Agents | Ruta de instalación                      |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Claude Code | 51     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
 | Codex       | 54     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
