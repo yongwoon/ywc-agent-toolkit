@@ -26,7 +26,9 @@ BASE_BRANCH=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --staged)    MODE="staged"; shift ;;
+    # Phases 1-2 always run; --staged must never downgrade an earlier
+    # --committed, or Phase 3 is skipped and committed secrets report as OK.
+    --staged)    shift ;;
     # A missing value must reach the usage check (exit 2); `shift 2` would
     # fail under set -e and exit 1, which callers read as "secrets found".
     --committed) MODE="committed"; BASE_BRANCH="${2:-}"; shift $(( $# >= 2 ? 2 : 1 )) ;;
@@ -63,7 +65,13 @@ fi
 FOUND=0
 
 # ── Phase 1: dangerous file names ────────────────────────────────────────────
-DANGEROUS=$(git status --short 2>/dev/null \
+# A failing git call means nothing was scanned (exit 2); `|| true` is kept only
+# on grep, where exit 1 just means "no match".
+STATUS=$(git status --short) || {
+  echo "ERROR: git status failed; nothing was scanned" >&2
+  exit 2
+}
+DANGEROUS=$(printf '%s\n' "$STATUS" \
   | awk '{print $NF}' \
   | grep -iE '(^|\/)\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$' \
   || true)
@@ -75,8 +83,14 @@ if [ -n "$DANGEROUS" ]; then
 fi
 
 # ── Phase 2: diff content (staged + unstaged) ─────────────────────────────────
-DIFF_STAGED=$(git diff --cached 2>/dev/null || true)
-DIFF_UNSTAGED=$(git diff 2>/dev/null || true)
+DIFF_STAGED=$(git diff --cached) || {
+  echo "ERROR: git diff --cached failed; nothing was scanned" >&2
+  exit 2
+}
+DIFF_UNSTAGED=$(git diff) || {
+  echo "ERROR: git diff failed; nothing was scanned" >&2
+  exit 2
+}
 DIFF_CONTENT="$DIFF_STAGED
 $DIFF_UNSTAGED"
 

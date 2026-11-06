@@ -82,6 +82,10 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=faildiff  — only the Phase 3 `git diff <base>...HEAD` fails
 #   SHIM_MODE=passdiff  — only that diff always succeeds (empty output)
 #   SHIM_MODE=passall   — `rev-parse --verify` and that diff always succeed
+# Phase 1/2 git failures must not read as "clean" either:
+#   SHIM_MODE=failstatus   — `git status` fails
+#   SHIM_MODE=failcached   — `git diff --cached` fails
+#   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
 SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
 REAL_GIT="$(command -v git)"
 cat > "$SHIM/git" <<EOF
@@ -90,18 +94,29 @@ case "\${SHIM_MODE:-}:\$1:\$*" in
   faildiff:diff:*...HEAD*) exit 1 ;;
   passall:diff:*...HEAD*|passdiff:diff:*...HEAD*) exit 0 ;;
   passall:rev-parse:*--verify*) exit 0 ;;
+  failstatus:status:*) exit 1 ;;
+  failcached:diff:*--cached*) exit 1 ;;
+  failworktree:diff:*--cached*) ;;
+  failworktree:diff:*) exit 1 ;;
 esac
 exec "$REAL_GIT" "\$@"
 EOF
 chmod +x "$SHIM/git"
 
 ERR="$TMP_ROOT/scan.err"
-# run_committed <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
-run_committed() {
+# run_args <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
+run_args() {
   local mode="$1"; shift
   (cd "$REPO" && SHIM_MODE="$mode" PATH="$SHIM:$PATH" GIT_CEILING_DIRECTORIES="$TMP_ROOT" \
-    no_git_env bash "$TARGET" --committed "$@" >/dev/null 2>"$ERR")
+    no_git_env bash "$TARGET" "$@" >/dev/null 2>"$ERR")
   echo $?
+}
+run_committed() { local mode="$1"; shift; run_args "$mode" --committed "$@"; }
+assert_args() {
+  local desc="$1" expected="$2"; shift 2
+  local before=$FAIL
+  assert_eq "$desc" "$expected" "$(run_args "$@")"
+  [ "$FAIL" -eq "$before" ] || sed 's/^/    stderr: /' "$ERR" >&2
 }
 assert_committed() {
   local desc="$1" expected="$2"; shift 2
@@ -126,6 +141,17 @@ assert_committed "--committed shell-metachar base" "2" passall 'main$(id)'
 assert_committed "--committed secret vs valid base" "1" "" main
 g checkout -q clean-feat
 assert_committed "--committed clean vs valid base" "0" "" main
+
+# Flag order: a later --staged must not downgrade --committed (Phase 3 would be
+# skipped and the committed key reported as OK).
+g checkout -q feat
+assert_args "--committed then --staged keeps the committed scan" "1" "" --committed main --staged
+assert_args "--staged then --committed" "1" "" --staged --committed main
+# Phase 1/2: a failing git call means nothing was scanned (exit 2), not "clean".
+g checkout -q clean-feat
+assert_args "git status failure" "2" failstatus --staged
+assert_args "git diff --cached failure" "2" failcached --staged
+assert_args "unstaged git diff failure" "2" failworktree --staged
 
 echo ""
 echo "test-scan-secrets.sh: $PASS passed, $FAIL failed"
