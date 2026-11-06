@@ -126,9 +126,19 @@ Verify the following conditions before starting:
 
 > **Action required**: Read [references/wave-integration-branch.md](references/wave-integration-branch.md) now for the exact scan procedure, the `wave-int/<N>` creation/promotion lifecycle, and promotion-conflict handling. Do not restate its content inline.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to the repo-local exclude file (not the tracked `.gitignore`) if absent. The resolution is correct inside linked worktrees; if the exclude file cannot be resolved or written, report `BLOCKED`:
 ```bash
-grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+if ! EXCL="$(git rev-parse --git-path info/exclude)"; then
+  echo "BLOCKED: cannot resolve info/exclude" >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$EXCL")"
+for f in .ywc-run-state.json .ywc-learnings.jsonl; do
+  if ! grep -qxF "$f" "$EXCL" 2>/dev/null && ! echo "$f" >> "$EXCL"; then
+    echo "BLOCKED: cannot write $EXCL" >&2
+    exit 1
+  fi
+done
 bash claude-code/skills/scripts/update-state.py init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"],"has_contract":true},{"wave":2,"tasks":["t-c"],"has_contract":false}]'
@@ -439,36 +449,7 @@ command sequences live in [references/aggregate-pr.md](references/aggregate-pr.m
 
 **`--per-task-pr` mode: no end-of-run push** — each task's PR was already merged via `gh pr merge --delete-branch` and its completion-marker commit was already pushed during the task's slot in the wave (Step 4e (a) step 5 and (b)). There is nothing deferred to flush here, and the individual PRs are merged and closed on the remote — not left open. Proceed directly to the report below.
 
-Display the following after all waves are complete:
-
-- Total tasks executed, total waves
-- Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode, and its dispatch model as `<model> (<source>)` (source `hint` / `frontmatter` / `env` / `default`), plus an `Invalid Model Hint` note for any ignored hint (see [../references/model-routing.md](../references/model-routing.md))
-- Failed/skipped tasks with reasons
-- Per-wave changed public contracts (interfaces/DTOs altered) and any critical-path tasks that triggered `/ywc-security-audit`
-- In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed
-- In `--per-task-pr` mode: each task's PR was created, CI-verified, bot-reviewed, and **merged** (`gh pr merge`); list each PR URL with its merged status
-- **Worktree cleanup status** — one line per task, in one of these categories (omitted when `--terse` is set):
-  - `clean` — worktree removed and branch deleted via Step 4g (the expected outcome for every successful task)
-  - `force-cleaned` — `git worktree remove --force` was required; note the reason (lock, disposable artifacts, etc.)
-  - `preserved (failure)` — intentionally retained for recovery; include the worktree path and branch name so the user can resume work
-  - `LEAKED` — Step 4g did not produce a clean result and the cause is not a recorded failure; this is a bug, surface it explicitly with the path and branch so the user can clean up manually
-
-  Run a final audit before printing the report:
-
-  ```bash
-  git worktree list --porcelain | awk '/^worktree /{print $2}' | grep -E '/worktree-' || echo "OK: no parallel-executor worktrees remain"
-  git branch --list 'feature/*' | sed 's/^[* ] //' || true
-  ```
-
-  Any `worktree-*` path or `feature/*` branch that does not map to a `preserved (failure)` task in the report is a leak and must be reported as `LEAKED`, not silently omitted.
-
-**When `--terse` is set**, omit all prose reminders, worktree audit lines, and mode-specific explanations. Emit only:
-1. The task table (name | status | merge SHA or PR URL)
-2. The `Completion Status` line
-
-This is the preferred format for CI scripts or automation that parse the report output.
-
-**Reporting Symbols**: Use the shared vocabulary in [symbols.md](../references/symbols.md) for the per-task status column, the worktree cleanup status column, and the wave-level summary line. **Parallel-specific addition**: `🚨` for `LEAKED` worktree or branch detected by the final audit (Step 5) — surface explicitly, never reduce to `❌`. Leaks are a distinct severity category the user must act on regardless of overall run status. For multi-step worktree lifecycle traces, use the flow operator `»` (e.g. `worktree ✅ » impl ✅ » verify ✅ » merge ✅ » cleanup ✅`).
+Build the report from the content list, worktree cleanup audit, `--terse` format, and reporting symbols defined in [references/report-format.md](references/report-format.md) (including the final worktree-leak audit), then end with the Completion Status below.
 
 **Completion Status**: End every report with one of these four declarations on its own line. This is the final line of the report — nothing follows it.
 
@@ -479,7 +460,7 @@ This is the preferred format for CI scripts or automation that parse the report 
 | `BLOCKED` | Run stopped and cannot continue — merge conflict, circular dependency, push rejected, or a decision requiring human input |
 | `NEEDS_CONTEXT` | Task list or arguments are ambiguous; the run cannot start without clarification |
 
-**Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-parallel-executor","project":"<basename>","learning":"<one sentence>"}`). Add the file to `.gitignore` if absent. Record only project-specific facts (package manager quirks, worktree isolation issues, build-step ordering, wave sizing observations); skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
+**Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-parallel-executor","project":"<basename>","learning":"<one sentence>"}`). Add `.ywc-learnings.jsonl` to the repo-local exclude file if absent (same `git rev-parse --git-path info/exclude` resolution as State Init; a resolve/write failure is `BLOCKED`). Record only project-specific facts (package manager quirks, worktree isolation issues, build-step ordering, wave sizing observations); skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
 
 **State cleanup**: After displaying the report, delete the checkpoint file — the run is complete:
 ```bash
