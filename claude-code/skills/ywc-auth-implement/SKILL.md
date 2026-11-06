@@ -56,6 +56,8 @@ Recommend battle-tested libraries or managed services using only stack evidence 
 
 > **Action required when stack evidence is insufficient for a direct recommendation**: Read [references/generic-fallback.md](references/generic-fallback.md) for the fallback research procedure and playbook-caching mechanics.
 
+Pass the policy interview and library recommendation results to `/ywc-plan --no-converge` to generate a plan/spec (this skill owns the convergence decision). If classified Medium or Large, run `/ywc-spec-ready --spec <path>`; if it does not return `DONE`, stop before Implementation Dispatch and report `BLOCKED` (or `NEEDS_CONTEXT` when the report names missing input) with its Completion Report. If classified Small, use the generated `plan.md` as-is. Pass the converged spec path (or the Small `plan.md` path) into every dispatch prompt below.
+
 ## Implementation Dispatch
 
 Dispatch, do not implement. Each direct-dispatch prompt below instructs the agent to follow the `ywc-tdd-ritual` cycle and to run `ywc-verify-done` before claiming completion. `ywc-tdd-ritual` is a discipline the dispatched agent follows, not a nested dispatcher this skill calls.
@@ -76,6 +78,7 @@ verifying again after the refactor. Never hand-roll password hashing, token
 signing, or secret crypto — use the recommended library/service exactly as
 specified. Before claiming completion, run ywc-verify-done and attach its
 evidence trail (command, exit code, key output) for each behavior implemented.
+Read the converged spec (or Small plan.md) at <spec-path> first.
 
 Return-payload contract: Reply with `Status | 1-line summary | artifact paths
 | (Concerns ≤ 10 lines | Blocker ≤ 5 lines | Missing-context bullets)`. Do not
@@ -97,6 +100,7 @@ GREEN -> REFACTOR -> Verify GREEN. Never implement client-side secret
 handling or bypass the backend's session/token contract. Before claiming
 completion, run ywc-verify-done and attach its evidence trail for each
 behavior implemented.
+Read the converged spec (or Small plan.md) at <spec-path> first.
 
 Return-payload contract: Reply with `Status | 1-line summary | artifact paths
 | (Concerns ≤ 10 lines | Blocker ≤ 5 lines | Missing-context bullets)`. Do not
@@ -117,6 +121,7 @@ checkbox UI requirements. Label the ToS/Privacy Policy draft "draft pending
 legal review" in its title and at the top of the document body — this label
 must survive into every downstream hand-off; never present the draft as
 final or legally reviewed.
+Read the converged spec (or Small plan.md) at <spec-path> first.
 
 Return-payload contract: Reply with `Status | 1-line summary | artifact paths
 | (Concerns ≤ 10 lines | Blocker ≤ 5 lines | Missing-context bullets)`. Do not
@@ -178,6 +183,6 @@ DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 
 ## Integration
 
-- **Upstream**: direct user invocation when an auth feature is requested; `ywc-plan` / `ywc-spec-ready` consume this skill's approved policy and recommendation for Medium/Large auth features.
-- **Downstream**: `Task(subagent_type: ywc-backend-coder\|ywc-frontend-coder)` for implementation, `Task(subagent_type: ywc-doc-writer)` for legal pages, `ywc-security-audit` and `ywc-e2e-test-strategy` for the delivery gates, `ywc-create-pr` for the non-blocking PR suggestion.
+- **Upstream**: direct user invocation when an auth feature is requested.
+- **Downstream**: `ywc-plan --no-converge` → `ywc-spec-ready` (this skill calls them for plan/spec convergence); `Task(subagent_type: ywc-backend-coder\|ywc-frontend-coder)` for implementation, `Task(subagent_type: ywc-doc-writer)` for legal pages, `ywc-security-audit` and `ywc-e2e-test-strategy` for the delivery gates, `ywc-create-pr` for the non-blocking PR suggestion.
 - **Must not be paired with**: implementing application auth code directly in this skill's own context — that always routes through the named-agent dispatches above.

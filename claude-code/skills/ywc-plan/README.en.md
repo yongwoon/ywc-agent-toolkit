@@ -40,7 +40,7 @@ Each path emits an explicit handoff message naming the next Skill.
 2. **Investigate** — Read only the essential files: `CLAUDE.md`, `package.json`, `docs/architecture/`, etc.
 3. **Assess Scale** — Pick exactly one of Small / Medium / Large (default to Medium when ambiguous)
 4. **Branch** — Small writes `plan.md`; Medium/Large writes a Spec document
-5. **Handoff** — Print the next-step Skill explicitly (execution is the user's decision, not this Skill's)
+5. **Handoff** — Print the next-step Skill explicitly (for Medium/Large, `ywc-spec-ready` auto-runs unless `--no-converge` / `--non-interactive` is set)
 
 ## Safety Invariants
 
@@ -56,7 +56,7 @@ Any of the following auto-escalates to Medium scale or higher:
 
 - `ywc-tech-research` — Run before `ywc-plan` when technology choice is unsettled
 - `ywc-product-review` — Run before `ywc-plan` when product/business framing is unclear
-- `ywc-spec-ready` — Auto-converge shortcut for the Medium/Large path (offered via opt-in prompt after spec draft)
+- `ywc-spec-ready` — Auto-converge shortcut for the Medium/Large path (runs automatically after the spec draft; skip with `--no-converge` or `--non-interactive`)
 - `ywc-spec-validate` — Manual next step on the Medium/Large path
 - `ywc-task-generator` — Decomposes the Spec into tasks after review passes
 - `ywc-code-gen` — Direct execution option for the Small path
