@@ -5,30 +5,14 @@
 
 Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm; language: en; initials: yk.
 
-## Phase yk-000001 — Source contracts and focused evaluations
+## Phase yk-000001 — done
+- Completed: `yk-000001-010-domain-model-hints`, `yk-000001-020-domain-analyst-modes`, `yk-000001-030-domain-authoring-feedback`, `yk-000001-040-domain-session-retro`, `yk-000001-050-domain-session-handoff`, `yk-000001-060-domain-review-defects`, `yk-000001-070-domain-operational-safety`, `yk-000001-080-domain-mission-anchor`, `yk-000001-090-domain-infra-evidence`, `yk-000001-100-domain-pr-worktrees`, `yk-000001-110-domain-convergence-callers`, `yk-000001-120-domain-pr-body`
 
-- Completed: `yk-000001-010-domain-model-hints`, `yk-000001-020-domain-analyst-modes`, `yk-000001-030-domain-authoring-feedback`, `yk-000001-040-domain-session-retro`, `yk-000001-050-domain-session-handoff`, `yk-000001-060-domain-review-defects`, `yk-000001-070-domain-operational-safety`, `yk-000001-080-domain-mission-anchor`, `yk-000001-090-domain-infra-evidence`, `yk-000001-100-domain-pr-worktrees`, `yk-000001-110-domain-convergence-callers`, `yk-000001-120-domain-pr-body`, `yk-000002-010-infra-distribution`
+## Phase yk-000002 — done
+- Completed: `yk-000002-010-infra-distribution`
 
-- `yk-000001-010-domain-model-hints` → (root)
-- `yk-000001-020-domain-analyst-modes` → depends on `yk-000001-010-domain-model-hints`
-- `yk-000001-030-domain-authoring-feedback` → depends on `yk-000001-020-domain-analyst-modes`
-- `yk-000001-040-domain-session-retro` → depends on `yk-000001-030-domain-authoring-feedback`
-- `yk-000001-050-domain-session-handoff` → depends on `yk-000001-040-domain-session-retro`
-- `yk-000001-060-domain-review-defects` → (root)
-- `yk-000001-070-domain-operational-safety` → depends on `yk-000001-060-domain-review-defects`
-- `yk-000001-080-domain-mission-anchor` → (root)
-- `yk-000001-090-domain-infra-evidence` → depends on `yk-000001-080-domain-mission-anchor`
-- `yk-000001-100-domain-pr-worktrees` → depends on `yk-000001-070-domain-operational-safety`
-- `yk-000001-110-domain-convergence-callers` → depends on `yk-000001-030-domain-authoring-feedback`, `yk-000001-100-domain-pr-worktrees`
-- `yk-000001-120-domain-pr-body` → (root)
-
-## Phase yk-000002 — Distribution integration
-
-- `yk-000002-010-infra-distribution` → depends on `yk-000001-010-domain-model-hints`, `yk-000001-020-domain-analyst-modes`, `yk-000001-030-domain-authoring-feedback`, `yk-000001-040-domain-session-retro`, `yk-000001-050-domain-session-handoff`, `yk-000001-060-domain-review-defects`, `yk-000001-070-domain-operational-safety`, `yk-000001-080-domain-mission-anchor`, `yk-000001-090-domain-infra-evidence`, `yk-000001-100-domain-pr-worktrees`, `yk-000001-110-domain-convergence-callers`, `yk-000001-120-domain-pr-body`
-
-## Phase yk-000003 — Claude Code Issue 69 — upstream snapshot
-
-- `yk-000003-010-config-upstream-snapshot` → (root)
+## Phase yk-000003 — done
+- Completed: `yk-000003-010-config-upstream-snapshot`
 
 ## Phase yk-000004 — Claude Code Issue 69 — single-skill ports (Phase A)
 
