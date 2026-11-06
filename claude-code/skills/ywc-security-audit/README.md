@@ -27,9 +27,9 @@
 
 | Subagent | OWASP 항목 |
 |---|---|
-| Auth & Data Subagent | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
-| Web Layer Subagent | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration |
-| Infra & Input Subagent | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+| Auth & Data Subagent | Injection · Broken Authentication · Sensitive Data Exposure |
+| Web Layer Subagent | XSS · Broken Access Control · Security Misconfiguration · PI Prompt Injection (LLM-driven surfaces only) |
+| Infra & Input Subagent | SSRF · Input Validation · Rate Limiting · Timing Attacks |
 
 ### Phase 2 — Advisor (Opus, 최대 3회)
 

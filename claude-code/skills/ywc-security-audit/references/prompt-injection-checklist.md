@@ -8,8 +8,10 @@ that pure OWASP coverage does not catch.
 
 The four audit items below each carry a Critical / High default severity:
 prompt-injection bypasses sit on top of the model's guardrails, so even
-a "theoretical" finding is reportable. If the surface is internal-only,
-downgrade to High; never below High when user input touches a prompt.
+a "theoretical" finding is reportable. Adjust severity only by the condition stated in
+the item's own row of the Severity Reference below — a surface being internal-only does
+not by itself lower any item, and item 2 is never downgraded. Never below High when user
+input touches a prompt, except where an item's own row names a lower downgrade.
 
 ## Audit Items
 

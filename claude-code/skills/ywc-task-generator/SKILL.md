@@ -447,7 +447,7 @@ After generating all tasks, verify the following:
 
 The final output includes:
 
-1. **Task list summary**: A table organizing all tasks by phase
+1. **Task list summary**: A table organizing all tasks by phase, with at least the columns **Task ID**, **Title**, and **Model Hint** (the model and its firing rule, copied verbatim from each README's `Model Hint` bullet, e.g. `opus — M1 ...`) — never omit the Model Hint column
 2. **Directory generation**: Task directories and files created under `<tasks-dir>/` (default: `tasks/`)
 3. **Dependency Graph**: `<tasks-dir>/dependency-graph.md` generated — single source of truth for execution order
 4. **Parallel Execution Notes**: Included in `<tasks-dir>/dependency-graph.md` when parallel worktree execution is expected

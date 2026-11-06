@@ -9,7 +9,8 @@ Use this as the starting structure for a new ywc-* skill. Replace every `<...>` 
 ```markdown
 ---
 name: ywc-<short-noun-or-verb>
-description: (ywc) Use when <primary trigger condition>. Triggers: "<한국어>", "<english>", "<日本語>", "<other natural-language phrases users would actually say>". Do not use for <anti-trigger 1>, <anti-trigger 2 — point to ywc-X if a sibling skill is the right one>.
+description: >-
+  (ywc) Use when <primary trigger condition>. Triggers: "<한국어>", "<english>", "<日本語>", "<other natural-language phrases users would actually say>". Do not use for <anti-trigger 1>, <anti-trigger 2 — point to ywc-X if a sibling skill is the right one>.
 requires: [<ywc-X if upstream skill is required, else omit>]
 ---
 
