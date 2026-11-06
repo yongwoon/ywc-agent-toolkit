@@ -26,9 +26,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000007 — done
 - Completed: `yk-000007-010-domain-security-guard-followups`
 
-## Phase yk-000008 — pending
-- Wave 1 (parallel): `yk-000008-010-domain-security-doc-followups`, `yk-000008-020-domain-codex-scan-secrets-guard`, `yk-000008-030-refactor-skill-author-script-paths`, `yk-000008-050-docs-low-followups`
-- Wave 2: `yk-000008-040-test-trigger-cases-grounding` — depends on all of Wave 1 (stages the shared `history.mechanical.json` baseline)
+## Phase yk-000008 — done
+- Completed: `yk-000008-010-domain-security-doc-followups`, `yk-000008-020-domain-codex-scan-secrets-guard`, `yk-000008-030-refactor-skill-author-script-paths`, `yk-000008-040-test-trigger-cases-grounding`, `yk-000008-050-docs-low-followups`
 
 ## Task Summary
 
