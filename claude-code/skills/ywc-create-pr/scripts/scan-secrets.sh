@@ -9,7 +9,8 @@
 # Exit codes:
 #   0  No secrets detected
 #   1  Secrets or dangerous files found (details on stdout)
-#   2  Usage error, or not inside a git work tree (nothing was scanned)
+#   2  Usage error, not inside a git work tree, or (--committed) an invalid or
+#      unresolvable base branch (nothing was scanned)
 #
 # Usage:
 #   # Scan staged + unstaged changes
@@ -26,7 +27,9 @@ BASE_BRANCH=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --staged)    MODE="staged"; shift ;;
-    --committed) MODE="committed"; BASE_BRANCH="${2:-}"; shift 2 ;;
+    # A missing value must reach the usage check (exit 2); `shift 2` would
+    # fail under set -e and exit 1, which callers read as "secrets found".
+    --committed) MODE="committed"; BASE_BRANCH="${2:-}"; shift $(( $# >= 2 ? 2 : 1 )) ;;
     *)           echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -41,6 +44,20 @@ fi
 if [ "$MODE" = "committed" ] && [ -z "$BASE_BRANCH" ]; then
   echo "Usage: scan-secrets.sh --committed <base-branch>" >&2
   exit 2
+fi
+
+# An unresolvable base would make Phase 3 diff nothing and report "clean".
+# The allowlist runs in-process before git sees the value (no option-like or
+# shell-metachar names, no `..` range syntax).
+if [ "$MODE" = "committed" ]; then
+  if ! [[ "$BASE_BRANCH" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "$BASE_BRANCH" == -* ]] || [[ "$BASE_BRANCH" == *..* ]]; then
+    echo "ERROR: invalid base branch name; nothing was scanned" >&2
+    exit 2
+  fi
+  if ! git rev-parse --verify --quiet "${BASE_BRANCH}^{commit}" >/dev/null; then
+    echo "ERROR: base branch '$BASE_BRANCH' does not resolve to a commit; nothing was scanned" >&2
+    exit 2
+  fi
 fi
 
 FOUND=0
@@ -65,7 +82,10 @@ $DIFF_UNSTAGED"
 
 # ── Phase 3: committed diff vs base branch ────────────────────────────────────
 if [ "$MODE" = "committed" ]; then
-  DIFF_COMMITTED=$(git diff "${BASE_BRANCH}...HEAD" 2>/dev/null || true)
+  DIFF_COMMITTED=$(git diff "${BASE_BRANCH}...HEAD") || {
+    echo "ERROR: git diff ${BASE_BRANCH}...HEAD failed; committed changes were not scanned" >&2
+    exit 2
+  }
   DIFF_CONTENT="$DIFF_CONTENT
 $DIFF_COMMITTED"
 fi

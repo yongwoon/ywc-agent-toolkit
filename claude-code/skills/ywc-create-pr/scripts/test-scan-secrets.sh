@@ -60,6 +60,73 @@ assert_eq "bare repository" "2" "$(run_scan "$BARE/r.git")"
 UNRESOLVED="$TMP_ROOT/unresolved-skill-dir"
 assert_eq "unresolved script path" "127" "$( (no_git_env bash "$UNRESOLVED/scan-secrets.sh" --staged >/dev/null 2>&1); echo $?)"
 
+# --committed <base>: a base that cannot be scanned must exit 2, never "OK".
+# Fixture: main has a clean commit; branch "feat" adds an AWS-key-shaped line
+# (assembled at runtime so this file itself never contains the pattern).
+REPO="$(mktemp -d "$TMP_ROOT/repo.XXXXXX")"
+# A failed fixture step aborts the suite: a half-built repo would let the
+# exit-2 cases pass without testing anything.
+g() {
+  (cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env git -c user.name=t -c user.email=t@example.invalid "$@" >/dev/null 2>&1) \
+    || { echo "FIXTURE FAIL: git $*" >&2; exit 1; }
+}
+g init -q -b main
+echo clean > "$REPO/a.txt"; g add a.txt; g commit -q -m base
+g checkout -q -b clean-feat
+echo "still clean" >> "$REPO/a.txt"; g commit -q -am clean
+g checkout -q -b feat main
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m secret
+
+# The three guards (allowlist, rev-parse --verify, checked diff) back each
+# other up, so each is isolated with a `git` shim on PATH:
+#   SHIM_MODE=faildiff  — only the Phase 3 `git diff <base>...HEAD` fails
+#   SHIM_MODE=passdiff  — only that diff always succeeds (empty output)
+#   SHIM_MODE=passall   — `rev-parse --verify` and that diff always succeed
+SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
+REAL_GIT="$(command -v git)"
+cat > "$SHIM/git" <<EOF
+#!/usr/bin/env bash
+case "\${SHIM_MODE:-}:\$1:\$*" in
+  faildiff:diff:*...HEAD*) exit 1 ;;
+  passall:diff:*...HEAD*|passdiff:diff:*...HEAD*) exit 0 ;;
+  passall:rev-parse:*--verify*) exit 0 ;;
+esac
+exec "$REAL_GIT" "\$@"
+EOF
+chmod +x "$SHIM/git"
+
+ERR="$TMP_ROOT/scan.err"
+# run_committed <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
+run_committed() {
+  local mode="$1"; shift
+  (cd "$REPO" && SHIM_MODE="$mode" PATH="$SHIM:$PATH" GIT_CEILING_DIRECTORIES="$TMP_ROOT" \
+    no_git_env bash "$TARGET" --committed "$@" >/dev/null 2>"$ERR")
+  echo $?
+}
+assert_committed() {
+  local desc="$1" expected="$2"; shift 2
+  local before=$FAIL
+  assert_eq "$desc" "$expected" "$(run_committed "$@")"
+  [ "$FAIL" -eq "$before" ] || sed 's/^/    stderr: /' "$ERR" >&2
+}
+
+# Fails if `shift 2` with a missing value exits 1 ("secrets found") under set -e.
+assert_committed "--committed without a base" "2" ""
+assert_committed "--committed unknown base" "2" "" no-such-branch
+# Fails only if the rev-parse --verify guard is removed (passdiff diffs nothing).
+assert_committed "--committed unknown base, diff succeeds" "2" passdiff no-such-branch
+# Fails if Phase 3 swallows the diff error (`|| true`) again.
+assert_committed "--committed diff failure" "2" faildiff main
+# Each fails only if its own allowlist clause is removed (passall bypasses git).
+assert_committed "--committed leading-dash base" "2" passall -x
+assert_committed "--committed dot-dot base" "2" passall 'main..feat'
+# shellcheck disable=SC2016  # the literal `$(id)` is the input under test
+assert_committed "--committed shell-metachar base" "2" passall 'main$(id)'
+# Positive cases: a resolvable base still detects (1) and still passes (0).
+assert_committed "--committed secret vs valid base" "1" "" main
+g checkout -q clean-feat
+assert_committed "--committed clean vs valid base" "0" "" main
+
 echo ""
 echo "test-scan-secrets.sh: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]
