@@ -45,7 +45,7 @@ If the file exists:
 
 ### State File Format
 
-Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
+Location: `.ywc-run-state.json` in the project root (excluded via the repo-local exclude file — `git rev-parse --git-path info/exclude` — not the tracked `.gitignore`).
 
 ```json
 {

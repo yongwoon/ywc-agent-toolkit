@@ -47,6 +47,8 @@ ywc-worktrees --mode create --task-name run-<slug> --branch <integration-branch>
 
 The worktree root itself is resolved by `ywc-worktrees`'s priority chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback); this skill adds **no** new root argument (FR-1.2).
 
+**Publish a newly created integration branch (PR modes only)**: when §A7 W8 created `integration/run-<slug>` and the delivery mode is `normal-pr`, `--draft`, or `--skip-ci-wait`, run `git -C "$WT" push -u origin <integration-branch>` right after capturing `$WT`, so the per-task PRs have a base on origin. A push failure is a `git push` rejection (allowed stop). `--local-merge` and `--aggregate-pr` skip this push: the first merges and pushes the integration branch itself, and the second targets the real base.
+
 ### 3. State file relocation + 2-stage Resume Detection (§A2)
 
 In `--worktree` mode `.ywc-run-state.json` lives at **`$WT/.ywc-run-state.json`** (absolute-path Write/Read/rm) and records `worktree_path: "$WT"`. Resume Detection searches in order:
@@ -79,9 +81,9 @@ Run state cleanup **before** prune (the state file lives in the worktree that pr
   The worktree is removed but the integration branch is **preserved** (`--keep-branch`) for the user's final integration→trunk PR.
 - **`--aggregate-pr`**:
   ```bash
-  ywc-worktrees --mode prune --task-name run-<slug> --branch work/<name>
+  ywc-worktrees --mode prune --task-name run-<slug> --branch integration/run-<slug>
   ```
-  No `--keep-branch`: `work/<name>` was already merged and deleted by the final PR, so the branch delete is idempotent (the prune script logs and continues on a missing branch, FR-6.3).
+  No `--keep-branch`: `work/<name>` was already merged and deleted by the final PR, and `integration/run-<slug>` carries no commits in an aggregate run, so deleting it leaves nothing unmerged (a missing branch is logged and skipped, FR-6.3).
 
 Pass the resolved root via `--root` on prune/audit to prevent mid-run root drift (§A8 S2).
 
