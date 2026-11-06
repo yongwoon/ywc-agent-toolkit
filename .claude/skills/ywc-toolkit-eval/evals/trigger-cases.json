@@ -1735,15 +1735,6 @@
       "note": "refactor-cleaner executes the per-item safe deletion loop; refactor-clean owns classification and orchestration"
     },
     {
-      "id": "impl-review-vs-typescript-reviewer-1",
-      "prompt": "TypeScript 코드 구현 전반 살펴봐줘 — 타입 시스템과 전반적인 품질 5축",
-      "expected": "ywc-impl-review",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "impl-review runs the full 5-axis review and dispatches typescript-reviewer internally; typescript-reviewer is the sub-agent"
-    },
-    {
       "id": "handle-pr-reviews-vs-receive-review-1",
       "prompt": "PR 리뷰 코멘트 받았어 — 코드 수정하고 각 스레드에 답장해줘",
       "expected": "ywc-handle-pr-reviews",
@@ -1979,7 +1970,7 @@
     },
     {
       "id": "ui-ux-review-vs-impl-review-1",
-      "prompt": "이 UI 코드 리뷰해줘 — 접근성이랑 사용성 점검해줘",
+      "prompt": "이 UI 코드 봐줘 — 접근성이랑 사용성 점검해줘",
       "expected": "ywc-ui-ux-review",
       "kind": "collision",
       "source": "description-derived",
