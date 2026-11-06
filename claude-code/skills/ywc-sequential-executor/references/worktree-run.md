@@ -43,7 +43,7 @@ Before creating the worktree, run `ywc-worktrees --mode audit --expect run-<slug
 ywc-worktrees --mode create --task-name run-<slug> --branch <integration-branch> --base-branch <start-point>
 ```
 
-`ywc-worktrees --mode create` prints the resolved worktree absolute path on stdout (`ywc-worktrees/SKILL.md:98` — "Print the resolved worktree path on stdout for the caller to capture"). Capture that **bare path** (no extra text) as `$WT` and use it for all subsequent operations. If create fails because the path already exists (`ywc-worktrees` exits 1), **surface the error and stop** — never overwrite (FR-2.3 / Edge Cases). If the integration branch is already checked out in main or another worktree, `git worktree add` fails loud — surface and stop (FR-3.3).
+`ywc-worktrees --mode create` prints the resolved worktree absolute path on stdout (`ywc-worktrees/SKILL.md` `--mode create` procedure, item 5 — "Print the resolved worktree path on stdout for the caller to capture"). Capture that **bare path** (no extra text) as `$WT` and use it for all subsequent operations. If create fails because the path already exists (`ywc-worktrees` exits 1), **surface the error and stop** — never overwrite (FR-2.3 / Edge Cases). If the integration branch is already checked out in main or another worktree, `git worktree add` fails loud — surface and stop (FR-3.3).
 
 The worktree root itself is resolved by `ywc-worktrees`'s priority chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback); this skill adds **no** new root argument (FR-1.2).
 

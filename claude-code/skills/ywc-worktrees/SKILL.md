@@ -131,7 +131,7 @@ The script refuses to operate on dirty worktrees unless `--force` is set — thi
 
 ## Integration
 
-- **upstream** — `ywc-parallel-executor` (Pre-flight `--mode audit`, Step 4 per-task `--mode create`, Step 4g `--mode prune`); `ywc-finish-branch` (Step 5/8 cleanup `--mode prune` when called from a parallel-executor context).
+- **upstream** — `ywc-parallel-executor` (Pre-flight `--mode audit`, Step 4 per-task `--mode create`, Step 4g `--mode prune`); `ywc-finish-branch` (Step 5/8 cleanup `--mode prune` when called from a parallel-executor context); `ywc-handle-pr-reviews` (`--worktree`: Step 1.5 `--mode create --existing-branch`, Step 9 guidance `--mode prune --keep-branch`).
 - **downstream** — none; this skill is a leaf operation. Callers consume its exit code and stdout.
 - **bundled scripts** — `scripts/audit-worktrees.sh` (audit), `scripts/cleanup-worktree.sh` (prune + local branch deletion). Both moved here from `ywc-parallel-executor/scripts/` via `git mv`, preserving history.
 
