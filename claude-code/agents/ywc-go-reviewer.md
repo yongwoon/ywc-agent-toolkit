@@ -22,17 +22,16 @@ description: >-
   Go-idiomatic lifecycle (`defer` order LIFO, `defer` in loops capturing
   loop variable, `sync.WaitGroup` / `sync.Mutex` / `sync.Once`
   correctness, race-condition patterns visible to `-race` detector,
-  `init()` ordering, package-level state hazards) that the generic
-  5-aspect impl-review cannot catch with language-agnostic prose.
+  `init()` ordering, package-level state hazards), plus the
+  high-frequency error-handling, external-call resilience and validation
+  defects the generic Design/Devex lanes cover, that the generic 5-aspect
+  impl-review cannot catch with language-agnostic prose.
   Triggers: explicit `Task(subagent_type=ywc-go-reviewer)` dispatch by
   ywc-impl-review Phase 1 when the review target is Go-heavy (Design or
   Devex aspect deep dive on .go / go.mod / go.sum files), explicit
   advisor dispatch when Phase 1 Design subagent flags a concurrency,
   interface-design, or error-wrapping question as ambiguous (Go Phase 2
-  alternative to the generic Opus advisor); natural language phrases
-  "Go 코드 리뷰", "Go code review", "go-reviewer", "Goコードレビュー",
-  "goroutine leak 점검", "channel 패턴 검토", "context 전파 확인",
-  "error wrapping 검토". Do not use for: non-Go code (use
+  alternative to the generic Opus advisor). Do not use for: non-Go code (use
   ywc-typescript-reviewer for TypeScript/JavaScript, ywc-python-reviewer
   for Python; Swift / Rust Tier 2 reviewers follow-up), writing or
   modifying code (this agent is read-only — fixes go to
@@ -45,7 +44,9 @@ description: >-
   `govulncheck` instead), or quantifying the runtime cost of a
   concurrency pattern — lock-contention throughput or goroutine-count
   memory (route to ywc-performance-engineer; this reviewer flags the Go
-  idiom, the performance-engineer profiles and quantifies it).
+  idiom, the performance-engineer profiles and quantifies it), or a
+  user-typed code review request, including a language-specific one
+  (ywc-impl-review owns it and dispatches this agent).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk

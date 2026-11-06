@@ -4,15 +4,15 @@ description: >-
   Use when reviewing TypeScript or JavaScript code for type-system depth, async
   correctness, framework-specific idioms (React hooks rules, Vue Composition
   API, Svelte reactivity), tsconfig strictness compliance, module / bundle
-  implications, and TS-idiomatic patterns that the generic 5-aspect impl-review
-  cannot catch with language-agnostic prose. Triggers: explicit
+  implications, and TS-idiomatic patterns, plus the high-frequency error-handling,
+  external-call resilience and validation defects the generic Design/Devex
+  lanes cover, that the generic 5-aspect impl-review cannot catch with
+  language-agnostic prose. Triggers: explicit
   `Task(subagent_type=ywc-typescript-reviewer)` dispatch by ywc-impl-review
   Phase 1 when the review target is TS-heavy (Design or Devex aspect deep
   dive on .ts / .tsx / .vue / .svelte files), explicit advisor dispatch when
   Phase 1 Design subagent flags a type-system or signature question as
-  ambiguous (TS Phase 2 alternative to the generic Opus advisor); natural
-  language phrases "TypeScript 코드 리뷰", "TS code review",
-  "typescript-reviewer", "TypeScript型レビュー", "ts-prune 결과 점검 외".
+  ambiguous (TS Phase 2 alternative to the generic Opus advisor).
   Do not use for: non-TypeScript code (use ywc-python-reviewer for Python,
   ywc-go-reviewer for Go; Swift / Rust Tier 2 reviewers follow-up), writing or modifying code (this
   agent is read-only — fixes go to ywc-frontend-coder / ywc-backend-coder),
@@ -23,7 +23,9 @@ description: >-
   knip / depcheck instead), or quantifying bundle-size / render
   performance against a budget (route to ywc-performance-engineer; this
   reviewer flags the TS / bundling idiom, the performance-engineer
-  measures it against the budget).
+  measures it against the budget), or a user-typed code review request,
+  including a language-specific one (ywc-impl-review owns it and
+  dispatches this agent).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk
