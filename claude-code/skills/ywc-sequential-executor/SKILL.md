@@ -441,10 +441,10 @@ If executing a range:
 2. **Pre-transition state check (`normal-pr`, `local-merge`, and `--aggregate-pr` modes):** Run the bundled verification script, passing the branch the next task will branch from — `<base-branch>` in `normal-pr`/`local-merge`, or `work/<name>` in `--aggregate-pr`. The script is mode-agnostic and checks the same 4 conditions against whichever integration branch it receives. Skip for `--draft`/`--skip-ci-wait`, which chain-branch from the still-alive previous feature branch:
    ```bash
    # normal-pr / local-merge (integration branch is the base branch):
-   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash "${CLAUDE_SKILL_DIR}/scripts/verify-transition.sh" \
      <base-branch> <completed-task-name> [<tasks-dir>]
    # --aggregate-pr (integration branch is the work branch):
-   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash "${CLAUDE_SKILL_DIR}/scripts/verify-transition.sh" \
      work/<name> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.

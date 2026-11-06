@@ -71,8 +71,10 @@ accumulating on the work branch instead of the real base.
 Before transitioning to the next task, run the same pre-transition gate the other modes use
 (Step 6.2), passing the **work branch** as the integration argument:
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+bash "<skill-base-dir>/scripts/verify-transition.sh" \
   "$WORK_BRANCH" <completed-task-name> <tasks-dir>
 ```
 

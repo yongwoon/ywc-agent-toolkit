@@ -74,7 +74,7 @@ Retrieve all PR review feedback across two tiers and filter out what doesn't nee
 **Actionable** (thread-level review comments — each has an `id` you can reply to directly):
 
 ```bash
-bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/fetch-unresolved-comments.sh" \
   {owner}/{repo} {pr_number}
 # exit 0 → JSON array of unresolved threads on stdout (may be [])
 # exit 1 → gh CLI error (not authenticated or PR not found)
@@ -85,7 +85,7 @@ The script fetches paginated comments, groups them into threads, and applies the
 **Nitpick** (CodeRabbit's advisory-tier items nested inside a single review body — no `id`/thread to reply to individually):
 
 ```bash
-bash claude-code/skills/ywc-handle-pr-reviews/scripts/fetch-nitpick-comments.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/fetch-nitpick-comments.sh" \
   {owner}/{repo} {pr_number}
 # exit 0 → JSON array of Nitpick items on stdout (may be [])
 # exit 1 → gh CLI error (not authenticated or PR not found)

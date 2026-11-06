@@ -28,10 +28,12 @@ A line that **starts with** a triple-backtick fence marker — bare, or followed
 
 ## Modes and exit codes
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py --status <ledger.md>    # parse + report only; executes nothing
-python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py <ledger.md>              # execute every unmet runnable gate
-python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py --reverify <ledger.md>   # force re-execute every runnable gate
+python3 "<skill-base-dir>/scripts/gate-check.py" --status <ledger.md>    # parse + report only; executes nothing
+python3 "<skill-base-dir>/scripts/gate-check.py" <ledger.md>              # execute every unmet runnable gate
+python3 "<skill-base-dir>/scripts/gate-check.py" --reverify <ledger.md>   # force re-execute every runnable gate
 ```
 
 - `--status`: parses and reports every gate's id/CHECK/EXPECT/current status. Exit 0 for a well-formed ledger, non-zero for a malformed one. Executes zero `CHECK:` commands.

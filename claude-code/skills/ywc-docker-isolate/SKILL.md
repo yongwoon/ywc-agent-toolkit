@@ -46,7 +46,7 @@ The CLI contract (arguments, writes, exit codes) is authoritative and is what
 ### `setup` — allocate and apply the port block
 
 ```bash
-bash claude-code/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/setup-docker-ports.sh" \
   --task-name <task> --worktree-path <dir> [--compose-file <file>] [--port-vars VAR1,VAR2]
 ```
 
@@ -58,7 +58,7 @@ bash claude-code/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh \
 ### `teardown` — remove only this worktree's stack
 
 ```bash
-bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/teardown-docker.sh" \
   (--task-name <task> | --project-name <proj>) --worktree-path <dir> [--keep-volumes]
 ```
 
@@ -68,7 +68,7 @@ bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh \
 ### `audit` — report leftover stacks for expected tasks
 
 ```bash
-bash claude-code/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/audit-docker-stacks.sh" \
   --expect <task1,task2,...> [--prune]
 ```
 

@@ -112,7 +112,7 @@ Verify the following conditions before starting:
 5. **No stale worktrees from previous runs** — Run the bundled audit (prunes stale metadata first, then reports any remaining `worktree-*` paths):
 
    ```bash
-   bash claude-code/skills/ywc-worktrees/scripts/audit-worktrees.sh --prune
+   bash "${CLAUDE_SKILL_DIR}/../ywc-worktrees/scripts/audit-worktrees.sh" --prune
    # exit 0 = clean; exit 1 = stale worktrees detected — details on stdout
    ```
 
@@ -120,7 +120,7 @@ Verify the following conditions before starting:
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
 
-   Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash claude-code/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
+   Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/audit-docker-stacks.sh" --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
 
 **Contract-bearing wave scan (before State Init, `--local-merge`/`--draft`/`--aggregate-pr` only)**: for each wave, OR its member tasks' declared `quality_gate_contract` field against the `N/A — no quality gate contract` sentinel to compute a per-wave `has_contract` boolean, feeding it into the `--waves` entry below. A missing field, malformed field, or absent task directory stops Pre-flight with `NEEDS_CONTEXT` — never a silent `false`.
 
@@ -215,7 +215,7 @@ git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
 for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktree-$t$" || { echo "GATE FAIL: worktree-$t missing"; exit 1; }; done
 ```
 
-**4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash claude-code/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
+**4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/setup-docker-ports.sh" --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
 
 **Checkpoint**: `bash claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 
@@ -383,10 +383,10 @@ gate_state: N/A — no quality gate contract
 
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 
-For each task whose Step 4e delivery completed (DONE) **and whose wave is not in a blocking-verdict wave (`Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT`)** (i.e. the wave created no `wave-int/<N>`, or its `hardener_verdict` is not in {BLOCKED, NEEDS_CONTEXT} — check `.ywc-run-state.json`), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-and-not-blocking-verdict loop, a BLOCKED-preserved task and a task whose wave is `Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT` (whose 4g is skipped, per [references/wave-integration-branch.md](references/wave-integration-branch.md)) are never torn down (AC6):
+For each task whose Step 4e delivery completed (DONE) **and whose wave is not in a blocking-verdict wave (`Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT`)** (i.e. the wave created no `wave-int/<N>`, or its `hardener_verdict` is not in {BLOCKED, NEEDS_CONTEXT} — check `.ywc-run-state.json`), first tear down its Docker stack (Docker-isolated projects only) — `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/teardown-docker.sh" --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-and-not-blocking-verdict loop, a BLOCKED-preserved task and a task whose wave is `Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT` (whose 4g is skipped, per [references/wave-integration-branch.md](references/wave-integration-branch.md)) are never torn down (AC6):
 
 ```bash
-bash claude-code/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>
+bash "${CLAUDE_SKILL_DIR}/../ywc-worktrees/scripts/cleanup-worktree.sh" <task-name>
 # exit 0 = PASS (worktree removed, branch deleted, prune done, verified)
 # exit 1 = FAIL — fix hints on stdout; read them before taking any action
 ```
@@ -398,7 +398,7 @@ Preserve worktrees and branches of failed tasks for recovery. Do not run this st
 **4h. Wave Cleanup Audit** — Before transitioning to the next wave, audit the worktree state for the wave as a whole. Per-task verification in 4g catches single-task drift; this step catches wave-level drift (e.g. an agent created a sibling worktree the executor did not track).
 
 ```bash
-bash claude-code/skills/ywc-worktrees/scripts/audit-worktrees.sh \
+bash "${CLAUDE_SKILL_DIR}/../ywc-worktrees/scripts/audit-worktrees.sh" \
   --expect <comma-separated preserved-failure task names, or omit if none>
 # exit 0 = clean (or only expected preserved failures); exit 1 = DRIFT — investigate before next wave
 ```

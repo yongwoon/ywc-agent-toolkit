@@ -39,7 +39,7 @@ graph LR
      Must be consistent with individual README.md "Dependencies" sections.
      The Mermaid diagram is optional but recommended for complex dependency structures.
      No special markup is needed for compaction: the shared completion marker
-     runs claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py
+     runs compact-dependency-graph.py
      after every task completion, reading the Phase / Parallel Execution Notes /
      Visual Dependency Graph headings directly. The script matches both the prefixed
      `## Phase <initials>-NNNNNN` form and the legacy unprefixed `## Phase NNNNNN`
