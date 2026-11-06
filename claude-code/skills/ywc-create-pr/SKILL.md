@@ -103,10 +103,10 @@ Run the bundled secret scan script:
 
 ```bash
 # Phase 1+2: dangerous file names + staged/unstaged diff content
-bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
-bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
+bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --committed <base-branch>
 ```
 
 Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout. Any other result (exit 2 = usage error or not a git work tree, exit 127 = script path did not resolve, or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
@@ -134,7 +134,7 @@ Run the same lint, format, typecheck, and test checks locally that CI will execu
 Run the bundled detector first — it emits candidate commands from each source plus the package manager, so you do not re-derive the same greps each run:
 
 ```bash
-bash claude-code/skills/ywc-create-pr/scripts/detect-ci-commands.sh [repo-dir]
+bash "${CLAUDE_SKILL_DIR}/scripts/detect-ci-commands.sh" [repo-dir]
 ```
 
 It is best-effort; reconcile its output against the priority order below (workflows are authoritative, then CLAUDE.md, then package.json, then Makefile):

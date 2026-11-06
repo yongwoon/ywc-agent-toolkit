@@ -390,7 +390,7 @@ A skill that calls its own script by a repo-relative script path does not resolv
 - Another skill's script: `"<skill-base-dir>/../<callee-skill>/scripts/<name>"`
 - Define the placeholder once per file, at first use, with this sentence: "`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads)".
 - Repeating that sentence in every reference file is an explicit exception to "define in one place": a reference can be Read on its own, without its SKILL.md.
-- Legacy `<path-to-skill>` placeholders are treated like `<skill-base-dir>` and need the same defining sentence (or are renamed to `<skill-base-dir>`).
+- A legacy angle-bracketed `path-to-skill` placeholder is renamed to `<skill-base-dir>` (or kept with the same defining sentence).
 - Exception: in a template whose text is emitted into a user's file (e.g. `ywc-task-generator/references/dependency-graph.md.template`), name the script without any path (e.g. `compact-dependency-graph.py`) instead of `${CLAUDE_SKILL_DIR}` or `<skill-base-dir>`.
 - The name is `<skill-base-dir>`, not `<skill-dir>`, because `ywc-skill-author/SKILL.md` already uses `<skill-dir>` for the installed skill directory.
 

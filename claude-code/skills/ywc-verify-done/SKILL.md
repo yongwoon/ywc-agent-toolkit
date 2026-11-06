@@ -151,9 +151,9 @@ For the highest-stakes completion claims — multi-command verification, PR-read
 **Invoking `gate-check.py`** (three modes, against a caller-supplied ledger file):
 
 ```bash
-python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py --status <ledger.md>    # parse + report only; executes nothing
-python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py <ledger.md>              # execute every unmet runnable gate
-python3 claude-code/skills/ywc-verify-done/scripts/gate-check.py --reverify <ledger.md>   # force re-execute every runnable gate
+python3 "${CLAUDE_SKILL_DIR}/scripts/gate-check.py" --status <ledger.md>    # parse + report only; executes nothing
+python3 "${CLAUDE_SKILL_DIR}/scripts/gate-check.py" <ledger.md>              # execute every unmet runnable gate
+python3 "${CLAUDE_SKILL_DIR}/scripts/gate-check.py" --reverify <ledger.md>   # force re-execute every runnable gate
 ```
 
 Exit 0 = all runnable gates met (well-formed on `--status`); exit 1 = at least one unmet gate, or a malformed/missing ledger. **`gate-check.py` only judges runnable gates.** A manual gate (neither `CHECK:` nor `EXPECT:`) is always reported `manual (skipped)` and never blocks exit 0 — this holds even under `--reverify`, and even for a ledger containing only manual gates. If a high-stakes claim depends on a manual gate, verify its human evidence separately before surfacing the claim; do not treat `gate-check.py`'s exit 0 as covering it.

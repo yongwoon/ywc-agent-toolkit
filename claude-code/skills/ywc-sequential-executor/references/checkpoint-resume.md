@@ -93,10 +93,12 @@ Update the file at the following events. The skill's per-step Checkpoint markers
 
 ## 5. Manual Inspection
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-python <path-to-skill>/scripts/inspect-state.py        # state summary
-python <path-to-skill>/scripts/resume-state.py         # validate + resume point
-python <path-to-skill>/scripts/resume-state.py --json  # machine-readable output
+python "<skill-base-dir>/scripts/inspect-state.py"        # state summary
+python "<skill-base-dir>/scripts/resume-state.py"         # validate + resume point
+python "<skill-base-dir>/scripts/resume-state.py" --json  # machine-readable output
 rm .ywc-run-state.json                                  # reset (force fresh run)
 ```
 

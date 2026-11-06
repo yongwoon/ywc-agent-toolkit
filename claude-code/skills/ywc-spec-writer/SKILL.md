@@ -110,7 +110,7 @@ For locale-specific writing rules (formality level, term policy), see [reference
 If `docs/specification/` does not exist, run:
 
 ```bash
-bash claude-code/skills/ywc-spec-writer/scripts/init-spec-structure.sh <lang> "<ProjectName>"
+bash "${CLAUDE_SKILL_DIR}/scripts/init-spec-structure.sh" <lang> "<ProjectName>"
 ```
 
 Pass the language code **resolved in Step 3** as the `<lang>` first positional argument so the scaffolded skeleton is created in the resolved language, not just the document bodies (Amendment A4). This creates the 7-section skeleton without any LLM calls. For the full section layout and writing templates, see [references/spec-structure.md](references/spec-structure.md).
@@ -123,7 +123,7 @@ For incremental modes, identify which spec sections need updating before writing
 
 ```bash
 git diff <ref>^..<ref> --name-only \
-  | bash claude-code/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
+  | bash "${CLAUDE_SKILL_DIR}/scripts/detect-affected-sections.sh"
 ```
 
 **Task-based (single task)** — read the task `README.md` for its `category` field and apply the mapping in [references/section-mapping.md](references/section-mapping.md).
@@ -132,7 +132,7 @@ git diff <ref>^..<ref> --name-only \
 
 ```bash
 # Resolve range / glob / multi-id to absolute task directory paths
-bash claude-code/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
+bash "${CLAUDE_SKILL_DIR}/scripts/resolve-task-paths.sh" \
   000002-010..000003-020
 
 # For each resolved path: read README.md → category → look up in section-mapping.md
@@ -142,8 +142,8 @@ bash claude-code/skills/ywc-spec-writer/scripts/resolve-task-paths.sh \
 **PR-based (single or multiple PRs)** — fetch the changed-file union, then feed it into `detect-affected-sections.sh`:
 
 ```bash
-bash claude-code/skills/ywc-spec-writer/scripts/collect-files-from-prs.sh 42 43 51 \
-  | bash claude-code/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
+bash "${CLAUDE_SKILL_DIR}/scripts/collect-files-from-prs.sh" 42 43 51 \
+  | bash "${CLAUDE_SKILL_DIR}/scripts/detect-affected-sections.sh"
 ```
 
 Additionally, for `--from-pr` / `--from-prs`, fetch each PR's title + body as narrative context:

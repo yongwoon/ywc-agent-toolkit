@@ -126,7 +126,7 @@ For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construc
 Run the bundled script to extract the task number and English slug without regex parsing:
 
 ```bash
-python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
+python "${CLAUDE_SKILL_DIR}/scripts/build-pr-title.py" <task-name>
 # TASK_NUMBER=yk-000001-010
 # SLUG_EN=Db Create Users Table
 ```
@@ -136,7 +136,7 @@ python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name
 For English PRs (`--pr-lang en`), use `--format title` to get the complete title directly:
 
 ```bash
-python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
+python "${CLAUDE_SKILL_DIR}/scripts/build-pr-title.py" <task-name> --format title
 # [yk-000001-010] Db Create Users Table
 ```
 
@@ -254,7 +254,7 @@ Use the shared marker script — it handles the `.gitignore` branch, the mandato
 bash claude-code/skills/scripts/mark-complete.sh <tasks-dir> <task-name> [--push | --defer-push]
 ```
 
-The marker script runs `claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py` between the move and marker commit, using the same resolved `<tasks-dir>`, and stages the resulting graph when it is tracked. The heading-based compactor retroactively handles existing graphs: completed phases become `## Phase NNNNNN — done` plus a `- Completed: ...` bullet, while fully completed Parallel Execution Notes and Visual Dependency Graph sections are removed. In worktree mode, the script path may come from the main checkout, but `<tasks-dir>` must resolve inside `<path>`.
+The marker script runs `"${CLAUDE_SKILL_DIR}/../ywc-task-generator/scripts/compact-dependency-graph.py"` between the move and marker commit, using the same resolved `<tasks-dir>`, and stages the resulting graph when it is tracked. The heading-based compactor retroactively handles existing graphs: completed phases become `## Phase NNNNNN — done` plus a `- Completed: ...` bullet, while fully completed Parallel Execution Notes and Visual Dependency Graph sections are removed. In worktree mode, the script path may come from the main checkout, but `<tasks-dir>` must resolve inside `<path>`.
 
 Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
 

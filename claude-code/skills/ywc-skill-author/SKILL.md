@@ -262,7 +262,7 @@ examples.
 Run the bundled mechanical gate first — it enforces the deterministic subset of the checklist below (name/description shape, announce line, 500-line cap, README locale set, no `@ywc-` force-loads, reference pointers + min-length) for a single skill and exits non-zero on any failure:
 
 ```bash
-bash claude-code/skills/ywc-skill-author/scripts/validate-skill.sh <skill-dir>
+bash "${CLAUDE_SKILL_DIR}/scripts/validate-skill.sh" <skill-dir>
 ```
 
 For work on the "## Rationalization Defense" table specifically (deletion testing, row sampling), use the row-range enumerator and the variant builder — `scripts/enumerate-rd-rows.sh <skill-dir>` prints one `<start>-<end>` line range per data row (`--self-check` asserts parity against the canonical row counter across all 46 skills), and `scripts/build-variant.sh <skill-dir> <start> <end>` writes a temp-path copy of `SKILL.md` with that inclusive range deleted, refusing to write on an inverted/out-of-bounds range or a header-orphaning deletion.
