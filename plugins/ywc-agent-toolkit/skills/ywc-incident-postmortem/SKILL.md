@@ -46,6 +46,10 @@ git log --oneline --since="3 days ago"
 git describe --tags --abbrev=0 2>/dev/null || echo "(no tags)"
 ```
 
+## Analyst contract
+
+Every analyst packet carries `Caller: ywc-incident-postmortem` and `analysis_mode=incident_five_whys` plus bounded evidence. Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode. Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`. An analyst refusal consumes the existing Step 4 analyst dispatch budget (separate from the Step 4.5 security advisor budget); preserve the caller's original gate and surface the missing evidence instead of re-dispatching or falling through. The analyst returns inline advice and never writes the caller's report or runs probes. Unavailable delegation uses the documented inline path; unavailable live runtime evidence is `UNVERIFIED — instruction contract only`.
+
 ## Workflow (--draft mode)
 
 **Step 1 — Gather basics**
@@ -58,7 +62,7 @@ Build a chronological event log with timestamps (detection → investigation →
 Affected users (count or %), duration in minutes, severity (SEV1/SEV2/SEV3), SLA breach, revenue impact if known.
 
 **Step 4 — Root cause analysis**
-Apply 5 Whys. Identify the primary root cause and contributing factors separately. When the current Codex session has an available subagent/delegation tool, request at most one independent root-cause analyst pass with a bounded packet: failure symptom, timeline excerpt, and relevant code snippet. Ask the analyst to walk the 5 Whys with explicit primary-cause vs contributing-factor separation and per-level evidence citations. If no delegation tool is available, perform the walk inline using the same discipline; do not attempt tool-specific named-agent syntax from another runtime.
+Apply exactly five numbered Why steps with evidence cited at every step; if a causal link is missing, return `NEEDS_CONTEXT` rather than inventing it. Identify the primary root cause and contributing factors separately. When the current Codex session has an available subagent/delegation tool, request at most one independent root-cause analyst pass with `Caller: ywc-incident-postmortem`, `analysis_mode=incident_five_whys`, and a bounded packet: failure symptom, timeline excerpt, and relevant code snippet. Ask the analyst to return exactly five numbered evidence-linked Why steps with explicit primary-cause vs contributing-factor separation and per-level evidence citations. If no delegation tool is available, perform the walk inline using the same discipline; do not attempt tool-specific named-agent syntax from another runtime.
 
 **Step 4.5 — Security advisor dispatch (only when the incident crosses a security boundary)**
 Run this step **only when the Step 4 root cause involves** one of: auth bypass, authorization failure, secret / token / credential leak, PII or sensitive-data exposure, data exfiltration, SSRF, IDOR, injection (SQL / command / template), or any A01–A10 OWASP category. Skip otherwise.
@@ -73,7 +77,7 @@ Procedure:
    - Prevention Action Items (Step 6) cite the advisor's concrete remediation steps, not generic "improve security"
    - Client report (Step 8 if `--client`) keeps the redaction discipline: never expose the exploit chain, only the user-facing impact + the prevention class
 
-Budget: at most **1** dispatch per postmortem. A second security question signals scope split — file a follow-up postmortem.
+Budget: at most **1** security advisor dispatch per postmortem, counted separately from the Step 4 analyst dispatch (an analyst dispatch or refusal never consumes it). If delegation is unavailable, the inline analysis in procedure item 3 applies. A second security question signals scope split — file a follow-up postmortem.
 
 **Step 5 — Actions taken during incident**
 List mitigation steps taken in real time (rollback, hotfix, manual data correction).
@@ -109,7 +113,7 @@ See [references/client-report-template.md](references/client-report-template.md)
 ## Integration
 
 - **After `ywc-security-audit`**: If audit reveals an active exploit or breach, use this skill to write the postmortem.
-- **Optional independent root-cause analyst pass (Step 4)**: when subagent/delegation support is available, request one bounded 5 Whys pass with per-level evidence citations + primary-cause vs contributing-factor separation. At most 1 dispatch per postmortem.
+- **Optional independent root-cause analyst pass (Step 4)**: when subagent/delegation support is available, request one bounded `incident_five_whys` pass with exactly five numbered per-level evidence citations + primary-cause vs contributing-factor separation. At most 1 dispatch per postmortem.
 - **Optional independent security advisor pass (Step 4.5)**: when the Step 4 root cause crosses a security boundary (auth / authz / secret / PII / OWASP A01–A10) and subagent/delegation support is available. The advisor returns OWASP / CWE-cited findings and concrete remediation steps that feed back into the Root Cause section + Step 6 Prevention Action Items. Skipped when the incident is non-security.
 - **Before `ywc-changelog-release-notes`**: Incident action items may drive a patch release; key fixes feed into the next changelog.
 - Not part of the standard development pipeline — activates reactively after incidents occur.

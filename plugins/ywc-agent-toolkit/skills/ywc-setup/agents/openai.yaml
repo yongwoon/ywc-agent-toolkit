@@ -2,3 +2,6 @@ interface:
   display_name: "YWC Setup"
   short_description: "Configure Codex YWC output language defaults"
   default_prompt: "Use $ywc-setup to configure a Codex YWC project or user output-language default or collaborator initials with --scope project|user, --lang ko|ja|en|zh|es, and optional --initials [a-z0-9]{2,4}."
+policy:
+  # Prefer explicit invocation; advisory metadata only, runtime enforcement is unverified.
+  allow_implicit_invocation: false

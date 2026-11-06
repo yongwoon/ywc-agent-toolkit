@@ -1,0 +1,114 @@
+{
+  "id": "authoring-feedback",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-3",
+    "AC-3"
+  ],
+  "upstream": {
+    "pr": 345,
+    "merge_sha": "2ddca68bcbf49fa7152e7c97184ab3f99cae710f",
+    "paths": [
+      "tools/codex-skill/skills/ywc-brainstorm/SKILL.md",
+      "tools/codex-skill/skills/ywc-tdd-ritual/SKILL.md",
+      "tools/codex-skill/skills/ywc-tdd-ritual/references/red-green-checklist.md",
+      "tools/codex-skill/skills/ywc-skill-author/SKILL.md"
+    ]
+  },
+  "live_evidence": "UNVERIFIED — instruction contract only; no live model scenario was executed",
+  "scenarios": [
+    {
+      "id": "repository-fact",
+      "input": "A requested fact already exists in code/config/docs.",
+      "expected": "Inspect repository evidence, cite its path, and do not re-ask the fact."
+    },
+    {
+      "id": "prerequisite-frontier",
+      "input": "Several user-owned prerequisites remain after repository inspection.",
+      "expected": "Ask only the earliest unresolved prerequisite needed for the next decision; defer downstream choices and retain approvals."
+    },
+    {
+      "id": "public-seam",
+      "input": "Existing public seam observes a behavior; a private helper is also available.",
+      "expected": "Name existing public seam, catches and misses; do not expose the helper for a test."
+    },
+    {
+      "id": "seam-missing",
+      "input": "No existing public seam observes the required behavior.",
+      "expected": "Preserve reproduction evidence and catches/misses; surface the smallest interface decision instead of inventing a test."
+    },
+    {
+      "id": "vertical-cycle",
+      "input": "Two behaviors need implementation.",
+      "expected": "Complete one behavior RED/GREEN/REFACTOR before starting the next; no horizontal slicing."
+    },
+    {
+      "id": "writing-levers",
+      "input": "Rules contain no-op prose, hedged action, duplicated rules and unobservable completion.",
+      "expected": "Apply five Writing Levers while preserving safety/stop constraints and canonical output schemas."
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-brainstorm/SKILL.md",
+      "required": [
+        "Check repository-resolvable facts in relevant code, configuration, tests, and maintained docs before asking the user.",
+        "State verified facts with source paths; distinguish missing evidence from established facts.",
+        "Ask only the earliest unresolved prerequisite needed for the next decision.",
+        "Defer downstream choices until their upstream purpose, users, or scope is settled.",
+        "Existing approach and detailed-design approval gates remain required."
+      ],
+      "forbidden": [
+        "Ask all unresolved prerequisites in one question."
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-tdd-ritual/SKILL.md",
+      "required": [
+        "Name the existing public boundary (seam) the test observes in one sentence.",
+        "Record a minimal feedback note: `Seam`, `Catches`, `Misses`, and the reproduction or test evidence.",
+        "A unit seam cannot claim effects beyond its boundary.",
+        "If no existing seam observes the behavior, preserve reproduction evidence and its catches/misses, then surface the smallest interface/design decision.",
+        "Do not expose a private helper only for testing or invent a misleading test.",
+        "Complete one behavior's RED → GREEN → REFACTOR cycle before starting the next behavior."
+      ],
+      "forbidden": [
+        "the import error counts as failure",
+        "Write all RED tests before any GREEN code."
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-tdd-ritual/references/red-green-checklist.md",
+      "required": [
+        "Name the existing public seam and record its catches/misses before writing the test.",
+        "If no existing seam observes the behavior, preserve reproduction evidence and surface the smallest interface decision; do not expose a helper only for testing.",
+        "Finish this behavior's RED/GREEN/REFACTOR cycle before starting another behavior."
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-skill-author/SKILL.md",
+      "required": [
+        "Check repository facts first; ask only one unresolved prerequisite needed for the next authoring decision.",
+        "**Remove no-ops.**",
+        "**State the positive goal.**",
+        "**Lead with the condition or action.**",
+        "**Make completion observable.**",
+        "**Keep one source of truth.**",
+        "Preserve safety, scope, and stop constraints.",
+        "Reuse canonical Validation and Output Format contracts instead of inventing a competing completion schema."
+      ]
+    }
+  ],
+  "feedback_evidence": {
+    "baseline": "Existing shared contract suite: 3 tests passed before the new fixture. New fixture RED failed on missing repository-facts clause before source edits.",
+    "green": "Shared contract suite: 3 tests passed after source edits.",
+    "negative_controls": {
+      "harness": "Real shared ContractTests.test_source_contract_scenarios with canonical temporary ROOT/FIXTURES; one source clause removed or forbidden clause inserted per run.",
+      "required_clause_removals_caught": 22,
+      "forbidden_clause_injections_caught": 3,
+      "misses": 0
+    },
+    "catches": "Required instruction omission and forbidden instruction reintroduction only.",
+    "misses": "Live model question ordering, seam choices and generated tests; UNVERIFIED — instruction contract only."
+  }
+}

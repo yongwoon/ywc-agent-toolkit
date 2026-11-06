@@ -1,0 +1,68 @@
+[
+  {
+    "id": "docker-version",
+    "patch": "diff --git a/Dockerfile b/Dockerfile\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1 +1 @@\n-FROM node:18\n+FROM node:20\n",
+    "exit": 0
+  },
+  {
+    "id": "nested-multistage",
+    "patch": "diff --git a/images/build.dockerfile b/images/build.dockerfile\n--- a/images/build.dockerfile\n+++ b/images/build.dockerfile\n@@ -1 +1 @@\n-FROM alpine:3 AS build\n+from alpine:4 AS build\n",
+    "exit": 0
+  },
+  {
+    "id": "docker-suffix",
+    "patch": "diff --git a/ops/Dockerfile.dev b/ops/Dockerfile.dev\n--- a/ops/Dockerfile.dev\n+++ b/ops/Dockerfile.dev\n@@ -1 +1 @@\n+FROM debian:stable\n",
+    "exit": 0
+  },
+  {
+    "id": "readme-from",
+    "patch": "diff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n+FROM node:20\n",
+    "exit": 1
+  },
+  {
+    "id": "different-file-from",
+    "patch": "diff --git a/Dockerfile b/Dockerfile\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1 +1 @@\n-RUN old\n+RUN new\ndiff --git a/script.sh b/script.sh\n--- a/script.sh\n+++ b/script.sh\n@@ -1 +1 @@\n+FROM node:20\n",
+    "exit": 1
+  },
+  {
+    "id": "hunk-header-lookalike",
+    "patch": "diff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n+++ Dockerfile\n+FROM node:20\n",
+    "exit": 1
+  },
+  {
+    "id": "unchanged-context",
+    "patch": "diff --git a/Dockerfile b/Dockerfile\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1 +1 @@\n FROM node:20\n-RUN old\n+RUN new\n",
+    "exit": 1
+  },
+  {
+    "id": "failed-query",
+    "patch": "",
+    "gh_status": 1,
+    "exit": 2
+  },
+  {
+    "id": "quoted-path",
+    "patch": "diff --git \"a/odd\\tDockerfile\" \"b/odd\\tDockerfile\"\n--- \"a/odd\\tDockerfile\"\n+++ \"b/odd\\tDockerfile\"\n@@ -1 +1 @@\n+FROM node:20\n",
+    "exit": 2
+  },
+  {
+    "id": "empty-diff",
+    "patch": "",
+    "exit": 1
+  },
+  {
+    "id": "new-dockerfile",
+    "patch": "diff --git a/Dockerfile b/Dockerfile\n--- /dev/null\n+++ b/Dockerfile\n@@ -0,0 +1 @@\n+FROM node:20\n",
+    "exit": 0
+  },
+  {
+    "id": "deleted-dockerfile",
+    "patch": "diff --git a/Dockerfile b/Dockerfile\n--- a/Dockerfile\n+++ /dev/null\n@@ -1 +0,0 @@\n-FROM node:20\n",
+    "exit": 0
+  },
+  {
+    "id": "malformed-diff",
+    "patch": "not a unified Git patch\n",
+    "exit": 2
+  }
+]

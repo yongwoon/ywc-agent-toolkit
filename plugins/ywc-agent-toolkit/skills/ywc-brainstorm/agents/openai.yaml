@@ -1,4 +1,4 @@
 interface:
   display_name: "Brainstorm"
   short_description: "Turn rough ideas into approved designs with surfaced blind spots"
-  default_prompt: "Use $ywc-brainstorm to clarify intent, constraints, success criteria, alternative approaches, and blind spots before handing the approved design to $ywc-plan."
+  default_prompt: "Use $ywc-brainstorm to verify repository facts, ask the earliest unresolved prerequisite one question at a time, and obtain approach and detailed-design approval before the $ywc-plan handoff."

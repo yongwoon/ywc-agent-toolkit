@@ -55,12 +55,18 @@ Each transition has a verification step that **must** be executed in the current
 
 Write one minimal test that captures **one** behavior the production code is required to exhibit.
 
+### Public seam and feedback
+
+Name the existing public boundary (seam) the test observes in one sentence. Prefer an existing seam; a new boundary needs an explicit interface decision. Record a minimal feedback note: `Seam`, `Catches`, `Misses`, and the reproduction or test evidence. A unit seam cannot claim effects beyond its boundary.
+
+If no existing seam observes the behavior, preserve reproduction evidence and its catches/misses, then surface the smallest interface/design decision. Do not expose a private helper only for testing or invent a misleading test. If multiple seams are plausible, resolve the public-interface ambiguity before writing the test.
+
 **Requirements:**
 
 - **One behavior per test.** If the test name contains "and", split it.
 - **Clear, intention-revealing name.** "`rejects offset > total with 400`" beats "`pagination test 3`".
 - **Real code paths.** Mocks are allowed only for boundaries the test cannot cross (network, clock, file system). Mocking the unit under test is forbidden — it tests the mock, not the code.
-- **No production code yet.** If the test references a function that does not exist, that is fine — the import error counts as failure.
+- **No production behavior yet.** If a symbol does not exist, first fix the test setup. If the language cannot compile or import the test without the symbol (for example a new Go function), add a minimal behavior-free production stub before RED: signature only, and the test must not pass against it. For a function that returns a value, return a not-implemented error or any placeholder value that makes the test fail at a behavior assertion; a sentinel distinct from every expected value is not required (for example, `IsEven(int) bool` tests that expect both `true` and `false` fail on whichever case the placeholder gets wrong). For a function that returns nothing and mutates state (for example a Go `Clear()`), use an empty no-op body and confirm RED through the failing state assertion; do not `panic`, which would stop the test before that assertion. If the expected value is itself the zero value, keep the expectation unchanged and confirm RED through the failing stub (or add a second case with a non-zero expectation) so a valid test cannot pass on its first run. Run the test through that stub so the failure reaches a behavior assertion, and implement the real behavior only in GREEN. Collection, compile, or import errors do not prove RED.
 
 ### Step 2: Verify RED — Watch it fail
 
@@ -127,6 +133,8 @@ Now, and only now, improve the implementation:
 Re-run the suite after the refactor. If it stays green, the cycle is complete. If a test breaks, treat as Step 5 violation.
 
 ### Step 7: Loop or hand off
+
+Complete one behavior's RED → GREEN → REFACTOR cycle before starting the next behavior. Do not batch all tests, all implementation, or all refactoring into horizontal phases.
 
 If there are more behaviors to implement, return to Step 1 with the next test.
 When all required behaviors are implemented, hand off to `ywc-verify-done` for the completion claim (build + lint + full test suite + per-claim evidence block).

@@ -100,9 +100,21 @@
       "id": 7,
       "name": "result-parser-exact-matrix",
       "prompt": "Evaluate ywc-plan's agentic Result parser with one complete block, duplicate or missing Scale/Artifact fields, unlabelled prose, an outside-root path, and a non-Markdown artifact.",
-      "input": {"accepted": "## Result with Status: DONE, Scale: Small|Medium|Large, and one docs/ywc-plans/*.md Artifact", "rejected": ["duplicate field", "missing field", "prose path", "../outside.md", "docs/ywc-plans/data.json"]},
+      "input": {
+        "accepted": "## Result with Status: DONE, Scale: Small|Medium|Large, and one docs/ywc-plans/*.md Artifact",
+        "rejected": [
+          "duplicate field",
+          "missing field",
+          "prose path",
+          "../outside.md",
+          "docs/ywc-plans/data.json"
+        ]
+      },
       "expected_status": "DONE for the accepted fixture; BLOCKED for every rejected fixture",
-      "expected_downstream_calls": {"accepted": 1, "rejected": 0},
+      "expected_downstream_calls": {
+        "accepted": 1,
+        "rejected": 0
+      },
       "expected_handoff": "accepted only for the exact complete in-root Markdown Result; rejected otherwise",
       "expected_output": "Reports bounded parser failure details without storing response text or selecting a fallback path."
     },
@@ -174,6 +186,35 @@
       "expected_output": "Use spec-ready owner default once in either mode, explicit policy wins, defer never amends, residual advisory findings do not ask again; blocking/malformed failures remain. Reuse only matching already-approved unchanged preview without another confirmation; never invent approval or weaken containment/identity/consume-only/preview-only write boundaries.",
       "files": [
         "SKILL.md"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "fresh-medium-large-auto-ready-and-suppression",
+      "prompt": "Exercise a fresh Medium and Large spec with default options, --no-converge, and --non-interactive; also exercise Small and Re-plan paths.",
+      "expected_behavior": [
+        "For each fresh Medium/Large spec without an exclusion, invokes ywc-spec-ready --spec <path> exactly once using the artifact just written.",
+        "Runs no automatic readiness for --no-converge, --non-interactive, Small, or Re-plan; suppressed fresh specs receive the manual validation/task handoff.",
+        "Stops after readiness and reports its bounded terminal status; never starts task generation or an executor."
+      ],
+      "anti_behavior": [
+        "Prompts for opt-in before default readiness.",
+        "Runs readiness more than once or runs it on a Small or Re-plan path.",
+        "Runs task generation or an executor directly."
+      ]
+    },
+    {
+      "id": 15,
+      "name": "suppressed-convergence-requires-manual-validation-gate",
+      "prompt": "Use ywc-plan --no-converge, then repeat with --non-interactive, for a fresh Medium/Large spec.",
+      "expected_behavior": [
+        "Makes zero automatic ywc-spec-ready calls in either suppressed case.",
+        "Prints ywc-spec-validate --spec <path> as the next gate.",
+        "Allows task generation only after that manual validation gate passes."
+      ],
+      "anti_behavior": [
+        "Requires a ywc-spec-ready DONE Result on the suppressed manual path.",
+        "Invokes task generation before ywc-spec-validate passes."
       ]
     }
   ]

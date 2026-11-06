@@ -6,4 +6,6 @@
 
 当你希望 Codex 自主推进整个交付流程，而不是手动控制每个阶段时使用。
 
+`ywc-agentic` 使用 `ywc-plan --no-converge --artifact-profile agentic` 避免重复 readiness；Medium/Large 验证 Artifact 后仅调用一次 `ywc-spec-ready`，再生成任务。
+
 `--pr-lang en|ja|ko|zh|es` 会原样转发给 executor。只有用户明确要求或 shared YWC language policy resolve task/spec language 时，才向 `ywc-task-generator` 转发 `--lang en|ja|ko|zh|es`；否则不传 `--lang`，由 downstream skill 必要时询问。

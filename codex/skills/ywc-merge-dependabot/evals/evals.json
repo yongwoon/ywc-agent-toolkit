@@ -18,6 +18,12 @@
       "prompt": "Process 25 Dependabot PRs sequentially without asking.",
       "expected_output": "Stops for confirmation because the batch is large and recommends parallel-auto when eligible PRs span ecosystems.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "A Dockerfile FROM changes while README also adds FROM; rebase polling resumes across chunks at 50, 1000, and 1800 seconds, with a successful rebase comment already recorded.",
+      "expected_output": "Skips actual Dockerfile FROM changes, ignores README-only FROM and refuses failed diff queries. Preserves original deadline, queue/lane/status and rebase markers, never reposts a confirmed comment, rejects stale CI and fails incomplete work at 1800 seconds; explicit invocation preference is not enforcement.",
+      "files": []
     }
   ]
 }

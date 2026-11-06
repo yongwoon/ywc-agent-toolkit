@@ -34,3 +34,7 @@ PR Review 이후 반복되는 대응 작업을 자동화합니다. 명확한 수
 - [Japanese](./README.ja.md)
 - [Chinese (Simplified)](./README.zh.md)
 - [Spanish](./README.es.md)
+
+## 기존 브랜치와 PR worktree
+
+`--worktree 123`은 같은 저장소의 열린 PR 번호와 head를 고정합니다. 정확한 fetch/fast-forward, 작업별 cwd/root/branch 확인과 한 번의 재진입만 허용하며, 필수 명령 실패 뒤 mutation을 중단합니다. 생성한 worktree만 `--keep-branch` 정리 안내를 제공합니다.

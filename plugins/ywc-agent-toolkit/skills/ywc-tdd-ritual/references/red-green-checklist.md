@@ -7,7 +7,9 @@ Walk through the per-step entry / exit conditions during the cycle. Each step ha
 ### Entry conditions
 
 - [ ] The behavior to implement is named in one sentence
-- [ ] No production code for this behavior exists yet (search the codebase before writing the test)
+- [ ] Name the existing public seam and record its catches/misses before writing the test. This applies only when such a seam exists; otherwise follow the next item.
+- [ ] If no existing seam observes the behavior, preserve reproduction evidence and surface the smallest interface decision; do not expose a helper only for testing. Record the approved new interface as the seam for this test.
+- [ ] No production implementation of this behavior exists yet (search the codebase before writing the test); a behavior-free stub that only lets the test compile is allowed
 - [ ] If exploration was needed, the spike was discarded — no carry-over code
 
 ### The test
@@ -39,6 +41,7 @@ The test file exists, asserts the desired behavior, and references symbols (func
 - [ ] The test actually ran (not skipped, not collection-error)
 - [ ] The failure originated at the assertion line, not at imports / setup
 - [ ] The failure message matches the expected mismatch (got X, expected Y)
+- [ ] If a compile-only stub was added, the test cannot pass against it: a value-returning stub returns a not-implemented error or a placeholder that makes the test fail at a behavior assertion (it need not differ from every expected value), a state-mutating stub with no return value is an empty no-op and RED is confirmed through the failing state assertion (no `panic`); a zero-value expectation stays unchanged and is never satisfied by a stub that already returns that zero value
 - [ ] No other test broke as a side effect
 
 ### Decision
@@ -152,6 +155,8 @@ A second verification block (per `ywc-verify-done`) is surfaced showing the suit
 ## Step 7 — Loop or hand off
 
 ### Loop
+
+Finish this behavior's RED/GREEN/REFACTOR cycle before starting another behavior.
 
 If there are more behaviors required for the feature, return to Step 1 with the next behavior. Each behavior gets its own RED-GREEN-REFACTOR cycle; do not combine.
 

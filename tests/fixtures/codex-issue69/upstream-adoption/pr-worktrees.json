@@ -1,0 +1,233 @@
+{
+  "id": "upstream-adoption-pr-worktrees",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-9",
+    "AC-9"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_sha": "76200680f059d34d295b3f01da527c29ea782dc2",
+    "source_prefix": "tools/codex-skill/skills/",
+    "port_scope": "Existing-branch producer and pinned PR worktree consumer; preserve local audit/cleanup helpers"
+  },
+  "live_evidence": "UNVERIFIED — instruction contract only",
+  "scenarios": [
+    {
+      "id": "local",
+      "input": "Existing clean local head not checked out elsewhere",
+      "expected": "Use exact local head without replacement branch",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "git worktree add \"$RESOLVED_PATH\" \"$EXISTING_BRANCH\""
+    },
+    {
+      "id": "remote-only",
+      "input": "Local head absent, exact origin head present",
+      "expected": "Exact ref query/fetch then tracking branch",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "git worktree add --track -b \"$EXISTING_BRANCH\" \"$RESOLVED_PATH\" \"refs/remotes/origin/$EXISTING_BRANCH\""
+    },
+    {
+      "id": "absent",
+      "input": "Remote lookup exit 2 with no exact head",
+      "expected": "NEEDS_CONTEXT and no worktree/branch mutation",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "NEEDS_CONTEXT: branch absent locally and on origin"
+    },
+    {
+      "id": "network",
+      "input": "Remote lookup or fetch transport fails",
+      "expected": "BLOCKED with original diagnostics and no create",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "BLOCKED: remote lookup failed"
+    },
+    {
+      "id": "flag-conflict",
+      "input": "Both base and existing branch flags",
+      "expected": "NEEDS_CONTEXT before mutation",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "Exactly one of base/existing is required."
+    },
+    {
+      "id": "checked-out",
+      "input": "Existing head already checked out",
+      "expected": "BLOCKED with checked-out identity",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "A checked-out branch, dirty matching worktree, locked/prunable record or missing"
+    },
+    {
+      "id": "dirty-locked",
+      "input": "Matching registered path dirty, locked, missing or prunable",
+      "expected": "BLOCKED and preserve path/branch",
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "source_clause": "A checked-out branch, dirty matching worktree, locked/prunable record or missing"
+    },
+    {
+      "id": "invalid-pr",
+      "input": "Worktree mode without positive explicit PR number",
+      "expected": "NEEDS_CONTEXT before lookup or mutation",
+      "source": "codex/skills/ywc-handle-pr-reviews/SKILL.md",
+      "source_clause": "With `--worktree`, require an explicit positive PR number"
+    },
+    {
+      "id": "foreign-closed",
+      "input": "Closed, cross-repository or mismatched PR",
+      "expected": "BLOCKED before worktree mutation",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "Require matching number, open state and `isCrossRepository=false`"
+    },
+    {
+      "id": "invalid-head",
+      "input": "Unsafe head name or failed check-ref-format",
+      "expected": "BLOCKED before branch-specific mutation",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "require `^[A-Za-z0-9._/-]+$`, reject leading `-` and"
+    },
+    {
+      "id": "selection",
+      "input": "Clean registered canonical in-place, reused or absent head",
+      "expected": "Select in-place/reused or create through provider and verify registration",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "The matching current registered path is `in-place`"
+    },
+    {
+      "id": "ahead-diverged",
+      "input": "Local ahead/diverged from exact fetched origin head",
+      "expected": "BLOCKED; no reset/rebase/main fallback",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "BLOCKED: local-ahead or diverged history"
+    },
+    {
+      "id": "cwd-once",
+      "input": "First cwd reset then valid re-entry",
+      "expected": "Consume one invocation-wide re-entry and recheck identity",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "one invocation-wide cwd re-entry"
+    },
+    {
+      "id": "cwd-repeat",
+      "input": "Second cwd reset or failed identity check",
+      "expected": "BLOCKED before further reads/mutations/API",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "Any second mismatch or failed identity check is `BLOCKED`"
+    },
+    {
+      "id": "head-move",
+      "input": "PR head changes during invocation",
+      "expected": "BLOCKED; do not replace pinned number/head",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "Any later PR metadata response with a changed number/head/repository/open"
+    },
+    {
+      "id": "push",
+      "input": "Valid guarded commit ready for push",
+      "expected": "Use HEAD:refs/heads/$H only",
+      "source": "codex/skills/ywc-handle-pr-reviews/SKILL.md",
+      "source_clause": "git push origin \"HEAD:refs/heads/$H\""
+    },
+    {
+      "id": "required-failure",
+      "input": "Required fetch/commit/push/CI command fails",
+      "expected": "Stop later mutations/retries and report prior side effects",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "A failed required command stops later edits, commits, API writes, pushes and"
+    },
+    {
+      "id": "cleanup",
+      "input": "Review work ends with created/reused/in-place state",
+      "expected": "Only created gets branch-preserving prune guidance",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "Only created worktrees get branch-preserving prune guidance in a separate"
+    },
+    {
+      "id": "audit",
+      "input": "Retained review worktree appears in executor audit",
+      "expected": "Keep Leaked/Drift/Missing classifications unchanged",
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "source_clause": "unchanged Drift/Missing/Leaked audit classifications."
+    }
+  ],
+  "checks": [
+    {
+      "source": "codex/skills/ywc-worktrees/SKILL.md",
+      "required": [
+        "--existing-branch <H>",
+        "`--base-branch` and `--existing-branch` are mutually exclusive",
+        "Read [references/existing-branch.md]",
+        "owner/input/output/status mismatch returns `NEEDS_CONTEXT`",
+        "Run `--mode audit` before creation"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-handle-pr-reviews/SKILL.md",
+      "required": [
+        "With `--worktree`, require an explicit positive PR number",
+        "For `--worktree`, read [references/pr-worktree-identity.md]",
+        "git push origin \"HEAD:refs/heads/$H\"",
+        "stop further retries and mutations",
+        "Worktree state: created | reused | in-place | N/A"
+      ],
+      "forbidden": []
+    },
+    {
+      "source": "codex/skills/ywc-worktrees/references/existing-branch.md",
+      "required": [
+        "The provider creates a new worktree only; it never reuses an existing target path.",
+        "Exactly one of base/existing is required.",
+        "A checked-out branch, dirty matching worktree, locked/prunable record or missing",
+        "git ls-remote --exit-code --heads origin \"refs/heads/$EXISTING_BRANCH\"",
+        "NEEDS_CONTEXT: branch absent locally and on origin",
+        "BLOCKED: remote lookup failed",
+        "git fetch --no-tags origin \"+refs/heads/$EXISTING_BRANCH:refs/remotes/origin/$EXISTING_BRANCH\"",
+        "git worktree add \"$RESOLVED_PATH\" \"$EXISTING_BRANCH\"",
+        "git worktree add --track -b \"$EXISTING_BRANCH\" \"$RESOLVED_PATH\" \"refs/remotes/origin/$EXISTING_BRANCH\"",
+        "Reject a leading",
+        "A failed post-create verification is `BLOCKED`"
+      ],
+      "forbidden": [
+        "git reset --hard",
+        "git pull --rebase"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-handle-pr-reviews/references/pr-worktree-identity.md",
+      "required": [
+        "Bind the invoking repository once as `REPOSITORY=owner/repo`",
+        "Require matching number, open state and `isCrossRepository=false`",
+        "require `^[A-Za-z0-9._/-]+$`, reject leading `-` and",
+        "Match only an exact `branch refs/heads/$H` record",
+        "The matching current registered path is `in-place`",
+        "another matching clean",
+        "set state `created`",
+        "Any\n   required provider failure is terminal",
+        "git fetch --no-tags origin \"+refs/heads/$H:refs/remotes/origin/$H\"",
+        "git merge --ff-only \"refs/remotes/origin/$H\"",
+        "BLOCKED: local-ahead or diverged history",
+        "Any later PR metadata response with a changed number/head/repository/open",
+        "every review file read/edit, PR API operation, commit, push, retry, CI check/wait",
+        "one invocation-wide cwd re-entry",
+        "Any second mismatch or failed identity check is `BLOCKED`",
+        "A failed required command stops later edits, commits, API writes, pushes and",
+        "Only created worktrees get branch-preserving prune guidance in a separate",
+        "unchanged Drift/Missing/Leaked audit classifications."
+      ],
+      "forbidden": [
+        "git reset --hard",
+        "git pull --rebase"
+      ]
+    }
+  ],
+  "baseline": {
+    "existing_contract_tests": "3 passed",
+    "existing_behavior_tests": "4 passed",
+    "existing_cleanup_helper": "PASS",
+    "focused_red": "exit 1: missing --existing-branch <H> before source changes"
+  },
+  "feedback": {
+    "oracle": "shared ContractTests source assertion in a temporary copy",
+    "required_clause_removals_caught": 39,
+    "misses": 0,
+    "evidence_kind": "source assertion / fixture expectation"
+  }
+}

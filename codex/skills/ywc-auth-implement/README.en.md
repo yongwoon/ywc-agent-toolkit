@@ -24,8 +24,10 @@ $ywc-auth-implement
 
 The skill performs a read-only preflight, a nine-section policy interview, and an evidence-based recommendation. It only prints the route below — never invokes it — and only after `$ywc-spec-ready` reaches `DONE` for medium/large work:
 
+For Small work, follow ywc-plan's existing Small-path handoff; do not run ywc-spec-ready or ywc-task-generator. The route below is for Medium/Large only.
+
 ```text
-$ywc-plan → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
+$ywc-plan --no-converge → $ywc-spec-ready → $ywc-task-generator → $ywc-code-gen --spec <path> --feature <auth feature> --tdd --review
 ```
 
 Critical/High audit findings skip E2E, PR proposal, and caching, and the route ends as `DONE_WITH_CONCERNS` until remediation and a fresh audit clear it. Legal wording is always marked `법적 검토 전 임시본`.

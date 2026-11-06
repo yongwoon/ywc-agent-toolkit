@@ -33,7 +33,7 @@ When tempted to skip a phase, check this table first:
 | "I see the problem, let me just fix it" | Seeing a *symptom* is not understanding the *cause*. The first reproducible defect-on-line-X is almost always a downstream effect of an upstream bad value. Trace the data flow at least one hop upstream before editing. |
 | "Emergency, no time for the 4 phases" | The 4 phases take 15–30 minutes for a typical bug; guess-and-check takes 2–3 hours of thrashing with a 40% first-time-fix rate. Pressure makes the systematic path **faster**, not slower. |
 | "I'll try one quick fix, then investigate if it doesn't work" | The first fix sets the pattern for the session. After the first symptom-fix, every subsequent attempt becomes "fix something else", not "investigate". Do the investigation first. |
-| "I've already tried 3 fixes, one more should do it" | 3+ failed fixes on the same surface is a signal that the **architecture is wrong**, not that the next fix is right. Stop and question the pattern (Phase 4 §5). A 4th fix on bad architecture creates a 5th bug; the loop only terminates at a refactor or a redesign. |
+| "I've already tried 3 fixes, one more should do it" | Three failed fixes require the architecture-suspicion gate (Phase 4 §5). Stop by default; one fourth attempt requires both separate evidence-linked debug-mode analyst fields. A failed fourth attempt ends the loop. |
 | "Test fails locally, I'll skip Phase 2 (pattern analysis) since I know the code" | Familiarity is the failure mode. The "I know this code" agent skips reading the *working* sibling implementation and reinvents a bug the sibling already solved. Always read a working reference end-to-end before fixing the broken one. |
 | "Logging at boundaries is overkill, I'll just read the source" | Multi-component systems (CI → build → sign; API → service → DB; controller → middleware → handler) fail at boundaries, not inside components. Source-reading without boundary logging produces false hypotheses about which component is at fault. |
 | "Symptom is intermittent, must be flakiness" | "Flakiness" is the label agents give to bugs they did not investigate. ≥95% of "flaky test" diagnoses turn out to be reproducible race conditions or environment leaks once instrumented. Skip the flakiness label and investigate. |
@@ -66,6 +66,10 @@ Do **not** skip when:
 - The user is impatient — systematic is still faster than thrashing
 - You are tired — exhaustion is not a justification
 
+## Analyst contract
+
+Every analyst packet carries `Caller: ywc-debug-rootcause` and `analysis_mode=debug_hypotheses` plus bounded evidence. Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode. Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`. An analyst refusal consumes the existing dispatch budget; preserve the caller's original gate and surface the missing evidence instead of re-dispatching or falling through. The analyst returns inline advice and never writes the caller's report or runs probes. Unavailable delegation uses the documented inline path; unavailable live runtime evidence is `UNVERIFIED — instruction contract only`.
+
 ## The Four Phases
 
 Complete each phase before proceeding to the next.
@@ -74,15 +78,16 @@ Complete each phase before proceeding to the next.
 
 Before proposing **any** fix:
 
+0. **Establish the smallest feedback loop first.** Use a focused test, build check, script or bounded manual reproduction. Record `Feedback loop`, `Catches`, `Misses`, and the observed failure before any fix. If automated reproduction is unavailable, record manual evidence and constraints; do not fabricate RED or claim execution PASS. Read-only analyst advice is not a reproduced failure.
 1. **Read error messages carefully.** Read the full stack trace, every line. Note file paths, line numbers, error codes. Errors often contain the exact name of the missing thing.
-2. **Reproduce consistently.** Run the failing case until you can predict the outcome before pressing enter. If you cannot reproduce, gather more data — never propose a fix for a non-reproducible bug.
+2. **Reproduce consistently.** Run the minimal feedback loop until its result is predictable. If reproduction is unavailable, retain the manual evidence and constraints from step 0, gather the missing data and do not propose a speculative fix.
 3. **Check recent changes.** Run `git log --oneline -20`, `git diff HEAD~1`, check dependency bumps, environment changes, config changes since the last known-good state.
 4. **Add diagnostic instrumentation at component boundaries.** For multi-component systems, the failure is almost always at a boundary, not inside a component. Log what each component receives and what it emits. Run once to gather evidence. **Read the evidence before forming a hypothesis.**
 5. **Trace data flow upstream.** Where does the bad value originate? What called the failing function with that value? Keep tracing until the *origin* is found; fix at the origin, not at the symptom.
 
 Phase 1 exit condition: you can answer in one sentence **what** is wrong and **why** it is happening. If either answer is fuzzy, continue Phase 1.
 
-When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent `ywc-root-cause-analyst` pass. Send only a bounded packet: failure symptom, timeline, stack trace or logs, recent diff, rejected hypotheses, relevant code snippet, and current candidate cause. Ask for `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>` plus a ranked top-3 hypothesis list with evidence-for / evidence-against per item. If no delegation tool is available, continue the inline procedure above; do not attempt tool-specific named-agent syntax from another runtime.
+When local evidence cannot produce a confident initial hypothesis and the current Codex session has an available subagent/delegation tool, request at most one independent `ywc-root-cause-analyst` pass. Send `Caller: ywc-debug-rootcause`, `analysis_mode=debug_hypotheses`, and only a bounded packet: failure symptom, timeline, stack trace or logs, recent diff, rejected hypotheses, relevant code snippet, and current candidate cause. Ask for `Status: <DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT>` plus ranked, falsifiable hypotheses (3–5 when evidence supports that many; fewer evidence-backed candidates are valid, never padded) with evidence-for / evidence-against and confidence per item. Validate the analyst contract before consuming advice. If no delegation tool is available, rank the same evidence-backed candidates inline; do not attempt tool-specific named-agent syntax from another runtime.
 
 ### Phase 2: Pattern Analysis
 
@@ -98,12 +103,10 @@ Phase 2 exit condition: a concrete diff between the broken and working version, 
 
 Apply the scientific method.
 
-1. **Form a single hypothesis.** Write it down in the shape: "X is the root cause because Y; if I change Z minimally, the test should pass." Vague hypotheses do not survive Step 2.
-2. **Test the smallest possible change.** Change one variable. Do not bundle "while I'm here" edits.
-3. **Verify the result.**
-   - Pass → proceed to Phase 4.
-   - Fail → form a **new** hypothesis. Do **not** layer another fix on top of the failed one.
-4. **Stop and admit when stuck.** If you have run two hypotheses and both failed, the model of the system is wrong. Read more before forming a third hypothesis. After 3+ failed fixes on the same surface, fire the **architecture-suspicion gate**: when a subagent/delegation tool is available, request one independent analyst pass with the bounded packet plus the failed-fix log. The analyst returns either "architecture is wrong — route to architecture redesign with [framed decision]" or "fix harder — next surgical attempt is [specific change]" — never an ambiguous verdict. Without delegation support, stop and surface the architectural concern to the user instead of attempting a 4th fix.
+1. **Rank 3–5 falsifiable candidate hypotheses** after reproduction and pattern analysis, each with evidence for and against. When evidence supports fewer than three, rank only the evidence-backed candidates and never pad the list: a single evidence-backed candidate is enough to proceed. Return `NEEDS_CONTEXT` with the highest-information probe only when no candidate is evidence-backed. Show the ranking before testing; non-interactive execution selects the highest-ranked candidate without waiting.
+2. **Test one hypothesis at a time.** State "X is the root cause because Y; minimal change Z should fix it." Change one variable per experiment. Do not layer a new fix on a failed one.
+3. **Update the ranking from evidence.** Pass → Phase 4; fail → reject or refine the hypothesis and record the result. After two rejected hypotheses, re-investigate before testing a third. A reverted falsification experiment is not a failed fix; count an attempted fix when it fails to resolve the confirmed reproduction or introduces a regression.
+4. **Stop after three failed fixes on the same surface.** The architecture-suspicion gate may request one independent analyst pass, when delegation is available, using `Caller: ywc-debug-rootcause`, `analysis_mode=debug_hypotheses`, the bounded packet, ranked hypotheses and failed-fix log. Require `Fix #4 signal: fix harder` and `Next fix worth attempting: <one concrete minimal change>`. Allow exactly one final fourth fix only when both fields are present, separate, evidence-linked, and returned for the valid debug pair. One missing or unlinked field, a different mode, malformed output or unavailable analyst keeps the stop in force. After a failed fourth fix, stop; do not reset the counter or attempt a fifth fix. Route architectural concerns to `ywc-architect`; the analyst recommends review and never makes the final architecture decision.
 
 Phase 3 exit condition: a passing test that confirms the hypothesis, with one and only one variable changed.
 
@@ -122,7 +125,7 @@ Fix the root cause, not the symptom.
    - Each fix requires "massive refactoring" to implement cleanly.
    - The pattern itself does not match the requirement.
 
-   At this point, **do not attempt fix #4**. Surface the situation to the user with: (a) the three attempted fixes and why each failed, (b) the architectural concern, (c) a proposed redesign or pattern change. Continuing to fix is not perseverance — it is sunk-cost thrashing. See [references/architectural-stop-signals.md](references/architectural-stop-signals.md) for the surface format.
+   Without both validated debug-mode analyst fields from Phase 3 step 4, **do not attempt fix #4**. Surface the situation to the user with: (a) the three attempted fixes and why each failed, (b) the architectural concern, (c) a proposed redesign or pattern change. The exception permits one minimal attempt only, followed by the original verification gate. See [references/architectural-stop-signals.md](references/architectural-stop-signals.md) for the surface format.
 
 Phase 4 exit condition: regression test passes + red-green-red cycle verified + `ywc-verify-done` block surfaced.
 
@@ -139,7 +142,7 @@ If you catch yourself doing any of these, stop and restart from Phase 1.
 | "Probably X, let me fix that" | "Probably" is forbidden by `ywc-verify-done`. State the hypothesis precisely or do not state it. |
 | "Pattern says X but I'll adapt differently" | Partial understanding of a pattern guarantees a bug. Read it completely before adapting. |
 | "Here are the main problems: [list of fixes]" | Listing fixes without investigation = guessing in bulk. |
-| "One more fix attempt" (after 2+) | 3+ attempts = architectural problem. Stop and discuss, do not fix again. |
+| "One more fix attempt" (after 2+) | Three failed fixes require the architecture gate; only both validated debug-mode fields permit one final attempt. |
 | Each fix surfaces a new defect elsewhere | The pattern is wrong, not the latest line. |
 
 ## Output Format
@@ -150,7 +153,9 @@ Surface the investigation in this shape, in order:
 ### Investigation summary
 
 - **Symptom:** <one-line observed behavior>
-- **Reproduction:** <exact command(s)>
+- **Reproduction:** <exact command(s), or manual evidence and constraints>
+- **Feedback loop / Catches / Misses:** <minimal observation and limits>
+- **Ranked candidates:** <1–5 evidence-backed falsifiable hypotheses (3–5 when evidence supports), evidence for/against>
 - **Root cause (Phase 1):** <one-sentence why, with file:line citation>
 - **Working reference (Phase 2):** <path:line of a working sibling, if applicable; "N/A — no sibling pattern exists" otherwise>
 - **Hypothesis (Phase 3):** "<X is the root cause because Y. Minimal change Z should fix it.>"
@@ -175,13 +180,13 @@ When the investigation reveals an architectural concern (Phase 4 §5), the outpu
 Before concluding the investigation, verify:
 
 - [ ] Phase 1 produced a one-sentence root-cause statement with `file:line` citation
-- [ ] Reproduction command is concrete and deterministic (not "sometimes it fails")
+- [ ] Minimal feedback loop, observed failure and catches/misses recorded; manual evidence and constraints named when automation is unavailable
 - [ ] Phase 2 found at least one working reference, OR explicitly recorded `N/A — no sibling pattern exists`
 - [ ] Hypothesis (Phase 3) is in the shape "X is the root cause because Y; minimal change Z fixes it"
 - [ ] The fix changed exactly one variable; no bundled cleanup
 - [ ] A regression test was added before the fix and verified red-green-red
 - [ ] `ywc-verify-done` block was surfaced for the final passing test
-- [ ] If 3+ fixes failed on the same surface, the investigation halted and surfaced an architectural concern instead of attempting a 4th fix
+- [ ] After three failed fixes, stop unless both validated debug-mode fields permit one fourth fix; stop after a failed fourth fix
 
 ## Common Mistakes
 

@@ -34,3 +34,7 @@ Natural-language triggers are defined in [SKILL.md](./SKILL.md).
 - [Korean](./README.ko.md)
 - [Chinese (Simplified)](./README.zh.md)
 - [Spanish](./README.es.md)
+
+## Existing branches and PR worktrees
+
+`--worktree 123` pins a same-repository open PR and head. Use exact fetch/fast-forward, guard cwd/root/branch before each operation with one re-entry, and stop mutations after required failure. Only created worktrees receive `--keep-branch` cleanup guidance.

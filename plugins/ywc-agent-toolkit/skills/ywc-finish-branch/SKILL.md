@@ -306,6 +306,14 @@ For `--mode local-merge`: already handled inside Step 5's command sequence (whic
 
 For all other modes: skip. The branch stays alive for the user or caller to handle.
 
+**Remote deletion guard**: normal delivery removes a remote branch through `gh pr merge --delete-branch`. A separate user-requested remote deletion requires all guards below; these are instruction contracts, not enforced hooks.
+
+1. Bind the caller's repository, branch and intended base, and verify `origin` belongs to that same repository; missing or mismatched ownership/input/output/status returns `NEEDS_CONTEXT`. Validate the branch with `git check-ref-format --branch "$branch"`; pass it only as a quoted argument, never shell source.
+2. Run `gh pr list --head "$branch" --state open --json number` in the bound repository. Require a successfully parsed JSON array; only a successful, parseable, empty result allows deletion. An open PR means stop and report with zero deletions; command failure is `BLOCKED`, malformed/ambiguous evidence is `NEEDS_CONTEXT`.
+3. Read the exact current remote ref with `git ls-remote origin "refs/heads/$branch"`. Require one exact matching ref and a valid object ID. An absent ref is already absent, not a new deletion; transport failure or ambiguous output stops cleanup.
+4. If deletion relies on a merge, require a row from `gh pr list --head "$branch" --state merged --json number,baseRefName,headRefOid` whose `baseRefName` is the intended base and `headRefOid` equals the current remote tip. A different base or tip means zero deletions. Never infer a merge from `git branch -r --merged HEAD`, or from `gh pr view <branch>` returning only one of several PRs.
+5. Protect the final delete with a tip-bound lease (`git push --force-with-lease="refs/heads/$branch:$remote_tip" origin ":refs/heads/$branch"`). This lease authorizes deletion of that exact tip only; a concurrent push must reject the delete. A failed or uncertain result stops subsequent mutation; reconcile the exact remote ref before any retry and rerun every guard. Never turn partial cleanup into `DONE`.
+
 **Worktree prune (when caller used a worktree)** — if the caller created a per-task worktree (`ywc-parallel-executor` does this), the post-cleanup prune is delegated to the installed `ywc-worktrees` skill:
 
 ```bash
@@ -327,6 +335,7 @@ ywc-worktrees --mode prune --task-name <task-name>
 - Merge: <commit-sha-or-"deferred">
 - Mark Complete commit: <commit-sha-or-"skipped">
 - Local branch: <"deleted"|"preserved">
+- Remote branch: <"deleted"|"retained"|"already-absent"|"uncertain">
 
 ### Verification
 - Post-merge gate: <passed|skipped|failed>
@@ -342,8 +351,8 @@ ywc-worktrees --mode prune --task-name <task-name>
 |---|---|
 | `DONE` | All applicable steps for the chosen mode succeeded; verification gates passed |
 | `DONE_WITH_CONCERNS` | Delivery succeeded but with caveats (e.g., advisor budget exceeded for the bot-polling loop, or `--defer-push` was set and the caller now owns the push) |
-| `BLOCKED` | Cannot proceed — merge conflict, CI failure unfixable in 2 attempts, push rejected, or post-merge verification failed |
-| `NEEDS_CONTEXT` | One of `--branch`, `--base-branch`, `--task-name`, `--tasks-dir`, or `--mode` was missing or invalid; no work was performed |
+| `BLOCKED` | Cannot proceed — merge conflict, CI failure unfixable in 2 attempts, push rejected, post-merge verification failed, or a remote deletion guard command failed or the final lease-protected delete failed or had an uncertain result (report `Remote branch: uncertain` — the remote ref may already have changed) |
+| `NEEDS_CONTEXT` | One of `--branch`, `--base-branch`, `--task-name`, `--tasks-dir`, or `--mode` was missing or invalid; no work was performed. A remote deletion guard that finds missing or ambiguous evidence before the delete is attempted also returns this, with `Remote branch: retained` |
 
 ## Validation
 

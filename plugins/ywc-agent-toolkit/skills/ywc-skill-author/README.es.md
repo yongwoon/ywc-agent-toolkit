@@ -61,3 +61,7 @@ Consulte `SKILL.md` y los cuatro documentos de referencia en `references/` para 
 - `references/rationalization-defense-cookbook.md` — guía para escribir la tabla de Defensa de Racionalización.
 - `references/description-anti-patterns.md` — anti-patrones a evitar en el campo de descripción.
 - `references/cross-skill-graph.md` — gráfico de dependencias y referencias cruzadas para las 18 habilidades ywc-*.
+
+## Contrato de comentarios de autoría
+
+Aplica cinco Writing Levers: elimina instrucciones inertes, expresa objetivos positivos, antepone condiciones/acciones, define un cierre observable y enlaza reglas canonical. Conserva los límites de seguridad y auditoría de solo lectura.

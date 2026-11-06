@@ -52,6 +52,10 @@ dispatched at runtime.
 
 ## Root Maintenance
 
-This skill ships identical content to the claude-code and codex-skill roots
-because worktree management is a universal feature. There is no auto-sync (the
-sync hook was removed); each root is maintained independently.
+Claude Code and Codex worktree instructions are maintained independently in
+their source roots. Cross-platform synchronization is not automatic; the Codex
+package is generated from the Codex source.
+
+## Existing branches and PR worktrees
+
+`create` accepts exactly one of `--base-branch` or `--existing-branch <H>`. Existing heads use exact local/origin refs; absence, transport failure, checked-out, dirty and locked states are distinct refusals.

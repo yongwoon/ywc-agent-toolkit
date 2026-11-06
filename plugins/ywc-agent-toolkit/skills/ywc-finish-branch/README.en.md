@@ -90,3 +90,7 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 - **Upstream**: `ywc-sequential-executor` (replaces its Steps 5–8), `ywc-parallel-executor` (replaces the merge + mark-complete portion of Step 4e–4f)
 - **Internal delegation**: `ywc-create-pr` (Step 2), `ywc-handle-pr-reviews` (Step 4 bot polling loop)
+
+## Operational safety
+
+Separate remote deletion requires a valid quoted branch and a successful, parsed empty open-PR lookup. A merge-based deletion also requires the intended base and current remote tip to match; an exact-tip lease rejects concurrent pushes.

@@ -8,7 +8,7 @@ description: >-
 
 **Announce at start:** "I'm using the ywc-merge-dependabot skill to merge Dependabot PRs with CI verification — sequential by default, or parallel-auto (ecosystem-lane scheduling) when requested."
 
-Safely merge Dependabot PRs with CI verification, conflict resolution, and clear reporting.
+Safely merge Dependabot PRs with CI verification, conflict resolution, and clear reporting. Metadata prefers explicit invocation (`allow_implicit_invocation: false`); it is not a runtime enforcement guarantee.
 
 ## Rationalization Defense
 
@@ -95,6 +95,34 @@ For each PR, run these checks **before** attempting to merge. If any check fails
 | **Major version upgrade** | PR bumps a major version (e.g. 2.x → 3.x), which risks breaking changes | `Skipped (Major version upgrade)` |
 | **CI status** | Required CI checks have not all passed | `Failed (CI not passing)` |
 
+### Dockerfile FROM detection
+
+Fetch the diff successfully, then match changed `FROM` lines only inside Dockerfile hunks. A README or shell-file `FROM` line alone does not trigger the skip. Recognize `Dockerfile*` and `*.dockerfile` basenames in nested directories, added/deleted files and multi-stage builds; match the instruction case-insensitively. A failed diff query is unresolved, never a clean result. Unsupported quoted paths/parser failure also remain unresolved and block that PR's merge.
+
+The following runnable recipe takes the already selected numeric PR as `$pr`. Exit 0 means skip for Dockerfile FROM change; 1 means a successful scan found none; any other exit is unresolved. Capture the exit explicitly rather than treating every nonzero as no match.
+
+<!-- operational-safety:dockerfile-detector:start -->
+```bash
+patch=$(gh pr diff "$pr") || { printf '%s\n' 'UNRESOLVED: diff query failed' >&2; exit 2; }
+printf '%s\n' "$patch" | awk '
+  /^diff --git / { sawfile=1; docker=0; hunk=0; next }
+  !hunk && (/^--- / || /^\+\+\+ /) {
+    path=substr($0,5)
+    if (path == "/dev/null") next
+    if (path ~ /^"/) { bad=1; exit }
+    sub(/^[ab]\//,"",path); sub(/\t.*$/,"",path)
+    n=split(path,parts,"/")
+    if (parts[n] ~ /^(Dockerfile.*|.*\.dockerfile)$/) docker=1
+    next
+  }
+  /^@@ / { hunk=1; next }
+  docker && hunk && /^[+-][[:space:]]*[Ff][Rr][Oo][Mm][[:space:]]/ { found=1 }
+  NF { nonempty=1 }
+  END { if (bad || (nonempty && !sawfile)) exit 2; exit !found }
+'
+```
+<!-- operational-safety:dockerfile-detector:end -->
+
 To detect major version bumps, compare the version numbers in the PR title (Dependabot titles typically follow the pattern "Bump X from A to B"). A major bump means the leftmost non-zero version segment changed.
 
 ### 2.5. Ecosystem Grouping (parallel-auto mode only)
@@ -127,6 +155,16 @@ Ecosystem grouping (8 PRs eligible):
 ### 3. Merge Process
 
 Choose the flow based on the execution flag from Mode Selection. Both flows preserve the same safety contract — only the merge invocation and waiting strategy differ.
+
+### One polling deadline across chunks
+
+For every rebase/CI wait and the parallel lane polling session below, set one deadline at the start (`started_at + 1800` seconds). Each polling chunk is bounded by the lesser of that deadline and its tool time budget. Never recompute the original 1800-second deadline on chunk resume; sleeps and API timeouts must fit the remaining total budget. A completion response received at or after the deadline cannot turn that wait into success.
+
+Persist `deadline`, `active`, `lanes`, `status`, and `rebase_commented` (plus `rebase_intent`, below) together with the bound repository/invocation identity and pending PR head/CI run identity. For a sequential wait, `active` contains its one PR and `lanes` its pending queue. Acquire an exclusive per-repository/queue lock; a competing owner must stop before mutation. Save a complete snapshot by atomic replacement of a private state file under that serialized invocation owner after every chunk and before handoff; never evaluate state as shell source. Persistence failure is `BLOCKED`: retain the previous snapshot and stop subsequent merge/comment requests. Validate identity and state on resume; missing or malformed state returns `NEEDS_CONTEXT` without further merge/comment requests. An in-memory original deadline can reconstruct lost state only after reconciliation, never extend the budget.
+
+Only a successful rebase comment sets `rebase_commented[pr]`; persist that marker before another chunk. Because the process can end after GitHub accepts the comment but before the marker is saved, atomically persist a `rebase_intent[pr]` entry (with the pending PR head and a baseline of the PR's existing comment IDs) **before** sending the comment. On resume, an intent without a marker means the comment may already exist: list the PR's comments first and set the marker only if a matching `@dependabot rebase` comment whose ID is not in the baseline is found (an earlier run's comment never completes a new intent), and send only if none is. Reconcile an uncertain transport result against existing PR comments the same way before retrying, so an accepted comment is not duplicated. Reuse successful markers across retries. Rebase completion must be tied to the resulting head and its fresh CI run: stale green CI on the old head is not success.
+
+At `now < deadline`, a nonempty queue may save state and resume; a chunk boundary is not terminal success or failure. At `now >= deadline`, incomplete work is failed, never successful. Mark remaining PRs failed/stalled, disable their pending auto-merge, and report a disable failure as auto-merge possibly still enabled. Stop subsequent merge or mixed-queue advancement after timeout. A PR whose state is read as `MERGED` or `CLOSED` at or after the deadline is recorded with its actual outcome (`merged`, reported as `Merged`, or `closed`) rather than left `active` as `lane-stalled`; the wait itself still counts as timed out, so the next PR in its lane is never started. Empty queues succeed only after verified completion before the deadline. These polling instructions and the lane illustration are source/expected-trace contracts; no live polling helper is provided.
 
 #### 3a. Sequential Flow (default)
 
@@ -180,21 +218,31 @@ This sets the active PR to merge automatically as soon as its CI is green and th
 
 **Stage 2 — Poll active lanes and advance them:**
 
-Track each active PR's state until it reaches a terminal state. When an active PR merges, start the next PR from the same ecosystem lane. Use a single bounded loop (do not spin in tight retries):
+Track each active PR's state until it reaches a terminal state. When an active PR merges, start the next PR from the same ecosystem lane. Use a single bounded loop (do not spin in tight retries). The following lane illustration omits state serialization and lane advancement; apply the complete chunk/state contract above, rather than executing it as a complete polling helper:
 
 ```bash
 # Wait up to 30 minutes total, polling every 60 seconds.
-deadline=$(( $(date +%s) + 1800 ))
+deadline=$(( $(date +%s) + 1800 ))  # first chunk only; load persisted value on resume
+chunk_deadline=$(( $(date +%s) + 50 ))  # clamp to deadline; yield within tool budget
 declare -A lanes
 lanes[npm]="101 105 107"
 lanes[github-actions]="203 209"
 active=(101 203)   # first PR from each non-empty lane
-declare -A status
-while [ ${#active[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ]; do
+declare -A status rebase_intent rebase_commented
+while [ ${#active[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ] && [ "$(date +%s)" -lt "$chunk_deadline" ]; do
   next=()
   for pr in "${active[@]}"; do
     pr_state=$(gh pr view "$pr" --json state --jq '.state' 2>/dev/null || echo UNKNOWN)
     merge_status=$(gh pr view "$pr" --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)
+    if [ "$(date +%s)" -ge "$deadline" ]; then
+      # Past the deadline: record the real terminal state, never start the next lane PR.
+      case "$pr_state" in
+        MERGED) status[$pr]="merged" ;;
+        CLOSED) status[$pr]="closed" ;;
+        *) next+=("$pr") ;;
+      esac
+      continue
+    fi
     if [ "$pr_state" = "MERGED" ]; then
       status[$pr]="merged"
       # Remove this PR from active. Then start the next unprocessed PR from
@@ -209,20 +257,27 @@ while [ ${#active[@]} -gt 0 ] && [ "$(date +%s)" -lt "$deadline" ]; do
     fi
   done
   active=("${next[@]}")
-  [ ${#active[@]} -gt 0 ] && sleep 60
+  # Bound each API call and clamp sleep to both remaining budgets.
+  left=$(( deadline - $(date +%s) ))
+  chunk_left=$(( chunk_deadline - $(date +%s) ))
+  [ "$chunk_left" -lt "$left" ] && left=$chunk_left
+  [ ${#active[@]} -gt 0 ] && [ "$left" -gt 0 ] && sleep $(( left < 60 ? left : 60 ))
 done
 
-# Any PR still in `active` after the loop is recorded as lane-stalled.
-for pr in "${active[@]}"; do
-  status[$pr]="lane-stalled"
-done
+# A chunk boundary saves all state, never marks failure by itself.
+if [ "$(date +%s)" -ge "$deadline" ]; then
+  for pr in "${active[@]}"; do
+    status[$pr]="lane-stalled"
+  done
+fi
+# Persist a complete snapshot per One polling deadline across chunks above.
 ```
 
 PRs that reach `MERGED` are recorded as `Merged`. PRs still in the `active` list after the deadline are recorded as `Failed (lane stalled)` so the user can investigate. Do not extend the deadline silently — if the lane genuinely needs more time, the user can rerun the skill.
 
 **Stage 3 — Final sequential pass for the mixed bucket:**
 
-After all active lanes have drained (Stage 2 returned), process the `mixed` group using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
+After all active lanes have drained successfully before the deadline (not merely because a chunk returned), process the `mixed` group using the same logic as Sequential Flow (3a). Mixed PRs run last because earlier merges may have changed the conflict surface they would land in.
 
 ### 4. Final Summary
 

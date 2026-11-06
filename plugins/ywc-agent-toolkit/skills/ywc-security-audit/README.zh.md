@@ -48,3 +48,7 @@
 - [英语](./README.en.md)
 - [日语](./README.ja.md)
 - [韩语](./README.ko.md)
+
+## 操作安全
+
+仅在各 checklist row 的条件满足时调整 severity。仅 internal-only 不允许降级；item 2 始终为 Critical。

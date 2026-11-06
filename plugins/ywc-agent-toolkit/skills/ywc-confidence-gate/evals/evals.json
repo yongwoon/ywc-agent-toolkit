@@ -1,7 +1,7 @@
 {
   "skill_name": "ywc-confidence-gate",
   "description": "Regression scenarios for deterministic confidence scoring, weakest-dimension reporting, and refusal to upgrade incomplete evidence.",
-  "last_updated": "2026-06-23",
+  "last_updated": "2026-11-05",
   "evals": [
     {
       "id": 1,
@@ -64,6 +64,39 @@
         "Inventing test output.",
         "Upgrading confidence because the user requested it."
       ]
+    },
+    {
+      "id": 4,
+      "name": "analyst-valid-mode",
+      "prompt": "Use ywc-confidence-gate with an available read-only analyst and bounded causal evidence.",
+      "expected_behavior": [
+        "Dispatch Caller: ywc-confidence-gate and analysis_mode=confidence_root_cause.",
+        "Validate Status/Summary/Finding counts and matching Analysis mode before consuming advice.",
+        "Retain the caller decision gate; analyst returns inline advice only."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 5,
+      "name": "analyst-refuses-invalid-contract",
+      "prompt": "The analyst packet has an omitted or unknown caller/mode, a cross-paired valid mode, or a malformed output envelope.",
+      "expected_behavior": [
+        "Return NEEDS_CONTEXT; no inference, mode fallthrough or repeated dispatch.",
+        "Retain original caller gate and dispatch budget.",
+        "Record UNVERIFIED — instruction contract only without a live trace."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 6,
+      "name": "one-cause-and-spent-budget",
+      "prompt": "STOP root-cause dimension needs an advisor; supply one bounded candidate, then repeat with missing contrary evidence.",
+      "expected_behavior": [
+        "Exactly one cause candidate with evidence for and against; no ranked alternatives or 5 Whys.",
+        "Refusal consumes one advisor dispatch; hand off rather than re-dispatch.",
+        "Caller re-scores using evidence and retains original band thresholds."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
     }
   ]
 }

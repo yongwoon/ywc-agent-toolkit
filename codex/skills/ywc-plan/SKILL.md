@@ -20,7 +20,8 @@ This skill converts a rough idea, vague request, or partially-formed change desc
 
 | Flag | Type | Description |
 |---|---|---|
-| `--non-interactive` | flag | Skip interactive clarification prompts in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. |
+| `--non-interactive` | flag | Skip interactive clarification prompts in Step 1. If any anchor is missing, fill with defaults: Out of Scope = `"nothing explicitly excluded"`, Done When = `"all tasks merged and ywc-impl-review returns DONE"`. Also suppress automatic `ywc-spec-ready`; print the manual handoff instead. |
+| `--no-converge` | flag | Suppress automatic `ywc-spec-ready` for a fresh Medium/Large spec and print the manual handoff instead. Small and Re-plan paths do not run automatic readiness regardless. |
 | `--update-spec <path>` | string | Path to an existing spec file. Activates Re-plan Mode (Step 4c). Must be used with `--failure-context`. Mutually exclusive with normal spec generation. |
 | `--failure-context <text>` | string | The "Fix Priority" section text from `ywc-impl-review`. Used together with `--update-spec` to identify which parts of the spec need amendment. |
 | `--output <path>` | string | Explicit output path for the generated spec or plan (e.g., `--output docs/ywc-plans/agentic-iteration-1.md`). When omitted, defaults to `./plan.md` (Small) or `docs/ywc-plans/<slug>.md` (Medium/Large). |
@@ -359,19 +360,13 @@ Output this block first:
 ✅ Spec drafted: <path>
 ```
 
-Then ask the user (skip when `--non-interactive` is set):
+After writing a fresh Medium/Large spec, invoke `ywc-spec-ready --spec <path>` exactly once by default, using the path just written. Do not invoke it when `--no-converge` or `--non-interactive` is set, or when `<path>` is outside `docs/ywc-plans/` (for example a custom `--output docs/specs/feature.md`), because `ywc-spec-ready` rejects spec paths outside that root unless the repository documents another spec directory. In any of these suppressed cases, print the manual handoff:
 
-> spec 초안이 완성됐습니다. `ywc-spec-ready`를 실행해서 자동으로 검증·수렴 루프(Critical/Warning 해소 → DONE)를 돌릴까요?
-> - **y** → `ywc-spec-ready <path>` 를 지금 실행합니다.
-> - **n** → 아래 단계를 수동으로 진행해 주세요:
->   1. `ywc-spec-validate --spec <path>`
->   2. (검토 통과 후) `ywc-task-generator <path>`
->   3. (task 생성 후) `ywc-sequential-executor` 또는 `ywc-parallel-executor`
+1. `ywc-spec-validate --spec <path>`
+2. (after review passes) `ywc-task-generator <path>`
+3. (after task generation) `ywc-sequential-executor` or `ywc-parallel-executor`
 
-If the user responds **y** (or equivalent affirmative), invoke `ywc-spec-ready <path>` immediately.
-If the user responds **n**, skips the prompt, or `--non-interactive` is set, do not proceed further — the three manual steps above are the guide.
-
-The `ywc-spec-ready` prompt is an opt-in shortcut, not automatic execution. The user decides the next action — this skill is the planner, not the executor. Use the bounded Suggestion owner policy in `ywc-spec-ready`: explicit apply/defer wins, otherwise one amendment/revalidation when needed; residual advisory Suggestions alone do not create another prompt or block a valid handoff.
+If readiness returns verified `DONE`, report it and print the next-step handoff using the spec path just written (`ywc-spec-ready --spec` updates that file in place and emits no `Artifact` field without `--artifact-profile agentic`); do not invoke task generation. Propagate a valid non-`DONE` terminal status unchanged and stop, or return `BLOCKED` for invalid/missing status. The fresh Medium/Large path stops after this single readiness call and never invokes an executor. Small and Re-plan paths do not invoke automatic readiness. Use the bounded Suggestion owner policy in `ywc-spec-ready`: explicit apply/defer wins, otherwise one amendment/revalidation when needed; residual advisory Suggestions alone do not create another prompt or another readiness pass, and do not block a valid handoff.
 
 ### Agentic artifact profile
 
@@ -381,6 +376,8 @@ When `--artifact-profile agentic` is present, reject `--output` before planning.
 - Medium/Large: `docs/ywc-plans/YYYYMMDD-<slug>.md`
 
 `YYYYMMDD` is the run date and `<slug>` is the planner's sanitized request slug. Do not use `plan.md`, reconstruct a basename, inspect `--output`, scan prose, or recover a path from a raw response. Direct calls without the profile keep their existing output behavior.
+
+The agentic caller passes `--no-converge` so it can verify this Result before owning the single subsequent `ywc-spec-ready` call. The artifact-profile Result remains exactly as specified below.
 
 On a successful agentic run, emit exactly one producer Result block and no additional fields:
 
@@ -428,7 +425,8 @@ Before declaring the skill's task complete, verify:
 - [ ] Output file written at a concrete path (no `<placeholder>` slugs)
 - [ ] Out of Scope is non-empty (use `N/A — none identified` if truly none)
 - [ ] Handoff message printed verbatim with the file path filled in
-- [ ] Did not auto-execute downstream — only invoked `ywc-spec-ready` if the user explicitly answered **y** to the opt-in prompt (or skipped the prompt when `--non-interactive` is set)
+- [ ] A fresh Medium/Large spec invoked `ywc-spec-ready --spec <path>` exactly once unless `--no-converge` or `--non-interactive` was set; suppressed, Small, and Re-plan paths made zero automatic readiness calls
+- [ ] The planner did not invoke task generation or an executor
 - [ ] If scale = Medium/Large, the spec's **Global Constraints** section is populated from Step 2 findings (or `N/A` after active consideration)
 - [ ] If the Small plan touches ≥2 files sharing a function/type signature, an **Interfaces** block declares each side's exact signature
 
@@ -444,5 +442,5 @@ Before declaring the skill's task complete, verify:
 
 - **Upstream**: `ywc-tech-research` (when technology choice is unsettled before planning)
 - **Downstream (Small path)**: `ywc-code-gen`, `ywc-sequential-executor`
-- **Downstream (Medium/Large path)**: `ywc-spec-ready` (auto-converge shortcut) or `ywc-spec-validate` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`
+- **Downstream (Medium/Large path)**: fresh specs invoke `ywc-spec-ready --spec <path>` once by default (suppressed by `--no-converge` / `--non-interactive`); after verified `DONE`, proceed to `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor`. Suppressed paths use `ywc-spec-validate` before task generation.
 - **Pairs with**: `ywc-product-review` (run before `ywc-plan` when business framing is unclear), `ywc-project-docs` (run after if `docs/` set is missing)

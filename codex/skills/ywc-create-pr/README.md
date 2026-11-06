@@ -8,6 +8,7 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 
 ### 주요 특징
 
+- 기능별 무엇/적용 위치/의도를 근거에 따라 작성하고, endpoint 또는 route에 연결된 요청·응답·인증·상태 계약 변경에만 Method+Path API 표를 추가합니다. 내부 리팩터링은 제외하며 template과 기존 PR update의 Step 7 skip을 유지합니다.
 - **Base Branch 자동 감지**: `develop` → `main` → `master` 순으로 자동 결정
 - **Security Check**: `.env`, `*.key`, `*.pem` 등 민감 파일 감지 및 경고
 - **CI Check (Pre-push Validation)**: Push 전에 lint, format, typecheck, test 등을 로컬에서 실행하여 CI 실패를 사전에 방지

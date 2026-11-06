@@ -44,7 +44,8 @@ When tempted to skip a step, check this table first:
 | `--mode` | `<mode>` | `--mode create` | One of `create`, `audit`, `prune`, `resolve`. See [Modes](#modes). |
 | `--task-name` | `<task-name>` | `--task-name 000001-010-db-create-users` | The task this worktree belongs to. Required for `create` and `prune`; optional for `audit`. |
 | `--branch` | `<branch-name>` | `--branch feature/000001-010-db-create-users` | The branch to associate with the worktree. Required for `create`; optional for `prune` (defaults to `feature/<task-name>`). |
-| `--base-branch` | `<branch-name>` | `--base-branch develop` | The starting point for the new branch. Required for `create` (no default). |
+| `--base-branch` | `<branch-name>` | `--base-branch develop` | Starting point for a new branch; required for `create` only without `--existing-branch`. |
+| `--existing-branch <H>` | existing head | `--existing-branch feature/123-fix` | Create-only: use local `H` or its exact `origin` ref; `--branch` must equal `H`. |
 | `--root` | `<path>` | `--root .worktrees` | Fallback worktree root when the project has neither `.worktrees/` nor `CLAUDE.md` `worktree_root`. Project-level configuration wins over this value. |
 | `--expect` | `<task1,task2,...>` | `--expect 000001-010,000001-020` | (Audit only) Comma-separated list of task names that should currently have a worktree. Any extra or missing worktree fails the audit. |
 | `--force` | flag | | (Prune only) Pass `--force` to `git worktree remove` even if the worktree is dirty. Use only when the caller has confirmed the worktree's contents are disposable. |
@@ -55,11 +56,13 @@ When tempted to skip a step, check this table first:
 | Mode | Reads | Writes | Use case |
 |---|---|---|---|
 | `resolve` | `.worktrees/` presence, CLAUDE.md `worktree_root`, `--root` | nothing | Caller wants to know where a worktree would land before committing to create. Returns the resolved path on stdout. |
-| `create` | resolved root + `--task-name` + `--branch` + `--base-branch` | `git worktree add` | Per-task worktree creation. Called by `ywc-parallel-executor` Step 4 for each in-wave task. |
+| `create` | resolved root + `--task-name` + `--branch` + exactly one base/existing flag | `git worktree add` | Per-task worktree creation. Called by `ywc-parallel-executor` Step 4 for each in-wave task. |
 | `audit` | resolved root contents + `--expect` (optional) | nothing (read-only) | Pre-flight or wave-end audit. Reports stale, leaked, or unexpected worktrees. |
 | `prune` | resolved root + `--task-name` + optional `--branch` | `git worktree remove` + local branch delete or preserve + `git worktree prune` | Post-merge cleanup. Called by `ywc-finish-branch` Step 5/8 and `ywc-parallel-executor` Step 4g. |
 
 Modes are mutually exclusive — `--mode` takes exactly one value. The caller chooses the mode based on the lifecycle stage; this skill does not infer.
+
+For create, `--base-branch` and `--existing-branch` are mutually exclusive and exactly one is required. With no existing-branch flag, preserve existing new-branch creation. Treat every argument as literal data; owner/input/output/status mismatch returns `NEEDS_CONTEXT` before mutation.
 
 ## Priority Resolution
 
@@ -84,12 +87,13 @@ No side effects. Safe to call from `--dry-run` paths in upstream skills.
 
 ### `--mode create`
 
-1. Run `--mode resolve` internally to get the worktree root.
+1. Run `--mode audit` before creation; stop on unexpected findings, then run `--mode resolve` internally to get the worktree root.
 2. Verify the target path `<root>/<task-name>` does not already exist. If it does, exit 1 with a descriptive error — never overwrite.
-3. Run `git worktree add <resolved-path> -b <branch> <base-branch>`.
-4. Verify the worktree was registered: `git worktree list --porcelain | grep <resolved-path>` returns a row.
-5. Print the resolved worktree path on stdout for the caller to capture.
-6. Exit 0 on success.
+3. For a new branch, validate the quoted branch/base with `git check-ref-format --branch`, resolve a commit at the exact local base ref or exact `origin` base ref, and run `git worktree add <resolved-path> -b <branch> <base-start-point>`. Missing/invalid/unreachable input is `NEEDS_CONTEXT`; other Git failures are `BLOCKED`.
+4. With `--existing-branch`, Read [references/existing-branch.md](references/existing-branch.md). It defines local/exact-origin lookup, checked-out/dirty/locked refusal, and the runnable command recipe; never replace the existing branch or infer a different remote.
+5. Verify the worktree was registered: `git worktree list --porcelain | grep <resolved-path>` returns a row.
+6. Print the resolved worktree path on stdout for the caller to capture.
+7. Exit 0 on success.
 
 Error handling: if `git worktree add` fails (locked, branch already exists elsewhere, etc.), surface the exact git error and exit 1. Never retry; the caller decides whether the failure is recoverable.
 
@@ -143,8 +147,8 @@ Use the statuses as follows:
 |---|---|
 | `DONE` | The requested mode completed and every required verification passed. |
 | `DONE_WITH_CONCERNS` | The mode completed but audit found drift, prune skipped a dirty worktree, or cleanup needs follow-up. |
-| `BLOCKED` | Git command failure, unsafe path, existing target path, locked worktree, missing branch, or permission issue prevents completion. |
-| `NEEDS_CONTEXT` | Required arguments are missing, such as `--task-name`, `--branch`, or `--base-branch` for the selected mode. |
+| `BLOCKED` | Git command failure, unsafe path, existing target path, locked worktree, transport failure, or permission issue prevents completion. |
+| `NEEDS_CONTEXT` | Required arguments are missing/invalid, create flags conflict, or an existing branch is absent locally and on the exact `origin` ref. |
 
 For `--mode resolve`, `Resolved path` may be `N/A` because only the root is
 requested. For `--mode audit`, list every drift, missing, or leaked worktree in
@@ -168,9 +172,9 @@ Before returning `DONE`, verify:
 
 | Mistake | Why it is wrong | Correct behavior |
 |---|---|---|
-| Calling `git worktree add` inline from the caller instead of `--mode create` | Bypasses the priority resolution chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback), so the worktree lands at an undocumented path that audit and prune tooling cannot find later. | Always invoke `--mode create` with `--task-name`, `--branch`, and `--base-branch`; let the skill resolve the root and register the worktree at `<root>/<task-name>`. |
+| Calling `git worktree add` inline from the caller instead of `--mode create` | Bypasses the priority resolution chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback), so the worktree lands at an undocumented path that audit and prune tooling cannot find later. | Always invoke `--mode create` with `--task-name`, `--branch`, and exactly one of `--base-branch` or `--existing-branch`; let the skill resolve the root and register the worktree at `<root>/<task-name>`. |
 | Calling `git worktree remove` directly to clean up after a merge | Removes the worktree but leaves the local `feature/<task-name>` branch behind and skips the `git worktree prune` of stale metadata, accumulating orphan branches and drift the audit will later flag as Leaked. | Use `--mode prune`, which runs `scripts/cleanup-worktree.sh` to remove the worktree, delete the local branch with `git branch -d`, prune metadata, and verify all three are gone. |
-| Passing `--keep-branch` for ordinary post-merge feature-branch cleanup | Preserving a task branch that should be deleted leaves stale local branches and can make audit output misleading. | Use `--keep-branch` only for callers such as non-aggregate sequential `--worktree` cleanup where the branch is an integration branch that intentionally survives. |
+| Passing `--keep-branch` for ordinary post-merge feature-branch cleanup | Preserving a task branch that should be deleted leaves stale local branches and can make audit output misleading. | Use `--keep-branch` for a retained sequential integration branch or a created PR review worktree whose open head must survive; delete ordinary merged task branches. |
 | Passing `--force` (or `git worktree remove --force`) to clear a worktree that still has uncommitted changes | The dirty-worktree refusal is the discipline that catches accidental deletion of in-progress work; forcing past it silently destroys unmerged commits or edits. | Leave `--force` unset by default. Only pass it after confirming the worktree's contents are disposable; otherwise commit or stash the work first. |
 | Skipping the Pre-flight `--mode audit` because the caller already chose `--mode create` | Stale metadata from a previous run makes the new `git worktree add` fail with a confusing "already registered" error, and a leaked worktree directory under the root collides with the new path. | Run `--mode audit` before any wave of creates so stale metadata and leaked worktrees are caught and pruned before the user-visible `add` failure. |
 | Reusing a worktree path that already exists instead of treating it as an error | A pre-existing `<root>/<task-name>` means either prior-run drift or a concurrent task is using it; reusing it silently corrupts whichever party is touching the path. | `--mode create` exits 1 when the target path exists — never overwrite. Resolve the collision (prune the stale one, or pick the correct task name) before retrying. |
@@ -179,6 +183,7 @@ Before returning `DONE`, verify:
 ## Integration
 
 - **upstream** — `ywc-parallel-executor` (Pre-flight `--mode audit`, Step 4 per-task `--mode create`, Step 4g `--mode prune`); `ywc-finish-branch` (Step 5/8 cleanup `--mode prune` when called from a parallel-executor context); `ywc-sequential-executor --worktree` (run worktree prune with `--keep-branch` for non-aggregate integration branches).
+- **conditional consumer** — `ywc-handle-pr-reviews --worktree` requests `--existing-branch`; it owns reuse/in-place selection and passes the pinned head unchanged.
 - **downstream** — none; this skill is a leaf operation. Callers consume its exit code and stdout.
 - **bundled scripts** — `scripts/audit-worktrees.sh` (audit), `scripts/cleanup-worktree.sh` (prune + local branch deletion). Both moved here from `ywc-parallel-executor/scripts/` via `git mv`, preserving history.
 

@@ -1,7 +1,7 @@
 {
   "skill_name": "ywc-debug-rootcause",
   "description": "Regression scenarios for evidence-first debugging, hypothesis ranking, and refusal to patch before root cause is identified.",
-  "last_updated": "2026-06-23",
+  "last_updated": "2026-11-05",
   "evals": [
     {
       "id": 1,
@@ -13,7 +13,7 @@
       },
       "expected_behavior": [
         "Starts by restating the observed failure and available evidence.",
-        "Ranks the top hypotheses with evidence for and against each.",
+        "Ranks 3–5 falsifiable hypotheses with evidence for and against each; selects one and changes one variable per experiment.",
         "Identifies test isolation or stale fixture state as the leading cause before proposing code changes."
       ],
       "anti_behavior": [
@@ -58,6 +58,59 @@
         "Blaming an individual.",
         "Skipping the prevention mechanism."
       ]
+    },
+    {
+      "id": 4,
+      "name": "analyst-valid-mode",
+      "prompt": "Use ywc-debug-rootcause with an available read-only analyst and bounded causal evidence.",
+      "expected_behavior": [
+        "Dispatch Caller: ywc-debug-rootcause and analysis_mode=debug_hypotheses.",
+        "Validate Status/Summary/Finding counts and matching Analysis mode before consuming advice.",
+        "Retain the caller decision gate; analyst returns inline advice only."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 5,
+      "name": "analyst-refuses-invalid-contract",
+      "prompt": "The analyst packet has an omitted or unknown caller/mode, a cross-paired valid mode, or a malformed output envelope.",
+      "expected_behavior": [
+        "Return NEEDS_CONTEXT; no inference, mode fallthrough or repeated dispatch.",
+        "Retain original caller gate and dispatch budget.",
+        "Record UNVERIFIED — instruction contract only without a live trace."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 6,
+      "name": "feedback-manual-evidence",
+      "prompt": "No automated reproduction is possible; bounded manual observations are supplied.",
+      "expected_behavior": [
+        "Record Feedback loop, Catches, Misses and the observed failure before any fix.",
+        "Record manual evidence and constraints; do not fabricate RED or test execution PASS."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 7,
+      "name": "fourth-fix-refusal",
+      "prompt": "Three failed fixes; only Fix #4 signal: fix harder is supplied, or both signals lack evidence.",
+      "expected_behavior": [
+        "Stop; no fourth attempt unless both separate fields are evidence-linked and from the valid debug pair.",
+        "Unavailable analyst, other mode or malformed response keeps stop in force."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
+    },
+    {
+      "id": 8,
+      "name": "fourth-fix-once",
+      "prompt": "Three failed fixes and a valid debug analyst response with both separate evidence-linked Fix #4 signal: fix harder and Next fix worth attempting: one concrete minimal change.",
+      "expected_behavior": [
+        "Allow exactly one final fourth fix changing one variable; verify through original regression gate.",
+        "After a failed fourth fix, stop; no fifth attempt or reset.",
+        "Route architecture concerns to ywc-architect; analyst makes no final architecture verdict."
+      ],
+      "evidence_kind": "instruction scenario; not live runtime evidence"
     }
   ]
 }

@@ -16,7 +16,7 @@
     {
       "id": 3,
       "prompt": "Just build the feature; no questions.",
-      "expected_output": "Does not treat speed as a waiver. It asks one consolidated question covering What, Why, Out of Scope, and Done When, then still requires design approval before handing off to ywc-plan. It does not jump directly to ywc-code-gen or an executor.",
+      "expected_output": "Checks repository-resolvable facts first, then asks only the earliest unresolved prerequisite needed for the next decision. It does not bundle What/Why/Out of Scope/Done When into one question or prefill user-owned answers. It preserves approach and detailed-design approval before the ywc-plan handoff.",
       "files": []
     },
     {
@@ -24,6 +24,27 @@
       "prompt": "The destination is known, but we need to track unresolved rollout decisions across multiple sessions. Which skill should handle that discovery state?",
       "expected_output": "Routes to ywc-wayfinder for the multi-session discovery map instead of keeping the request inside ywc-brainstorm. Distinguishes ordinary idea clarification from one active ticket discovery tracking.",
       "files": []
+    },
+    {
+      "id": 5,
+      "name": "inspect-existing-language-default-scopes-first",
+      "prompt": "I want to add a language-default feature to this repository. Before asking me anything, inspect whether language defaults and project/user scopes already exist, report the verified repository facts, then ask only the next user decision that the repository cannot answer.",
+      "expected_output": "Inspect the current repository first and report verified paths and supported behavior for any existing language-default configuration. Do not ask the user to restate facts already established in source. Ask exactly one remaining user-only prerequisite question and do not preselect its answer.",
+      "files": [
+        "codex/skills/ywc-brainstorm/SKILL.md",
+        "codex/skills/ywc-setup/SKILL.md"
+      ],
+      "source_id": "brainstorm-resolve-repository-facts-before-asking"
+    },
+    {
+      "id": 6,
+      "name": "defer-dependent-decisions-and-keep-approval-gate",
+      "prompt": "I want to build an onboarding assistant. The target users and purpose are not decided, and data retention and architecture depend on those choices. Ask your next question.",
+      "expected_output": "Ask exactly one question about the earliest unresolved prerequisite (purpose or target users). Do not bundle the other choice, ask dependent data-retention or architecture questions, prefill a recommendation, or present an approved design/handoff before the user answers. Do not hand off until the user explicitly approves the design.",
+      "files": [
+        "codex/skills/ywc-brainstorm/SKILL.md"
+      ],
+      "source_id": "brainstorm-ask-only-frontier-prerequisite"
     }
   ]
 }

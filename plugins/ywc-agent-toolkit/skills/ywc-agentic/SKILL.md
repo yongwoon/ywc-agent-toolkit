@@ -113,9 +113,9 @@ Skipped entirely in **Resume Mode**. In **Full Mode** (first iteration) and on *
 **Full Mode — first iteration:**
 
 1. Run the planner preflight immediately before the `ywc-plan` call. It validates **only planner-required inputs** — the goal and the run-level arguments the planner itself consumes. Do **not** validate `--mode`, `--lang`, `--suggestions`, or `--resume-disposition` here: Scale is unknown until `ywc-plan` returns, so those arguments belong to their own callees' preflights (see Staged preflight; a Small-scale `--non-interactive` goal must not be blocked on a `--mode` it will never use). In `--non-interactive` mode a missing planner-required input returns a bounded `NEEDS_CONTEXT` naming the exact argument/config key and invokes no callee. Never ask a question or invent a default.
-2. Invoke `ywc-plan` using its agentic-owned artifact profile, forwarding `--non-interactive` only when the orchestrator received it:
+2. Invoke `ywc-plan` with convergence disabled because this orchestrator owns the one readiness pass. Forward `--non-interactive` only when the orchestrator received it:
    ```text
-   ywc-plan [--non-interactive] --artifact-profile agentic
+   ywc-plan --no-converge [--non-interactive] --artifact-profile agentic
    ```
    Agentic accepts authority only from exactly one complete producer Result block:
    ```text

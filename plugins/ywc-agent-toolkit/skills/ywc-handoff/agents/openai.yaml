@@ -1,0 +1,7 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Save a safe temporary session handoff"
+  default_prompt: "Use $ywc-handoff to save a concise seven-section handoff from this conversation. The authorized aggregator alone creates a new owner-only file under the canonical temporary root; redact private data, never overwrite files, and stop if safe creation cannot be verified."
+policy:
+  # Prefer explicit invocation; advisory metadata only, runtime enforcement is unverified.
+  allow_implicit_invocation: false

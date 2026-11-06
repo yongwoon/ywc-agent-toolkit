@@ -5,12 +5,28 @@
       "id": 1,
       "prompt": "tasks/000001-010-api-users 작업을 병렬 실행하려고 해. base branch는 main이고 branch는 feature/000001-010-api-users야. worktree를 만들어줘.",
       "expected_output": "Resolve the worktree root using the documented priority chain, run an audit before creation, reject an existing target path instead of reusing it, execute create mode with the task name, branch, and base branch, verify git worktree registration, and return the resolved path. Do not bypass ywc-worktrees by inlining ad-hoc git worktree commands in the caller.",
-      "files": []
+      "files": [],
+      "source_id": "ywc-worktrees-01"
     },
     {
       "id": 2,
       "prompt": "parallel executor가 끝났어. 000001-010-api-users worktree를 정리하고 stale worktree가 없는지 확인해줘.",
       "expected_output": "Run prune mode for the exact task worktree, refuse unsafe paths outside the resolved root, remove the worktree, delete the local feature branch after release, run git worktree prune, verify path, metadata, and branch removal, then run audit mode to report any remaining drift. Do not use force unless explicitly requested and confirmed disposable.",
+      "files": [],
+      "source_id": "ywc-worktrees-02"
+    },
+    {
+      "id": 3,
+      "source_id": "local-fr9-existing-branch",
+      "prompt": "Create a worktree for existing branch feature/review, first local and then remote-only. Do not create a replacement branch.",
+      "expected_output": "Require branch equality and mutually exclusive base/existing flags. Use the exact local head if present; otherwise require exact origin head lookup and fetch before tracking creation. Distinguish absence NEEDS_CONTEXT from transport BLOCKED and preserve diagnostics.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "source_id": "local-fr9-producer-refusal",
+      "prompt": "Use --existing-branch with --base-branch, an unsafe branch, an existing target path, or a branch checked out in a dirty/locked worktree.",
+      "expected_output": "Refuse conflicting/invalid input before mutation; report checked-out, dirty, locked and missing/prunable states distinctly. Do not force, replace, retry or fall back to another remote.",
       "files": []
     }
   ]

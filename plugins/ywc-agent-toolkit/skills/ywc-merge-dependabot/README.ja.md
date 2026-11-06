@@ -98,3 +98,7 @@ ywc-merge-dependabot/
 - [ywc-create-pr](../ywc-create-pr/SKILL.md) — PR 作成
 - [ywc-handle-pr-reviews](../ywc-handle-pr-reviews/SKILL.md) — PR review comment 対応
 - [ywc-release-pr-list](../ywc-release-pr-list/SKILL.md) — Release PR list 生成
+
+## 運用の安全性
+
+Dockerfile diff hunk 内の変更された FROM のみ検出し、照会・解析の失敗は未解決として扱います。Rebase/CI polling は chunk 間で合計 1800 秒の deadline と完全な状態を維持し、timeout を失敗とします。明示呼び出しを優先する metadata は runtime 強制保証ではありません。

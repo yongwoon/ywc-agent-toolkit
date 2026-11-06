@@ -49,3 +49,13 @@
 - [한국어 (default)](./README.md)
 - [English](./README.en.md)
 - [日本語](./README.ja.md)
+
+## Analyst contract
+
+`Caller: ywc-confidence-gate` · `analysis_mode=confidence_root_cause`
+
+Caller와 analysis_mode를 명시합니다. 누락·unknown·mismatch는 추론 없이 `NEEDS_CONTEXT`이며, 응답의 Status → Summary → Finding counts → Analysis mode를 검증하고 기존 caller gate를 유지합니다.
+
+단일 cause candidate의 찬반 근거만 반환하며 ranked alternatives나 5 Whys를 추가하지 않습니다. Advisor 거부도 단일 dispatch budget을 소비하고 점수·band 재판정은 caller가 소유합니다.
+
+Live runtime: `UNVERIFIED — instruction contract only`.

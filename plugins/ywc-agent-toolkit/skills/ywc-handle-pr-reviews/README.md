@@ -61,3 +61,7 @@ PR Review를 받은 후 Comment를 하나씩 확인하고 대응하는 반복 �
 ## 사용 Tool
 
 `Bash`, `Read`, `Edit`, `Write`, `Glob`, `Grep`, `Agent`
+
+## 기존 브랜치와 PR worktree
+
+`--worktree 123`은 같은 저장소의 열린 PR 번호와 head를 고정합니다. 정확한 fetch/fast-forward, 작업별 cwd/root/branch 확인과 한 번의 재진입만 허용하며, 필수 명령 실패 뒤 mutation을 중단합니다. 생성한 worktree만 `--keep-branch` 정리 안내를 제공합니다.

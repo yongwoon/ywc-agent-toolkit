@@ -30,6 +30,27 @@
       "prompt": "A reviewer comments in Spanish: \"Este comando falla en CI: `npm test -- --runInBand`. Por favor revisa.\" Reply after addressing it.",
       "expected_output": "Replies in Spanish to match the original reviewer comment, keeps `npm test -- --runInBand` unchanged, and does not translate command output or other machine text.",
       "files": []
+    },
+    {
+      "id": 6,
+      "source_id": "local-fr9-pinned-pr-worktree",
+      "prompt": "Handle PR 123 with --worktree. Compare missing/invalid number, closed/fork PR, in-place/reused/created clean head, and a head change during the run.",
+      "expected_output": "Require explicit positive same-repository open PR, pin repository/PR_NUMBER/H, validate head before Git use, independently verify canonical registered path and branch, and never repin on later metadata changes. Without the flag retain the existing workflow.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "source_id": "local-fr9-refresh-cwd",
+      "prompt": "In PR worktree mode inject dirty state, local-ahead/divergence, fetch failure, and one then repeated cwd reset.",
+      "expected_output": "Only exact head fetch and fast-forward are permitted. Dirty/ahead/diverged/fetch failure is BLOCKED with preservation. Guard cwd/root/branch before each read/edit/API/commit/push/CI; allow one invocation-wide re-entry then BLOCKED with no main fallback.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "source_id": "local-fr9-delivery-preservation",
+      "prompt": "Commit a justified review fix in worktree mode, then inject push or CI failure and compare cleanup for created/reused/in-place paths.",
+      "expected_output": "Push only HEAD:refs/heads/$H. Required command failure stops retries and later mutations, reports completed commits/pushes and failed gate. Only created gets --keep-branch prune guidance; never automatically delete reused/in-place paths or change audit classifications.",
+      "files": []
     }
   ]
 }

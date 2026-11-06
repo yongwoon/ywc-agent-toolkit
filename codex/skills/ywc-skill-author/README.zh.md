@@ -61,3 +61,7 @@
 - `references/rationalization-defense-cookbook.md` — 编写理性化防御表格的指南。
 - `references/description-anti-patterns.md` — 描述字段中应避免的反模式。
 - `references/cross-skill-graph.md` — 18 个 ywc-* 技能的依赖关系和交叉引用图。
+
+## 编写反馈契约
+
+应用五项 Writing Levers：删除无效指令、正向目标、条件与动作优先、可观察完成、canonical 引用；保留安全和只读审计边界。

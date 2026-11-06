@@ -233,9 +233,9 @@ Record the resolved worktree path for the subagent payload. Record the resolved 
 After 4a-verify passes for a task, set up Docker isolation using the same resolved worktree path returned by `ywc-worktrees`:
 ```text
 $ywc-docker-isolate --mode setup --task-name <task-name> --worktree-path <resolved-worktree-path>
-# exit 0 = PASS or no Docker compose detected; exit 1 = setup failed
+# exit 0 = PASS or no Docker compose detected; every nonzero = setup failed
 ```
-If setup exits 1, mark that task `BLOCKED`, preserve its branch/worktree for recovery, and continue the wave with any other tasks whose setup passed. Do not replace or retry `ywc-worktrees --mode create`; Docker isolation wraps the created worktree and never owns git lifecycle.
+Every nonzero setup exit (including unresolved command-not-found 127) is `BLOCKED` before Step 4b: preserve its branch/worktree for recovery, record the exact exit and diagnostics, and continue the wave only with other tasks whose setup passed. Only exit 0 permits a worker for that task. Do not interpret unavailable tooling as no Docker needed. Before retry, inspect retained isolation state; do not spawn a duplicate worker for an already active task. Do not replace or retry `ywc-worktrees --mode create`; Docker isolation wraps the created worktree and never owns git lifecycle.
 
 **Checkpoint**: use the same `STATE_SCRIPT` resolver above, then run `python3 "$STATE_SCRIPT" wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 

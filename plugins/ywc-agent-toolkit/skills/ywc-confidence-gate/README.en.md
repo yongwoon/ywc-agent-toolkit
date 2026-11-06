@@ -49,3 +49,13 @@ Full workflow and anti-patterns are in [SKILL.md](./SKILL.md). The canonical rub
 - [한국어 (default)](./README.md)
 - [日本語](./README.ja.md)
 - [한국어 (full)](./README.ko.md)
+
+## Analyst contract
+
+`Caller: ywc-confidence-gate` · `analysis_mode=confidence_root_cause`
+
+Set Caller and analysis_mode explicitly. Missing, unknown or mismatched pairs return `NEEDS_CONTEXT` without inference. Validate Status → Summary → Finding counts → Analysis mode; retain the original caller gate.
+
+Return exactly one cause candidate with evidence for and against; no ranked alternatives or 5 Whys. A refusal consumes the one-dispatch budget; scoring and band decisions remain with the caller.
+
+Live runtime: `UNVERIFIED — instruction contract only`.

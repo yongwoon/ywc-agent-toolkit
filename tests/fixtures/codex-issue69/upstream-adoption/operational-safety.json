@@ -1,0 +1,86 @@
+{
+  "id": "upstream-adoption-operational-safety",
+  "evidence_kind": "source assertion / fixture expectation",
+  "requirements": [
+    "FR-6",
+    "AC-6",
+    "FR-4 explicit-invocation subset"
+  ],
+  "provenance": {
+    "repository": "yongwoon/develop-with-llm",
+    "merge_shas": [
+      "6fe84d96e910d1d56137862366161ab0780d91f1",
+      "b529b0594f1db8534a34359f4bd625ae4f023d6a"
+    ],
+    "port_scope": "Frozen FR-6 behavior only; installed paths and caller contracts preserved"
+  },
+  "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+  "checks": [
+    {
+      "source": "codex/skills/ywc-finish-branch/SKILL.md",
+      "required": [
+        "**Remote deletion guard**",
+        "only a successful, parseable, empty result allows deletion",
+        "git check-ref-format --branch \"$branch\"",
+        "baseRefName` is the intended base and `headRefOid` equals the current remote tip",
+        "Never infer a merge from `git branch -r --merged HEAD`",
+        "tip-bound lease"
+      ],
+      "forbidden": [
+        "A failed PR lookup permits deletion"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-parallel-executor/SKILL.md",
+      "required": [
+        "Every nonzero setup exit (including unresolved command-not-found 127) is `BLOCKED` before Step 4b",
+        "Only exit 0 permits a worker for that task",
+        "preserve its branch/worktree for recovery"
+      ],
+      "forbidden": [
+        "If setup exits 1, mark that task"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-merge-dependabot/SKILL.md",
+      "required": [
+        "### Dockerfile FROM detection",
+        "match changed `FROM` lines only inside Dockerfile hunks",
+        "A failed diff query is unresolved, never a clean result",
+        "### One polling deadline across chunks",
+        "Persist `deadline`, `active`, `lanes`, `status`, and `rebase_commented`",
+        "Never recompute the original 1800-second deadline on chunk resume",
+        "At `now >= deadline`, incomplete work is failed, never successful",
+        "Only a successful rebase comment sets `rebase_commented[pr]`",
+        "missing or malformed state returns `NEEDS_CONTEXT`",
+        "atomic replacement",
+        "A completion response received at or after the deadline cannot turn that wait into success"
+      ],
+      "forbidden": [
+        "If timeout occurs, report success"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-security-audit/references/prompt-injection-checklist.md",
+      "required": [
+        "Adjust severity only by the condition stated in the item's own row",
+        "internal-only does not by itself lower any item",
+        "item 2 is never downgraded",
+        "Downgrade to High only if surface is internal-only and audited",
+        "No downgrade \u2014 the role separation is structural",
+        "Downgrade to Medium if surface has independent rate limit + audit log",
+        "Downgrade to High if external source is read-only by trusted authors"
+      ],
+      "forbidden": [
+        "If the surface is internal-only,\ndowngrade to High"
+      ]
+    },
+    {
+      "source": "codex/skills/ywc-merge-dependabot/agents/openai.yaml",
+      "required": [
+        "allow_implicit_invocation: false"
+      ],
+      "forbidden": []
+    }
+  ]
+}

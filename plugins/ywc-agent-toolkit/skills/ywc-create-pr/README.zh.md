@@ -12,6 +12,7 @@
 
 ### 主要特性
 
+- 按功能编写有依据的变更内容、适用位置和目的；仅在 endpoint 或关联 route 的请求、响应、认证、状态契约变更时添加 Method+Path API 表。排除内部重构，保留模板和现有 PR 更新时的 Step 7 skip。
 - 按 `develop` → `main` → `master` 顺序自动检测基础分支
 - 对 `.env`、`*.key`、`*.pem` 等敏感文件执行安全检查
 - 支持推送前的 CI 检查，如 lint、format、typecheck 和 test

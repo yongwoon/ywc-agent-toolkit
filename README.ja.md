@@ -24,7 +24,7 @@ Claude Code および Codex 向けの開発ワークフロー自動化スキル�
 | ツール      | Skills | Custom Agents | インストール先                            |
 | ----------- | ------ | ------------- | ---------------------------------------- |
 | Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
-| Codex       | 51     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
+| Codex       | 54     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
 
@@ -108,8 +108,13 @@ ywc-setup --scope user --lang ja
 | QA テストシートの生成 | [`ywc-gen-testcase`](claude-code/skills/ywc-gen-testcase/README.md) |
 | リリースノートの作成 | [`ywc-release-pr-list`](claude-code/skills/ywc-release-pr-list/README.md) + [`ywc-changelog-release-notes`](claude-code/skills/ywc-changelog-release-notes/README.md) |
 | 新しい `ywc-*` skill の作成 | [`ywc-skill-author`](claude-code/skills/ywc-skill-author/README.md) |
+| プロジェクトの mission anchor を管理 | [ywc-mission](codex/skills/ywc-mission/README.md) |
+| セッションの証拠から workflow 改善を振り返る | [ywc-retro](codex/skills/ywc-retro/README.md) |
+| 安全な session handoff を作成 | [ywc-handoff](codex/skills/ywc-handoff/README.md) |
 
 すべての skill ディレクトリは [`claude-code/skills/`](claude-code/skills) と [`codex/skills/`](codex/skills) にあり、それぞれ独自の README を持っています。
+
+Codex パッケージカタログ、skill と agent の数、インストール手順は [codex/README.md](codex/README.md) を参照してください。
 
 **つながり:** `ywc-plan` → （Medium/Large）`ywc-spec-writer` → `ywc-spec-ready` → `ywc-task-generator` → `ywc-sequential-executor` / `ywc-parallel-executor` が各タスクを end-to-end で届けます。アドホックな変更は executor を経由せず `ywc-create-pr` → `ywc-handle-pr-reviews` で進めます。各経路のコマンドとフラグは [コア pipeline ガイド](https://yongwoon.github.io/ywc-agent-toolkit-lp/ja/guidebook/02-core-concepts/) を参照してください。
 
@@ -140,6 +145,7 @@ Codex には read-only の specialist agent 8 個と、品質ゲート用の bou
 | [`ywc-security-engineer`](claude-code/agents/ywc-security-engineer.md) | 静的セキュリティレビューと threat model の分類 |
 | [`ywc-root-cause-analyst`](claude-code/agents/ywc-root-cause-analyst.md) | 根本原因および障害原因の分析 |
 | [`ywc-performance-engineer`](claude-code/agents/ywc-performance-engineer.md) | パフォーマンスレビューとプロファイリング推奨 |
+| [ywc-cloud-engineer](codex/agents/ywc-cloud-engineer.toml) | Terraform ベースの IaC 信頼性と cloud misconfiguration のレビュー |
 | [`ywc-typescript-reviewer`](claude-code/agents/ywc-typescript-reviewer.md) | TypeScript / JavaScript 言語別レビュー |
 | [`ywc-python-reviewer`](claude-code/agents/ywc-python-reviewer.md) | Python 言語別レビュー |
 | [`ywc-go-reviewer`](claude-code/agents/ywc-go-reviewer.md) | Go 言語別レビュー |

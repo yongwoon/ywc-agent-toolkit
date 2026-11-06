@@ -48,3 +48,7 @@ Las condiciones de activación de esta Skill están definidas en el campo `descr
 - [Inglés](./README.en.md)
 - [Japonés](./README.ja.md)
 - [Coreano](./README.ko.md)
+
+## Seguridad operativa
+
+Ajusta la severidad solo cuando se cumple la condición de cada fila del checklist. Internal-only por sí solo no permite reducirla; el elemento 2 siempre sigue siendo Critical.

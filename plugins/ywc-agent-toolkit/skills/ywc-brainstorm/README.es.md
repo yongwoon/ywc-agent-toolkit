@@ -46,3 +46,7 @@ El flujo de trabajo completo y la Defensa de Racionalización están en [SKILL.m
 - [한국어 (default)](./README.md)
 - [日本語](./README.ja.md)
 - [한국어 (full)](./README.ko.md)
+
+## Contrato de comentarios de autoría
+
+Verifica primero los hechos del repositorio y cita sus rutas; pregunta solo por el primer requisito pendiente necesario para decidir. Conserva la aprobación del enfoque y del diseño detallado.

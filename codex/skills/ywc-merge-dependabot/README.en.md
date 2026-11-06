@@ -98,3 +98,7 @@ ywc-merge-dependabot/
 - [ywc-create-pr](../ywc-create-pr/SKILL.md) — create PRs
 - [ywc-handle-pr-reviews](../ywc-handle-pr-reviews/SKILL.md) — handle PR review comments
 - [ywc-release-pr-list](../ywc-release-pr-list/SKILL.md) — generate release PR lists
+
+## Operational safety
+
+Detect changed FROM instructions only in Dockerfile diff hunks; query/parser failures remain unresolved. Rebase/CI polling preserves one total 1800-second deadline and complete state across chunks; timeout is failure. Explicit invocation is preferred metadata, not runtime enforcement.

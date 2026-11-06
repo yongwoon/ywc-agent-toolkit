@@ -202,6 +202,12 @@
         "SKILL.md",
         "../references/subagent-async-monitoring.md"
       ]
+    },
+    {
+      "id": 31,
+      "prompt": "Isolation setup exits 127 for one task and 2 for another; a third exits 0. Start the wave.",
+      "expected_output": "Marks every nonzero task BLOCKED before worker start, preserves branch/worktree, and only permits a worker for the exit-0 task. Missing tooling is not a no-Docker success.",
+      "files": []
     }
   ]
 }

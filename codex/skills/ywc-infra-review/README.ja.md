@@ -43,3 +43,11 @@ $ywc-infra-review --scope infra/modules/network
 - `ywc-security-engineer` / `ywc-performance-engineer` / `ywc-cloud-engineer`(Review Mode) の Persona — 各 Lens の Fan-out Worker
 - `ywc-security-audit` — App-code の Auth/Injection Review 担当 (IaC オコンフィグではない)
 - `ywc-impl-review` — 一般的な Application Code Review 担当 (Infrastructure ではない)
+
+## 適用済み scope の証拠と FinOps
+
+既存 scoped IaC には一度のユーザー attestation として `evidence_type=state_backend|apply_record|applied_commit`、正確な `binding_target`、`applied=yes|no` を求めます。provider/state/apply system の照会や追加 repository/revision field は不要です。証拠なし・scope 不一致・未適用の scoped-only 入力は `BLOCKED`、有効な binding の content 欠落・truncation は `NEEDS_CONTEXT` とし、reviewer 呼び出しはどちらも 0 回です。
+
+Mixed 入力では完全な fresh plan/diff と適格な scoped content を全 3 lens に同一に渡します。除外 path と理由を `Scope evidence:` に記録し、除外 set を fallback にしません。Fresh-only/topology-only header は `N/A — fresh plan/diff only` / `N/A — topology packet only` です。
+
+FinOps は提供された費用・利用量・選択肢の証拠から option ごとの cost/risk と推奨を inline で返します。必須証拠がなければ `NEEDS_CONTEXT` とし、価格・節約率を推測しません。report file は aggregator が所有します。live runtime 証拠がない場合は `UNVERIFIED — instruction contract only` です。

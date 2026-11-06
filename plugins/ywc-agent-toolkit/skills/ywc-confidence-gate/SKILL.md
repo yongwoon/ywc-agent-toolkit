@@ -70,6 +70,10 @@ Score each dimension 0–100. Aggregate is the weighted sum, rounded to the near
 
 **Single-dim ≤ 50 rule**: even if aggregate would clear the threshold, a single dimension scoring at or below 50 drops the band by one level (PROCEED → REVIEW, REVIEW → STOP). This prevents one strong dimension from masking a fatal weakness.
 
+## Analyst contract
+
+Every analyst packet carries `Caller: ywc-confidence-gate` and `analysis_mode=confidence_root_cause` plus bounded evidence. Missing, unknown, or mismatched caller/mode returns `NEEDS_CONTEXT` without inferring another mode. Validate the returned Status/Summary/Finding counts envelope and matching Analysis mode before consuming advice; owner/input/output/status mismatch returns `NEEDS_CONTEXT`. An analyst refusal consumes the existing dispatch budget; preserve the caller's original gate and surface the missing evidence instead of re-dispatching or falling through. The analyst returns inline advice and never writes the caller's report or runs probes. Unavailable delegation uses the documented inline path; unavailable live runtime evidence is `UNVERIFIED — instruction contract only`.
+
 ## Workflow
 
 ### Step 1: Establish the work item
@@ -122,7 +126,7 @@ This step adopts the advisor dispatch pattern established by `ywc-plan` Step 3.5
 
 1. **Frame the gap** — in 1–3 sentences, state the specific decision blocked by the failing dimension. "What would I do differently with a definitive answer?" If the answer is "nothing", do not dispatch.
 2. **Bounded payload** — assemble the minimal context the advisor needs: the failing dimension name + score + evidence line, the current work item one-liner from Step 1, and any spec excerpt or repo snippet directly relevant. Hard cap: **≤ 200 lines**. The payload is the gap, not the entire context.
-3. **Dispatch the advisor** — invoke the routing target from the table below. Pass the bounded payload + the framed decision. Expect a verdict in the format `proceed | reconsider with refinements | needs more context`.
+3. **Dispatch the advisor** — invoke the routing target from the table below. Pass the bounded payload + the framed decision. For non-root-cause advisors, expect `proceed | reconsider with refinements | needs more context`. For the root-cause analyst, require the analyst envelope and exactly one cause candidate with evidence for and against; no ranked alternatives or 5 Whys chain. Re-scoring and band decisions remain this caller's responsibility.
 4. **Record the verdict** — paste the verdict (or its summary if long) under the dimension's evidence line. The verdict becomes part of the dimension's evidence for the re-gate.
 5. **Re-run the gate or hand off** — re-score the failing dimension using the verdict as new evidence. If the dimension now ≥ 70, re-run aggregate + Step 4 override; the band may transition to REVIEW or PROCEED. If still < 70, hand off to the upstream skill listed in §Decision Bands, carrying the verdict as additional context.
 
@@ -133,7 +137,7 @@ This step adopts the advisor dispatch pattern established by `ywc-plan` Step 3.5
 | Architecture (`< 50`) | Bounded architecture advisor pass when delegation is available; otherwise `ywc-plan` | Design / trade-off analysis for irreversible architectural decisions |
 | Evidence (`< 50`) | `ywc-spec-validate` skill | Spec quality review surfaces missing acceptance criteria / contradictions before implementation |
 | Reuse (`< 50`) | `ywc-tech-research` skill | Targeted research into existing utilities, packages, or implementations that may eliminate the need to build from scratch |
-| Root cause (`< 50`) | `ywc-debug-rootcause` skill; optionally one bounded root-cause analyst pass when delegation is available | Root-cause analysis renders evidence-for / evidence-against verdict on the cause hypothesis |
+| Root cause (`< 50`) | One bounded root-cause analyst pass when delegation is available; otherwise a read-only inline analysis that edits nothing. Do not invoke the full `ywc-debug-rootcause` workflow here | Pass `Caller: ywc-confidence-gate` and `analysis_mode=confidence_root_cause`; receive exactly one cause candidate with evidence for and against, without ranked alternatives or a 5 Whys chain. `ywc-debug-rootcause` plans and applies fixes, so it would run before this gate re-scores; record the result, re-score per procedure step 5, and hand off through §Decision Bands if the dimension stays `< 70`; invoke `ywc-debug-rootcause` only after the gate allows implementation |
 
 Scope dimension `< 50` does NOT have an advisor target — STOP on scope routes back to `ywc-plan` (Scale assessment) or `ywc-brainstorm` (intent surfacing) via §Decision Bands directly; an advisor cannot disambiguate scope without first knowing what the user actually wants.
 

@@ -34,3 +34,7 @@ PR Review 後の反復作業を自動化します。明確な修正依頼はそ�
 - [Korean](./README.ko.md)
 - [Chinese (Simplified)](./README.zh.md)
 - [Spanish](./README.es.md)
+
+## 既存ブランチと PR worktree
+
+`--worktree 123` は同一リポジトリの open PR と head を固定します。正確な fetch/fast-forward、各操作前の cwd/root/branch 確認と一度だけの再入場を使い、必須コマンド失敗後は変更を停止します。作成した worktree だけに `--keep-branch` の整理を案内します。

@@ -40,7 +40,7 @@ Scale に応じて以下のいずれか:
 2. **Investigate** — `AGENTS.md` / `CODEX.md` / `CLAUDE.md`, `package.json`, `docs/architecture/` などの essential file のみ read
 3. **Assess Scale** — Small / Medium / Large から 1 つ選択 (曖昧なら Medium default)
 4. **Branch** — Small なら `plan.md`、Medium/Large なら spec document を作成
-5. **Handoff** — `ywc-spec-ready` の自動収束 shortcut、または手動の次 step Skill を明示的に表示 (実行は user が決定)
+5. **Handoff** — 新しい Medium/Large spec の作成後、既定で `ywc-spec-ready --spec <path>` を正確に 1 回実行します。`--no-converge` または `--non-interactive` の場合は手動 handoff を表示し、Small と Re-plan では自動収束しません。
 
 ## Safety Invariants
 
@@ -56,7 +56,7 @@ Scale に応じて以下のいずれか:
 
 - `ywc-tech-research` — Technology 選択が未定の場合、ywc-plan より先に
 - `ywc-product-review` — Product / business の framing が不明確な場合、ywc-plan より先に
-- `ywc-spec-ready` — Medium/Large path で user が承認した validate -> DONE 自動収束 shortcut
+- `ywc-spec-ready` — 新しい Medium/Large spec の既定の 1 回限りの自動収束。`--no-converge` または `--non-interactive` の場合は手動で実行
 - `ywc-spec-validate` — Medium/Large path の次の step
 - `ywc-task-generator` — Spec review 通過後の task 分解
 - `ywc-code-gen` — Small path の直接実行 option

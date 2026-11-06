@@ -8,6 +8,7 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 
 ### 주요 기능
 
+- 기능별 무엇/적용 위치/의도를 근거에 따라 작성하고, endpoint 또는 route에 연결된 요청·응답·인증·상태 계약 변경에만 Method+Path API 표를 추가합니다. 내부 리팩터링은 제외하며 template과 기존 PR update의 Step 7 skip을 유지합니다.
 - `develop` → `main` → `master` 순서로 Base Branch 자동 감지
 - `.env`, `*.key`, `*.pem` 등 민감 파일 Security Check
 - push 전에 lint, format, typecheck, test 등 CI Check 수행

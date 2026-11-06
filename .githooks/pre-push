@@ -51,4 +51,10 @@ if [ "$package_files_changed" -eq 1 ]; then
   fi
 fi
 
+while IFS= read -r git_env_var; do
+  if [ -n "$git_env_var" ]; then
+    unset "$git_env_var"
+  fi
+done < <(git rev-parse --local-env-vars)
+
 bash scripts/validate.sh
