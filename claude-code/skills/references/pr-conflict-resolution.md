@@ -13,7 +13,7 @@ Do not confuse these — they have different causes and different fixes.
 
 | Situation | Cause | Symptom | Fix |
 |---|---|---|---|
-| **Feature-branch push rejection** | The **remote feature branch** advanced (a teammate pushed, or a prior push you did not pull) | `git push` rejected as `non-fast-forward` | `git pull --rebase origin <feature-branch>` (rebase onto the *same* branch is safe here — you own those commits), then re-push. Never force-push without explicit user approval. |
+| **Feature-branch push rejection** | The **remote feature branch** advanced (a teammate pushed, or a prior push you did not pull) | `git push` rejected as `non-fast-forward` | `git pull --rebase origin "$BRANCH"` with `BRANCH` holding the feature branch name (rebase onto the *same* branch is safe here — you own those commits), then re-push. Never force-push without explicit user approval. |
 | **PR-vs-base conflict** | The **base branch** advanced and now textually conflicts with the PR | `gh pr view --json mergeable` returns `CONFLICTING`; `gh pr merge` fails | Merge base into the feature branch (procedure below). This is the common gap — CI can be green while the PR is unmergeable. |
 
 A PR that **passed CI** can still be **unmergeable** against the base. CI status
@@ -72,12 +72,16 @@ in fact no conflict (the merge becomes a fast no-op).
 ## Update Branch From Base
 
 When the PR conflicts with (or is behind) the base, bring the base into the
-feature branch by **merging**, not rebasing:
+feature branch by **merging**, not rebasing.
+
+`<base-branch>` usually comes from the PR's `baseRefName`, which is remote-controlled. Validate it before any git command, in this order (the same rule as `ywc-worktrees --existing-branch`): (1) in-process, without interpolating it into any shell command, it must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`; (2) only then `git check-ref-format "refs/heads/$BASE"` must succeed. On any failure stop with `BLOCKED: invalid base branch name`. Then hold it in a variable and quote every use:
 
 ```bash
-git fetch origin <base-branch>
-git checkout feature/<task-name>          # skip if the branch is in a worktree — use git -C <worktree>
-git merge --no-ff origin/<base-branch> -m "Merge origin/<base-branch> into feature/<task-name>"
+BASE='<base-branch>'                       # validated value only
+git fetch origin "$BASE"
+BRANCH='feature/<task-name>'
+git checkout "$BRANCH"                    # skip if the branch is in a worktree — use git -C <worktree>
+git merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into $BRANCH"
 ```
 
 **Why merge, not rebase:** rebasing rewrites the feature branch's commit SHAs,
@@ -91,7 +95,8 @@ the final base merge.
 The branch was merely out of date. Push and re-verify CI:
 
 ```bash
-git push origin feature/<task-name>
+BRANCH='feature/<task-name>'               # same value as in Update Branch From Base
+git push origin "$BRANCH"
 ```
 
 The new merge commit triggers a fresh CI run. **Re-verify CI** before merging —

@@ -165,18 +165,18 @@ UI/Interaction omission mapping (Step 3.6):
 
 **Completion Status rules:**
 
-| Status | When to use |
+Statuses decided by the Confidence Gate result (`DONE`, `DONE_WITH_CONCERNS`, and the gate's `NEEDS_CONTEXT` / `BLOCKED` bands) are defined only in the Band-to-status mapping table under [Confidence Gate](#confidence-gate) — that table is the single source; do not restate it here. The table below lists the pre-gate statuses, which are decided before (or instead of) the gate runs:
+
+| Pre-gate status | When to use |
 |--------|------------|
-| `DONE` | Review complete, no Critical findings |
-| `DONE_WITH_CONCERNS` | Review complete but Critical issues were found — the spec needs revision before task decomposition |
 | `BLOCKED` | Review cannot proceed — spec file missing, or a Phase 2 advisor returned an inconclusive verdict |
 | `NEEDS_CONTEXT` | `--spec` argument is missing or the file is empty/unreadable |
 | `SOCRATIC` | `--mode socratic` was used; output is a learning-question list, not a gate verdict. Downstream skills (especially `ywc-task-generator`) must not consume this status as a handoff signal. |
 
-**Precedence — read this before emitting a status.** The table above and the Confidence Gate's
-Band-to-status mapping are **not two independent rules**; applied separately they contradict each
-other. A spec with zero Critical findings scoring 78 is `DONE` by the table and `NEEDS_CONTEXT` by
-the band. Resolve it this way:
+**Precedence — read this before emitting a status.** The Pre-gate status table above and the
+Confidence Gate's Band-to-status mapping are **not two independent rules**; the gate decision
+status comes only from the Band-to-status table. A spec with zero Critical findings scoring 78 is
+`NEEDS_CONTEXT` by the band, never `DONE`. Resolve it this way:
 
 1. **The Confidence Gate band decides the status.** It is the outer gate; run it last and let it win.
 2. **The finding count only splits the PROCEED band** — `DONE` when no Critical findings remain,

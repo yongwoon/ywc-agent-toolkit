@@ -86,7 +86,7 @@ If no task specifier is given, detect the next executable task from the dependen
 
 ## Dry Run Mode
 
-When `--dry-run` is set, perform Pre-flight and Task Resolution as usual, then display:
+When `--dry-run` is set, perform only the read-only parts of Pre-flight and Task Resolution — skip State Init (it writes the state file and the exclude file), any persistence of the Pre-flight 5 URL-policy decision, and any resume prompt — then display:
 
 - Resolved task list in execution order (with phase+sequence and full name)
 - Dependency status for each task (satisfied / pending)
@@ -113,12 +113,22 @@ Before starting execution, verify these conditions:
 4. **Tasks directory exists** — The tasks directory must contain task subdirectories and `dependency-graph.md`.
 5. **Spec-Reference external URL policy** — Determine whether this project allows fetching external URLs (Notion, Confluence, Figma, etc.) listed in a task's `Spec Reference` section. See [External URL Policy](#external-url-policy) below. This check runs **once per project**, not once per task.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Do not modify `.gitignore` during execution; the ignore entry must already be committed or present in repo-local exclude before the run:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` now using the Write tool (see format in [Checkpoint and Resume](#checkpoint-and-resume)). Do not modify the tracked `.gitignore`; add the ignore rule to the repo-local exclude file, which is untracked and resolves correctly inside linked worktrees (where `.git` is a file):
 ```bash
-grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null \
-  || grep -qxF '.ywc-run-state.json' .git/info/exclude 2>/dev/null \
-  || { echo "Missing .ywc-run-state.json ignore entry; add it to tracked .gitignore before the run or to .git/info/exclude for local-only state."; exit 1; }
+if ! EXCL="$(git rev-parse --git-path info/exclude)"; then
+  echo "BLOCKED: cannot resolve info/exclude" >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$EXCL")"
+for f in .ywc-run-state.json .ywc-learnings.jsonl; do
+  if ! grep -qxF "$f" "$EXCL" 2>/dev/null; then
+    { [ -z "$(tail -c1 "$EXCL" 2>/dev/null)" ] || echo; echo "$f"; } >> "$EXCL" \
+      || { echo "BLOCKED: cannot write $EXCL" >&2; exit 1; }
+  fi
+done
 ```
+
+If the exclude file cannot be resolved or written, report `BLOCKED` — an un-ignored state file leaves the working tree dirty and breaks `verify-transition.sh`.
 
 ## External URL Policy
 
@@ -333,7 +343,7 @@ For the full procedure, 3-round loop cap, survivor forwarding, and dispatch-fail
 
 ### Step 4: Task Verification
 
-Run verification in three layers, from narrowest to broadest. Each layer must pass before moving on.
+Run verification in four layers, from narrowest to broadest. Each layer must pass before moving on.
 
 1. **Task Verify commands** — Run each command listed in the `task.md` Task Verify section. These are the task-author's definition of "this specific change works."
 
@@ -431,10 +441,10 @@ If executing a range:
 2. **Pre-transition state check (`normal-pr`, `local-merge`, and `--aggregate-pr` modes):** Run the bundled verification script, passing the branch the next task will branch from — `<base-branch>` in `normal-pr`/`local-merge`, or `work/<name>` in `--aggregate-pr`. The script is mode-agnostic and checks the same 4 conditions against whichever integration branch it receives. Skip for `--draft`/`--skip-ci-wait`, which chain-branch from the still-alive previous feature branch:
    ```bash
    # normal-pr / local-merge (integration branch is the base branch):
-   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash "${CLAUDE_SKILL_DIR}/scripts/verify-transition.sh" \
      <base-branch> <completed-task-name> [<tasks-dir>]
    # --aggregate-pr (integration branch is the work branch):
-   bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+   bash "${CLAUDE_SKILL_DIR}/scripts/verify-transition.sh" \
      work/<name> <completed-task-name> [<tasks-dir>]
    ```
    Exit 0 = PASS — all 4 conditions satisfied, safe to proceed. Exit 1 = FAIL — details printed to stdout with fix hints. Remediations per condition: wrong branch → `git checkout <base-branch>`; feature branch still alive → re-invoke `ywc-finish-branch` (it returned non-DONE); dirty tracked files → stop and report, do not auto-stash (only `??` untracked files are safe to `git clean -fd`); missing `completed/<task>` directory → finish-branch's Step 7 post-move verification did not run — treat as a Step 5 failure and re-invoke or surface to the user. Never transition forward without PASS. This gate exists because the most common range-mode failure is carrying state from one task into the next, and a missed Mark-Complete silently corrupts the dependency contract for every subsequent task.
@@ -445,30 +455,7 @@ The working tree state at this point differs by mode (`normal-pr` / `local-merge
 
 ## Completion Report
 
-After all tasks are executed, display:
-
-- Total tasks executed: N
-- Each task: name, PR URL, PR status (draft / open / merged) — or `local-merge` with the merge commit SHA when `--local-merge` is used
-- Any tasks that were skipped or failed (with reason)
-- Current branch and sync status
-- Changed public contracts (interfaces/signatures/DTOs altered), tests that first failed (RED) then passed, and any critical-path tasks that triggered `/ywc-security-audit`
-- If in draft/skip-ci-wait mode: remind user that PRs need manual review and merge
-- If in local-merge mode: remind user that no PR was created and no CI ran remotely — only the local verification from Step 4 gates the merge
-
-**When `--terse` is set**, omit all prose reminders and mode-specific explanations. Emit only:
-1. The task table (name | status | PR URL or merge SHA)
-2. The `Completion Status` line
-
-This is the preferred format for CI scripts or automation that parse the report output.
-
-**Reporting Symbols**: Use the shared vocabulary in [symbols.md](../references/symbols.md) for the per-task status column and inline step traces. The symbol is a scan aid, not a replacement for the status text — keep both. For multi-step traces inside a single task report, use the flow operator `»` (e.g. `branch ✅ » impl ✅ » verify ✅ » PR ✅ » merge ✅`). Do not use symbols inside commit messages, PR titles, or generated source code — they belong to the report layer only.
-
-Example task table row:
-
-```
-000003-010-add-auth-middleware  | ✅ merged   | https://github.com/.../pull/142
-000003-020-add-rate-limiting    | 🚫 blocked  | depends on 000003-010 (failed)
-```
+Build the report from the task table, per-task status, and mode reminders defined in [references/report-format.md](./references/report-format.md), then end with the Completion Status below. `--terse` and the shared reporting symbols are specified there.
 
 **Completion Status**: End every report with one of these four declarations on its own line. This is the final line of the report — nothing follows it.
 
@@ -479,7 +466,7 @@ Example task table row:
 | `BLOCKED` | Run stopped and cannot continue — merge conflict, authentication failure, or a decision requiring human input |
 | `NEEDS_CONTEXT` | Task list or arguments are ambiguous; the run cannot start without clarification |
 
-**Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-sequential-executor","project":"<basename>","learning":"<one sentence>"}`). Add the file to `.gitignore` if absent. Record only project-specific facts (package manager quirks, CI timing, build-step ordering, branch-protection rules) — skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
+**Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-sequential-executor","project":"<basename>","learning":"<one sentence>"}`). Add `.ywc-learnings.jsonl` to the repo-local exclude file if absent (same `git rev-parse --git-path info/exclude` resolution as State Init; a resolve/write failure is `BLOCKED`). Record only project-specific facts (package manager quirks, CI timing, build-step ordering, branch-protection rules) — skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
 
 **State cleanup (mandatory, unconditional, every mode)**: after displaying the report, delete the checkpoint file — see [State Cleanup](./references/checkpoint-resume.md#state-cleanup-mandatory-unconditional-every-mode) for the exact command and the `WARNING` handling.
 

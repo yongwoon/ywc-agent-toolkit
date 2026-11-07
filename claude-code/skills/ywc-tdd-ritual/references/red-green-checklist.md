@@ -15,7 +15,7 @@ Walk through the per-step entry / exit conditions during the cycle. Each step ha
 - [ ] One behavior per test (no "and" in the test name)
 - [ ] Intent-revealing name (a future reader can guess the production code's purpose from the name alone)
 - [ ] Real code paths (no mock of the unit under test; mock only the boundaries the test cannot cross — network, clock, file system)
-- [ ] Minimal setup (if setup exceeds ~10 lines for a unit test, the design is too coupled — listen to the test and simplify before writing more)
+- [ ] Minimal setup (if setup exceeds ~50 lines for a unit test, the design is too coupled — listen to the test and simplify before writing more)
 
 ### Exit condition
 

@@ -360,6 +360,36 @@ def load_coverage() -> dict:
     return out
 
 
+# Coverage exemptions are derived from the item's OWN frontmatter, never a
+# hand-kept list or description prose, so a new dispatch-only item must declare itself.
+#  - "slash-only": `disable-model-invocation: true` -> activated by the user typing
+#    the slash command, never routed by description, so neither floor applies.
+#  - "dispatch-only": `tags` contains the exact element `dispatch-only`. No honest
+#    user prompt can select such an item, so the positives floor is waived — but the
+#    collision floor still applies: the sibling-routing boundary it names is real
+#    and testable.
+
+
+def _has_dispatch_only_tag(tags_raw: str) -> bool:
+    """True if the raw `tags` value holds the exact, case-sensitive element `dispatch-only`.
+
+    Handles the flow form (`[a, "b"]`) and the block list parse_yaml_lite joins
+    (`- a - b`). Everything from the first `#` that starts the value or follows
+    whitespace is a comment, so a commented-out mention never counts (fail-closed)."""
+    value = re.split(r"(?:^|\s)#", tags_raw)[0]
+    return "dispatch-only" in (t.strip("'\"") for t in re.split(r"[\[\],\s]+", value))
+
+
+def apply_coverage_exemption(cov: dict, fm: dict) -> dict:
+    """Return `cov` with an `exempt` reason and the exemption-aware `sufficient`."""
+    if fm.get("disable-model-invocation") == "true":
+        return {**cov, "exempt": "slash-only", "sufficient": True}
+    if _has_dispatch_only_tag(fm.get("tags", "")):
+        return {**cov, "exempt": "dispatch-only",
+                "sufficient": cov["collisions"] >= COVERAGE_MIN_COLLISIONS}
+    return {**cov, "exempt": None}
+
+
 # --- skill scoring ---------------------------------------------------------
 
 def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
@@ -383,6 +413,10 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
         "A11_locales": all((d / loc).exists() for loc in REQUIRED_LOCALES),
         "A14_ref_pointers": _refs_have_pointers(d, body),
     }
+    # A16: a user-invoked skill pays no Tier-1 routing cost, so trigger rules do not apply.
+    if fm.get("disable-model-invocation") == "true":
+        for trigger_check in ("A2_use_when", "A3_anti_trigger", "A4_multilingual"):
+            del checks[trigger_check]
     s2 = round(sum(checks.values()) / len(checks) * 5)
     signals["structure_checks"] = {k: bool(v) for k, v in checks.items()}
 
@@ -428,9 +462,9 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     signals["collision_pairs"] = coll
 
     # FR1b coverage — signals-only; S1 stays null in axes (Amendment A2)
-    signals["coverage"] = coverage.get(
+    signals["coverage"] = apply_coverage_exemption(coverage.get(
         name, {"positives": 0, "collisions": 0, "positives_total": 0,
-               "collisions_total": 0, "sufficient": False})
+               "collisions_total": 0, "sufficient": False}), fm)
 
     # Prose lint — informational only, never feeds any axis or the CI baseline.
     signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
@@ -608,9 +642,9 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     signals["collision_pairs"] = coll
 
     # FR1b coverage — signals-only; A2 stays null in axes (Amendment A2)
-    signals["coverage"] = coverage.get(
+    signals["coverage"] = apply_coverage_exemption(coverage.get(
         name, {"positives": 0, "collisions": 0, "positives_total": 0,
-               "collisions_total": 0, "sufficient": False})
+               "collisions_total": 0, "sufficient": False}), fm)
 
     # Prose lint — informational only, never feeds any axis or the CI baseline.
     signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
@@ -882,6 +916,19 @@ def main() -> int:
           f">= {COVERAGE_MIN_COLLISIONS} collisions per item, counting only "
           f"independently-sourced cases: {', '.join(INDEPENDENT_CASE_SOURCES)})",
           file=sys.stderr)
+    # Every exemption is named so a gap cannot hide behind one silently.
+    for it in (i for items in results.values() for i in items):
+        cov = it["signals"].get("coverage", {})
+        if cov.get("exempt"):
+            print(f"[coverage] exempt ({cov['exempt']}): {it['name']} "
+                  f"[positives={cov['positives']} collisions={cov['collisions']}]",
+                  file=sys.stderr)
+    for it in (i for items in results.values() for i in items):
+        cov = it["signals"].get("coverage", {})
+        if not cov.get("sufficient", False):
+            print(f"[coverage] below minimum: {it['name']} "
+                  f"[positives={cov.get('positives', 0)} collisions={cov.get('collisions', 0)}]",
+                  file=sys.stderr)
 
     if args.ci:
         return ci_gate(results)

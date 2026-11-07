@@ -49,11 +49,11 @@ When tempted to skip a step, check this table first:
 
    | Subagent | Model | OWASP Items |
    |---|---|---|
-   | Auth & Data | sonnet | A01 Injection · A02 Broken Auth · A03 Sensitive Data Exposure |
-   | Web Layer | sonnet | A04 XSS · A05 Broken Access Control · A06 Security Misconfiguration · **PI Prompt Injection** (LLM-driven surfaces only — user-controlled string → prompt sink; see `references/prompt-injection-checklist.md`) |
-   | Infra & Input | sonnet | A07 SSRF · A08 Input Validation · A09 Rate Limiting · A10 Timing Attacks |
+   | Auth & Data | sonnet | Injection · Broken Authentication · Sensitive Data Exposure |
+   | Web Layer | sonnet | XSS · Broken Access Control · Security Misconfiguration · **PI Prompt Injection** (LLM-driven surfaces only — user-controlled string → prompt sink; see `references/prompt-injection-checklist.md`) |
+   | Infra & Input | sonnet | SSRF · Input Validation · Rate Limiting · Timing Attacks |
 
-   **Prompt-Injection slice (Web Layer sub-category)** — when the audit target includes an LLM-driven surface (agent / chatbot / prompt-template system / function-calling pipeline), the Web Layer subagent additionally walks the four items in [`references/prompt-injection-checklist.md`](./references/prompt-injection-checklist.md): user-controlled string flowing directly into a prompt, system/user role separation, canary-token + ML-classifier defense, and external-tool / RAG-result sanitization. The checklist defines default severity and conditions for adjustment. Findings surface under the standard severity rubric below and are reported alongside the OWASP A04-A06 items in the Web Layer subagent's output.
+   **Prompt-Injection slice (Web Layer sub-category)** — when the audit target includes an LLM-driven surface (agent / chatbot / prompt-template system / function-calling pipeline), the Web Layer subagent additionally walks the four items in [`references/prompt-injection-checklist.md`](./references/prompt-injection-checklist.md): user-controlled string flowing directly into a prompt, system/user role separation, canary-token + ML-classifier defense, and external-tool / RAG-result sanitization. The checklist defines default severity and conditions for adjustment. Findings surface under the standard severity rubric below and are reported alongside the XSS, Broken Access Control, and Security Misconfiguration items in the Web Layer subagent's output.
 
    Each subagent classifies its findings:
    - **Critical**: Immediately exploitable (SQL injection, auth bypass, hardcoded secrets)

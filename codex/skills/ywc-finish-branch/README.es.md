@@ -95,4 +95,4 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## Seguridad operativa
 
-La eliminación remota independiente exige una rama válida entre comillas y una consulta de PR abiertos exitosa, analizada y vacía. Si se basa en un merge, deben coincidir la base prevista y el tip remoto actual; un lease del tip exacto rechaza pushes concurrentes.
+La eliminación remota separada debe pasar estas guardas en orden: una allowlist de rama más `git check-ref-format "refs/heads/$branch"`, una única URL de push de `origin` fijada, un repositorio calificado con host vinculado mediante `env -u GH_HOST gh` (y su parent si es un fork), el tip remoto exacto, una comprobación incondicional de PR fusionado con la base prevista y el tip actual, cero PR abiertos como última comprobación, y un delete con lease de tip exacto. Queda una breve race window entre la comprobación de PR abiertos y el delete.

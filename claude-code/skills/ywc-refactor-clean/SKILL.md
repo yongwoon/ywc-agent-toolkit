@@ -88,14 +88,17 @@ Full classification rules with concrete examples live in [`references/safety-tie
 
 ### Step 3: SAFE deletion loop
 
-The 5-substep loop below is the work the deletion worker performs per item. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-refactor-cleaner)` with the SAFE worklist so the worker carries the dedicated persona, Mission, and Boundaries (`claude-code/agents/ywc-refactor-cleaner.md`). When the runtime lacks named-agent dispatch, run the loop inline with the same discipline.
+The loop below (steps 0–5) is the work the deletion worker performs per item. When the Claude Code runtime is in use and the named-agent catalog at `claude-code/agents/` is installed, dispatch `Task(subagent_type: ywc-refactor-cleaner)` with the SAFE worklist so the worker carries the dedicated persona, Mission, and Boundaries (`claude-code/agents/ywc-refactor-cleaner.md`). When the runtime lacks named-agent dispatch, run the loop inline with the same discipline.
+
+Before the first deletion, require a clean working tree (`git status --porcelain` prints nothing). If it is not clean, stop and ask the user to commit or stash first — step 4's `git checkout -- <files>` restores every unstaged change in those files, so pre-existing edits would be lost along with the deletion.
 
 For each SAFE item, in order:
 
+0. **Require clean target files.** Run `git status --porcelain -- <files the deletion will touch>`. Any output means the files carry uncommitted work this skill does not own: skip the item and report it as `NEEDS_CONTEXT` — never delete from, or roll back, a file with pre-existing uncommitted changes. This precondition is what makes the step 4 rollback safe.
 1. **Run the test suite scoped to the item's domain.** Establish that the suite is green *before* the deletion, so a later failure can be attributed to the deletion (and not pre-existing).
 2. **Verify with grep.** `git grep -nE '<symbol>'` (or pattern-matched variant for dynamic patterns). Zero hits = proceed. Any hit = re-classify to CAUTION and skip.
 3. **Delete the item** with the `Edit` tool — surgical removal, no adjacent re-formatting.
-4. **Re-run the same test suite.** If green, commit (next step). If red, `git revert <commit>` (after the commit lands) and re-classify to CAUTION. Use `git checkout -- <file>` only for the pre-commit state, never after committing — `git revert` is the atomic rollback for multi-file deletions.
+4. **Re-run the same test suite.** If green, commit (next step). If red, nothing is committed yet, so discard the uncommitted deletion with `git checkout -- <files>` (only the files step 0 verified clean, so no earlier work is lost) and re-classify to CAUTION. Reserve `git revert <commit>` for a regression discovered after the commit has landed — it is the atomic rollback for multi-file deletions.
 5. **Commit** with shape `chore(cleanup): remove unused <symbol> (knip)` — name the tool that flagged it. One deletion per commit.
 
 Do **not** batch multiple deletions into one commit. Bisectability is the entire reason for per-item commits — when a regression surfaces in week 3, `git bisect` lands on the exact deletion.
@@ -139,6 +142,7 @@ The cleanup commit series is closed by a single Verification Report following th
 ```text
 Dead Code Cleanup Report
 ─────────────────────────────────────────────────
+Status:          DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 Scope:           src/   (or --scope value)
 Tier reached:    safe   (or safe+caution / all)
 Detection tools: knip 5.x, depcheck 1.4, ts-prune 0.10
@@ -196,7 +200,7 @@ Before declaring the cleanup pass complete, verify:
 (Procedural failure modes specific to dead-code removal. Behavioral rationalizations are in the table above — do not duplicate here.)
 
 - **Re-running detection tools mid-loop to "re-check" after each deletion.** Detection tools cache module graphs; the second run will report stale findings. Run detection **once** at Step 1, classify **once** at Step 2, then process the worklist linearly. Re-running mid-loop wastes CI minutes and produces false-positive re-flags.
-- **Treating `git checkout -- <file>` as the rollback for a multi-file deletion.** If the deletion spanned files (e.g., removed a function and its sole caller's import), the checkout reverts only one file and leaves the codebase in a half-deleted state. Use `git revert <commit>` instead — atomic rollback of the entire commit.
+- **Treating `git checkout -- <file>` as the rollback after a commit has landed, or for one file of a multi-file deletion.** If the deletion spanned files (e.g., removed a function and its sole caller's import), the checkout reverts only one file and leaves the codebase in a half-deleted state. Use `git revert <commit>` instead — atomic rollback of the entire commit.
 - **Deleting a `--dry-run` finding without re-running the tool live.** `--dry-run` output is a snapshot; if another commit landed between the snapshot and the live run, the finding may be stale. Always re-run live before deletion.
 - **Skipping the SAFE tier "because there's nothing interesting there" and jumping to CAUTION.** SAFE items are where the test suite proves the discipline works for this codebase — they validate that the suite covers the deletion paths. Skipping them means the first signal that the suite is incomplete arrives during a CAUTION deletion, where the rollback cost is higher.
 - **Letting bundle-size pressure shortcut the discipline.** "We need this 10 KB win for the launch" is exactly when CAUTION deletions break production. The launch pressure makes you skip the grep step; the grep step is the protection. Either ship the launch without the cleanup or budget extra time for the cleanup gate.

@@ -9,9 +9,9 @@ It can be used from both Claude Code and Codex CLI.
 
 - Merge all Dependabot PRs or only security-related PRs
 - Run pre-merge safety checks for Dockerfile `FROM` changes, major version upgrades, and CI status
-- Attempt merge-conflict resolution and wait for CI reruns
+- Resolve merge conflicts only through `@dependabot rebase` (never by hand), wait for the rebased head's CI, and merge pinned to the verified head (`--match-head-commit`)
 - Process PRs sequentially by ascending PR number by default
-- **Parallel-auto mode**: group PRs into lockfile ecosystem lanes and keep one active auto-merge PR per lane to reduce wall-clock time for large batches
+- **Parallel-auto mode**: group PRs into lockfile ecosystem lanes and keep one active auto-merge PR per lane to reduce wall-clock time for large batches; every auto-merge start first confirms that the PR's base branch has a required status check, and unconfirmed PRs go to the final sequential pass
 - Emit a final summary report
 
 ## Usage
@@ -90,7 +90,9 @@ ywc-merge-dependabot/
 ├── agents/
 │   └── openai.yaml
 └── scripts/
-    └── group-by-ecosystem.py
+    ├── group-by-ecosystem.py
+    ├── check-base-required-checks.sh
+    └── test_merge_dependabot_scripts.py
 ```
 
 ## Related Skills
@@ -101,4 +103,4 @@ ywc-merge-dependabot/
 
 ## Operational safety
 
-Detect changed FROM instructions only in Dockerfile diff hunks; query/parser failures remain unresolved. Rebase/CI polling preserves one total 1800-second deadline and complete state across chunks; timeout is failure. Explicit invocation is preferred metadata, not runtime enforcement.
+Detect changed FROM instructions only in Dockerfile diff hunks; query/parser failures remain unresolved. Rebase/CI polling preserves one run-wide 1800-second deadline and complete state across chunks; timeout is failure. Explicit invocation is preferred metadata, not runtime enforcement.

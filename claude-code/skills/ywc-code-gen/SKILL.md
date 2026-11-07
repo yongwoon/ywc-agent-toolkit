@@ -72,6 +72,7 @@ Execute all steps (0 → 8) without pausing for user confirmation between steps.
 - Spec file unreadable or project context unreadable (BLOCKED)
 - Reuse Gate: decision is Adopt/Extend/Compose and user has not confirmed full generation (stop only for this confirmation, then proceed after response)
 - Verification Gate failure after 1 retry attempt (BLOCKED)
+- Step 8 review returned BLOCKED or NEEDS_CONTEXT — `NEEDS_CONTEXT` also covers a REVIEW band (70 – 89) or `--review` result from `/ywc-impl-review` / `/ywc-security-audit`; propagate it (see Step 8)
 
 All other mid-execution pauses are not permitted. Phase transitions (Phase 1 → aggregate → Phase 2 → finalize → verify) are silent.
 

@@ -112,23 +112,34 @@ Verify the following conditions before starting:
 5. **No stale worktrees from previous runs** — Run the bundled audit (prunes stale metadata first, then reports any remaining `worktree-*` paths):
 
    ```bash
-   bash claude-code/skills/ywc-worktrees/scripts/audit-worktrees.sh --prune
+   bash "${CLAUDE_SKILL_DIR}/../ywc-worktrees/scripts/audit-worktrees.sh" --prune
    # exit 0 = clean; exit 1 = stale worktrees detected — details on stdout
    ```
 
-   If exit 1, resolve per worktree listed in the output:
+   If exit 1, resolve per worktree listed in the output (check the first bullet before the others):
+   - The worktree basename is `pr-<N>` → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish or prune it via `ywc-handle-pr-reviews` (`--mode prune --keep-branch`) before the run
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
 
-   Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash claude-code/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
+   Pre-flight must end with exit 0 before Step 1 begins. Starting a new run on top of stale metadata is the most common reason worktrees "leak" — the new run reuses paths and branches the cleanup logic no longer recognises. **Docker-isolated projects**: after the worktree audit, also run `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/audit-docker-stacks.sh" --expect <t1,t2,...>` (comma-separated, no spaces — every expected task name) — non-empty stdout means a prior run's `ywc-<task>` stack still holds the deterministic port, so **abort the run**, surface the printed stacks + the `--prune` remediation, and do not start Step 1 (§A3.W/AC10).
 
 **Contract-bearing wave scan (before State Init, `--local-merge`/`--draft`/`--aggregate-pr` only)**: for each wave, OR its member tasks' declared `quality_gate_contract` field against the `N/A — no quality gate contract` sentinel to compute a per-wave `has_contract` boolean, feeding it into the `--waves` entry below. A missing field, malformed field, or absent task directory stops Pre-flight with `NEEDS_CONTEXT` — never a silent `false`.
 
 > **Action required**: Read [references/wave-integration-branch.md](references/wave-integration-branch.md) now for the exact scan procedure, the `wave-int/<N>` creation/promotion lifecycle, and promotion-conflict handling. Do not restate its content inline.
 
-**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to `.gitignore` if absent:
+**State Init (non-resume runs only)**: Initialize `.ywc-run-state.json` from the computed wave plan, and add it to the repo-local exclude file (not the tracked `.gitignore`) if absent. The resolution is correct inside linked worktrees; if the exclude file cannot be resolved or written, report `BLOCKED`:
 ```bash
-grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+if ! EXCL="$(git rev-parse --git-path info/exclude)"; then
+  echo "BLOCKED: cannot resolve info/exclude" >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$EXCL")"
+for f in .ywc-run-state.json .ywc-learnings.jsonl; do
+  if ! grep -qxF "$f" "$EXCL" 2>/dev/null; then
+    { [ -z "$(tail -c1 "$EXCL" 2>/dev/null)" ] || echo; echo "$f"; } >> "$EXCL" \
+      || { echo "BLOCKED: cannot write $EXCL" >&2; exit 1; }
+  fi
+done
 bash claude-code/skills/scripts/update-state.py init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"],"has_contract":true},{"wave":2,"tasks":["t-c"],"has_contract":false}]'
@@ -197,7 +208,8 @@ Repeat the following for each wave. **Each task must have its own independent wo
 
 **4a. Create Worktrees** — For each task in the wave:
 ```bash
-git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
+WT='../worktree-<task-name>'           # this task's worktree; every later "$WT" means this path
+git worktree add "$WT" -b feature/<task-name> <base-branch>
 ```
 
 **4a-verify (mechanical gate — do not skip)**: before Step 4b, confirm each task's worktree physically exists. Implementing a task on the base/aggregate branch working tree (the `aggregate-branch-serial` deviation) violates the isolation contract regardless of wave width. Re-run Step 4a on failure — never reach 4b without one isolated worktree per task:
@@ -205,7 +217,7 @@ git worktree add ../worktree-<task-name> -b feature/<task-name> <base-branch>
 for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktree-$t$" || { echo "GATE FAIL: worktree-$t missing"; exit 1; }; done
 ```
 
-**4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash claude-code/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
+**4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/setup-docker-ports.sh" --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
 
 **Checkpoint**: `bash claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 
@@ -242,7 +254,7 @@ The named worker subagents return payloads per [../references/subagent-status-ac
 **4c. Task Verify** — After each agent completes, run the Task Verify commands from `task.md`. Then run two gates before the task is eligible for 4e Wave Delivery:
 
 - **Regression layer (closes the depth asymmetry with `ywc-sequential-executor` Step 4 layer 3).** Task Verify alone proves the task's own behavior, not that it left shared code intact. After Task Verify passes, run the **full project test suite** (or, when a full run is impractical inside the worktree, the impacted-scope subset — and document why the scope was narrowed). A wave task can pass its own Task Verify and still regress shared state / types / schema / runtime wiring; without this layer that regression reaches the base branch (and in `--local-merge` is never caught at all). Long suites may run in the background.
-- **Ownership-scope gate.** Run `git -C "$WT" diff --name-only` and confirm every changed path is within the task's declared Ownership. An out-of-Ownership file is a scope-creep signal — a missed dependency (return `BLOCKED`) or a drive-by edit (revert it), never a silent merge.
+- **Ownership-scope gate.** Run `git -C "$WT" diff --name-only` (`WT` as set in Step 4a — never empty, since `git -C ""` would inspect the current directory instead) and confirm every changed path is within the task's declared Ownership. An out-of-Ownership file is a scope-creep signal — a missed dependency (return `BLOCKED`) or a drive-by edit (revert it), never a silent merge.
 
 **4c.5. Cleaner (CRAP gate, per-task)** — Runs per-task (parallel-safe) and dispatches to `ywc-refactor-cleaner` via the Task tool if the task declares a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the per-task subagent return payload — never in `.ywc-run-state.json`. 
 
@@ -288,11 +300,15 @@ For each task in the wave **sequentially** (topological order within the wave) �
    Categorize failures as lint/format (run the project's auto-fix command first), type, test, or build — fix on the worktree branch, commit, `git push origin feature/<task-name>`, then re-poll. After 2 failed fix cycles, mark the task `BLOCKED`, preserve its worktree and branch (skip Step 4g for it), and record it for the Completion Report.
 3. **Handle automated PR reviews**: run the polling loop in [`../references/pr-bot-polling.md`](../references/pr-bot-polling.md). If `BOT_COUNT > 0`, invoke `ywc-handle-pr-reviews` for this task's PR, then **re-verify CI (step 2)** — bot fixes push new commits that trigger a fresh CI run — then re-poll. Repeat until CI is green and no new comments arrive within the polling window. Bot reviews across tasks in the same wave are processed **one task at a time** so each task's review commits land before its merge.
 4. **Refresh the PR branch against the latest base if another task already advanced it** — this is the canonical merge-not-rebase procedure in [`../references/pr-conflict-resolution.md`](../references/pr-conflict-resolution.md). This matters when branch protection requires PR branches to be up to date, or when a previous task in the same wave already merged and pushed its completion marker:
+   Validate `<base-branch>` and `feature/<task-name>` first, with the same rule and order as `pr-conflict-resolution.md` (whole-string `^[A-Za-z0-9._/-]+$`, no leading `-`, no `..`, checked in-process; only then `git check-ref-format "refs/heads/…"`). On any failure mark the task `BLOCKED: invalid branch name` and run no git command. Then hold them in variables and quote every use:
    ```bash
-   git fetch origin <base-branch>
-   if ! git merge-base --is-ancestor origin/<base-branch> feature/<task-name>; then
-     git -C ../worktree-<task-name> merge --no-ff origin/<base-branch> -m "Merge origin/<base-branch> into feature/<task-name>"
-     git -C ../worktree-<task-name> push origin feature/<task-name>
+   BASE='<base-branch>'                   # validated value only
+   BRANCH='feature/<task-name>'           # validated value only
+   WT='../worktree-<task-name>'           # same path as Step 4a
+   git fetch origin "$BASE"
+   if ! git merge-base --is-ancestor "origin/$BASE" "$BRANCH"; then
+     git -C "$WT" merge --no-ff "origin/$BASE" -m "Merge origin/$BASE into $BRANCH"
+     git -C "$WT" push origin "$BRANCH"
      # The branch now has a new commit; return to step 2 and re-verify CI.
    fi
    ```
@@ -373,10 +389,10 @@ gate_state: N/A — no quality gate contract
 
 **4g. Clean Up Worktrees** — Delete worktrees and branches for merged-and-marked tasks. This step is **mandatory and verified**, not best-effort. A leaked worktree pollutes Pre-flight on the next run, blocks reuse of the task name, and leaves the feature branch alive long after the work is on the base branch.
 
-For each task whose Step 4e delivery completed (DONE) **and whose wave is not in a blocking-verdict wave (`Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT`)** (i.e. the wave created no `wave-int/<N>`, or its `hardener_verdict` is not in {BLOCKED, NEEDS_CONTEXT} — check `.ywc-run-state.json`), first tear down its Docker stack (Docker-isolated projects only) — `bash claude-code/skills/ywc-docker-isolate/scripts/teardown-docker.sh --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-and-not-blocking-verdict loop, a BLOCKED-preserved task and a task whose wave is `Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT` (whose 4g is skipped, per [references/wave-integration-branch.md](references/wave-integration-branch.md)) are never torn down (AC6):
+For each task whose Step 4e delivery completed (DONE) **and whose wave is not in a blocking-verdict wave (`Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT`)** (i.e. the wave created no `wave-int/<N>`, or its `hardener_verdict` is not in {BLOCKED, NEEDS_CONTEXT} — check `.ywc-run-state.json`), first tear down its Docker stack (Docker-isolated projects only) — `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/teardown-docker.sh" --task-name <task-name> --worktree-path ../worktree-<task-name>` — then remove the worktree. Because this runs inside the DONE-and-not-blocking-verdict loop, a BLOCKED-preserved task and a task whose wave is `Hardener-BLOCKED` or `Hardener-NEEDS_CONTEXT` (whose 4g is skipped, per [references/wave-integration-branch.md](references/wave-integration-branch.md)) are never torn down (AC6):
 
 ```bash
-bash claude-code/skills/ywc-worktrees/scripts/cleanup-worktree.sh <task-name>
+bash "${CLAUDE_SKILL_DIR}/../ywc-worktrees/scripts/cleanup-worktree.sh" <task-name>
 # exit 0 = PASS (worktree removed, branch deleted, prune done, verified)
 # exit 1 = FAIL — fix hints on stdout; read them before taking any action
 ```
@@ -388,7 +404,7 @@ Preserve worktrees and branches of failed tasks for recovery. Do not run this st
 **4h. Wave Cleanup Audit** — Before transitioning to the next wave, audit the worktree state for the wave as a whole. Per-task verification in 4g catches single-task drift; this step catches wave-level drift (e.g. an agent created a sibling worktree the executor did not track).
 
 ```bash
-bash claude-code/skills/ywc-worktrees/scripts/audit-worktrees.sh \
+bash "${CLAUDE_SKILL_DIR}/../ywc-worktrees/scripts/audit-worktrees.sh" \
   --expect <comma-separated preserved-failure task names, or omit if none>
 # exit 0 = clean (or only expected preserved failures); exit 1 = DRIFT — investigate before next wave
 ```
@@ -439,36 +455,7 @@ command sequences live in [references/aggregate-pr.md](references/aggregate-pr.m
 
 **`--per-task-pr` mode: no end-of-run push** — each task's PR was already merged via `gh pr merge --delete-branch` and its completion-marker commit was already pushed during the task's slot in the wave (Step 4e (a) step 5 and (b)). There is nothing deferred to flush here, and the individual PRs are merged and closed on the remote — not left open. Proceed directly to the report below.
 
-Display the following after all waves are complete:
-
-- Total tasks executed, total waves
-- Each task: name, status (success/failed/skipped), merge commit SHA in `--local-merge` mode, or the merged PR URL in `--per-task-pr` mode, and its dispatch model as `<model> (<source>)` (source `hint` / `frontmatter` / `env` / `default`), plus an `Invalid Model Hint` note for any ignored hint (see [../references/model-routing.md](../references/model-routing.md))
-- Failed/skipped tasks with reasons
-- Per-wave changed public contracts (interfaces/DTOs altered) and any critical-path tasks that triggered `/ywc-security-audit`
-- In `--local-merge` mode: remind that no PR was created, no remote CI ran, only local verification was performed
-- In `--per-task-pr` mode: each task's PR was created, CI-verified, bot-reviewed, and **merged** (`gh pr merge`); list each PR URL with its merged status
-- **Worktree cleanup status** — one line per task, in one of these categories (omitted when `--terse` is set):
-  - `clean` — worktree removed and branch deleted via Step 4g (the expected outcome for every successful task)
-  - `force-cleaned` — `git worktree remove --force` was required; note the reason (lock, disposable artifacts, etc.)
-  - `preserved (failure)` — intentionally retained for recovery; include the worktree path and branch name so the user can resume work
-  - `LEAKED` — Step 4g did not produce a clean result and the cause is not a recorded failure; this is a bug, surface it explicitly with the path and branch so the user can clean up manually
-
-  Run a final audit before printing the report:
-
-  ```bash
-  git worktree list --porcelain | awk '/^worktree /{print $2}' | grep -E '/worktree-' || echo "OK: no parallel-executor worktrees remain"
-  git branch --list 'feature/*' | sed 's/^[* ] //' || true
-  ```
-
-  Any `worktree-*` path or `feature/*` branch that does not map to a `preserved (failure)` task in the report is a leak and must be reported as `LEAKED`, not silently omitted.
-
-**When `--terse` is set**, omit all prose reminders, worktree audit lines, and mode-specific explanations. Emit only:
-1. The task table (name | status | merge SHA or PR URL)
-2. The `Completion Status` line
-
-This is the preferred format for CI scripts or automation that parse the report output.
-
-**Reporting Symbols**: Use the shared vocabulary in [symbols.md](../references/symbols.md) for the per-task status column, the worktree cleanup status column, and the wave-level summary line. **Parallel-specific addition**: `🚨` for `LEAKED` worktree or branch detected by the final audit (Step 5) — surface explicitly, never reduce to `❌`. Leaks are a distinct severity category the user must act on regardless of overall run status. For multi-step worktree lifecycle traces, use the flow operator `»` (e.g. `worktree ✅ » impl ✅ » verify ✅ » merge ✅ » cleanup ✅`).
+Build the report from the content list, worktree cleanup audit, `--terse` format, and reporting symbols defined in [references/report-format.md](references/report-format.md) (including the final worktree-leak audit), then end with the Completion Status below.
 
 **Completion Status**: End every report with one of these four declarations on its own line. This is the final line of the report — nothing follows it.
 
@@ -479,7 +466,7 @@ This is the preferred format for CI scripts or automation that parse the report 
 | `BLOCKED` | Run stopped and cannot continue — merge conflict, circular dependency, push rejected, or a decision requiring human input |
 | `NEEDS_CONTEXT` | Task list or arguments are ambiguous; the run cannot start without clarification |
 
-**Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-parallel-executor","project":"<basename>","learning":"<one sentence>"}`). Add the file to `.gitignore` if absent. Record only project-specific facts (package manager quirks, worktree isolation issues, build-step ordering, wave sizing observations); skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
+**Operational Self-Improvement**: Before deleting the checkpoint file, append any genuinely new project-specific operational findings to `.ywc-learnings.jsonl` (one JSON object per line, format `{"ts":"<ISO-8601>","skill":"ywc-parallel-executor","project":"<basename>","learning":"<one sentence>"}`). Add `.ywc-learnings.jsonl` to the repo-local exclude file if absent (same `git rev-parse --git-path info/exclude` resolution as State Init; a resolve/write failure is `BLOCKED`). Record only project-specific facts (package manager quirks, worktree isolation issues, build-step ordering, wave sizing observations); skip generic programming facts and anything already in `CLAUDE.md`. If nothing new in this run, skip the write entirely; empty entries are noise.
 
 **State cleanup**: After displaying the report, delete the checkpoint file — the run is complete:
 ```bash

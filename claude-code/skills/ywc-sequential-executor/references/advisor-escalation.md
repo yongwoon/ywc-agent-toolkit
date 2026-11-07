@@ -33,13 +33,13 @@ The full project test suite fails in a module **outside** the task's declared Ow
 
 **Why escalate**: blindly fixing the wrong layer (test vs. implementation, shared vs. local) burns the 2-attempt fix budget and triggers a stop without progress.
 
-### 3. Merge conflict strategy (Step 6a, `--local-merge` mode)
+### 3. Merge conflict strategy (Step 5, delivered by `ywc-finish-branch`; this skill no longer owns it)
 
 `git merge` reports a non-trivial conflict in a file the task did not directly modify. The advisor suggests a resolution strategy before any edits happen. Do **not** auto-resolve.
 
 **Why escalate**: auto-resolving a conflict in code the task does not own can silently overwrite another contributor's change. The advisor's verdict gives a defensible reason for the resolution choice.
 
-### 4. CI first failure with ambiguous category (Step 6, normal mode)
+### 4. CI first failure with ambiguous category (Step 5, delivered by `ywc-finish-branch`; this skill no longer owns it)
 
 CI fails and the failure category is not obviously "my code": infrastructure, environment variables, timing, and flake are all plausible. The advisor helps classify before the fix attempt.
 

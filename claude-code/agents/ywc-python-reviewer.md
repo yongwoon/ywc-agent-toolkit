@@ -1,6 +1,9 @@
 ---
 name: ywc-python-reviewer
 description: >-
+  Dispatch-only: use only when invoked by `Task(subagent_type=ywc-python-reviewer)`
+  from ywc-impl-review; never route a user-typed Python review request here
+  (ywc-impl-review owns it and dispatches this agent).
   Use when reviewing Python code for type-system depth (PEP 484 / 526 /
   612 generics, `Protocol` structural typing, `TypedDict`, `TypeGuard` /
   `TypeIs`, `Self` type, `ParamSpec` / `Concatenate`, `Literal` /
@@ -18,17 +21,16 @@ description: >-
   multiprocess decision), and Python lifecycle patterns (context manager
   `__enter__` / `__exit__` exception safety, `contextlib.contextmanager`
   finally semantics, generator `yield` cleanup, `__init__.py` star-import
-  hygiene, `__all__` declarations, namespace vs regular packages) that
-  the generic 5-aspect impl-review cannot catch with language-agnostic
-  prose. Triggers: explicit `Task(subagent_type=ywc-python-reviewer)`
+  hygiene, `__all__` declarations, namespace vs regular packages), plus the
+  high-frequency error-handling, external-call resilience and validation
+  defects the generic Design/Devex lanes cover, that the generic 5-aspect
+  impl-review cannot catch with language-agnostic prose. Triggers: explicit `Task(subagent_type=ywc-python-reviewer)`
   dispatch by ywc-impl-review Phase 1 when the review target is
   Python-heavy (Design or Devex aspect deep dive on .py / .pyi /
   pyproject.toml / requirements files), explicit advisor dispatch when
   Phase 1 Design subagent flags a type-system or signature question as
-  ambiguous (Python Phase 2 alternative to the generic Opus advisor);
-  natural language phrases "Python 코드 리뷰", "Python code review",
-  "python-reviewer", "Python型レビュー", "mypy strict mode 점검",
-  "asyncio 점검", "Django ORM N+1 확인". Do not use for: non-Python
+  ambiguous (Python Phase 2 alternative to the generic Opus advisor).
+  Do not use for: non-Python
   code (TypeScript / Go / Swift / Rust have their own Tier 2 reviewers
   in follow-up PRs), writing or modifying code (this agent is
   read-only — fixes go to ywc-backend-coder / ywc-frontend-coder),
@@ -39,11 +41,14 @@ description: >-
   (use ywc-refactor-clean + pip-audit / safety instead), or quantifying
   async / runtime performance — event-loop blocking latency or allocation
   under load (route to ywc-performance-engineer; this reviewer flags the
-  Python idiom, the performance-engineer profiles and quantifies it).
+  Python idiom, the performance-engineer profiles and quantifies it), or a
+  user-typed code review request, including a language-specific one
+  (ywc-impl-review owns it and dispatches this agent).
 model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk
 category: language-reviewer
+tags: [dispatch-only]
 ---
 
 # ywc-python-reviewer
@@ -83,9 +88,6 @@ linter / tests, or execute the application.
     candidate is a type-system or signature question; the dedicated
     Python persona produces a sharper verdict than a generic Opus
     call on language-agnostic prose
-- Natural language: "Python 코드 리뷰", "Python code review",
-  "python-reviewer", "Python型レビュー", "mypy strict mode 점검",
-  "asyncio 점검", "Django ORM N+1 확인", "Pydantic v2 마이그레이션 점검"
 
 ## Boundaries
 

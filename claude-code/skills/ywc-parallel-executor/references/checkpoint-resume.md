@@ -45,7 +45,7 @@ If the file exists:
 
 ### State File Format
 
-Location: `.ywc-run-state.json` in the project root (`.gitignore`d).
+Location: `.ywc-run-state.json` in the project root (excluded via the repo-local exclude file — `git rev-parse --git-path info/exclude` — not the tracked `.gitignore`).
 
 ```json
 {
@@ -108,9 +108,11 @@ A fully contract-less wave (`integration_branch` was `None` from init) never ent
 
 ### Manual Inspection
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-python <path-to-skill>/scripts/save-state.py           # state summary
-python <path-to-skill>/scripts/resume-state.py         # validate + resume point
-python <path-to-skill>/scripts/resume-state.py --json  # machine-readable output
+python "<skill-base-dir>/scripts/save-state.py"           # state summary
+python "<skill-base-dir>/scripts/resume-state.py"         # validate + resume point
+python "<skill-base-dir>/scripts/resume-state.py" --json  # machine-readable output
 rm .ywc-run-state.json                                  # reset (force fresh run)
 ```

@@ -23,7 +23,7 @@ Claude Code および Codex 向けの開発ワークフロー自動化スキル�
 
 | ツール      | Skills | Custom Agents | インストール先                            |
 | ----------- | ------ | ------------- | ---------------------------------------- |
-| Claude Code | 49     | 13            | `~/.claude/skills/`, `~/.claude/agents/` |
+| Claude Code | 51     | 14            | `~/.claude/skills/`, `~/.claude/agents/` |
 | Codex       | 54     | 10            | `~/.codex/skills/`, `~/.codex/agents/`   |
 
 ---
@@ -135,7 +135,7 @@ Codex パッケージカタログ、skill と agent の数、インストール�
 
 ## Custom Agent
 
-Claude Code には worker、reviewer、specialist dispatch 用の 13 個の custom agent が含まれます。`~/.claude/agents/` にインストールされ、詳細は [`claude-code/agents/README.md`](claude-code/agents/README.md) を参照してください。
+Claude Code には worker、reviewer、specialist dispatch 用の 14 個の custom agent が含まれます。`~/.claude/agents/` にインストールされ、詳細は [`claude-code/agents/README.md`](claude-code/agents/README.md) を参照してください。
 
 Codex には read-only の specialist agent 8 個と、品質ゲート用の bounded worker 2 個があり、`~/.codex/agents/`（`CODEX_HOME` で上書き可能）に agent ごとに 1 つの TOML ファイルとしてインストールされます:
 

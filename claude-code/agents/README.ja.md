@@ -14,7 +14,7 @@ authoring rule は [CLAUDE.md](./CLAUDE.md) を参照してください。
 
 - Tier 1 (worker) — Backend / Frontend / QA Engineer / Doc Writer の 4 種
 - Tier 2 (language reviewer) — 現在 3 種が land 済: TypeScript (Sonnet) / Python (Sonnet) / Go (Sonnet)。Swift / Rust などは follow-up PR
-- Tier 3 (specialist) — 現在 5 種が land 済: Architect (Opus) / Security Engineer (Opus) / Refactor Cleaner (Sonnet) / Root-cause Analyst (Opus) / Performance Engineer (Sonnet)。追加 specialist は follow-up PR
+- Tier 3 (specialist) — 現在 6 種が land 済: Architect (Opus) / Security Engineer (Opus) / Refactor Cleaner (Sonnet) / Root-cause Analyst (Opus) / Performance Engineer (Sonnet) / Retro Lens (Sonnet)。追加 specialist は follow-up PR
 - Catalog sync 範囲 — `claude-code/` のみ (Codex / pi-skills には適用しない)
 
 Tier 定義および dispatch flow は spec 文書
@@ -25,7 +25,7 @@ Tier 定義および dispatch flow は spec 文書
 ## Per-Agent Summary
 
 > 以下の表は本 Catalog に現在 land している Agent です (Tier 1 worker 4 種 + Tier 2
-> language reviewer 3 種 + Tier 3 specialist 5 種)。各 Agent body の正式な
+> language reviewer 3 種 + Tier 3 specialist 6 種)。各 Agent body の正式な
 > frontmatter / Mission / Boundaries / Return Contract は対応する
 > `<agent-name>.md` ファイル内で確認できます。
 
@@ -43,6 +43,7 @@ Tier 定義および dispatch flow は spec 文書
 | `ywc-refactor-cleaner` | 3 (specialist) | sonnet | Dead-code 削除 worker (coder tier — writes)。SAFE 分類された worklist を受けて per-item grep 検証 + 前後 test 実行 + 1-deletion-per-commit で削除。ywc-refactor-clean Step 3 から dispatch |
 | `ywc-root-cause-analyst` | 3 (specialist) | opus | Root-cause analyst (read-only)。5 Whys + hypothesis tracking + primary cause vs contributing factor 分離 + "architecture wrong vs fix harder" gate。ywc-debug-rootcause Phase 1 / Phase 3 (3+ failed fixes), ywc-incident-postmortem Step 4 から dispatch |
 | `ywc-performance-engineer` | 3 (specialist) | sonnet | Performance review worker (read-only)。4 axes: Backend (N+1 / index / hot loop / sync IO / allocation / lock)、Frontend (bundle / render-block / image / hydration / CSS specificity)、Web Vitals (LCP / INP / CLS / FCP / TBT vs project targets)、Profiling recommendations (py-spy / chrome devtools / node --prof / pprof / perf / JFR / dotnet-trace — recommend invocation、do not execute)。ywc-impl-review Phase 2 advisor pass の Performance-related Architecture / Devex candidate から dispatch |
+| `ywc-retro-lens` | 3 (specialist) | sonnet | Retro transcript reader (read-only、`[Read, Grep, Glob]` のみ — Bash / Write / WebFetch / MCP なし)。lens / synthesizer prompt を適用して結果を inline で返し、ファイルは caller が書く。ywc-retro Step 3 (lens 3 種、sonnet) / Step 4 (synthesizer、opus で dispatch) からのみ dispatch |
 
 各 Agent body の正確な frontmatter、Mission 文言、Boundaries、Return Contract は
 `claude-code/agents/<agent-name>.md` で直接確認できます。本 Catalog の

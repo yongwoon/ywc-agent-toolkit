@@ -12,6 +12,7 @@ Feature Branch 작업이 완료된 뒤, Commit 생성부터 Draft PR 생성까�
 - `.env`, `*.key`, `*.pem` 등 민감 파일 Security Check
 - push 전에 lint, format, typecheck, test 등 CI Check 수행
 - PR 생성 전 자기 diff 전체를 필수 Self-Review (scope creep, debug 잔여물, secret 검출)
+- Changes를 기능 목록으로 작성하고, HTTP endpoint가 변경된 경우에만 API 변경 표 추가
 - `.github/pull_request_template.md`가 있으면 자동 적용
 - Branch에 대응하는 task의 `## Spec Reference`(우선) 또는 `docs/ywc-plans/` 하위 plan을 찾아 PR 본문에 "설계 배경"으로 인용 (best-effort, non-blocking)
 - 모든 PR을 Draft 상태로 생성

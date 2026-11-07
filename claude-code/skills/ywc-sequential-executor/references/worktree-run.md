@@ -43,9 +43,11 @@ Before creating the worktree, run `ywc-worktrees --mode audit --expect run-<slug
 ywc-worktrees --mode create --task-name run-<slug> --branch <integration-branch> --base-branch <start-point>
 ```
 
-`ywc-worktrees --mode create` prints the resolved worktree absolute path on stdout (`ywc-worktrees/SKILL.md:98` — "Print the resolved worktree path on stdout for the caller to capture"). Capture that **bare path** (no extra text) as `$WT` and use it for all subsequent operations. If create fails because the path already exists (`ywc-worktrees` exits 1), **surface the error and stop** — never overwrite (FR-2.3 / Edge Cases). If the integration branch is already checked out in main or another worktree, `git worktree add` fails loud — surface and stop (FR-3.3).
+`ywc-worktrees --mode create` prints the resolved worktree absolute path on stdout (`ywc-worktrees/SKILL.md` `--mode create` procedure, item 5 — "Print the resolved worktree path on stdout for the caller to capture"). Capture that **bare path** (no extra text) as `$WT` and use it for all subsequent operations. If create fails because the path already exists (`ywc-worktrees` exits 1), **surface the error and stop** — never overwrite (FR-2.3 / Edge Cases). If the integration branch is already checked out in main or another worktree, `git worktree add` fails loud — surface and stop (FR-3.3).
 
 The worktree root itself is resolved by `ywc-worktrees`'s priority chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback); this skill adds **no** new root argument (FR-1.2).
+
+**Publish a newly created integration branch (`--local-merge` and PR modes)**: when §A7 W8 created `integration/run-<slug>` and the delivery mode is `normal-pr`, `--draft`, `--skip-ci-wait`, or `--local-merge`, first run `git -C "$WT" ls-remote --exit-code origin "refs/heads/<integration-branch>"` (the full ref avoids tail matches such as `feature/<integration-branch>`): exit `2` (no such remote branch) → run `git -C "$WT" push -u origin <integration-branch>` right after capturing `$WT`; exit `0` (a same-named branch already exists on origin, e.g. from another run) → stop with `BLOCKED: integration branch already exists on origin` and never push onto it; any other exit → stop with `BLOCKED` quoting git's stderr. For PR modes, this push gives the per-task PRs a base on origin. For `--local-merge`, it lets the first `git pull origin <integration-branch>` in `ywc-finish-branch` succeed. A push failure is a `git push` rejection (allowed stop). Any stop here happens before `$WT/.ywc-run-state.json` exists, so Resume Detection cannot find this run and a re-run's `ywc-worktrees --mode create` exits 1 on the existing path: report the cleanup command `ywc-worktrees --mode prune --task-name run-<slug> --branch <integration-branch>` (run from the main checkout; it removes the worktree and the unpublished local branch) so the next run starts fresh. `--aggregate-pr` skips this push: it targets the real base.
 
 ### 3. State file relocation + 2-stage Resume Detection (§A2)
 
@@ -79,9 +81,9 @@ Run state cleanup **before** prune (the state file lives in the worktree that pr
   The worktree is removed but the integration branch is **preserved** (`--keep-branch`) for the user's final integration→trunk PR.
 - **`--aggregate-pr`**:
   ```bash
-  ywc-worktrees --mode prune --task-name run-<slug> --branch work/<name>
+  ywc-worktrees --mode prune --task-name run-<slug> --branch integration/run-<slug>
   ```
-  No `--keep-branch`: `work/<name>` was already merged and deleted by the final PR, so the branch delete is idempotent (the prune script logs and continues on a missing branch, FR-6.3).
+  No `--keep-branch`: `work/<name>` was already merged and deleted by the final PR, and `integration/run-<slug>` carries no commits in an aggregate run, so deleting it leaves nothing unmerged (a missing branch is logged and skipped, FR-6.3).
 
 Pass the resolved root via `--root` on prune/audit to prevent mid-run root drift (§A8 S2).
 

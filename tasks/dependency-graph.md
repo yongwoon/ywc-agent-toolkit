@@ -1,60 +1,45 @@
-**Next PHASE (yk): `000007`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yk): `000013`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 **Next PHASE (yw): `000005`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 # Codex Issue 69 — task dependency graph
 
 Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm; language: en; initials: yk.
 
-## Phase yk-000001 — Source contracts and focused evaluations
+## Phase yk-000001 — done
+- Completed: `yk-000001-010-domain-model-hints`, `yk-000001-020-domain-analyst-modes`, `yk-000001-030-domain-authoring-feedback`, `yk-000001-040-domain-session-retro`, `yk-000001-050-domain-session-handoff`, `yk-000001-060-domain-review-defects`, `yk-000001-070-domain-operational-safety`, `yk-000001-080-domain-mission-anchor`, `yk-000001-090-domain-infra-evidence`, `yk-000001-100-domain-pr-worktrees`, `yk-000001-110-domain-convergence-callers`, `yk-000001-120-domain-pr-body`
 
-- Completed: `yk-000001-010-domain-model-hints`, `yk-000001-020-domain-analyst-modes`, `yk-000001-030-domain-authoring-feedback`, `yk-000001-040-domain-session-retro`, `yk-000001-050-domain-session-handoff`, `yk-000001-060-domain-review-defects`, `yk-000001-070-domain-operational-safety`, `yk-000001-080-domain-mission-anchor`, `yk-000001-090-domain-infra-evidence`, `yk-000001-100-domain-pr-worktrees`, `yk-000001-110-domain-convergence-callers`, `yk-000001-120-domain-pr-body`, `yk-000002-010-infra-distribution`
+## Phase yk-000002 — done
+- Completed: `yk-000002-010-infra-distribution`
 
-- `yk-000001-010-domain-model-hints` → (root)
-- `yk-000001-020-domain-analyst-modes` → depends on `yk-000001-010-domain-model-hints`
-- `yk-000001-030-domain-authoring-feedback` → depends on `yk-000001-020-domain-analyst-modes`
-- `yk-000001-040-domain-session-retro` → depends on `yk-000001-030-domain-authoring-feedback`
-- `yk-000001-050-domain-session-handoff` → depends on `yk-000001-040-domain-session-retro`
-- `yk-000001-060-domain-review-defects` → (root)
-- `yk-000001-070-domain-operational-safety` → depends on `yk-000001-060-domain-review-defects`
-- `yk-000001-080-domain-mission-anchor` → (root)
-- `yk-000001-090-domain-infra-evidence` → depends on `yk-000001-080-domain-mission-anchor`
-- `yk-000001-100-domain-pr-worktrees` → depends on `yk-000001-070-domain-operational-safety`
-- `yk-000001-110-domain-convergence-callers` → depends on `yk-000001-030-domain-authoring-feedback`, `yk-000001-100-domain-pr-worktrees`
-- `yk-000001-120-domain-pr-body` → (root)
+## Phase yk-000003 — done
+- Completed: `yk-000003-010-config-upstream-snapshot`
 
-## Phase yk-000002 — Distribution integration
+## Phase yk-000004 — done
+- Completed: `yk-000004-010-domain-plan-auto-converge`, `yk-000004-020-domain-finish-branch-remote-guard`, `yk-000004-030-domain-executor-local-exclude`, `yk-000004-040-domain-create-pr-features-api`, `yk-000004-050-domain-scan-secrets-guard`, `yk-000004-060-domain-skill-contradiction-fixes`, `yk-000004-070-domain-impl-review-linter-defects`, `yk-000004-080-domain-debug-feedback-loop`, `yk-000004-090-domain-brainstorm-tdd-rules`
 
-- `yk-000002-010-infra-distribution` → depends on `yk-000001-010-domain-model-hints`, `yk-000001-020-domain-analyst-modes`, `yk-000001-030-domain-authoring-feedback`, `yk-000001-040-domain-session-retro`, `yk-000001-050-domain-session-handoff`, `yk-000001-060-domain-review-defects`, `yk-000001-070-domain-operational-safety`, `yk-000001-080-domain-mission-anchor`, `yk-000001-090-domain-infra-evidence`, `yk-000001-100-domain-pr-worktrees`, `yk-000001-110-domain-convergence-callers`, `yk-000001-120-domain-pr-body`
+## Phase yk-000005 — done
+- Completed: `yk-000005-010-domain-skill-path-convention`, `yk-000005-020-domain-user-invoked-skills`, `yk-000005-030-refactor-skill-script-paths`, `yk-000005-040-domain-merge-dependabot-workflow`, `yk-000005-050-domain-handoff-retro-skills`
 
-## Phase yk-000003 — Claude Code Issue 69 — upstream snapshot
+## Phase yk-000006 — done
+- Completed: `yk-000006-010-domain-agent-description-alignment`, `yk-000006-020-domain-worktrees-existing-branch`, `yk-000006-030-domain-handle-pr-reviews-worktree`
 
-- `yk-000003-010-config-upstream-snapshot` → (root)
+## Phase yk-000007 — done
+- Completed: `yk-000007-010-domain-security-guard-followups`
 
-## Phase yk-000004 — Claude Code Issue 69 — single-skill ports (Phase A)
+## Phase yk-000008 — done
+- Completed: `yk-000008-010-domain-security-doc-followups`, `yk-000008-020-domain-codex-scan-secrets-guard`, `yk-000008-030-refactor-skill-author-script-paths`, `yk-000008-040-test-trigger-cases-grounding`, `yk-000008-050-docs-low-followups`
 
-- `yk-000004-010-domain-plan-auto-converge` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-020-domain-finish-branch-remote-guard` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-030-domain-executor-local-exclude` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-040-domain-create-pr-features-api` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-050-domain-scan-secrets-guard` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000004-040-domain-create-pr-features-api`
-- `yk-000004-060-domain-skill-contradiction-fixes` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-070-domain-impl-review-linter-defects` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-080-domain-debug-feedback-loop` → depends on `yk-000003-010-config-upstream-snapshot`
-- `yk-000004-090-domain-brainstorm-tdd-rules` → depends on `yk-000003-010-config-upstream-snapshot`
+## Phase yk-000009 — done
+- Completed: `yk-000009-010-domain-scan-secrets-and-branch-hardening`
 
-## Phase yk-000005 — Claude Code Issue 69 — cross-cutting conventions (Phase B)
+## Phase yk-000010 — done
+- Completed: `yk-000010-010-domain-scan-secrets-hunk-filter`, `yk-000010-020-domain-merge-dependabot-hardening`, `yk-000010-030-domain-retro-readonly-lenses`, `yk-000010-040-domain-finish-branch-guard-review`, `yk-000010-050-docs-metadata-followups`, `yk-000010-060-test-reviewer-trigger-coverage`
 
-- `yk-000005-010-domain-skill-path-convention` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000004-050-domain-scan-secrets-guard`
-- `yk-000005-020-domain-user-invoked-skills` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-010-domain-skill-path-convention`
-- `yk-000005-030-refactor-skill-script-paths` → depends on `yk-000005-020-domain-user-invoked-skills`
-- `yk-000005-040-domain-merge-dependabot-workflow` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-030-refactor-skill-script-paths`
-- `yk-000005-050-domain-handoff-retro-skills` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-040-domain-merge-dependabot-workflow`, `yk-000005-020-domain-user-invoked-skills`
+## Phase yk-000011 — done
+- Completed: `yk-000011-010-domain-ci-gate-and-dependabot-lows`, `yk-000011-020-domain-codex-finish-branch-guard`, `yk-000011-030-domain-dispatch-only-agent-tag`
 
-## Phase yk-000006 — Claude Code Issue 69 — agents and worktrees (Phase C)
-
-- `yk-000006-010-domain-agent-description-alignment` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000005-050-domain-handoff-retro-skills`
-- `yk-000006-020-domain-worktrees-existing-branch` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000006-010-domain-agent-description-alignment`
-- `yk-000006-030-domain-handle-pr-reviews-worktree` → depends on `yk-000003-010-config-upstream-snapshot`, `yk-000006-020-domain-worktrees-existing-branch`
+## Phase yk-000012 — done
+- Completed: `yk-000012-010-domain-codex-merge-dependabot-parity`
 
 ## Task Summary
 
@@ -91,24 +76,23 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 | yk-000006-010-domain-agent-description-alignment | C1 (#345) | sonnet |
 | yk-000006-020-domain-worktrees-existing-branch | C2 (#347) | sonnet |
 | yk-000006-030-domain-handle-pr-reviews-worktree | C3 (#347) | opus |
-
-## Parallel Execution Notes
-
-Root-ready tasks: model hints, review defects, mission anchor and PR body. PR worktrees depends on operational safety because it extends the behavior runner introduced there. Other edges follow the specification feature dependencies. Conflicts are edit scheduling restrictions, not extra functional dependencies; serialize overlapping agent evals, cross-skill graph and behavior runner changes. No task may run alongside an explicitly conflicting task. Phase 2 begins only after every Phase 1 task is merged, because counts, catalogs and generated plugin copies require all completed source contracts. Analyzer waves are dependency candidates only.
-
-### Claude Code Issue 69 port (plan: `docs/ywc-plans/20261105-claude-upstream-issue-69-port.md`)
-
-Mode: llm; language: en; initials: yk (phases `yk-000003`–`yk-000006`). This batch is independent of the Codex batch above (`yk-000001`/`yk-000002`); the only shared surface is the root skill/agent counts (see conflict below).
-
-Phase gates: `yk-000003` (snapshot) gates everything. Phase `yk-000004` (A) tasks are mutually parallel except `yk-000004-050` after `yk-000004-040` (both edit `ywc-create-pr/SKILL.md`). Phase `yk-000005` (B) is a strict chain B1 → B3 → B2 → B4 → B5 because of shared files (`claude-code/skills/CLAUDE.md`, `ywc-skill-author/SKILL.md`, `history.mechanical.json`, `scripts/validate.sh`). Phase `yk-000006` (C) is a chain C1 → C2 → C3.
-
-Spec inconsistency resolved: FR5's `claude-code/skills/CLAUDE.md` row lists B2 before B3, while the global order and the `ywc-skill-author/SKILL.md` row list B3 before B2. The global order (B1 → B3 → B2 → B4 → B5) is used.
-
-Conflict with the Codex batch: `yk-000005-050-domain-handoff-retro-skills` and `yk-000002-010-infra-distribution` both edit root `CLAUDE.md` / `README*.md` counts; do not run them concurrently. Because both batches share the `yk` namespace, an executor that treats `yk-000002` as a hard gate for `yk-000003` will wait for the Codex distribution task; that ordering is not a functional dependency.
-
-`history.mechanical.json`: Phase A tasks run `score.py --ci` but restore the file so parallel merges do not conflict; Phase B/C tasks commit the auto-updated file.
-
-Inferred criticality: `yk-000004-010-domain-plan-auto-converge` is `critical` only by the keyword heuristic (Ownership contains `ywc-auth-implement`); downgrade to `normal` if desired. `yk-000006-020-domain-worktrees-existing-branch` is `normal` per the spec's Critical Surfaces but defines the branch-name validation C3 relies on.
+| yk-000007-010-domain-security-guard-followups | Final review M1/M2/M4/M5 | opus |
+| yk-000008-010-domain-security-doc-followups | follow-up | sonnet |
+| yk-000008-020-domain-codex-scan-secrets-guard | follow-up | opus |
+| yk-000008-030-refactor-skill-author-script-paths | follow-up | sonnet |
+| yk-000008-040-test-trigger-cases-grounding | follow-up | sonnet |
+| yk-000008-050-docs-low-followups | follow-up | sonnet |
+| yk-000009-010-domain-scan-secrets-and-branch-hardening | security follow-up | opus |
+| yk-000010-010-domain-scan-secrets-hunk-filter | follow-up | opus |
+| yk-000010-020-domain-merge-dependabot-hardening | follow-up | opus |
+| yk-000010-030-domain-retro-readonly-lenses | follow-up | opus |
+| yk-000010-040-domain-finish-branch-guard-review | follow-up | opus |
+| yk-000010-050-docs-metadata-followups | follow-up | sonnet |
+| yk-000010-060-test-reviewer-trigger-coverage | follow-up | sonnet |
+| yk-000011-010-domain-ci-gate-and-dependabot-lows | follow-up | opus |
+| yk-000011-020-domain-codex-finish-branch-guard | P1 spec FR-4 | opus |
+| yk-000011-030-domain-dispatch-only-agent-tag | P1 spec FR-5 | sonnet |
+| yk-000012-010-domain-codex-merge-dependabot-parity | P1 spec FR-1..FR-3 | opus |
 
 ## Spec Coverage
 
@@ -132,6 +116,7 @@ Failure Modes: provenance/locale gaps → every source task + distribution; anal
 
 - AC0 → `yk-000003-010`; AC1/AC2/AC2b/AC2c, FR6, FR7 → `yk-000004-010`; AC4 → `yk-000004-020`; AC9, NFR1 → `yk-000004-030`; AC6 → `yk-000004-040`; AC8 → `yk-000004-050`; AC3, AC8b → `yk-000004-060`; AC5 → `yk-000004-070`; AC7 → `yk-000004-080`; AC7b → `yk-000004-090`.
 - AC11b → `yk-000005-010`; AC12 (2 skills), AC13, FR8 → `yk-000005-020`; AC10, AC11 → `yk-000005-030`; AC13b → `yk-000005-040`; AC12 (4 skills), AC14, AC14b, AC14c → `yk-000005-050`; AC15 → `yk-000006-010`; AC16 → `yk-000006-020`; AC16b, AC17 → `yk-000006-030`.
+- Final-review follow-up (security Mediums M1, M2, M4, M5) → `yk-000007-010`. M3 → `yk-000008-030`; M6 → `yk-000008-040`; Lows → `yk-000008-050`; yk-000007-010 review Lows → `yk-000008-010`; Codex scan-secrets → `yk-000008-020`. yk-000009-010 `++` Low → `yk-000010-010`; merge-dependabot Medium/Lows → `yk-000010-020`; retro lens confinement → `yk-000010-030`; 004-020 upstream Mediums → `yk-000010-040`; impl-review word cap, Codex audit path, validate.sh naming → `yk-000010-050`; trigger coverage → `yk-000010-060`. yk-000010 deferred (coverage CI gate, merge-dependabot Lows, validate.sh local) → `yk-000011-010`. P1 spec `docs/ywc-plans/20261107-p1-hardening-before-main-pr.md`: AC0 → `yk-000011-010-domain-ci-gate-and-dependabot-lows`; AC1–AC3 (FR-1..FR-3, review-5 W1–W4, W6, W7) → `yk-000012-010-domain-codex-merge-dependabot-parity`; AC4 (FR-4, W5) → `yk-000011-020-domain-codex-finish-branch-guard`; AC5–AC6 (FR-5) → `yk-000011-030-domain-dispatch-only-agent-tag`; AC7 (FR-6) → post-run release gate.
 - FR1–FR4 apply to every task; FR5 is the graph above; the NFR1 body-line check is in every task that edits a `SKILL.md`; NFR2 follows from B3/B5.
 - Failure Modes: `${CLAUDE_SKILL_DIR}` / partial install → B1; user-invoked → B3; malicious branch / PR number / fork PR → C2, C3; recursion / double run / non-DONE → A1; handoff secret → B5; remote deletion → A3; CI red → B3; upstream unavailable → T0; required-check gate → B4.
 
@@ -141,92 +126,3 @@ No unjustified requirements emitted. Live runtime availability remains an execut
 
 Claude Code Issue 69 port: no requirement was dropped for lacking an Acceptance Criterion. Items verified by review only (no grep AC): brainstorm ordering rules and tdd seam line (`yk-000004-090`), fix #4 / checklist alignment (`yk-000004-080`), refactor-clean and security-audit sentence corrections (`yk-000004-060`), advisor-escalation / aggregate-pr / worktree-run corrections (`yk-000004-030`). The spec's Open Questions 1–6 keep their stated defaults.
 
-## Visual Dependency Graph
-
-```mermaid
-graph TD
-  N0["yk-000001-010-domain-model-hints"]
-  N1["yk-000001-020-domain-analyst-modes"]
-  N2["yk-000001-030-domain-authoring-feedback"]
-  N3["yk-000001-040-domain-session-retro"]
-  N4["yk-000001-050-domain-session-handoff"]
-  N5["yk-000001-060-domain-review-defects"]
-  N6["yk-000001-070-domain-operational-safety"]
-  N7["yk-000001-080-domain-mission-anchor"]
-  N8["yk-000001-090-domain-infra-evidence"]
-  N9["yk-000001-100-domain-pr-worktrees"]
-  N10["yk-000001-110-domain-convergence-callers"]
-  N11["yk-000001-120-domain-pr-body"]
-  N12["yk-000002-010-infra-distribution"]
-  N0 --> N1
-  N1 --> N2
-  N2 --> N3
-  N3 --> N4
-  N5 --> N6
-  N7 --> N8
-  N6 --> N9
-  N2 --> N10
-  N9 --> N10
-  N0 --> N12
-  N1 --> N12
-  N2 --> N12
-  N3 --> N12
-  N4 --> N12
-  N5 --> N12
-  N6 --> N12
-  N7 --> N12
-  N8 --> N12
-  N9 --> N12
-  N10 --> N12
-  N11 --> N12
-```
-
-### Claude Code Issue 69 port
-
-```mermaid
-graph TD
-  C0["yk-000003-010-config-upstream-snapshot"]
-  C1["yk-000004-010-domain-plan-auto-converge"]
-  C2["yk-000004-020-domain-finish-branch-remote-guard"]
-  C3["yk-000004-030-domain-executor-local-exclude"]
-  C4["yk-000004-040-domain-create-pr-features-api"]
-  C5["yk-000004-050-domain-scan-secrets-guard"]
-  C6["yk-000004-060-domain-skill-contradiction-fixes"]
-  C7["yk-000004-070-domain-impl-review-linter-defects"]
-  C8["yk-000004-080-domain-debug-feedback-loop"]
-  C9["yk-000004-090-domain-brainstorm-tdd-rules"]
-  C10["yk-000005-010-domain-skill-path-convention"]
-  C11["yk-000005-020-domain-user-invoked-skills"]
-  C12["yk-000005-030-refactor-skill-script-paths"]
-  C13["yk-000005-040-domain-merge-dependabot-workflow"]
-  C14["yk-000005-050-domain-handoff-retro-skills"]
-  C15["yk-000006-010-domain-agent-description-alignment"]
-  C16["yk-000006-020-domain-worktrees-existing-branch"]
-  C17["yk-000006-030-domain-handle-pr-reviews-worktree"]
-  C0 --> C1
-  C0 --> C2
-  C0 --> C3
-  C0 --> C4
-  C0 --> C5
-  C4 --> C5
-  C0 --> C6
-  C0 --> C7
-  C0 --> C8
-  C0 --> C9
-  C0 --> C10
-  C5 --> C10
-  C0 --> C11
-  C10 --> C11
-  C11 --> C12
-  C0 --> C13
-  C12 --> C13
-  C0 --> C14
-  C13 --> C14
-  C11 --> C14
-  C0 --> C15
-  C14 --> C15
-  C0 --> C16
-  C15 --> C16
-  C0 --> C17
-  C16 --> C17
-```

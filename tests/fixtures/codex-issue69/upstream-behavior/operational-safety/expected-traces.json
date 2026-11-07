@@ -3,6 +3,18 @@
     "id": "empty-open-pr",
     "input": {
       "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
+      },
       "open_query": {
         "exit": 0,
         "json": []
@@ -11,8 +23,9 @@
     },
     "expected_trace": [
       "validate branch",
-      "open query parsed empty",
       "read exact tip",
+      "match actual base and remote tip",
+      "open query parsed empty",
       "tip-bound delete"
     ],
     "expected_status": "ALLOWED",
@@ -24,6 +37,19 @@
   {
     "id": "open-pr",
     "input": {
+      "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
+      },
       "open_query": {
         "exit": 0,
         "json": [
@@ -46,6 +72,19 @@
   {
     "id": "nonparseable",
     "input": {
+      "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
+      },
       "open_query": {
         "exit": 0,
         "raw": "not JSON"
@@ -64,6 +103,19 @@
   {
     "id": "api-failure",
     "input": {
+      "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
+      },
       "open_query": {
         "exit": 1,
         "raw": ""
@@ -82,15 +134,15 @@
   {
     "id": "invalid-branch",
     "input": {
-      "branch": "--bad",
-      "check_ref_format_exit": 1
+      "branch": "feature/a$b",
+      "allowlist_match": false
     },
     "expected_trace": [
       "reject branch",
       "no lookup or deletion"
     ],
     "expected_status": "BLOCKED",
-    "source_clause": "git check-ref-format --branch \"$branch\"",
+    "source_clause": "must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`",
     "evidence_kind": "source assertion / fixture expectation",
     "live_evidence": "UNVERIFIED \u2014 instruction contract only",
     "remote_deletions": 0
@@ -99,16 +151,22 @@
     "id": "wrong-base",
     "input": {
       "intended_base": "main",
-      "remote_tip": "aaa",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "merged_row": {
         "baseRefName": "integration",
-        "headRefOid": "aaa"
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
       },
       "open_query": [],
       "local_merged": true
     },
     "expected_trace": [
-      "parsed empty open query",
+      "read exact tip",
       "match actual base and remote tip",
       "retain remote"
     ],
@@ -122,16 +180,22 @@
     "id": "moved-tip",
     "input": {
       "intended_base": "main",
-      "remote_tip": "aaa",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "merged_row": {
         "baseRefName": "main",
-        "headRefOid": "bbb"
+        "headRefOid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
       },
       "open_query": [],
       "local_merged": true
     },
     "expected_trace": [
-      "parsed empty open query",
+      "read exact tip",
       "match actual base and remote tip",
       "retain remote"
     ],
@@ -142,20 +206,57 @@
     "remote_deletions": 0
   },
   {
-    "id": "matching-merge",
+    "id": "foreign-head",
     "input": {
       "intended_base": "main",
-      "remote_tip": "aaa",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "merged_row": {
         "baseRefName": "main",
-        "headRefOid": "aaa"
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "other-fork"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
       },
       "open_query": [],
       "local_merged": true
     },
     "expected_trace": [
-      "parsed empty open query",
+      "read exact tip",
       "match actual base and remote tip",
+      "match head repository to origin",
+      "retain remote"
+    ],
+    "expected_status": "BLOCKED",
+    "source_clause": "`headRepositoryOwner.login` and `headRepository.name` must equal the owner and name in `repo`, in the `$parent` run too",
+    "evidence_kind": "source assertion / fixture expectation",
+    "live_evidence": "UNVERIFIED \u2014 instruction contract only",
+    "remote_deletions": 0
+  },
+  {
+    "id": "matching-merge",
+    "input": {
+      "intended_base": "main",
+      "remote_tip": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headRepositoryOwner": {
+          "login": "owner"
+        },
+        "headRepository": {
+          "name": "repo"
+        }
+      },
+      "open_query": [],
+      "local_merged": true
+    },
+    "expected_trace": [
+      "read exact tip",
+      "match actual base and remote tip",
+      "parsed empty open query",
       "delete exact tip"
     ],
     "expected_status": "ALLOWED",

@@ -6,7 +6,7 @@
 
 A range execution may run for hours and traverse dozens of tasks, branches, and CI cycles. If the session is interrupted (network drop, accidental cancel, machine restart), the executor must be able to resume without redoing completed tasks or starting the in-progress task from scratch. The checkpoint is a small JSON file written after each major step; the Resume procedure validates the file against current git state before deciding whether to honor it.
 
-The file lives at `.ywc-run-state.json` in the project root and is `.gitignore`d — it is per-machine, per-run state, not source.
+The file lives at `.ywc-run-state.json` in the project root and is excluded from git via the repo-local exclude file (§6) — it is per-machine, per-run state, not source.
 
 ## 2. Resume Detection (run before Pre-flight)
 
@@ -58,7 +58,7 @@ If the file exists, apply these checks in order:
 
 ## 3. State File Format
 
-Location: `.ywc-run-state.json` in the project root. Always `.gitignore`d.
+Location: `.ywc-run-state.json` in the project root. Always excluded via the repo-local exclude file (§6).
 
 ```json
 {
@@ -93,22 +93,36 @@ Update the file at the following events. The skill's per-step Checkpoint markers
 
 ## 5. Manual Inspection
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-python <path-to-skill>/scripts/inspect-state.py        # state summary
-python <path-to-skill>/scripts/resume-state.py         # validate + resume point
-python <path-to-skill>/scripts/resume-state.py --json  # machine-readable output
+python "<skill-base-dir>/scripts/inspect-state.py"        # state summary
+python "<skill-base-dir>/scripts/resume-state.py"         # validate + resume point
+python "<skill-base-dir>/scripts/resume-state.py" --json  # machine-readable output
 rm .ywc-run-state.json                                  # reset (force fresh run)
 ```
 
 The `inspect-state.py` and `resume-state.py` helpers live under `scripts/` next to this reference.
 
-## 6. .gitignore Wiring
+## 6. Local Exclude Wiring
 
-The state file must never be committed. The skill ensures this on its first run:
+The state file must never be committed, and the tracked `.gitignore` must not be modified (it would dirty the user's tree). The skill adds the entry to the repo-local exclude file on its first run; `git rev-parse --git-path info/exclude` resolves the correct path inside linked worktrees, where `.git` is a file:
 
 ```bash
-grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
+if ! EXCL="$(git rev-parse --git-path info/exclude)"; then
+  echo "BLOCKED: cannot resolve info/exclude" >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$EXCL")"
+for f in .ywc-run-state.json .ywc-learnings.jsonl; do
+  if ! grep -qxF "$f" "$EXCL" 2>/dev/null; then
+    { [ -z "$(tail -c1 "$EXCL" 2>/dev/null)" ] || echo; echo "$f"; } >> "$EXCL" \
+      || { echo "BLOCKED: cannot write $EXCL" >&2; exit 1; }
+  fi
+done
 ```
+
+If the exclude file cannot be resolved or written, stop with `BLOCKED: .ywc-run-state.json is not ignored` — do not continue the run, because an un-ignored state file leaves the working tree dirty and breaks worktree cleanup. `--dry-run` never performs this step.
 
 If the user has a stricter ignore policy, point it there instead — but the rule stands: this file is per-machine state.
 

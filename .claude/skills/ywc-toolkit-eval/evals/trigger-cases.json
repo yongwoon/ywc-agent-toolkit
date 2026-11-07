@@ -361,21 +361,21 @@
     },
     {
       "id": "impl-review-pos-1",
-      "prompt": "구현 검증해줘 — PR 올리기 전에 코드 리뷰 해줘",
+      "prompt": "PR 올리기 전에 구현이 스펙에 맞게 됐는지 점검해줘 — 코드 품질도 같이 봐줘",
       "expected": "ywc-impl-review",
       "kind": "positive",
       "source": "description-derived"
     },
     {
       "id": "impl-review-pos-2",
-      "prompt": "run an implementation review against the spec before creating the PR",
+      "prompt": "run a review of the finished code against the spec before creating the PR",
       "expected": "ywc-impl-review",
       "kind": "positive",
       "source": "description-derived"
     },
     {
       "id": "impl-review-pos-3",
-      "prompt": "実装レビューをお願いします — 仕様との適合性を確認して",
+      "prompt": "実装の確認をお願いします — 仕様との適合性を確認して",
       "expected": "ywc-impl-review",
       "kind": "positive",
       "source": "description-derived"
@@ -418,23 +418,26 @@
     {
       "id": "merge-dependabot-pos-1",
       "prompt": "디펜다봇 PR 모아서 머지해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-2",
       "prompt": "batch merge all pending dependabot PRs with CI verification",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-3",
       "prompt": "依存関係更新のDependabot PRをマージしてください",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "onboard-repo-pos-1",
@@ -1166,31 +1169,35 @@
     },
     {
       "id": "go-reviewer-pos-1",
-      "prompt": "이 Go 코드 리뷰해줘 — goroutine leak 체크하고 채널 패턴 점검",
-      "expected": "ywc-go-reviewer",
+      "prompt": "이 Go 소스 한번 검토해줘 — goroutine leak 체크하고 채널 패턴 점검",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "go-reviewer-pos-2",
       "prompt": "review this Go code for context cancellation and error wrapping patterns",
-      "expected": "ywc-go-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "go-reviewer-pos-3",
       "prompt": "Goコードのレビューをお願いします — goroutineライフサイクルとinterface設計",
-      "expected": "ywc-go-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "go-reviewer-pos-4",
       "prompt": "check this Go code for race conditions and sync.WaitGroup usage — Go-specific",
-      "expected": "ywc-go-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "performance-engineer-pos-1",
@@ -1222,31 +1229,35 @@
     },
     {
       "id": "python-reviewer-pos-1",
-      "prompt": "이 Python 코드 리뷰해줘 — async correctness랑 type annotation 점검",
-      "expected": "ywc-python-reviewer",
+      "prompt": "이 Python 소스 검토해줘 — async correctness랑 type annotation 점검",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "python-reviewer-pos-2",
       "prompt": "review this Python code for asyncio correctness and Django ORM N+1 patterns",
-      "expected": "ywc-python-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "python-reviewer-pos-3",
       "prompt": "Pythonコードのレビューをお願いします — 型システムとasync確認",
-      "expected": "ywc-python-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "python-reviewer-pos-4",
       "prompt": "check the FastAPI Pydantic v2 model usage and dependency injection patterns",
-      "expected": "ywc-python-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "qa-engineer-pos-1",
@@ -1362,31 +1373,35 @@
     },
     {
       "id": "typescript-reviewer-pos-1",
-      "prompt": "TypeScript 코드 리뷰해줘 — 타입 시스템 심층 점검",
-      "expected": "ywc-typescript-reviewer",
+      "prompt": "TypeScript 소스 검토해줘 — 타입 시스템 심층 점검",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "typescript-reviewer-pos-2",
       "prompt": "review this TypeScript code for strict type correctness and React hooks rules",
-      "expected": "ywc-typescript-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "typescript-reviewer-pos-3",
       "prompt": "TypeScript型レビューをお願いします — tsconfig strictの確認も",
-      "expected": "ywc-typescript-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "typescript-reviewer-pos-4",
       "prompt": "TS code review — async patterns and module resolution issues in .tsx files",
-      "expected": "ywc-typescript-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "description-derived"
+      "source": "description-derived",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "agentic-vs-sequential-executor-1",
@@ -1463,11 +1478,10 @@
     {
       "id": "merge-dependabot-vs-create-pr-1",
       "prompt": "pending Dependabot PR 모두 CI 확인하고 merge해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-create-pr",
-      "note": "merge-dependabot specifically handles dependabot PRs; create-pr is for opening new PRs"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "release-pr-list-vs-changelog-1",
@@ -1508,11 +1522,10 @@
     {
       "id": "merge-dependabot-vs-finish-branch-1",
       "prompt": "dependency security updates PR들 CI 확인하고 merge해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-finish-branch",
-      "note": "merge-dependabot handles dependabot/security update PRs; finish-branch handles feature branch delivery"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "plan-vs-brainstorm-1",
@@ -1678,7 +1691,7 @@
     },
     {
       "id": "impl-review-vs-security-audit-1",
-      "prompt": "구현 리뷰 해줘 — 보안 포함 5개 축 전체 검토",
+      "prompt": "구현한 걸 보안 포함 5개 축으로 전체 검토해줘",
       "expected": "ywc-impl-review",
       "kind": "collision",
       "source": "description-derived",
@@ -1720,78 +1733,6 @@
       "source": "description-derived",
       "impostor": "ywc-refactor-clean",
       "note": "refactor-cleaner executes the per-item safe deletion loop; refactor-clean owns classification and orchestration"
-    },
-    {
-      "id": "impl-review-vs-typescript-reviewer-1",
-      "prompt": "TypeScript 코드 구현 리뷰해줘 — 타입 시스템과 전반적인 품질 5축",
-      "expected": "ywc-impl-review",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "impl-review runs the full 5-axis review and dispatches typescript-reviewer internally; typescript-reviewer is the sub-agent"
-    },
-    {
-      "id": "typescript-reviewer-vs-impl-review-1",
-      "prompt": "이 .tsx 파일들 TypeScript 타입 심층 리뷰 해줘 — strict 준수 점검, TS 전용",
-      "expected": "ywc-typescript-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-impl-review",
-      "note": "typescript-reviewer does TS-specific deep dive; impl-review is broader and language-agnostic"
-    },
-    {
-      "id": "go-reviewer-vs-impl-review-1",
-      "prompt": "이 Go 파일 goroutine 패턴이랑 channel 설계 집중 리뷰해줘 — Go 전용",
-      "expected": "ywc-go-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-impl-review",
-      "note": "go-reviewer does Go-specific deep analysis; impl-review is language-agnostic"
-    },
-    {
-      "id": "python-reviewer-vs-impl-review-1",
-      "prompt": "Python async 코드 PEP 484 타입 시스템 심층 리뷰 해줘 — Python 전용",
-      "expected": "ywc-python-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-impl-review",
-      "note": "python-reviewer does Python-specific deep analysis; impl-review is language-agnostic"
-    },
-    {
-      "id": "go-reviewer-vs-python-reviewer-1",
-      "prompt": "이 .go 파일 goroutine leak 체크하고 context cancellation 점검해줘",
-      "expected": "ywc-go-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-python-reviewer",
-      "note": "Go code uses goroutines/channels — go-reviewer owns it; python-reviewer handles .py files only"
-    },
-    {
-      "id": "python-reviewer-vs-typescript-reviewer-1",
-      "prompt": "FastAPI endpoint 코드 타입 힌트랑 asyncio 패턴 리뷰해줘",
-      "expected": "ywc-python-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "FastAPI is Python; typescript-reviewer handles TS/JS only"
-    },
-    {
-      "id": "typescript-reviewer-vs-python-reviewer-1",
-      "prompt": "이 .ts 파일 type-system depth 심층 리뷰해줘 — Vue Composition API 포함",
-      "expected": "ywc-typescript-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-python-reviewer",
-      "note": "Vue/TS files are TS domain; python-reviewer handles Python only"
-    },
-    {
-      "id": "go-reviewer-vs-typescript-reviewer-1",
-      "prompt": "이 서버 코드 interface 설계랑 error handling 패턴 리뷰해줘 — Go 파일",
-      "expected": "ywc-go-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "Go interfaces and error wrapping are Go-reviewer territory; typescript-reviewer handles .ts/.tsx only"
     },
     {
       "id": "handle-pr-reviews-vs-receive-review-1",
@@ -2029,7 +1970,7 @@
     },
     {
       "id": "ui-ux-review-vs-impl-review-1",
-      "prompt": "이 UI 코드 리뷰해줘 — 접근성이랑 사용성 점검해줘",
+      "prompt": "이 UI 코드 봐줘 — 접근성이랑 사용성 점검해줘",
       "expected": "ywc-ui-ux-review",
       "kind": "collision",
       "source": "description-derived",
@@ -2188,15 +2129,6 @@
       "source": "description-derived"
     },
     {
-      "id": "agent-tsreviewer-vs-pyreviewer-1",
-      "prompt": "이 Python 코드 asyncio랑 타입 힌트 리뷰해줘",
-      "expected": "ywc-python-reviewer",
-      "kind": "collision",
-      "source": "description-derived",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "language reviewers share trigram surface — each must only win its own language"
-    },
-    {
       "id": "specready-pos-1",
       "prompt": "이 사양서를 spec-validate DONE 까지 자동으로 수렴시켜줘",
       "expected": "ywc-spec-ready",
@@ -2332,41 +2264,42 @@
     {
       "id": "setup-language-pos-1",
       "prompt": "출력 언어를 한국어로 기본 설정해줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-2",
       "prompt": "stop making me pass --lang on every call — default all ywc output to English from now on",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-3",
       "prompt": "生成物の出力言語を日本語に既定設定して",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "description-derived"
+      "expected": null,
+      "kind": "negative",
+      "source": "description-derived",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-vs-project-mission-1",
       "prompt": "이 프로젝트 산출물 기본 언어를 정해서 설정으로 영속화해줘",
-      "expected": "ywc-setup-language",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-project-mission",
-      "note": "both persist project-level config as committed memory; project-mission owns the durable why/mission / success-criteria, but this asks to fix the default output language — owned by setup-language"
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-vs-project-mission-2",
       "prompt": "persist this project's setup so all future ywc output is written in English",
-      "expected": "ywc-setup-language",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "description-derived",
-      "impostor": "ywc-project-mission",
-      "note": "'persist project setup' overlaps project-mission's durable-memory surface, but the concrete ask fixes the output-language default, so setup-language wins"
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "auth-implement-pos-1",
@@ -3747,23 +3680,26 @@
     {
       "id": "merge-dependabot-pos-4",
       "prompt": "쌓여있는 의존성 업데이트들 한번에 처리해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-5",
       "prompt": "봇이 열어놓은 패키지 업데이트 관련 요청들 확인하고 정리해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-pos-6",
       "prompt": "자동으로 올라온 보안 패치 관련 요청들 있으면 검토하고 합쳐줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "changelog-pos-5",
@@ -3867,20 +3803,18 @@
     {
       "id": "merge-dependabot-vs-create-pr-2",
       "prompt": "새로 짠 기능 PR 얘기 아니고, 자동으로 열린 업데이트들 정리해서 머지해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "user-prompt",
-      "impostor": "ywc-create-pr",
-      "note": "merge-dependabot wins for batch-processing Dependabot PRs; its own anti-trigger defers feature-PR creation to create-pr"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "merge-dependabot-vs-create-pr-3",
       "prompt": "이건 사람이 짠 코드 PR이 아니라, 봇이 연 의존성 업데이트들 얘기야, 그것들만 정리해줘",
-      "expected": "ywc-merge-dependabot",
-      "kind": "collision",
+      "expected": null,
+      "kind": "negative",
       "source": "user-prompt",
-      "impostor": "ywc-create-pr",
-      "note": "merge-dependabot wins for bot-opened dependency-update PRs specifically, distinct from a human feature PR handled by create-pr"
+      "note": "user-invoked, not routed: ywc-merge-dependabot sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "receive-review-vs-impl-review-1",
@@ -4197,23 +4131,26 @@
     {
       "id": "setup-language-pos-4",
       "prompt": "이제부터 매번 지정 안 해도 되게, 기본 출력 쓰는 말 하나로 고정해줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-5",
       "prompt": "지금 고정돼 있는 기본 언어가 뭔지 보여줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "setup-language-pos-6",
       "prompt": "앞으로 생성되는 문서, PR, 커밋 메시지 전부 한국어로 고정해줘",
-      "expected": "ywc-setup-language",
-      "kind": "positive",
-      "source": "user-prompt"
+      "expected": null,
+      "kind": "negative",
+      "source": "user-prompt",
+      "note": "user-invoked, not routed: ywc-setup-language sets disable-model-invocation, so no model routing is expected"
     },
     {
       "id": "skill-author-pos-5",
@@ -4506,65 +4443,74 @@
     {
       "id": "go-reviewer-pos-5",
       "prompt": "이 Go 코드 고루틴 새는 데 없는지 봐줘",
-      "expected": "ywc-go-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "go-reviewer-pos-6",
       "prompt": "이 채널 쓰는 방식 괜찮은지 봐줘",
-      "expected": "ywc-go-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "go-reviewer-pos-7",
       "prompt": "이 에러 감싸는 방식 Go스럽게 됐는지 확인해줘",
-      "expected": "ywc-go-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-go-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "python-reviewer-pos-5",
       "prompt": "이 파이썬 코드 타입 힌트 제대로 됐는지 봐줘",
-      "expected": "ywc-python-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "python-reviewer-pos-6",
       "prompt": "이 비동기 코드에 블로킹 호출 섞여있는지 확인해줘",
-      "expected": "ywc-python-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "python-reviewer-pos-7",
       "prompt": "이 ORM 쿼리 반복 조회 문제 없는지 봐줘",
-      "expected": "ywc-python-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-python-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "typescript-reviewer-pos-5",
       "prompt": "이 타입스크립트 코드 타입 안정성 봐줘",
-      "expected": "ywc-typescript-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "typescript-reviewer-pos-6",
       "prompt": "이 훅 사용 규칙 지켜졌는지 봐줘",
-      "expected": "ywc-typescript-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "typescript-reviewer-pos-7",
       "prompt": "엄격 모드 기준으로 이 코드 타입 점검해줘",
-      "expected": "ywc-typescript-reviewer",
+      "expected": "ywc-impl-review",
       "kind": "positive",
-      "source": "user-prompt"
+      "source": "user-prompt",
+      "note": "user-typed code review request: ywc-impl-review owns it and dispatches the language reviewer; ywc-typescript-reviewer is a dispatch-only agent and must not be routed to directly"
     },
     {
       "id": "performance-engineer-pos-5",
@@ -4720,51 +4666,6 @@
       "note": "refactor-cleaner wins again for pure SAFE-tier deletion, distinct scenario from consolidation; same grounding"
     },
     {
-      "id": "go-reviewer-vs-typescript-reviewer-2",
-      "prompt": "이건 프론트엔드 타입스크립트 코드가 아니라, Go 서버 코드 리뷰해달라는 거야",
-      "expected": "ywc-go-reviewer",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-typescript-reviewer",
-      "note": "go-reviewer wins for Go-specific review; go-reviewer's own definition names typescript-reviewer for TypeScript/JavaScript code, which this ask is not"
-    },
-    {
-      "id": "go-reviewer-vs-python-reviewer-2",
-      "prompt": "이건 파이썬 코드가 아니라, 이 Go 패키지의 인터페이스 설계 리뷰해달라는 거야",
-      "expected": "ywc-go-reviewer",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-python-reviewer",
-      "note": "go-reviewer wins for Go interface design review; go-reviewer's own definition names python-reviewer for Python code, which this ask is not"
-    },
-    {
-      "id": "typescript-reviewer-vs-python-reviewer-2",
-      "prompt": "이건 파이썬 코드가 아니라, 이 리액트 컴포넌트 타입 리뷰해달라는 거야",
-      "expected": "ywc-typescript-reviewer",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-python-reviewer",
-      "note": "typescript-reviewer wins for TS/React review; typescript-reviewer's own definition names python-reviewer for Python code, which this ask is not"
-    },
-    {
-      "id": "typescript-reviewer-vs-go-reviewer-1",
-      "prompt": "이건 Go 코드가 아니라, 이 프론트엔드 타입스크립트 코드 리뷰해달라는 거야",
-      "expected": "ywc-typescript-reviewer",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-go-reviewer",
-      "note": "typescript-reviewer wins for TypeScript review; typescript-reviewer's own definition names go-reviewer for Go code, which this ask is not"
-    },
-    {
-      "id": "python-reviewer-vs-performance-engineer-1",
-      "prompt": "이건 속도 측정 얘기가 아니라, 이 비동기 코드가 파이썬답게 짜여있는지 리뷰해달라는 거야",
-      "expected": "ywc-python-reviewer",
-      "kind": "collision",
-      "source": "user-prompt",
-      "impostor": "ywc-performance-engineer",
-      "note": "python-reviewer wins for flagging the async idiom itself; python-reviewer's own definition names performance-engineer for quantifying runtime performance, which this ask is not"
-    },
-    {
       "id": "performance-engineer-vs-go-reviewer-1",
       "prompt": "이건 Go 문법이 맞는지가 아니라, 이 락 경합 때문에 처리량이 얼마나 떨어지는지 측정해달라는 거야",
       "expected": "ywc-performance-engineer",
@@ -4799,6 +4700,78 @@
       "source": "user-prompt",
       "impostor": "ywc-backend-coder",
       "note": "security-engineer wins for read-only static analysis; security-engineer's own definition names backend-coder as where fixes are dispatched separately, which this ask is not"
+    },
+    {
+      "id": "impl-review-vs-go-reviewer-1",
+      "prompt": "이 Go 코드 고루틴 새는 데 없는지 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-go-reviewer",
+      "note": "prompt reused verbatim from case go-reviewer-pos-5 (user-prompt); only the sibling label is new: a user-typed Go review request is owned by impl-review, which dispatches go-reviewer; go-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-python-reviewer-1",
+      "prompt": "이 파이썬 코드 타입 힌트 제대로 됐는지 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-python-reviewer",
+      "note": "prompt reused verbatim from case python-reviewer-pos-5 (user-prompt); only the sibling label is new: a user-typed Python review request is owned by impl-review, which dispatches python-reviewer; python-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-python-reviewer-2",
+      "prompt": "이 비동기 코드에 블로킹 호출 섞여있는지 확인해줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-python-reviewer",
+      "note": "prompt reused verbatim from case python-reviewer-pos-6 (user-prompt); only the sibling label is new: a user-typed async-correctness review request is owned by impl-review, which dispatches python-reviewer; python-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-typescript-reviewer-1",
+      "prompt": "이 타입스크립트 코드 타입 안정성 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "prompt reused verbatim from case typescript-reviewer-pos-5 (user-prompt); only the sibling label is new: a user-typed TypeScript review request is owned by impl-review, which dispatches typescript-reviewer; typescript-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-typescript-reviewer-2",
+      "prompt": "이 훅 사용 규칙 지켜졌는지 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "prompt reused verbatim from case typescript-reviewer-pos-6 (user-prompt); only the sibling label is new: a user-typed React-hooks review request is owned by impl-review, which dispatches typescript-reviewer; typescript-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "root-cause-analyst-vs-retro-lens-1",
+      "prompt": "이 버그 왜 나는 건지 하나씩 파고들어서 밝혀줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-retro-lens",
+      "note": "prompt reused verbatim from case root-cause-analyst-pos-5 (user-prompt); only the sibling label is new: retro-lens's own definition routes root-cause analysis to root-cause-analyst; retro-lens is dispatched only by ywc-retro"
+    },
+    {
+      "id": "security-engineer-vs-retro-lens-1",
+      "prompt": "이 코드 취약점 기준으로 정적 분석해줘",
+      "expected": "ywc-security-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-retro-lens",
+      "note": "prompt reused verbatim from case security-engineer-pos-5 (user-prompt); only the sibling label is new: retro-lens's own definition routes general code analysis to security-engineer / a language reviewer; retro-lens is dispatched only by ywc-retro"
+    },
+    {
+      "id": "performance-engineer-vs-typescript-reviewer-1",
+      "prompt": "빌드 결과물 용량이 예산 넘는지 확인해줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "prompt reused verbatim from case performance-engineer-pos-7 (user-prompt); only the sibling label is new: typescript-reviewer's own definition routes bundle-size-against-budget measurement to performance-engineer; this ask is a budget check, not a TS idiom review"
     }
   ]
 }

@@ -74,7 +74,7 @@ The test name must let a future reader infer the production behavior **without r
 | Symptom | What the test is telling you |
 |---|---|
 | Need to mock 5+ collaborators | Module has too many responsibilities; split it |
-| Setup is 50+ lines for a unit test | Setup is the actual API; expose a builder or factory |
+| Setup is over ~50 lines for a unit test | Setup is the actual API; expose a builder or factory |
 | Need to mock the unit under test | The module is being tested through itself — find the seam |
 | Test name needs "and" | Two behaviors — split into two tests |
 | Test needs to assert ≥ 5 unrelated outputs | Function has too many side effects — split |

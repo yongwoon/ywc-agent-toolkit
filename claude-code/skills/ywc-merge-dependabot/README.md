@@ -1,5 +1,7 @@
 # Merge Dependabot Skill
 
+> **사용자 호출 전용 Skill** — `/ywc-merge-dependabot` 으로 직접 실행합니다. 모델이 자동으로 선택하지 않으며(`disable-model-invocation: true`), 다른 Skill 이 Skill tool 로 호출할 수 없습니다.
+
 ## 개요
 
 **merge-dependabot** Skill은 Dependabot이 생성한 Pull Request를 안전하게 일괄 Merge하는 Claude Code Skill입니다.
@@ -9,7 +11,8 @@
 - Dependabot PR 자동 탐지 및 일괄 Merge
 - Security 관련 PR만 선별 Merge하는 모드 지원
 - Pre-Merge 안전 검증 (Dockerfile, Major Version, CI Status)
-- Merge Conflict 자동 해결 시도
+- Merge Conflict 시 `@dependabot rebase` Comment 를 1회만 남기고 Dependabot 의 rebase 를 대기. Major Version 업그레이드는 항상 Skip 하고 수동 Review 로 넘김
+- Parallel-auto 는 Base Branch 에 required status check 가 확인된 PR 만 `--auto` 에 등록 (Base Branch 이름은 사전 검증). Queue 는 bounded chunk 로 polling 하며, 30분 deadline 경과 후 남은 PR 만 stalled 로 보고
 - PR 번호 오름차순 순차 처리 (이전 Merge가 이후 PR에 미치는 영향 고려)
 - **Parallel-auto Mode** — 다수 PR 처리 시 lockfile ecosystem 별로 grouping 한 뒤 GitHub auto-merge queue 에 위임하여 wall-clock 시간을 단축
 - 처리 결과 Summary Report 자동 생성
@@ -90,7 +93,7 @@ Security 관련 PR 만 선별하여 Merge 합니다. 다음 조건으로 Securit
 다수 PR (≥ 5) 이 여러 ecosystem 에 걸쳐 누적되어 wall-clock CI 대기가 병목인 경우 사용합니다. 동작 방식:
 
 1. 모든 eligible PR 을 `npm`, `github-actions`, `python`, `go`, `cargo`, `maven`, `gradle`, `docker` group 으로 분류 (`scripts/group-by-ecosystem.py` 사용)
-2. 각 PR 에 대해 `gh pr merge --auto` 로 auto-merge 예약
+2. 각 PR 에 대해 `gh pr merge --auto --merge --match-head-commit "<HEAD_SHA>"` 로 auto-merge 예약 (기록한 head SHA 에 pin)
 3. GitHub Server 측에서 동일 ecosystem 은 직렬 merge, 서로 다른 ecosystem 은 병렬 merge 수행
 4. Client 는 polling 으로 queue 상태 추적 (최대 30분)
 5. Mixed-ecosystem PR (둘 이상의 lockfile 을 동시 변경) 은 마지막에 sequential pass 로 처리
@@ -136,10 +139,12 @@ PR 번호 **오름차순**으로 하나씩 처리합니다. 이전 PR 의 Merge 
 Merge 시도
 ├── 성공 → ✅ Merged
 └── Conflict 발생
-    ├── Branch Checkout → Conflict 해결 → Push → CI 재실행
-    │   ├── CI 통과 → Merge → ✅ Merged
-    │   └── CI 실패 → ❌ Failed
-    └── 자동 해결 불가 → ❌ Failed
+    ├── `@dependabot rebase` Comment 1회 → Rebase 대기 (최대 9회 × 60초)
+    │   ├── 새 Head 확인 → Dockerfile / Major Version 재검사 → CI 대기
+    │   │   ├── CI 통과 → 새 Head 에 고정 (`--match-head-commit`) 하여 Merge → ✅ Merged
+    │   │   └── CI 실패 → ❌ Failed
+    │   └── Rebase 미완료 또는 여전히 CONFLICTING → ⏭️ Skip 후 사람의 Review 로 전달
+    └── Conflict 를 직접 해결하거나 Push 하지 않음
 ```
 
 ---
@@ -323,9 +328,9 @@ Major Version Upgrade 는 Breaking Change 가능성이 높으므로, Skill 이 �
 
 **A**: Security PR 식별은 Label, Title/Body 키워드 기반입니다. Dependabot이 `security` Label을 붙이지 않는 경우, Title에 "CVE-" 또는 "GHSA-" 키워드가 포함되어야 합니다.
 
-### Q: Conflict 해결 후에도 Merge가 실패합니다
+### Q: `@dependabot rebase` 후에도 Merge가 실패합니다
 
-**A**: Conflict 해결 후 CI가 재실행되며, CI가 실패하면 Merge도 실패합니다. CI 실패 원인을 확인하고 수동으로 대응하세요.
+**A**: Skill 은 Conflict 를 직접 해결하거나 Push 하지 않습니다. `@dependabot rebase` Comment 를 1회 남긴 뒤 Rebase 가 끝나지 않거나, 새 Head 가 여전히 CONFLICTING 이거나, 새 Head 의 CI 가 실패하면 해당 PR 은 Skip 되어 사람의 Review 로 넘어갑니다. CI 실패 원인 또는 Conflict 내용을 확인하고 수동으로 대응하세요.
 
 ### Q: Parallel-auto 를 호출했는데 sequential 로 fallback 되었습니다
 

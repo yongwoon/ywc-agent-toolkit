@@ -14,7 +14,7 @@ worker 이며, Skill 의 fan-out parallel/sequential dispatch 대상으로 설�
 
 - Tier 1 (worker) — Backend / Frontend / QA Engineer / Doc Writer 4종 운영
 - Tier 2 (language reviewer) — TypeScript (Sonnet) / Python (Sonnet) / Go (Sonnet) 3종 운영, Swift / Rust 등은 추후 follow-up PR
-- Tier 3 (specialist) — Architect (Opus) / Security Engineer (Opus) / Refactor Cleaner (Sonnet) / Root-cause Analyst (Opus) / Performance Engineer (Sonnet) 5종 운영, 추가 specialist 는 추후 follow-up PR
+- Tier 3 (specialist) — Architect (Opus) / Security Engineer (Opus) / Refactor Cleaner (Sonnet) / Root-cause Analyst (Opus) / Performance Engineer (Sonnet) / Retro Lens (Sonnet) 6종 운영, 추가 specialist 는 추후 follow-up PR
 - Catalog 동기 범위 — `claude-code/` 한정 (Codex / pi-skills 에는 적용 불가)
 
 Tier 정의와 dispatch 흐름은 spec 문서
@@ -24,7 +24,7 @@ Tier 정의와 dispatch 흐름은 spec 문서
 
 ## Per-Agent Summary
 
-> 아래 표는 본 Catalog 에 실제로 land 된 Agent 들입니다 (Tier 1 worker 4종 + Tier 2 language reviewer 3종 + Tier 3 specialist 5종). 각 Agent body
+> 아래 표는 본 Catalog 에 실제로 land 된 Agent 들입니다 (Tier 1 worker 4종 + Tier 2 language reviewer 3종 + Tier 3 specialist 6종). 각 Agent body
 > 의 정식 frontmatter, Mission, Boundaries, Return Contract 는 해당 `<agent-name>.md`
 > 파일에서 확인할 수 있습니다.
 
@@ -42,6 +42,7 @@ Tier 정의와 dispatch 흐름은 spec 문서
 | `ywc-refactor-cleaner` | 3 (specialist) | sonnet | Dead-code 제거 worker (coder tier — writes). SAFE 분류된 worklist 를 받아 per-item grep 검증 + 전후 test 실행 + 1-deletion-per-commit 으로 정리. ywc-refactor-clean Step 3 에서 dispatch |
 | `ywc-root-cause-analyst` | 3 (specialist) | opus | Root-cause analyst (read-only). 5 Whys + hypothesis tracking + primary cause vs contributing factor 분리 + "architecture wrong vs fix harder" gate. ywc-debug-rootcause Phase 1 / Phase 3 (3+ failed fixes), ywc-incident-postmortem Step 4 에서 dispatch |
 | `ywc-performance-engineer` | 3 (specialist) | sonnet | Performance review worker (read-only). 4 axes: Backend (N+1 / index / hot loop / sync IO / allocation / lock), Frontend (bundle / render-block / image / hydration / CSS specificity), Web Vitals (LCP / INP / CLS / FCP / TBT vs project targets), Profiling recommendations (py-spy / chrome devtools / node --prof / pprof / perf / JFR / dotnet-trace — recommend invocation, do not execute). ywc-impl-review Phase 2 advisor pass 의 Performance-related Architecture / Devex candidate 에서 dispatch |
+| `ywc-retro-lens` | 3 (specialist) | sonnet | Retro transcript reader (read-only, `[Read, Grep, Glob]` only — Bash / Write / WebFetch / MCP 없음). Lens / synthesizer prompt 를 적용해 결과를 inline 으로 반환하고, 파일은 caller 가 작성. ywc-retro Step 3 (lens 3종, sonnet) / Step 4 (synthesizer, opus 로 dispatch) 에서만 dispatch |
 
 각 Agent body 의 정확한 frontmatter, Mission 문구, Boundaries, Return Contract 는
 `claude-code/agents/<agent-name>.md` 에서 직접 확인할 수 있습니다. 본
@@ -126,6 +127,7 @@ Agent 가 다른 source 에서 설치되면 마지막 installer 의 내용으로
 - [`ywc-refactor-cleaner`](./ywc-refactor-cleaner.md) ← [`ywc-refactor-clean`](../skills/ywc-refactor-clean/) (Step 3 SAFE deletion loop worker — per-item grep + test before/after + 1-deletion-per-commit)
 - [`ywc-root-cause-analyst`](./ywc-root-cause-analyst.md) ← [`ywc-debug-rootcause`](../skills/ywc-debug-rootcause/) (Phase 1 hypothesis assembly, Phase 3 architecture-suspicion gate after 3+ failed fixes), [`ywc-incident-postmortem`](../skills/ywc-incident-postmortem/) (Step 4 5-Whys walk)
 - [`ywc-performance-engineer`](./ywc-performance-engineer.md) ← [`ywc-impl-review`](../skills/ywc-impl-review/) (Phase 2 advisor pass on Performance-related Architecture / Devex candidate — Backend latency / Frontend bundle / Web Vitals regression / Profiling recommendation)
+- [`ywc-retro-lens`](./ywc-retro-lens.md) ← [`ywc-retro`](../skills/ywc-retro/) (Step 3 judgment / tooling / divergent lens, Step 4 synthesizer — untrusted transcript 를 Bash / Write / MCP 없이 읽음)
 
 각 Skill 의 SKILL.md 안에서 `subagent_type: ywc-<name>` 형식으로 명명 dispatch
 합니다.

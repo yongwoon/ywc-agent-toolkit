@@ -1,5 +1,7 @@
 # Merge Dependabot Skill
 
+> **사용자 호출 전용 Skill** — `/ywc-merge-dependabot` 으로 직접 실행합니다. 모델이 자동으로 선택하지 않으며(`disable-model-invocation: true`), 다른 Skill 이 Skill tool 로 호출할 수 없습니다.
+
 Dependabot이 생성한 Pull Request를 안전하게 일괄 Merge하는 Claude Code Skill입니다.
 
 ## 개요
@@ -11,7 +13,8 @@ Dependabot PR을 탐지하고 사전 안전 검증을 수행한 뒤, PR 번호 �
 - Dependabot PR 일괄 탐지 및 Merge
 - Security 관련 PR 만 처리하는 모드 지원
 - Dockerfile Base Image 변경, Major Version 업그레이드, CI Status 사전 점검
-- 가능한 경우 Conflict 자동 해결 시도
+- Conflict 시 `@dependabot rebase` Comment 를 1회만 남기고 Dependabot 의 rebase 를 대기. Major Version 업그레이드는 항상 Skip 하고 수동 Review 로 넘김
+- Parallel-auto 는 Base Branch 에 required status check 가 확인된 PR 만 `--auto` 에 등록 (Base Branch 이름은 사전 검증). Queue 는 bounded chunk 로 polling 하며, 30분 deadline 경과 후 남은 PR 만 stalled 로 보고
 - **Parallel-auto mode**: lockfile ecosystem 별 PR grouping 과 GitHub auto-merge queue 위임으로 대량 PR 의 wall-clock 시간 단축
 - 처리 후 Summary Report 생성
 

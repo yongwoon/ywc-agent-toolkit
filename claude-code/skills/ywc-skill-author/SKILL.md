@@ -46,6 +46,7 @@ These rules apply to **every** ywc-* skill without exception.
 | A4 | `description` MUST include multilingual triggers (Korean / English / Japanese) when the skill is user-facing |
 | A5 | Frontmatter required minimum: `name`, `description`. For Claude Code skills, additional fields (`version`, `category`, `requires`, etc.) are optional but recommended where meaningful. For Codex skills, frontmatter MUST contain only `name` and `description` — do not copy Claude-only fields |
 | A15 | `description` SHOULD be ≤80 words (locale-independent whitespace count, boundary inclusive: 80 PASS, 81 FAIL). Trim by removing redundancy — repeated trigger phrasings, negated-restatement anti-trigger items, prose duplicating the body — never by removing a trigger a user actually needs to reach the skill. An unreachable-under-80 skill is a reported finding, not a mutilated description. Enforcement mode (advisory vs hard-fail) is gated on the skill-pruning-pilot deletion-test evidence gate; see `validate-skill.sh`'s inline comment for the current mode and rationale |
+| A16 | Choose the invocation mode. Default is **model-invoked** (A2–A4 apply). Set `disable-model-invocation: true` (**user-invoked**) only when the user always types the slash command and no other skill invokes this one through the Skill tool — a user-invoked skill is unreachable from other skills. A user-invoked skill pays zero Tier-1 cost, so A2–A4 do not apply: its `description` is a one-line human-facing summary starting with `(ywc)`, with no trigger list or anti-triggers. `score.py` and `validate-skill.sh` skip A2–A4 for it, and `evals/trigger-cases.json` keeps its prompts only as negatives (`kind: negative`, note `user-invoked, not routed`) |
 
 ### Body
 
@@ -107,6 +108,7 @@ These improve quality but are not strictly required.
 | B6 | Reference an Advisor Pattern (A / B / C) from the bundle-level `references/advisor-pattern.md` | Skill uses an advisor/escalation pass for cost-bounded review |
 | B7 | Add `## Banned Output Patterns` table | Skill generates code or other parseable artifacts |
 | B8 | Define a `--skip-<side-effect>` flag and document propagation in `## Arguments` + `## Integration` + the relevant bundle instruction file | Skill performs a side effect (UL update, CI check, etc.) that an upstream caller may have already performed. See [references/cross-skill-graph.md#flag-propagation-patterns](references/cross-skill-graph.md) for the canonical pattern. |
+| B9 | Call a skill's scripts by the skill-local path form in `claude-code/skills/CLAUDE.md` "Skill-local script paths", never by a repo-relative script path | Skill ships a `scripts/` directory or calls another skill's script |
 
 ## Format Conventions
 
@@ -118,6 +120,20 @@ These improve quality but are not strictly required.
 | Multi-line shell commands | Use heredoc (`git commit -m "$(cat <<'EOF' ... EOF\n)"`) |
 | Empty section placeholder | `N/A — <reason>` (e.g., `N/A — no external spec, housekeeping only`) |
 | Code blocks | Always include language tag (\`\`\`bash, \`\`\`python, etc.) |
+
+## Writing Levers
+
+Every sentence in a skill must change the agent's behavior versus its default. Apply these levers on every draft and every edit:
+
+| Lever | Rule | Test |
+|---|---|---|
+| No-op hunt | Delete any sentence the model already obeys by default ("be careful", "write clean code"). Delete the whole sentence, not words from it. A leading word too weak to beat the default is also a no-op — replace it with a stronger one (*relentless* over *thorough*) | Does removing the sentence change what the agent does? If not, it goes |
+| Positive target | State the behavior to perform ("write one-line comments"), not only the banned one. A bare prohibition puts the banned behavior into context and makes it more available. Keep a prohibition only as a hard guardrail, paired with its positive target | Each `never`/`do not` line names what to do instead |
+| Leading word | Collapse a restated triad or a sentence-long gesture into one pretrained word used as a token (*tight* loop, goes *red*, *tracer bullet*, *frontier*). | The same idea is no longer spelled out at several sites |
+| Completion criterion | End every step on a criterion that is **clear** (done is distinguishable from not-done) and **demanding** ("every modified model accounted for", not "produce a change list"). A vague bound invites premature completion | Could two runs disagree about whether the step is done? |
+| Single source of truth | One meaning lives in one place; the environment (`package.json` scripts, `--help`, config files) is a source of truth the skill must not restate unless the lookup is expensive | Changing the behavior is a one-place edit |
+
+Rationalization Defense rows (A7) are the sanctioned exception to the positive-target lever: each row names an excuse so the agent recognizes it, and its Reality column carries the positive target.
 
 ## Anti-patterns (Never Do These)
 
@@ -175,7 +191,7 @@ skill's own mode flag — it is not a flag the bundled script accepts. Translate
 it into the script's actual CLI before running:
 
 ```bash
-bash scripts/audit-skills.sh --root <skill-or-bundle-dir> --counterpart-root <counterpart-dir> [--near-line-cap <1..500>]
+bash "${CLAUDE_SKILL_DIR}/scripts/audit-skills.sh" --root <skill-or-bundle-dir> --counterpart-root <counterpart-dir> [--near-line-cap <1..500>]
 ```
 
 Run the mechanical report before making any model judgment. Its findings are
@@ -195,7 +211,7 @@ The "compare" step above is not free-form judgment — it follows this 8-step
 procedure so a proposed Rationalization Defense row removal is judged the
 same way every time, never by the agent grading its own prose.
 
-1. **Enumerate** candidates via `scripts/enumerate-rd-rows.sh`. One candidate
+1. **Enumerate** candidates via `"${CLAUDE_SKILL_DIR}/scripts/enumerate-rd-rows.sh"`. One candidate
    = one data row, keyed `<file>:<start>-<end>`.
 2. **Draw the stratified sample**: `min(40, available)` from Stratum A (row
    positions 1–4) and `min(40, available)` from Stratum B (positions 5+), at
@@ -208,7 +224,7 @@ same way every time, never by the agent grading its own prose.
 3. **Bind a scenario**: reuse an `evals/evals.json` `prompt` verbatim if one
    exists, else synthesize from the skill's `description` triggers. Record
    it for reproducibility. Never read `expected_output`.
-4. **Build the variant** via `scripts/build-variant.sh` only — never
+4. **Build the variant** via `"${CLAUDE_SKILL_DIR}/scripts/build-variant.sh"` only — never
    hand-edited; an incidental edit invalidates the contrast.
 5. **Dispatch 3 + 3, blind**: 3 subagents against the original body, 3
    against the deleted body, all on the same scenario. No subagent is told
@@ -246,18 +262,20 @@ examples.
 Run the bundled mechanical gate first — it enforces the deterministic subset of the checklist below (name/description shape, announce line, 500-line cap, README locale set, no `@ywc-` force-loads, reference pointers + min-length) for a single skill and exits non-zero on any failure:
 
 ```bash
-bash claude-code/skills/ywc-skill-author/scripts/validate-skill.sh <skill-dir>
+bash "${CLAUDE_SKILL_DIR}/scripts/validate-skill.sh" <skill-dir>
 ```
 
-For work on the "## Rationalization Defense" table specifically (deletion testing, row sampling), use the row-range enumerator and the variant builder — `scripts/enumerate-rd-rows.sh <skill-dir>` prints one `<start>-<end>` line range per data row (`--self-check` asserts parity against the canonical row counter across all 46 skills), and `scripts/build-variant.sh <skill-dir> <start> <end>` writes a temp-path copy of `SKILL.md` with that inclusive range deleted, refusing to write on an inverted/out-of-bounds range or a header-orphaning deletion.
+For work on the "## Rationalization Defense" table specifically (deletion testing, row sampling), use the row-range enumerator and the variant builder — `"${CLAUDE_SKILL_DIR}/scripts/enumerate-rd-rows.sh" <skill-dir>` prints one `<start>-<end>` line range per data row (`--self-check` asserts parity against the canonical row counter across all 46 skills), and `"${CLAUDE_SKILL_DIR}/scripts/build-variant.sh" <skill-dir> <start> <end>` writes a temp-path copy of `SKILL.md` with that inclusive range deleted, refusing to write on an inverted/out-of-bounds range or a header-orphaning deletion.
 
 Then verify the judgment-based items the script cannot check, before merging a new or modified ywc-* skill:
 
 **Frontmatter**
 - [ ] `name` starts with `ywc-`
+- [ ] Invocation mode chosen per A16; for a user-invoked skill the three `description` trigger checks below are replaced by "one-line `(ywc)` summary" and no sibling invokes it through the Skill tool
 - [ ] `description` starts with `(ywc) Use when...`
 - [ ] `description` ends with `Do not use for...` anti-triggers
 - [ ] `description` includes Korean / English / Japanese triggers (if user-facing)
+- [ ] Writing Levers applied: no no-op sentences, every prohibition paired with its positive target, every step ends on a clear and demanding completion criterion
 
 **Body**
 - [ ] First content line is `**Announce at start:** "..."`

@@ -35,7 +35,7 @@ ywc-commit                      (standalone)
 ywc-create-pr                   (no formal requires; calls ywc-commit internally)
         │
         ▼
-ywc-handle-pr-reviews           (requires: [ywc-create-pr])
+ywc-handle-pr-reviews           (requires: [ywc-create-pr]; --worktree invokes ywc-worktrees --existing-branch)
         │
         ▼
 ywc-release-pr-list             (release flow; no formal requires)
@@ -49,7 +49,9 @@ Standalone / parallel skills (no requires):
 - `ywc-e2e-test-strategy` — runs after implementation; not pipeline-bound (init / audit / flow modes)
 - `ywc-incident-postmortem` — runs reactively after production incidents; not part of dev pipeline
 - `ywc-changelog-release-notes` — runs at release time; soft dependency on ywc-release-pr-list output
-- `ywc-merge-dependabot` — independent of feature pipeline
+- `ywc-merge-dependabot` — independent of feature pipeline; user-invoked — not a model-routing target
+- `ywc-handoff` — runs at the end of a session to brief the next one; user-invoked — not a model-routing target
+- `ywc-retro` — runs after a session to propose environment improvements; user-invoked — not a model-routing target
 - `ywc-project-scaffold` — pre-pipeline (used at project start)
 - `ywc-project-docs` — independent documentation utility
 - `ywc-skill-author` — meta-skill for authoring other skills
@@ -75,7 +77,7 @@ When skill A and skill B share trigger vocabulary, A's description should explic
 | `ywc-parallel-executor` | Sequential tasks → `ywc-sequential-executor` |
 | `ywc-gen-testcase` | Automated unit/integration tests → (none, dev-domain skill) |
 | `ywc-e2e-test-strategy` | Manual verification test sheets → `ywc-gen-testcase`; security penetration testing → `ywc-security-audit`; unit/integration test generation → (none, dev-domain) |
-| `ywc-merge-dependabot` | Feature PR merge → `ywc-create-pr` (or platform tools) |
+| `ywc-merge-dependabot` | Feature PR merge → `ywc-create-pr` (or platform tools); user-invoked — not a model-routing target |
 | `ywc-release-pr-list` | Feature PR creation → `ywc-create-pr`; review comment handling → `ywc-handle-pr-reviews` |
 | `ywc-project-scaffold` | Existing project modification → (none); task creation → `ywc-task-generator` |
 | `ywc-project-docs` | Code comments → (none, in-source); root README → (none); implementation tasks → `ywc-task-generator` |
@@ -132,6 +134,8 @@ If the side effect is **only ever skipped** because a specific upstream skill ra
    - The Dependency Graph (placement based on `requires:`)
    - The Cross-Reference Table (one row, listing each anti-trigger pointer)
 
+5. **Check script paths and co-install pairs.** If your skill calls another skill's script, use the skill-local path form (rule B9, `claude-code/skills/CLAUDE.md` "Skill-local script paths" — never a repo-relative script path) and add the pair to that section's "must be installed together" table.
+
 ## Spotting Overlap (Avoid Creating Duplicate Skills)
 
 If the new skill matches one of these patterns, it is overlap with an existing skill — reconsider:
@@ -154,7 +158,7 @@ Pattern: `ywc-<verb-or-domain-noun>` — short, kebab-case, descriptive.
 
 | Style | Examples (existing) | Use for |
 |---|---|---|
-| Verb-led | `ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-merge-dependabot` | Action-oriented skills |
+| Verb-led | `ywc-create-pr`, `ywc-handle-pr-reviews`, `ywc-merge-dependabot` (user-invoked — not a model-routing target) | Action-oriented skills |
 | Domain noun + suffix | `ywc-impl-review`, `ywc-spec-validate`, `ywc-security-audit` | Review / audit skills |
 | Compound noun | `ywc-task-generator`, `ywc-tech-research`, `ywc-gen-testcase` | Generator / produce-X skills |
 | Executor pattern | `ywc-sequential-executor`, `ywc-parallel-executor` | Multi-task orchestration |

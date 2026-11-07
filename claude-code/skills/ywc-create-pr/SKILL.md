@@ -102,14 +102,14 @@ Before proceeding, verify the environment is ready:
 Run the bundled secret scan script:
 
 ```bash
-# Phase 1+2: dangerous file names + staged/unstaged diff content
-bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --staged
+# Phase 1+2: dangerous file names + staged/unstaged diff and untracked file content
+bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
-bash claude-code/skills/ywc-create-pr/scripts/scan-secrets.sh --committed <base-branch>
+bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --committed <base-branch>
 ```
 
-Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout.
+Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout. Any other result (exit 2 = usage error, not a git work tree, or a `--committed` base that is invalid or does not resolve to a local commit — a base that exists only as `origin/<base>` needs a local ref, or pass `origin/<base>`; exit 127 = script path did not resolve, or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
 
 If either scan returns exit 1, warn the user and show the script output. Do not include flagged files in the commit unless the user explicitly confirms. For committed secrets (second scan), require explicit confirmation before proceeding to PR creation.
 
@@ -134,7 +134,7 @@ Run the same lint, format, typecheck, and test checks locally that CI will execu
 Run the bundled detector first — it emits candidate commands from each source plus the package manager, so you do not re-derive the same greps each run:
 
 ```bash
-bash claude-code/skills/ywc-create-pr/scripts/detect-ci-commands.sh [repo-dir]
+bash "${CLAUDE_SKILL_DIR}/scripts/detect-ci-commands.sh" [repo-dir]
 ```
 
 It is best-effort; reconcile its output against the priority order below (workflows are authoritative, then CLAUDE.md, then package.json, then Makefile):
@@ -254,13 +254,14 @@ PR bodies generated purely from diff/commit history lose the *why* behind a desi
 
     ## Changes
 
-    [List of specific changes made]
+    [Feature list: one item per user- or operator-visible change, written as a capability]
 
     ## Test Plan
 
     [How to verify the changes]
     ```
 
+- **Changes section (new PR body only)**: **Action required: Read `references/pr-body-features-api.md`** and write the Changes content as a feature list, plus an API table when an HTTP endpoint changed. Skip this on the update path, where Step 7 does not run.
 - Write each section based on all commits from the base branch (`git log <base-branch>..HEAD`)
 - Review the full diff already read in Step 6.5 to ensure the description accurately reflects the changes
 - **Design Background (optional, appended)**: if Step 6.6 held a result, **append** a Design Background section after the template/default body above — this augments the body, it never replaces or reorders the project's own template structure (same rule as the `.github/pull_request_template.md` precedence above). Localize the heading and intro line to the language chosen in Step 0 — do not hardcode a single language:

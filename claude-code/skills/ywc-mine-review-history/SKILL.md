@@ -56,7 +56,7 @@ Confirm at least one of `--limit` or `--since` was given. If neither was given, 
 ### Step 2 — Batch fetch (FR-2)
 
 ```bash
-bash claude-code/skills/ywc-mine-review-history/scripts/fetch-bulk-review-comments.sh --limit <n>
+bash "${CLAUDE_SKILL_DIR}/scripts/fetch-bulk-review-comments.sh" --limit <n>
 # or: --since <date>, or both together
 ```
 

@@ -25,6 +25,7 @@ When tempted to skip a step, check this table first:
 | "Post-merge verification is just running `git log` — skip it for speed" | The hard gate exists because `git merge` can silently no-op (already merged, nothing to do, fast-forward elided) and the caller cannot tell from exit code alone. Always verify. |
 | "Bot review polling found 0 comments, skip the wait window" | Polling the full window is the contract. Bots can post asynchronously after CI completes; cutting short the window misses real findings. |
 | "Branch was already deleted by `gh pr merge --delete-branch`, skip the local cleanup" | `--delete-branch` only removes the **remote** branch. The local copy persists and the next task's branch creation will conflict. Always run `git branch -d`. |
+| "`git branch -r --merged HEAD` lists the branch, so deleting the remote is safe" | `--merged HEAD` only proves the branch is in the *local* checkout, not in the PR's actual base. Deleting the remote head of an open PR auto-closes that PR. Before any remote deletion outside `gh pr merge --delete-branch`, follow the Step 5 Remote deletion guard in order — its open-PR check `env -u GH_HOST gh pr list --repo "$repo" --head "$branch" --state open --json number --jq length` must print exactly `0`. Command failure → `BLOCKED`; undeterminable repo or ambiguous output → `NEEDS_CONTEXT`; an open PR or tip mismatch → zero deletions, report the PR numbers or both SHAs. |
 | "Mode flag conflict was already validated upstream, skip the check here" | This skill is a callable unit and may be invoked outside the executors. Validate flag conflicts at every entry point, not just the upstream caller. |
 | "Mark Task Complete is bookkeeping — defer it for after all wave tasks merge" | `tasks/completed/` is the contract that downstream tasks read for dependency resolution. Move-then-merge ordering is forbidden by the Definition of Done; merge-then-move within the same task cycle is required. |
 | "If `git merge --no-ff` reports a conflict, abort and try again" | An aborted merge loses the working state needed to debug the conflict. **Never** auto-abort — surface the conflict to the user so they can inspect it. |
@@ -79,7 +80,7 @@ A `--mode normal-pr` or `--mode local-merge` invocation is **done** only when al
 2. **Merge succeeded**: either the PR was merged via `gh pr merge --delete-branch` (normal-pr) or `git merge --no-ff` succeeded locally and was pushed (local-merge).
 3. **Post-merge verification passed**: `git log -1 --format="%s"` on the base branch begins with `Merge branch 'feature/`.
 4. **Task directory moved**: `git mv <tasks-dir>/<task-name> <tasks-dir>/completed/<task-name>` and the `chore: mark <task-name> as completed` commit was created.
-5. **Local feature branch deleted**: `git branch -d feature/<task-name>` succeeded (refuses to delete an unmerged branch — that is the safety check).
+5. **Local feature branch deleted**: `git branch -d "$BRANCH"` (`BRANCH` as validated in Step 1) succeeded (refuses to delete an unmerged branch — that is the safety check).
 
 For `--mode draft` and `--mode skip-ci-wait`, conditions 2–5 are intentionally not performed; the skill's responsibility ends at PR creation (and ready-marking for `skip-ci-wait`). For `--mode per-task-pr`, only the PR creation portion runs; the caller handles the rest within the wave loop.
 
@@ -87,8 +88,9 @@ For `--mode draft` and `--mode skip-ci-wait`, conditions 2–5 are intentionally
 
 ### Step 1: Validate Inputs
 
-- Confirm `--branch` exists locally (`git branch --list <branch>` returns the branch).
-- Confirm `--base-branch` is reachable (`git rev-parse --verify <base-branch>` succeeds).
+- Hold `--branch` in `BRANCH` and `--base-branch` in `BASE`, and validate both per the Step 5 Remote deletion guard rule before any git command below (on failure return `BLOCKED: invalid branch name`). Every later step reuses these validated variables.
+- Confirm `--branch` exists locally (`git branch --list "$BRANCH"` returns the branch).
+- Confirm `--base-branch` is reachable (`git rev-parse --verify "$BASE"` succeeds).
 - Confirm `--task-name` matches an entry under `<tasks-dir>/` (not under `<tasks-dir>/completed/`).
 - For PR-based modes: confirm `gh auth status` succeeds.
 
@@ -125,7 +127,7 @@ For `--mode` ∈ {`normal-pr`, `draft`, `skip-ci-wait`, `per-task-pr`}: construc
 Run the bundled script to extract the task number and English slug without regex parsing:
 
 ```bash
-python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name>
+python "${CLAUDE_SKILL_DIR}/scripts/build-pr-title.py" <task-name>
 # TASK_NUMBER=yk-000001-010
 # SLUG_EN=Db Create Users Table
 ```
@@ -135,7 +137,7 @@ python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name
 For English PRs (`--pr-lang en`), use `--format title` to get the complete title directly:
 
 ```bash
-python claude-code/skills/ywc-finish-branch/scripts/build-pr-title.py <task-name> --format title
+python "${CLAUDE_SKILL_DIR}/scripts/build-pr-title.py" <task-name> --format title
 # [yk-000001-010] Db Create Users Table
 ```
 
@@ -210,6 +212,18 @@ Skip this step entirely for `--mode local-merge`, `--mode draft`, `--mode skip-c
 
 ### Step 5: Merge
 
+**Remote deletion guard**: normal delivery removes the remote branch through `gh pr merge --delete-branch`. Any other remote deletion — even when the user asks — runs only after every step below passes, in this order. `$branch` is the validated `BRANCH` and `$base` the validated `BASE` (the intended base) of the blocks below. This guard is prose-only; no hook enforces it.
+
+1. **Validate the branch** (the same rule as `ywc-worktrees --existing-branch`): (a) in-process, without interpolating it into any shell command, it must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`; (b) only then `git check-ref-format "refs/heads/$branch"` must succeed. On any failure return `BLOCKED: invalid branch name` and run no remote command. Pass the branch only as a quoted variable — never splice a `--branch`-derived value unquoted into the command line.
+2. **Pin the push target**: `url` is `git remote get-url origin`; it must not start with `-`. `git remote get-url --push --all origin` must print exactly one line, equal to `url` (a `pushurl` or `pushInsteadOf` would send the delete somewhere the checks below never looked); otherwise return `NEEDS_CONTEXT` and delete nothing.
+3. **Bind the repository to `origin`**: run every `gh` call in this guard as `env -u GH_HOST gh …` with an explicit `--repo`. `env -u GH_HOST gh repo view --json url,isFork,parent -- "$url"` (flags before `--`). `repo` is that `url` without its `https://` prefix (`<host>/<owner>/<name>`); when `isFork` is true, `parent` is `<host>/<parent.owner.login>/<parent.name>`, and `env -u GH_HOST gh repo view --json isFork -- "$parent"` must report `false` — a fork of a fork returns `NEEDS_CONTEXT`. Each value must match `^[A-Za-z0-9.-]+/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$`. Pass `--repo "$repo"` (and, for a fork, a second run with `--repo "$parent"`) to every `gh pr list` below — never rely on gh's implicit remote pick, where an upstream PR from this head can be invisible.
+4. **Read the tip**: `git ls-remote origin "refs/heads/$branch"`. Patterns tail-match (`refs/heads/x/refs/heads/$branch` may also print), so assign `tip` from the one line whose ref field is exactly `refs/heads/$branch`; it must match `^[0-9a-f]{40}([0-9a-f]{24})?$`. No exact line means the branch is already absent — report it and delete nothing.
+5. **Merged check**: `env -u GH_HOST gh pr list --repo "$repo" --head "$branch" --state merged --json number,baseRefName,headRefOid,headRepository,headRepositoryOwner` (plus the `$parent` run for a fork) must return a row whose `baseRefName` equals `$base` **and** whose `headRefOid` equals `$tip`; a differing tip means commits were pushed after the merge. The row's head repository must be `origin`: `headRepositoryOwner.login` and `headRepository.name` must equal the owner and name in `repo`, in the `$parent` run too, since `--head` filters by branch name only and a same-named branch from another fork is not evidence. Compare on the parsed JSON in-process (or with `jq --arg`) — never interpolate `$base` or `$tip` into a `--jq` filter. Never judge "merged" by `git branch -r --merged HEAD` on a local integration or work branch, nor by `gh pr view <branch>` (it returns only one of possibly several PRs for that head).
+6. **Open-PR check** (last before the push, to shrink the race window): `env -u GH_HOST gh pr list --repo "$repo" --head "$branch" --state open --json number --jq length` must exit 0 and print exactly `0`; for a fork, the `--repo "$parent"` run must print `0` too.
+7. **Lease-delete**: `git push --force-with-lease="refs/heads/$branch:$tip" origin --delete "refs/heads/$branch"` — a push landing after step 4 is rejected instead of lost. A small window remains between step 6 and this push: a PR opened in it is not seen and is auto-closed by the delete; the lease does not cover that.
+
+Outcomes: any command exiting non-zero (`gh`, `git ls-remote`, the push) → `BLOCKED`; an undeterminable repo, a value failing its shape check, or ambiguous output (unparseable JSON, a malformed `tip`) → `NEEDS_CONTEXT`; an open PR, no qualifying merged row, or a tip mismatch → stop with zero deletions and report the PR numbers or both SHAs.
+
 For `--mode normal-pr`:
 ```bash
 gh pr merge <pr-number> --delete-branch
@@ -218,14 +232,18 @@ gh pr merge <pr-number> --delete-branch
 For `--mode local-merge`:
 ```bash
 # Caller has already verified its Step 4 (Task Verification); this skill does not re-verify.
-git checkout <base-branch>
-git pull origin <base-branch>
-git merge --no-ff feature/<task-name> -m "Merge branch 'feature/<task-name>'"
-git push origin <base-branch>          # omit when --defer-push is set
-git branch -d feature/<task-name>      # omit when --keep-branch is set (parallel wave loop case)
+BASE='<base-branch>'                   # validated value only (Remote deletion guard rule above)
+BRANCH='feature/<task-name>'           # validated value only (same rule)
+git checkout "$BASE"
+git pull origin "$BASE"
+git merge --no-ff "$BRANCH" -m "Merge branch '$BRANCH'"
+git push origin "$BASE"                # omit when --defer-push is set
+git branch -d "$BRANCH"                # omit when --keep-branch is set (parallel wave loop case)
 ```
 
-When `--worktree-path <path>` is set, prefix every git command above with `-C <path>` (e.g. `git -C <path> checkout <base-branch>`, `git -C <path> merge --no-ff feature/<task-name> …`, `git -C <path> branch -d feature/<task-name>`); here `<base-branch>` is the run's integration branch (the worktree's checkout). Per the [Worktree-path mode](#worktree-path-mode) HEAD invariant, the integration branch is checked out before the per-task `feature/<task-name>` is deleted, so the delete succeeds.
+Both `BASE` and `BRANCH` must pass the validation order from the Remote deletion guard rule above before the block runs (on failure return `BLOCKED: invalid branch name` and run no git command); quote every use.
+
+When `--worktree-path <path>` is set, prefix every git command above with `-C <path>` (e.g. `git -C <path> checkout "$BASE"`, `git -C <path> merge --no-ff "$BRANCH" …`, `git -C <path> branch -d "$BRANCH"`); here `<base-branch>` is the run's integration branch (the worktree's checkout). Per the [Worktree-path mode](#worktree-path-mode) HEAD invariant, the integration branch is checked out before the per-task `feature/<task-name>` is deleted, so the delete succeeds.
 
 For all other modes: skip — merge happens later (manual for `draft`, caller for `skip-ci-wait` and `per-task-pr`).
 
@@ -251,7 +269,7 @@ Use the shared marker script — it handles the `.gitignore` branch, the mandato
 bash claude-code/skills/scripts/mark-complete.sh <tasks-dir> <task-name> [--push | --defer-push]
 ```
 
-The marker script runs `claude-code/skills/ywc-task-generator/scripts/compact-dependency-graph.py` between the move and marker commit, using the same resolved `<tasks-dir>`, and stages the resulting graph when it is tracked. The heading-based compactor retroactively handles existing graphs: completed phases become `## Phase NNNNNN — done` plus a `- Completed: ...` bullet, while fully completed Parallel Execution Notes and Visual Dependency Graph sections are removed. In worktree mode, the script path may come from the main checkout, but `<tasks-dir>` must resolve inside `<path>`.
+The marker script runs `"${CLAUDE_SKILL_DIR}/../ywc-task-generator/scripts/compact-dependency-graph.py"` between the move and marker commit, using the same resolved `<tasks-dir>`, and stages the resulting graph when it is tracked. The heading-based compactor retroactively handles existing graphs: completed phases become `## Phase NNNNNN — done` plus a `- Completed: ...` bullet, while fully completed Parallel Execution Notes and Visual Dependency Graph sections are removed. In worktree mode, the script path may come from the main checkout, but `<tasks-dir>` must resolve inside `<path>`.
 
 Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
 
@@ -265,10 +283,14 @@ For `--mode draft`, `--mode skip-ci-wait`, `--mode per-task-pr`: skip Step 7 ent
 
 For `--mode normal-pr`:
 ```bash
-git checkout <base-branch>
-git pull origin <base-branch>
-git branch -d feature/<task-name>      # omit when --keep-branch is set
+BASE='<base-branch>'                   # validated value only (Remote deletion guard rule, Step 5)
+BRANCH='feature/<task-name>'           # validated value only (same rule)
+git checkout "$BASE"
+git pull origin "$BASE"
+git branch -d "$BRANCH"                # omit when --keep-branch is set
 ```
+Validate `BASE` and `BRANCH` per the Step 5 Remote deletion guard rule before this block (on failure return `BLOCKED: invalid branch name` and run no git command); quote every use.
+
 The local branch must be deleted explicitly because `gh pr merge --delete-branch` only removes the remote. Skip the deletion when `--keep-branch` is set — the caller (typically `ywc-parallel-executor`) will release the worktree and delete the branch in its own cleanup step. When `--worktree-path <path>` is set, run all three commands as `git -C <path> …` (here `<base-branch>` is the run's integration branch); the per-task `feature/<task-name>` deletion is safe because the worktree HEAD is on the integration branch per the [Worktree-path mode](#worktree-path-mode) invariant.
 
 For `--mode local-merge`: already handled inside Step 5's command sequence (which honors `--keep-branch` likewise).

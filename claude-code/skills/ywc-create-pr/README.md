@@ -12,6 +12,7 @@ Feature Branch에서 작업이 완료된 후, 변경 사항 Commit부터 Draft P
 - **Security Check**: `.env`, `*.key`, `*.pem` 등 민감 파일 감지 및 경고
 - **CI Check (Pre-push Validation)**: Push 전에 lint, format, typecheck, test 등을 로컬에서 실행하여 CI 실패를 사전에 방지
 - **Author Self-Review Gate**: PR 생성 전 자기 diff 전체를 검토하여 scope creep, debug 잔여물, secret을 차단 (필수, skip 불가)
+- **Changes를 기능 목록으로 작성**: 변경 내용을 기능 단위 목록으로 쓰고, HTTP endpoint가 바뀐 경우에만 API 변경 표를 추가
 - **PR Template 지원**: `.github/pull_request_template.md`가 있으면 자동 적용
 - **관련 설계 문서 인용**: Branch에 대응하는 task의 `## Spec Reference`(우선) 또는 `docs/ywc-plans/` 하위 전체에서 매칭되는 plan/spec을 찾아 PR 본문에 "설계 배경" 섹션으로 인용 (best-effort, non-blocking)
 - **Draft PR 생성**: 모든 PR은 Draft 상태로 생성

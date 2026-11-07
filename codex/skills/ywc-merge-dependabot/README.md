@@ -9,9 +9,9 @@ Claude Code와 Codex CLI 모두에서 사용할 수 있습니다.
 
 - 전체 Dependabot PR Merge 또는 Security PR만 선별 Merge
 - Pre-Merge 안전 검증 (Dockerfile FROM 변경, Major Version Upgrade, CI Status)
-- Merge Conflict 자동 해결 시도 및 CI 재실행
+- Merge Conflict 는 `@dependabot rebase` 로만 해결 (직접 해결하지 않음), rebase 된 head 의 CI 를 기다린 뒤 검증된 head 에 pin 하여 Merge (`--match-head-commit`)
 - PR 번호 오름차순 순차 처리 (이전 Merge 영향 고려)
-- **Parallel-auto mode**: lockfile ecosystem 별 lane 을 만들고 lane 별로 한 PR 만 active auto-merge 상태로 유지하여 대량 PR 의 wall-clock 시간을 단축
+- **Parallel-auto mode**: lockfile ecosystem 별 lane 을 만들고 lane 별로 한 PR 만 active auto-merge 상태로 유지하여 대량 PR 의 wall-clock 시간을 단축. 모든 auto-merge 시작 전에 PR 의 base branch 에 required status check 가 있는지 확인하고, 확인되지 않은 PR 은 마지막 sequential pass 에서 처리
 - 처리 결과 Summary Report 자동 생성
 
 ## 사용 방법
@@ -91,7 +91,9 @@ ywc-merge-dependabot/
 ├── agents/
 │   └── openai.yaml                    # Codex CLI Agent 설정
 └── scripts/
-    └── group-by-ecosystem.py          # PR → lockfile ecosystem 분류 (parallel-auto mode 전용)
+    ├── group-by-ecosystem.py          # PR → lockfile ecosystem 분류 (parallel-auto mode 전용)
+    ├── check-base-required-checks.sh  # PR base branch 의 required status check 확인 (Claude Code copy 와 byte-identical)
+    └── test_merge_dependabot_scripts.py  # base check, 3a gate, SKILL.md 계약 Test
 ```
 
 ## 관련 Skill
@@ -102,4 +104,4 @@ ywc-merge-dependabot/
 
 ## 운영 안전성
 
-Dockerfile diff hunk의 변경된 FROM만 검출하며 조회·파싱 실패는 미해결로 처리합니다. Rebase/CI polling은 chunk 간 전체 1800초 deadline과 완전한 상태를 유지하고 timeout을 실패로 처리합니다. 명시적 호출 선호 metadata는 runtime 강제 보장이 아닙니다.
+Dockerfile diff hunk의 변경된 FROM만 검출하며 조회·파싱 실패는 미해결로 처리합니다. Rebase/CI polling은 chunk 간 run-wide 1800초 deadline과 완전한 상태를 유지하고 timeout을 실패로 처리합니다. 명시적 호출 선호 metadata는 runtime 강제 보장이 아닙니다.

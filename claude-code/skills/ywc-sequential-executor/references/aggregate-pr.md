@@ -59,7 +59,7 @@ target:
     --base-branch "$WORK_BRANCH" \
     --task-name <task-name> \
     --tasks-dir <tasks-dir> \
-    --pr-lang <pr-lang>
+    [--pr-lang <pr-lang>]   # include only when the user passed --pr-lang; otherwise omit it
   ```
 
 Each task merges into the work branch, commits its `chore: mark <task-name> as completed`
@@ -71,8 +71,10 @@ accumulating on the work branch instead of the real base.
 Before transitioning to the next task, run the same pre-transition gate the other modes use
 (Step 6.2), passing the **work branch** as the integration argument:
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-bash claude-code/skills/ywc-sequential-executor/scripts/verify-transition.sh \
+bash "<skill-base-dir>/scripts/verify-transition.sh" \
   "$WORK_BRANCH" <completed-task-name> <tasks-dir>
 ```
 
@@ -90,11 +92,12 @@ work branch):
 
 1. **Create the PR** via `ywc-create-pr`, passing `--skip-post-ci-check` because this
    procedure runs its own CI/bot/merge gate below, and an explicit `--title` (the caller
-   owns the group title):
+   owns the group title). When the user passed `--pr-lang`, add a `--lang <pr-lang> \`
+   line before `--base-branch`; otherwise omit it (never leave a comment after a `\`
+   line continuation — it would split the command):
    ```bash
    /ywc-create-pr \
      --title "<group title — e.g. [000024-010..000025-030] project health>" \
-     --lang <pr-lang> \
      --base-branch <base-branch> \
      --skip-post-ci-check
    ```

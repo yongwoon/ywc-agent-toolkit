@@ -1,5 +1,7 @@
 # Setup Language Skill (ywc-setup-language)
 
+> **User-invoked skill** — run it directly with `/ywc-setup-language`. The model does not route to it automatically (`disable-model-invocation: true`), and other skills cannot call it through the Skill tool.
+
 A Claude Code Skill that persists a project- or user-level **output language** so every
 language-aware `ywc-*` skill produces documents, PR text, and commit messages in that
 language without a per-call `--lang` flag or prompt.

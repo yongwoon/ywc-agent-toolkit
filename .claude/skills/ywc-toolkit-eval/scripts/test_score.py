@@ -83,6 +83,38 @@ class S5LocaleTest(unittest.TestCase):
             self.assertEqual(r["axes"]["S5"], 0)
 
 
+class UserInvokedSkillTest(unittest.TestCase):
+    """A16 — `disable-model-invocation: true` skills are exempt from A2/A3/A4 only."""
+
+    def _score(self, flag: str) -> dict:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp) / "ywc-sample"
+            d.mkdir()
+            (d / "SKILL.md").write_text(
+                "---\nname: ywc-sample\n" + flag +
+                "description: (ywc) Merges things on request.\n---\n\n"
+                "**Announce at start:** x\n\n## Rationalization Defense\n\n"
+                "| Excuse | Reality |\n|---|---|\n| a | b |\n| c | d |\n"
+                "| e | f |\n| g | h |\n| i | j |\n", encoding="utf-8")
+            for loc in score.REQUIRED_LOCALES:
+                (d / loc).write_text("content", encoding="utf-8")
+            return score.score_skill(d, {}, {})
+
+    # Fails if score_skill stops reading disable-model-invocation: S2 drops to 4.
+    def test_user_invoked_skips_trigger_checks_and_keeps_s2(self) -> None:
+        r = self._score("disable-model-invocation: true\n")
+        self.assertEqual(r["axes"]["S2"], 5)
+        for check in ("A2_use_when", "A3_anti_trigger", "A4_multilingual"):
+            self.assertNotIn(check, r["signals"]["structure_checks"])
+
+    # Fails if the exemption becomes global: the same description without the flag must drop.
+    def test_model_invoked_skill_is_still_checked(self) -> None:
+        r = self._score("")
+        self.assertLess(r["axes"]["S2"], 5)
+        self.assertFalse(r["signals"]["structure_checks"]["A3_anti_trigger"])
+
+
 class A5HeuristicTest(unittest.TestCase):
     """FR3 — A5 model-tier band derives from role keywords in the NAME."""
 
@@ -607,6 +639,122 @@ class CoverageIndependenceTest(unittest.TestCase):
         for name in ("ywc-commit", "ywc-create-pr",
                      "ywc-handle-pr-reviews", "ywc-debug-rootcause"):
             self.assertTrue(coverage[name]["sufficient"], name)
+
+
+class CoverageExemptionTest(unittest.TestCase):
+    """yk-000010-060 — only items that cannot be user-triggered by description are exempt."""
+
+    @staticmethod
+    def _cov(positives: int, collisions: int) -> dict:
+        return {"positives": positives, "collisions": collisions,
+                "positives_total": positives, "collisions_total": collisions,
+                "sufficient": positives >= score.COVERAGE_MIN_POSITIVES
+                and collisions >= score.COVERAGE_MIN_COLLISIONS}
+
+    def _agent_cov(self, description: str, cov: dict, tags: str = "") -> dict:
+        """`tags` is raw frontmatter text (e.g. "tags: [x]" or a block list); "" omits it."""
+        import tempfile
+        tags_block = f"{tags}\n" if tags else ""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ywc-x.md"
+            path.write_text(f"---\nname: ywc-x\ndescription: >-\n  {description}\n"
+                            f"model: sonnet\ntools: [Read]\n{tags_block}---\nbody\n",
+                            encoding="utf-8")
+            return score.score_agent(path, {}, {"ywc-x": cov})["signals"]["coverage"]
+
+    # Fails if a slash-only skill is judged on description-routing coverage.
+    def test_slash_only_skill_is_exempt_from_both_minimums(self) -> None:
+        fm = {"disable-model-invocation": "true", "description": "(ywc) x"}
+        cov = score.apply_coverage_exemption(self._cov(0, 0), fm)
+        self.assertTrue(cov["sufficient"])
+        self.assertEqual(cov["exempt"], "slash-only")
+
+    # Fails if the exemption leaks to model-invoked items.
+    def test_model_invoked_item_is_not_exempt(self) -> None:
+        cov = score.apply_coverage_exemption(
+            self._cov(0, 0), {"description": "(ywc) Use when x. Triggers: a."})
+        self.assertFalse(cov["sufficient"])
+        self.assertIsNone(cov["exempt"])
+
+    # Fails if the collision minimum is waived for a tagged dispatch-only agent.
+    def test_dispatch_only_agent_still_needs_collisions(self) -> None:
+        desc = "Use only as the confined reader. Triggers: dispatch by ywc-retro."
+        tag = "tags: [dispatch-only]"
+        self.assertFalse(self._agent_cov(desc, self._cov(0, 1), tag)["sufficient"])
+        ok = self._agent_cov(desc, self._cov(0, 2), tag)
+        self.assertTrue(ok["sufficient"])
+        self.assertEqual(ok["exempt"], "dispatch-only")
+
+    # Fails if the description phrase (not the tag) is used to derive the exemption.
+    def test_description_phrase_without_tag_is_not_exempt(self) -> None:
+        for desc in ("Triggers: dispatch by ywc-retro; no natural-language triggers.",
+                     "Use when reviewing Go code. Do not use for a user-typed code review "
+                     "request (ywc-impl-review owns it and dispatches this agent)."):
+            cov = self._agent_cov(desc, self._cov(0, 2))
+            self.assertIsNone(cov["exempt"], desc)
+            self.assertFalse(cov["sufficient"], desc)
+
+    # Fails if the token rule accepts a near-miss or a commented-out mention.
+    def test_near_miss_tags_are_not_exempt(self) -> None:
+        for tag in ("tags: [dispatch-only-x]", "tags: [non-dispatch-only]",
+                    "tags: [Dispatch-Only]", "tags: [dispatch_only]",
+                    "tags: [language-reviewer] # not dispatch-only",
+                    "tags: [language-reviewer]\t# not dispatch-only",
+                    "tags: # dispatch-only (disabled)\n  - dispatch-only",
+                    "tags:\n  # dispatch-only (disabled)\n  - dispatch-only"):
+            cov = self._agent_cov("Use when x.", self._cov(0, 2), tag)
+            self.assertIsNone(cov["exempt"], tag)
+            self.assertFalse(cov["sufficient"], tag)
+
+    # Fails if a valid flow, quoted or block-list tag is not recognised.
+    def test_valid_tag_forms_are_dispatch_only(self) -> None:
+        for tag in ("tags: [dispatch-only]", "tags: [dispatch-only, language-reviewer]",
+                    "tags: [language-reviewer, dispatch-only]", 'tags: ["dispatch-only"]',
+                    "tags: ['dispatch-only'] # trailing comment",
+                    "tags:\n  - dispatch-only", "tags:\n  - language-reviewer\n  - dispatch-only"):
+            cov = self._agent_cov("Use when x.", self._cov(0, 2), tag)
+            self.assertEqual(cov["exempt"], "dispatch-only", tag)
+            self.assertTrue(cov["sufficient"], tag)
+
+    # Fails if the slash-only rule stops taking precedence over the tag.
+    def test_slash_only_wins_over_dispatch_only_tag(self) -> None:
+        fm = {"disable-model-invocation": "true", "tags": "[dispatch-only]"}
+        self.assertEqual(score.apply_coverage_exemption(self._cov(0, 0), fm)["exempt"],
+                         "slash-only")
+
+    # Fails if an ordinary agent is exempted, or an exempt one lacks an explicit reason.
+    def test_ordinary_agent_is_not_exempt(self) -> None:
+        cov = self._agent_cov("Use when analyzing performance. Triggers: perf.", self._cov(0, 2))
+        self.assertFalse(cov["sufficient"])
+        self.assertIsNone(cov["exempt"])
+
+    # Pins the shipped result: every item is sufficient, and exemptions are exactly these.
+    def test_shipped_catalog_has_no_unexplained_gap(self) -> None:
+        results = score.evaluate("all")
+        gaps, exempt = [], {}
+        for items in results.values():
+            for it in items:
+                cov = it["signals"]["coverage"]
+                if not cov["sufficient"]:
+                    gaps.append(it["name"])
+                if cov.get("exempt"):
+                    exempt[it["name"]] = cov["exempt"]
+        # ywc-mine-review-history is a model-invoked skill with no independently
+        # sourced prompt anywhere in the repo, and no rule-based exemption fits it.
+        # Pinned as the one known open gap so any NEW gap fails; drop this entry
+        # when real session-trace / user-prompt cases for it land.
+        self.assertEqual(gaps, ["ywc-mine-review-history"])
+        # The full map, so an accidental NEW exemption fails here too.
+        self.assertEqual(exempt, {
+            "ywc-handoff": "slash-only",
+            "ywc-merge-dependabot": "slash-only",
+            "ywc-retro": "slash-only",
+            "ywc-setup-language": "slash-only",
+            "ywc-go-reviewer": "dispatch-only",
+            "ywc-python-reviewer": "dispatch-only",
+            "ywc-typescript-reviewer": "dispatch-only",
+            "ywc-retro-lens": "dispatch-only",
+        })
 
 
 if __name__ == "__main__":

@@ -80,7 +80,11 @@ When creating a new `ywc-*` skill or modifying an existing skill's structure
 `ywc-*` skills:
 
 - Frontmatter format (description must start with `(ywc) Use when...` and end
-  with `Do not use for ...` anti-triggers; multilingual triggers required)
+  with `Do not use for ...` anti-triggers; multilingual triggers required).
+  Exception: user-invoked skills (`disable-model-invocation: true`, rule A16) are
+  exempt from trigger / anti-trigger rules and carry a one-line description
+  instead — currently `ywc-setup-language`, `ywc-merge-dependabot`,
+  `ywc-handoff`, and `ywc-retro`
 - Body structure (`**Announce at start:**` line, `## Rationalization Defense`
   table with ≥5 domain-specific Excuse / Reality pairs)
 - Filesystem (Tier 1 README locale set: `.md`, `.en.md`, `.ja.md`, `.ko.md`; generated Tier 2 `.zh.md` / `.es.md` where present;
@@ -330,7 +334,7 @@ a same-line `Release … TaskStop` clause, enforced by
 `tests/named_agent_release_test.py`): `ywc-impl-review`, `ywc-spec-validate`,
 `ywc-parallel-executor`, `ywc-code-gen`, `ywc-product-review`,
 `ywc-security-audit`, `ywc-ui-ux-review`, `ywc-tech-research`,
-`ywc-iac-author`, `ywc-infra-review`. `ywc-sequential-executor` is the
+`ywc-iac-author`, `ywc-infra-review`, `ywc-retro`. `ywc-sequential-executor` is the
 single-bounded-dispatch consumer (prose citation, no batch, no callout).
 
 ## Bundled Execution Scripts
@@ -344,7 +348,7 @@ them instead of inlining equivalent logic in SKILL.md bodies.
 | `scripts/poll-pr-reviews.sh <pr>` | shared | Bot-polling loop; exit 0 = bots found, exit 1 = no bots |
 | `scripts/resolve-language.sh [--lang <code>] \| --emit-section <code>` | shared | Deterministic output-language resolution; precedence `--lang` flag → project `CLAUDE.md` → user `CLAUDE.md` → `UNRESOLVED`; prints the resolved code (or, with `--emit-section`, the canonical `## Language Policy` block); always exits 0 |
 | `ywc-task-generator/scripts/resolve-initials.sh [--initials <s>]` | ywc-task-generator | Collaborator-initials resolution; `--initials` flag → derive from `git config user.email`/`user.name`; prints `RESOLVED <s>` \| `NEEDS_CONFIRM <candidate>` \| `NONE`; always exits 0 |
-| `ywc-create-pr/scripts/scan-secrets.sh --staged \| --committed <base>` | ywc-create-pr | 3-phase secret scan; exit 0 = clean, exit 1 = found |
+| `ywc-create-pr/scripts/scan-secrets.sh --staged \| --committed <base>` | ywc-create-pr | 3-phase secret scan; exit 0 = clean, exit 1 = found, exit 2 = usage error, not a work tree, or a `--committed` base that is invalid or does not resolve to a local commit (a base only on `origin/<base>` needs a local ref, or pass `origin/<base>`) |
 | `ywc-finish-branch/scripts/build-pr-title.py <task> [--format parts\|title]` | ywc-finish-branch | task-name → TASK_NUMBER + SLUG_EN; 4 regex patterns incl. flexible N-M and single-prefix fallbacks |
 | `ywc-sequential-executor/scripts/verify-transition.sh <base> <task> [dir]` | ywc-sequential-executor | 4-condition pre-transition check; exit 0 = PASS |
 | `ywc-skill-author/scripts/enumerate-rd-rows.sh <skill-dir> \| --self-check` | ywc-skill-author | Rationalization Defense table data-row `<start>-<end>` line-range enumeration, mirroring score.py's canonical row counter; `--self-check` asserts 46/46 count parity |
@@ -359,6 +363,10 @@ them instead of inlining equivalent logic in SKILL.md bodies.
 | `ywc-release-pr-list/scripts/fetch-pr-metadata.sh <pr> [<pr> ...]` | ywc-release-pr-list | Batch PR metadata (author, title, summary, state); NDJSON output |
 | `ywc-merge-dependabot/scripts/group-by-ecosystem.py <pr> [<pr> ...]` | ywc-merge-dependabot | Classify Dependabot PRs by lockfile ecosystem (npm / github-actions / python / go / cargo / maven / gradle / docker / mixed); JSON output; powers parallel-auto mode grouping |
 | `ywc-merge-dependabot/scripts/detect-major-bump.py --title <t> \| (stdin)` | ywc-merge-dependabot | Deterministic "leftmost non-zero segment" semver major-bump gate; NDJSON output; `major_bump: true\|false\|null` (null = undecidable, LLM falls back) |
+| `ywc-merge-dependabot/scripts/check-base-required-checks.sh <pr>` | ywc-merge-dependabot | Validate the remote `baseRefName` (allowlist, no leading `-`, no `..`, not `HEAD`, `git check-ref-format "refs/heads/$base"`) and confirm ≥1 required status check on it; last line `CONFIRMED=<0\|1> BASE=<base>`; exit 0 = confirmed, 1 = cannot confirm (zero required checks or invalid base; exclude from `--auto`), 2 = usage error, 3 = unresolved (lookup failed or unparseable; exclude from `--auto`, never the all-checks fallback) |
+| `ywc-merge-dependabot/scripts/detect-dockerfile-from.sh <pr>` | ywc-merge-dependabot | `FROM` change detection limited to `Dockerfile*` / `*.dockerfile` hunks; exit 0 = FROM change (skip), 1 = none, 2 = usage error, 3 = unresolved (`gh` failed) |
+| `ywc-merge-dependabot/scripts/wait-dependabot-rebase.sh <pr>` | ywc-merge-dependabot | Single `@dependabot rebase` comment + bounded query-first rebase wait (9 × 60 s); last line `REBASED=<0\|1> ATTEMPTS=<n> NEW_HEAD=<sha>`; exit 0 = rebased, 1 = not rebased, 2 = usage error |
+| `ywc-merge-dependabot/scripts/poll-merge-queue.py --state <file> [--prs <n> ...] [--deadline <epoch>]` | ywc-merge-dependabot | One ≤540 s chunk of parallel-auto queue polling with persisted state (fixed 30 min deadline, 20 s `gh` timeout, stalled only after the deadline); exit 0 = finished, 3 = run next chunk, 2 = usage error |
 | `ywc-release-pr-list/scripts/extract-merged-prs.sh [--exclude <pr>]` | ywc-release-pr-list | Pure-text extraction of merged PR numbers from commit headlines (2 anchored patterns only); dedup + ascending sort; no network |
 | `ywc-task-generator/scripts/compact-dependency-graph.py <tasks-dir>` | ywc-task-generator | Collapse fully completed phases in `dependency-graph.md` to `## Phase NNNNNN — done`; drop fully completed Notes/Mermaid sections; invoked by `scripts/mark-complete.sh` and by the Step 2 >300-line gate |
 | `ywc-verify-done/scripts/gate-check.py [--status\|--reverify] <ledger>` | ywc-verify-done | Deterministic Executable Gate Ledger checker for the optional high-stakes completion-claim escalation; `--status` parses/reports only (executes nothing), default mode executes unmet runnable gates, `--reverify` forces re-execution of all; exit 0 = all runnable gates met / well-formed ledger on `--status`, exit 1 = >=1 unmet gate or malformed/missing ledger |
@@ -367,6 +375,44 @@ All paths are relative to the repository root. When authoring a new `ywc-*`
 skill that needs deterministic parsing or a bounded wait loop, add a script
 to `<skill>/scripts/` and reference it with a one-line Bash invocation in the
 SKILL.md body rather than describing the logic inline.
+
+The table above ("relative to the repository root") applies only to `shared`
+scripts. Skill-local scripts follow
+[Skill-local script paths](#skill-local-script-paths) below.
+
+## Skill-local script paths
+
+A skill that calls its own script by a repo-relative script path does not resolve once the skill is installed under `~/.claude/skills`. LLM-executed Markdown therefore uses the forms below. The rule applies to every occurrence of a skill-local script path, whether it appears in a command or in prose. In these forms `ywc-x` is a placeholder for the callee skill's directory name, and `<skill>` for the owning skill. This section is the only place the rule is defined; `ywc-skill-author` rule B9 points here.
+
+**(a) SKILL.md** — Claude Code substitutes `${CLAUDE_SKILL_DIR}` when the skill loads.
+
+- Own script: `"${CLAUDE_SKILL_DIR}/scripts/<name>"`
+- Another skill's script: `"${CLAUDE_SKILL_DIR}/../<callee-skill>/scripts/<name>"`
+
+**(b) Per-skill `references/*.md` and `*.md.template`** — these are not substituted, so they use a placeholder.
+
+- Own script: `"<skill-base-dir>/scripts/<name>"`
+- Another skill's script: `"<skill-base-dir>/../<callee-skill>/scripts/<name>"`
+- Define the placeholder once per file, at first use, with this sentence: "`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads)".
+- Repeating that sentence in every reference file is an explicit exception to "define in one place": a reference can be Read on its own, without its SKILL.md.
+- A legacy angle-bracketed `path-to-skill` placeholder is renamed to `<skill-base-dir>` (or kept with the same defining sentence).
+- Exception: in a template whose text is emitted into a user's file (e.g. `ywc-task-generator/references/dependency-graph.md.template`), name the script without any path (e.g. `compact-dependency-graph.py`) instead of `${CLAUDE_SKILL_DIR}` or `<skill-base-dir>`.
+- The name is `<skill-base-dir>`, not `<skill-dir>`, because `ywc-skill-author/SKILL.md` already uses `<skill-dir>` for the installed skill directory.
+
+**(c) Fallback** — if the model Reads SKILL.md directly, `${CLAUDE_SKILL_DIR}` appears unsubstituted. Replace it with the directory that contains that SKILL.md. If the script then fails with `No such file or directory`, `can't open file`, exit `127`, or (for an unresolved `<skill-base-dir>`) a shell `syntax error near unexpected token 'newline'`, stop with `BLOCKED: unresolved skill path`. Do not interpret the result with the skill's own exit-code table: an empty path makes python exit `2`, which collides with skill-defined exit `2` values.
+
+**(c2) Quoting** — always double-quote the expanded path, e.g. `"${CLAUDE_SKILL_DIR}/scripts/x.sh"`, so a space in `$HOME` or a plugin cache path stays one argument.
+
+**(d) Out of scope** — the shared scripts (`resolve-language.sh`, `poll-pr-reviews.sh`, `mark-complete.sh`, `update-state.py`) and the `"${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/…"` form keep their existing contract. README files and the maintainer tables in this file stay repo-relative because humans read them.
+
+**(e) Skills that must be installed together** — a cross-skill script path resolves only when both skills sit side by side, so a partial install (`bash scripts/install.sh --cc <skill> ...`, handled by `run_cc_install` / `install_skill` in `scripts/install.sh`) must include both. The installer does not check these pairs: name both skills when installing partially. A skill-invocation dependency (the caller invokes the callee by name, no script path) still needs the callee installed, so it is listed separately. The table lists confirmed pairs only and is non-exhaustive for skill-invocation dependencies (for example `ywc-parallel-executor` and `ywc-sequential-executor` also invoke `ywc-finish-branch`).
+
+| Caller | Callee (script path) | Callee (skill invocation only) |
+|---|---|---|
+| `ywc-parallel-executor` | `ywc-worktrees`, `ywc-docker-isolate` | — |
+| `ywc-finish-branch` | `ywc-task-generator` | `ywc-worktrees` |
+| `ywc-sequential-executor` | — | `ywc-worktrees` |
+| `ywc-handle-pr-reviews` | — | `ywc-worktrees` (`--worktree` only) |
 
 ## HTML Output Mode
 

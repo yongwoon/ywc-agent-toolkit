@@ -91,7 +91,7 @@ Before proceeding, verify the environment is ready:
 Run the bundled secret scan script:
 
 ```bash
-# Phase 1+2: dangerous file names + staged/unstaged diff content
+# Phase 1+2: dangerous file names + staged/unstaged diff and untracked file content
 RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 SECRET_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/scan-secrets.sh" bash)" || exit $?
 bash "$SECRET_SCRIPT" --staged
@@ -100,7 +100,7 @@ bash "$SECRET_SCRIPT" --staged
 bash "$SECRET_SCRIPT" --committed <base-branch>
 ```
 
-Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout.
+Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout. Any other result (exit 2 = usage error, not a git work tree, or an invalid or unresolvable `--committed` base; or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
 
 If either scan returns exit 1, warn the user and show the script output. Do not include flagged files in the commit unless the user explicitly confirms. For committed secrets (second scan), require explicit confirmation before proceeding to PR creation.
 

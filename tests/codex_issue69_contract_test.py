@@ -61,6 +61,19 @@ class ContractTests(unittest.TestCase):
             self.assertFalse(sentinel.exists(), 'fixture command was executed')
 
 
+    def test_finish_branch_remote_deletion_guard_step_order(self):
+        # Mutation oracle: moving the open-PR check ahead of the tip read or the
+        # merged check (the pre-FR-4 order) must fail this test.
+        source = (ROOT / 'codex/skills/ywc-finish-branch/SKILL.md').read_text()
+        start = source.index('**Remote deletion guard**')
+        guard = source[start:source.index('**Worktree prune', start)]
+        steps = ['git check-ref-format "refs/heads/$branch"', 'git remote get-url --push --all origin',
+                 'gh repo view --json url,isFork,parent', 'git ls-remote origin "refs/heads/$branch"',
+                 '--state merged', '--state open', '--force-with-lease']
+        positions = [guard.index(step) for step in steps]
+        self.assertEqual(positions, sorted(positions), dict(zip(steps, positions)))
+
+
     def test_coverage_gate_placement_and_expected_calls(self):
         # Source placement/call-count expectations, not a live agentic trace.
         source = (ROOT / 'codex/skills/ywc-agentic/SKILL.md').read_text()

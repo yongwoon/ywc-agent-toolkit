@@ -15,7 +15,7 @@ Este Skill detecta los PRs de Dependabot, aplica verificaciones de seguridad pre
 - Detecta y fusiona PRs de Dependabot en lote
 - Admite un modo de merge solo para seguridad
 - Verifica cambios en la imagen base de Dockerfile, actualizaciones de versión mayor y estado de CI antes del merge
-- Intenta resolver conflictos cuando es posible
+- Resuelve conflictos solo mediante `@dependabot rebase` (nunca a mano), espera el CI del head rebasado y hace merge fijado al head verificado (`--match-head-commit`)
 - Genera un informe de resumen al final
 
 ## Uso
@@ -41,4 +41,4 @@ Los disparadores en lenguaje natural están definidos en [SKILL.md](./SKILL.md).
 
 ## Seguridad operativa
 
-Detecta FROM modificados solo en hunks de Dockerfile; los errores de consulta o análisis quedan sin resolver. El polling de rebase/CI conserva todo el estado y un único límite total de 1800 segundos entre bloques; un timeout es un fallo. La preferencia de invocación explícita en metadata no garantiza su imposición en runtime.
+Detecta FROM modificados solo en hunks de Dockerfile; los errores de consulta o análisis quedan sin resolver. El polling de rebase/CI conserva todo el estado y un único deadline run-wide de 1800 segundos entre bloques; un timeout es un fallo. La preferencia de invocación explícita en metadata no garantiza su imposición en runtime.

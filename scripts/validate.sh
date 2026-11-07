@@ -716,20 +716,6 @@ check_cc_support_dirs() {
     ERRORS=$((ERRORS + 1))
   fi
 
-  # The poll script is a merge gate: a wrong verdict lets an unreviewed PR
-  # merge. Both suites stub `gh` and need no network.
-  local poll_test
-  for poll_test in claude-code/skills/scripts/test-poll-pr-reviews.sh \
-                   codex/skills/scripts/test-poll-pr-reviews.sh; do
-    if [ ! -f "$poll_test" ]; then
-      echo "ERROR: poll-pr-reviews test suite is missing: $poll_test"
-      ERRORS=$((ERRORS + 1))
-    elif ! bash "$poll_test" >/dev/null 2>&1; then
-      echo "ERROR: poll-pr-reviews test suite failed: $poll_test"
-      ERRORS=$((ERRORS + 1))
-    fi
-  done
-
   # Every ../references/<file> link must resolve relative to the file that
   # contains it. From a SKILL.md this points at the shared references dir; from
   # a skill-local references/*.md it points back at that same local dir. We
@@ -747,6 +733,83 @@ check_cc_support_dirs() {
       fi
     done < <(grep -oE '(\.\./)+references/[A-Za-z0-9._-]+\.md' "$file" | sort -u)
   done < <(grep -rlE '(\.\./)+references/[A-Za-z0-9._-]+\.md' claude-code/skills --include='*.md')
+}
+
+run_script_test_suites() {
+  # The poll script is a merge gate: a wrong verdict lets an unreviewed PR
+  # merge. Both suites stub `gh` and need no network.
+  local poll_test
+  for poll_test in claude-code/skills/scripts/test-poll-pr-reviews.sh \
+                   codex/skills/scripts/test-poll-pr-reviews.sh; do
+    if [ ! -f "$poll_test" ]; then
+      echo "ERROR: poll-pr-reviews test suite is missing: $poll_test"
+      ERRORS=$((ERRORS + 1))
+    elif ! bash "$poll_test" >/dev/null 2>&1; then
+      echo "ERROR: poll-pr-reviews test suite failed: $poll_test"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  # The secret scan must never report "clean" when it could not scan.
+  local scan_test
+  for scan_test in claude-code/skills/ywc-create-pr/scripts/test-scan-secrets.sh \
+                   codex/skills/ywc-create-pr/scripts/test-scan-secrets.sh; do
+    if [ ! -f "$scan_test" ]; then
+      echo "ERROR: scan-secrets test suite is missing: $scan_test"
+      ERRORS=$((ERRORS + 1))
+    elif ! bash "$scan_test" >/dev/null 2>&1; then
+      echo "ERROR: scan-secrets test suite failed: $scan_test"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  # merge-dependabot scripts gate `--auto` merges on a remote-controlled
+  # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
+  local dependabot_test dependabot_out
+  for dependabot_test in claude-code/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py \
+                         codex/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py; do
+    if [ ! -f "$dependabot_test" ]; then
+      echo "ERROR: merge-dependabot test suite is missing: $dependabot_test"
+      ERRORS=$((ERRORS + 1))
+    elif ! dependabot_out=$(python3 "$dependabot_test" 2>&1); then
+      echo "ERROR: merge-dependabot test suite failed: $dependabot_test"
+      printf '%s\n' "$dependabot_out" | tail -n 30
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  # The evaluator's own tests pin the shipped catalog's trigger coverage; a new
+  # skill or agent below the coverage minimum fails here. Offline, stdlib only.
+  local score_dir=.claude/skills/ywc-toolkit-eval/scripts score_out
+  if [ ! -f "$score_dir/test_score.py" ]; then
+    echo "ERROR: toolkit-eval scorer test suite is missing: $score_dir/test_score.py"
+    ERRORS=$((ERRORS + 1))
+  elif ! score_out=$(python3 "$score_dir/test_score.py" 2>&1); then
+    echo "ERROR: toolkit-eval scorer test suite failed: $score_dir/test_score.py"
+    printf '%s\n' "$score_out" | tail -n 30
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  # Security suites for remote-controlled PR head names and for the handoff /
+  # retro artifact writes; all run offline (stubbed `gh`, temp dirs).
+  local sec_test sec_out
+  for sec_test in claude-code/skills/ywc-handle-pr-reviews/tests/resolve-pr-head-test.sh \
+                  claude-code/skills/ywc-handoff/tests/test_handoff_safety.py \
+                  claude-code/skills/ywc-retro/tests/test_retro_safety.py; do
+    if [ ! -f "$sec_test" ]; then
+      echo "ERROR: security test suite is missing: $sec_test"
+      ERRORS=$((ERRORS + 1))
+      continue
+    fi
+    case "$sec_test" in
+      *.py) sec_out=$(python3 "$sec_test" 2>&1) ;;
+      *)    sec_out=$(bash "$sec_test" 2>&1) ;;
+    esac || {
+      echo "ERROR: security test suite failed: $sec_test"
+      printf '%s\n' "$sec_out" | tail -n 30
+      ERRORS=$((ERRORS + 1))
+    }
+  done
 }
 
 check_loop_only_tool_calls() {
@@ -826,6 +889,7 @@ done
 echo "==> Validating claude-code agents..."
 check_cc_agents
 check_cc_support_dirs
+run_script_test_suites
 check_loop_only_tool_calls claude-code/skills
 
 echo "==> Running named-agent release gate..."
