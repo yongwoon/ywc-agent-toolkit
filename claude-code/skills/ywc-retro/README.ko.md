@@ -1,7 +1,7 @@
 # Retrospective Skill (ywc-retro)
 
 > **사용자 호출 전용 Skill** — `/ywc-retro` 로 직접 실행합니다. 모델이 자동으로 선택하지 않으며(`disable-model-invocation: true`), 다른 Skill 이 Skill tool 로 호출할 수 없습니다.
-
+>
 > **Agent 의존성** — lens 와 synthesizer 는 read-only `ywc-retro-lens` Agent (Read / Grep / Glob 만) 에서 실행됩니다. `bash scripts/install.sh --cc-agents ywc-retro-lens` 로 설치하며, 설치되지 않은 경우 single pass 로 fallback 합니다.
 
 Coding session 을 회고하여, 다음 실행부터 Agent 가 더 잘 일하도록 **환경**(navigation pointer, automated check, coding standard, steering file, tooling, 정보 접근)을 개선할 후보를 심각도 (High / Medium / Low) 순으로 제안하는 Claude Code Skill 입니다. `mattpocock/skills` 의 `retro` 를 기반으로 합니다.
