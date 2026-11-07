@@ -22,7 +22,7 @@ You review a coding-session transcript through the judgment lens. Your strength 
 
 ## Output
 
-Produce at most 15 candidates, each at most 4 lines, with these fields:
+Produce at most 15 candidates, each at most 6 lines, with these fields:
 
 - **Principle**: one sentence stating the rule that generalizes.
 - **Evidence**: the transcript moment (tool name + timestamp or turn, minimal redacted excerpt).
