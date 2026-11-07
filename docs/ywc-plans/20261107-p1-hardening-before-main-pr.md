@@ -31,7 +31,7 @@ The branch `feature/improvement-20261106` (about 130 commits ahead of `main`) ha
 ## Out of Scope
 
 - **P2-a — enforce prose-only guards with hooks** (`claude-code/hooks/` already ships `block-dangerous-commands.py`, `protect-secrets.py`, `hooks-registry.json`). Deferred: it is a cross-cutting design decision (which guards, false-positive cost, Codex has no equivalent hook surface) that needs its own plan and an architect verdict.
-- **P2-b — scan-secrets residual gaps:** combined-diff lines of the ` +x` form (`--cc`) and the content of untracked files with harmless names (`scan-secrets.sh:86` checks names only). Deferred: both pre-date this branch and are Low.
+- **P2-b — scan-secrets residual gap:** combined-diff lines of the ` +x` form (`--cc`). Deferred: pre-dates this branch and is Low. (The untracked-file content gap originally listed here was raised to High by the FR-6 whole-run review and fixed in the release-gate fix pass — Amendment Log Iteration 7.)
 - **P2-c — real prompts for `ywc-mine-review-history`** coverage (pinned gap in `test_score.py`). Deferred: requires real usage data; fabrication is forbidden by the dataset provenance rule.
 - Codex agent TOML files (`codex/agents/*.toml`): `score.py` does not evaluate them, so no marker is added there.
 - Any change to `claude-code/skills/ywc-merge-dependabot/**` beyond what T0 already owns.
@@ -369,3 +369,14 @@ Each task merges locally (`--local-merge`) onto `feature/improvement-20261106`; 
 | `## Existing Constraints Touched` | `:159-167` row: new persisted entries are `ci_wait` and `stage3` only | "the new persisted entries are `auto_intent`, `ci_wait` and `stage3`" |
 | `## Functional Requirements` | FR-1 `lane-state.md` list drops `auto_intent`; FR-3 replaces the `auto_intent` write/clear/resume rules with the `state,autoMergeRequest,headRefOid` pre-start read, the resume lane advance and the Stage 3 drain condition; `SkillContractTest` bullet updated | "Before the `--auto` call, persist by the same atomic snapshot `auto_intent[pr] = {head}`." |
 | `## Edge Cases` | crash-after-`--auto` case decided by the resume lane advance + pre-start read | "the `auto_intent` entry plus an `autoMergeRequest` read decides" |
+
+### Iteration 7 — 2026-11-07
+
+**Driven by**: FR-6 whole-run review (3 chunks) — 1 High open at tip (untracked-file content not scanned by `scan-secrets.sh --staged`); targeted re-review of fix `155ae0bd` found 1 High regression (untracked binary → exit 2 under UTF-8 locale), fixed in `3fbf2241`; gate not re-scored
+**Signatures**: `security:untracked-content-unscanned`, `devex:untracked-binary-blocks-scan`
+
+> FR-6 allows one fix pass. The second commit (`3fbf2241`) only repairs a regression introduced by that pass (same file, same finding area), so it is treated as part of the same pass; the targeted re-review covers `c034f53a..3fbf2241`.
+
+| Section edited | What changed | Why |
+|---|---|---|
+| `## Out of Scope` | P2-b keeps only the `--cc` ` +x` gap; the untracked-content gap is recorded as fixed in the release-gate pass | "the content of untracked files with harmless names (`scan-secrets.sh:86` checks names only). Deferred: both pre-date this branch and are Low." |
