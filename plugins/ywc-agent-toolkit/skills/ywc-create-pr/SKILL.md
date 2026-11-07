@@ -96,7 +96,7 @@ RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-res
 SECRET_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/scan-secrets.sh" bash)" || exit $?
 bash "$SECRET_SCRIPT" --staged
 
-# Phase 3: all commits on this branch vs base (secrets already committed)
+# Phase 3: all commits on this branch vs base (secrets and dangerous file names already committed)
 bash "$SECRET_SCRIPT" --committed <base-branch>
 ```
 

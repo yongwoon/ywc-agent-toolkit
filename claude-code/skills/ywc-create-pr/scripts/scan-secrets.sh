@@ -5,7 +5,8 @@
 #   Phase 1 — dangerous file names (.env, .pem, credentials.*, etc.)
 #   Phase 2 — staged + unstaged diff content and untracked file content
 #             (secret regex patterns)
-#   Phase 3 — committed diff vs base branch (when --committed is given)
+#   Phase 3 — committed diff vs base branch, plus dangerous file names in
+#             that range (when --committed is given)
 #
 # Exit codes:
 #   0  No secrets detected
@@ -90,9 +91,10 @@ STATUS=$(git status --porcelain -z --untracked-files=all | tr '\0' '\n') || {
   echo "ERROR: git status failed; nothing was scanned" >&2
   exit 2
 }
-DANGEROUS=$(printf '%s\n' "$STATUS" \
-  | grep -iE '(^|[/ ])\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$' \
-  || true)
+# A name is matched after the status field's space, after a `/`, or at the
+# start of a bare path (Phase 3 name list).
+DANGEROUS_NAME_RE='(^|[/ ])\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$'
+DANGEROUS=$(printf '%s\n' "$STATUS" | grep -iE "$DANGEROUS_NAME_RE" || true)
 
 if [ -n "$DANGEROUS" ]; then
   echo "WARN: Potentially sensitive files in changeset:"
@@ -143,6 +145,18 @@ $DIFF_UNTRACKED"
 
 # ── Phase 3: committed diff vs base branch ────────────────────────────────────
 if [ "$MODE" = "committed" ]; then
+  # Phase 1 sees only the work tree, so a .env committed on the branch is
+  # checked here. Deleted paths are excluded: they never reach the base.
+  COMMITTED_NAMES=$(git diff --name-only -z --diff-filter=d --no-renames "${BASE_BRANCH}...HEAD" | tr '\0' '\n') || {
+    echo "ERROR: git diff --name-only ${BASE_BRANCH}...HEAD failed; committed changes were not scanned" >&2
+    exit 2
+  }
+  DANGEROUS_COMMITTED=$(printf '%s\n' "$COMMITTED_NAMES" | grep -iE "$DANGEROUS_NAME_RE" || true)
+  if [ -n "$DANGEROUS_COMMITTED" ]; then
+    echo "WARN: Potentially sensitive files committed since ${BASE_BRANCH}:"
+    echo "$DANGEROUS_COMMITTED" | sed 's/^/  /'
+    FOUND=1
+  fi
   DIFF_COMMITTED=$(git diff "${DIFF_OPTS[@]}" "${BASE_BRANCH}...HEAD") || {
     echo "ERROR: git diff ${BASE_BRANCH}...HEAD failed; committed changes were not scanned" >&2
     exit 2
@@ -161,7 +175,8 @@ SECRET_PATTERNS=(
   'xoxp-[0-9]{11}-'
   'AIza[0-9A-Za-z_\-]{35}'
   '\-\-\-\-\-BEGIN .* PRIVATE KEY\-\-\-\-\-'
-  'password\s*=\s*["\x27][^"\x27]{4,}'
+  # Double-quoted so the apostrophe is literal (`\x27` is not an ERE escape).
+  "password\\s*=\\s*[\"'][^\"']{4,}"
   'DATABASE_URL\s*='
 )
 
@@ -177,7 +192,9 @@ for PATTERN in "${SECRET_PATTERNS[@]}"; do
   MATCHES=$(echo "$ADDED_LINES" | grep -E "$PATTERN" || true)
   if [ -n "$MATCHES" ]; then
     echo "SECRET DETECTED (pattern: $PATTERN):"
-    echo "$MATCHES" | head -3 | sed 's/^/  /'
+    # One sed reads all input: `head` would close the pipe early and, under
+    # pipefail, turn a large match set into exit 141 instead of "found".
+    echo "$MATCHES" | sed -n '1,3s/^/  /p'
     FOUND=1
   fi
 done

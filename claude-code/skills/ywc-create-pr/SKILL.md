@@ -105,7 +105,7 @@ Run the bundled secret scan script:
 # Phase 1+2: dangerous file names + staged/unstaged diff and untracked file content
 bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --staged
 
-# Phase 3: all commits on this branch vs base (secrets already committed)
+# Phase 3: all commits on this branch vs base (secrets and dangerous file names already committed)
 bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --committed <base-branch>
 ```
 
