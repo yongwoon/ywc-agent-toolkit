@@ -130,6 +130,31 @@
         "Marking the recommendation as cache-eligible because the audit ran, even though it failed.",
         "Reporting Completion Status as DONE despite unresolved Critical/High findings."
       ]
+    },
+    {
+      "id": 6,
+      "name": "medium-spec-task-split-dispatch",
+      "prompt": "Add email/password sign-in with a new users table migration and the argon2 library",
+      "context": {
+        "files_changed": [],
+        "preconditions": {
+          "existing_auth_detected": false,
+          "policy_interview": "all 9 categories answered, all approved",
+          "ywc-plan scale": "Medium (DB migration and new library escalate it out of Small)",
+          "ywc-spec-ready": "DONE"
+        }
+      },
+      "expected_behavior": [
+        "ywc-task-generator runs on the converged spec after ywc-spec-ready returns DONE and before any implementation dispatch.",
+        "Each generated task directory gets its own Task dispatch, in dependency-graph order; the db migration task and the lib (argon2) task are separate dispatches.",
+        "Each dispatch prompt names the single task directory it implements; ui tasks go to ywc-frontend-coder and every other category to ywc-backend-coder.",
+        "A task starts only after the tasks it depends on resolved to a clean integration state."
+      ],
+      "anti_behavior": [
+        "Dispatching one ywc-backend-coder for the whole backend of a Medium/Large spec.",
+        "Bundling the migration or the library introduction into the same dispatch as the code that uses it.",
+        "Skipping ywc-task-generator on the Medium/Large path."
+      ]
     }
   ],
   "notes": [

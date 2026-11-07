@@ -34,6 +34,7 @@ Or invoke via natural language:
 ## Related Skills
 
 - `ywc-backend-coder` / `ywc-frontend-coder` — implementation dispatch targets under TDD discipline
+- `ywc-task-generator` — splits a Medium/Large spec into tasks before dispatch, one dispatch per task (a DB migration and a new library stay separate tasks)
 - `ywc-doc-writer` — dispatch target for ToS/Privacy Policy drafts (draft pending legal review)
 - `ywc-security-audit` / `ywc-e2e-test-strategy` — post-implementation security/E2E gates
 - `ywc-tech-research` — real-time research routing when stack evidence is insufficient

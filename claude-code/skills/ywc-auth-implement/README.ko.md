@@ -34,6 +34,7 @@
 ## 관련 Skill
 
 - `ywc-backend-coder` / `ywc-frontend-coder` — TDD 규율 하 실제 구현 dispatch 대상
+- `ywc-task-generator` — Medium/Large spec을 dispatch 전에 task로 분할하고 task마다 한 번씩 dispatch (DB migration과 새 library는 별도 task로 유지)
 - `ywc-doc-writer` — 법적 검토 전 임시본 ToS/Privacy Policy 초안 dispatch 대상
 - `ywc-security-audit` / `ywc-e2e-test-strategy` — 구현 후 Security/E2E Gate
 - `ywc-tech-research` — Stack 근거 불충분 시 실시간 리서치 routing
