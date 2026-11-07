@@ -40,7 +40,7 @@ case "$GH_STUB_MODE:$*" in
     printf 'diff --git a/build/app.dockerfile b/build/app.dockerfile\n-FROM alpine:3.19\n' ;;
   diff-fail:"pr diff"*)
     exit 1 ;;
-  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*|nullnew:"pr view "*"--json headRefOid --jq"*|shortnew:"pr view "*"--json headRefOid --jq"*)
+  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*|nullnew:"pr view "*"--json headRefOid --jq"*|shortnew:"pr view "*"--json headRefOid --jq"*|oddnull:"pr view "*"--json headRefOid --jq"*|oddempty:"pr view "*"--json headRefOid --jq"*)
     echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
   nullhead:"pr view "*"--json headRefOid --jq"*)
     echo null ;;
@@ -60,6 +60,10 @@ case "$GH_STUB_MODE:$*" in
     echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb UNKNOWN" ;;
   emptyhead:"pr view "*"headRefOid,mergeable"*)
     echo " MERGEABLE" ;;
+  oddnull:"pr view "*"headRefOid,mergeable"*)
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb null" ;;
+  oddempty:"pr view "*"headRefOid,mergeable"*)
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb " ;;
   newconflict:"pr view "*"headRefOid,mergeable"*)
     echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb CONFLICTING" ;;
   commentfail:"pr comment"*)
@@ -88,10 +92,12 @@ case "$GH_STUB_MODE:$*" in
     [ -n "${GH_STUB_BASE+x}" ] || exit 1
     printf '%s\n' "$GH_STUB_BASE" ;;
   base:"api "*"/protection/required_status_checks"*)
-    [ -n "${GH_STUB_PROTECTION:-}" ] || exit 1
+    [ -z "${GH_STUB_PROTECTION_ERR+x}" ] || { printf '%s\n' "$GH_STUB_PROTECTION_ERR" >&2; exit 1; }
+    [ -n "${GH_STUB_PROTECTION:-}" ] || { echo '{"message":"Branch not protected"}'; echo "gh: Branch not protected (HTTP 404)" >&2; exit 1; }
     echo "$GH_STUB_PROTECTION" ;;
   base:"api "*"/rules/branches/"*)
-    [ -n "${GH_STUB_RULES:-}" ] || exit 1
+    [ -z "${GH_STUB_RULES_ERR+x}" ] || { printf '%s\n' "$GH_STUB_RULES_ERR" >&2; exit 1; }
+    [ -n "${GH_STUB_RULES:-}" ] || { echo '{"message":"Not Found"}'; echo "gh: Not Found (HTTP 404)" >&2; exit 1; }
     echo "$GH_STUB_RULES" ;;
   *)
     exit 1 ;;
@@ -174,6 +180,15 @@ class WaitDependabotRebaseTest(StubbedTest):
         r = self.run_cmd("newconflict", "bash", REBASE, "7")
         self.assertEqual(r.returncode, 1)
         self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
+
+    def test_mergeable_outside_allowlist_is_not_rebased(self):
+        # Fails if `mergeable` is checked with a deny-list: `null` or an empty value is not
+        # CONFLICTING/UNKNOWN and would be reported as a finished rebase.
+        for mode in ("oddnull", "oddempty"):
+            with self.subTest(mode=mode):
+                r = self.run_cmd(mode, "bash", REBASE, "7")
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
 
     def test_unreadable_head_fails_before_requesting_rebase(self):
         r = self.run_cmd("no-head", "bash", REBASE, "7")
@@ -261,10 +276,14 @@ class CheckBaseRequiredChecksTest(StubbedTest):
             "api repos/{owner}/{repo}/branches/release/1.2/protection/required_status_checks"), 1)
 
     def test_ruleset_check_confirms_when_protection_lookup_fails(self):
-        # Fails if the rulesets fallback is removed.
-        r = self.check(GH_STUB_BASE="main", GH_STUB_RULES="2")
-        self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual(self.gh_calls("api repos/{owner}/{repo}/rules/branches/main"), 1)
+        # Fails if the rulesets fallback is removed, or if a failed protection lookup
+        # overrides a positive ruleset count.
+        for env in ({}, {"GH_STUB_PROTECTION_ERR": "gh: Resource not accessible by integration (HTTP 403)"}):
+            with self.subTest(env=env):
+                r = self.check(GH_STUB_BASE="main", GH_STUB_RULES="2", **env)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                self.assertEqual(r.stdout.strip().splitlines()[-1], "CONFIRMED=1 BASE=main")
+        self.assertEqual(self.gh_calls("api repos/{owner}/{repo}/rules/branches/main"), 2)
 
     def test_zero_required_checks_cannot_confirm(self):
         # Fails if a count of 0 is treated as a required check (instant --auto merge).
@@ -272,16 +291,33 @@ class CheckBaseRequiredChecksTest(StubbedTest):
         self.assertEqual(r.returncode, 1)
         self.assertEqual(r.stdout.strip().splitlines()[-1], "CONFIRMED=0 BASE=main")
 
-    def test_non_numeric_count_cannot_confirm(self):
-        # Fails if non-numeric gh output is trusted as a count.
+    def test_non_numeric_count_is_unresolved(self):
+        # Fails if non-numeric gh output is trusted as a count, or read as "zero required checks".
         r = self.check(GH_STUB_BASE="main", GH_STUB_PROTECTION="null", GH_STUB_RULES="1;x")
-        self.assertEqual(r.returncode, 1)
+        self.assertEqual(r.returncode, 3)
+        self.assertEqual(r.stdout.strip().splitlines()[-1], "CONFIRMED=0 BASE=main")
 
-    def test_gh_failures_cannot_confirm(self):
-        # Fails if a 404 / permission error is read as "confirmed".
+    def test_not_found_lookups_mean_zero_required_checks(self):
+        # Fails if HTTP 404 (branch not protected, no rulesets) is read as "confirmed" or
+        # as a failed lookup: an unprotected base would lose its all-checks gate.
         r = self.check(GH_STUB_BASE="main")
         self.assertEqual(r.returncode, 1)
         self.assertEqual(r.stdout.strip().splitlines()[-1], "CONFIRMED=0 BASE=main")
+
+    def test_failed_lookup_is_unresolved_not_zero(self):
+        # Fails if a 403 / rate limit / server error / silent gh failure on either lookup is
+        # read as "base has zero required checks" (exit 1 → all-checks fallback).
+        errors = ["gh: API rate limit exceeded for installation ID 1. (HTTP 403)",
+                  "gh: Resource not accessible by integration (HTTP 403)",
+                  "gh: Server Error (HTTP 502)", ""]
+        for err in errors:
+            for env in ({"GH_STUB_PROTECTION_ERR": err, "GH_STUB_RULES": "0"},
+                        {"GH_STUB_PROTECTION": "0", "GH_STUB_RULES_ERR": err}):
+                with self.subTest(env=env):
+                    r = self.check(GH_STUB_BASE="main", **env)
+                    self.assertEqual(r.returncode, 3, r.stderr)
+                    self.assertEqual(r.stdout.strip().splitlines()[-1], "CONFIRMED=0 BASE=main")
+                    self.assertIn("unresolved", r.stderr)
 
     def test_unreadable_base_cannot_confirm(self):
         # Fails if an empty / failed baseRefName lookup reaches `gh api`.
@@ -353,6 +389,16 @@ class SequentialCiGateTest(StubbedTest):
         r = self.gate(GH_STUB_ALL_RC="1", GH_STUB_ALL_OUT="no checks reported on the 'dependabot/x' branch", **env)
         self.assertEqual(self.last(r), "Skipped (no CI checks)")
         self.assertEqual(self.gh_calls("pr merge"), 1)
+
+    def test_failed_base_lookup_is_skipped_never_fallback(self):
+        # Fails if exit 3 (lookup failed) reaches the all-checks fallback or any merge.
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ, GH_STUB_BASE="main",
+                      GH_STUB_PROTECTION_ERR="gh: API rate limit exceeded (HTTP 403)", GH_STUB_RULES="0")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (required checks unconfirmed)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+        self.assertEqual(sum(l.startswith("pr checks") and "--required" not in l
+                             for l in self.log.read_text().splitlines()), 0)
 
     def test_unreadable_base_keeps_fail_safe(self):
         # Fails if an unreadable/invalid base is treated as "no required checks".

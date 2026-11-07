@@ -6,7 +6,8 @@
 # (up to 9 queries, 60 s apart — issue as one Bash call with `timeout: 600000`).
 #
 # The rebase counts as done only when `headRefOid` differs from the recorded
-# value AND `mergeable` is neither CONFLICTING nor UNKNOWN. Both heads must
+# value AND `mergeable` is exactly MERGEABLE (allowlist: CONFLICTING, UNKNOWN,
+# empty, `null` or any other value is unresolved). Both heads must
 # match ^[0-9a-f]{40}$: a recorded head that does not (empty, `null`, a failed
 # query) exits as "head unreadable"; a polled head that does not is unresolved —
 # polling continues; it is never evidence of a finished rebase.
@@ -47,7 +48,7 @@ until [ "$REBASED" -eq 1 ] || [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; do
   STATE="$(gh pr view "$PR" --json headRefOid,mergeable --jq '"\(.headRefOid) \(.mergeable)"' 2>/dev/null || true)"
   NEW_HEAD="${STATE%% *}"; MERGEABLE="${STATE##* }"
   if [[ "$NEW_HEAD" =~ ^[0-9a-f]{40}$ ]] && [ "$NEW_HEAD" != "$OLD_HEAD" ] \
-     && [ "$MERGEABLE" != "CONFLICTING" ] && [ "$MERGEABLE" != "UNKNOWN" ]; then
+     && [ "$MERGEABLE" = "MERGEABLE" ]; then
     REBASED=1
   elif [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; then
     sleep "$POLL_SECONDS"
