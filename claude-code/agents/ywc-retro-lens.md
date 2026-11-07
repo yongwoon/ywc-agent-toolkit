@@ -29,7 +29,10 @@ synthesizer prompt the caller passes (judgment, tooling, divergent, or
 synthesizer from `claude-code/skills/ywc-retro/references/`) to the read
 scope that prompt names, and returning the complete output inline. It has no
 persona of its own; the prompt carries the lens. The caller, not this agent,
-writes the output to the run scratchpad.
+writes the output to the run scratchpad. It exists so the retro transcript,
+which may carry prompt injection, is read by an agent that structurally cannot
+run commands, write files, or reach the network — `general-purpose` would hold
+all three.
 
 ## Triggers
 

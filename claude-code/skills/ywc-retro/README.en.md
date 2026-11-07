@@ -2,6 +2,8 @@
 
 > **User-invoked skill** — run it directly with `/ywc-retro`. The model does not route to it automatically (`disable-model-invocation: true`), and other skills cannot call it through the Skill tool.
 
+> **Agent dependency** — the lenses and synthesizer run on the read-only `ywc-retro-lens` agent (Read / Grep / Glob only). Install it with `bash scripts/install.sh --cc-agents ywc-retro-lens`; without it the skill falls back to a single pass.
+
 A Claude Code Skill that reviews a coding session and proposes, ranked by severity (High / Medium / Low), improvements to the **environment** — navigation pointers, automated checks, coding standards, steering files, tooling, information access — so the Agent works better from the next run on. Based on `retro` from `mattpocock/skills`.
 
 ## Overview
