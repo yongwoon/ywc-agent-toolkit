@@ -24,6 +24,9 @@ BASE_CHECK = HERE / "check-base-required-checks.sh"
 QUEUE = HERE / "poll-merge-queue.py"
 MAJOR = HERE / "detect-major-bump.py"
 
+OLD_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+NEW_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
 GH_STUB = r"""#!/usr/bin/env bash
 echo "$*" >> "$GH_STUB_LOG"
 case "$GH_STUB_MODE:$*" in
@@ -37,20 +40,28 @@ case "$GH_STUB_MODE:$*" in
     printf 'diff --git a/build/app.dockerfile b/build/app.dockerfile\n-FROM alpine:3.19\n' ;;
   diff-fail:"pr diff"*)
     exit 1 ;;
-  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*)
-    echo oldsha ;;
+  rebased:"pr view "*"--json headRefOid --jq"*|stuck:"pr view "*"--json headRefOid --jq"*|unknown:"pr view "*"--json headRefOid --jq"*|emptyhead:"pr view "*"--json headRefOid --jq"*|newconflict:"pr view "*"--json headRefOid --jq"*|commentfail:"pr view "*"--json headRefOid --jq"*|nullnew:"pr view "*"--json headRefOid --jq"*|shortnew:"pr view "*"--json headRefOid --jq"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  nullhead:"pr view "*"--json headRefOid --jq"*)
+    echo null ;;
+  shorthead:"pr view "*"--json headRefOid --jq"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  nullnew:"pr view "*"headRefOid,mergeable"*)
+    echo "null MERGEABLE" ;;
+  shortnew:"pr view "*"headRefOid,mergeable"*)
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb MERGEABLE" ;;
   no-head:"pr view "*"--json headRefOid --jq"*)
     exit 1 ;;
   rebased:"pr view "*"headRefOid,mergeable"*)
-    echo "newsha MERGEABLE" ;;
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb MERGEABLE" ;;
   stuck:"pr view "*"headRefOid,mergeable"*)
-    echo "oldsha CONFLICTING" ;;
+    echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa CONFLICTING" ;;
   unknown:"pr view "*"headRefOid,mergeable"*)
-    echo "newsha UNKNOWN" ;;
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb UNKNOWN" ;;
   emptyhead:"pr view "*"headRefOid,mergeable"*)
     echo " MERGEABLE" ;;
   newconflict:"pr view "*"headRefOid,mergeable"*)
-    echo "newsha CONFLICTING" ;;
+    echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb CONFLICTING" ;;
   commentfail:"pr comment"*)
     exit 1 ;;
   *:"pr comment"*)
@@ -63,6 +74,16 @@ case "$GH_STUB_MODE:$*" in
     echo '{"state":"CLOSED","mergeStateStatus":"CLEAN"}' ;;
   queue:"pr view 4 "*)
     exit 1 ;;
+  base:"pr view "*"headRefOid"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  base:"pr checks "*"--required"*)
+    printf '%s\n' "${GH_STUB_REQ_OUT:-}" >&2
+    exit "${GH_STUB_REQ_RC:-0}" ;;
+  base:"pr checks "*)
+    printf '%s\n' "${GH_STUB_ALL_OUT:-}" >&2
+    exit "${GH_STUB_ALL_RC:-0}" ;;
+  base:"pr merge "*)
+    exit 0 ;;
   base:"pr view "*"baseRefName"*)
     [ -n "${GH_STUB_BASE+x}" ] || exit 1
     printf '%s\n' "$GH_STUB_BASE" ;;
@@ -129,7 +150,7 @@ class WaitDependabotRebaseTest(StubbedTest):
     def test_new_head_and_mergeable_counts_as_rebased(self):
         r = self.run_cmd("rebased", "bash", REBASE, "7")
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=1 ATTEMPTS=1 NEW_HEAD=newsha")
+        self.assertEqual(r.stdout.strip().splitlines()[-1], f"REBASED=1 ATTEMPTS=1 NEW_HEAD={NEW_SHA}")
         self.assertEqual(self.gh_calls("pr comment 7 --body @dependabot rebase"), 1)
 
     def test_unchanged_head_exhausts_nine_attempts(self):
@@ -159,6 +180,26 @@ class WaitDependabotRebaseTest(StubbedTest):
         self.assertEqual(r.returncode, 1)
         self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=0 NEW_HEAD=")
         self.assertEqual(self.gh_calls("pr comment"), 0)
+
+    def test_non_sha_recorded_head_fails_before_requesting_rebase(self):
+        # Fails if OLD_HEAD is accepted without the 40-hex check: "null" or a 39-char value would
+        # be recorded and any later head would look "new".
+        for mode in ("nullhead", "shorthead"):
+            with self.subTest(mode=mode):
+                r = self.run_cmd(mode, "bash", REBASE, "7")
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=0 NEW_HEAD=")
+                self.assertIn("cannot read the current head", r.stderr)
+                self.assertEqual(self.gh_calls("pr comment"), 0)
+
+    def test_non_sha_polled_head_is_not_rebased(self):
+        # Fails if NEW_HEAD is accepted without the 40-hex check: "null" or a 39-char value differs
+        # from the recorded head and would be reported as a finished rebase.
+        for mode in ("nullnew", "shortnew"):
+            with self.subTest(mode=mode):
+                r = self.run_cmd(mode, "bash", REBASE, "7")
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
 
     def test_failed_rebase_comment_exits_before_polling(self):
         r = self.run_cmd("commentfail", "bash", REBASE, "7")
@@ -201,7 +242,7 @@ class CheckBaseRequiredChecksTest(StubbedTest):
         # or if the base value is ever expanded by a shell.
         pwned = self.tmp / "PWNED"
         hostile = [f"$(touch {pwned})", f"`touch {pwned}`", f"main;touch {pwned}",
-                   "a/../b", "..", "--x", "-x", "a b", "a\nb", "main|id", "x.lock", "a/", "/a"]
+                   "a/../b", "..", "--x", "-x", "a b", "a\nb", "main|id", "x.lock", "a/", "/a", "HEAD", "@"]
         for base in hostile:
             with self.subTest(base=base):
                 r = self.check(GH_STUB_BASE=base, GH_STUB_PROTECTION="1", GH_STUB_RULES="1")
@@ -253,6 +294,72 @@ class CheckBaseRequiredChecksTest(StubbedTest):
     def test_usage_error(self):
         self.assertEqual(self.run_cmd("base", "bash", BASE_CHECK, "1;x").returncode, 2)
         self.assertEqual(self.run_cmd("base", "bash", BASE_CHECK).returncode, 2)
+
+
+class SequentialCiGateTest(StubbedTest):
+    """Runs the Step 3a gate snippet from SKILL.md against the stubbed gh."""
+
+    NO_REQ = "no required checks reported on the 'dependabot/x' branch"
+
+    def gate(self, **env):
+        text = (HERE.parent / "SKILL.md").read_text(encoding="utf-8")
+        blocks = [b.split("\n", 1)[1] for b in text.split("```bash")[1:]]
+        block = next(b.split("```", 1)[0] for b in blocks if "gh pr checks {number} --required 2>&1" in b)
+        script = self.tmp / "gate.sh"
+        script.write_text(block.replace("{number}", "7"))
+        return self.run_cmd("base", "bash", script, CLAUDE_SKILL_DIR=str(HERE.parent), **env)
+
+    def last(self, r):
+        return r.stdout.strip().splitlines()[-1]
+
+    def test_required_checks_pass_merges_pinned(self):
+        # Fails if a passing gate no longer reaches the pinned merge.
+        r = self.gate()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.last(r), "Merged")
+        self.assertEqual(self.gh_calls(f"pr merge 7 --merge --match-head-commit {OLD_SHA}"), 1)
+
+    def test_pending_exit_8_is_skipped_not_failed(self):
+        # Fails if exit 8 is collapsed into the failure branch.
+        r = self.gate(GH_STUB_REQ_RC="8")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (CI pending)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+
+    def test_failed_required_checks_never_merge(self):
+        # Fails if a non-zero, non-8 exit without the message stops being a failure.
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT="X build fail")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Failed (CI not passing)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+
+    def test_unregistered_required_checks_are_pending_not_fallback(self):
+        # Fails if the message triggers the fallback while the base has a required check.
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ, GH_STUB_BASE="main", GH_STUB_PROTECTION="1")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (CI pending)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+        self.assertEqual(sum(l.startswith("pr checks") and "--required" not in l
+                             for l in self.log.read_text().splitlines()), 0)
+
+    def test_base_without_required_checks_falls_back_to_all_checks(self):
+        # Fails if the fallback, its label, or its gate on every check is dropped.
+        env = dict(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ, GH_STUB_BASE="main", GH_STUB_RULES="0")
+        r = self.gate(**env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.last(r), "Merged (no required checks)")
+        r = self.gate(GH_STUB_ALL_RC="1", GH_STUB_ALL_OUT="X lint fail", **env)
+        self.assertEqual(self.last(r), "Failed (CI not passing) (no required checks)")
+        r = self.gate(GH_STUB_ALL_RC="1", GH_STUB_ALL_OUT="no checks reported on the 'dependabot/x' branch", **env)
+        self.assertEqual(self.last(r), "Skipped (no CI checks)")
+        self.assertEqual(self.gh_calls("pr merge"), 1)
+
+    def test_unreadable_base_keeps_fail_safe(self):
+        # Fails if an unreadable/invalid base is treated as "no required checks".
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ)
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (no required check confirmed)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
 
 
 class PollMergeQueueTest(StubbedTest):

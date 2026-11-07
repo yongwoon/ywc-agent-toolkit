@@ -54,7 +54,7 @@ This skill supports two orthogonal flags inside `$ARGUMENTS`. Parse the argument
 
 | Token | Execution | When to use |
 | --- | --- | --- |
-| `parallel-auto` | Group eligible PRs by lockfile ecosystem; queue every PR with `gh pr merge --auto`; GitHub serializes within each ecosystem and processes ecosystems in parallel; one final sequential pass clears the `mixed` bucket | Many PRs (≥ 5) across multiple ecosystems (npm + github-actions + python …) where wall-clock CI wait is the bottleneck |
+| `parallel-auto` | Group eligible PRs by lockfile ecosystem; queue every PR with `gh pr merge --auto --merge --match-head-commit "<HEAD_SHA>"`; GitHub serializes within each ecosystem and processes ecosystems in parallel; one final sequential pass clears the `mixed` bucket | Many PRs (≥ 5) across multiple ecosystems (npm + github-actions + python …) where wall-clock CI wait is the bottleneck |
 | _(token absent)_ | Sequential — one PR at a time, ascending PR number | Small batches, repos with strict branch protection, or environments where auto-merge is disabled |
 
 Examples:
@@ -74,9 +74,9 @@ gh repo view --json autoMergeAllowed --jq .autoMergeAllowed
 
 If the value is `false`, announce the fallback ("Auto-merge is not enabled on this repository — falling back to sequential mode") and proceed as if `parallel-auto` were absent. Never silently skip the queueing and pretend the work is in progress.
 
-Also verify that each PR's own **base branch** has at least one **required** status check. Dependabot PRs may target a branch other than the default one, and `gh pr merge --auto` on a PR that is already mergeable (`CLEAN`/`UNSTABLE`) merges immediately, so without a required check a PR whose CI is still pending would merge before CI finishes.
+Also verify that each PR's own **base branch** has at least one **required** status check. Dependabot PRs may target a branch other than the default one, and `gh pr merge --auto --merge --match-head-commit "<HEAD_SHA>"` on a PR that is already mergeable (`CLEAN`/`UNSTABLE`) merges immediately, so without a required check a PR whose CI is still pending would merge before CI finishes.
 
-`baseRefName` is set by the remote, so treat it as hostile input: never paste it into a command line, a shell variable, or a `gh api` path yourself. The bundled script reads it from the PR number and only uses it after it matches `^[A-Za-z0-9._/-]+$`, does not start with `-`, contains no `..`, and passes `git check-ref-format --branch`; it is passed only as a quoted variable to `gh api "repos/{owner}/{repo}/branches/$base/protection/required_status_checks"` and, as a fallback, `gh api "repos/{owner}/{repo}/rules/branches/$base"` (rulesets of type `required_status_checks`):
+`baseRefName` is set by the remote, so treat it as hostile input: never paste it into a command line, a shell variable, or a `gh api` path yourself. The bundled script reads it from the PR number and only uses it after it matches `^[A-Za-z0-9._/-]+$`, does not start with `-`, contains no `..`, and passes `git check-ref-format "refs/heads/$base"`; it is passed only as a quoted variable to `gh api "repos/{owner}/{repo}/branches/$base/protection/required_status_checks"` and, as a fallback, `gh api "repos/{owner}/{repo}/rules/branches/$base"` (rulesets of type `required_status_checks`):
 
 ```bash
 bash "${CLAUDE_SKILL_DIR}/scripts/check-base-required-checks.sh" {number}
@@ -176,14 +176,32 @@ For each PR that passes pre-merge checks:
 HEAD_SHA=$(gh pr view {number} --json headRefOid --jq .headRefOid) || HEAD_SHA=""
 [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Skipped (head unreadable)"; exit 1; }
 
-# Merge only when the required checks pass (non-zero exit = failed or pending)
-gh pr checks {number} --required || { echo "CI not passing"; exit 1; }
+# Gate on the required checks: 0 = pass, 8 = pending, other non-zero = failed,
+# except "no required checks reported" (resolved against the base branch below)
+OUT=$(gh pr checks {number} --required 2>&1) && RC=0 || RC=$?
+TAG=""
+if [ "$RC" -ne 0 ] && [[ "$OUT" == *"no required checks reported"* ]]; then
+  BASE_OUT=$(bash "${CLAUDE_SKILL_DIR}/scripts/check-base-required-checks.sh" {number}) && BASE_RC=0 || BASE_RC=$?
+  case "$BASE_RC:${BASE_OUT##*$'\n'}" in
+    0:*) echo "Skipped (CI pending)"; exit 1 ;;  # base requires checks; none registered yet
+    1:"CONFIRMED=0 BASE="?*)                    # validated base, no required check: gate on every check
+      TAG=" (no required checks)"
+      OUT=$(gh pr checks {number} 2>&1) && RC=0 || RC=$? ;;
+    *) echo "Skipped (no required check confirmed)"; exit 1 ;;  # base unreadable or invalid
+  esac
+fi
+case "$RC" in
+  0) ;;
+  8) echo "Skipped (CI pending)$TAG"; exit 1 ;;
+  *) [[ "$OUT" == *"no checks reported"* ]] && { echo "Skipped (no CI checks)"; exit 1; }
+     echo "Failed (CI not passing)$TAG"; exit 1 ;;
+esac
 
 # Attempt merge, pinned to the head CI verified
-gh pr merge {number} --merge --match-head-commit "$HEAD_SHA"
+gh pr merge {number} --merge --match-head-commit "$HEAD_SHA" && echo "Merged$TAG"
 ```
 
-Gate the merge on the exit status of `gh pr checks --required`: a non-zero exit is `Failed (CI not passing)` (failed) or `Skipped (CI pending)` (pending), never a merge. Pin the merge to the recorded head: if Dependabot pushes a new commit between the CI check and the merge, GitHub refuses the merge instead of landing an unverified head. Shell state does not persist between Bash calls, so substitute the literal recorded SHA into the merge command when the CI check runs in a separate call. Output that does not match `^[0-9a-f]{40}$` (empty, `null`, a failed query) means the head is unreadable: skip the PR as `Skipped (head unreadable)` rather than merging without a pin.
+Gate the merge on the exit status of `gh pr checks --required`, as the block does: exit 8 is `Skipped (CI pending)`, any other non-zero exit is `Failed (CI not passing)`, and a non-zero exit is never a merge. The one exception is output containing `no required checks reported on the '<branch>' branch` (gh 2.102.0 exits 1 with it, naming the PR's head branch). gh prints it both when the base has no required checks and when required checks exist but have not registered on the head yet (e.g. right after a rebase), so resolve it with `check-base-required-checks.sh`: exit 0 means the base requires checks — `Skipped (CI pending)`, no fallback; exit 1 with a non-empty `BASE=` means the validated base has no required check — gate on every check instead (`gh pr checks {number}`, same 0 / 8 / other rules) and add `(no required checks)` to the result; anything else (unreadable or invalid base, empty `BASE=`) is `Skipped (no required check confirmed)`. If the all-checks run reports `no checks reported`, record `Skipped (no CI checks)`. Pin the merge to the recorded head: if Dependabot pushes a new commit between the CI check and the merge, GitHub refuses the merge instead of landing an unverified head. Shell state does not persist between Bash calls, so substitute the literal recorded SHA into the merge command when the CI check runs in a separate call. Output that does not match `^[0-9a-f]{40}$` (empty, `null`, a failed query) means the head is unreadable: skip the PR as `Skipped (head unreadable)` rather than merging without a pin.
 
 If the merge is refused, read `headRefOid` again and apply the same `^[0-9a-f]{40}$` check — an unreadable re-read is `Skipped (head unreadable)`, never a moved head. When a valid re-read differs from the recorded SHA, the head moved: record the new head, re-run the Dockerfile and major-bump checks (Step 2) on it, and restart the CI check on it — at most 2 restarts per PR, then record `Failed (head kept moving)` and move on. When it still matches, the refusal has another cause: record `Failed (merge refused)` with the error. Never retry the merge unpinned.
 
@@ -202,13 +220,23 @@ Dependabot regenerate the PR against the fresh base instead:
    `CONFLICTING` nor `UNKNOWN`. Empty output, a failed query, or `UNKNOWN` is unresolved — keep
    polling; it is never evidence of a finished rebase. Once done, wait for the rebased
    branch's CI to re-run and pass — bounded to 30 minutes in chunks of at most 540 s
-   (`gh pr checks {number} --watch --fail-fast`); past that, report `Failed (CI timeout)`
+   (`gh pr checks {number} --required --watch --fail-fast`; `--watch` never exits 8:
+   exit 0 = pass, a chunk cut off by its timeout = still running, any other non-zero
+   = `Failed (CI not passing)`). If it fails with `no required checks reported`, resolve it with
+   `check-base-required-checks.sh` exactly as in the 3a gate: exit 0 → the required checks
+   have not registered yet, re-run the same `--required --watch` command in the next chunk;
+   exit 1 with a non-empty `BASE=` → watch every check instead with
+   `gh pr checks {number} --watch --fail-fast` and add `(no required checks)` to the result
+   (`no checks reported` there is `Skipped (no CI checks)`); anything else →
+   `Skipped (no required check confirmed)`. Past 30 minutes, report `Failed (CI timeout)`
    and move on
 3. Re-run the Dockerfile and major-bump checks (Step 2) on `NEW_HEAD` — the rebase can
    change the diff — then, if CI passes, merge with
    `gh pr merge {number} --merge --match-head-commit "<NEW_HEAD>"` (the literal SHA).
-   A refused merge means the head moved: re-read it and restart the checks and CI wait
-   on the new head (the same at-most-2-restarts rule as above); never retry unpinned
+   A refused merge may mean the head moved, or another refusal (for example a permission
+   or branch-protection error): re-read the head as above — a moved head restarts the checks
+   and CI wait on it (the same at-most-2-restarts rule), an unchanged head is
+   `Failed (merge refused)` with the error; never retry unpinned
 4. If the loop is exhausted, the new head is still `CONFLICTING`, or CI is red, skip the
    PR and surface it for human review — do not force-push a resolution
 
@@ -238,7 +266,7 @@ For each ecosystem group's PRs whose base branch is confirmed (exit 0 from the r
 gh pr merge {number} --auto --merge --match-head-commit "<HEAD_SHA>"
 ```
 
-Record `<HEAD_SHA>` per PR exactly as in 3a (`headRefOid`, must match `^[0-9a-f]{40}$`, else the PR goes to the Stage 3 pass) and write it as a literal. The pin only guards the queueing call; heads Dependabot pushes later are guarded by the confirmed required checks, which GitHub evaluates on the head it actually merges. A refused queue call means the head moved: hand the PR to the Stage 3 sequential pass — never re-queue it unpinned.
+Record `<HEAD_SHA>` per PR exactly as in 3a (`headRefOid`, must match `^[0-9a-f]{40}$`, else the PR goes to the Stage 3 pass) and write it as a literal. The pin only guards the queueing call; heads Dependabot pushes later are guarded by the confirmed required checks, which GitHub evaluates on the head it actually merges. A refused queue call may mean the head moved, or another refusal (for example a permission or branch-protection error): hand the PR to the Stage 3 sequential pass, which re-reads the head and records the actual cause — never re-queue it unpinned.
 
 This sets the PR to merge automatically as soon as its CI is green and the branch is up to date. PRs sharing a lockfile (same ecosystem) automatically serialize because each merge invalidates the next PR's branch state, and Dependabot rebases the affected PRs; PRs in different ecosystems progress in parallel because GitHub processes them independently.
 
