@@ -93,4 +93,4 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## Operational safety
 
-Separate remote deletion requires a valid quoted branch and a successful, parsed empty open-PR lookup. A merge-based deletion also requires the intended base and current remote tip to match; an exact-tip lease rejects concurrent pushes.
+Separate remote deletion passes these guards in order: a branch allowlist plus `git check-ref-format "refs/heads/$branch"`, a single pinned `origin` push URL, a host-qualified repository bound through `env -u GH_HOST gh` (and its parent for a fork), the exact remote tip, an unconditional merged-PR check on the intended base and current tip, an open-PR count of zero as the last check, and an exact-tip lease delete. A short race window remains between the open-PR check and the delete.

@@ -95,4 +95,4 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## 操作安全
 
-单独删除 remote 分支前，必须验证并引用 branch，且 open-PR 查询成功、解析成功并返回空数组。以 merge 为依据时，还须匹配目标 base 与当前 remote tip；exact-tip lease 拒绝并发 push 后的删除。
+远程删除须依次通过以下防护：branch allowlist 加 `git check-ref-format "refs/heads/$branch"` 校验、将 push URL 固定为唯一的 `origin`、通过 `env -u GH_HOST gh` 绑定含 host 的 repository（fork 时包括其 parent）、读取确切的远程 tip、无条件确认 base 与当前 tip 均匹配的 merged PR、在删除前最后确认 open-PR 为 0 个，最后执行 exact-tip lease 删除。Open-PR 检查与删除之间仍存在短暂的 race window。

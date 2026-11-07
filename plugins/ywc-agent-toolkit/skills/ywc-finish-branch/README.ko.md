@@ -91,4 +91,4 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## 운영 안전성
 
-별도 remote 삭제는 유효한 quoted branch와 성공적으로 파싱한 빈 open-PR 조회 결과가 필요합니다. Merge 근거 삭제는 의도한 base와 현재 remote tip까지 일치해야 하며, exact-tip lease로 동시 push를 거부합니다.
+별도 remote 삭제는 다음 순서의 guard를 모두 통과해야 합니다: branch allowlist와 `git check-ref-format "refs/heads/$branch"` 검증, push URL을 `origin` 하나로 고정, `env -u GH_HOST gh`로 host까지 포함한 repository(fork이면 parent 포함) 고정, 정확한 remote tip 조회, 의도한 base와 현재 tip이 일치하는 merged PR 확인(항상 실행), 삭제 직전 open-PR 0건 확인, 마지막으로 exact-tip lease 삭제. Open-PR 확인과 삭제 사이의 짧은 race window는 남습니다.

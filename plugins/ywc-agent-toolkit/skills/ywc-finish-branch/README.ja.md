@@ -91,4 +91,4 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## 運用の安全性
 
-個別の remote 削除には、有効な引用済み branch と、正常に解析した空の open-PR 照会結果が必要です。Merge を根拠とする削除は意図した base と現在の remote tip も一致させ、exact-tip lease で並行 push を拒否します。
+個別の remote 削除は、次の guard を順にすべて通過する必要があります: branch allowlist と `git check-ref-format "refs/heads/$branch"` の検証、push URL を `origin` の 1 つに固定、`env -u GH_HOST gh` で host を含む repository（fork なら parent も）を固定、正確な remote tip の取得、意図した base と現在の tip が一致する merged PR の確認（常に実行）、削除直前の open-PR 0 件の確認、最後に exact-tip lease による削除。Open-PR 確認と削除の間には短い race window が残ります。
