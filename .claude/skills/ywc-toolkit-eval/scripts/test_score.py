@@ -710,13 +710,17 @@ class CoverageExemptionTest(unittest.TestCase):
         # Pinned as the one known open gap so any NEW gap fails; drop this entry
         # when real session-trace / user-prompt cases for it land.
         self.assertEqual(gaps, ["ywc-mine-review-history"])
-        for name in ("ywc-handoff", "ywc-merge-dependabot", "ywc-retro", "ywc-setup-language"):
-            self.assertEqual(exempt.get(name), "slash-only", name)
-        for name in ("ywc-go-reviewer", "ywc-python-reviewer", "ywc-typescript-reviewer",
-                     "ywc-retro-lens"):
-            self.assertEqual(exempt.get(name), "dispatch-only", name)
-        self.assertNotIn("ywc-performance-engineer", exempt)
-        self.assertNotIn("ywc-mine-review-history", exempt)
+        # The full map, so an accidental NEW exemption fails here too.
+        self.assertEqual(exempt, {
+            "ywc-handoff": "slash-only",
+            "ywc-merge-dependabot": "slash-only",
+            "ywc-retro": "slash-only",
+            "ywc-setup-language": "slash-only",
+            "ywc-go-reviewer": "dispatch-only",
+            "ywc-python-reviewer": "dispatch-only",
+            "ywc-typescript-reviewer": "dispatch-only",
+            "ywc-retro-lens": "dispatch-only",
+        })
 
 
 if __name__ == "__main__":
