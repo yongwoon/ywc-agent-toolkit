@@ -25,6 +25,13 @@ Covers: the Scope bullets above
 ## Task Verify
 - [ ] `grep -q 'Remote deletion guard' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `grep -qF 'git check-ref-format "refs/heads/$branch"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '--json number --jq length' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '--force-with-lease="refs/heads/$branch:$tip"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- 'gh repo view "$(git remote get-url origin)" --json nameWithOwner,isFork,parent' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '--repo "$parent"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '^[0-9a-f]{40}([0-9a-f]{24})?$' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '5. **Open-PR check**' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `bash scripts/validate.sh`
 - [ ] `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci`
 - [ ] `git checkout -- .claude/skills/ywc-toolkit-eval/evals/history.mechanical.json`  — Phase 000010 Wave 1 tasks do NOT commit the baseline file; yk-000010-060 stages it last
@@ -50,3 +57,11 @@ Review of `claude-code/skills/ywc-finish-branch/SKILL.md:215` (Step 5 Remote del
 - L2 (Low, no change) — fork PRs with the same head name (`--head` matches name only): on the open check they cause a false stop (fail-safe); on the merged check a matching row also requires `headRefOid` == origin tip, so the tip commit really was merged into the intended base.
 - M1 also applied to the Rationalization Defense row at :28, which restated the old check.
 - L3 (Low, no change) — multiple PRs per head: the guard already requires "a row" matching both base and tip, and states `gh pr view` cannot settle it.
+
+Critical-review round (team-lead): High (new guard pieces lacked Task Verify coverage) and M-a..M-d plus Lows fixed at `SKILL.md:215-224` and `:28`:
+- M-a: `--repo` is now always passed, bound to `origin` via `gh repo view "$(git remote get-url origin)" --json nameWithOwner,isFork,parent`; a fork also runs every check against its parent (shape is `parent.owner.login/parent.name`, confirmed with `gh repo view minio/cli`).
+- M-b: deletion needs a merged row with `baseRefName == $base` and `headRefOid == $tip` (step 4) and an open count of `0` (step 5).
+- M-c: one line maps each outcome to a status (`:224`, summarized at `:28`).
+- M-d: numbered steps in run order; the open-PR check comes last, right before the lease-delete.
+- Lows: `tip` and the repo values are shape-checked; the opening sentence now covers the lease-delete path; `$branch`/`$base` are tied to the validated `BRANCH`/`BASE`.
+- Task Verify gained 7 `grep -qF --` checks (README.md and task.md); test.md gained Scenarios 3-5.
