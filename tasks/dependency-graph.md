@@ -32,9 +32,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000009 — done
 - Completed: `yk-000009-010-domain-scan-secrets-and-branch-hardening`
 
-## Phase yk-000010 — pending
-- Wave 1 (parallel): `yk-000010-010-domain-scan-secrets-hunk-filter`, `yk-000010-020-domain-merge-dependabot-hardening`, `yk-000010-030-domain-retro-readonly-lenses`, `yk-000010-040-domain-finish-branch-guard-review`, `yk-000010-050-docs-metadata-followups`
-- Wave 2: `yk-000010-060-test-reviewer-trigger-coverage` — depends on all of Wave 1 (stages the shared `history.mechanical.json` baseline)
+## Phase yk-000010 — done
+- Completed: `yk-000010-010-domain-scan-secrets-hunk-filter`, `yk-000010-020-domain-merge-dependabot-hardening`, `yk-000010-030-domain-retro-readonly-lenses`, `yk-000010-040-domain-finish-branch-guard-review`, `yk-000010-050-docs-metadata-followups`, `yk-000010-060-test-reviewer-trigger-coverage`
 
 ## Task Summary
 
