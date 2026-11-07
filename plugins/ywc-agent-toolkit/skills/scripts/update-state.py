@@ -145,7 +145,10 @@ def cmd_wave_start(args: argparse.Namespace) -> None:
     require_executor(state, "parallel", "wave-start")
     wave = find_wave(state, args.n)
     wave["status"] = "in_progress"
-    if not wave.get("pending"):
+    # Fill pending only when the key is absent. An empty list means every task
+    # already merged (interrupted before wave-complete); refilling it on resume
+    # would make wave-complete refuse a finished wave.
+    if "pending" not in wave:
         wave["pending"] = list(wave.get("tasks", []))
     state["current_wave"] = args.n
     save(state)
