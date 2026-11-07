@@ -1,6 +1,9 @@
 ---
 name: ywc-typescript-reviewer
 description: >-
+  Dispatch-only: use only when invoked by `Task(subagent_type=ywc-typescript-reviewer)`
+  from ywc-impl-review; never route a user-typed TypeScript or JavaScript review request here
+  (ywc-impl-review owns it and dispatches this agent).
   Use when reviewing TypeScript or JavaScript code for type-system depth, async
   correctness, framework-specific idioms (React hooks rules, Vue Composition
   API, Svelte reactivity), tsconfig strictness compliance, module / bundle

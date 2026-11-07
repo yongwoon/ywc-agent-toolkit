@@ -1,6 +1,9 @@
 ---
 name: ywc-python-reviewer
 description: >-
+  Dispatch-only: use only when invoked by `Task(subagent_type=ywc-python-reviewer)`
+  from ywc-impl-review; never route a user-typed Python review request here
+  (ywc-impl-review owns it and dispatches this agent).
   Use when reviewing Python code for type-system depth (PEP 484 / 526 /
   612 generics, `Protocol` structural typing, `TypedDict`, `TypeGuard` /
   `TypeIs`, `Self` type, `ParamSpec` / `Concatenate`, `Literal` /

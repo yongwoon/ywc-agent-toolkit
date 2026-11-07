@@ -1,6 +1,9 @@
 ---
 name: ywc-go-reviewer
 description: >-
+  Dispatch-only: use only when invoked by `Task(subagent_type=ywc-go-reviewer)`
+  from ywc-impl-review; never route a user-typed Go review request here
+  (ywc-impl-review owns it and dispatches this agent).
   Use when reviewing Go code for goroutine lifecycle (leak detection,
   `context.Context` cancellation propagation, `errgroup.Group` shutdown,
   worker-pool termination, panic propagation in goroutines), channel
