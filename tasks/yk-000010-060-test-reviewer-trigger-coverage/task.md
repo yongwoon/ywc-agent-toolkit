@@ -45,3 +45,9 @@ Covers: the Scope bullets above
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+- Premise: 10 of 65 (not 9 of 64) — Wave 1 added dispatch-only agent `ywc-retro-lens`.
+- Below-minimum list before change (positives/collisions, independent only): ywc-handoff 0/0, ywc-merge-dependabot 0/0, ywc-retro 0/0, ywc-setup-language 0/0 (all `disable-model-invocation: true`); ywc-mine-review-history 0/0; ywc-go-reviewer 0/1, ywc-python-reviewer 0/0, ywc-typescript-reviewer 0/0, ywc-retro-lens 0/0 (dispatch-only agents); ywc-performance-engineer 3/1.
+- score.py now prints `[coverage] exempt (<reason>): <item>` and `[coverage] below minimum: <item>` lines to stderr.
+- Exemption is derived from the item's own frontmatter (`apply_coverage_exemption`): slash-only skills waive both floors; dispatch-only agents (description says "no natural-language triggers" or a user-typed review request is owned by ywc-impl-review) waive only positives and still need >= 2 independent collisions.
+- 8 new collision cases reuse verbatim prompts from existing `user-prompt` cases (origin id cited in each `note`); only the sibling label is new. No new prompt text was written.
+- Residual: `ywc-mine-review-history` stays below minimum (0/0). No real prompt exists in the repo and no rule-based exemption applies; left open rather than invented.

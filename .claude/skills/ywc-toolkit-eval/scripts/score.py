@@ -360,6 +360,31 @@ def load_coverage() -> dict:
     return out
 
 
+# Coverage exemptions are derived from the item's OWN frontmatter text, never a
+# hand-kept list, so a new dispatch-only item cannot be waved through by name.
+#  - "slash-only": `disable-model-invocation: true` -> activated by the user typing
+#    the slash command, never routed by description, so neither floor applies.
+#  - "dispatch-only": the description says a user-typed request is owned by another
+#    item ("no natural-language triggers", or "a user-typed code review request ...
+#    (ywc-X owns it ...)"). No honest user prompt can select it, so the positives
+#    floor is waived — but the collision floor still applies: the sibling-routing
+#    boundary it names is real and testable.
+DISPATCH_ONLY_RE = re.compile(
+    r"no natural-language triggers"
+    r"|user-typed\s+code\s+review\s+request[^()]*\(ywc-[\w-]+\s+owns\s+it",
+    re.I)
+
+
+def apply_coverage_exemption(cov: dict, fm: dict) -> dict:
+    """Return `cov` with an `exempt` reason and the exemption-aware `sufficient`."""
+    if fm.get("disable-model-invocation") == "true":
+        return {**cov, "exempt": "slash-only", "sufficient": True}
+    if DISPATCH_ONLY_RE.search(fm.get("description", "")):
+        return {**cov, "exempt": "dispatch-only",
+                "sufficient": cov["collisions"] >= COVERAGE_MIN_COLLISIONS}
+    return {**cov, "exempt": None}
+
+
 # --- skill scoring ---------------------------------------------------------
 
 def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
@@ -432,9 +457,9 @@ def score_skill(d: Path, collisions: dict, coverage: dict) -> dict:
     signals["collision_pairs"] = coll
 
     # FR1b coverage — signals-only; S1 stays null in axes (Amendment A2)
-    signals["coverage"] = coverage.get(
+    signals["coverage"] = apply_coverage_exemption(coverage.get(
         name, {"positives": 0, "collisions": 0, "positives_total": 0,
-               "collisions_total": 0, "sufficient": False})
+               "collisions_total": 0, "sufficient": False}), fm)
 
     # Prose lint — informational only, never feeds any axis or the CI baseline.
     signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
@@ -612,9 +637,9 @@ def score_agent(path: Path, collisions: dict, coverage: dict) -> dict:
     signals["collision_pairs"] = coll
 
     # FR1b coverage — signals-only; A2 stays null in axes (Amendment A2)
-    signals["coverage"] = coverage.get(
+    signals["coverage"] = apply_coverage_exemption(coverage.get(
         name, {"positives": 0, "collisions": 0, "positives_total": 0,
-               "collisions_total": 0, "sufficient": False})
+               "collisions_total": 0, "sufficient": False}), fm)
 
     # Prose lint — informational only, never feeds any axis or the CI baseline.
     signals["prose_lint"] = _prose_lint(body, _body_line_offset(text, body))
@@ -886,6 +911,19 @@ def main() -> int:
           f">= {COVERAGE_MIN_COLLISIONS} collisions per item, counting only "
           f"independently-sourced cases: {', '.join(INDEPENDENT_CASE_SOURCES)})",
           file=sys.stderr)
+    # Every exemption is named so a gap cannot hide behind one silently.
+    for it in (i for items in results.values() for i in items):
+        cov = it["signals"].get("coverage", {})
+        if cov.get("exempt"):
+            print(f"[coverage] exempt ({cov['exempt']}): {it['name']} "
+                  f"[positives={cov['positives']} collisions={cov['collisions']}]",
+                  file=sys.stderr)
+    for it in (i for items in results.values() for i in items):
+        cov = it["signals"].get("coverage", {})
+        if not cov.get("sufficient", False):
+            print(f"[coverage] below minimum: {it['name']} "
+                  f"[positives={cov.get('positives', 0)} collisions={cov.get('collisions', 0)}]",
+                  file=sys.stderr)
 
     if args.ci:
         return ci_gate(results)
