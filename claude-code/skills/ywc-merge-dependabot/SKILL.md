@@ -81,13 +81,14 @@ Also verify that each PR's own **base branch** has at least one **required** sta
 ```bash
 bash "${CLAUDE_SKILL_DIR}/scripts/check-base-required-checks.sh" {number}
 # last stdout line: CONFIRMED=<0|1> BASE=<validated base, empty when invalid>
+# branch on the exit code before reading it: exit 1 and exit 3 can print the same line
 # exit 0 = confirmed (at least one required check), 1 = cannot confirm (zero required
 #   checks, or invalid base), 2 = usage error, 3 = unresolved (lookup failed or unparseable)
 ```
 
 If you Read this SKILL.md directly, `${CLAUDE_SKILL_DIR}` is unsubstituted — replace it with the directory containing this SKILL.md; if the script then fails with `No such file or directory`, `can't open file`, or exit `127`, stop with `BLOCKED: unresolved skill path`.
 
-A base branch is confirmed only on exit 0. Any other exit — zero required checks (a 404 counts as zero), a `baseRefName` that cannot be read or fails validation (exit 1), or a lookup that failed with a permission error, rate limit, or unparseable output (exit 3) — means "cannot confirm": that PR is excluded from the `--auto` queue and handled in the Stage 3 sequential pass (Step 3b) instead (report it as `Skipped (no required check confirmed on <base>)` if the sequential pass skips it, or `Skipped (required checks unconfirmed)` when the script exited 3; use `<base>` only from a `BASE=` value the script printed). Exit 3 never enables `--auto`. If no PR's base branch is confirmed at all, announce the sequential fallback ("No required status checks confirmed on the base branch — falling back to sequential mode") and proceed as if `parallel-auto` were absent.
+A base branch is confirmed only on exit 0. Any other exit — zero required checks (a 404 counts as zero; it can also mean the token cannot read branch protection, e.g. a non-admin classic token, and GitHub-side branch protection is the backstop), a `baseRefName` that cannot be read or fails validation (exit 1), or a lookup that failed with a permission error, rate limit, or unparseable output (exit 3) — means "cannot confirm": that PR is excluded from the `--auto` queue and handled in the Stage 3 sequential pass (Step 3b) instead (report it as `Skipped (no required check confirmed)` if the sequential pass skips it, or `Skipped (required checks unconfirmed)` when the script exited 3). Exit 3 never enables `--auto`. If no PR's base branch is confirmed at all, announce the sequential fallback ("No required status checks confirmed on the base branch — falling back to sequential mode") and proceed as if `parallel-auto` were absent.
 
 ## Task
 

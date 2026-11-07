@@ -12,16 +12,21 @@
 # It is only ever used as a quoted variable.
 #
 # stdout (last line): CONFIRMED=<0|1> BASE=<validated base, or empty>
+# Branch on the exit code before reading the last line: exit 1 and exit 3 can print
+# the same `CONFIRMED=0 BASE=<base>`.
 #
 # Exit codes:
 #   0  confirmed — the PR may join the `--auto` queue
 #   1  validated base with zero required checks (a lookup answering HTTP 404 —
 #      branch not protected / no rulesets — counts as zero), or an unreadable or
-#      invalid base (empty BASE=) — exclude the PR from `--auto`
+#      invalid base (empty BASE=) — exclude the PR from `--auto`. A 404 can also mean
+#      the token cannot read branch protection (non-admin classic token); GitHub-side
+#      branch protection is the backstop.
 #   2  usage error
 #   3  unresolved — a lookup failed (403, rate limit, other gh error) or returned a
 #      non-integer, and no lookup confirmed a required check; nothing is confirmed
-#      or denied — exclude the PR from `--auto`, never treat it as zero checks
+#      or denied — exclude the PR from `--auto`, never treat it as zero checks;
+#      stderr names each failed endpoint and the first line of its output
 
 set -euo pipefail
 
@@ -41,21 +46,19 @@ if [ -z "$base" ] || [[ ! "$base" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "$base" == -* ]
   cannot_confirm "baseRefName is unreadable or not a safe branch name" ""
 fi
 
-# ponytail: a 404 caused by missing permission looks like "not protected"; the caller's
-# all-checks fallback still gates such a PR on every check.
 # Prints the required-check count; HTTP 404 is a count of 0. Fails when gh fails any
 # other way or the output (stderr included, so a stray warning is never trusted) is
-# not an integer.
+# not an integer; on failure it prints the first line of that output instead.
 required_count() {
   local out
   if out="$(gh api "$1" --jq "$2" 2>&1)"; then
-    [[ "$out" =~ ^[0-9]+$ ]] || return 1
-    echo "$out"
+    [[ "$out" =~ ^[0-9]+$ ]] && { echo "$out"; return 0; }
   elif [[ "$out" == *"(HTTP 404)"* ]]; then
     echo 0
-  else
-    return 1
+    return 0
   fi
+  echo "${out%%$'\n'*}"
+  return 1
 }
 
 # Exits 0 on a positive count; records a failed lookup so zero is never inferred from it.
@@ -64,6 +67,7 @@ check_lookup() {
   local n
   if ! n="$(required_count "$1" "$2")"; then
     unresolved=1
+    echo "lookup $1 failed: ${n:-(no output)}" >&2
   elif [ "$n" -gt 0 ]; then
     echo "CONFIRMED=1 BASE=$base"
     exit 0

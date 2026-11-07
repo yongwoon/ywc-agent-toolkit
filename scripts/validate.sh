@@ -778,12 +778,12 @@ run_script_test_suites() {
 
   # The evaluator's own tests pin the shipped catalog's trigger coverage; a new
   # skill or agent below the coverage minimum fails here. Offline, stdlib only.
-  local score_test=.claude/skills/ywc-toolkit-eval/scripts/test_score.py score_out
-  if [ ! -f "$score_test" ]; then
-    echo "ERROR: toolkit-eval scorer test suite is missing: $score_test"
+  local score_dir=.claude/skills/ywc-toolkit-eval/scripts score_out
+  if [ ! -f "$score_dir/test_score.py" ]; then
+    echo "ERROR: toolkit-eval scorer test suite is missing: $score_dir/test_score.py"
     ERRORS=$((ERRORS + 1))
-  elif ! score_out=$(python3 .claude/skills/ywc-toolkit-eval/scripts/test_score.py 2>&1); then
-    echo "ERROR: toolkit-eval scorer test suite failed: $score_test"
+  elif ! score_out=$(python3 "$score_dir/test_score.py" 2>&1); then
+    echo "ERROR: toolkit-eval scorer test suite failed: $score_dir/test_score.py"
     printf '%s\n' "$score_out" | tail -n 30
     ERRORS=$((ERRORS + 1))
   fi

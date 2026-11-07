@@ -318,6 +318,11 @@ class CheckBaseRequiredChecksTest(StubbedTest):
                     self.assertEqual(r.returncode, 3, r.stderr)
                     self.assertEqual(r.stdout.strip().splitlines()[-1], "CONFIRMED=0 BASE=main")
                     self.assertIn("unresolved", r.stderr)
+                    # Fails if exit 3 stops naming the failed endpoint and its first output line.
+                    endpoint = ("protection/required_status_checks" if "GH_STUB_PROTECTION_ERR" in env
+                                else "rules/branches/main")
+                    self.assertIn(f"{endpoint} failed", r.stderr)
+                    self.assertIn(err or "(no output)", r.stderr)
 
     def test_unreadable_base_cannot_confirm(self):
         # Fails if an empty / failed baseRefName lookup reaches `gh api`.

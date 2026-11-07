@@ -16,7 +16,8 @@
 #
 # Exit codes:
 #   0  rebased — wait for CI on NEW_HEAD, re-check the head before merging
-#   1  not rebased within the window (or still CONFLICTING), or the current head
+#   1  not rebased within the window (`mergeable` never became MERGEABLE — any other
+#      value counts as not rebased), or the current head
 #      could not be read / the rebase comment could not be posted, so no rebase
 #      was requested — skip + surface
 #   2  usage error
