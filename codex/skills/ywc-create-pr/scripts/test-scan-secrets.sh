@@ -372,7 +372,10 @@ g checkout -q -b cc-theirs main
 echo "theirs" > "$REPO/cc.txt"; g add cc.txt; g commit -q -m theirs
 g checkout -q -b cc-ours main
 printf 'ours\nkey=%s\n' "AKIA""ABCDEFGHIJKLMNOP" > "$REPO/cc.txt"; g add cc.txt; g commit -q -m ours
-(cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env git merge -q cc-theirs >/dev/null 2>&1) || true
+# The conflict makes merge exit 1, so it bypasses g(); identity is still needed
+# (CI runners have no global user.name / user.email).
+(cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env \
+  git -c user.name=t -c user.email=t@example.invalid merge -q cc-theirs >/dev/null 2>&1) || true
 assert_eq "conflicted merge leaves a combined diff" "1" \
   "$( (cd "$REPO" && no_git_env git diff | grep -c '^ +key=') )"
 assert_args "--staged secret on a ' +' combined-diff line" "1" "" --staged
