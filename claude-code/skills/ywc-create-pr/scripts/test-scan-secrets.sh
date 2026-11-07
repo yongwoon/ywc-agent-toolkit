@@ -88,6 +88,7 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
 #   SHIM_MODE=failuntracked — `git ls-files --others` fails
 #   SHIM_MODE=failnoindex   — `git diff --no-index` exits 2 (exit 1 = "has diff")
+#   SHIM_MODE=failnames     — the Phase 3 `git log --name-only <base>..HEAD` fails
 # A failing added-line filter must not read as "secrets found" (exit 1):
 #   SHIM_MODE=failawk      — `awk` fails
 SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
@@ -103,6 +104,7 @@ case "\${SHIM_MODE:-}:\$1:\$*" in
   failworktree:diff:*--cached*) ;;
   failuntracked:ls-files:*--others*) exit 1 ;;
   failnoindex:diff:*--no-index*) exit 2 ;;
+  failnames:log:*--name-only*) exit 1 ;;
   failworktree:diff:*) exit 1 ;;
 esac
 exec "$REAL_GIT" "\$@"
@@ -154,6 +156,38 @@ assert_committed "--committed shell-metachar base" "2" passall 'main$(id)'
 assert_committed "--committed secret vs valid base" "1" "" main
 g checkout -q clean-feat
 assert_committed "--committed clean vs valid base" "0" "" main
+# Fails if the Phase 3 name-list walk swallows its error.
+assert_committed "--committed name-list failure" "2" failnames main
+# Phase 1 sees only the work tree: a .env committed on the branch (harmless
+# content, clean tree) is caught only by the Phase 3 name check.
+g checkout -q -b committed-env main
+echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m env
+assert_committed "--committed .env file in the range" "1" "" main
+# Deleting a .env that the base still has is a cleanup, not a leak: the name
+# check skips deleted paths (--diff-filter=d).
+g checkout -q -b drop-env
+g rm -q .env; g commit -q -m drop-env
+assert_committed "--committed deletion of a base .env" "0" "" committed-env
+# A .env added and then deleted on the branch is absent from the net diff but
+# still in the pushed history; only a per-commit walk catches it.
+g checkout -q -b add-drop-env main
+echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m add-env
+g rm -q .env; g commit -q -m drop-env
+assert_committed "--committed .env added then deleted in the range" "1" "" main
+# A file added only in a merge commit's resolution is flagged, while a base
+# .env merged in unchanged is not (base-env is the base for both cases).
+g checkout -q -b base-env main
+echo "X=1" > "$REPO/.env.base"; g add -f .env.base; g commit -q -m base-env
+g checkout -q -b merge-in-base main
+echo y > "$REPO/side.txt"; g add side.txt; g commit -q -m side
+g merge -q --no-ff --no-edit base-env
+assert_committed "--committed base .env merged in unchanged" "0" "" base-env
+g checkout -q -b evil-merge main
+echo y > "$REPO/side.txt"; g add side.txt; g commit -q -m side
+g merge -q --no-ff --no-commit base-env
+echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m evil-merge
+assert_committed "--committed .env added in a merge resolution" "1" "" base-env
+g checkout -q clean-feat
 
 # Flag order: a later --staged must not downgrade --committed (Phase 3 would be
 # skipped and the committed key reported as OK).
@@ -223,6 +257,18 @@ g checkout -q -b plusplus-space main
 echo "++ key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt; g commit -q -m plusplus-space
 assert_args "--committed secret on a line starting with '++ '" "1" "" --committed main
 g checkout -q clean-feat
+# The password pattern must match both quote styles (assembled at runtime so
+# this file never contains the pattern).
+echo "pass""word = 'hunter22x'" > "$REPO/p.txt"; g add p.txt
+assert_args "--staged single-quoted password" "1" "" --staged
+echo 'pass''word = "hunter22x"' > "$REPO/p.txt"; g add p.txt
+assert_args "--staged double-quoted password" "1" "" --staged
+g rm -q -f --cached p.txt; rm -f "$REPO/p.txt"
+# More matches than a pipe buffer holds: `head` closing the pipe early made the
+# preview exit 141 under pipefail, read as "not scanned" instead of "found".
+for _ in $(seq 1 5000); do echo "key=AKIA""ABCDEFGHIJKLMNOP"; done > "$REPO/many.txt"; g add many.txt
+assert_args "--staged secret matches larger than a pipe buffer" "1" "" --staged
+g rm -q -f --cached many.txt; rm -f "$REPO/many.txt"
 # Quoted paths (space, non-ASCII) must still match the dangerous-name patterns.
 mkdir -p "$REPO/x y"; : > "$REPO/x y/server.pem"
 assert_args "untracked dangerous file under a path with a space" "1" "" --staged
@@ -244,14 +290,28 @@ assert_args "untracked enumeration failure" "2" failuntracked --staged
 assert_args "untracked --no-index diff failure" "2" failnoindex --staged
 rm -rf "$REPO/x y"
 # Fails if a binary untracked file (NUL bytes, invalid UTF-8) breaks the
-# filter under a UTF-8 locale (bash drops NULs, awk aborts on multibyte input).
-{ printf '\000\377\376\200'; head -c 4096 /dev/urandom; } > "$REPO/img.bin"
-assert_eq "untracked binary file under a UTF-8 locale" "0" \
-  "$( (cd "$REPO" && LC_ALL=en_US.UTF-8 GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >/dev/null 2>&1); echo $?)"
-echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/notes.txt"
-assert_eq "untracked secret next to a binary file" "1" \
-  "$( (cd "$REPO" && LC_ALL=en_US.UTF-8 GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >/dev/null 2>&1); echo $?)"
-rm -f "$REPO/img.bin" "$REPO/notes.txt"
+# filter under a UTF-8 locale (bash drops NULs, BSD awk aborts on multibyte
+# input, GNU grep treats the stream as binary and prints no matching line).
+# The locale must be installed or the shell silently falls back to C and the
+# cases cannot fail; Ubuntu names it C.utf8, macOS en_US.UTF-8 / C.UTF-8.
+UTF8_LOCALE=$(locale -a 2>/dev/null | grep -iE '^(C|en_US)\.utf-?8$' | sed -n 1p || true)
+if [ -z "$UTF8_LOCALE" ]; then
+  echo "SKIP: no UTF-8 locale installed; binary-file cases not run" >&2
+else
+  run_utf8() {
+    (cd "$REPO" && LC_ALL="$UTF8_LOCALE" GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >/dev/null 2>&1)
+    echo $?
+  }
+  { printf '\000\377\376\200'; head -c 4096 /dev/urandom; } > "$REPO/img.bin"
+  assert_eq "untracked binary file under $UTF8_LOCALE" "0" "$(run_utf8)"
+  echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/notes.txt"
+  assert_eq "untracked secret next to a binary file under $UTF8_LOCALE" "1" "$(run_utf8)"
+  rm -f "$REPO/img.bin" "$REPO/notes.txt"
+  # Invalid bytes and a secret in the same file.
+  { printf '\377\376\200\n'; echo "key=AKIA""ABCDEFGHIJKLMNOP"; } > "$REPO/mixed.bin"
+  assert_eq "invalid bytes followed by a secret under $UTF8_LOCALE" "1" "$(run_utf8)"
+  rm -f "$REPO/mixed.bin"
+fi
 # diff.relative=true limits every diff to the current directory.
 g checkout -q feat
 mkdir -p "$REPO/sub"

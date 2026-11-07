@@ -181,6 +181,18 @@ run_unit_scenarios() {
   rm -rf "$wd"
   trap - EXIT
 
+  # wave-start on resume keeps an empty pending list, so a wave whose tasks
+  # all merged before the interruption can still be completed.
+  wd=$(new_workdir)
+  trap 'rm -rf "$wd"' EXIT
+  write_state "$wd" '{"executor":"parallel","run_id":"aaaaaaaa","current_wave":0,"waves":[{"wave":0,"tasks":["t"],"status":"in_progress","merged":["t"],"pending":[]}]}'
+  run_capture "$wd" "$abs_root" wave-start 0
+  assert_eq "[]" "$(read_state_field "$wd" "s['waves'][0]['pending']")" "wave-start keeps empty pending on resume ($root)"
+  run_capture "$wd" "$abs_root" wave-complete 0
+  assert_eq "0" "$RC" "wave-complete after resumed wave-start ($root)"
+  rm -rf "$wd"
+  trap - EXIT
+
   # AC10 / wave-int-owner: executor-mismatch, run_id-unset, wave-not-found.
   wd=$(new_workdir)
   trap 'rm -rf "$wd"' EXIT
