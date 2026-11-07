@@ -66,18 +66,30 @@ case "$GH_STUB_MODE:$*" in
     echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb " ;;
   newconflict:"pr view "*"headRefOid,mergeable"*)
     echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb CONFLICTING" ;;
+  pollfail:"pr view "*"--json headRefOid --jq"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  pollfail:"pr view "*"headRefOid,mergeable"*)
+    echo "HTTP 401: Bad credentials" >&2
+    exit 1 ;;
   commentfail:"pr comment"*)
     exit 1 ;;
   *:"pr comment"*)
-    exit 0 ;;
+    exit "${GH_STUB_COMMENT_RC:-0}" ;;
   queue:"pr view 1 "*)
-    echo '{"state":"MERGED","mergeStateStatus":"CLEAN"}' ;;
+    echo '{"state":"MERGED","mergeStateStatus":"CLEAN","headRefOid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
   queue:"pr view 2 "*)
-    echo '{"state":"OPEN","mergeStateStatus":"DIRTY"}' ;;
+    echo '{"state":"OPEN","mergeStateStatus":"DIRTY","headRefOid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
   queue:"pr view 3 "*)
-    echo '{"state":"CLOSED","mergeStateStatus":"CLEAN"}' ;;
+    echo '{"state":"CLOSED","mergeStateStatus":"CLEAN","headRefOid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
   queue:"pr view 4 "*)
+    echo "HTTP 401: Bad credentials" >&2
     exit 1 ;;
+  queue:"pr view 5 "*)
+    echo '{"state":"OPEN","mergeStateStatus":"BLOCKED","headRefOid":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}' ;;
+  queue:"pr view 6 "*)
+    /bin/sleep 3 ;;
+  queue:"pr merge 5 --disable-auto"*)
+    exit "${GH_STUB_DISABLE_RC:-0}" ;;
   base:"pr view "*"headRefOid"*)
     echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
   base:"pr checks "*"--required"*)
@@ -216,6 +228,14 @@ class WaitDependabotRebaseTest(StubbedTest):
                 self.assertEqual(r.returncode, 1)
                 self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
 
+    def test_every_failed_status_query_is_reported_not_hidden(self):
+        # Fails if a persistent gh failure is swallowed and reported like a slow rebase.
+        r = self.run_cmd("pollfail", "bash", REBASE, "7")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(r.stdout.strip().splitlines()[-1], "REBASED=0 ATTEMPTS=9 NEW_HEAD=")
+        self.assertIn("every status query for PR 7 failed", r.stderr)
+        self.assertIn("Bad credentials", r.stderr)
+
     def test_failed_rebase_comment_exits_before_polling(self):
         r = self.run_cmd("commentfail", "bash", REBASE, "7")
         self.assertEqual(r.returncode, 1)
@@ -244,6 +264,16 @@ class DetectMajorBumpClassifyTest(unittest.TestCase):
         for from_v, to_v, expected in table:
             with self.subTest(from_v=from_v, to_v=to_v):
                 self.assertIs(self.mod.classify(from_v, to_v)[0], expected)
+
+
+class DetectMajorBumpStdinTest(unittest.TestCase):
+    def test_hash_prefixed_number_is_parsed_not_a_crash(self):
+        # Fails if "#N<TAB>title" crashes on int("#N") (it used to exit 1 with a traceback).
+        r = subprocess.run([sys.executable, str(MAJOR)], capture_output=True, text=True,
+                           input="#130\tBump webpack from 4.46.0 to 5.90.0\nabc\tBump a from 1.0.0 to 1.1.0\n")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        rows = [json.loads(l) for l in r.stdout.splitlines()]
+        self.assertEqual([(x["number"], x["major_bump"]) for x in rows], [(130, True), (None, False)])
 
 
 class CheckBaseRequiredChecksTest(StubbedTest):
@@ -418,12 +448,12 @@ class PollMergeQueueTest(StubbedTest):
         return self.run_cmd("queue", sys.executable, QUEUE, "--state", self.tmp / "state.json", *args, **extra_env)
 
     def test_merged_pr_drains_queue(self):
-        r = self.queue("--prs", "1")
+        r = self.queue("--prs", f"1:{OLD_SHA}")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(json.loads(r.stdout)["status"], {"1": "merged"})
 
     def test_chunk_end_persists_state_and_comments_rebase_once(self):
-        r = self.queue("--prs", "1", "2", YWC_MQ_CHUNK_SECONDS="2", YWC_MQ_POLL_SECONDS="1")
+        r = self.queue("--prs", f"1:{OLD_SHA}", f"2:{OLD_SHA}", YWC_MQ_CHUNK_SECONDS="2", YWC_MQ_POLL_SECONDS="1")
         self.assertEqual(r.returncode, 3, r.stderr)
         state = json.loads((self.tmp / "state.json").read_text())
         self.assertEqual(state["remaining"], [2])
@@ -433,31 +463,40 @@ class PollMergeQueueTest(StubbedTest):
 
     def test_resume_after_deadline_marks_remaining_stalled(self):
         (self.tmp / "state.json").write_text(json.dumps(
-            {"deadline": int(time.time()) - 1, "remaining": [2], "status": {"1": "merged"},
-             "rebase_commented": [2]}))
+            {"deadline": int(time.time()) - 1, "remaining": [2], "heads": {"1": OLD_SHA, "2": OLD_SHA},
+             "status": {"1": "merged"}, "rebase_commented": [2]}))
         r = self.queue()
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(json.loads(r.stdout)["status"], {"1": "merged", "2": "stalled"})
-        self.assertEqual(self.gh_calls("pr "), 0)
+        self.assertEqual(self.gh_calls("pr view 2 "), 1)  # the one final read
+        self.assertEqual(self.gh_calls("pr comment"), 0)
+
+    def test_pr_merged_by_the_deadline_is_merged_not_stalled(self):
+        # Fails if the remaining PRs are marked without one final read at the deadline.
+        (self.tmp / "state.json").write_text(json.dumps(
+            {"deadline": int(time.time()) - 1, "remaining": [1], "heads": {"1": OLD_SHA}, "status": {}}))
+        r = self.queue()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["status"], {"1": "merged"})
 
     def test_missing_state_without_prs_is_usage_error(self):
         self.assertEqual(self.queue().returncode, 2)
 
     def test_closed_pr_is_terminal(self):
-        r = self.queue("--prs", "3")
+        r = self.queue("--prs", f"3:{OLD_SHA}")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(json.loads(r.stdout)["status"], {"3": "closed"})
 
     def test_failed_query_requeues_without_terminal_status(self):
-        r = self.queue("--prs", "4", YWC_MQ_CHUNK_SECONDS="1", YWC_MQ_POLL_SECONDS="1")
+        r = self.queue("--prs", f"4:{OLD_SHA}", YWC_MQ_CHUNK_SECONDS="1", YWC_MQ_POLL_SECONDS="1")
         self.assertEqual(r.returncode, 3, r.stderr)
         self.assertEqual(json.loads(r.stdout), {"done": False, "deadline": json.loads(r.stdout)["deadline"],
-                                                "remaining": [4], "status": {}})
+                                                "remaining": [4], "status": {}, "requeues": {}})
 
     def test_prs_with_existing_state_is_refused(self):
-        self.assertEqual(self.queue("--prs", "1").returncode, 0)
+        self.assertEqual(self.queue("--prs", f"1:{OLD_SHA}").returncode, 0)
         before = (self.tmp / "state.json").read_text()
-        r = self.queue("--prs", "2")
+        r = self.queue("--prs", f"2:{OLD_SHA}")
         self.assertEqual(r.returncode, 2)
         self.assertIn("fresh --state path", r.stderr)
         self.assertEqual((self.tmp / "state.json").read_text(), before)
@@ -465,20 +504,111 @@ class PollMergeQueueTest(StubbedTest):
     def test_corrupt_state_with_prs_keeps_given_deadline(self):
         (self.tmp / "state.json").write_text("{not json")
         past = int(time.time()) - 1
-        r = self.queue("--prs", "2", "--deadline", str(past))
+        r = self.queue("--prs", f"2:{OLD_SHA}", "--deadline", str(past))
         self.assertEqual(r.returncode, 0, r.stderr)
         out = json.loads(r.stdout)
         self.assertEqual((out["deadline"], out["status"]), (past, {"2": "stalled"}))
 
     def test_fresh_mktemp_state_file_starts_without_warning(self):
         (self.tmp / "state.json").write_text("")
-        r = self.queue("--prs", "1")
+        r = self.queue("--prs", f"1:{OLD_SHA}")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertNotIn("unparsable", r.stderr)
 
+    def test_moved_head_disables_auto_merge(self):
+        # Fails if a head pushed after --auto stays queued: GitHub would merge it without the
+        # Step 2 Dockerfile / major-bump checks.
+        r = self.queue("--prs", f"5:{OLD_SHA}")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["status"], {"5": "head-moved"})
+        self.assertEqual(self.gh_calls("pr merge 5 --disable-auto"), 1)
+
+    def test_moved_head_ends_the_chunk_at_once(self):
+        # Fails if the poller keeps polling (up to 540 s) before handing a moved head back.
+        started = time.time()
+        r = self.queue("--prs", f"5:{OLD_SHA}", f"2:{OLD_SHA}", YWC_MQ_CHUNK_SECONDS="60",
+                       YWC_MQ_POLL_SECONDS="60")
+        self.assertLess(time.time() - started, 10)
+        self.assertEqual(r.returncode, 3, r.stderr)
+        out = json.loads(r.stdout)
+        self.assertEqual((out["status"], out["remaining"]), ({"5": "head-moved"}, [2]))
+        self.assertEqual(self.gh_calls("pr view 2 "), 1)
+
+    def test_requeue_resumes_on_the_new_head_up_to_the_cap(self):
+        # Fails if a re-queued PR keeps its old head (it would be disabled again at once),
+        # or if a head that keeps moving is re-queued forever.
+        NEW = "b" * 40
+        self.queue("--prs", f"5:{OLD_SHA}")
+        r = self.queue("--requeue", f"5:{NEW}", YWC_MQ_CHUNK_SECONDS="1")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        state = json.loads((self.tmp / "state.json").read_text())
+        self.assertEqual((state["remaining"], state["heads"]["5"], state["requeues"]), ([5], NEW, {"5": 1}))
+        state["status"]["5"] = "head-moved"; state["remaining"] = []; state["requeues"]["5"] = 2
+        (self.tmp / "state.json").write_text(json.dumps(state))
+        r = self.queue("--requeue", f"5:{NEW}")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("sequential pass", r.stderr)
+        self.assertEqual(json.loads(r.stdout)["requeues"], {"5": 2})
+        self.assertEqual(self.gh_calls("pr merge 5 --disable-auto"), 2)  # once moved, once at the cap
+        self.assertEqual(json.loads(r.stdout)["status"], {"5": "head-moved"})
+
+    def test_requeue_is_refused_for_a_pr_that_did_not_move(self):
+        self.queue("--prs", f"1:{OLD_SHA}")
+        self.assertEqual(self.queue("--requeue", f"1:{OLD_SHA}").returncode, 2)
+        self.assertEqual(self.queue("--requeue", f"1:{OLD_SHA}", "--prs", f"2:{OLD_SHA}").returncode, 2)
+
+    def test_duplicate_requeue_is_usage_error_not_a_crash(self):
+        self.queue("--prs", f"5:{OLD_SHA}")
+        r = self.queue("--requeue", f"5:{OLD_SHA}", f"5:{'b' * 40}")
+        self.assertEqual(r.returncode, 2, r.stderr)
+        self.assertNotIn("Traceback", r.stderr)
+
+    def test_failed_disable_is_retried_and_never_reported_moved(self):
+        r = self.queue("--prs", f"5:{OLD_SHA}", YWC_MQ_CHUNK_SECONDS="2", YWC_MQ_POLL_SECONDS="1",
+                       GH_STUB_DISABLE_RC="1")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["remaining"], [5])
+        self.assertGreaterEqual(self.gh_calls("pr merge 5 --disable-auto"), 2)
+
+    def test_failed_query_at_deadline_is_unreadable_not_stalled(self):
+        # Fails if an auth or rate-limit outage is reported as a stalled queue.
+        past = int(time.time()) + 3
+        r = self.queue("--prs", f"4:{OLD_SHA}", f"2:{OLD_SHA}", "--deadline", str(past),
+                       YWC_MQ_POLL_SECONDS="1")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["status"], {"4": "unreadable", "2": "stalled"})
+        self.assertIn("Bad credentials", r.stderr)
+
+    def test_timed_out_query_requeues_and_names_the_timeout(self):
+        r = self.queue("--prs", f"6:{OLD_SHA}", YWC_MQ_CHUNK_SECONDS="1", YWC_MQ_POLL_SECONDS="1",
+                       YWC_MQ_GH_TIMEOUT_SECONDS="1")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["remaining"], [6])
+        self.assertIn("timed out", r.stderr)
+        self.assertEqual(json.loads((self.tmp / "state.json").read_text())["query_failed"], [6])
+
+    def test_failed_rebase_comment_is_retried_next_chunk(self):
+        # Fails if a failed `@dependabot rebase` post is recorded as sent.
+        r = self.queue("--prs", f"2:{OLD_SHA}", YWC_MQ_CHUNK_SECONDS="1", GH_STUB_COMMENT_RC="1")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertEqual(json.loads((self.tmp / "state.json").read_text())["rebase_commented"], [])
+        r = self.queue(YWC_MQ_CHUNK_SECONDS="1")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertEqual(json.loads((self.tmp / "state.json").read_text())["rebase_commented"], [2])
+        self.assertEqual(self.gh_calls("pr comment 2"), 2)
+
+    def test_pr_without_head_is_usage_error(self):
+        self.assertEqual(self.queue("--prs", "1").returncode, 2)
+        self.assertEqual(self.queue("--prs", "1:null").returncode, 2)
+
+    def test_state_without_heads_is_unusable(self):
+        (self.tmp / "state.json").write_text(json.dumps(
+            {"deadline": int(time.time()) + 60, "remaining": [2], "status": {}}))
+        self.assertEqual(self.queue().returncode, 2)
+
     def test_corrupt_state_without_deadline_warns(self):
         (self.tmp / "state.json").write_text("{not json")
-        r = self.queue("--prs", "1")
+        r = self.queue("--prs", f"1:{OLD_SHA}")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("unparsable", r.stderr)
 

@@ -32,7 +32,7 @@ GH_STUB = r"""#!/usr/bin/env bash
 echo "$*" >> "$GH_STUB_LOG"
 case "$GH_STUB_MODE:$*" in
   base:"pr view "*"headRefOid"*)
-    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+    printf '%s\n' "${GH_STUB_HEAD-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}" ;;
   base:"pr checks "*"--required"*)
     printf '%s\n' "${GH_STUB_REQ_OUT:-}" >&2
     exit "${GH_STUB_REQ_RC:-0}" ;;
@@ -193,7 +193,7 @@ class SequentialCiGateTest(StubbedTest):
 
     NO_REQ = "no required checks reported on the 'dependabot/x' branch"
 
-    def gate(self, bundle=True, **env):
+    def gate(self, bundle=True, own_script=True, **env):
         block = next(b for b in fenced_blocks(skill_text()) if GATE_MARKER in b)
         script = self.tmp / "gate.sh"
         script.write_text(block.replace("{number}", "7"))
@@ -208,7 +208,8 @@ class SequentialCiGateTest(StubbedTest):
             own.mkdir(parents=True, exist_ok=True)
             for name in RESOLVER_FILES:
                 shutil.copyfile(SHARED_SCRIPTS / name, shared / name)
-            shutil.copyfile(BASE_CHECK, own / BASE_CHECK.name)
+            if own_script:
+                shutil.copyfile(BASE_CHECK, own / BASE_CHECK.name)
         self.env.pop("CLAUDE_SKILL_DIR", None)
         # Empty, so a developer shell's source fallback cannot turn BLOCKED into a pass.
         return self.run_cmd("base", "bash", script, CODEX_HOME=str(codex_home),
@@ -287,6 +288,29 @@ class SequentialCiGateTest(StubbedTest):
         self.assertEqual(self.gh_calls("api "), 0)
 
 
+    def test_unreadable_head_is_skipped_before_any_check_or_merge(self):
+        # Fails if the 3a head guard is dropped: an empty or `null` head would reach the gate
+        # and the merge would run with an unusable pin.
+        for head in ("", "null", OLD_SHA[:-1]):
+            with self.subTest(head=head):
+                self.log.unlink(missing_ok=True)
+                r = self.gate(GH_STUB_HEAD=head)
+                self.assertEqual(r.returncode, 1)
+                self.assertEqual(self.last(r), "Skipped (head unreadable)")
+                self.assertEqual(self.gh_calls("pr checks"), 0)
+                self.assertEqual(self.gh_calls("pr merge"), 0)
+
+    def test_resolver_failure_for_the_skill_script_blocks_the_run(self):
+        # Fails if the second resolver line (launcher found, skill script missing) is treated
+        # as a per-PR result or reaches the base check or a merge.
+        r = self.gate(own_script=False, GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ, GH_STUB_BASE="main",
+                      GH_STUB_PROTECTION="1")
+        self.assertEqual(r.returncode, 3, r.stdout)
+        self.assertIn("BLOCKED:", r.stderr)
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+        self.assertEqual(self.gh_calls("api "), 0)
+
+
 class SkillContractTest(unittest.TestCase):
     """Source assertions on the Codex SKILL.md merge-safety contract (prose guards)."""
 
@@ -295,7 +319,8 @@ class SkillContractTest(unittest.TestCase):
         "Skipped (required checks unconfirmed)", "Skipped (no CI checks)", "Failed (head kept moving)",
         "Failed (merge refused)", "Failed (CI timeout)", "Skipped (deadline reached)",
         "Failed (auto-merge possibly still enabled)", "Skipped (run blocked)",
-        "Skipped (run blocked) — auto-merge still enabled",
+        "Skipped (run blocked) — auto-merge still enabled", "Skipped (closed without merge)",
+        "Failed (lane stalled) — still in merge queue",
     ]
 
     @classmethod
@@ -378,8 +403,8 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn('a `MERGED` re-read persists `status[pr] = "merged"`', self.text)
         self.assertIn('a `CLOSED` re-read persists `status[pr] = "closed"`', self.text)
         self.assertIn("the PR never enters `stage3`", self.text)
-        self.assertIn("For an `OPEN` PR, an empty `autoMergeRequest` removes the PR from its lane and adds it to `stage3`",
-                      self.text)
+        self.assertIn("For an `OPEN` PR not in the merge queue, an empty `autoMergeRequest` removes the PR from its "
+                      "lane and adds it to `stage3`", self.text)
         self.assertNotIn("Any non-zero result removes the PR from its lane", self.text)
         self.assertIn('status[pr] = "auto-merge-uncertain"', self.text)
         self.assertIn("only when that re-read shows auto-merge enabled or fails", self.text)
@@ -388,6 +413,37 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("An `auto-merge-uncertain` PR closes its lane: the lane's remaining PRs move to `stage3`",
                       self.text)
         self.assertIn("never in `stage3`", self.text)
+
+    def test_merge_queue_prs_stay_in_their_lane(self):
+        # Fails if a PR GitHub has merge-queued (autoMergeRequest may be empty then) leaves its
+        # lane, letting the next same-lockfile PR start, or if isInMergeQueue is read from
+        # `gh pr view --json`, which has no such field.
+        stage1 = self.section("**Stage 1", "**Stage 2")
+        self.assertIn("pullRequest(number:$pr){isInMergeQueue}", stage1)
+        self.assertNotRegex(self.text, r"gh pr view[^\n`]*--json[^\n` ]*isInMergeQueue")
+        self.assertIn("An `OPEN` PR with `isInMergeQueue` true stays active in its lane", self.text)
+        self.assertIn("plus `isInMergeQueue` with the step 1b read", self.text)
+        self.assertIn("`autoMergeRequest` empty and `isInMergeQueue` false", self.text)
+        self.assertIn("or that is in the merge queue, as active", self.text)
+        self.assertIn("the Stage 1 step 1b `isInMergeQueue` value for every PR in `active`", self.text)
+
+    def test_closed_without_merge_has_a_label(self):
+        # Fails if a PR that closes without merging (resume, re-read, deadline) has no result label.
+        self.assertIn("PRs whose status is `closed` (closed without merging, whether seen while polling, in a "
+                      "re-read, on resume or at the deadline) are recorded as `Skipped (closed without merge)`",
+                      self.text)
+
+    def test_conflict_done_condition_and_refused_merge_are_pinned(self):
+        # Fails if the rebase done condition loosens, or the refused pinned-merge rule loses its
+        # re-read, restart cap, labels or the no-unpinned-retry rule.
+        conflict = self.section("**Conflict path.**", "After each successful merge")
+        self.assertIn("40-hex", conflict)
+        self.assertIn("differs from the recorded head", conflict)
+        refused = self.section("**Refused merge.**", "**Conflict path.**")
+        for phrase in ("`gh pr view {number} --json headRefOid,mergeable`", "at most 2 restarts",
+                       "`Failed (head kept moving)`", "`Failed (merge refused)`", "Never retry unpinned"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, refused)
 
     def test_persisted_set_adds_ci_wait_and_stage3(self):
         # Fails if the restart cap or the Stage 3 queue is lost across chunks.
@@ -409,7 +465,8 @@ class SkillContractTest(unittest.TestCase):
         # could merge on the same lockfile while it auto-merges.
         self.assertIn("advance each lane whose active PR was removed through the Stage 1 lane start block "
                       "before polling", self.text)
-        self.assertIn("adopts a PR whose auto-merge is already enabled as active", self.text)
+        self.assertIn("adopts a PR whose auto-merge is already enabled, or that is in the merge queue, as active",
+                      self.text)
         stage3 = self.section("**Stage 3", "### 4. Final Summary")
         self.assertIn("drained means `active` is empty and every lane's queue is empty", stage3)
 
