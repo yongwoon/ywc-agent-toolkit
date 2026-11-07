@@ -44,11 +44,13 @@ if ! gh pr comment "$PR" --body "@dependabot rebase"; then
   exit 1
 fi
 ATTEMPT=0; REBASED=0; NEW_HEAD=""; FAILED=0; LAST_ERR=""
+ERR_FILE="$(mktemp)"; trap 'rm -f "$ERR_FILE"' EXIT
 until [ "$REBASED" -eq 1 ] || [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; do
   ATTEMPT=$((ATTEMPT + 1))
-  # stderr goes to a variable, so a persistent gh failure (auth, rate limit) is reported below.
-  if ! STATE="$(gh pr view "$PR" --json headRefOid,mergeable --jq '"\(.headRefOid) \(.mergeable)"' 2>&1)"; then
-    FAILED=$((FAILED + 1)); LAST_ERR="${STATE##*$'\n'}"; STATE=""
+  # stdout alone is the state; stderr goes to a file so a successful call's diagnostics
+  # (e.g. GH_DEBUG=api) never leak into it, and a persistent gh failure is reported below.
+  if ! STATE="$(gh pr view "$PR" --json headRefOid,mergeable --jq '"\(.headRefOid) \(.mergeable)"' 2>"$ERR_FILE")"; then
+    FAILED=$((FAILED + 1)); LAST_ERR="$(tail -n 1 "$ERR_FILE")"; STATE=""
   fi
   NEW_HEAD="${STATE%% *}"; MERGEABLE="${STATE##* }"
   if [[ "$NEW_HEAD" =~ ^[0-9a-f]{40}$ ]] && [ "$NEW_HEAD" != "$OLD_HEAD" ] \
