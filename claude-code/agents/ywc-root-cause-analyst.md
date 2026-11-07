@@ -16,7 +16,7 @@ description: >-
   (this agent is read-only — fixes go to ywc-backend-coder / ywc-frontend-coder
   after the verdict), architectural redesign decisions (route to ywc-architect
   once the analyst names "architecture wrong"), security-boundary failures
-  (dispatch ywc-security-engineer instead), or running tests / probes that
+  (dispatch ywc-security-engineer instead), a session retrospective over a transcript (ywc-retro, which dispatches ywc-retro-lens), or running tests / probes that
   require Bash (the caller assembles evidence and forwards the bounded payload).
 model: opus
 tools: [Read, Grep, Glob, WebFetch]
