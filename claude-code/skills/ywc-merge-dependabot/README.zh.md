@@ -15,7 +15,7 @@
 - 批量检测并合并 Dependabot PR
 - 支持仅安全合并模式
 - 合并前检查 Dockerfile 基础镜像更改、主版本升级和 CI 状态
-- 在可能时尝试解决冲突
+- 发生冲突时只发布一次 `@dependabot rebase` 评论并等待 Dependabot 完成 rebase，从不手动解决冲突
 - 最后生成汇总报告
 
 ## 使用方法

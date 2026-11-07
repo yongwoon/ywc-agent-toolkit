@@ -74,7 +74,7 @@ Ecosystem groups processed: npm (3), github-actions (2), python (2)
 
 - Merged    (npm)            : #123 Bump axios from 1.6.0 to 1.7.2
 - Skipped   (Dockerfile)     : #127 Bump node from 18 to 20
-- Skipped   (Major version)  : #130 Bump webpack from 4.x to 5.x
+- Skipped   (Major version upgrade) : #130 Bump webpack from 4.x to 5.x
 - Failed    (lane stalled)   : #132 Bump express from 4.18.0 to 4.19.2 - CONFLICTING after 30 min
 ```
 

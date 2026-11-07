@@ -15,7 +15,7 @@ Este Skill detecta los PRs de Dependabot, aplica verificaciones de seguridad pre
 - Detecta y fusiona PRs de Dependabot en lote
 - Admite un modo de merge solo para seguridad
 - Verifica cambios en la imagen base de Dockerfile, actualizaciones de versión mayor y estado de CI antes del merge
-- Intenta resolver conflictos cuando es posible
+- Ante un conflicto, publica un único comentario `@dependabot rebase` y espera el rebase de Dependabot; nunca resuelve conflictos a mano
 - Genera un informe de resumen al final
 
 ## Uso

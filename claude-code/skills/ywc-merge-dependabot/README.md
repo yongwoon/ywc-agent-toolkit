@@ -248,7 +248,7 @@ Ecosystem groups processed: npm (4), github-actions (2), python (2), go (2)
 - ✅ Merged (github-actions) : #302, #309
 - ✅ Merged (python)         : #304, #310
 - ✅ Merged (go)             : #306, #311
-- ⏭️ Skipped (Major version) : #307
+- ⏭️ Skipped (Major version upgrade) : #307
 - ⏭️ Skipped (Dockerfile)    : #303
 
 Total: 10 merged / 2 skipped / 0 failed

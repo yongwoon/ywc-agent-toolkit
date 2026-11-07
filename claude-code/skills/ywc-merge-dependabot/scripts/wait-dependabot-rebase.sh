@@ -43,10 +43,13 @@ if ! gh pr comment "$PR" --body "@dependabot rebase"; then
   echo "REBASED=0 ATTEMPTS=0 NEW_HEAD="
   exit 1
 fi
-ATTEMPT=0; REBASED=0; NEW_HEAD=""
+ATTEMPT=0; REBASED=0; NEW_HEAD=""; FAILED=0; LAST_ERR=""
 until [ "$REBASED" -eq 1 ] || [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; do
   ATTEMPT=$((ATTEMPT + 1))
-  STATE="$(gh pr view "$PR" --json headRefOid,mergeable --jq '"\(.headRefOid) \(.mergeable)"' 2>/dev/null || true)"
+  # stderr goes to a variable, so a persistent gh failure (auth, rate limit) is reported below.
+  if ! STATE="$(gh pr view "$PR" --json headRefOid,mergeable --jq '"\(.headRefOid) \(.mergeable)"' 2>&1)"; then
+    FAILED=$((FAILED + 1)); LAST_ERR="${STATE##*$'\n'}"; STATE=""
+  fi
   NEW_HEAD="${STATE%% *}"; MERGEABLE="${STATE##* }"
   if [[ "$NEW_HEAD" =~ ^[0-9a-f]{40}$ ]] && [ "$NEW_HEAD" != "$OLD_HEAD" ] \
      && [ "$MERGEABLE" = "MERGEABLE" ]; then
@@ -56,5 +59,8 @@ until [ "$REBASED" -eq 1 ] || [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; do
   fi
 done
 [ "$REBASED" -eq 1 ] || NEW_HEAD=""
+if [ "$REBASED" -eq 0 ] && [ "$FAILED" -eq "$ATTEMPT" ]; then
+  echo "every status query for PR $PR failed — the rebase state is unknown, not stuck (last error: ${LAST_ERR:-none})" >&2
+fi
 echo "REBASED=$REBASED ATTEMPTS=$ATTEMPT NEW_HEAD=$NEW_HEAD"
 [ "$REBASED" -eq 1 ]
