@@ -54,3 +54,7 @@ Covers: AC4 (FR-4)
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+- RED (fixtures + order test before the `SKILL.md` edit): `python3 tests/codex_issue69_contract_test.py` → `FAILED (failures=1, errors=1)`; failure: `missing 'must match \`^[A-Za-z0-9._/-]+$\` over the whole string, ...'`; error: order test `ValueError: substring not found` (no `check-ref-format "refs/heads/$branch"`). The order check over the four Warning-5 steps on the old text gave positions `[908, 1194, 577, 1565]` (ls-remote, merged, open, lease) → not sorted, so the open-before-tip order is caught.
+- GREEN: after the guard rewrite the contract test passes (4 tests OK). A first draft wrote "Only a successful, ..." and the pinned lowercase clause caught it; reworded to keep it verbatim.
+- `wrong-base` / `moved-tip` traces drop the "parsed empty open query" step: under FR-4 a failed merged check stops before step 6, so that step is unreachable.
+- zh/es regenerated with `bash scripts/translate.sh --codex --skill ywc-finish-branch` (whole-file re-translation, so the diff is larger than the guard line).

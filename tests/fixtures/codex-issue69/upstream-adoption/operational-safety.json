@@ -21,13 +21,25 @@
       "required": [
         "**Remote deletion guard**",
         "only a successful, parseable, empty result allows deletion",
-        "git check-ref-format --branch \"$branch\"",
+        "must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`",
+        "git check-ref-format \"refs/heads/$branch\"",
         "baseRefName` is the intended base and `headRefOid` equals the current remote tip",
         "Never infer a merge from `git branch -r --merged HEAD`",
-        "tip-bound lease"
+        "tip-bound lease",
+        "`url` is `git remote get-url origin` and must not start with `-`",
+        "git remote get-url --push --all origin",
+        "env -u GH_HOST gh",
+        "--repo \"$parent\"",
+        "a fork of a fork returns `NEEDS_CONTEXT`",
+        "whose ref field is exactly `refs/heads/$branch`",
+        "^[0-9a-f]{40}([0-9a-f]{24})?$",
+        "must exit 0 and print exactly `0`",
+        "race window"
       ],
       "forbidden": [
-        "A failed PR lookup permits deletion"
+        "A failed PR lookup permits deletion",
+        "check-ref-format --branch",
+        "If deletion relies on a merge"
       ]
     },
     {

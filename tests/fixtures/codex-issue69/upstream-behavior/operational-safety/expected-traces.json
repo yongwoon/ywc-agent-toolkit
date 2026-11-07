@@ -3,6 +3,12 @@
     "id": "empty-open-pr",
     "input": {
       "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaa"
+      },
       "open_query": {
         "exit": 0,
         "json": []
@@ -11,8 +17,9 @@
     },
     "expected_trace": [
       "validate branch",
-      "open query parsed empty",
       "read exact tip",
+      "match actual base and remote tip",
+      "open query parsed empty",
       "tip-bound delete"
     ],
     "expected_status": "ALLOWED",
@@ -24,6 +31,13 @@
   {
     "id": "open-pr",
     "input": {
+      "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaa"
+      },
       "open_query": {
         "exit": 0,
         "json": [
@@ -46,6 +60,13 @@
   {
     "id": "nonparseable",
     "input": {
+      "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaa"
+      },
       "open_query": {
         "exit": 0,
         "raw": "not JSON"
@@ -64,6 +85,13 @@
   {
     "id": "api-failure",
     "input": {
+      "branch": "feature/safe",
+      "intended_base": "main",
+      "remote_tip": "aaa",
+      "merged_row": {
+        "baseRefName": "main",
+        "headRefOid": "aaa"
+      },
       "open_query": {
         "exit": 1,
         "raw": ""
@@ -83,14 +111,14 @@
     "id": "invalid-branch",
     "input": {
       "branch": "--bad",
-      "check_ref_format_exit": 1
+      "allowlist_match": false
     },
     "expected_trace": [
       "reject branch",
       "no lookup or deletion"
     ],
     "expected_status": "BLOCKED",
-    "source_clause": "git check-ref-format --branch \"$branch\"",
+    "source_clause": "must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`",
     "evidence_kind": "source assertion / fixture expectation",
     "live_evidence": "UNVERIFIED \u2014 instruction contract only",
     "remote_deletions": 0
@@ -108,7 +136,7 @@
       "local_merged": true
     },
     "expected_trace": [
-      "parsed empty open query",
+      "read exact tip",
       "match actual base and remote tip",
       "retain remote"
     ],
@@ -131,7 +159,7 @@
       "local_merged": true
     },
     "expected_trace": [
-      "parsed empty open query",
+      "read exact tip",
       "match actual base and remote tip",
       "retain remote"
     ],
@@ -154,8 +182,9 @@
       "local_merged": true
     },
     "expected_trace": [
-      "parsed empty open query",
+      "read exact tip",
       "match actual base and remote tip",
+      "parsed empty open query",
       "delete exact tip"
     ],
     "expected_status": "ALLOWED",
