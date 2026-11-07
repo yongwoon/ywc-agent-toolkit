@@ -163,7 +163,7 @@ Set one run-wide deadline once at the start of Step 3 (`started_at + 1800` secon
 
 Persist `deadline`, `active`, `lanes`, `status`, and `rebase_commented` (plus `rebase_intent`, below) together with the bound repository/invocation identity and pending PR head/CI run identity. For a sequential wait, `active` contains its one PR and `lanes` its pending queue. Acquire an exclusive per-repository/queue lock; a competing owner must stop before mutation. Save a complete snapshot by atomic replacement of a private state file under that serialized invocation owner after every chunk and before handoff; never evaluate state as shell source. Persistence failure is `BLOCKED`: retain the previous snapshot and stop subsequent merge/comment requests. Validate identity and state on resume; missing or malformed state returns `NEEDS_CONTEXT` without further merge/comment requests. An in-memory original deadline can reconstruct lost state only after reconciliation, never extend the budget.
 
-Also persist `ci_wait[pr] = {head, restarts}` (the rebased head a 3a CI wait is on, and its restart count) and `stage3` (the list of PR numbers queued for Stage 3, kept beside `active` and `lanes`) in the same snapshot. An absent `ci_wait` or `stage3` key is empty, not malformed. The base-check result is never persisted: the check runs in the same block as its `--auto` call, every time. Persisted or remote values are compared in-process on parsed JSON, never interpolated into `--jq` or a shell string. On resume, first read `gh pr view {number} --json state,autoMergeRequest,headRefOid` for every PR in `active`, `stage3` and `ci_wait`: a PR whose `state` is `MERGED` or `CLOSED` is recorded as terminal (`merged`, reported as `Merged`, or `closed`) and removed from those entries instead of being restarted.
+Also persist `ci_wait[pr] = {head, restarts}` (the rebased head a 3a CI wait is on, and its restart count) and `stage3` (the list of PR numbers queued for Stage 3, kept beside `active` and `lanes`) in the same snapshot. An absent `ci_wait` or `stage3` key is empty, not malformed. The base-check result is never persisted: the check runs in the same block as its `--auto` call, every time. Persisted or remote values are compared in-process on parsed JSON, never interpolated into `--jq` or a shell string. On resume, first read `gh pr view {number} --json state,autoMergeRequest,headRefOid` for every PR in `active`, `stage3` and `ci_wait`: a PR whose `state` is `MERGED` or `CLOSED` is recorded as terminal (`merged`, reported as `Merged`, or `closed`) and removed from those entries instead of being restarted. After those reads, advance each lane whose active PR was removed through the Stage 1 lane start block before polling: its pre-start read adopts a PR whose auto-merge is already enabled as active (a start GitHub accepted before the crash), so that PR is polled and reported and the lane never stalls.
 
 Only a successful rebase comment sets `rebase_commented[pr]`; persist that marker before another chunk. Because the process can end after GitHub accepts the comment but before the marker is saved, atomically persist a `rebase_intent[pr]` entry (with the pending PR head and a baseline of the PR's existing comment IDs) **before** sending the comment. On resume, an intent without a marker means the comment may already exist: list the PR's comments first and set the marker only if a matching `@dependabot rebase` comment whose ID is not in the baseline is found (an earlier run's comment never completes a new intent), and send only if none is. Reconcile an uncertain transport result against existing PR comments the same way before retrying, so an accepted comment is not duplicated. Reuse successful markers across retries. Rebase completion must be tied to the resulting head and its fresh CI run: stale green CI on the old head is not success.
 
@@ -186,7 +186,7 @@ OUT=$(gh pr checks {number} --required 2>&1) && RC=0 || RC=$?
 TAG=""
 if [ "$RC" -ne 0 ] && [[ "$OUT" == *"no required checks reported"* ]]; then
   RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
-  BASE_CHECK_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-merge-dependabot/scripts/check-base-required-checks.sh" bash)" || exit $?
+  BASE_CHECK_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-merge-dependabot/scripts/check-base-required-checks.sh" bash)" || { echo "BLOCKED: resolver failed ($?)" >&2; exit 3; }
   BASE_OUT=$(bash "$BASE_CHECK_SCRIPT" {number}) && BASE_RC=0 || BASE_RC=$?
   # Branch on the exit code before reading the last line CONFIRMED=<0|1> BASE=<…>
   case "$BASE_RC:${BASE_OUT##*$'\n'}" in
@@ -244,7 +244,7 @@ For each non-empty ecosystem group, start only the first PR in that group with a
 gh pr view {number} --json state,autoMergeRequest,headRefOid
 # 2. Confirm the base: only exit 0 may start the PR; any other exit → stage3, never --auto.
 RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
-BASE_CHECK_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-merge-dependabot/scripts/check-base-required-checks.sh" bash)" || exit $?
+BASE_CHECK_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-merge-dependabot/scripts/check-base-required-checks.sh" bash)" || { echo "BLOCKED: resolver failed ($?)" >&2; exit 3; }
 BASE_OUT=$(bash "$BASE_CHECK_SCRIPT" {number}) && BASE_RC=0 || BASE_RC=$?
 [ "$BASE_RC" -eq 0 ] || { echo "stage3 (base not confirmed, exit $BASE_RC)"; exit 1; }
 # 3. Compare in-process with the BASE= value of ${BASE_OUT##*$'\n'}; a difference re-runs step 2.
@@ -320,7 +320,7 @@ PRs that reach `MERGED` are recorded as `Merged`. PRs still in the `active` list
 
 **Stage 3 — Final sequential pass for the mixed bucket and unconfirmed-base PRs:**
 
-After all active lanes have drained successfully before the deadline (not merely because a chunk returned), process the `mixed` group and the persisted `stage3` list (PRs whose base was not confirmed, whose `--auto` start failed with an empty `autoMergeRequest` re-read, or whose lane an `auto-merge-uncertain` PR closed) using the same logic as Sequential Flow (3a), under the run-wide deadline. Mixed PRs run last because earlier merges may have changed the conflict surface they would land in. PRs that 3a or Stage 3 has not reached before the deadline are `Skipped (deadline reached)`.
+After all active lanes have drained successfully before the deadline (not merely because a chunk returned; drained means `active` is empty and every lane's queue is empty), process the `mixed` group and the persisted `stage3` list (PRs whose base was not confirmed, whose `--auto` start failed with an empty `autoMergeRequest` re-read, or whose lane an `auto-merge-uncertain` PR closed) using the same logic as Sequential Flow (3a), under the run-wide deadline. Mixed PRs run last because earlier merges may have changed the conflict surface they would land in. PRs that 3a or Stage 3 has not reached before the deadline are `Skipped (deadline reached)`.
 
 ### 4. Final Summary
 

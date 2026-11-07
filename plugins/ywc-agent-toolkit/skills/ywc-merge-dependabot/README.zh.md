@@ -41,4 +41,4 @@
 
 ## 操作安全
 
-只检测 Dockerfile diff hunk 中改动的 FROM；查询或解析失败保持未解决。Rebase/CI polling 跨 chunk 保留完整状态和run-wide 的 1800 秒 deadline，超时视为失败。显式调用偏好 metadata 并不保证 runtime 强制执行。
+只检测 Dockerfile diff hunk 中改动的 FROM；查询或解析失败保持未解决。Rebase/CI polling 跨 chunk 保留完整状态和 run-wide 的 1800 秒 deadline，超时视为失败。显式调用偏好 metadata 并不保证 runtime 强制执行。

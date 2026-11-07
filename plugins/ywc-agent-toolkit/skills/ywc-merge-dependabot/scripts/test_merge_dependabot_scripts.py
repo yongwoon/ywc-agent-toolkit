@@ -23,7 +23,8 @@ GATE_MARKER = "gh pr checks {number} --required 2>&1"
 RESOLVER_SELECT = ('RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" '
                    '2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }')
 RESOLVER_RESOLVE = ('BASE_CHECK_SCRIPT="$(bash "$RESOLVER_LAUNCHER" '
-                    '"ywc-merge-dependabot/scripts/check-base-required-checks.sh" bash)" || exit $?')
+                    '"ywc-merge-dependabot/scripts/check-base-required-checks.sh" bash)" '
+                    '|| { echo "BLOCKED: resolver failed ($?)" >&2; exit 3; }')
 
 OLD_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
@@ -396,6 +397,16 @@ class SkillContractTest(unittest.TestCase):
         # Fails if a resume restarts a PR that merged or closed during the crash window (W3).
         self.assertIn("for every PR in `active`, `stage3` and `ci_wait`", self.text)
         self.assertIn("`MERGED` or `CLOSED` is recorded as terminal", self.text)
+
+    def test_resume_advances_lanes_whose_active_pr_was_removed(self):
+        # Fails if a resume drops a lane whose active PR ended in the crash window: its next PR
+        # (possibly already auto-merging) would never be read, polled or reported, and Stage 3
+        # could merge on the same lockfile while it auto-merges.
+        self.assertIn("advance each lane whose active PR was removed through the Stage 1 lane start block "
+                      "before polling", self.text)
+        self.assertIn("adopts a PR whose auto-merge is already enabled as active", self.text)
+        stage3 = self.section("**Stage 3", "### 4. Final Summary")
+        self.assertIn("drained means `active` is empty and every lane's queue is empty", stage3)
 
     def test_run_blocked_keeps_recorded_terminal_labels(self):
         # Fails if a resolver failure overwrites labels already recorded or is read per PR.

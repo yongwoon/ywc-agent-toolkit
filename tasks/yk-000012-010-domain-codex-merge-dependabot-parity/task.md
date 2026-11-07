@@ -75,3 +75,7 @@ Covers: AC1, AC2, AC3 (FR-1, FR-2, FR-3)
 - **W6:** the unpinned part of the old `:161` now names one run-wide deadline, set once at the start of Step 3. The Stage 2 illustration reads `deadline=$RUN_DEADLINE` and no longer computes `+1800`.
 - **W7:** at the deadline, PRs that never started are `Skipped (deadline reached)`. Only started PRs are marked failed/stalled.
 - **zh/es:** these were edited by hand on the changed lines only. `scripts/translate.sh` was not run (it would rewrite `.claude/settings.json`). The AUTO-GENERATED headers are unchanged.
+- **Review fixes:**
+  - **M1:** after the resume state reads, each lane whose active PR was removed is advanced through the lane start block before polling. Its pre-start read adopts a PR whose auto-merge is already enabled as active. Stage 3 "drained" is now defined as `active` empty and every lane's queue empty.
+  - **L4:** the second resolver line now maps any failure to `BLOCKED` with exit 3. The resolver call count stays at 22.
+  - **RED:** `test_resume_advances_lanes_whose_active_pr_was_removed` and the updated `RESOLVER_RESOLVE` check both failed before the SKILL.md edit (`FAILED (failures=2)`). After the edit: `Ran 33 tests … OK`.
