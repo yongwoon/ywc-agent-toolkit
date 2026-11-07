@@ -117,7 +117,7 @@ Verify the following conditions before starting:
    ```
 
    If exit 1, resolve per worktree listed in the output (check the first bullet before the others):
-   - The worktree basename is `pr-<N>` (a `.worktrees/` or configured root) or `worktree-pr-<N>` (the legacy `../worktree-<task-name>` root) → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish the PR review, then prune it from the main checkout with `ywc-worktrees --mode prune --task-name pr-<N> --branch <H> --keep-branch` (`<H>` = the PR head branch) before the run
+   - The worktree basename is `pr-<N>` (a `.worktrees/` or configured root) or `worktree-pr-<N>` (the legacy `../worktree-<task-name>` root) → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish the PR review, then prune it from the main checkout with `/ywc-worktrees --mode prune --task-name pr-<N> --branch <H> --keep-branch` (`<H>` = the PR head branch) before the run; when the worktree is not at the path prune resolves to (a legacy `../worktree-pr-<N>` after `.worktrees/` was added), use `git worktree remove <path>` instead, as `ywc-handle-pr-reviews` Step 9 describes
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
 
@@ -219,7 +219,7 @@ for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktre
 
 **4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/setup-docker-ports.sh" --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
 
-**Checkpoint**: `python3 claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
+**Checkpoint**: `python3 claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list when the key is absent (an empty list from an interrupted, fully merged wave is kept), and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 
 **4b. Spawn Agents** — Use Claude Code's `Agent` tool to spawn one subagent per task in parallel. Pass each agent:
 - The task's `task.md` (implementation checklist)
