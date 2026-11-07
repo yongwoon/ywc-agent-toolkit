@@ -30,6 +30,7 @@ model: sonnet
 tools: [Read, Grep, Glob, WebFetch]
 permissionMode: dontAsk
 category: language-reviewer
+tags: [dispatch-only]
 ---
 
 # ywc-typescript-reviewer

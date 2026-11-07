@@ -78,7 +78,7 @@ tools: [Read, Write, Edit, Bash, Grep, Glob]
 | `license` | string | License hint for catalog publishing. **lowercase.** |
 | `metadata` | object | Free-form labels. **lowercase.** |
 | `compatibility` | object | Tool / runtime constraints. **lowercase.** |
-| `tags` | list | Search tags. **lowercase.** |
+| `tags` | list | Search tags. **lowercase.** `dispatch-only` marks an agent no user-typed prompt can select (a skill or agent dispatches it); it waives only the trigger-coverage positives floor. |
 | `author` | string | Authorship attribution. **lowercase.** |
 | `homepage` | string | Catalog homepage / docs URL. **lowercase.** |
 | `repository` | string | Source repo URL. **lowercase.** |
