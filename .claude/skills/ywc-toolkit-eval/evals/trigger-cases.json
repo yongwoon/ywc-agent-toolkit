@@ -4700,6 +4700,78 @@
       "source": "user-prompt",
       "impostor": "ywc-backend-coder",
       "note": "security-engineer wins for read-only static analysis; security-engineer's own definition names backend-coder as where fixes are dispatched separately, which this ask is not"
+    },
+    {
+      "id": "impl-review-vs-go-reviewer-1",
+      "prompt": "이 Go 코드 고루틴 새는 데 없는지 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-go-reviewer",
+      "note": "prompt reused verbatim from case go-reviewer-pos-5 (user-prompt); only the sibling label is new: a user-typed Go review request is owned by impl-review, which dispatches go-reviewer; go-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-python-reviewer-1",
+      "prompt": "이 파이썬 코드 타입 힌트 제대로 됐는지 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-python-reviewer",
+      "note": "prompt reused verbatim from case python-reviewer-pos-5 (user-prompt); only the sibling label is new: a user-typed Python review request is owned by impl-review, which dispatches python-reviewer; python-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-python-reviewer-2",
+      "prompt": "이 비동기 코드에 블로킹 호출 섞여있는지 확인해줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-python-reviewer",
+      "note": "prompt reused verbatim from case python-reviewer-pos-6 (user-prompt); only the sibling label is new: a user-typed async-correctness review request is owned by impl-review, which dispatches python-reviewer; python-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-typescript-reviewer-1",
+      "prompt": "이 타입스크립트 코드 타입 안정성 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "prompt reused verbatim from case typescript-reviewer-pos-5 (user-prompt); only the sibling label is new: a user-typed TypeScript review request is owned by impl-review, which dispatches typescript-reviewer; typescript-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "impl-review-vs-typescript-reviewer-2",
+      "prompt": "이 훅 사용 규칙 지켜졌는지 봐줘",
+      "expected": "ywc-impl-review",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "prompt reused verbatim from case typescript-reviewer-pos-6 (user-prompt); only the sibling label is new: a user-typed React-hooks review request is owned by impl-review, which dispatches typescript-reviewer; typescript-reviewer's own definition excludes user-typed review requests"
+    },
+    {
+      "id": "root-cause-analyst-vs-retro-lens-1",
+      "prompt": "이 버그 왜 나는 건지 하나씩 파고들어서 밝혀줘",
+      "expected": "ywc-root-cause-analyst",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-retro-lens",
+      "note": "prompt reused verbatim from case root-cause-analyst-pos-5 (user-prompt); only the sibling label is new: retro-lens's own definition routes root-cause analysis to root-cause-analyst; retro-lens is dispatched only by ywc-retro"
+    },
+    {
+      "id": "security-engineer-vs-retro-lens-1",
+      "prompt": "이 코드 취약점 기준으로 정적 분석해줘",
+      "expected": "ywc-security-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-retro-lens",
+      "note": "prompt reused verbatim from case security-engineer-pos-5 (user-prompt); only the sibling label is new: retro-lens's own definition routes general code analysis to security-engineer / a language reviewer; retro-lens is dispatched only by ywc-retro"
+    },
+    {
+      "id": "performance-engineer-vs-typescript-reviewer-1",
+      "prompt": "빌드 결과물 용량이 예산 넘는지 확인해줘",
+      "expected": "ywc-performance-engineer",
+      "kind": "collision",
+      "source": "user-prompt",
+      "impostor": "ywc-typescript-reviewer",
+      "note": "prompt reused verbatim from case performance-engineer-pos-7 (user-prompt); only the sibling label is new: typescript-reviewer's own definition routes bundle-size-against-budget measurement to performance-engineer; this ask is a budget check, not a TS idiom review"
     }
   ]
 }

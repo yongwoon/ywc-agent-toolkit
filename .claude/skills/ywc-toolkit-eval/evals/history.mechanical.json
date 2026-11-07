@@ -304,6 +304,11 @@
     "A4": 5,
     "A5": 5
   },
+  "claude-code/agents/ywc-retro-lens": {
+    "A3": 5,
+    "A4": 5,
+    "A5": 5
+  },
   "claude-code/agents/ywc-root-cause-analyst": {
     "A3": 5,
     "A4": 5,
