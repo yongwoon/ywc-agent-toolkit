@@ -38,11 +38,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000011 — done
 - Completed: `yk-000011-010-domain-ci-gate-and-dependabot-lows`, `yk-000011-020-domain-codex-finish-branch-guard`, `yk-000011-030-domain-dispatch-only-agent-tag`
 
-## Phase yk-000012 — pending
-- `yk-000012-010-domain-codex-merge-dependabot-parity` — depends on `yk-000011-010-domain-ci-gate-and-dependabot-lows`; runs after every Phase 000011 task (stages the shared `history.mechanical.json` baseline)
-
-### Post-run step (not a task): release gate — `docs/ywc-plans/20261107-p1-hardening-before-main-pr.md` FR-6 / AC7
-- After Phase 000012: chunked whole-run `/ywc-impl-review --git-range <a>..<b> --non-interactive` over `git merge-base main feature/improvement-20261106`..`feature/improvement-20261106` (each chunk ≤200 files / ≤5,000 lines), one fix pass + targeted re-review, then update and mark draft PR #214 ready.
+## Phase yk-000012 — done
+- Completed: `yk-000012-010-domain-codex-merge-dependabot-parity`
 
 ## Task Summary
 
