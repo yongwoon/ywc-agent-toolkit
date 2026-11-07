@@ -24,6 +24,7 @@
         "must match `^[A-Za-z0-9._/-]+$` over the whole string, must not start with `-`, and must not contain `..`",
         "git check-ref-format \"refs/heads/$branch\"",
         "baseRefName` is the intended base and `headRefOid` equals the current remote tip",
+        "`headRepositoryOwner.login` and `headRepository.name` must equal the owner and name in `repo`, in the `$parent` run too",
         "Never infer a merge from `git branch -r --merged HEAD`",
         "tip-bound lease",
         "`url` is `git remote get-url origin` and must not start with `-`",

@@ -373,8 +373,13 @@ class SkillContractTest(unittest.TestCase):
     def test_failed_auto_is_reread_and_only_left_after_a_verified_disable(self):
         # Fails if a non-zero --auto skips the re-read, an uncertain PR enters Stage 3 (W2),
         # or an uncertain PR lets its lane start another same-lockfile PR (W4).
-        self.assertIn("After any non-zero `--auto` result, re-read `autoMergeRequest`", self.text)
-        self.assertIn("An empty re-read removes the PR from its lane and adds it to `stage3`", self.text)
+        self.assertIn("After any non-zero `--auto` result, re-read `state` and `autoMergeRequest` together", self.text)
+        # Fails if a PR that --auto already merged (or that closed) is sent to Stage 3 for a second merge.
+        self.assertIn('a `MERGED` re-read persists `status[pr] = "merged"`', self.text)
+        self.assertIn('a `CLOSED` re-read persists `status[pr] = "closed"`', self.text)
+        self.assertIn("the PR never enters `stage3`", self.text)
+        self.assertIn("For an `OPEN` PR, an empty `autoMergeRequest` removes the PR from its lane and adds it to `stage3`",
+                      self.text)
         self.assertNotIn("Any non-zero result removes the PR from its lane", self.text)
         self.assertIn('status[pr] = "auto-merge-uncertain"', self.text)
         self.assertIn("only when that re-read shows auto-merge enabled or fails", self.text)

@@ -139,7 +139,11 @@ class OperationalSafetyTests(unittest.TestCase):
                 self.assertTrue(trace['input'])
                 self.assertTrue(trace['expected_trace'])
                 self.assertTrue(trace['expected_status'])
-        for denied in ('open-pr', 'nonparseable', 'api-failure', 'invalid-branch', 'wrong-base', 'moved-tip', 'lease-race'):
+                # A tip the guard would reject as malformed must not back an ALLOWED/BLOCKED expectation.
+                for sha in (trace['input'].get('remote_tip'), trace['input'].get('merged_row', {}).get('headRefOid')):
+                    if sha is not None:
+                        self.assertRegex(sha, r'^[0-9a-f]{40}([0-9a-f]{24})?$')
+        for denied in ('open-pr', 'nonparseable', 'api-failure', 'invalid-branch', 'wrong-base', 'moved-tip', 'foreign-head', 'lease-race'):
             self.assertEqual(next(t for t in traces if t['id'] == denied)['remote_deletions'], 0)
         for status in (1, 2, 127):
             item = next(t for t in traces if t['id'] == f'isolation-{status}')
