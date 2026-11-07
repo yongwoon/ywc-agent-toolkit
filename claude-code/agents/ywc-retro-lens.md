@@ -18,6 +18,7 @@ model: sonnet
 tools: [Read, Grep, Glob]
 permissionMode: dontAsk
 category: retro
+tags: [dispatch-only]
 ---
 
 # ywc-retro-lens

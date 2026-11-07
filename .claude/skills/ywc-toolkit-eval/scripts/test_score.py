@@ -651,12 +651,15 @@ class CoverageExemptionTest(unittest.TestCase):
                 "sufficient": positives >= score.COVERAGE_MIN_POSITIVES
                 and collisions >= score.COVERAGE_MIN_COLLISIONS}
 
-    def _agent_cov(self, description: str, cov: dict) -> dict:
+    def _agent_cov(self, description: str, cov: dict, tags: str = "") -> dict:
+        """`tags` is raw frontmatter text (e.g. "tags: [x]" or a block list); "" omits it."""
         import tempfile
+        tags_block = f"{tags}\n" if tags else ""
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "ywc-x.md"
             path.write_text(f"---\nname: ywc-x\ndescription: >-\n  {description}\n"
-                            "model: sonnet\ntools: [Read]\n---\nbody\n", encoding="utf-8")
+                            f"model: sonnet\ntools: [Read]\n{tags_block}---\nbody\n",
+                            encoding="utf-8")
             return score.score_agent(path, {}, {"ywc-x": cov})["signals"]["coverage"]
 
     # Fails if a slash-only skill is judged on description-routing coverage.
@@ -673,20 +676,51 @@ class CoverageExemptionTest(unittest.TestCase):
         self.assertFalse(cov["sufficient"])
         self.assertIsNone(cov["exempt"])
 
-    # Fails if a dispatch-only agent also skips its collision minimum.
+    # Fails if the collision minimum is waived for a tagged dispatch-only agent.
     def test_dispatch_only_agent_still_needs_collisions(self) -> None:
-        desc = "Use only as the confined reader. Triggers: dispatch by ywc-retro; no natural-language triggers."
-        self.assertFalse(self._agent_cov(desc, self._cov(0, 1))["sufficient"])
-        ok = self._agent_cov(desc, self._cov(0, 2))
+        desc = "Use only as the confined reader. Triggers: dispatch by ywc-retro."
+        tag = "tags: [dispatch-only]"
+        self.assertFalse(self._agent_cov(desc, self._cov(0, 1), tag)["sufficient"])
+        ok = self._agent_cov(desc, self._cov(0, 2), tag)
         self.assertTrue(ok["sufficient"])
         self.assertEqual(ok["exempt"], "dispatch-only")
 
-    # Fails if the reviewer rule stops being derived from the description text.
-    def test_user_typed_request_owned_elsewhere_marks_dispatch_only(self) -> None:
-        desc = ("Use when reviewing Go code. Do not use for a user-typed code review "
-                "request, including a language-specific one (ywc-impl-review owns it "
-                "and dispatches this agent).")
-        self.assertEqual(self._agent_cov(desc, self._cov(0, 2))["exempt"], "dispatch-only")
+    # Fails if the description phrase (not the tag) is used to derive the exemption.
+    def test_description_phrase_without_tag_is_not_exempt(self) -> None:
+        for desc in ("Triggers: dispatch by ywc-retro; no natural-language triggers.",
+                     "Use when reviewing Go code. Do not use for a user-typed code review "
+                     "request (ywc-impl-review owns it and dispatches this agent)."):
+            cov = self._agent_cov(desc, self._cov(0, 2))
+            self.assertIsNone(cov["exempt"], desc)
+            self.assertFalse(cov["sufficient"], desc)
+
+    # Fails if the token rule accepts a near-miss or a commented-out mention.
+    def test_near_miss_tags_are_not_exempt(self) -> None:
+        for tag in ("tags: [dispatch-only-x]", "tags: [non-dispatch-only]",
+                    "tags: [Dispatch-Only]", "tags: [dispatch_only]",
+                    "tags: [language-reviewer] # not dispatch-only",
+                    "tags: [language-reviewer]\t# not dispatch-only",
+                    "tags: # dispatch-only (disabled)\n  - dispatch-only",
+                    "tags:\n  # dispatch-only (disabled)\n  - dispatch-only"):
+            cov = self._agent_cov("Use when x.", self._cov(0, 2), tag)
+            self.assertIsNone(cov["exempt"], tag)
+            self.assertFalse(cov["sufficient"], tag)
+
+    # Fails if a valid flow, quoted or block-list tag is not recognised.
+    def test_valid_tag_forms_are_dispatch_only(self) -> None:
+        for tag in ("tags: [dispatch-only]", "tags: [dispatch-only, language-reviewer]",
+                    "tags: [language-reviewer, dispatch-only]", 'tags: ["dispatch-only"]',
+                    "tags: ['dispatch-only'] # trailing comment",
+                    "tags:\n  - dispatch-only", "tags:\n  - language-reviewer\n  - dispatch-only"):
+            cov = self._agent_cov("Use when x.", self._cov(0, 2), tag)
+            self.assertEqual(cov["exempt"], "dispatch-only", tag)
+            self.assertTrue(cov["sufficient"], tag)
+
+    # Fails if the slash-only rule stops taking precedence over the tag.
+    def test_slash_only_wins_over_dispatch_only_tag(self) -> None:
+        fm = {"disable-model-invocation": "true", "tags": "[dispatch-only]"}
+        self.assertEqual(score.apply_coverage_exemption(self._cov(0, 0), fm)["exempt"],
+                         "slash-only")
 
     # Fails if an ordinary agent is exempted, or an exempt one lacks an explicit reason.
     def test_ordinary_agent_is_not_exempt(self) -> None:

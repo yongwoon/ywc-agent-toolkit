@@ -360,26 +360,31 @@ def load_coverage() -> dict:
     return out
 
 
-# Coverage exemptions are derived from the item's OWN frontmatter text, never a
-# hand-kept list, so a new dispatch-only item cannot be waved through by name.
+# Coverage exemptions are derived from the item's OWN frontmatter, never a
+# hand-kept list or description prose, so a new dispatch-only item must declare itself.
 #  - "slash-only": `disable-model-invocation: true` -> activated by the user typing
 #    the slash command, never routed by description, so neither floor applies.
-#  - "dispatch-only": the description says a user-typed request is owned by another
-#    item ("no natural-language triggers", or "a user-typed code review request ...
-#    (ywc-X owns it ...)"). No honest user prompt can select it, so the positives
-#    floor is waived — but the collision floor still applies: the sibling-routing
-#    boundary it names is real and testable.
-DISPATCH_ONLY_RE = re.compile(
-    r"no natural-language triggers"
-    r"|user-typed\s+code\s+review\s+request[^()]*\(ywc-[\w-]+\s+owns\s+it",
-    re.I)
+#  - "dispatch-only": `tags` contains the exact element `dispatch-only`. No honest
+#    user prompt can select such an item, so the positives floor is waived — but the
+#    collision floor still applies: the sibling-routing boundary it names is real
+#    and testable.
+
+
+def _has_dispatch_only_tag(tags_raw: str) -> bool:
+    """True if the raw `tags` value holds the exact, case-sensitive element `dispatch-only`.
+
+    Handles the flow form (`[a, "b"]`) and the block list parse_yaml_lite joins
+    (`- a - b`). Everything from the first `#` that starts the value or follows
+    whitespace is a comment, so a commented-out mention never counts (fail-closed)."""
+    value = re.split(r"(?:^|\s)#", tags_raw)[0]
+    return "dispatch-only" in (t.strip("'\"") for t in re.split(r"[\[\],\s]+", value))
 
 
 def apply_coverage_exemption(cov: dict, fm: dict) -> dict:
     """Return `cov` with an `exempt` reason and the exemption-aware `sufficient`."""
     if fm.get("disable-model-invocation") == "true":
         return {**cov, "exempt": "slash-only", "sufficient": True}
-    if DISPATCH_ONLY_RE.search(fm.get("description", "")):
+    if _has_dispatch_only_tag(fm.get("tags", "")):
         return {**cov, "exempt": "dispatch-only",
                 "sufficient": cov["collisions"] >= COVERAGE_MIN_COLLISIONS}
     return {**cov, "exempt": None}
