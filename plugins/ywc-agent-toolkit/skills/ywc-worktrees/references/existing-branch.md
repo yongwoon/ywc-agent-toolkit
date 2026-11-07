@@ -10,7 +10,7 @@ existing root resolution, mandatory pre-create audit, ignore guard, and cleanup/
 classifications. No helper path from the upstream installation is copied.
 
 Require `--branch` to equal the literal `--existing-branch` value. Reject a leading
-`-`, `..`, non-allowlisted characters, or failed `git check-ref-format --branch`
+`-`, `..`, non-allowlisted characters, or failed `git check-ref-format "refs/heads/<branch>"`
 before branch-specific commands. Exactly one of base/existing is required.
 A checked-out branch, dirty matching worktree, locked/prunable record or missing
 registered path is `BLOCKED`; report which state was observed and preserve it.
@@ -32,7 +32,7 @@ if [ -n "${BASE_BRANCH:-}" ] || [ -z "${EXISTING_BRANCH:-}" ] || [ "${BRANCH:-}"
 fi
 case "$EXISTING_BRANCH" in ''|-*|*..*|*[!A-Za-z0-9._/-]*)
   printf '%s\n' 'NEEDS_CONTEXT: invalid existing branch' >&2; exit 1;; esac
-git check-ref-format --branch "$EXISTING_BRANCH" >/dev/null || { printf '%s\n' 'NEEDS_CONTEXT: invalid ref' >&2; exit 1; }
+git check-ref-format "refs/heads/$EXISTING_BRANCH" >/dev/null || { printf '%s\n' 'NEEDS_CONTEXT: invalid ref' >&2; exit 1; }
 if [ -e "$RESOLVED_PATH" ] || [ -L "$RESOLVED_PATH" ]; then
   printf '%s\n' 'BLOCKED: target path exists' >&2; exit 1
 fi
