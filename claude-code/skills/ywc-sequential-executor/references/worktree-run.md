@@ -47,7 +47,7 @@ ywc-worktrees --mode create --task-name run-<slug> --branch <integration-branch>
 
 The worktree root itself is resolved by `ywc-worktrees`'s priority chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback); this skill adds **no** new root argument (FR-1.2).
 
-**Publish a newly created integration branch (PR modes only)**: when §A7 W8 created `integration/run-<slug>` and the delivery mode is `normal-pr`, `--draft`, or `--skip-ci-wait`, run `git -C "$WT" push -u origin <integration-branch>` right after capturing `$WT`, so the per-task PRs have a base on origin. A push failure is a `git push` rejection (allowed stop). `--local-merge` and `--aggregate-pr` skip this push: the first merges and pushes the integration branch itself, and the second targets the real base.
+**Publish a newly created integration branch (`--local-merge` and PR modes)**: when §A7 W8 created `integration/run-<slug>` and the delivery mode is `normal-pr`, `--draft`, `--skip-ci-wait`, or `--local-merge`, run `git -C "$WT" push -u origin <integration-branch>` right after capturing `$WT`. For PR modes, this gives the per-task PRs a base on origin. For `--local-merge`, this lets the first `git pull origin <integration-branch>` in `ywc-finish-branch` succeed. A push failure is a `git push` rejection (allowed stop). `--aggregate-pr` skips this push: it targets the real base.
 
 ### 3. State file relocation + 2-stage Resume Detection (§A2)
 
