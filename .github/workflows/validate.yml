@@ -53,6 +53,25 @@ jobs:
             claude-code/skills/ywc-skill-author/tests/audit-skills-test.sh
             claude-code/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
 
+      # Same carve-out rule as the claude-code step: the ten paths below had shellcheck
+      # findings before this step was added (issue #215). Every other file under
+      # codex/skills, including future additions, stays linted.
+      - name: ShellCheck (codex/skills)
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # v2.0.0
+        with:
+          scandir: codex/skills
+          ignore_paths: >-
+            codex/skills/ywc-create-pr/scripts/scan-secrets.sh
+            codex/skills/ywc-docker-isolate/scripts/_lib.sh
+            codex/skills/ywc-docker-isolate/scripts/audit-docker-stacks.sh
+            codex/skills/ywc-docker-isolate/scripts/setup-docker-ports.sh
+            codex/skills/ywc-docker-isolate/scripts/teardown-docker.sh
+            codex/skills/ywc-handle-pr-reviews/scripts/fetch-unresolved-comments.sh
+            codex/skills/ywc-mine-review-history/scripts/test_fetch_bulk_review_comments.sh
+            codex/skills/ywc-onboard-repo/scripts/recon.sh
+            codex/skills/ywc-spec-writer/scripts/detect-affected-sections.sh
+            codex/skills/ywc-worktrees/scripts/test-cleanup-worktree.sh
+
       - name: Test install script (dry run)
         run: |
           bash scripts/install.sh --list
