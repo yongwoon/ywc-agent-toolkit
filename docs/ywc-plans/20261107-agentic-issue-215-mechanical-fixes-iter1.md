@@ -112,8 +112,10 @@ shellcheck findings themselves (they are carved out with `ignore_paths`).
   semantics: `ls-remote` non-zero → stop quoting stderr; exact line found → "exists"; none →
   "absent". The branch is never spliced into the awk program text. Drop the "exit 2" wording at
   both sites. Input boundary: `ywc-worktrees` already allowlists `<branch>` (`SKILL.md:98`);
-  `integration/run-<slug>` is safe because `run-<slug>` must pass `^[A-Za-z0-9_-]+$` as the
-  `--task-name` before this check runs (`worktree-run.md:27`); no new validation is added.
+  `integration/run-<slug>` is checked in-process against `^integration/run-[A-Za-z0-9_-]+$`
+  before it is assigned (`BLOCKED: invalid integration branch name` otherwise): the
+  `worktree-run.md:27` claim that `ywc-worktrees` enforces the `--task-name` allowlist holds only
+  for `prune` (`cleanup-worktree.sh:76`), not `create`.
 - **FR-8** Add a `ShellCheck (codex/skills)` step with `ignore_paths` for the ten files above.
   `codex/skills` has no extensionless shebang scripts, so the `*.sh` baseline is complete; CI
   may run a newer shellcheck than 0.11.0 — a CI-only finding is fixed or added to the list in
@@ -201,3 +203,12 @@ each is a wording-precision fix)
 | `## Acceptance Criteria` | AC-3 net-new cases, AC-7 stale-count grep, AC-9 test copies + baseline, new AC-10 | "covered by existing `faildiff` shim pattern" |
 | `## Existing Constraints Touched` | agent file count wording | "`claude-code/agents/` holds 14 agent files" |
 | `## Failure Modes` | name-list row now tested by `failnames`; preview row added | "covered by existing `faildiff` shim pattern (shim matches `*...HEAD*`)" |
+
+### Iteration 2 — 2026-11-07
+
+**Driven by**: ywc-impl-review DONE (0 Critical / 0 High; 1 Medium, Lows), gate not re-scored (no design change)
+**Signatures**: `security:integration-branch-allowlist-claim-unbacked`, `qa:deleted-env-filter-untested`
+
+| Section edited | What changed | Why |
+|---|---|---|
+| `## Functional Requirements` | FR-7 adds an in-process `^integration/run-[A-Za-z0-9_-]+$` check | "`integration/run-<slug>` is safe because `run-<slug>` must pass `^[A-Za-z0-9_-]+$`" |

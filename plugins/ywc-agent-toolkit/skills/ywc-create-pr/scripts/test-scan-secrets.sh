@@ -163,6 +163,11 @@ assert_committed "--committed name-list failure" "2" failnames main
 g checkout -q -b committed-env main
 echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m env
 assert_committed "--committed .env file in the range" "1" "" main
+# Deleting a .env that the base still has is a cleanup, not a leak: the name
+# check skips deleted paths (--diff-filter=d).
+g checkout -q -b drop-env
+g rm -q .env; g commit -q -m drop-env
+assert_committed "--committed deletion of a base .env" "0" "" committed-env
 g checkout -q clean-feat
 
 # Flag order: a later --staged must not downgrade --committed (Phase 3 would be
