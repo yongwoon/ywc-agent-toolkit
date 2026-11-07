@@ -146,9 +146,12 @@ $DIFF_UNTRACKED"
 # ── Phase 3: committed diff vs base branch ────────────────────────────────────
 if [ "$MODE" = "committed" ]; then
   # Phase 1 sees only the work tree, so a .env committed on the branch is
-  # checked here. Deleted paths are excluded: they never reach the base.
-  COMMITTED_NAMES=$(git diff --name-only -z --diff-filter=d --no-renames "${BASE_BRANCH}...HEAD" | tr '\0' '\n') || {
-    echo "ERROR: git diff --name-only ${BASE_BRANCH}...HEAD failed; committed changes were not scanned" >&2
+  # checked here. Walk every branch commit, not the net diff: a .env added and
+  # then deleted is gone from BASE...HEAD but still in the pushed history.
+  # --diff-filter=d skips deletions (removing a base .env is a cleanup), and
+  # merge commits show no diff by default, so merging the base in adds nothing.
+  COMMITTED_NAMES=$(git log --no-renames --diff-filter=d --name-only -z --format= "${BASE_BRANCH}..HEAD" | tr '\0' '\n') || {
+    echo "ERROR: git log --name-only ${BASE_BRANCH}..HEAD failed; committed changes were not scanned" >&2
     exit 2
   }
   DANGEROUS_COMMITTED=$(printf '%s\n' "$COMMITTED_NAMES" | grep -iE "$DANGEROUS_NAME_RE" || true)

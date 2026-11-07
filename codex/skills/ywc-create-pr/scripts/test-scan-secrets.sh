@@ -88,7 +88,7 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
 #   SHIM_MODE=failuntracked — `git ls-files --others` fails
 #   SHIM_MODE=failnoindex   — `git diff --no-index` exits 2 (exit 1 = "has diff")
-#   SHIM_MODE=failnames     — the Phase 3 `git diff --name-only <base>...HEAD` fails
+#   SHIM_MODE=failnames     — the Phase 3 `git log --name-only <base>..HEAD` fails
 # A failing added-line filter must not read as "secrets found" (exit 1):
 #   SHIM_MODE=failawk      — `awk` fails
 SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
@@ -104,7 +104,7 @@ case "\${SHIM_MODE:-}:\$1:\$*" in
   failworktree:diff:*--cached*) ;;
   failuntracked:ls-files:*--others*) exit 1 ;;
   failnoindex:diff:*--no-index*) exit 2 ;;
-  failnames:diff:*--name-only*) exit 1 ;;
+  failnames:log:*--name-only*) exit 1 ;;
   failworktree:diff:*) exit 1 ;;
 esac
 exec "$REAL_GIT" "\$@"
@@ -156,7 +156,7 @@ assert_committed "--committed shell-metachar base" "2" passall 'main$(id)'
 assert_committed "--committed secret vs valid base" "1" "" main
 g checkout -q clean-feat
 assert_committed "--committed clean vs valid base" "0" "" main
-# Fails if the Phase 3 name-list diff swallows its error.
+# Fails if the Phase 3 name-list walk swallows its error.
 assert_committed "--committed name-list failure" "2" failnames main
 # Phase 1 sees only the work tree: a .env committed on the branch (harmless
 # content, clean tree) is caught only by the Phase 3 name check.
@@ -168,6 +168,12 @@ assert_committed "--committed .env file in the range" "1" "" main
 g checkout -q -b drop-env
 g rm -q .env; g commit -q -m drop-env
 assert_committed "--committed deletion of a base .env" "0" "" committed-env
+# A .env added and then deleted on the branch is absent from the net diff but
+# still in the pushed history; only a per-commit walk catches it.
+g checkout -q -b add-drop-env main
+echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m add-env
+g rm -q .env; g commit -q -m drop-env
+assert_committed "--committed .env added then deleted in the range" "1" "" main
 g checkout -q clean-feat
 
 # Flag order: a later --staged must not downgrade --committed (Phase 3 would be
