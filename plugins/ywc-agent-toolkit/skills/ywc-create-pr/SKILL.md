@@ -93,14 +93,15 @@ Run the bundled secret scan script:
 ```bash
 # Phase 1+2: dangerous file names + staged/unstaged diff and untracked file content
 RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
-SECRET_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/scan-secrets.sh" bash)" || exit $?
+# A resolver failure must never exit 1, which reads as "secrets found": stop as BLOCKED.
+SECRET_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/scan-secrets.sh" bash)" || { echo "BLOCKED: resolver failed ($?)" >&2; exit 3; }
 bash "$SECRET_SCRIPT" --staged
 
 # Phase 3: all commits on this branch vs base (secrets and dangerous file names already committed)
 bash "$SECRET_SCRIPT" --committed <base-branch>
 ```
 
-Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout. Any other result (exit 2 = usage error, not a git work tree, or an invalid or unresolvable `--committed` base; or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
+Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints the matching lines to stdout with each matched value shown as `[REDACTED]`. Any other result (exit 2 = usage error, not a git work tree, an invalid or unresolvable `--committed` base, or a failed scan step — a git call, `mktemp`, reading an untracked file, or the added-line filter; exit 3 = the resolver `BLOCKED`; or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
 
 If either scan returns exit 1, warn the user and show the script output. Do not include flagged files in the commit unless the user explicitly confirms. For committed secrets (second scan), require explicit confirmation before proceeding to PR creation.
 

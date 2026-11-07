@@ -87,7 +87,8 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=failcached   — `git diff --cached` fails
 #   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
 #   SHIM_MODE=failuntracked — `git ls-files --others` fails
-#   SHIM_MODE=failnoindex   — `git diff --no-index` exits 2 (exit 1 = "has diff")
+#   SHIM_MODE=failcat       — `cat` (reading untracked files) fails
+#   SHIM_MODE=failgrep      — `grep` exits 2 (an error, not "no match")
 #   SHIM_MODE=failnames     — the Phase 3 `git log --name-only <base>..HEAD` fails
 # A failing added-line filter must not read as "secrets found" (exit 1):
 #   SHIM_MODE=failawk      — `awk` fails
@@ -103,7 +104,6 @@ case "\${SHIM_MODE:-}:\$1:\$*" in
   failcached:diff:*--cached*) exit 1 ;;
   failworktree:diff:*--cached*) ;;
   failuntracked:ls-files:*--others*) exit 1 ;;
-  failnoindex:diff:*--no-index*) exit 2 ;;
   failnames:log:*--name-only*) exit 1 ;;
   failworktree:diff:*) exit 1 ;;
 esac
@@ -117,6 +117,20 @@ cat > "$SHIM/awk" <<EOF
 exec "$REAL_AWK" "\$@"
 EOF
 chmod +x "$SHIM/awk"
+REAL_CAT="$(command -v cat)"
+cat > "$SHIM/cat" <<EOF
+#!/usr/bin/env bash
+[ "\${SHIM_MODE:-}" = failcat ] && { echo "cat: injected failure" >&2; exit 1; }
+exec "$REAL_CAT" "\$@"
+EOF
+chmod +x "$SHIM/cat"
+REAL_GREP="$(command -v grep)"
+cat > "$SHIM/grep" <<EOF
+#!/usr/bin/env bash
+[ "\${SHIM_MODE:-}" = failgrep ] && { echo "grep: memory exhausted" >&2; exit 2; }
+exec "$REAL_GREP" "\$@"
+EOF
+chmod +x "$SHIM/grep"
 
 ERR="$TMP_ROOT/scan.err"
 # run_args <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
@@ -287,8 +301,91 @@ assert_args "untracked secret under a space / non-ASCII path" "1" "" --staged
 echo "plain" > "$REPO/x y/設定.ts"
 assert_args "clean untracked file" "0" "" --staged
 assert_args "untracked enumeration failure" "2" failuntracked --staged
-assert_args "untracked --no-index diff failure" "2" failnoindex --staged
+assert_args "untracked file read failure" "2" failcat --staged
+assert_args "grep error is not 'no match'" "2" failgrep --staged
 rm -rf "$REPO/x y"
+# A nested repository or a directory symlink is skipped, never an error; a
+# symlink contributes its target path, as git would commit it.
+mkdir -p "$REPO/nested"; (cd "$REPO/nested" && no_git_env git init -q)
+echo "plain" > "$REPO/nested/f.txt"; ln -s nested "$REPO/dirlink"
+assert_args "untracked nested repo and directory symlink" "0" "" --staged
+ln -s "AKIA""ABCDEFGHIJKLMNOP" "$REPO/keylink"
+assert_args "untracked symlink whose target is a secret" "1" "" --staged
+rm -rf "${REPO:?}/nested" "$REPO/dirlink" "$REPO/keylink"
+# `cat -- -` reads stdin, so a file named `-` must be passed as `./-`.
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/-"
+assert_args "untracked file named '-'" "1" "" --staged
+rm -f -- "$REPO/-"
+# Fails if each untracked file costs its own process again: ~1,800 files used to
+# hit the 120 s Bash timeout. 2,000 files must finish well inside 30 s.
+mkdir -p "$REPO/many"
+for i in $(seq 1 2000); do echo "line $i" > "$REPO/many/f$i.txt"; done
+STARTED=$(date +%s)
+assert_args "2,000 untracked clean files" "0" "" --staged
+assert_eq "2,000 untracked files scanned in under 30 s" "1" "$(( $(date +%s) - STARTED < 30 ? 1 : 0 ))"
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/many/f2000.txt"
+assert_args "secret in the last of 2,000 untracked files" "1" "" --staged
+rm -rf "${REPO:?}/many"
+# Every SECRET_PATTERNS entry needs a positive case, and the report must never
+# echo the value. Samples are assembled at runtime so this file never contains
+# a pattern; each tail is the part that must be redacted.
+rep() { local out="" i; for ((i = 0; i < $2; i++)); do out="$out$1"; done; printf '%s' "$out"; }
+SAMPLES=(
+  "AK""IA$(rep A 16)"
+  "sk""-$(rep a 40)"
+  "sk""-ant-api03-$(rep a 30)"
+  "sk""-proj-$(rep a 30)"
+  "gh""p_$(rep a 36)" "gh""o_$(rep a 36)" "gh""u_$(rep a 36)" "gh""s_$(rep a 36)" "gh""r_$(rep a 36)"
+  "github""_pat_$(rep a 82)"
+  "gl""pat-$(rep a 20)"
+  "sk""_live_$(rep a 30)"
+  "xo""xb-$(rep 1 11)-$(rep 2 11)-$(rep a 24)"
+  "xo""xp-$(rep 1 11)-$(rep a 10)"
+  "AI""za$(rep a 35)"
+  "-----BEGIN RSA PRI""VATE KEY-----"
+  "-----BEGIN PRI""VATE KEY-----"
+  "pass""word = \"hunter22x\""
+  "DATABASE""_URL=postgres://u:hunter22x@db/app"
+)
+OUT="$TMP_ROOT/scan.out"
+for SAMPLE in "${SAMPLES[@]}"; do
+  echo "x=$SAMPLE" > "$REPO/sample.txt"
+  RC=0
+  (cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >"$OUT" 2>&1) || RC=$?
+  assert_eq "pattern detects ${SAMPLE:0:12}" "1" "$RC"
+  # The secret's tail (last 8 chars) must not appear outside the pattern header
+  # lines; [REDACTED] must.
+  assert_eq "report redacts ${SAMPLE:0:12}" "0:1" \
+    "$(grep -v '^SECRET DETECTED' "$OUT" | grep -cF -- "${SAMPLE: -8}" | tr -d ' '):$(grep -c '\[REDACTED\]' "$OUT" | sed 's/^[1-9][0-9]*$/1/')"
+done
+# Two secrets on one line: redacting from one pattern's match must not leave
+# the other, earlier secret in the printed prefix.
+TWO_A="AK""IA$(rep Q 16)"; TWO_B="DATABASE""_URL=postgres://u:zz9@db"
+echo "a=$TWO_A $TWO_B" > "$REPO/sample.txt"
+(cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >"$OUT" 2>&1)
+assert_eq "two secrets on one line are both redacted" "0" \
+  "$(grep -v '^SECRET DETECTED' "$OUT" | grep -cF -e "$(rep Q 16)" -e "zz9@db" | tr -d ' ')"
+rm -f "$REPO/sample.txt"
+# A conflicted merge's unstaged diff is combined (`diff --cc`): a line kept from
+# HEAD's side reads " +line" and must count as added like "++" and "+ ".
+g checkout -q -b cc-theirs main
+echo "theirs" > "$REPO/cc.txt"; g add cc.txt; g commit -q -m theirs
+g checkout -q -b cc-ours main
+printf 'ours\nkey=%s\n' "AKIA""ABCDEFGHIJKLMNOP" > "$REPO/cc.txt"; g add cc.txt; g commit -q -m ours
+# The conflict makes merge exit 1, so it bypasses g(); identity is still needed
+# (CI runners have no global user.name / user.email).
+(cd "$REPO" && GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env \
+  git -c user.name=t -c user.email=t@example.invalid merge -q cc-theirs >/dev/null 2>&1) || true
+assert_eq "conflicted merge leaves a combined diff" "1" \
+  "$( (cd "$REPO" && no_git_env git diff | grep -c '^ +key=') )"
+assert_args "--staged secret on a ' +' combined-diff line" "1" "" --staged
+# Dropping that line in the resolution reads "- key=…": a removed line, not added.
+printf '<<<<<<< HEAD\nours\n=======\ntheirs\n>>>>>>> cc-theirs\n' > "$REPO/cc.txt"
+assert_eq "combined diff shows the dropped line as '- '" "1" \
+  "$( (cd "$REPO" && no_git_env git diff | grep -c '^- key=') )"
+assert_args "--staged secret only on a '- ' combined-diff line" "0" "" --staged
+(cd "$REPO" && no_git_env git merge --abort >/dev/null 2>&1)
+g checkout -q clean-feat
 # Fails if a binary untracked file (NUL bytes, invalid UTF-8) breaks the
 # filter under a UTF-8 locale (bash drops NULs, BSD awk aborts on multibyte
 # input, GNU grep treats the stream as binary and prints no matching line).
