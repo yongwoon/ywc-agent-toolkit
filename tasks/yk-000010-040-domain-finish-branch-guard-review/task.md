@@ -27,11 +27,16 @@ Covers: the Scope bullets above
 - [ ] `grep -qF 'git check-ref-format "refs/heads/$branch"' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `grep -qF -- '--json number --jq length' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `grep -qF -- '--force-with-lease="refs/heads/$branch:$tip"' claude-code/skills/ywc-finish-branch/SKILL.md`
-- [ ] `grep -qF -- 'gh repo view "$(git remote get-url origin)" --json nameWithOwner,isFork,parent' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- 'env -u GH_HOST gh repo view --json url,isFork,parent -- "$url"' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `grep -qF -- '--repo "$parent"' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `grep -qF -- '^[0-9a-f]{40}([0-9a-f]{24})?$' claude-code/skills/ywc-finish-branch/SKILL.md`
-- [ ] `grep -qF -- '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$' claude-code/skills/ywc-finish-branch/SKILL.md`
-- [ ] `grep -qF -- '5. **Open-PR check**' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '^[A-Za-z0-9.-]+/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '6. **Open-PR check**' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- 'git remote get-url --push --all origin' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- '2. **Pin the push target**' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- 'a fork of a fork returns `NEEDS_CONTEXT`' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- 'never interpolate `$base` or `$tip` into a `--jq` filter' claude-code/skills/ywc-finish-branch/SKILL.md`
+- [ ] `grep -qF -- 'A small window remains between step 6 and this push' claude-code/skills/ywc-finish-branch/SKILL.md`
 - [ ] `bash scripts/validate.sh`
 - [ ] `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci`
 - [ ] `git checkout -- .claude/skills/ywc-toolkit-eval/evals/history.mechanical.json`  — Phase 000010 Wave 1 tasks do NOT commit the baseline file; yk-000010-060 stages it last
@@ -65,3 +70,12 @@ Critical-review round (team-lead): High (new guard pieces lacked Task Verify cov
 - M-d: numbered steps in run order; the open-PR check comes last, right before the lease-delete.
 - Lows: `tip` and the repo values are shape-checked; the opening sentence now covers the lease-delete path; `$branch`/`$base` are tied to the validated `BRANCH`/`BASE`.
 - Task Verify gained 7 `grep -qF --` checks (README.md and task.md); test.md gained Scenarios 3-5.
+
+Security re-review round (team-lead) on d8a5d57a, fixed at `SKILL.md:217-223`:
+- H1: new step 2 — `git remote get-url --push --all origin` must print exactly one line equal to `git remote get-url origin`. Reproduced in a scratch repo: `pushInsteadOf` rewrote the push URL to `git@evil:a/b.git`, and two `pushurl`s printed two lines, while the fetch URL stayed the same.
+- M1: `repo`/`parent` now include the host (`<host>/<owner>/<name>`, from `gh repo view --json url`); every `gh` runs as `env -u GH_HOST gh … --repo`. Checked: `env -u GH_HOST gh pr list --repo github.com/yongwoon/ywc-agent-toolkit …` exit 0.
+- M2: a fork of a fork returns `NEEDS_CONTEXT`.
+- L1: `gh repo view --json … -- "$url"` puts flags before `--` (checked: `gh repo view -- "$url" --json url` fails with "accepts at most 1 arg(s), received 5") and the URL must not start with `-`.
+- L2: compare `baseRefName`/`headRefOid` on the parsed JSON in-process or with `jq --arg`, never interpolated into `--jq`.
+- L3: the guard now states that a small window remains between the open-PR check and the push.
+- Task Verify: 3 greps updated, 5 added; test.md gained Scenarios 6-7.

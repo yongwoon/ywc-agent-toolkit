@@ -39,3 +39,17 @@
 
 **Expected Result:**
 - the lease-delete is rejected (non-zero exit) → `BLOCKED`; the branch and the new commit survive
+
+### Scenario 6: Push URL differs from the fetch URL
+**Steps:**
+1. Walk the guard where `remote.origin.pushurl` or a `url.<x>.pushInsteadOf` rewrite makes `git remote get-url --push --all origin` print a different URL, or more than one line
+
+**Expected Result:**
+- `NEEDS_CONTEXT`; no `gh` call and no deletion
+
+### Scenario 7: Fork of a fork
+**Steps:**
+1. Walk the guard where origin is a fork and `gh repo view --json isFork -- "$parent"` reports `true`
+
+**Expected Result:**
+- `NEEDS_CONTEXT`; zero deletions
