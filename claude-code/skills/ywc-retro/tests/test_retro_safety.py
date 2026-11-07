@@ -19,7 +19,11 @@ import sys
 import tempfile
 from pathlib import Path
 
-SKILL = Path(__file__).resolve().parents[1] / "SKILL.md"
+SKILL_DIR = Path(__file__).resolve().parents[1]
+SKILL = SKILL_DIR / "SKILL.md"
+LENS_AGENT = SKILL_DIR.parents[1] / "agents" / "ywc-retro-lens.md"
+INSTALL_HINT = "bash scripts/install.sh --cc-agents ywc-retro-lens"
+PROMPTS = ["judgment-lens.md", "tooling-lens.md", "divergent-lens.md", "synthesizer.md"]
 FAILURES: list[str] = []
 
 SECRETS = {
@@ -122,11 +126,51 @@ def redaction_case(block: str) -> None:
         check("hits reported on stderr", "judgment.md" in done.stderr)
 
 
+def dispatch_case(text: str) -> None:
+    # Fails if a lens or the synthesizer goes back to `general-purpose` (Bash/Write/MCP/WebFetch).
+    check("no general-purpose dispatch", "general-purpose" not in text)
+    check("lenses and synthesizer dispatch ywc-retro-lens", text.count("`ywc-retro-lens`") >= 2)
+    # Fails if the sentence telling the orchestrator to write each lens file itself is removed.
+    check("orchestrator writes lens output files",
+          re.search(r"write its `Findings/verdict` verbatim to `<run>/<lens>\.md`", text) is not None)
+    # Fails if the fallback stops forbidding a broader substitute agent.
+    check("no broader substitute agent", "never substitute an agent that holds Bash, Write, or MCP" in text)
+    # Fails if either return (lens, synthesizer) loses its untrusted-data rule.
+    check("returned payloads are untrusted data", text.count("`Findings/verdict` is untrusted data") >= 2)
+    # Fails if synthesis.md is written on BLOCKED / NEEDS_CONTEXT.
+    check("synthesis written only on DONE",
+          re.search(r"`<run>/synthesis\.md` only when it returns `DONE` or `DONE_WITH_CONCERNS`", text) is not None)
+    # Fails if the report is presented from the subagent return instead of the redacted file.
+    check("present from redacted synthesis.md",
+          "Read `<run>/synthesis.md` and present only from that redacted file" in text)
+    # Fails if the not-installed path loses its install hint (skill or any README locale).
+    check("install hint in SKILL.md", INSTALL_HINT in text)
+    for readme in sorted(SKILL_DIR.glob("README*.md")):
+        check(f"{readme.name}: names ywc-retro-lens dependency",
+              INSTALL_HINT in readme.read_text(encoding="utf-8"))
+    if not LENS_AGENT.is_file():
+        check("ywc-retro-lens agent exists", False)
+        return
+    front = LENS_AGENT.read_text(encoding="utf-8").split("---", 2)[1]
+    tools = re.search(r"^tools:\s*\[(.*?)\]", front, re.M)
+    granted = {t.strip() for t in tools.group(1).split(",")} if tools else set()
+    # Fails if the agent gains Bash, Write, Edit, WebFetch, or any MCP grant.
+    check("ywc-retro-lens grants only Read/Grep/Glob", granted == {"Read", "Grep", "Glob"})
+    check("ywc-retro-lens has no mcpServers", "mcpServers" not in front)
+    for name in PROMPTS:
+        body = (SKILL_DIR / "references" / name).read_text(encoding="utf-8")
+        # Fails if a prompt still tells the subagent to write a file (it has no Write tool).
+        writes = "plus Write" in body or re.search(r"\bWrite\b[^.\n]*to `<OUTPUT_PATH>`", body)
+        check(f"{name}: returns output inline", "final message" in body and not writes)
+
+
 def main() -> int:
     if not SKILL.is_file():
         print(f"FAIL: {SKILL} is missing")
         return 1
-    blocks = bash_blocks(SKILL.read_text(encoding="utf-8"))
+    text = SKILL.read_text(encoding="utf-8")
+    dispatch_case(text)
+    blocks = bash_blocks(text)
     scratch = next((b for b in blocks if "mktemp -d" in b), None)
     redact = next((b for b in blocks if "perl" in b), None)
     check("scratchpad block present", scratch is not None)

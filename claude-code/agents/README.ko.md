@@ -13,7 +13,7 @@ window 에서 실행되며, Skill 의 fan-out (parallel / sequential) dispatch �
 
 - 동기화 범위: `claude-code/` 한정 (Codex / pi-skills 미적용)
 - Tier 정의: Tier 1 (worker), Tier 2 (language reviewer), Tier 3 (specialist)
-- 현재 상태: Tier 1 4종 + Tier 2 3종 (TypeScript / Python / Go) + Tier 3 5종 (Architect / Security Engineer / Refactor Cleaner / Root-cause Analyst / Performance Engineer) land 완료 (`<agent-name>.md` 각 파일에서 본문 확인)
+- 현재 상태: Tier 1 4종 + Tier 2 3종 (TypeScript / Python / Go) + Tier 3 6종 (Architect / Security Engineer / Refactor Cleaner / Root-cause Analyst / Performance Engineer / Retro Lens) land 완료 (`<agent-name>.md` 각 파일에서 본문 확인)
 
 ## Per-Agent Summary
 
@@ -31,5 +31,6 @@ window 에서 실행되며, Skill 의 fan-out (parallel / sequential) dispatch �
 | `ywc-refactor-cleaner` | 3 | sonnet | Dead-code 제거 worker (coder tier). SAFE worklist → per-item grep + 전후 test + 1-deletion-per-commit. ywc-refactor-clean Step 3 에서 dispatch |
 | `ywc-root-cause-analyst` | 3 | opus | Root-cause analyst (read-only). 5 Whys + hypothesis tracking + "architecture wrong vs fix harder" gate. ywc-debug-rootcause Phase 1/3, ywc-incident-postmortem Step 4 에서 dispatch |
 | `ywc-performance-engineer` | 3 | sonnet | Performance review (read-only). Backend (N+1 / index / hot loop / sync IO / allocation) + Frontend (bundle / render-block / image / CSS) + Web Vitals (LCP / INP / CLS / FCP / TBT) + Profiling recommendation (py-spy / chrome devtools / pprof). ywc-impl-review Phase 2 advisor 에서 dispatch |
+| `ywc-retro-lens` | 3 | sonnet | Retro transcript reader (read-only, `[Read, Grep, Glob]` 만 — Bash / Write / WebFetch / MCP 없음). Lens / synthesizer 결과를 inline 반환, 파일은 caller 가 작성. ywc-retro Step 3 (lens, sonnet) / Step 4 (synthesizer, opus) 에서만 dispatch |
 
 Tier 1 worker file 은 `000005-010-domain-tier1-worker-agents` task 에서 land 되었으며 `ywc-code-gen` / `ywc-parallel-executor` / `ywc-sequential-executor` / `ywc-agentic` (Step 5) 에서 named dispatch 됩니다. Tier 3 specialist (architect / security-engineer) 는 advisor-style dispatch 로 별도 skill 에서 호출됩니다.

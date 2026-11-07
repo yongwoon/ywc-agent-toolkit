@@ -48,6 +48,10 @@ critical — secret detection, remote-controlled values reaching shell/gh, or re
 - `codex/skills/ywc-retro/**`
 - `plugins/ywc-agent-toolkit/skills/ywc-retro/**` (generated)
 - `plugins/ywc-agent-toolkit/README.md` (generated)
+- `claude-code/agents/ywc-retro-lens.md` (user-approved widening)
+- `claude-code/agents/README*.md` (user-approved widening)
+- `CLAUDE.md` (agent count only; user-approved widening)
+- `README*.md` (root; agent count/list lines only; user-approved widening)
 
 ### Owned Interface
 - (None — no public interface owned)

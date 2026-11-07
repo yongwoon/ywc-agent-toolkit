@@ -14,7 +14,7 @@ as the dispatch target for skill-level fan-out (parallel or sequential).
 
 - Tier 1 (worker) — 4 agents: Backend / Frontend / QA Engineer / Doc Writer
 - Tier 2 (language reviewer) — 3 agents currently shipped: TypeScript (Sonnet) / Python (Sonnet) / Go (Sonnet); Swift / Rust — follow-up PR
-- Tier 3 (specialist) — 5 agents currently shipped: Architect (Opus) / Security Engineer (Opus) / Refactor Cleaner (Sonnet) / Root-cause Analyst (Opus) / Performance Engineer (Sonnet); additional specialists — follow-up PR
+- Tier 3 (specialist) — 6 agents currently shipped: Architect (Opus) / Security Engineer (Opus) / Refactor Cleaner (Sonnet) / Root-cause Analyst (Opus) / Performance Engineer (Sonnet) / Retro Lens (Sonnet); additional specialists — follow-up PR
 - Catalog sync scope — `claude-code/` only (not Codex / pi-skills)
 
 Tier definitions and dispatch flow are documented in
@@ -24,7 +24,7 @@ Iteration 0 §2 (Persona Definitions) and Iteration 4 §P3 (Built-in vs Custom).
 ## Per-Agent Summary
 
 > The table below shows the agents currently in this catalog (4 Tier 1 workers
-> + 3 Tier 2 language reviewers + 5 Tier 3 specialists). Each agent body's
+> + 3 Tier 2 language reviewers + 6 Tier 3 specialists). Each agent body's
 > authoritative frontmatter, Mission, Boundaries, and Return Contract live in
 > the corresponding `<agent-name>.md` file.
 
@@ -42,6 +42,7 @@ Iteration 0 §2 (Persona Definitions) and Iteration 4 §P3 (Built-in vs Custom).
 | `ywc-refactor-cleaner` | 3 (specialist) | sonnet | Dead-code deletion worker (coder tier — writes). Receives the SAFE-tier worklist from ywc-refactor-clean, runs per-item grep + scoped test before/after + one-deletion-per-commit. Dispatched from ywc-refactor-clean Step 3 |
 | `ywc-root-cause-analyst` | 3 (specialist) | opus | Root-cause analyst (read-only). 5 Whys + hypothesis tracking + primary cause vs contributing factor separation + "architecture wrong vs fix harder" gate. Dispatched from ywc-debug-rootcause Phase 1 / Phase 3 (3+ failed fixes), ywc-incident-postmortem Step 4 |
 | `ywc-performance-engineer` | 3 (specialist) | sonnet | Performance review worker (read-only). 4 axes: Backend (N+1 / index / hot loop / sync IO / allocation / lock), Frontend (bundle / render-block / image / hydration / CSS specificity), Web Vitals (LCP / INP / CLS / FCP / TBT against project targets), Profiling recommendations (py-spy / chrome devtools / node --prof / pprof / perf / JFR / dotnet-trace — recommend invocation, do not execute). Dispatched from ywc-impl-review Phase 2 advisor pass on Performance-related Architecture / Devex candidate |
+| `ywc-retro-lens` | 3 (specialist) | sonnet | Retro transcript reader (read-only, `[Read, Grep, Glob]` only — no Bash / Write / WebFetch / MCP). Applies the lens or synthesizer prompt and returns the output inline; the caller writes the file. Dispatched only from ywc-retro Step 3 (three lenses, sonnet) / Step 4 (synthesizer, dispatched on opus) |
 
 Each agent body's exact frontmatter, Mission text, Boundaries, and Return
 Contract lives in the corresponding `claude-code/agents/<agent-name>.md`
