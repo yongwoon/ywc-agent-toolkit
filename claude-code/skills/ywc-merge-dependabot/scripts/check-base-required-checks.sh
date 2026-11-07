@@ -7,7 +7,7 @@
 #
 # `baseRefName` is set by the remote and is treated as hostile input: it is
 # read here (never pasted into a command line by the caller) and must pass
-# `^[A-Za-z0-9._/-]+$`, no leading `-`, no `..`, and
+# `^[A-Za-z0-9._/-]+$`, no leading `-`, no `..`, not `HEAD`, and
 # `git check-ref-format "refs/heads/$base"` before it reaches any `gh api` path.
 # It is only ever used as a quoted variable.
 #
@@ -33,7 +33,7 @@ cannot_confirm() {
 base="$(gh pr view "$PR" --json baseRefName --jq .baseRefName 2>/dev/null)" || base=""
 # The leading-dash test runs before git so the value can never be read as an option.
 if [ -z "$base" ] || [[ ! "$base" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "$base" == -* ]] \
-   || [[ "$base" == *..* ]] || ! git check-ref-format "refs/heads/$base" >/dev/null 2>&1; then
+   || [[ "$base" == *..* ]] || [ "$base" = HEAD ] || ! git check-ref-format "refs/heads/$base" >/dev/null 2>&1; then
   cannot_confirm "baseRefName is unreadable or not a safe branch name" ""
 fi
 

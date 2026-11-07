@@ -74,6 +74,16 @@ case "$GH_STUB_MODE:$*" in
     echo '{"state":"CLOSED","mergeStateStatus":"CLEAN"}' ;;
   queue:"pr view 4 "*)
     exit 1 ;;
+  base:"pr view "*"headRefOid"*)
+    echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;;
+  base:"pr checks "*"--required"*)
+    printf '%s\n' "${GH_STUB_REQ_OUT:-}" >&2
+    exit "${GH_STUB_REQ_RC:-0}" ;;
+  base:"pr checks "*)
+    printf '%s\n' "${GH_STUB_ALL_OUT:-}" >&2
+    exit "${GH_STUB_ALL_RC:-0}" ;;
+  base:"pr merge "*)
+    exit 0 ;;
   base:"pr view "*"baseRefName"*)
     [ -n "${GH_STUB_BASE+x}" ] || exit 1
     printf '%s\n' "$GH_STUB_BASE" ;;
@@ -232,7 +242,7 @@ class CheckBaseRequiredChecksTest(StubbedTest):
         # or if the base value is ever expanded by a shell.
         pwned = self.tmp / "PWNED"
         hostile = [f"$(touch {pwned})", f"`touch {pwned}`", f"main;touch {pwned}",
-                   "a/../b", "..", "--x", "-x", "a b", "a\nb", "main|id", "x.lock", "a/", "/a"]
+                   "a/../b", "..", "--x", "-x", "a b", "a\nb", "main|id", "x.lock", "a/", "/a", "HEAD", "@"]
         for base in hostile:
             with self.subTest(base=base):
                 r = self.check(GH_STUB_BASE=base, GH_STUB_PROTECTION="1", GH_STUB_RULES="1")
@@ -284,6 +294,72 @@ class CheckBaseRequiredChecksTest(StubbedTest):
     def test_usage_error(self):
         self.assertEqual(self.run_cmd("base", "bash", BASE_CHECK, "1;x").returncode, 2)
         self.assertEqual(self.run_cmd("base", "bash", BASE_CHECK).returncode, 2)
+
+
+class SequentialCiGateTest(StubbedTest):
+    """Runs the Step 3a gate snippet from SKILL.md against the stubbed gh."""
+
+    NO_REQ = "no required checks reported on the 'dependabot/x' branch"
+
+    def gate(self, **env):
+        text = (HERE.parent / "SKILL.md").read_text(encoding="utf-8")
+        blocks = [b.split("\n", 1)[1] for b in text.split("```bash")[1:]]
+        block = next(b.split("```", 1)[0] for b in blocks if "gh pr checks {number} --required 2>&1" in b)
+        script = self.tmp / "gate.sh"
+        script.write_text(block.replace("{number}", "7"))
+        return self.run_cmd("base", "bash", script, CLAUDE_SKILL_DIR=str(HERE.parent), **env)
+
+    def last(self, r):
+        return r.stdout.strip().splitlines()[-1]
+
+    def test_required_checks_pass_merges_pinned(self):
+        # Fails if a passing gate no longer reaches the pinned merge.
+        r = self.gate()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.last(r), "Merged")
+        self.assertEqual(self.gh_calls(f"pr merge 7 --merge --match-head-commit {OLD_SHA}"), 1)
+
+    def test_pending_exit_8_is_skipped_not_failed(self):
+        # Fails if exit 8 is collapsed into the failure branch.
+        r = self.gate(GH_STUB_REQ_RC="8")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (CI pending)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+
+    def test_failed_required_checks_never_merge(self):
+        # Fails if a non-zero, non-8 exit without the message stops being a failure.
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT="X build fail")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Failed (CI not passing)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+
+    def test_unregistered_required_checks_are_pending_not_fallback(self):
+        # Fails if the message triggers the fallback while the base has a required check.
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ, GH_STUB_BASE="main", GH_STUB_PROTECTION="1")
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (CI pending)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
+        self.assertEqual(sum(l.startswith("pr checks") and "--required" not in l
+                             for l in self.log.read_text().splitlines()), 0)
+
+    def test_base_without_required_checks_falls_back_to_all_checks(self):
+        # Fails if the fallback, its label, or its gate on every check is dropped.
+        env = dict(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ, GH_STUB_BASE="main", GH_STUB_RULES="0")
+        r = self.gate(**env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.last(r), "Merged (no required checks)")
+        r = self.gate(GH_STUB_ALL_RC="1", GH_STUB_ALL_OUT="X lint fail", **env)
+        self.assertEqual(self.last(r), "Failed (CI not passing) (no required checks)")
+        r = self.gate(GH_STUB_ALL_RC="1", GH_STUB_ALL_OUT="no checks reported on the 'dependabot/x' branch", **env)
+        self.assertEqual(self.last(r), "Skipped (no CI checks)")
+        self.assertEqual(self.gh_calls("pr merge"), 1)
+
+    def test_unreadable_base_keeps_fail_safe(self):
+        # Fails if an unreadable/invalid base is treated as "no required checks".
+        r = self.gate(GH_STUB_REQ_RC="1", GH_STUB_REQ_OUT=self.NO_REQ)
+        self.assertEqual(r.returncode, 1)
+        self.assertEqual(self.last(r), "Skipped (no required check confirmed)")
+        self.assertEqual(self.gh_calls("pr merge"), 0)
 
 
 class PollMergeQueueTest(StubbedTest):

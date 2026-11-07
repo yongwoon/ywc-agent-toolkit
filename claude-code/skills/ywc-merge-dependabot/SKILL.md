@@ -176,14 +176,32 @@ For each PR that passes pre-merge checks:
 HEAD_SHA=$(gh pr view {number} --json headRefOid --jq .headRefOid) || HEAD_SHA=""
 [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Skipped (head unreadable)"; exit 1; }
 
-# Merge only when the required checks pass (exit 0); 8 = pending, 1 = failed or no required checks (below)
-gh pr checks {number} --required || { echo "CI not passing (or no required checks)"; exit 1; }
+# Gate on the required checks: 0 = pass, 8 = pending, other non-zero = failed,
+# except "no required checks reported" (resolved against the base branch below)
+OUT=$(gh pr checks {number} --required 2>&1) && RC=0 || RC=$?
+TAG=""
+if [ "$RC" -ne 0 ] && [[ "$OUT" == *"no required checks reported"* ]]; then
+  BASE_OUT=$(bash "${CLAUDE_SKILL_DIR}/scripts/check-base-required-checks.sh" {number}) && BASE_RC=0 || BASE_RC=$?
+  case "$BASE_RC:${BASE_OUT##*$'\n'}" in
+    0:*) echo "Skipped (CI pending)"; exit 1 ;;  # base requires checks; none registered yet
+    1:"CONFIRMED=0 BASE="?*)                    # validated base, no required check: gate on every check
+      TAG=" (no required checks)"
+      OUT=$(gh pr checks {number} 2>&1) && RC=0 || RC=$? ;;
+    *) echo "Skipped (no required check confirmed)"; exit 1 ;;  # base unreadable or invalid
+  esac
+fi
+case "$RC" in
+  0) ;;
+  8) echo "Skipped (CI pending)$TAG"; exit 1 ;;
+  *) [[ "$OUT" == *"no checks reported"* ]] && { echo "Skipped (no CI checks)"; exit 1; }
+     echo "Failed (CI not passing)$TAG"; exit 1 ;;
+esac
 
 # Attempt merge, pinned to the head CI verified
-gh pr merge {number} --merge --match-head-commit "$HEAD_SHA"
+gh pr merge {number} --merge --match-head-commit "$HEAD_SHA" && echo "Merged$TAG"
 ```
 
-Gate the merge on the exit status of `gh pr checks --required`: exit 8 is `Skipped (CI pending)`, any other non-zero exit is `Failed (CI not passing)` — except the no-required-checks case below — and a non-zero exit is never a merge. When the base branch has no required checks, gh (verified on 2.102.0) exits 1 with `no required checks reported on the '<branch>' branch` (naming the PR's head branch); that is not a CI failure. Re-run the gate without `--required` (`gh pr checks {number}`, every check on the PR) under the same exit rules and add `no required checks` to the PR's result (e.g. `Merged (no required checks)`); if that run reports `no checks reported`, record `Skipped (no CI checks)`. Pin the merge to the recorded head: if Dependabot pushes a new commit between the CI check and the merge, GitHub refuses the merge instead of landing an unverified head. Shell state does not persist between Bash calls, so substitute the literal recorded SHA into the merge command when the CI check runs in a separate call. Output that does not match `^[0-9a-f]{40}$` (empty, `null`, a failed query) means the head is unreadable: skip the PR as `Skipped (head unreadable)` rather than merging without a pin.
+Gate the merge on the exit status of `gh pr checks --required`, as the block does: exit 8 is `Skipped (CI pending)`, any other non-zero exit is `Failed (CI not passing)`, and a non-zero exit is never a merge. The one exception is output containing `no required checks reported on the '<branch>' branch` (gh 2.102.0 exits 1 with it, naming the PR's head branch). gh prints it both when the base has no required checks and when required checks exist but have not registered on the head yet (e.g. right after a rebase), so resolve it with `check-base-required-checks.sh`: exit 0 means the base requires checks — `Skipped (CI pending)`, no fallback; exit 1 with a non-empty `BASE=` means the validated base has no required check — gate on every check instead (`gh pr checks {number}`, same 0 / 8 / other rules) and add `(no required checks)` to the result; anything else (unreadable or invalid base, empty `BASE=`) is `Skipped (no required check confirmed)`. If the all-checks run reports `no checks reported`, record `Skipped (no CI checks)`. Pin the merge to the recorded head: if Dependabot pushes a new commit between the CI check and the merge, GitHub refuses the merge instead of landing an unverified head. Shell state does not persist between Bash calls, so substitute the literal recorded SHA into the merge command when the CI check runs in a separate call. Output that does not match `^[0-9a-f]{40}$` (empty, `null`, a failed query) means the head is unreadable: skip the PR as `Skipped (head unreadable)` rather than merging without a pin.
 
 If the merge is refused, read `headRefOid` again and apply the same `^[0-9a-f]{40}$` check — an unreadable re-read is `Skipped (head unreadable)`, never a moved head. When a valid re-read differs from the recorded SHA, the head moved: record the new head, re-run the Dockerfile and major-bump checks (Step 2) on it, and restart the CI check on it — at most 2 restarts per PR, then record `Failed (head kept moving)` and move on. When it still matches, the refusal has another cause: record `Failed (merge refused)` with the error. Never retry the merge unpinned.
 
@@ -202,14 +220,23 @@ Dependabot regenerate the PR against the fresh base instead:
    `CONFLICTING` nor `UNKNOWN`. Empty output, a failed query, or `UNKNOWN` is unresolved — keep
    polling; it is never evidence of a finished rebase. Once done, wait for the rebased
    branch's CI to re-run and pass — bounded to 30 minutes in chunks of at most 540 s
-   (`gh pr checks {number} --required --watch --fail-fast`, with the same exit and
-   no-required-checks rules as the 3a gate); past that, report `Failed (CI timeout)`
+   (`gh pr checks {number} --required --watch --fail-fast`; `--watch` never exits 8:
+   exit 0 = pass, a chunk cut off by its timeout = still running, any other non-zero
+   = `Failed (CI not passing)`). If it fails with `no required checks reported`, resolve it with
+   `check-base-required-checks.sh` exactly as in the 3a gate: exit 0 → the required checks
+   have not registered yet, re-run the same `--required --watch` command in the next chunk;
+   exit 1 with a non-empty `BASE=` → watch every check instead with
+   `gh pr checks {number} --watch --fail-fast` and add `(no required checks)` to the result
+   (`no checks reported` there is `Skipped (no CI checks)`); anything else →
+   `Skipped (no required check confirmed)`. Past 30 minutes, report `Failed (CI timeout)`
    and move on
 3. Re-run the Dockerfile and major-bump checks (Step 2) on `NEW_HEAD` — the rebase can
    change the diff — then, if CI passes, merge with
    `gh pr merge {number} --merge --match-head-commit "<NEW_HEAD>"` (the literal SHA).
-   A refused merge means the head moved: re-read it and restart the checks and CI wait
-   on the new head (the same at-most-2-restarts rule as above); never retry unpinned
+   A refused merge may mean the head moved, or another refusal (for example a permission
+   or branch-protection error): re-read the head as above — a moved head restarts the checks
+   and CI wait on it (the same at-most-2-restarts rule), an unchanged head is
+   `Failed (merge refused)` with the error; never retry unpinned
 4. If the loop is exhausted, the new head is still `CONFLICTING`, or CI is red, skip the
    PR and surface it for human review — do not force-push a resolution
 
