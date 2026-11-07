@@ -86,6 +86,8 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=failstatus   — `git status` fails
 #   SHIM_MODE=failcached   — `git diff --cached` fails
 #   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
+# A failing added-line filter must not read as "secrets found" (exit 1):
+#   SHIM_MODE=failawk      — `awk` fails
 SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
 REAL_GIT="$(command -v git)"
 cat > "$SHIM/git" <<EOF
@@ -102,6 +104,13 @@ esac
 exec "$REAL_GIT" "\$@"
 EOF
 chmod +x "$SHIM/git"
+REAL_AWK="$(command -v awk)"
+cat > "$SHIM/awk" <<EOF
+#!/usr/bin/env bash
+[ "\${SHIM_MODE:-}" = failawk ] && exit 1
+exec "$REAL_AWK" "\$@"
+EOF
+chmod +x "$SHIM/awk"
 
 ERR="$TMP_ROOT/scan.err"
 # run_args <shim-mode> [args...] — prints the exit code; stderr kept in $ERR.
@@ -152,6 +161,7 @@ g checkout -q clean-feat
 assert_args "git status failure" "2" failstatus --staged
 assert_args "git diff --cached failure" "2" failcached --staged
 assert_args "unstaged git diff failure" "2" failworktree --staged
+assert_args "added-line filter failure" "2" failawk --staged
 
 # The user's git config must not hide changes from the scan.
 g checkout -q feat
@@ -191,6 +201,24 @@ echo "c.json -diff" > "$REPO/.git/info/attributes"
 echo "{\"key\": \"AKIA""ABCDEFGHIJKLMNOP\"}" > "$REPO/c.json"; g add c.json
 assert_args "--staged secret in a -diff (binary) path" "1" "" --staged
 g rm -q --cached c.json; rm -f "$REPO/c.json"; : > "$REPO/.git/info/attributes"
+# An added line whose content starts with "++" reads "+++" in the diff; a
+# filter that drops every "+++" line as a file header misses it.
+echo "++key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt
+assert_args "--staged secret on a line starting with ++" "1" "" --staged
+g rm -q --cached d.txt; rm -f "$REPO/d.txt"
+g checkout -q -b plusplus main
+echo "++key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt; g commit -q -m plusplus
+assert_args "--committed secret on a line starting with ++" "1" "" --committed main
+g checkout -q clean-feat
+# "++ " content reads "+++ " — exactly a header — so dropping only "+++ "
+# lines still misses it.
+echo "++ key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt
+assert_args "--staged secret on a line starting with '++ '" "1" "" --staged
+g rm -q --cached d.txt; rm -f "$REPO/d.txt"
+g checkout -q -b plusplus-space main
+echo "++ key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/d.txt"; g add d.txt; g commit -q -m plusplus-space
+assert_args "--committed secret on a line starting with '++ '" "1" "" --committed main
+g checkout -q clean-feat
 # Quoted paths (space, non-ASCII) must still match the dangerous-name patterns.
 mkdir -p "$REPO/x y"; : > "$REPO/x y/server.pem"
 assert_args "untracked dangerous file under a path with a space" "1" "" --staged

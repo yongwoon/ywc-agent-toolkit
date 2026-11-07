@@ -133,7 +133,13 @@ SECRET_PATTERNS=(
   'DATABASE_URL\s*='
 )
 
-ADDED_LINES=$(echo "$DIFF_CONTENT" | grep '^+' | grep -v '^+++' || true)
+# `+++ `/`--- ` are file headers only between a `diff ` line (`--git`, `--cc`)
+# and the first `@@` hunk header; inside a hunk every `+` line is content, even
+# one that reads `+++` because the added text starts with `++`.
+ADDED_LINES=$(echo "$DIFF_CONTENT" | awk '/^diff /{h=0} /^@@/{h=1} h && /^\+/') || {
+  echo "ERROR: filtering added lines failed; nothing was scanned" >&2
+  exit 2
+}
 
 for PATTERN in "${SECRET_PATTERNS[@]}"; do
   MATCHES=$(echo "$ADDED_LINES" | grep -E "$PATTERN" || true)
