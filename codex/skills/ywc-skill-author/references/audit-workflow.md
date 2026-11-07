@@ -6,10 +6,10 @@
 one skill, a selected group, or a bundle, but it never creates a second audit
 skill, changes an audited target, authorizes deletion, or invokes an executor.
 
-Run the mechanical report first:
+Run the mechanical report first. `<skill-base-dir>` is the directory containing this skill's SKILL.md.
 
 ```bash
-bash scripts/audit-skills.sh --root <bundle-skills-root> \
+bash "<skill-base-dir>/scripts/audit-skills.sh" --root <bundle-skills-root> \
   --counterpart-root <other-bundle-skills-root> [--near-line-cap 1..500]
 ```
 
