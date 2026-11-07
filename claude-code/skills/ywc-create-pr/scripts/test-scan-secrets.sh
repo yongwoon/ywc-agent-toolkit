@@ -174,6 +174,19 @@ g checkout -q -b add-drop-env main
 echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m add-env
 g rm -q .env; g commit -q -m drop-env
 assert_committed "--committed .env added then deleted in the range" "1" "" main
+# A file added only in a merge commit's resolution is flagged, while a base
+# .env merged in unchanged is not (base-env is the base for both cases).
+g checkout -q -b base-env main
+echo "X=1" > "$REPO/.env.base"; g add -f .env.base; g commit -q -m base-env
+g checkout -q -b merge-in-base main
+echo y > "$REPO/side.txt"; g add side.txt; g commit -q -m side
+g merge -q --no-ff --no-edit base-env
+assert_committed "--committed base .env merged in unchanged" "0" "" base-env
+g checkout -q -b evil-merge main
+echo y > "$REPO/side.txt"; g add side.txt; g commit -q -m side
+g merge -q --no-ff --no-commit base-env
+echo "X=1" > "$REPO/.env"; g add -f .env; g commit -q -m evil-merge
+assert_committed "--committed .env added in a merge resolution" "1" "" base-env
 g checkout -q clean-feat
 
 # Flag order: a later --staged must not downgrade --committed (Phase 3 would be

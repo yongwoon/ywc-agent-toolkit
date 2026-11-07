@@ -148,9 +148,10 @@ if [ "$MODE" = "committed" ]; then
   # Phase 1 sees only the work tree, so a .env committed on the branch is
   # checked here. Walk every branch commit, not the net diff: a .env added and
   # then deleted is gone from BASE...HEAD but still in the pushed history.
-  # --diff-filter=d skips deletions (removing a base .env is a cleanup), and
-  # merge commits show no diff by default, so merging the base in adds nothing.
-  COMMITTED_NAMES=$(git log --no-renames --diff-filter=d --name-only -z --format= "${BASE_BRANCH}..HEAD" | tr '\0' '\n') || {
+  # --diff-filter=d skips deletions (removing a base .env is a cleanup). --cc
+  # lists a merge's file only when it differs from every parent, so a file
+  # added while resolving a merge is caught but files from the base are not.
+  COMMITTED_NAMES=$(git log --cc --no-renames --diff-filter=d --name-only -z --format= "${BASE_BRANCH}..HEAD" | tr '\0' '\n') || {
     echo "ERROR: git log --name-only ${BASE_BRANCH}..HEAD failed; committed changes were not scanned" >&2
     exit 2
   }
