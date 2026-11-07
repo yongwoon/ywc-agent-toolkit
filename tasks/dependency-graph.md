@@ -1,4 +1,4 @@
-**Next PHASE (yk): `000012`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
+**Next PHASE (yk): `000013`** — authoritative starting point for the next `yk`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 **Next PHASE (yw): `000005`** — authoritative starting point for the next `yw`-initials `ywc-task-generator` batch. Read this line first; do not re-derive by scanning when it is present. After allocating a new batch, update this line to `highest allocated PHASE + 1`.
 
 # Codex Issue 69 — task dependency graph
@@ -36,7 +36,13 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 - Completed: `yk-000010-010-domain-scan-secrets-hunk-filter`, `yk-000010-020-domain-merge-dependabot-hardening`, `yk-000010-030-domain-retro-readonly-lenses`, `yk-000010-040-domain-finish-branch-guard-review`, `yk-000010-050-docs-metadata-followups`, `yk-000010-060-test-reviewer-trigger-coverage`
 
 ## Phase yk-000011 — pending
-- Wave 1: `yk-000011-010-domain-ci-gate-and-dependabot-lows`
+- Wave 1 (parallel): `yk-000011-010-domain-ci-gate-and-dependabot-lows`, `yk-000011-020-domain-codex-finish-branch-guard`, `yk-000011-030-domain-dispatch-only-agent-tag`
+
+## Phase yk-000012 — pending
+- `yk-000012-010-domain-codex-merge-dependabot-parity` — depends on `yk-000011-010-domain-ci-gate-and-dependabot-lows`; runs after every Phase 000011 task (stages the shared `history.mechanical.json` baseline)
+
+### Post-run step (not a task): release gate — `docs/ywc-plans/20261107-p1-hardening-before-main-pr.md` FR-6 / AC7
+- After Phase 000012: chunked whole-run `/ywc-impl-review --git-range <a>..<b> --non-interactive` over `git merge-base main feature/improvement-20261106`..`feature/improvement-20261106` (each chunk ≤200 files / ≤5,000 lines), one fix pass + targeted re-review, then update and mark draft PR #214 ready.
 
 ## Task Summary
 
@@ -87,6 +93,9 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 | yk-000010-050-docs-metadata-followups | follow-up | sonnet |
 | yk-000010-060-test-reviewer-trigger-coverage | follow-up | sonnet |
 | yk-000011-010-domain-ci-gate-and-dependabot-lows | follow-up | opus |
+| yk-000011-020-domain-codex-finish-branch-guard | P1 spec FR-4 | opus |
+| yk-000011-030-domain-dispatch-only-agent-tag | P1 spec FR-5 | sonnet |
+| yk-000012-010-domain-codex-merge-dependabot-parity | P1 spec FR-1..FR-3 | opus |
 
 ## Spec Coverage
 
@@ -110,7 +119,7 @@ Failure Modes: provenance/locale gaps → every source task + distribution; anal
 
 - AC0 → `yk-000003-010`; AC1/AC2/AC2b/AC2c, FR6, FR7 → `yk-000004-010`; AC4 → `yk-000004-020`; AC9, NFR1 → `yk-000004-030`; AC6 → `yk-000004-040`; AC8 → `yk-000004-050`; AC3, AC8b → `yk-000004-060`; AC5 → `yk-000004-070`; AC7 → `yk-000004-080`; AC7b → `yk-000004-090`.
 - AC11b → `yk-000005-010`; AC12 (2 skills), AC13, FR8 → `yk-000005-020`; AC10, AC11 → `yk-000005-030`; AC13b → `yk-000005-040`; AC12 (4 skills), AC14, AC14b, AC14c → `yk-000005-050`; AC15 → `yk-000006-010`; AC16 → `yk-000006-020`; AC16b, AC17 → `yk-000006-030`.
-- Final-review follow-up (security Mediums M1, M2, M4, M5) → `yk-000007-010`. M3 → `yk-000008-030`; M6 → `yk-000008-040`; Lows → `yk-000008-050`; yk-000007-010 review Lows → `yk-000008-010`; Codex scan-secrets → `yk-000008-020`. yk-000009-010 `++` Low → `yk-000010-010`; merge-dependabot Medium/Lows → `yk-000010-020`; retro lens confinement → `yk-000010-030`; 004-020 upstream Mediums → `yk-000010-040`; impl-review word cap, Codex audit path, validate.sh naming → `yk-000010-050`; trigger coverage → `yk-000010-060`. yk-000010 deferred (coverage CI gate, merge-dependabot Lows, validate.sh local) → `yk-000011-010`.
+- Final-review follow-up (security Mediums M1, M2, M4, M5) → `yk-000007-010`. M3 → `yk-000008-030`; M6 → `yk-000008-040`; Lows → `yk-000008-050`; yk-000007-010 review Lows → `yk-000008-010`; Codex scan-secrets → `yk-000008-020`. yk-000009-010 `++` Low → `yk-000010-010`; merge-dependabot Medium/Lows → `yk-000010-020`; retro lens confinement → `yk-000010-030`; 004-020 upstream Mediums → `yk-000010-040`; impl-review word cap, Codex audit path, validate.sh naming → `yk-000010-050`; trigger coverage → `yk-000010-060`. yk-000010 deferred (coverage CI gate, merge-dependabot Lows, validate.sh local) → `yk-000011-010`. P1 spec `docs/ywc-plans/20261107-p1-hardening-before-main-pr.md`: AC0 → `yk-000011-010-domain-ci-gate-and-dependabot-lows`; AC1–AC3 (FR-1..FR-3, review-5 W1–W4, W6, W7) → `yk-000012-010-domain-codex-merge-dependabot-parity`; AC4 (FR-4, W5) → `yk-000011-020-domain-codex-finish-branch-guard`; AC5–AC6 (FR-5) → `yk-000011-030-domain-dispatch-only-agent-tag`; AC7 (FR-6) → post-run release gate.
 - FR1–FR4 apply to every task; FR5 is the graph above; the NFR1 body-line check is in every task that edits a `SKILL.md`; NFR2 follows from B3/B5.
 - Failure Modes: `${CLAUDE_SKILL_DIR}` / partial install → B1; user-invoked → B3; malicious branch / PR number / fork PR → C2, C3; recursion / double run / non-DONE → A1; handoff secret → B5; remote deletion → A3; CI red → B3; upstream unavailable → T0; required-check gate → B4.
 
