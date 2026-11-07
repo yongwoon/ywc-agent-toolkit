@@ -95,7 +95,28 @@ def main() -> int:
         check("no symlink followed", all(not os.path.islink(p) for p in made)
               and victim.read_text(encoding="utf-8") == "keep" and str(predictable) not in made)
     inside_repo_case(command)
+    blocked_when_no_safe_dir(command)
     return report()
+
+
+def blocked_when_no_safe_dir(command: str) -> None:
+    """TMPDIR and the /tmp fallback both inside the repository: stop without saving."""
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp, "repo").resolve()
+        inner_tmp = repo / "tmp"
+        inner_tmp.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(repo)], check=True)
+        env = {**os.environ, "TMPDIR": str(inner_tmp)}
+        # Point the /tmp fallback at an in-repo directory so no safe directory remains.
+        blocked = command.replace("safe /tmp ", f"safe {inner_tmp} ", 1)
+        # Fails if the fallback call no longer reads `safe /tmp`, which would void this case.
+        check("/tmp fallback replaced with an in-repo path", blocked != command)
+        done = subprocess.run(["sh", "-c", blocked], cwd=repo, env=env, capture_output=True, text=True)
+        # Fails if the BLOCKED stop is removed and the file is written inside the repository instead.
+        check("both save dirs inside repo: stops with BLOCKED",
+              done.returncode != 0 and "BLOCKED" in done.stderr)
+        check("both save dirs inside repo: no file written",
+              not any(repo.rglob("handoff-*")))
 
 
 def inside_repo_case(command: str) -> None:
