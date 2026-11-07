@@ -56,7 +56,7 @@ Recommend battle-tested libraries or managed services using only stack evidence 
 
 > **Action required when stack evidence is insufficient for a direct recommendation**: Read [references/generic-fallback.md](references/generic-fallback.md) for the fallback research procedure and playbook-caching mechanics.
 
-Pass the policy interview and library recommendation results to `/ywc-plan --no-converge` to generate a plan/spec (this skill owns the convergence decision). If classified Medium or Large, run `/ywc-spec-ready --spec <path>`; if it does not return `DONE`, stop before Implementation Dispatch and report `BLOCKED` (or `NEEDS_CONTEXT` when the report names missing input) with its Completion Report. If classified Small, use the generated `plan.md` as-is. Pass the converged spec path (or the Small `plan.md` path) into every dispatch prompt below.
+Pass the policy interview and library recommendation results to `/ywc-plan --no-converge` to generate a plan/spec (this skill owns the convergence decision). If classified Medium or Large, run `/ywc-spec-ready --spec <path>`; if it does not return `DONE`, stop before Implementation Dispatch and report `BLOCKED` (or `NEEDS_CONTEXT` when the report names missing input) with its Completion Report. If classified Small, use the generated `plan.md` as-is. Pass the converged spec path (or the Small `plan.md` path) into every dispatch prompt below. Before dispatch, compare the converged spec's MFA, session, and consent policy with the policy interview summary; if an approved or explicitly deferred item changed, get the user's approval and record it, and do not dispatch until that approval is recorded.
 
 ## Implementation Dispatch
 
