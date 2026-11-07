@@ -21,6 +21,8 @@
 #   bash ./scan-secrets.sh --committed develop
 
 set -euo pipefail
+# Binary content is not valid UTF-8 and makes awk abort; the patterns are ASCII.
+export LC_ALL=C
 
 MODE="staged"
 BASE_BRANCH=""
@@ -110,7 +112,9 @@ DIFF_UNSTAGED=$(git diff "${DIFF_OPTS[@]}") || {
 # Neither diff shows untracked files, and ywc-create-pr scans before its commit
 # stages them, so each one is diffed against /dev/null. The NUL-separated list
 # goes through a file so a failing ls-files is still caught. `--no-index` exits
-# 1 when the files differ; only 2+ is an error.
+# 1 when the files differ and 2+ on error. Directories (nested repos, dir
+# symlinks) are skipped: git cannot read them as files and still exits 1. NUL
+# bytes from binary content are dropped so bash does not warn about them.
 UNTRACKED_LIST=$(mktemp) || {
   echo "ERROR: mktemp failed; nothing was scanned" >&2
   exit 2
@@ -122,8 +126,9 @@ git ls-files -z --others --exclude-standard > "$UNTRACKED_LIST" || {
 }
 DIFF_UNTRACKED=""
 while IFS= read -r -d '' UNTRACKED_FILE; do
+  [ -d "$UNTRACKED_FILE" ] && continue
   RC=0
-  FILE_DIFF=$(git diff "${DIFF_OPTS[@]}" --no-index -- /dev/null "$UNTRACKED_FILE") || RC=$?
+  FILE_DIFF=$(git diff "${DIFF_OPTS[@]}" --no-index -- /dev/null "$UNTRACKED_FILE" | tr -d '\0') || RC=$?
   if [ "$RC" -gt 1 ]; then
     echo "ERROR: git diff --no-index failed for an untracked file; nothing was scanned" >&2
     exit 2

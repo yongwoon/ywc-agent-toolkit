@@ -243,6 +243,15 @@ assert_args "clean untracked file" "0" "" --staged
 assert_args "untracked enumeration failure" "2" failuntracked --staged
 assert_args "untracked --no-index diff failure" "2" failnoindex --staged
 rm -rf "$REPO/x y"
+# Fails if a binary untracked file (NUL bytes, invalid UTF-8) breaks the
+# filter under a UTF-8 locale (bash drops NULs, awk aborts on multibyte input).
+{ printf '\000\377\376\200'; head -c 4096 /dev/urandom; } > "$REPO/img.bin"
+assert_eq "untracked binary file under a UTF-8 locale" "0" \
+  "$( (cd "$REPO" && LC_ALL=en_US.UTF-8 GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >/dev/null 2>&1); echo $?)"
+echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/notes.txt"
+assert_eq "untracked secret next to a binary file" "1" \
+  "$( (cd "$REPO" && LC_ALL=en_US.UTF-8 GIT_CEILING_DIRECTORIES="$TMP_ROOT" no_git_env bash "$TARGET" --staged >/dev/null 2>&1); echo $?)"
+rm -f "$REPO/img.bin" "$REPO/notes.txt"
 # diff.relative=true limits every diff to the current directory.
 g checkout -q feat
 mkdir -p "$REPO/sub"
