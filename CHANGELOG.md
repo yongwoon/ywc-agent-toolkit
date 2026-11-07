@@ -11,6 +11,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.40.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.39.1...v1.40.0) (2026-11-07)
+
+
+### Added
+
+* **claude-code:** port upstream Issue 69 improvements and harden scan-secrets and finish-branch guards ([#214](https://github.com/yongwoon/ywc-agent-toolkit/issues/214)) ([e8830e3](https://github.com/yongwoon/ywc-agent-toolkit/commit/e8830e3d24944d3cab5770d562a7512bc4ab752b))
+* **codex:** adopt selected Issue 69 improvements ([#211](https://github.com/yongwoon/ywc-agent-toolkit/issues/211)) ([7dd8534](https://github.com/yongwoon/ywc-agent-toolkit/commit/7dd8534e65d8073e1270563c6655f6eb44bee5ba))
+* **codex:** Issue 69 반영 범위 확장 및 배포 통합 ([#213](https://github.com/yongwoon/ywc-agent-toolkit/issues/213)) ([46cafde](https://github.com/yongwoon/ywc-agent-toolkit/commit/46cafdeab65fb3f31df24f086ccef2cc2c43793d))
+
+
+### Fixed
+
+* address issue 215 mechanical follow-ups (scan-secrets, worktree prose, CI, agents README) ([#216](https://github.com/yongwoon/ywc-agent-toolkit/issues/216)) ([9e48916](https://github.com/yongwoon/ywc-agent-toolkit/commit/9e48916721e8f989d12ef49b3ba33166a5b57591))
+* harden ywc-merge-dependabot parallel-auto and its helper scripts ([#217](https://github.com/yongwoon/ywc-agent-toolkit/issues/217)) ([bee866c](https://github.com/yongwoon/ywc-agent-toolkit/commit/bee866c30def70b092774595838f80611c6b1d05))
+
 ## [1.39.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.39.0...v1.39.1) (2026-10-29)
 
 
