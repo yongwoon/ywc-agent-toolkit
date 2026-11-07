@@ -95,7 +95,7 @@ Budget discipline (see advisor-pattern.md §6): default cap is 5 Opus calls per 
    Each reference file (`references/*-agent.md`) explains what "confident" vs "needs advisor" means for that category. The code-review aspects (architecture / design / devex / security) stay in their own lanes: an Architecture finding does not include naming polish (Design) or error-message wording (Devex). Cross-aspect concerns surface as one-line cross-references, never as duplicated findings.
 
    **Language-specific reviewer dispatch (Tier 2)** — when the changed-file list is dominated by a single language and the Claude Code named-agent catalog at `tools/claude-code/agents/` is installed, replace the Design and Devex generic `model: sonnet` subagents with the matching language reviewer for sharper findings. Currently shipped:
-   - TypeScript / TSX / Vue / Svelte → `subagent_type: ywc-typescript-reviewer` (covers type-system depth, async correctness, framework idioms, tsconfig strictness, ESM/CJS interop)
+   - TypeScript / TSX / JavaScript / JSX / Vue / Svelte → `subagent_type: ywc-typescript-reviewer` (covers type-system depth, async correctness, framework idioms, tsconfig strictness, ESM/CJS interop)
    - Python / .py / .pyi / pyproject.toml → `subagent_type: ywc-python-reviewer` (covers type-system depth, asyncio correctness, framework idioms — Django / FastAPI / Pydantic v2 / Flask, mypy strict mode, GIL implications, lifecycle patterns)
    - Go / .go / go.mod / go.sum → `subagent_type: ywc-go-reviewer` (covers goroutine lifecycle, channel patterns, interface design — accept interfaces return concrete, error wrapping `%w` / `errors.Is` / `errors.As`, pointer vs value semantics, generics post 1.18, defer + sync primitives)
 

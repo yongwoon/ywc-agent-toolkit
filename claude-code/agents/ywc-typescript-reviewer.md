@@ -12,8 +12,8 @@ description: >-
   lanes cover, that the generic 5-aspect impl-review cannot catch with
   language-agnostic prose. Triggers: explicit
   `Task(subagent_type=ywc-typescript-reviewer)` dispatch by ywc-impl-review
-  Phase 1 when the review target is TS-heavy (Design or Devex aspect deep
-  dive on .ts / .tsx / .vue / .svelte files), explicit advisor dispatch when
+  Phase 1 when the review target is TS/JS-heavy (Design or Devex aspect deep
+  dive on .ts / .tsx / .js / .jsx / .vue / .svelte files), explicit advisor dispatch when
   Phase 1 Design subagent flags a type-system or signature question as
   ambiguous (TS Phase 2 alternative to the generic Opus advisor).
   Do not use for: non-TypeScript code (use ywc-python-reviewer for Python,
