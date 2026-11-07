@@ -56,6 +56,18 @@ critical — secret detection, remote-controlled values reaching shell/gh, or re
 ### Task Verify
 - `grep -q 'Remote deletion guard' claude-code/skills/ywc-finish-branch/SKILL.md`
 - `grep -qF 'git check-ref-format "refs/heads/$branch"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '--json number --jq length' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '--force-with-lease="refs/heads/$branch:$tip"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- 'env -u GH_HOST gh repo view --json url,isFork,parent -- "$url"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '--repo "$parent"' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '^[0-9a-f]{40}([0-9a-f]{24})?$' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '^[A-Za-z0-9.-]+/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '6. **Open-PR check**' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- 'git remote get-url --push --all origin' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- '2. **Pin the push target**' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- 'a fork of a fork returns `NEEDS_CONTEXT`' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- 'never interpolate `$base` or `$tip` into a `--jq` filter' claude-code/skills/ywc-finish-branch/SKILL.md`
+- `grep -qF -- 'A small window remains between step 6 and this push' claude-code/skills/ywc-finish-branch/SKILL.md`
 - `bash scripts/validate.sh`
 - `python3 .claude/skills/ywc-toolkit-eval/scripts/score.py --ci`
 - `git checkout -- .claude/skills/ywc-toolkit-eval/evals/history.mechanical.json`  — Phase 000010 Wave 1 tasks do NOT commit the baseline file; yk-000010-060 stages it last
