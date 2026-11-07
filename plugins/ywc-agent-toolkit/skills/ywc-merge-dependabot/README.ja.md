@@ -9,9 +9,9 @@ Claude Code と Codex CLI の両方で利用できます。
 
 - 全 Dependabot PR、または Security 関連 PR のみを Merge
 - Dockerfile `FROM` 変更、Major Version Upgrade、CI Status の pre-merge check
-- Merge conflict の解決試行と CI 再実行待ち
+- Merge conflict は `@dependabot rebase` でのみ解決 (手動解決はしない)、rebase 後の head の CI を待ち、検証済み head に pin して Merge (`--match-head-commit`)
 - Default では PR 番号の昇順で sequential 処理
-- **Parallel-auto mode**: lockfile ecosystem ごとに lane を作り、各 lane で active auto-merge PR を 1 件だけ維持して、大量 PR の wall-clock 時間を短縮
+- **Parallel-auto mode**: lockfile ecosystem ごとに lane を作り、各 lane で active auto-merge PR を 1 件だけ維持して、大量 PR の wall-clock 時間を短縮。各 auto-merge の開始前に PR の base branch に required status check があることを確認し、確認できない PR は最後の sequential pass で処理
 - 最終 Summary Report の出力
 
 ## 使用方法
@@ -90,7 +90,9 @@ ywc-merge-dependabot/
 ├── agents/
 │   └── openai.yaml
 └── scripts/
-    └── group-by-ecosystem.py
+    ├── group-by-ecosystem.py
+    ├── check-base-required-checks.sh
+    └── test_merge_dependabot_scripts.py
 ```
 
 ## 関連 Skill
@@ -101,4 +103,4 @@ ywc-merge-dependabot/
 
 ## 運用の安全性
 
-Dockerfile diff hunk 内の変更された FROM のみ検出し、照会・解析の失敗は未解決として扱います。Rebase/CI polling は chunk 間で合計 1800 秒の deadline と完全な状態を維持し、timeout を失敗とします。明示呼び出しを優先する metadata は runtime 強制保証ではありません。
+Dockerfile diff hunk 内の変更された FROM のみ検出し、照会・解析の失敗は未解決として扱います。Rebase/CI polling は chunk 間で run-wide の 1800 秒 deadline と完全な状態を維持し、timeout を失敗とします。明示呼び出しを優先する metadata は runtime 強制保証ではありません。

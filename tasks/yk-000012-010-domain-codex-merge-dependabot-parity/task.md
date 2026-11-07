@@ -63,3 +63,19 @@ Covers: AC1, AC2, AC3 (FR-1, FR-2, FR-3)
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- **RED (AC2):** the new `test_merge_dependabot_scripts.py` was run against the unchanged Codex `SKILL.md` and failed with 29 failures and 8 errors (`FAILED (failures=29, errors=8)`, 32 tests). All 15 `SkillContractTest` tests failed. All 8 `SequentialCiGateTest` tests raised `StopIteration` because the 3a gate marker did not exist yet. `CheckBaseRequiredChecksTest` passed (the script was already copied). After the change: `Ran 32 tests … OK`.
+- **AC3 mutation:** `self.assertEqual(calls, 2)` was changed to `3` in `SkillContractTest`. `bash scripts/validate.sh` then exited 1 and printed `ERROR: merge-dependabot test suite failed: codex/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py` with the `2 != 3` tail. The change was reverted from a saved copy and checked with `grep`.
+- **Resolver call sites:** there are 2 new `bash "$RESOLVER_LAUNCHER"` lines (the 3a gate and the Stage 1 lane start block that Stage 2 reuses). Both `== 20` counts are now `== 22`.
+- **Line budget:** the `SKILL.md` body is 391 lines, so the `references/lane-state.md` fallback was not needed.
+- **W1:** `auto_intent` was dropped. Every `--auto` start, including a resume, first reads `gh pr view {number} --json state,autoMergeRequest,headRefOid`. If that read finds auto-merge enabled, the PR is treated as active. So a persisted intent would have had no reader. The `SkillContractTest` assertion was changed to require that `auto_intent` is absent and that this pre-start read comes before the base check.
+- **W2:** only an empty `autoMergeRequest` re-read after a non-zero `--auto` adds the PR to `stage3`. `auto-merge-uncertain` PRs are "never in `stage3`".
+- **W3:** a resume first reads `state` for every PR in `active`, `stage3` and `ci_wait`. A `MERGED` or `CLOSED` PR is recorded as terminal.
+- **W4:** an `auto-merge-uncertain` PR closes its lane, and the lane's remaining PRs move to `stage3`.
+- **W6:** the unpinned part of the old `:161` now names one run-wide deadline, set once at the start of Step 3. The Stage 2 illustration reads `deadline=$RUN_DEADLINE` and no longer computes `+1800`.
+- **W7:** at the deadline, PRs that never started are `Skipped (deadline reached)`. Only started PRs are marked failed/stalled.
+- **zh/es:** these were edited by hand on the changed lines only. `scripts/translate.sh` was not run (it would rewrite `.claude/settings.json`). The AUTO-GENERATED headers are unchanged.
+- **Review fixes:**
+  - **M1:** after the resume state reads, each lane whose active PR was removed is advanced through the lane start block before polling. Its pre-start read adopts a PR whose auto-merge is already enabled as active. Stage 3 "drained" is now defined as `active` empty and every lane's queue empty.
+  - **L4:** the second resolver line now maps any failure to `BLOCKED` with exit 3. The resolver call count stays at 22.
+  - **RED:** `test_resume_advances_lanes_whose_active_pr_was_removed` and the updated `RESOLVER_RESOLVE` check both failed before the SKILL.md edit (`FAILED (failures=2)`). After the edit: `Ran 33 tests … OK`.

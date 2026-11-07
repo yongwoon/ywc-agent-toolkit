@@ -765,16 +765,18 @@ run_script_test_suites() {
 
   # merge-dependabot scripts gate `--auto` merges on a remote-controlled
   # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
-  local dependabot_test=claude-code/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py
-  local dependabot_out
-  if [ ! -f "$dependabot_test" ]; then
-    echo "ERROR: merge-dependabot test suite is missing: $dependabot_test"
-    ERRORS=$((ERRORS + 1))
-  elif ! dependabot_out=$(python3 "$dependabot_test" 2>&1); then
-    echo "ERROR: merge-dependabot test suite failed: $dependabot_test"
-    printf '%s\n' "$dependabot_out" | tail -n 30
-    ERRORS=$((ERRORS + 1))
-  fi
+  local dependabot_test dependabot_out
+  for dependabot_test in claude-code/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py \
+                         codex/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py; do
+    if [ ! -f "$dependabot_test" ]; then
+      echo "ERROR: merge-dependabot test suite is missing: $dependabot_test"
+      ERRORS=$((ERRORS + 1))
+    elif ! dependabot_out=$(python3 "$dependabot_test" 2>&1); then
+      echo "ERROR: merge-dependabot test suite failed: $dependabot_test"
+      printf '%s\n' "$dependabot_out" | tail -n 30
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
 
   # The evaluator's own tests pin the shipped catalog's trigger coverage; a new
   # skill or agent below the coverage minimum fails here. Offline, stdlib only.

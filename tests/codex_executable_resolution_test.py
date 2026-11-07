@@ -26,6 +26,7 @@ CALLER_FILES = [
             "ywc-create-pr",
             "ywc-finish-branch",
             "ywc-handle-pr-reviews",
+            "ywc-merge-dependabot",
             "ywc-onboard-repo",
             "ywc-parallel-executor",
             "ywc-release-pr-list",
@@ -204,7 +205,7 @@ def test_mark_complete_does_not_mutate_when_blocked() -> None:
 
 def test_closed_set_complement() -> None:
     combined = "\n".join(path.read_text(encoding="utf-8") for path in CALLER_FILES)
-    assert combined.count('bash "$RESOLVER_LAUNCHER"') == 20
+    assert combined.count('bash "$RESOLVER_LAUNCHER"') == 22
     assert all(path.is_file() for path in CALLER_FILES)
     source_files = [
         path
@@ -214,7 +215,7 @@ def test_closed_set_complement() -> None:
         and "codex/skills/references" not in str(path)
     ]
     all_source = "\n".join(path.read_text(encoding="utf-8") for path in source_files)
-    assert all_source.count('bash "$RESOLVER_LAUNCHER"') == 20
+    assert all_source.count('bash "$RESOLVER_LAUNCHER"') == 22
     unsafe = [
         line
         for line in all_source.splitlines()
