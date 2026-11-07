@@ -117,7 +117,7 @@ Verify the following conditions before starting:
    ```
 
    If exit 1, resolve per worktree listed in the output (check the first bullet before the others):
-   - The worktree basename is `pr-<N>` → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish or prune it via `ywc-handle-pr-reviews` (`--mode prune --keep-branch`) before the run
+   - The worktree basename is `pr-<N>` (a `.worktrees/` or configured root) or `worktree-pr-<N>` (the legacy `../worktree-<task-name>` root) → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish the PR review, then prune it from the main checkout with `ywc-worktrees --mode prune --task-name pr-<N> --branch <H> --keep-branch` (`<H>` = the PR head branch) before the run
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
 
@@ -140,7 +140,7 @@ for f in .ywc-run-state.json .ywc-learnings.jsonl; do
       || { echo "BLOCKED: cannot write $EXCL" >&2; exit 1; }
   fi
 done
-bash claude-code/skills/scripts/update-state.py init-parallel \
+python3 claude-code/skills/scripts/update-state.py init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"],"has_contract":true},{"wave":2,"tasks":["t-c"],"has_contract":false}]'
 ```
@@ -219,7 +219,7 @@ for t in <wave-task-names>; do git worktree list --porcelain | grep -q "/worktre
 
 **4a-isolate (Docker-isolated projects only)**: immediately after 4a-verify passes, isolate each task's Docker host ports — `bash "${CLAUDE_SKILL_DIR}/../ywc-docker-isolate/scripts/setup-docker-ports.sh" --task-name <t> --worktree-path ../worktree-<t>`. Exit 1 (hardcoded port / squatter / corrupt persist) → mark the task **BLOCKED** and preserve its worktree (skip Step 4g for it), wave continues (§A1.2). This hook is delivery-mode-independent — it fires for every per-task worktree.
 
-**Checkpoint**: `bash claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
+**Checkpoint**: `python3 claude-code/skills/scripts/update-state.py wave-start <N>` — flips wave `<N>` to `in_progress`, populates `pending` from its task list, and stamps `last_checkpoint`. (Hand-editing the JSON risks malformed state and stale timestamps; the script does the mutation deterministically.)
 
 **4b. Spawn Agents** — Use Claude Code's `Agent` tool to spawn one subagent per task in parallel. Pass each agent:
 - The task's `task.md` (implementation checklist)
@@ -363,17 +363,17 @@ This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves 
 
 **Status handling for `--per-task-pr`** (no finish-branch delegation): the inline path has three failure gates — a CI failure exhausted after 2 fix cycles (a step 2), a latest-base refresh conflict (a step 4), and a post-move verification mismatch (b). Any one marks the task `BLOCKED`: preserve its worktree and branch (Step 4g must skip it), record it for the Completion Report, and continue with the remaining wave tasks. A merge conflict reported by `gh pr merge` (a step 5) is likewise `BLOCKED` — never force-merge; surface the conflict to the user.
 
-**Checkpoint** (after each successful task delivery in the inner loop): `bash claude-code/skills/scripts/update-state.py task-merged <N> <task-name>` — moves the task from `pending` to `merged` in wave `<N>` and stamps `last_checkpoint`.
+**Checkpoint** (after each successful task delivery in the inner loop): `python3 claude-code/skills/scripts/update-state.py task-merged <N> <task-name>` — moves the task from `pending` to `merged` in wave `<N>` and stamps `last_checkpoint`.
 
 **Wave-end push for `--draft` mode**: After every task in the wave has been processed, the `--defer-push` completion-marker commits remain local. They are pushed once at the end of **all waves** (not per-wave), as part of the Completion Report transition. For `--local-merge` and `--per-task-pr`, no wave-end push is needed — every task already pushed individually (local-merge via finish-branch, per-task-pr via the (b) inline push after `gh pr merge`).
 
 Failed (BLOCKED) tasks remain in `<tasks-dir>/<task-name>`; finish-branch never moves them. Record those tasks for the Completion Report.
 
-**Checkpoint** (after the entire wave loop finishes, **contract-less waves and `--per-task-pr` only** — a wave that created `wave-int/<N>` does not stamp this here; see 4e.6): `bash claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
+**Checkpoint** (after the entire wave loop finishes, **contract-less waves and `--per-task-pr` only** — a wave that created `wave-int/<N>` does not stamp this here; see 4e.6): `python3 claude-code/skills/scripts/update-state.py wave-complete <N>` — flips wave `<N>` to `completed` (it refuses if any task is still `pending`, a built-in guard against marking an incomplete wave done) and stamps `last_checkpoint`.
 
 **4e.5. Hardener (Mutation gate, wave boundary)** — Runs once against the wave's merged diff (cross-task interaction gaps only surface post-merge) and dispatches to `ywc-qa-engineer` via the Task tool if the wave's accumulated tasks declare a quality gate contract. On dispatch failure, return `DONE_WITH_CONCERNS`, never `BLOCKED`. Records the `gate_state` in the wave-level Completion Report — never in `.ywc-run-state.json`.
 
-**Checkpoint** (contract-bearing wave under `--local-merge`/`--draft`/`--aggregate-pr` only — i.e. `integration_branch` is non-`None`): immediately after 4e.5 exits, before attempting promotion, run `bash claude-code/skills/scripts/update-state.py hardener-verdict <N> <absent|PASS|BLOCKED|NEEDS_CONTEXT> [--detail <text>]` — `absent` if no contract applied, `PASS` if Hardener ran and did not return an `enforced`-tier `BLOCKED` (a dispatch failure counts as `PASS` here per the no-block rule above), `BLOCKED` only on an `enforced`-tier `BLOCKED`, `NEEDS_CONTEXT` when Hardener ran under an `enforced` contract and returned `NEEDS_CONTEXT` (per `quality-gates.md:93`) — distinct from a dispatch failure, which still maps to `PASS`. When the verdict is `NEEDS_CONTEXT`, always pass `--detail` with Hardener's own missing-context diagnostic (e.g. which `Baseline` artifact is missing/corrupt) — this writes the dedicated `hardener_detail` checkpoint field (see [references/checkpoint-resume.md](references/checkpoint-resume.md)), distinct from `blocked_detail`, so a later resume can display the actual gap rather than a bare verdict name. Store the diagnostic in a shell variable first and pass it double-quoted (`--detail "$hardener_detail"`) — never interpolate Hardener's free-form text directly into the command line, since unquoted whitespace causes argument splitting and an unquoted `$()`/backtick sequence in the diagnostic would be evaluated as command substitution. 4e.6 below reads this value to decide promotion.
+**Checkpoint** (contract-bearing wave under `--local-merge`/`--draft`/`--aggregate-pr` only — i.e. `integration_branch` is non-`None`): immediately after 4e.5 exits, before attempting promotion, run `python3 claude-code/skills/scripts/update-state.py hardener-verdict <N> <absent|PASS|BLOCKED|NEEDS_CONTEXT> [--detail <text>]` — `absent` if no contract applied, `PASS` if Hardener ran and did not return an `enforced`-tier `BLOCKED` (a dispatch failure counts as `PASS` here per the no-block rule above), `BLOCKED` only on an `enforced`-tier `BLOCKED`, `NEEDS_CONTEXT` when Hardener ran under an `enforced` contract and returned `NEEDS_CONTEXT` (per `quality-gates.md:93`) — distinct from a dispatch failure, which still maps to `PASS`. When the verdict is `NEEDS_CONTEXT`, always pass `--detail` with Hardener's own missing-context diagnostic (e.g. which `Baseline` artifact is missing/corrupt) — this writes the dedicated `hardener_detail` checkpoint field (see [references/checkpoint-resume.md](references/checkpoint-resume.md)), distinct from `blocked_detail`, so a later resume can display the actual gap rather than a bare verdict name. Store the diagnostic in a shell variable first and pass it double-quoted (`--detail "$hardener_detail"`) — never interpolate Hardener's free-form text directly into the command line, since unquoted whitespace causes argument splitting and an unquoted `$()`/backtick sequence in the diagnostic would be evaluated as command substitution. 4e.6 below reads this value to decide promotion.
 
 > **Action required**: Read [../references/quality-gates.md](../references/quality-gates.md) for thresholds, dispatch conditions, mutation score loop cap, and resolution policies. Do not restate gate rules inline.
 
