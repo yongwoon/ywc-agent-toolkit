@@ -50,3 +50,7 @@ Covers: the Scope bullets above
 ## Implementation Notes (optional)
 
 <!-- Starts empty at generation time. -->
+
+- `gh api` answers an unprotected branch with HTTP 404 (stderr `gh: Branch not protected (HTTP 404)`, verified live). `check-base-required-checks.sh` treats 404 as a count of 0 (exit 1, keeps the all-checks fallback). Any other failure, a silent failure, or non-integer output is exit 3, unless the other lookup confirms a positive count (exit 0).
+- Known limit: a 404 caused by missing permission looks the same as "not protected". The all-checks fallback still gates those PRs on every check.
+- Coverage-gap check: in a scratch `git archive` copy, removing the 2 `ywc-go-reviewer` collision cases makes `test_score.py` exit 1 and `run_script_test_suites` report `ERROR: toolkit-eval scorer test suite failed` (ERRORS=1).

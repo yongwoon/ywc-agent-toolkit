@@ -766,12 +766,25 @@ run_script_test_suites() {
   # merge-dependabot scripts gate `--auto` merges on a remote-controlled
   # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
   local dependabot_test=claude-code/skills/ywc-merge-dependabot/scripts/test_merge_dependabot_scripts.py
+  local dependabot_out
   if [ ! -f "$dependabot_test" ]; then
     echo "ERROR: merge-dependabot test suite is missing: $dependabot_test"
     ERRORS=$((ERRORS + 1))
   elif ! dependabot_out=$(python3 "$dependabot_test" 2>&1); then
     echo "ERROR: merge-dependabot test suite failed: $dependabot_test"
     printf '%s\n' "$dependabot_out" | tail -n 30
+    ERRORS=$((ERRORS + 1))
+  fi
+
+  # The evaluator's own tests pin the shipped catalog's trigger coverage; a new
+  # skill or agent below the coverage minimum fails here. Offline, stdlib only.
+  local score_dir=.claude/skills/ywc-toolkit-eval/scripts score_out
+  if [ ! -f "$score_dir/test_score.py" ]; then
+    echo "ERROR: toolkit-eval scorer test suite is missing: $score_dir/test_score.py"
+    ERRORS=$((ERRORS + 1))
+  elif ! score_out=$(python3 "$score_dir/test_score.py" 2>&1); then
+    echo "ERROR: toolkit-eval scorer test suite failed: $score_dir/test_score.py"
+    printf '%s\n' "$score_out" | tail -n 30
     ERRORS=$((ERRORS + 1))
   fi
 
