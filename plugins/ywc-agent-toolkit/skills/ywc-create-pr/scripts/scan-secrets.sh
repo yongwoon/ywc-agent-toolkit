@@ -3,7 +3,8 @@
 #
 # Scans git diff for secret patterns across three phases:
 #   Phase 1 — dangerous file names (.env, .pem, credentials.*, etc.)
-#   Phase 2 — staged + unstaged diff content (secret regex patterns)
+#   Phase 2 — staged + unstaged diff content and untracked file content
+#             (secret regex patterns)
 #   Phase 3 — committed diff vs base branch (when --committed is given)
 #
 # Exit codes:
@@ -106,8 +107,34 @@ DIFF_UNSTAGED=$(git diff "${DIFF_OPTS[@]}") || {
   echo "ERROR: git diff failed; nothing was scanned" >&2
   exit 2
 }
+# Neither diff shows untracked files, and ywc-create-pr scans before its commit
+# stages them, so each one is diffed against /dev/null. The NUL-separated list
+# goes through a file so a failing ls-files is still caught. `--no-index` exits
+# 1 when the files differ; only 2+ is an error.
+UNTRACKED_LIST=$(mktemp) || {
+  echo "ERROR: mktemp failed; nothing was scanned" >&2
+  exit 2
+}
+trap 'rm -f "$UNTRACKED_LIST"' EXIT
+git ls-files -z --others --exclude-standard > "$UNTRACKED_LIST" || {
+  echo "ERROR: git ls-files --others failed; nothing was scanned" >&2
+  exit 2
+}
+DIFF_UNTRACKED=""
+while IFS= read -r -d '' UNTRACKED_FILE; do
+  RC=0
+  FILE_DIFF=$(git diff "${DIFF_OPTS[@]}" --no-index -- /dev/null "$UNTRACKED_FILE") || RC=$?
+  if [ "$RC" -gt 1 ]; then
+    echo "ERROR: git diff --no-index failed for an untracked file; nothing was scanned" >&2
+    exit 2
+  fi
+  DIFF_UNTRACKED="$DIFF_UNTRACKED
+$FILE_DIFF"
+done < "$UNTRACKED_LIST"
+
 DIFF_CONTENT="$DIFF_STAGED
-$DIFF_UNSTAGED"
+$DIFF_UNSTAGED
+$DIFF_UNTRACKED"
 
 # ── Phase 3: committed diff vs base branch ────────────────────────────────────
 if [ "$MODE" = "committed" ]; then

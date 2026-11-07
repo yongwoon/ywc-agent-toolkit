@@ -86,6 +86,8 @@ echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/b.txt"; g add b.txt; g commit -q -m s
 #   SHIM_MODE=failstatus   — `git status` fails
 #   SHIM_MODE=failcached   — `git diff --cached` fails
 #   SHIM_MODE=failworktree — the unstaged `git diff` fails (`--cached` still works)
+#   SHIM_MODE=failuntracked — `git ls-files --others` fails
+#   SHIM_MODE=failnoindex   — `git diff --no-index` exits 2 (exit 1 = "has diff")
 # A failing added-line filter must not read as "secrets found" (exit 1):
 #   SHIM_MODE=failawk      — `awk` fails
 SHIM="$TMP_ROOT/shim"; mkdir -p "$SHIM"
@@ -99,6 +101,8 @@ case "\${SHIM_MODE:-}:\$1:\$*" in
   failstatus:status:*) exit 1 ;;
   failcached:diff:*--cached*) exit 1 ;;
   failworktree:diff:*--cached*) ;;
+  failuntracked:ls-files:*--others*) exit 1 ;;
+  failnoindex:diff:*--no-index*) exit 2 ;;
   failworktree:diff:*) exit 1 ;;
 esac
 exec "$REAL_GIT" "\$@"
@@ -226,6 +230,19 @@ rm -rf "$REPO/x y"
 mkdir -p "$REPO/日本"; : > "$REPO/日本/.env"
 assert_args "untracked .env under a non-ASCII path" "1" "" --staged
 rm -rf "${REPO:?}/日本"
+# Untracked file content: Step 3 runs before the commit stages new files, so
+# each fails if the untracked-content scan is removed (the names are harmless).
+mkdir -p "$REPO/src"; echo "const k = 'AKIA""ABCDEFGHIJKLMNOP';" > "$REPO/src/config.ts"
+assert_args "untracked file with a secret" "1" "" --staged
+rm -rf "${REPO:?}/src"
+mkdir -p "$REPO/x y"; echo "key=AKIA""ABCDEFGHIJKLMNOP" > "$REPO/x y/設定.ts"
+assert_args "untracked secret under a space / non-ASCII path" "1" "" --staged
+# Fails if an untracked-scan failure reads as "clean" (needs a file to diff).
+echo "plain" > "$REPO/x y/設定.ts"
+assert_args "clean untracked file" "0" "" --staged
+assert_args "untracked enumeration failure" "2" failuntracked --staged
+assert_args "untracked --no-index diff failure" "2" failnoindex --staged
+rm -rf "$REPO/x y"
 # diff.relative=true limits every diff to the current directory.
 g checkout -q feat
 mkdir -p "$REPO/sub"

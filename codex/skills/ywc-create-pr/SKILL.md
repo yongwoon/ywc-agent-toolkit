@@ -91,7 +91,7 @@ Before proceeding, verify the environment is ready:
 Run the bundled secret scan script:
 
 ```bash
-# Phase 1+2: dangerous file names + staged/unstaged diff content
+# Phase 1+2: dangerous file names + staged/unstaged diff and untracked file content
 RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
 SECRET_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "ywc-create-pr/scripts/scan-secrets.sh" bash)" || exit $?
 bash "$SECRET_SCRIPT" --staged

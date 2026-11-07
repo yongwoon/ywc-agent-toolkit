@@ -102,7 +102,7 @@ Before proceeding, verify the environment is ready:
 Run the bundled secret scan script:
 
 ```bash
-# Phase 1+2: dangerous file names + staged/unstaged diff content
+# Phase 1+2: dangerous file names + staged/unstaged diff and untracked file content
 bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --staged
 
 # Phase 3: all commits on this branch vs base (secrets already committed)
