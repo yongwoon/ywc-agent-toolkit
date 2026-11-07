@@ -116,8 +116,10 @@ Verify the following conditions before starting:
    # exit 0 = clean; exit 1 = stale worktrees detected — details on stdout
    ```
 
+   The audit scans only the resolved root, so a legacy `../worktree-pr-<N>` is missed once `.worktrees/` exists. Whatever the exit code, also read `git worktree list --porcelain`; a worktree whose basename is `worktree-pr-<N>` and is not under the resolved root gets the same handling as the first bullet below.
+
    If exit 1, resolve per worktree listed in the output (check the first bullet before the others):
-   - The worktree basename is `pr-<N>` (a `.worktrees/` or configured root) or `worktree-pr-<N>` (the legacy `../worktree-<task-name>` root) → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish the PR review, then prune it from the main checkout with `/ywc-worktrees --mode prune --task-name pr-<N> --branch <H> --keep-branch` (`<H>` = the PR head branch) before the run; when the worktree is not at the path prune resolves to (a legacy `../worktree-pr-<N>` after `.worktrees/` was added), use `git worktree remove <path>` instead, as `ywc-handle-pr-reviews` Step 9 describes
+   - The worktree basename is `pr-<N>` (a `.worktrees/` or configured root) or `worktree-pr-<N>` (the legacy `../worktree-<task-name>` root) → it belongs to `ywc-handle-pr-reviews` (`--worktree`), not to a task: never delete it or its branch, even if that branch is merged. Stop and ask the user to finish the PR review, then prune it from the main checkout with `/ywc-worktrees --mode prune --task-name pr-<N> --branch <H> --keep-branch` (`<H>` = the PR head branch) before the run; when the worktree is not at the path prune resolves to (a legacy `../worktree-pr-<N>` after `.worktrees/` was added), use `git worktree remove <path>` instead, as `ywc-handle-pr-reviews` Step 9 describes (check `git -C <path> status --ignored --short` first: removal deletes ignored files such as `.env`)
    - The task already merged → `git worktree remove --force <path> && git branch -D feature/<task-name>`
    - The task has unmerged work → stop and surface to the user; do **not** silently delete in-progress work
 
