@@ -10,9 +10,12 @@
 #
 # Exit codes:
 #   0  No secrets detected
-#   1  Secrets or dangerous files found (details on stdout)
-#   2  Usage error, not inside a git work tree, or (--committed) an invalid or
-#      unresolvable base branch (nothing was scanned)
+#   1  Secrets or dangerous files found (details on stdout; matched values are
+#      shown as [REDACTED])
+#   2  Nothing (or not everything) was scanned: usage error, not inside a git
+#      work tree, (--committed) an invalid or unresolvable base branch, or a
+#      failed step — git status / diff / ls-files / log, mktemp, reading an
+#      untracked file, or the added-line filter. Never read 2 as "clean".
 #
 # Usage:
 #   # Scan staged + unstaged changes
@@ -21,7 +24,10 @@
 #   # Also scan all commits vs base branch
 #   bash ./scan-secrets.sh --committed develop
 
-set -euo pipefail
+set -Eeuo pipefail
+# Any unguarded failure (a full TMPDIR, a sed error) would otherwise exit 1,
+# which callers read as "secrets found": every such exit is 2.
+trap 'exit 2' ERR
 # Binary content is not valid UTF-8 and makes awk abort; the patterns are ASCII.
 export LC_ALL=C
 
@@ -94,7 +100,9 @@ STATUS=$(git status --porcelain -z --untracked-files=all | tr '\0' '\n') || {
 # A name is matched after the status field's space, after a `/`, or at the
 # start of a bare path (Phase 3 name list).
 DANGEROUS_NAME_RE='(^|[/ ])\.env(\.|$)|credentials\.|secret\.|id_rsa|\.pem$|\.key$'
-DANGEROUS=$(printf '%s\n' "$STATUS" | grep -iE "$DANGEROUS_NAME_RE" || true)
+# grep exits 1 for "no match" and 2 for an error; only 1 is "nothing found".
+grep_or_none() { local rc=0; grep "$@" || rc=$?; [ "$rc" -le 1 ] || { echo "ERROR: grep failed; nothing was scanned" >&2; exit 2; }; }
+DANGEROUS=$(printf '%s\n' "$STATUS" | grep_or_none -iE "$DANGEROUS_NAME_RE")
 
 if [ -n "$DANGEROUS" ]; then
   echo "WARN: Potentially sensitive files in changeset:"
@@ -112,32 +120,52 @@ DIFF_UNSTAGED=$(git diff "${DIFF_OPTS[@]}") || {
   exit 2
 }
 # Neither diff shows untracked files, and ywc-create-pr scans before its commit
-# stages them, so each one is diffed against /dev/null. The NUL-separated list
-# goes through a file so a failing ls-files is still caught. `--no-index` exits
-# 1 when the files differ and 2+ on error. Directories (nested repos, dir
-# symlinks) are skipped: git cannot read them as files and still exits 1. NUL
-# bytes from binary content are dropped so bash does not warn about them.
-UNTRACKED_LIST=$(mktemp) || {
+# stages them. Every line of an untracked file is added, so the files are read
+# with one `cat` and prefixed with `+` under a synthetic hunk header (a
+# `git diff --no-index` per file took ~65 ms each and hit the 120 s Bash
+# timeout around 1,800 files). The NUL-separated lists go through files so a
+# failing ls-files is still caught. A symlink contributes its target path, as
+# git would commit it; directories (nested repos, dir symlinks) and other
+# non-regular files are skipped. NUL bytes from binary content are dropped so
+# bash does not warn about them.
+UNTRACKED_LIST=$(mktemp) && REGULAR_LIST=$(mktemp) || {
   echo "ERROR: mktemp failed; nothing was scanned" >&2
   exit 2
 }
-trap 'rm -f "$UNTRACKED_LIST"' EXIT
+trap 'rm -f "$UNTRACKED_LIST" "$REGULAR_LIST"' EXIT
 git ls-files -z --others --exclude-standard > "$UNTRACKED_LIST" || {
   echo "ERROR: git ls-files --others failed; nothing was scanned" >&2
   exit 2
 }
-DIFF_UNTRACKED=""
+SYMLINK_TARGETS=""
 while IFS= read -r -d '' UNTRACKED_FILE; do
-  [ -d "$UNTRACKED_FILE" ] && continue
-  RC=0
-  FILE_DIFF=$(git diff "${DIFF_OPTS[@]}" --no-index -- /dev/null "$UNTRACKED_FILE" | tr -d '\0') || RC=$?
-  if [ "$RC" -gt 1 ]; then
-    echo "ERROR: git diff --no-index failed for an untracked file; nothing was scanned" >&2
-    exit 2
+  if [ -L "$UNTRACKED_FILE" ]; then
+    LINK_TARGET=$(readlink -- "$UNTRACKED_FILE") || {
+      echo "ERROR: readlink failed for untracked symlink '$UNTRACKED_FILE'; nothing was scanned" >&2
+      exit 2
+    }
+    SYMLINK_TARGETS="$SYMLINK_TARGETS$LINK_TARGET
+"
+  elif [ -f "$UNTRACKED_FILE" ]; then
+    # ./ so a file named `-` is not read as stdin.
+    printf './%s\0' "$UNTRACKED_FILE" >> "$REGULAR_LIST"
   fi
-  DIFF_UNTRACKED="$DIFF_UNTRACKED
-$FILE_DIFF"
 done < "$UNTRACKED_LIST"
+UNTRACKED_CONTENT=""
+if [ -s "$REGULAR_LIST" ]; then
+  # cat names any file it cannot read on stderr.
+  UNTRACKED_CONTENT=$(xargs -0 cat -- < "$REGULAR_LIST" | tr -d '\0') || {
+    echo "ERROR: reading untracked files failed (see the cat error above); nothing was scanned" >&2
+    exit 2
+  }
+fi
+DIFF_UNTRACKED=$(printf '%s\n%s' "$UNTRACKED_CONTENT" "$SYMLINK_TARGETS" | sed 's/^/+/') || {
+  echo "ERROR: preparing untracked content failed; nothing was scanned" >&2
+  exit 2
+}
+DIFF_UNTRACKED="diff untracked-files
+@@
+$DIFF_UNTRACKED"
 
 DIFF_CONTENT="$DIFF_STAGED
 $DIFF_UNSTAGED
@@ -155,7 +183,7 @@ if [ "$MODE" = "committed" ]; then
     echo "ERROR: git log --name-only ${BASE_BRANCH}..HEAD failed; committed changes were not scanned" >&2
     exit 2
   }
-  DANGEROUS_COMMITTED=$(printf '%s\n' "$COMMITTED_NAMES" | grep -iE "$DANGEROUS_NAME_RE" || true)
+  DANGEROUS_COMMITTED=$(printf '%s\n' "$COMMITTED_NAMES" | grep_or_none -iE "$DANGEROUS_NAME_RE")
   if [ -n "$DANGEROUS_COMMITTED" ]; then
     echo "WARN: Potentially sensitive files committed since ${BASE_BRANCH}:"
     echo "$DANGEROUS_COMMITTED" | sed 's/^/  /'
@@ -170,35 +198,55 @@ $DIFF_COMMITTED"
 fi
 
 # Secret patterns (applied to added lines only — lines starting with +)
+# POSIX ERE only ([[:space:]], not \s): the same pattern also drives the sed
+# redaction below, and BSD sed has no \s.
 SECRET_PATTERNS=(
   'AKIA[0-9A-Z]{16}'
   'sk-[a-zA-Z0-9]{32,}'
-  'ghp_[a-zA-Z0-9]{36}'
-  'github_pat_[a-zA-Z0-9]{82}'
+  'sk-ant-[A-Za-z0-9_-]{20,}'
+  'sk-proj-[A-Za-z0-9_-]{20,}'
+  'gh[pousr]_[a-zA-Z0-9]{36}'
+  'github_pat_[a-zA-Z0-9_]{82}'
+  'glpat-[A-Za-z0-9_-]{20}'
+  'sk_live_[A-Za-z0-9]{24,}'
   'xoxb-[0-9]{11}-[0-9]{11}-[a-zA-Z0-9]{24}'
   'xoxp-[0-9]{11}-'
-  'AIza[0-9A-Za-z_\-]{35}'
-  '\-\-\-\-\-BEGIN .* PRIVATE KEY\-\-\-\-\-'
+  'AIza[0-9A-Za-z_-]{35}'
+  # RSA / EC / OPENSSH / ENCRYPTED and the bare PKCS#8 header.
+  '-----BEGIN ([A-Z0-9]+ )*PRIVATE KEY-----'
   # Double-quoted so the apostrophe is literal (`\x27` is not an ERE escape).
-  "password\\s*=\\s*[\"'][^\"']{4,}"
-  'DATABASE_URL\s*='
+  "password[[:space:]]*=[[:space:]]*[\"'][^\"']{4,}"
+  'DATABASE_URL[[:space:]]*='
 )
 
 # `+++ `/`--- ` are file headers only between a `diff ` line (`--git`, `--cc`)
 # and the first `@@` hunk header; inside a hunk every `+` line is content, even
-# one that reads `+++` because the added text starts with `++`.
-ADDED_LINES=$(echo "$DIFF_CONTENT" | awk '/^diff /{h=0} /^@@/{h=1} h && /^\+/') || {
+# one that reads `+++` because the added text starts with `++`. A combined diff
+# (`diff --cc`, e.g. the unstaged diff of a conflicted merge) has one marker
+# column per parent, counted from the `@@@` header: a line is added when any
+# marker column holds a `+` (`++`, `+ `, ` +`); `+` and `-` never share a line.
+ADDED_LINES=$(echo "$DIFF_CONTENT" | awk '
+  /^diff /{h=0}
+  /^@@/{match($0, /^@+/); n=RLENGTH-1; h=1; next}
+  h && index(substr($0, 1, n), "+")') || {
   echo "ERROR: filtering added lines failed; nothing was scanned" >&2
   exit 2
 }
 
+# Every pattern redacts every printed line, so a second secret earlier on the
+# same line is never shown either.
+REDACT=()
+for PATTERN in "${SECRET_PATTERNS[@]}"; do REDACT+=(-e "s#${PATTERN}.*#[REDACTED]#"); done
+
 for PATTERN in "${SECRET_PATTERNS[@]}"; do
-  MATCHES=$(echo "$ADDED_LINES" | grep -E "$PATTERN" || true)
+  # -e: the private-key pattern starts with `-`.
+  MATCHES=$(echo "$ADDED_LINES" | grep_or_none -E -e "$PATTERN")
   if [ -n "$MATCHES" ]; then
     echo "SECRET DETECTED (pattern: $PATTERN):"
-    # One sed reads all input: `head` would close the pipe early and, under
-    # pipefail, turn a large match set into exit 141 instead of "found".
-    echo "$MATCHES" | sed -n '1,3s/^/  /p'
+    # Never echo the secret: everything from the match to the end of the line is
+    # redacted. One sed reads all input: `head` would close the pipe early and,
+    # under pipefail, turn a large match set into exit 141 instead of "found".
+    echo "$MATCHES" | sed -n '1,3p' | sed -E "${REDACT[@]}" -e 's/^/  /'
     FOUND=1
   fi
 done
