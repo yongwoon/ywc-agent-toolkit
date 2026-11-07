@@ -129,10 +129,12 @@ Exit 3 skips the PR as `Skipped (Dockerfile check unresolved)` — an unresolved
 To detect major version bumps, run the bundled classifier instead of comparing versions by hand — the "leftmost non-zero segment" rule mis-fires easily in the 0.x range (`0.2.0 → 0.3.0` IS breaking, `1.2.0 → 1.3.0` is not), and a wrong call here merges a breaking change to main.
 
 ```bash
-gh pr list --author "app/dependabot" --state open --json number,title \
+gh pr list --author "app/dependabot" --state open --limit 100 --json number,title \
   --jq '.[] | "\(.number)\t\(.title)"' \
   | python3 "${CLAUDE_SKILL_DIR}/scripts/detect-major-bump.py"
 ```
+
+Use the same `--limit 100` as the Step 1 list so both commands see the same PR set; a PR missing from the classifier output has no `major_bump` value and is never treated as "not a major bump" — judge it manually like a `null` result.
 
 Each output line is one JSON object: `{"number":130,"name":"webpack","from":"4.46.0","to":"5.90.0","major_bump":true,"reason":"..."}`. Treat `"major_bump": true` as the skip condition — major bumps are always skipped, never merged. `"major_bump": null` (group updates, git-sha action bumps, unparseable titles) means the script could not decide — fall back to reading the PR diff and judging manually.
 
