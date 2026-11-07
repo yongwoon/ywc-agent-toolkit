@@ -35,8 +35,8 @@ Source: `docs/ywc-plans/20261105-codex-issue69-upstream-adoption.md`. Mode: llm;
 ## Phase yk-000010 — done
 - Completed: `yk-000010-010-domain-scan-secrets-hunk-filter`, `yk-000010-020-domain-merge-dependabot-hardening`, `yk-000010-030-domain-retro-readonly-lenses`, `yk-000010-040-domain-finish-branch-guard-review`, `yk-000010-050-docs-metadata-followups`, `yk-000010-060-test-reviewer-trigger-coverage`
 
-## Phase yk-000011 — pending
-- Wave 1 (parallel): `yk-000011-010-domain-ci-gate-and-dependabot-lows`, `yk-000011-020-domain-codex-finish-branch-guard`, `yk-000011-030-domain-dispatch-only-agent-tag`
+## Phase yk-000011 — done
+- Completed: `yk-000011-010-domain-ci-gate-and-dependabot-lows`, `yk-000011-020-domain-codex-finish-branch-guard`, `yk-000011-030-domain-dispatch-only-agent-tag`
 
 ## Phase yk-000012 — pending
 - `yk-000012-010-domain-codex-merge-dependabot-parity` — depends on `yk-000011-010-domain-ci-gate-and-dependabot-lows`; runs after every Phase 000011 task (stages the shared `history.mechanical.json` baseline)
