@@ -11,6 +11,7 @@ stdlib only, offline.
 from __future__ import annotations
 
 import os
+import shlex
 import re
 import stat
 import subprocess
@@ -108,7 +109,7 @@ def blocked_when_no_safe_dir(command: str) -> None:
         subprocess.run(["git", "init", "-q", str(repo)], check=True)
         env = {**os.environ, "TMPDIR": str(inner_tmp)}
         # Point the /tmp fallback at an in-repo directory so no safe directory remains.
-        blocked = command.replace("safe /tmp ", f"safe {inner_tmp} ", 1)
+        blocked = command.replace("safe /tmp ", f"safe {shlex.quote(str(inner_tmp))} ", 1)
         # Fails if the fallback call no longer reads `safe /tmp`, which would void this case.
         check("/tmp fallback replaced with an in-repo path", blocked != command)
         done = subprocess.run(["sh", "-c", blocked], cwd=repo, env=env, capture_output=True, text=True)
