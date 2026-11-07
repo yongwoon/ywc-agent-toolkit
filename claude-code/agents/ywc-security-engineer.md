@@ -19,7 +19,7 @@ description: >-
   read-only — fixes are dispatched separately to ywc-backend-coder /
   ywc-frontend-coder), architectural decisions (route via ywc-architect),
   generic code quality review (route via ywc-impl-review Devex subagent),
-  or running the application / penetration testing (out of scope —
+  a session retrospective over a transcript (ywc-retro, which dispatches ywc-retro-lens), or running the application / penetration testing (out of scope —
   static analysis only).
 model: opus
 tools: [Read, Grep, Glob, WebFetch]
