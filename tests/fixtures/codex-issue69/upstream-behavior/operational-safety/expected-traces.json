@@ -110,7 +110,7 @@
   {
     "id": "invalid-branch",
     "input": {
-      "branch": "--bad",
+      "branch": "feature/a$b",
       "allowlist_match": false
     },
     "expected_trace": [

@@ -33,13 +33,16 @@
         "a fork of a fork returns `NEEDS_CONTEXT`",
         "whose ref field is exactly `refs/heads/$branch`",
         "^[0-9a-f]{40}([0-9a-f]{24})?$",
-        "must exit 0 and print exactly `0`",
-        "race window"
+        "the parsed array must have exactly 0 entries",
+        "race window",
+        "`BLOCKED: invalid branch name`",
+        "never interpolate `$base` or `$tip` into a `--jq` filter"
       ],
       "forbidden": [
         "A failed PR lookup permits deletion",
         "check-ref-format --branch",
-        "If deletion relies on a merge"
+        "If deletion relies on a merge",
+        "--jq length"
       ]
     },
     {
