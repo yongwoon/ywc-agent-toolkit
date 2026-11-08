@@ -78,11 +78,12 @@ User: dependabot PR 이 많으니 parallel-auto 로 빠르게 처리해줘
 
 ### 2. Security Mode (Scope: security)
 
-Security 관련 PR 만 선별하여 Merge 합니다. 다음 조건으로 Security PR 을 식별합니다:
+Security 관련 PR 만 선별하여 Merge 합니다. Repository 의 열린 Dependabot Alert 를 기준으로 식별하며, 다음 두 조건을 모두 만족하는 PR 만 Security PR 입니다:
 
-- `security` Label 이 있는 PR
-- Title 또는 Body 에 "security advisory", "CVE-", "GHSA-", "vulnerability" 포함
-- Dependabot Security Advisory Metadata 가 Body 에 존재
+- Alert 의 Manifest 파일(예: `package-lock.json`)을 변경한다
+- Alert 의 Package 이름이 Title 에 있다 (Group PR 은 Body 에 있어도 됨)
+
+Label 과 "CVE-", "GHSA-", "vulnerability" 같은 키워드는 보지 않습니다. Body 에 upstream release note 가 포함되기 때문입니다. Alert 를 읽을 수 없으면 (Dependabot alerts 비활성화, Token 권한 부족, `gh` 없음) 모든 PR 을 `Skipped (security status unresolved)` 로 보고하고 Merge 하지 않습니다. 한계: PR 의 대상 버전이 advisory 의 첫 패치 버전 이상인지는 확인하지 않습니다.
 
 ```
 /ywc-merge-dependabot security
@@ -216,9 +217,9 @@ Claude: Security 관련 Dependabot PR을 필터링합니다.
 [PR 목록 조회 및 Security 필터 적용]
 
 3개의 Security 관련 PR을 발견했습니다.
-- #210: CVE-2024-1234 관련 axios 업데이트
-- #215: GHSA-xxxx 관련 jsonwebtoken 업데이트
-- #218: Security advisory 관련 helmet 업데이트
+- #210: 열린 Alert(GHSA-xxxx) 가 있는 axios 업데이트
+- #215: 열린 Alert(GHSA-yyyy) 가 있는 jsonwebtoken 업데이트
+- #218: 열린 Alert(GHSA-zzzz) 가 있는 helmet 업데이트
 
 순차 처리를 시작합니다.
 ```
@@ -326,7 +327,7 @@ Major Version Upgrade 는 Breaking Change 가능성이 높으므로, Skill 이 �
 
 ### Q: Security PR인데 필터링되지 않습니다
 
-**A**: Security PR 식별은 Label, Title/Body 키워드 기반입니다. Dependabot이 `security` Label을 붙이지 않는 경우, Title에 "CVE-" 또는 "GHSA-" 키워드가 포함되어야 합니다.
+**A**: Security PR 식별은 열린 Dependabot Alert 기준입니다. PR 이 Alert 의 Manifest 파일을 변경하고 Alert 의 Package 이름을 Title 에 포함해야 합니다. Label 과 CVE/GHSA 키워드는 사용하지 않습니다. Alert 가 닫혔거나 Dependabot alerts 가 비활성화되어 있으면 PR 은 Security 로 분류되지 않습니다.
 
 ### Q: `@dependabot rebase` 후에도 Merge가 실패합니다
 

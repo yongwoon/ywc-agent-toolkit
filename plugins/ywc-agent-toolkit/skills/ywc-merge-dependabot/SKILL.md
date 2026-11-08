@@ -23,7 +23,7 @@ When tempted to skip a step, check this table first:
 | "CI is green but lockfile shows different hash, merge anyway" | Lockfile mismatch indicates dirty working state. Stop and rebase the PR first. |
 | "Major version bump looks safe, just merge" | Major bumps need explicit user confirmation. Default action: skip and report for human review. |
 | "Conflicts with main, force-push my own resolution" | Use Dependabot's `@dependabot rebase` comment instead. Hand-resolved conflicts in dep PRs hide breaking changes. |
-| "Security mode, but PR has no CVE link" | If `security` mode is requested and CVE/advisory is missing, skip the PR and report it. |
+| "Security mode, and the PR body mentions a CVE or GHSA" | The body embeds upstream release notes, so a CVE in it proves nothing. A PR is in `security` scope only when `select-security-prs.py` matches it to an open Dependabot alert; otherwise skip it and report it. |
 | "All passed, no need for a final summary" | Always emit a per-PR result table (merged / skipped / failed) at the end. |
 
 **Violating the letter of these rules is violating the spirit.** Dependabot velocity is worthless if a bad merge silently breaks main.
@@ -58,7 +58,7 @@ Examples:
 - `parallel-auto` → all PRs, ecosystem-lane auto-merge
 - `security parallel-auto` → security PRs only, ecosystem-lane auto-merge
 
-Security-related PRs are identified by labels like `security`, PR title containing "security", or Dependabot's security advisory metadata. When in doubt about whether a PR is security-related, check the PR body for CVE references or GitHub Security Advisory links.
+Security-related PRs are identified by the repository's open Dependabot alerts, never by labels or PR text (see Step 1).
 
 **Parallel-auto prerequisite:** before entering parallel-auto mode, verify the repository allows auto-merge:
 
@@ -78,10 +78,14 @@ Retrieve all open PRs created by Dependabot:
 gh pr list --author "app/dependabot" --state open --json number,title,labels,body --limit 100
 ```
 
-If in **security-only mode**, filter to PRs that match any of:
-- Have a `security` label
-- Title or body contains "security advisory", "CVE-", "GHSA-", or "vulnerability"
-- Created by `dependabot[bot]` with security update metadata in the body
+If in **security-only mode**, keep only the PRs that match an open Dependabot alert. Add `files` to the `--json` fields above and pipe the list through:
+
+```bash
+gh pr list --author "app/dependabot" --state open --json number,title,body,files --limit 100 \
+  | python3 /path/to/ywc-merge-dependabot/scripts/select-security-prs.py {owner/repo}
+```
+
+A PR matches when it changes the alert's manifest file and names the alert's package in its title (a grouped PR, whose title says "group", may name it in its body instead). Labels and words such as "CVE-", "GHSA-" or "vulnerability" do not count: the body embeds upstream release notes. Exit 0 prints `{"security": [...], "other": [...], "advisories": {...}}`; process only `security` and report every `other` PR as `Skipped (no matching Dependabot alert)`. Exit 2 means the alerts could not be read (Dependabot alerts disabled, or the token cannot read them): report every PR as `Skipped (security status unresolved)` with the printed `error`, and merge nothing. Any other exit stops the run. Known limit: the script does not check that the PR's target version reaches the advisory's first patched version, so a bump that stays vulnerable is still kept as `security`; the other pre-merge checks still apply.
 
 Sort the resulting list by PR number ascending — processing order matters because earlier merges can affect later PRs.
 
