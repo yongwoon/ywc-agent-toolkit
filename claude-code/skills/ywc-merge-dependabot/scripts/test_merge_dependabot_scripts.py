@@ -613,5 +613,54 @@ class PollMergeQueueTest(StubbedTest):
         self.assertIn("unparsable", r.stderr)
 
 
+class SelectSecurityPrsTest(unittest.TestCase):
+    """select-security-prs.py: only an open Dependabot alert puts a PR in security scope."""
+
+    ALERTS = '["lodash","package-lock.json","GHSA-aaaa-bbbb-cccc"]\n["requests","api/requirements.txt","GHSA-dddd-eeee-ffff"]\n'
+
+    def run_script(self, prs, alerts=ALERTS, rc=0, repo="o/r"):
+        with tempfile.TemporaryDirectory() as tmp:
+            gh = Path(tmp) / "gh"
+            gh.write_text('#!/usr/bin/env bash\necho "$*" > "$(dirname "$0")/args"\n'
+                          'printf "%s" "$ALERTS"; [ "$RC" = 0 ] || echo "HTTP 403" >&2; exit "$RC"\n')
+            gh.chmod(0o755)
+            env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", ALERTS=alerts, RC=str(rc))
+            r = subprocess.run([sys.executable, str(HERE / "select-security-prs.py"), repo],
+                               input=json.dumps(prs), capture_output=True, text=True, env=env)
+            args = (Path(tmp) / "args").read_text() if (Path(tmp) / "args").exists() else ""
+        return r, args
+
+    def pr(self, number, title, files, body=""):
+        return {"number": number, "title": title, "body": body, "files": [{"path": f} for f in files]}
+
+    def test_alert_match_is_required(self):
+        prs = [
+            self.pr(3, "Bump lodash from 4.17.20 to 4.17.21", ["package.json", "package-lock.json"]),
+            # Release notes mention a CVE and the vulnerable package, but no alert covers this manifest.
+            self.pr(1, "Bump axios from 1.0.0 to 1.0.1", ["package-lock.json"], "Fixes CVE-2024-1 GHSA-xxxx (security)"),
+            self.pr(2, "Bump lodash.merge from 4.6.1 to 4.6.2", ["package-lock.json"]),
+            self.pr(4, "Bump requests from 2.0 to 2.1", ["requirements.txt"]),
+            self.pr(5, "Bump the pip group", ["api/requirements.txt"], "Bumps [requests](https://x) from 2.0 to 2.1."),
+        ]
+        r, args = self.run_script(prs)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = json.loads(r.stdout)
+        self.assertEqual(out["security"], [3, 5])
+        self.assertEqual(out["other"], [1, 2, 4])
+        self.assertEqual(out["advisories"], {"3": ["GHSA-aaaa-bbbb-cccc"], "5": ["GHSA-dddd-eeee-ffff"]})
+        self.assertIn("repos/o/r/dependabot/alerts?state=open", args)
+
+    def test_unreadable_alerts_leave_every_pr_unresolved(self):
+        r, _ = self.run_script([self.pr(7, "Bump lodash", ["package-lock.json"])], alerts="", rc=1)
+        self.assertEqual(r.returncode, 2)
+        out = json.loads(r.stdout)
+        self.assertEqual(out["unresolved"], [7])
+        self.assertNotIn("security", out)
+
+    def test_bad_repo_and_input_exit_1(self):
+        self.assertEqual(self.run_script([], repo="o/r;x")[0].returncode, 1)
+        self.assertEqual(self.run_script([{"title": "no number"}])[0].returncode, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
