@@ -7,7 +7,7 @@ description: >-
   fix dispatch; natural language phrases "프론트엔드 구현", "build the UI", "UI
   を実装". Do not use for: backend or API contract work (dispatch
   ywc-backend-coder instead), test-only authoring (dispatch ywc-qa-engineer),
-  or pure documentation work (dispatch ywc-doc-writer).
+  pure documentation work (dispatch ywc-doc-writer), or renewing an existing UI's visual identity (use ywc-design-renew).
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---

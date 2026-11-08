@@ -9,7 +9,7 @@ description: >
   "incident report", "outage report", "ポストモーテム", "障害振り返り",
   "ywc-incident-postmortem"
 
-  Do not use for security scanning before an incident (ywc-security-audit),
+  Do not use for live debugging of an active bug (ywc-debug-rootcause; ywc-root-cause-analyst is dispatched internally for the 5 Whys), security scanning before an incident (ywc-security-audit),
   code review unrelated to an incident (ywc-impl-review), or changelog/release
   notes after a fix (ywc-changelog-release-notes).
 version: 1.0.0

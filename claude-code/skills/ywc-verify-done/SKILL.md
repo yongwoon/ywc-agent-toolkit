@@ -7,7 +7,7 @@ description: >-
   Triggers: "완료", "다 됐어", "끝났어", "verify done", "검증해줘", "done",
   "finished", "ready to merge", "完了", "終わった", "確認お願いします",
   "ywc-verify-done". Do not use for ongoing implementation drafting (use
-  ywc-code-gen), root-cause debugging (use ywc-debug-rootcause),
+  ywc-code-gen), root-cause debugging (use ywc-debug-rootcause), test-first writing discipline (use ywc-tdd-ritual),
   pre-implementation confidence assessment (use ywc-confidence-gate), or
   codebase exploration before planning (use ywc-plan).
 category: discipline

@@ -8,7 +8,7 @@ description: >-
   "이상해", "왜 안돼", "원인 찾아줘", "debug", "find the bug", "root cause",
   "what's wrong", "デバッグ", "原因不明", "通らない", "落ちる", "おかしい",
   "ywc-debug-rootcause". Do not use for implementation drafting (use
-  ywc-code-gen), post-hoc incident postmortems (use ywc-incident-postmortem),
+  ywc-code-gen), post-hoc incident postmortems (use ywc-incident-postmortem), the read-only analysis worker it dispatches (ywc-root-cause-analyst),
   security triage (use ywc-security-audit), or pre-implementation confidence
   checks (use ywc-confidence-gate).
 category: discipline

@@ -6,7 +6,7 @@ description: >-
   "why this project exists" memory that frames every planning session.
   Triggers: "프로젝트 미션 정리", "이 프로젝트 미션 기억해둬", "north star 정의",
   "success criteria 정리", "プロジェクトミッション", "project mission",
-  "mission persistence". Do not use for domain vocabulary
+  "mission persistence". Do not use for pre-intent idea exploration (use ywc-brainstorm), general project documentation (use ywc-project-docs), domain vocabulary
   (use ywc-ubiquitous-language), review preferences (use ywc-review-learnings),
   a single feature's plan (use ywc-plan), or spec-level review
   (use ywc-spec-validate).

@@ -1,7 +1,7 @@
 ---
 name: ywc-task-generator
 description: >-
-  (ywc) Use when converting a specification into implementation tasks. Task documents can be written in Korean, Japanese, English, Chinese, or Spanish. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", "从规范生成任务", "中文任务", "generar tareas", "tareas en español", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), or planning without a written specification.
+  (ywc) Use when converting a specification into implementation tasks. Task documents can be written in Korean, Japanese, English, Chinese, or Spanish. Triggers: "task 생성", "タスク生成", "spec to tasks", "task breakdown", "작업 분해", "仕様からタスク生成", "implementation tasks", "스펙 분해", "从规范生成任务", "中文任务", "generar tareas", "tareas en español", or any spec-to-task decomposition request. Do not use for direct code implementation, spec review (use ywc-spec-validate), writing or updating the spec (use ywc-spec-writer), driving a not-yet-DONE spec to DONE (use ywc-spec-ready), or planning without a written specification (use ywc-plan).
 ---
 
 # Task Generator

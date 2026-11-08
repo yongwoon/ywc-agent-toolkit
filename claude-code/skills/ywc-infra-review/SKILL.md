@@ -7,7 +7,7 @@ description: >-
   SPOF/backup gaps across AWS/GCP/Azure/K8s Terraform. Fans out to
   security/cost/reliability lenses with severity-rated findings. Triggers:
   "인프라 리뷰", "terraform 검토", "iam 과권한", "보안 그룹 점검", "infra review",
-  "review my terraform", "インフラレビュー", "ywc-infra-review". Do not use for app-code
+  "review my terraform", "インフラレビュー", "ywc-infra-review". Do not use for designing new infrastructure (use ywc-infra-design), app-code
   auth/injection review (use ywc-security-audit), writing IaC (use
   ywc-iac-author), executing cost/drift remediation (use
   ywc-infra-optimize), or general application code review (use

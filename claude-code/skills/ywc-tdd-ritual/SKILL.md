@@ -8,7 +8,7 @@ description: >-
   "테스트 먼저", "회귀 테스트", "テスト先行", "テストファースト",
   "ywc-tdd-ritual", "ywc-code-gen --tdd". Do not use for opted-out
   throwaway prototypes, debugging an existing test failure (use
-  ywc-debug-rootcause), generated/config files, or completion-claim
+  ywc-debug-rootcause), generated/config files, test authoring without the RED-GREEN discipline (ywc-qa-engineer), behavior-preserving cleanup (use ywc-refactor-clean), or completion-claim
   verification (use ywc-verify-done).
 category: discipline
 phase: implementation

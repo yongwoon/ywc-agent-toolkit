@@ -8,7 +8,7 @@ description: >-
   `ywc-parallel-executor` (audit/setup/teardown). Triggers: "docker port 격리",
   "compose 포트 충돌", "ywc-docker-isolate", "docker isolate", "worktree docker
   stack", "Docker ポート分離". Do not use for projects without
-  Docker/docker-compose (no-op), non-Docker workspace isolation, or
+  Docker/docker-compose (no-op), non-Docker workspace isolation, infrastructure topology design (use ywc-infra-design), or
   `ywc-sequential-executor` (single task, no worktree port collision).
 ---
 
