@@ -149,7 +149,8 @@ def segments(cmd: str) -> list[list[str]] | None:
     an unquoted newline separates commands like `;` does.
     """
     text = strip_heredocs(cmd).replace("\\\n", " ")  # line continuations
-    text = re.sub(r"\$(['\"])", r"\1", text)  # $'...' / $"..." quoting → plain quotes
+    # $'...' / $"..." quoting → plain quotes, only where `$` starts a word (not inside "a$'b").
+    text = re.sub(r"(?<![^\s;&|()])\$(['\"])", r"\1", text)
     lex = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
     lex.whitespace = " \t\r"
     lex.whitespace_split = True
@@ -240,8 +241,12 @@ def nested_commands(argv: list[str]) -> list[str]:
     if name in SHELLS:
         # -c may sit in a cluster (`bash -lc`); the script is the first non-option word after it
         flags = [i for i, a in enumerate(cmd[1:], 1) if re.match(r"^-[A-Za-z]*c[A-Za-z]*$", a)]
-        if flags and flags[0] + 1 < len(cmd):
-            nested.append(cmd[flags[0] + 1])
+        j = flags[0] + 1 if flags else len(cmd)
+        while j < len(cmd) and cmd[j][:1] in ("-", "+") and cmd[j] != "--":  # `bash -c -e 'cmd'`
+            j += 2 if cmd[j] in ("-o", "+o", "-O", "+O") else 1
+        j += 1 if j < len(cmd) and cmd[j] == "--" else 0
+        if j < len(cmd):
+            nested.append(cmd[j])
     if name == "eval":
         nested.append(" ".join(cmd[1:]))
     return nested

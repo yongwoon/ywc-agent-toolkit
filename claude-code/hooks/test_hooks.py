@@ -60,7 +60,8 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "{ git commit -n -m x; }", "if true; then git commit -n -m x; fi", "! git commit -n -m x",
                     "while true; do git commit -n; done", "timeout 5 git commit -n -m x",
                     "stdbuf -o0 git commit -n", "sudo bash -c 'git commit -n'", "bash -lc 'git commit -n -m x'",
-                    "cat <(git commit -n -m x)", f"git commit $'{NV}' -m x"):
+                    "cat <(git commit -n -m x)", f"git commit $'{NV}' -m x",
+                    "bash -c -e 'git commit -n'", "bash -c -o pipefail -- 'git commit -n'"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 
@@ -133,7 +134,11 @@ class ProtectSecretsTest(unittest.TestCase):
                  ("Glob", {"pattern": "**/id_*"}),
                  ("Grep", {"pattern": "x", "glob": "{.env,a.ts}"}),
                  ("Grep", {"pattern": "BEGIN", "path": "~"}),
-                 ("Grep", {"pattern": "x", "path": "/"})]
+                 ("Grep", {"pattern": "x", "path": "/"}),
+                 ("Grep", {"pattern": "x", "path": "~", "glob": "**/*"}),
+                 ("Glob", {"pattern": "**/*env"}),
+                 ("Glob", {"pattern": "**/*_rsa"}),
+                 ("Glob", {"pattern": "{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}"})]
         for tool, ti in cases:
             with self.subTest(tool=tool, ti=ti):
                 self.assertEqual(self.check(tool, ti), "deny")
@@ -155,6 +160,28 @@ class ProtectSecretsTest(unittest.TestCase):
         for tool, ti in cases:
             with self.subTest(tool=tool, ti=ti):
                 self.assertIsNone(self.check(tool, ti))
+
+    def test_bracket_class_names_are_denied(self):
+        self.assertEqual(self.check("Grep", {"pattern": "x", "glob": "**/[.]env"}), "deny")
+        self.assertEqual(self.check("Glob", {"pattern": "**/[.]env"}), "deny")
+
+    def test_grep_without_path_uses_session_cwd(self):
+        with tempfile.TemporaryDirectory() as home:
+            out = subprocess.run([sys.executable, str(HERE / "protect-secrets.py")],
+                                 input=json.dumps({"tool_name": "Grep", "cwd": home, "tool_input": {"pattern": "x"}}),
+                                 capture_output=True, text=True, env={**os.environ, "HOME": home}, check=True)
+        self.assertEqual(decision(json.loads(out.stdout)), "deny")
+        self.assertIsNone(self.check("Grep", {"pattern": "x"}))  # no cwd given → not broad
+
+    def test_block_log_omits_grep_content_pattern(self):
+        secret = "AKIA" + "Z" * 16
+        with tempfile.TemporaryDirectory() as home:
+            subprocess.run([sys.executable, str(HERE / "protect-secrets.py")],
+                           input=json.dumps({"tool_name": "Grep", "tool_input": {"pattern": secret, "path": "~/.ssh"}}),
+                           capture_output=True, text=True, env={**os.environ, "HOME": home}, check=True)
+            logs = "".join(p.read_text() for p in Path(home, ".claude", "hooks-logs").glob("*.jsonl"))
+        self.assertIn("ssh-dir", logs)
+        self.assertNotIn(secret, logs)
 
     def test_read_behavior_unchanged(self):
         self.assertEqual(self.check("Read", {"file_path": "/repo/.env"}), "deny")
