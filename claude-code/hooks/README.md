@@ -132,6 +132,17 @@ export CCH_SLA_WEBHOOK="https://hooks.slack.com/services/..."
 glob 패턴은 brace(`{a,b}`)를 펼쳐서 검사한다. 또 대표적인 비밀 파일명(`.env`, `id_rsa` 등)과 매칭되는지 확인하므로 `**/.[e]nv`나 `**/id_*`도 차단된다. 단, `*.json`처럼 `*`로 시작하는 확장자 필터는 리터럴 부분만 검사한다.
 home이나 `/` 전체를 대상으로 하는 `Grep`은 `glob`이나 `type`이 없으면 차단한다(`broad-search`).
 
+**`ywc-retro-lens` 범위 제한(`retro-lens-scope`)**: hook input의 `agent_type`이 `ywc-retro-lens`(또는 `<plugin>:ywc-retro-lens`)이면 `Read` / `Grep` / `Glob`이 다음 위치만 대상으로 할 수 있다. 그 밖의 경로와 다른 tool은 차단한다.
+
+- temp directory 바로 아래의 `ywc-retro.*` run directory. `ywc-retro`는 검토할 transcript를 여기에 복사해서 넘긴다
+- repository root(`cwd`에 `.git`이 있고 `$HOME`이 아닌 경우)의 `claude-code/`, `docs/`, `.claude/{skills,agents,commands,rules}/`, root `CLAUDE.md` / `AGENTS.md`(synthesizer의 Owner 파일)
+
+`~/.claude/projects/`에는 모든 project의 transcript가 있으므로 범위에서 제외한다. `.claude/settings*.json`도 allow rule에 token이 들어 있을 수 있어서 제외한다.
+
+경로는 symlink를 따라 resolve한 뒤 검사한다. `Grep` / `Glob`은 검색 대상 아래에 범위 밖을 가리키는 symlink가 하나라도 있으면 차단한다(20,000개 항목까지만 검사하고, 넘으면 차단한다). brace를 펼쳤을 때 `..`가 나오는 glob, `~`로 시작하는 glob, backslash나 `[`가 들어간 glob, path 없는 `Grep`(repository 전체)은 차단한다. 판정 중 예외가 나면 이 agent에 한해 차단한다(fail closed). 다른 agent와 main thread에는 영향이 없다.
+
+이 제한은 hook input에 `agent_type`을 넣어 주는 Claude Code 버전에서만 동작한다. 이 hook을 설치하지 않았거나 `agent_type`이 오지 않으면 제한이 적용되지 않는다.
+
 기존 설치에서 matcher가 `Read|Edit|Write|Bash`였다면 `install.sh --hooks protect-secrets`를 다시 실행한다. 기존 matcher 그룹에 있던 같은 명령은 제거되고 새 matcher로 옮겨진다.
 
 ## 테스트

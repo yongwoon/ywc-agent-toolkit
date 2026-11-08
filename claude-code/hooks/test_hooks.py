@@ -231,5 +231,102 @@ class ProtectSecretsTest(unittest.TestCase):
         self.assertIsNone(self.check("Read", {"file_path": "/repo/.env.example"}))
 
 
+class RetroLensConfinementTest(unittest.TestCase):
+    """G7: tool calls from ywc-retro-lens stay inside the ywc-retro run dir and repo Owner files."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name).resolve()
+        self.home, self.repo = root / "home", root / "repo"
+        self.transcript = self.home / ".claude" / "projects" / "p" / "s.jsonl"
+        self.run_dir = Path(tempfile.mkdtemp(prefix="ywc-retro."))  # same naming as ywc-retro Step 3
+        for d in (self.transcript.parent, self.repo / ".git", self.repo / "docs", self.repo / "src",
+                  self.repo / ".claude" / "skills"):
+            d.mkdir(parents=True)
+        self.transcript.write_text("{}")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+        self.run_dir.rmdir()
+
+    def check(self, tool: str, tool_input: dict, agent: str | None = "ywc-retro-lens",
+              cwd: Path | None = None) -> str | None:
+        data = {"tool_name": tool, "tool_input": tool_input, "cwd": str(cwd or self.repo)}
+        if agent:
+            data["agent_type"] = agent
+        r = subprocess.run([sys.executable, str(HERE / "protect-secrets.py")], input=json.dumps(data),
+                           capture_output=True, text=True, env={**os.environ, "HOME": str(self.home)}, check=True)
+        return decision(json.loads(r.stdout))
+
+    def test_allowed_scope(self):
+        self.assertIsNone(self.check("Read", {"file_path": str(self.run_dir / "transcript.jsonl")}))
+        self.assertIsNone(self.check("Read", {"file_path": str(self.run_dir / "judgment.md")}))
+        self.assertIsNone(self.check("Read", {"file_path": str(self.repo / ".claude" / "skills" / "s.md")}))
+        self.assertIsNone(self.check("Read", {"file_path": str(self.repo / "docs" / "a.md")}))
+        self.assertIsNone(self.check("Read", {"file_path": str(self.repo / "CLAUDE.md")}))
+        self.assertIsNone(self.check("Grep", {"pattern": "x", "path": str(self.run_dir)}))
+        self.assertIsNone(self.check("Glob", {"pattern": "docs/**/*.md"}))
+        self.assertIsNone(self.check("Glob", {"pattern": "*.md", "path": str(self.run_dir)}))
+
+    def test_out_of_scope_is_denied(self):
+        for tool, ti in [
+            ("Read", {"file_path": str(self.repo / "src" / "app.py")}),
+            ("Read", {"file_path": str(self.home / "notes.txt")}),
+            ("Read", {"file_path": "/etc/hosts"}),
+            ("Read", {"file_path": str(self.repo / "docs" / ".." / "src" / "app.py")}),
+            ("Read", {}),
+            ("Read", {"file_path": str(self.transcript)}),  # every project's transcripts live here
+            ("Grep", {"pattern": "x", "path": str(self.transcript.parent.parent)}),
+            ("Read", {"file_path": str(self.repo / ".claude" / "settings.local.json")}),
+            ("Grep", {"pattern": "x", "path": str(self.repo / "docs\x00")}),  # check() raises → fail closed
+            ("Grep", {"pattern": "x"}),  # no path → whole repo
+            ("Grep", {"pattern": "x", "path": str(self.home)}),
+            ("Glob", {"pattern": "**/*"}),
+            ("Glob", {"pattern": "docs/**/../../src/*"}),
+            ("Glob", {"pattern": "{docs,src}/*"}),
+            ("Glob", {"pattern": "docs/{..,x}/{..,x}/src/*"}),  # `..` hidden in braces
+            ("Glob", {"pattern": "~/notes/*", "path": str(self.repo / "docs")}),
+            ("Glob", {"pattern": "docs/**/\\.\\./\\.\\./src/*"}),  # escaped dots
+            ("Glob", {"pattern": "docs/**/[!x][!x]/src/*"}),  # negated class is not expanded
+            ("Grep", {"pattern": "x", "path": str(self.repo / "docs"), "glob": "{..,x}/*"}),
+            ("Bash", {"command": "cat docs/a.md"}),
+        ]:
+            self.assertEqual(self.check(tool, ti), "deny", (tool, ti))
+
+    def test_symlinks_leaving_scope_are_denied(self):
+        (self.repo / "docs" / "inside").symlink_to(self.repo / "claude-code", target_is_directory=True)
+        self.assertIsNone(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}))
+        (self.repo / "docs" / "link").symlink_to(self.home)
+        self.assertEqual(self.check("Read", {"file_path": str(self.repo / "docs" / "link" / "n.txt")}), "deny")
+        self.assertEqual(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}), "deny")
+        self.assertEqual(self.check("Glob", {"pattern": "docs/**/*.md"}), "deny")
+        self.assertIsNone(self.check("Read", {"file_path": str(self.repo / "docs" / "a.md")}))
+
+    def test_chained_and_cyclic_symlinks(self):
+        cc = self.repo / "claude-code"
+        cc.mkdir()
+        (cc / "loop").symlink_to(cc, target_is_directory=True)  # cycle must terminate
+        (self.repo / "docs" / "inside").symlink_to(cc, target_is_directory=True)
+        self.assertIsNone(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}))
+        (cc / "out").symlink_to(self.home)  # docs/inside → claude-code/out → $HOME
+        self.assertEqual(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}), "deny")
+
+    def test_home_cwd_does_not_open_home_dot_claude(self):
+        (self.home / ".claude" / "skills").mkdir(parents=True)
+        (self.home / ".git").mkdir()
+        for f in (".claude/skills/s.md", "docs/a.md", "CLAUDE.md"):
+            self.assertEqual(self.check("Read", {"file_path": str(self.home / f)}, cwd=self.home), "deny", f)
+        self.assertEqual(self.check("Read", {"file_path": str(self.repo / "docs" / "a.md")},
+                                    cwd=self.repo / "docs"), "deny")  # not a repo root
+
+    def test_plugin_prefixed_agent_type_is_confined(self):
+        self.assertEqual(self.check("Read", {"file_path": "/etc/hosts"}, agent="ywc:ywc-retro-lens"), "deny")
+
+    def test_other_agents_and_main_thread_are_unaffected(self):
+        self.assertIsNone(self.check("Read", {"file_path": "/etc/hosts"}, agent=None))
+        self.assertIsNone(self.check("Read", {"file_path": "/etc/hosts"}, agent="ywc-architect"))
+        self.assertIsNone(self.check("Grep", {"pattern": "x", "path": "/repo\x00"}, agent=None))  # fail-open kept
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
