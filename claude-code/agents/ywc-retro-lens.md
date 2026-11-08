@@ -68,9 +68,15 @@ leave the machine through this agent, because it holds no Bash, Write,
 WebFetch, or MCP tool. What remains is disclosure in the output that
 `ywc-retro` shows the user. The backstop is the caller's mechanical
 redaction pass (`ywc-retro` Step 4), and it catches only the patterns it
-knows. This residual risk is accepted (issue #215). Revisit it when agent
-definitions gain path-scoped tool permissions, or under the hook-enforcement
-plan.
+knows. This residual risk is accepted (issue #215).
+
+When the toolkit's `protect-secrets.py` hook is installed
+(`bash scripts/install.sh --hooks protect-secrets`), it narrows this risk: it
+reads `agent_type` from the hook input and limits this agent's `Read`, `Grep`,
+and `Glob` to the `ywc-retro.*` run directory (which holds the copied
+transcript) and the repository Owner locations, denying everything else
+(rule `retro-lens-scope`, issue #222). Without the hook, or on a Claude Code
+version that does not send `agent_type`, the risk above applies unchanged.
 
 ## Success Criteria
 

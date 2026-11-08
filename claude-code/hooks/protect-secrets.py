@@ -20,6 +20,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -271,6 +272,85 @@ def check_grep(tool_input: dict, safety_level: str = SAFETY_LEVEL, cwd: str = ""
     return check_search(path, glob, safety_level)
 
 
+# G7: ywc-retro-lens reads an untrusted transcript, so a prompt injected there must not reach
+# other local files. Claude Code puts `agent_type` in the hook input for a subagent's tool calls.
+# Session transcripts are not in scope: ywc-retro copies the one it reviews into the run directory,
+# and ~/.claude/projects holds every project's transcripts.
+CONFINED_AGENT = "ywc-retro-lens"
+# Owner locations from ywc-retro synthesizer.md, minus .claude/settings*.json (allow rules can hold tokens).
+REPO_DIRS = ("claude-code", "docs", ".claude/skills", ".claude/agents", ".claude/commands", ".claude/rules")
+REPO_FILES = ("CLAUDE.md", "AGENTS.md")
+CONFINED = Pattern("critical", "retro-lens-scope", re.compile(r'$^'),
+                   "ywc-retro-lens may read only its ywc-retro run directory and repository Owner files")
+
+
+def is_confined_agent(agent_type: object) -> bool:
+    return isinstance(agent_type, str) and (agent_type == CONFINED_AGENT or agent_type.endswith(":" + CONFINED_AGENT))
+
+
+def literal_prefix(pattern: str) -> str:
+    """Leading path components of a glob that hold no glob syntax: `docs/*/x.md` → `docs`."""
+    parts = pattern.split("/")
+    keep = []
+    for part in parts[:-1]:
+        if GLOB_CHARS.search(part) or "{" in part:
+            break
+        keep.append(part)
+    return "/".join(keep) or ("/" if pattern.startswith("/") else "")
+
+
+def is_repo_root(cwd: Path) -> bool:
+    """Owner paths are repository-relative; a cwd of $HOME would turn `.claude/…` into ~/.claude."""
+    return cwd != Path.home().resolve() and (cwd / ".git").exists()
+
+
+def in_scope(target: Path, cwd: Path) -> bool:
+    p = target.resolve()  # follows symlinks, so a link inside an allowed dir cannot point out of it
+    for tmp in {Path(tempfile.gettempdir()).resolve(), Path("/tmp").resolve()}:
+        rel = p.relative_to(tmp).parts if p.is_relative_to(tmp) else ()
+        if rel and rel[0].startswith("ywc-retro."):
+            return True
+    if not is_repo_root(cwd):
+        return False
+    if p.parent == cwd and p.name in REPO_FILES:
+        return True
+    return any(p.is_relative_to(cwd / d) for d in REPO_DIRS)
+
+
+def escapes(pattern: str) -> bool:
+    """`docs/**/../../x` walks back out after the glob part; braces can hide the `..` (`{..,x}`)."""
+    expansions = expand_braces(pattern)
+    return (expansions is None or pattern.startswith("~")
+            or any(".." in e.split("/") for e in expansions))
+
+
+def check_confinement(tool_name: str, tool_input: dict, cwd: str) -> Pattern | None:
+    """Fail closed: anything this function cannot place inside the scope is denied."""
+    try:
+        if not cwd:
+            return CONFINED
+        base_dir = Path(cwd).resolve()
+        if tool_name == "Read":
+            targets = [tool_input.get("file_path") or ""]
+        elif tool_name == "Grep":
+            targets = [tool_input.get("path") or cwd]
+            if escapes(tool_input.get("glob") or ""):
+                return CONFINED
+        elif tool_name == "Glob":
+            pattern = tool_input.get("pattern") or ""
+            if escapes(pattern):
+                return CONFINED
+            targets = [os.path.join(tool_input.get("path") or cwd, literal_prefix(pattern))]
+        else:
+            return CONFINED  # the agent is granted Read/Grep/Glob only
+        for t in targets:
+            if not t or not in_scope(base_dir / os.path.expanduser(t), base_dir):
+                return CONFINED
+        return None
+    except Exception:
+        return CONFINED
+
+
 def check(tool_name: str, tool_input: dict, safety_level: str = SAFETY_LEVEL, cwd: str = "") -> Pattern | None:
     if tool_name in ("Read", "Edit", "Write"):
         return check_file_path(tool_input.get("file_path", ""), safety_level)
@@ -283,9 +363,21 @@ def check(tool_name: str, tool_input: dict, safety_level: str = SAFETY_LEVEL, cw
     return None
 
 
+def deny_json(matched: Pattern, action: str) -> str:
+    return json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": f"{EMOJIS[matched.level]} [{matched.id}] Cannot {action}: {matched.reason}",
+        }
+    })
+
+
 def main() -> None:
+    confined = False
     try:
         data = json.loads(sys.stdin.read())
+        confined = is_confined_agent(data.get("agent_type"))
         tool_name = data.get("tool_name", "")
         tool_input = data.get("tool_input", {})
 
@@ -293,7 +385,9 @@ def main() -> None:
             print("{}")
             return
 
-        matched = check(tool_name, tool_input, cwd=data.get("cwd") or "")
+        cwd = data.get("cwd") or ""
+        matched = (check_confinement(tool_name, tool_input, cwd) if confined else None) \
+            or check(tool_name, tool_input, cwd=cwd)
 
         if matched:
             search_keys = ("path", "glob") if tool_name == "Grep" else ("path", "pattern")  # Grep pattern may hold a secret
@@ -304,18 +398,15 @@ def main() -> None:
                 "session_id": data.get("session_id"), "cwd": data.get("cwd"),
             })
             action = {"Read": "read", "Edit": "modify", "Write": "write to", "Bash": "execute", "Grep": "search", "Glob": "search"}[tool_name]
-            print(json.dumps({
-                "hookSpecificOutput": {
-                    "hookEventName": "PreToolUse",
-                    "permissionDecision": "deny",
-                    "permissionDecisionReason": f"{EMOJIS[matched.level]} [{matched.id}] Cannot {action}: {matched.reason}",
-                }
-            }))
+            print(deny_json(matched, action))
         else:
             print("{}")
 
     except Exception:
-        print("{}")
+        if confined:  # fail closed for the confined agent only
+            print(deny_json(CONFINED, "read"))
+        else:
+            print("{}")
 
 
 if __name__ == "__main__":

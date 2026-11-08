@@ -2,7 +2,7 @@
 
 > Scale: Medium
 > Parent: issue #215 (P2-a), `docs/ywc-plans/20261107-p1-hardening-before-main-pr.md:33`
-> Status: first slice (G1, G2, G4, G7 secret paths) implemented for #222; see `claude-code/hooks/test_hooks.py`. G7 confinement and the Open Questions remain.
+> Status: first slice (G1, G2, G4, G7 secret paths) implemented for #222; G7 confinement implemented as `retro-lens-scope` in `claude-code/hooks/protect-secrets.py`; see `claude-code/hooks/test_hooks.py`. The G2 deny-vs-ask Open Question remains.
 
 ## Purpose
 
@@ -52,7 +52,7 @@ Several `ywc-*` safety rules exist only as SKILL.md prose. A model can skip pros
 | G4 | No `gh pr merge --admin` | `ywc-agentic` Finish Phase rule (installed bundle copy, not present in this repo's `claude-code/skills/ywc-agentic/SKILL.md`) | PreToolUse / `Bash` | **Low.** No skill in this repo runs `--admin` (`grep -rn -e '--admin' claude-code/skills` → no SKILL.md hit) | Hook (deny), tokenized | Prose |
 | G5 | No `gh pr merge --auto` outside `ywc-merge-dependabot` | same as G4 | — | **High.** `ywc-merge-dependabot` needs it (see Existing Constraints) and a hook cannot tell which skill is running | Keep prose | Prose |
 | G6 | No `git branch -D` to bypass the merge check | `claude-code/skills/ywc-worktrees/scripts/cleanup-worktree.sh:203` (message) | — | **High.** `ywc-parallel-executor` uses `-D` legitimately | Keep prose | Prose |
-| G7 | `ywc-retro-lens` reads only the transcript and lens files | `claude-code/agents/ywc-retro-lens.md` Boundaries and "Accepted residual risk" | PreToolUse / `Read|Grep|Glob` | **Low** for a secret-path deny: extend `protect-secrets.py` so `Grep` and `Glob` check their `path` (and `Glob` its `pattern`) against the same secret patterns. Full confinement to the transcript path needs the hook input to identify the subagent; not verified (Open Questions) | Hook (deny) for secret paths in `Grep`/`Glob`; confinement waits on the Open Question | N/A (no Codex retro-lens agent) |
+| G7 | `ywc-retro-lens` reads only the transcript and lens files | `claude-code/agents/ywc-retro-lens.md` Boundaries and "Accepted residual risk" | PreToolUse / `Read|Grep|Glob` | **Low** for a secret-path deny: extend `protect-secrets.py` so `Grep` and `Glob` check their `path` (and `Glob` its `pattern`) against the same secret patterns. Confinement uses the documented `agent_type` hook input field (Open Questions, resolved) and limits the agent to the `ywc-retro.*` run directory (ywc-retro copies the transcript there, so `~/.claude/projects` with every project's transcripts stays out of scope) and repository Owner locations; it touches no other agent | Hook (deny) for secret paths in `Grep`/`Glob`; hook (deny, fail closed) for confinement | N/A (no Codex retro-lens agent) |
 
 ## Recommended First Slice
 
@@ -110,5 +110,5 @@ The following ACs belong to the later implementation PR and are recorded so it c
 
 ## Open Questions
 
-- Does the Claude Code PreToolUse input identify the subagent (an `agent_type` or equivalent field) for tool calls made inside a dispatched agent? If yes, G7 can confine `ywc-retro-lens` reads to the transcript path; verify against current Claude Code hook docs before building it.
+- ~~Does the Claude Code PreToolUse input identify the subagent?~~ Resolved: yes. The hooks reference (https://code.claude.com/docs/en/hooks, "Common input fields") documents `agent_id` and `agent_type`, present when the hook fires inside a subagent. `protect-secrets.py` uses `agent_type` for the G7 confinement (`retro-lens-scope`).
 - Should G2 be `deny` once skills are the main users of these hooks? Default: `ask`, revisit after a release.
