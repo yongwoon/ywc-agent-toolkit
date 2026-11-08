@@ -63,7 +63,9 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "cat <(git commit -n -m x)", f"git commit $'{NV}' -m x",
                     "bash -c -e 'git commit -n'", "bash -c -o pipefail -- 'git commit -n'",
                     "git commit -m x --$'no-verify'", "git commit -m x -$'n'",
-                    "git commit -m x $'\\x2dn'", "git commit -m x $'\\055\\055no-verify'"):
+                    "git commit -m x $'\\x2dn'", "git commit -m x $'\\055\\055no-verify'",
+                    "git commit -m x $'\\x2d\\x2dno-verify'", "git commit -m x $'-\\u6e'",
+                    "git commit -m x $'\\x2d\\156'"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 

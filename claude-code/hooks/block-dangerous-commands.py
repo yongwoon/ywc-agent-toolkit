@@ -15,7 +15,6 @@ SAFETY_LEVEL: 'critical' | 'high' | 'strict'
   strict   - + cautionary: any force push, sudo rm, docker prune
 """
 
-import codecs
 import json
 import re
 import shlex
@@ -143,7 +142,29 @@ def strip_heredocs(cmd: str) -> str:
     return "\n".join(out)
 
 
-def drop_dollar_quotes(text: str) -> str:
+ANSI_C_ESCAPE = re.compile(r"\\(x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{1,4}|U[0-9A-Fa-f]{1,8}|[0-7]{1,3}|c.|.)", re.S)
+ANSI_C_SIMPLE = {"a": "\a", "b": "\b", "e": "\x1b", "E": "\x1b", "f": "\f", "n": "\n", "r": "\r",
+                 "t": "\t", "v": "\v", "\\": "\\", "'": "'", '"': '"', "?": "?"}
+
+
+def decode_ansi_c(body: str) -> str | None:
+    """Decode a `$'...'` body by bash's rules; None when it cannot be decoded (caller fails closed)."""
+    def repl(m: re.Match) -> str:
+        e = m.group(1)
+        if e[0] in "xuU":
+            return chr(int(e[1:], 16))
+        if e[0] in "01234567":
+            return chr(int(e, 8) & 0xFF)
+        if e[0] == "c":
+            return chr(ord(e[1].upper()) ^ 0x40)
+        return ANSI_C_SIMPLE.get(e, "\\" + e)
+    try:
+        return ANSI_C_ESCAPE.sub(repl, body).split("\0", 1)[0]  # bash stops at NUL
+    except (ValueError, OverflowError):
+        return None
+
+
+def drop_dollar_quotes(text: str) -> str | None:
     """`$'...'` / `$"..."` → plain quotes wherever bash would read them (`--$'no-verify'` too),
     but not inside single or double quotes, where `$'` is literal text."""
     out: list[str] = []
@@ -160,11 +181,9 @@ def drop_dollar_quotes(text: str) -> str:
             j = i + 2
             while j < len(text) and text[j] != "'":
                 j += 2 if text[j] == "\\" else 1
-            body = text[i + 2:j]
-            try:
-                body = codecs.decode(body, "unicode_escape")
-            except (UnicodeDecodeError, ValueError):
-                pass
+            body = decode_ansi_c(text[i + 2:j])
+            if body is None:
+                return None
             out.append("'" + body.replace("'", "'\\''") + "'")
             i = j + 1
             continue
@@ -186,6 +205,8 @@ def segments(cmd: str) -> list[list[str]] | None:
     """
     text = strip_heredocs(cmd).replace("\\\n", " ")  # line continuations
     text = drop_dollar_quotes(text)
+    if text is None:
+        return None  # undecodable $'...' → caller uses the whole-string fallback
     lex = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
     lex.whitespace = " \t\r"
     lex.whitespace_split = True
