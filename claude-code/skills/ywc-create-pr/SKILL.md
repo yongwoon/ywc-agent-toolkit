@@ -54,7 +54,7 @@ Follow the steps below to commit and create a PR.
 
 1. **Title**: Check `$ARGUMENTS` for `--title "<value>"`. If present, store it as the PR title — it will be used verbatim in Step 7 (skip self-generated title).
 2. **Language**: Check `$ARGUMENTS` for a language hint (e.g., `--lang ja`, `--language korean`). If a `--lang` flag is present, use it. Otherwise resolve the output language via the shared resolution reference **before** prompting.
-   > Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
+   > Run `bash "${CLAUDE_SKILL_DIR}/../scripts/resolve-language.sh" [--lang <code>]`.
    > Resolved code → write the PR title and body in that language and skip the language prompt entirely (AC6). `UNRESOLVED` → continue to the prompt below.
 
    Only when resolution yields nothing (no `--lang`, no policy) **and** no `--title` was provided, use the `AskUserQuestion` tool to ask: "What language should the PR title and description be written in?" with the full option set English / Japanese / Korean / Spanish / Chinese (`en | ja | ko | es | zh`) — then **immediately continue to Step 0.5 in the same turn**; do not end the turn or wait for further input after receiving the answer. If `--title` was provided, it is used verbatim in Step 7 and a resolved policy governs only the **body** language (EC4); with no policy, infer the body language from the title or default to English — do not prompt. The title's `[task-id]` / conventional prefix always stays English.
@@ -391,7 +391,7 @@ If `gh pr checks` exits 1, at least one check failed. Apply fixes in the loop be
 > **Action required**: Read [`claude-code/skills/references/pr-bot-polling.md`](../references/pr-bot-polling.md) before proceeding. The canonical polling procedure and parameters are defined there.
 
 ```bash
-bash claude-code/skills/scripts/poll-pr-reviews.sh $PR_NUMBER
+bash "${CLAUDE_SKILL_DIR}/../scripts/poll-pr-reviews.sh" $PR_NUMBER
 # stdout (last line): BOT_COUNT=<n> WINDOW=complete|degraded
 # exit 0 → BOT_COUNT > 0 (bots posted)
 # exit 1 → BOT_COUNT == 0 after the FULL window (no bots) → merge allowed

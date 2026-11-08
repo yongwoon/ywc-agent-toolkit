@@ -45,7 +45,7 @@ When tempted to bend a rule, check this table first:
 
 When `--lang` is not specified, resolve the output language via the shared resolution reference.
 
-> Run `bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]`.
+> Run `bash "${CLAUDE_SKILL_DIR}/../scripts/resolve-language.sh" [--lang <code>]`.
 > Resolved code → use it directly. `UNRESOLVED` → fall through to this skill's own fallback below.
 
 This skill's terminal fallback is unchanged (AC10, no regression): when no canonical `## Language Policy` is configured, infer from the project CLAUDE.md's older cue (Language Policy section or Documentation Writing Guidelines) and, only if that fails, ask the user — defaulting to `en`. Resolution runs in the **main skill context**; because this skill fans out subagents, resolve the language once in the main context and pass the resolved code in each subagent payload — subagents must not rely on an auto-loaded user-global CLAUDE.md (EC8).

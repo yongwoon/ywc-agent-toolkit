@@ -130,12 +130,15 @@ exit=0
 
 **Verification:**
 
+
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
 $ gh pr checks 1234 --json name,state,conclusion
 [{"name":"build","state":"COMPLETED","conclusion":"SUCCESS"},
  {"name":"test","state":"COMPLETED","conclusion":"SUCCESS"},
  {"name":"lint","state":"COMPLETED","conclusion":"SUCCESS"}]
-$ bash claude-code/skills/scripts/poll-pr-reviews.sh 1234
+$ bash "<skill-base-dir>/../scripts/poll-pr-reviews.sh" 1234
 exit=1   # = no bot reviews surfaced after 10×30s polling
 ```
 

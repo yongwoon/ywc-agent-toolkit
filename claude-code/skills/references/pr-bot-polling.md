@@ -14,8 +14,10 @@ Automated review bots (CodeRabbit, Codex Review, Claude Review) need time to ana
 
 **Preferred execution — use the bundled script:**
 
+`<skill-base-dir>` is the directory containing this skill's SKILL.md (Claude Code prints it as `Base directory for this skill: <path>` when the skill loads).
+
 ```bash
-bash claude-code/skills/scripts/poll-pr-reviews.sh <pr-number>
+bash "<skill-base-dir>/../scripts/poll-pr-reviews.sh" <pr-number>
 # stdout (last line): BOT_COUNT=<n> WINDOW=complete|degraded
 # exit 0 → BOT_COUNT > 0 (bots posted)
 # exit 1 → BOT_COUNT == 0 after the FULL window (no bots) → merge allowed
