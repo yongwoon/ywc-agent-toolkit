@@ -751,14 +751,17 @@ run_script_test_suites() {
   done
 
   # The secret scan must never report "clean" when it could not scan.
-  local scan_test
+  # The plugins copy is what Codex plugin users install, so it is tested too.
+  local scan_test scan_out
   for scan_test in claude-code/skills/ywc-create-pr/scripts/test-scan-secrets.sh \
-                   codex/skills/ywc-create-pr/scripts/test-scan-secrets.sh; do
+                   codex/skills/ywc-create-pr/scripts/test-scan-secrets.sh \
+                   plugins/ywc-agent-toolkit/skills/ywc-create-pr/scripts/test-scan-secrets.sh; do
     if [ ! -f "$scan_test" ]; then
       echo "ERROR: scan-secrets test suite is missing: $scan_test"
       ERRORS=$((ERRORS + 1))
-    elif ! bash "$scan_test" >/dev/null 2>&1; then
+    elif ! scan_out=$(bash "$scan_test" 2>&1); then
       echo "ERROR: scan-secrets test suite failed: $scan_test"
+      printf '%s\n' "$scan_out" | tail -n 20 | sed 's/^/  /'
       ERRORS=$((ERRORS + 1))
     fi
   done

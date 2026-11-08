@@ -109,7 +109,7 @@ bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --staged
 bash "${CLAUDE_SKILL_DIR}/scripts/scan-secrets.sh" --committed <base-branch>
 ```
 
-Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints matches to stdout. Any other result (exit 2 = usage error, not a git work tree, or a `--committed` base that is invalid or does not resolve to a local commit — a base that exists only as `origin/<base>` needs a local ref, or pass `origin/<base>`; exit 127 = script path did not resolve, or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
+Exit 0 = clean — proceed. Exit 1 = secrets or dangerous files found — the script prints the matching lines to stdout with each matched value shown as `[REDACTED]`. Any other result (exit 2 = usage error, not a git work tree, a `--committed` base that is invalid or does not resolve to a local commit — a base that exists only as `origin/<base>` needs a local ref, or pass `origin/<base>` — or a failed scan step: a git call, `mktemp`, reading an untracked file, or the added-line filter; exit 127 = script path did not resolve, or any other code) means nothing was scanned: treat it as `BLOCKED` and stop — never as clean.
 
 If either scan returns exit 1, warn the user and show the script output. Do not include flagged files in the commit unless the user explicitly confirms. For committed secrets (second scan), require explicit confirmation before proceeding to PR creation.
 
