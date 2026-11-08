@@ -65,7 +65,10 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "git commit -m x --$'no-verify'", "git commit -m x -$'n'",
                     "git commit -m x $'\\x2dn'", "git commit -m x $'\\055\\055no-verify'",
                     "git commit -m x $'\\x2d\\x2dno-verify'", "git commit -m x $'-\\u6e'",
-                    "git commit -m x $'\\x2d\\156'"):
+                    "git commit -m x $'\\x2d\\156'",
+                    # decoder edge cases must not raise (a raise would fail open)
+                    "git commit -m $'\\cß' -n", "git commit -m $'\\UFFFFFFFF' -n",
+                    "git commit -m $'\\x' -n", "git commit -m $'end\\c' -n"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 

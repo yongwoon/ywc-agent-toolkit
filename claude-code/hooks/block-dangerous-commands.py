@@ -151,16 +151,18 @@ def decode_ansi_c(body: str) -> str | None:
     """Decode a `$'...'` body by bash's rules; None when it cannot be decoded (caller fails closed)."""
     def repl(m: re.Match) -> str:
         e = m.group(1)
-        if e[0] in "xuU":
-            return chr(int(e[1:], 16))
+        if e[0] in "xuU" and len(e) > 1:
+            n = int(e[1:], 16)
+            return chr(n) if n <= 0x10FFFF and not 0xD800 <= n <= 0xDFFF else "�"
         if e[0] in "01234567":
             return chr(int(e, 8) & 0xFF)
-        if e[0] == "c":
-            return chr(ord(e[1].upper()) ^ 0x40)
-        return ANSI_C_SIMPLE.get(e, "\\" + e)
+        if e[0] == "c" and len(e) > 1:
+            c = e[1].upper() if "a" <= e[1] <= "z" else e[1]
+            return chr((ord(c) ^ 0x40) % 0x110000)
+        return ANSI_C_SIMPLE.get(e, "\\" + e)  # unknown escapes (and bare \x) stay literal, as in bash
     try:
         return ANSI_C_ESCAPE.sub(repl, body).split("\0", 1)[0]  # bash stops at NUL
-    except (ValueError, OverflowError):
+    except Exception:  # the decoder is total; this only guards against a bug in it
         return None
 
 
