@@ -548,11 +548,49 @@ class SelectSecurityPrsTest(unittest.TestCase):
         self.assertEqual(out["advisories"], {"3": ["GHSA-aaaa-bbbb-cccc"], "5": ["GHSA-dddd-eeee-ffff"]})
         self.assertIn("repos/o/r/dependabot/alerts?state=open", args)
 
+    def test_single_package_pr_ignores_other_packages_in_release_notes(self):
+        # Release notes of an unrelated bump name "lodash"; only a grouped PR may be matched through its body.
+        prs = [self.pr(8, "Bump axios from 1.0.0 to 1.0.1", ["package-lock.json"], "Changelog: updated lodash usage")]
+        r, _ = self.run_script(prs)
+        self.assertEqual(json.loads(r.stdout)["security"], [])
+
+    def test_every_matching_ghsa_is_reported(self):
+        alerts = self.ALERTS + '["lodash","package-lock.json","GHSA-1111-2222-3333"]\n'
+        r, _ = self.run_script([self.pr(3, "Bump lodash from 1 to 2", ["package-lock.json"])], alerts=alerts)
+        self.assertEqual(json.loads(r.stdout)["advisories"], {"3": ["GHSA-1111-2222-3333", "GHSA-aaaa-bbbb-cccc"]})
+
+    def test_missing_or_null_files_is_other(self):
+        prs = [{"number": 9, "title": "Bump lodash", "body": "", "files": None}, {"number": 10, "title": "Bump lodash"}]
+        r, _ = self.run_script(prs)
+        self.assertEqual((r.returncode, json.loads(r.stdout)["other"]), (0, [9, 10]))
+
+    def test_no_alerts_means_no_security_prs(self):
+        r, _ = self.run_script([self.pr(3, "Bump lodash", ["package-lock.json"])], alerts="")
+        self.assertEqual((r.returncode, json.loads(r.stdout)["security"]), (0, []))
+
+    def test_malformed_alert_rows_are_unresolved(self):
+        for alerts in ('[null,"package-lock.json","GHSA-x"]\n', '["lodash","package-lock.json"]\n', '{"a":1}\n', "not json\n"):
+            with self.subTest(alerts=alerts):
+                r, _ = self.run_script([self.pr(7, "Bump lodash", ["package-lock.json"])], alerts=alerts)
+                self.assertEqual(r.returncode, 2, r.stderr)
+                self.assertEqual(json.loads(r.stdout)["unresolved"], [7])
+
+    def test_missing_gh_is_unresolved_not_a_traceback(self):
+        with tempfile.TemporaryDirectory() as empty:
+            r = subprocess.run([sys.executable, str(HERE / "select-security-prs.py"), "o/r"],
+                               input=json.dumps([self.pr(7, "Bump lodash", ["package-lock.json"])]),
+                               capture_output=True, text=True, env=dict(os.environ, PATH=empty))
+        self.assertEqual(r.returncode, 2, r.stderr)
+        out = json.loads(r.stdout)
+        self.assertEqual(out["unresolved"], [7])
+        self.assertIn("gh", out["error"])
+
     def test_unreadable_alerts_leave_every_pr_unresolved(self):
         r, _ = self.run_script([self.pr(7, "Bump lodash", ["package-lock.json"])], alerts="", rc=1)
         self.assertEqual(r.returncode, 2)
         out = json.loads(r.stdout)
         self.assertEqual(out["unresolved"], [7])
+        self.assertIn("HTTP 403", out["error"])
         self.assertNotIn("security", out)
 
     def test_bad_repo_and_input_exit_1(self):
