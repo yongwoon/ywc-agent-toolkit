@@ -166,17 +166,28 @@ def decode_ansi_c(body: str) -> str | None:
         return None
 
 
+COMMENT_PRECEDERS = " \t\r\n;&|()<>"  # characters after which an unquoted `#` starts a comment in bash
+
+
 def drop_dollar_quotes(text: str) -> str | None:
     """`$'...'` / `$"..."` → plain quotes wherever bash would read them (`--$'no-verify'` too),
     but not inside single or double quotes, where `$'` is literal text."""
     out: list[str] = []
     quote = ""
+    escaped_end = -1  # index just after a backslash escape: a `#` there is not at a word start
     i = 0
     while i < len(text):
         ch = text[i]
         if ch == "\\" and quote != "'":
             out.append(text[i:i + 2])
             i += 2
+            escaped_end = i
+            continue
+        if not quote and ch == "#" and i != escaped_end and (i == 0 or text[i - 1] in COMMENT_PRECEDERS):
+            # A comment runs to the newline, which stays as the command separator. Dropping it here
+            # keeps its quotes (`don't`) out of the quote tracking and leaves mid-word `#` alone.
+            nl = text.find("\n", i)
+            i = len(text) if nl == -1 else nl
             continue
         if not quote and text[i:i + 2] == "$'":
             # ANSI-C quoting: decode escapes the way bash does (`$'\x2dn'` → `-n`), re-quote literally.
@@ -211,6 +222,7 @@ def segments(cmd: str) -> list[list[str]] | None:
         return None  # undecodable $'...' → caller uses the whole-string fallback
     lex = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
     lex.whitespace = " \t\r"
+    lex.commenters = ""  # comments are removed in drop_dollar_quotes; shlex would also eat mid-word `#` and the newline
     lex.whitespace_split = True
     result: list[list[str]] = []
     argv: list[str] = []
