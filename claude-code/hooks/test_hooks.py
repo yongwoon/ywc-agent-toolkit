@@ -62,7 +62,8 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "stdbuf -o0 git commit -n", "sudo bash -c 'git commit -n'", "bash -lc 'git commit -n -m x'",
                     "cat <(git commit -n -m x)", f"git commit $'{NV}' -m x",
                     "bash -c -e 'git commit -n'", "bash -c -o pipefail -- 'git commit -n'",
-                    "git commit -m x --$'no-verify'", "git commit -m x -$'n'"):
+                    "git commit -m x --$'no-verify'", "git commit -m x -$'n'",
+                    "git commit -m x $'\\x2dn'", "git commit -m x $'\\055\\055no-verify'"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 
@@ -80,7 +81,8 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "git commit -Sn1234 -m x", "git commit -uno -m x",
                     "git commit --no-verbose -m x",
                     "git commit -- -n",
-                    "git commit -m \"price is $'x -n'\"", "git commit -m 'a $\" -n'"):
+                    "git commit -m \"price is $'x -n'\"", "git commit -m 'a $\" -n'",
+                    "git commit -m $'line1\\nline2 -n'", "git commit -m $'it\\'s -n'"):
             with self.subTest(cmd=cmd):
                 self.assert_allowed(cmd)
 
@@ -144,6 +146,7 @@ class ProtectSecretsTest(unittest.TestCase):
                  ("Glob", {"pattern": "**/?env"}),
                  ("Grep", {"pattern": "x", "path": "~", "glob": "[a-z]*"}),
                  ("Grep", {"pattern": "x", "path": "~", "glob": "?"}),
+                 ("Grep", {"pattern": "x", "path": "~", "glob": "!*.ts"}),
                  ("Glob", {"pattern": "{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}"})]
         for tool, ti in cases:
             with self.subTest(tool=tool, ti=ti):
@@ -170,6 +173,11 @@ class ProtectSecretsTest(unittest.TestCase):
     def test_bracket_class_names_are_denied(self):
         self.assertEqual(self.check("Grep", {"pattern": "x", "glob": "**/[.]env"}), "deny")
         self.assertEqual(self.check("Glob", {"pattern": "**/[.]env"}), "deny")
+        # not in the sample-name list: caught because the class expands to literals
+        self.assertEqual(self.check("Glob", {"pattern": "**/[.]env.staging"}), "deny")
+        self.assertEqual(self.check("Grep", {"pattern": "x", "glob": "**/.e[n-o]v.staging"}), "deny")
+        self.assertIsNone(self.check("Glob", {"pattern": "**/[.]env.example"}))  # allowlisted
+        self.assertIsNone(self.check("Glob", {"pattern": "src/[a-z]*.ts"}))
 
     def test_grep_without_path_uses_session_cwd(self):
         with tempfile.TemporaryDirectory() as home:

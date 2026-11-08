@@ -174,9 +174,31 @@ GLOB_TOO_COMPLEX = Pattern("critical", "glob-too-complex", re.compile(r'$^'),
                            "brace expansion too large to check; use a simpler glob")
 
 
+BRACKET = re.compile(r'\[([^\]!^][^\]]*)\]')
+MAX_CLASS_CHARS = 32
+
+
+def bracket_to_braces(pattern: str) -> str:
+    """`[.]env` → `{.}env`, `[a-c]` → `{a,b,c}`, so the literal file rules see every spelling.
+    Negated or very wide classes are left alone; the sample-name check still covers them."""
+    def repl(m: re.Match) -> str:
+        body, chars, i = m.group(1), [], 0
+        while i < len(body):
+            if i + 2 < len(body) and body[i + 1] == "-":
+                chars.extend(chr(c) for c in range(ord(body[i]), ord(body[i + 2]) + 1))
+                i += 3
+            else:
+                chars.append(body[i])
+                i += 1
+        if len(chars) > MAX_CLASS_CHARS or any(c in ",{}" for c in chars):
+            return m.group(0)
+        return "{" + ",".join(dict.fromkeys(chars)) + "}"
+    return BRACKET.sub(repl, pattern)
+
+
 def expand_braces(pattern: str) -> list[str] | None:
     """`a{b,c}d` → [abd, acd]; innermost braces first. None when over MAX_EXPANSIONS (fail closed)."""
-    out, todo = [], [pattern]
+    out, todo = [], [bracket_to_braces(pattern)]
     while todo:
         if len(out) + len(todo) > MAX_EXPANSIONS:
             return None
@@ -240,7 +262,9 @@ def check_grep(tool_input: dict, safety_level: str = SAFETY_LEVEL, cwd: str = ""
     # A glob narrows only if every brace expansion keeps a literal name part (`*.md` → `md`);
     # `*`, `**/*`, `?`, `[a-z]*` narrow nothing.
     expansions = expand_braces(glob) if glob else None
-    narrows = bool(expansions) and all(re.sub(r'[/.]', "", GLOB_CHARS.sub("", e)) for e in expansions)
+    # `!*.ts` excludes files, so a negated glob widens rather than narrows.
+    narrows = bool(expansions) and all(not e.startswith("!") and re.sub(r'[/.]', "", GLOB_CHARS.sub("", e))
+                                       for e in expansions)
     narrows = narrows or bool(tool_input.get("type"))
     if is_broad(path or cwd) and not narrows:  # no path → Grep searches the session cwd
         return BROAD_SEARCH

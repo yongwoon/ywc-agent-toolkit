@@ -15,6 +15,7 @@ SAFETY_LEVEL: 'critical' | 'high' | 'strict'
   strict   - + cautionary: any force push, sudo rm, docker prune
 """
 
+import codecs
 import json
 import re
 import shlex
@@ -154,7 +155,20 @@ def drop_dollar_quotes(text: str) -> str:
             out.append(text[i:i + 2])
             i += 2
             continue
-        if not quote and ch == "$" and text[i + 1:i + 2] in ("'", '"'):
+        if not quote and text[i:i + 2] == "$'":
+            # ANSI-C quoting: decode escapes the way bash does (`$'\x2dn'` → `-n`), re-quote literally.
+            j = i + 2
+            while j < len(text) and text[j] != "'":
+                j += 2 if text[j] == "\\" else 1
+            body = text[i + 2:j]
+            try:
+                body = codecs.decode(body, "unicode_escape")
+            except (UnicodeDecodeError, ValueError):
+                pass
+            out.append("'" + body.replace("'", "'\\''") + "'")
+            i = j + 1
+            continue
+        if not quote and text[i:i + 2] == '$"':
             i += 1
             continue
         if ch in ("'", '"') and quote in ("", ch):
