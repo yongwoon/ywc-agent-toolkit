@@ -10,7 +10,7 @@ description: >-
   branch creation/deletion alone (use `git checkout -b` / `git branch -d`),
   PR creation (`ywc-create-pr`), CI/merge/Mark-Complete delivery
   (`ywc-finish-branch`), task-level orchestration (`ywc-sequential-executor`
-  / `ywc-parallel-executor`), or non-git workspace isolation (e.g. Docker ports or volumes; use ywc-docker-isolate).
+  / `ywc-parallel-executor`), or non-git workspace isolation (e.g. Docker host ports or Compose project names; use ywc-docker-isolate).
 ---
 
 # ywc-worktrees

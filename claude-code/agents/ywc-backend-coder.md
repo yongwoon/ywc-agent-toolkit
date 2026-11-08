@@ -9,7 +9,7 @@ description: >-
   phrases "백엔드 구현해줘", "implement the API", "backend を実装". Do not use for:
   client-side UI work (dispatch ywc-frontend-coder instead), test-only
   authoring (dispatch ywc-qa-engineer), documentation prose
-  (dispatch ywc-doc-writer), infrastructure / IaC changes (dispatch ywc-cloud-engineer), architecture trade-off judgment (dispatch ywc-architect), or performance diagnosis before a fix is decided (dispatch ywc-performance-engineer).
+  (dispatch ywc-doc-writer), Terraform IaC changes (dispatch ywc-cloud-engineer) or other infrastructure / DevOps changes, architecture trade-off judgment (dispatch ywc-architect), or performance diagnosis before a fix is decided (dispatch ywc-performance-engineer).
 model: sonnet
 tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---

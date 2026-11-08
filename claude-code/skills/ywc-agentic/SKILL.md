@@ -8,8 +8,7 @@ description: >-
   full lifecycle", "ywc-agentic", "자율 end-to-end 실행", "전체 lifecycle 자율
   실행", "自律エンドツーエンド実行". Do not use for generic planning (use
   ywc-plan), an ordinary direct change (use the implementation workflow),
-  one-off skill invocations or direct task execution without autonomous
-  orchestration (use ywc-sequential-executor or ywc-parallel-executor), or converging a spec without implementing it (use ywc-spec-ready). Existing tasks/ directories may use
+  one-off skill invocations (invoke that skill directly), executing an existing tasks/ backlog without autonomous orchestration (use ywc-sequential-executor or ywc-parallel-executor), or converging a spec without implementing it (use ywc-spec-ready). Existing tasks/ directories may use
   `--resume`.
 category: meta
 phase: orchestration
