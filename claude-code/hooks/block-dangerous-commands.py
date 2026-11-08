@@ -166,7 +166,7 @@ def decode_ansi_c(body: str) -> str | None:
         return None
 
 
-COMMENT_PRECEDERS = " \t\r\n;&|()<>"  # characters after which an unquoted `#` starts a comment in bash
+COMMENT_PRECEDERS = " \t\n;&|()<>"  # (not `\r`: bash treats it as a word character) characters after which an unquoted `#` starts a comment in bash
 
 
 def drop_dollar_quotes(text: str) -> str | None:
@@ -186,6 +186,9 @@ def drop_dollar_quotes(text: str) -> str | None:
         if not quote and ch == "#" and i != escaped_end and (i == 0 or text[i - 1] in COMMENT_PRECEDERS):
             # A comment runs to the newline, which stays as the command separator. Dropping it here
             # keeps its quotes (`don't`) out of the quote tracking and leaves mid-word `#` alone.
+            before = "".join(out)
+            if before.count("${") > before.count("}"):
+                return None  # `#` inside ${...} is literal in bash, not a comment: fail closed to the regex fallback
             nl = text.find("\n", i)
             i = len(text) if nl == -1 else nl
             continue
