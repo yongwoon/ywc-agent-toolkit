@@ -486,3 +486,43 @@ An automated flow performs an action that is hard to undo or costs money — pus
 **Severity guide:** an unconfirmed push to a shared base branch, infra apply, or destructive delete → High (Critical if production); an unconfirmed paid or credentialed call → High; a confirmation that exists but does not show the concrete target → Medium.
 
 > Provenance — source: `mining`; date: `2026-11-08`; origin: `bulk mining (200 PRs, 2026-07..2026-11)` (fix confirmed in 3 PRs; yongwoon/develop-with-llm).
+
+### A-024: Script or gate treats a failed lookup or command as success (fail-open) (Devex / Security)
+
+A shell, Python, or CI step swallows the failure of a command whose result feeds a pass/complete/merge decision, so the gate reports success exactly when its input could not be read. Real cases: `cmd || echo ""` or `|| true` after a lookup, so a failed `gh`/`git` call yields an empty result that is read as "nothing found"; a missing root, ref, or fixture returning an empty list that counts as "clean"; a script without `set -e` (or `set -uo pipefail` without `-e`) that continues after a failed step and still exits 0; a poll that treats "no response" as "no bots". The class recurs because the happy path always has data, and the swallowed failure leaves no visible symptom. Apply the *why* — an unreadable input must produce an unknown/blocked outcome, never the same outcome as a clean one — in shell, Python, and workflow files alike. This is the shell/CI counterpart of §2's swallowing `catch` and A-007's discarded error value.
+
+**Scan cue:** in changed `.sh`, `.py`, and workflow files, grep `|| echo`, `|| true`, `2>/dev/null`, `set -u` / `set -o pipefail` without `-e`, `except: pass`, and functions that return an empty result when a root, ref, or fixture is missing. For each hit, trace whether the value reaches a pass, success, "complete", or merge decision, and whether a distinct exit code or marker separates "failed to read" from "read and empty". A swallow on a purely informational print is not a finding. Deterministic check: ShellCheck (SC2015, SC2155 and related), plus a fixture test that makes the lookup fail and asserts the gate does not pass.
+
+**Severity guide:** a security scan or delivery/merge gate that passes on failure → High; a report-only script that hides a failure → Medium; a swallow whose output is only logged → Low.
+
+> Provenance — source: `mining`; date: `2026-11-08`; origin: `bulk mining (200 PRs, 2026-05..2026-11)` (recurrence in 9 PRs by keyword match; yongwoon/ywc-agent-toolkit).
+
+### A-025: State, status, or branch is enumerated but has no defined action (Design / Contract)
+
+A procedure, contract table, or script names the values a state can take (BEHIND/BLOCKED, `NEEDS_CONTEXT`, `cap-unverified`, `possibly-live`, "not applicable", Deprecated, a Hardener-BLOCKED outcome) but one or more values map to no action: the producer can emit it, and no consumer branch, table row, or exit path says what to do. The reader then improvises, usually by continuing or stopping silently. The class recurs because each value is added where it is produced, while the consumer table lives in a different file. Apply the *why* — every value a producer can emit needs exactly one defined consumer action, including the terminal vs non-terminal distinction — in prose procedures, enums, and exit-code tables alike.
+
+**Scan cue:** for every enum, status, exit code, or gate state the diff adds or handles, list each producer and each consumer table, switch, or step; confirm every value maps to one action, including the N/A and "unknown" values and whether the state is terminal. A value documented as "ignored" with a reason is not a finding. Deterministic check: for code, an exhaustive `switch`/`match` (compiler or `assert_never`); no linter covers prose procedures.
+
+**Severity guide:** an unmapped state in a merge, delivery, or checkpoint path → High; a gap in a contract table that a reader can still resolve from context → Medium; a missing row for a state that cannot currently be produced → Low.
+
+> Provenance — source: `mining`; date: `2026-11-08`; origin: `bulk mining (200 PRs, 2026-05..2026-11)` (recurrence in 12 PRs by keyword match; yongwoon/ywc-agent-toolkit).
+
+### A-026: Subprocess, wait, or poll with no timeout or upper bound (Devex / QA)
+
+A script or procedure launches a subprocess, waits for a dispatched worker, or polls a remote state with no deadline, so a hung child, a stuck remote, or a worker that never reports blocks the whole flow indefinitely. Real cases: `subprocess.run(...)` without `timeout=` around a `gh` call; a `while` loop polling PR state with no attempt cap; a dispatch-then-wait step with no stall threshold or defined outcome; a test that spawns a process and waits for it unbounded. The class recurs because local runs finish in milliseconds. Apply the *why* — every wait needs a bound and a defined outcome for hitting it — in code, workflow files, and skill procedures. This extends §2's "timeout + bounded retry" from network clients to tooling and orchestration.
+
+**Scan cue:** grep `subprocess.run(`/`check_output(` without `timeout=`, `while true`/`until` loops without a deadline or attempt counter, `wait`/`sleep` loops, and dispatch-then-wait steps in procedures. For each, confirm a bound exists and that hitting it yields a distinct outcome (timeout, BLOCKED, retry budget exhausted) rather than a silent continue. A bound set by the caller and documented is not a finding. Deterministic check: Bandit B113-style rules for missing timeouts where available; otherwise a test with a stub that never returns.
+
+**Severity guide:** a gate or delivery path that can hang → High; a CI test that can hang the job → Medium; an interactive helper whose user can interrupt → Low.
+
+> Provenance — source: `mining`; date: `2026-11-08`; origin: `bulk mining (200 PRs, 2026-05..2026-11)` (recurrence in 4 PRs by keyword match; yongwoon/ywc-agent-toolkit).
+
+### A-027: Internal reference no longer resolves after a renumber, rename, or move (Devex / Design)
+
+A step or phase number ("see Step 4"), a heading anchor (`#section`), or a relative link points at a heading or file that was renumbered, renamed, or moved in the same or an earlier change. The reference still reads naturally, so nothing fails until a reader or an agent follows it to the wrong step or a missing target. The class recurs because the renumbering edit touches the headings, not the sentences that cite them. A sibling of A-010 (links resolved from the wrong directory) and A-008 (descriptions of old behavior), but about references inside the document set. Apply the *why* — a reference is part of the structure it points into, so structure edits must re-check every pointer.
+
+**Scan cue:** after any heading renumber, rename, or file move in the diff, grep "Step N", "Phase N", `#anchor`, and relative-link mentions across the repository and compare each with the heading or file it should name. A reference to a heading that still exists with the same meaning is not a finding. Deterministic check: a link/anchor checker such as `lychee` or `markdown-link-check`; step-number citations need a project-specific script.
+
+**Severity guide:** a wrong step reference inside an executable procedure → Medium; a broken link to a normative document → Medium; a broken link in illustrative prose → Low.
+
+> Provenance — source: `mining`; date: `2026-11-08`; origin: `bulk mining (200 PRs, 2026-05..2026-11)` (recurrence in 5 PRs by keyword match; yongwoon/ywc-agent-toolkit).
