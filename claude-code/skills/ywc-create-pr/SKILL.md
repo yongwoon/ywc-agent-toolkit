@@ -1,7 +1,7 @@
 ---
 name: ywc-create-pr
 version: 1.0.0
-description: (ywc) Use when the user wants to open a pull request and says "create a PR", "open a PR", "submit code for review", "push and create PR", "PR 만들어줘", "풀리퀘 작성", "プルリク作成", or is wrapping up a feature branch. Do not use for committing only without PR creation, for the full delivery lifecycle of merging an already-completed branch (use ywc-finish-branch), or for handling existing PR review comments (use ywc-handle-pr-reviews).
+description: (ywc) Use when the user wants to open a pull request and says "create a PR", "open a PR", "submit code for review", "push and create PR", "PR 만들어줘", "풀리퀘 작성", "プルリク作成", or is wrapping up a feature branch. Do not use for committing only without PR creation (use ywc-commit), for the full delivery lifecycle of merging an already-completed branch (use ywc-finish-branch), or for handling existing PR review comments (use ywc-handle-pr-reviews).
 category: release
 phase: release
 requires: []

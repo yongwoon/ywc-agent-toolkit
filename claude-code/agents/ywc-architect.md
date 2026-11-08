@@ -10,8 +10,7 @@ description: >-
   2 for advisor candidates flagged by the Architecture subagent, ywc-confidence-gate
   when the architecture dimension scores below 70 and the decision is irreversible;
   natural language phrases "architectural decision", "design trade-off",
-  "아키텍처 판단", "アーキテクチャ判断". Do not use for: writing or modifying code
-  (this agent is read-only), security analysis (dispatch ywc-security-engineer
+  "아키텍처 판단", "アーキテクチャ判断". Do not use for: writing or modifying code (this agent is read-only; code goes to ywc-backend-coder, IaC to ywc-cloud-engineer), profiling or quantifying performance (ywc-performance-engineer), security analysis (dispatch ywc-security-engineer
   instead), implementation-level naming or signature debates (route via
   ywc-impl-review Design subagent), or whole-codebase audits (use ywc-onboard-repo
   to survey first, then escalate specific decisions).

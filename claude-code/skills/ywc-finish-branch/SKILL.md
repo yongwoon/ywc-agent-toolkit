@@ -2,7 +2,7 @@
 name: ywc-finish-branch
 version: 1.0.0
 description: >-
-  (ywc) Use when delivering a single completed feature branch to the base branch — covers mark-PR-ready, CI wait + bot review polling, merge (PR/local), post-merge verification, Mark Task Complete bookkeeping, and local branch cleanup. Triggers: "finish branch", "deliver branch", "ywc-finish-branch", "merge feature branch", "branch 마무리", "ブランチ完了", "deliver task", "task 마감". Do not use for branch creation (handled by upstream executor), worktree management (caller of `ywc-parallel-executor` handles), draft PR creation alone (use `ywc-create-pr`), or PR review comment handling (use `ywc-handle-pr-reviews`).
+  (ywc) Use when delivering a single completed feature branch to the base branch — covers mark-PR-ready, CI wait + bot review polling, merge (PR/local), post-merge verification, Mark Task Complete bookkeeping, and local branch cleanup. Triggers: "finish branch", "deliver branch", "ywc-finish-branch", "merge feature branch", "branch 마무리", "ブランチ完了", "deliver task", "task 마감". Do not use for branch creation (handled by upstream executor), committing alone (use `ywc-commit`), worktree management (use `ywc-worktrees`), draft PR creation alone (use `ywc-create-pr`), or PR review comment handling (use `ywc-handle-pr-reviews`).
 category: delivery
 phase: execution
 requires: [ywc-create-pr]

@@ -1,7 +1,7 @@
 ---
 name: ywc-gen-testcase
 version: 1.1.0
-description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, git range, or diff, with prose in Korean, Japanese, English, Chinese, or Spanish. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증", "生成测试用例", "测试表", "generar caso de prueba", "hoja de pruebas". Do not use for writing automated unit/integration tests, code-level test generation, or in-IDE test scaffolding.
+description: (ywc) Use when generating a manual verification testsheet (developer + QA gate) from a PR, task directory, git range, or diff, with prose in Korean, Japanese, English, Chinese, or Spanish. Triggers: "generate test case", "testsheet", "QA checklist", "PR 테스트 케이스", "테스트시트", "テストシート作って", "manual test", "release 범위 test", "수기 검증", "生成测试用例", "测试表", "generar caso de prueba", "hoja de pruebas". Do not use for writing automated unit/integration tests (use ywc-qa-engineer), designing an automated E2E / Playwright strategy (use ywc-e2e-test-strategy), code-level test generation, or in-IDE test scaffolding.
 category: review
 phase: quality
 requires: []

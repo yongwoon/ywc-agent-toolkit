@@ -8,7 +8,7 @@ description: >
   "what changed in this release", "ywc-changelog-release-notes". Do not use for
   listing merged PRs as a summary table (use ywc-release-pr-list), committing
   the changelog file (use ywc-commit), creating the release PR (use ywc-create-pr),
-  or writing a postmortem after a patch release (use ywc-incident-postmortem).
+  writing a postmortem after a patch release (use ywc-incident-postmortem), or general project docs (use ywc-project-docs).
 version: 1.0.0
 category: release
 phase: release

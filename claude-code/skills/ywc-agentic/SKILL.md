@@ -9,7 +9,7 @@ description: >-
   실행", "自律エンドツーエンド実行". Do not use for generic planning (use
   ywc-plan), an ordinary direct change (use the implementation workflow),
   one-off skill invocations or direct task execution without autonomous
-  orchestration (use an executor). Existing tasks/ directories may use
+  orchestration (use ywc-sequential-executor or ywc-parallel-executor), or converging a spec without implementing it (use ywc-spec-ready). Existing tasks/ directories may use
   `--resume`.
 category: meta
 phase: orchestration

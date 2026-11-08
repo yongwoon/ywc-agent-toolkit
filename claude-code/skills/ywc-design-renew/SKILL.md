@@ -7,7 +7,7 @@ description: >-
   renew", "de-slop this UI", "make it look less AI-generated", "AI slop
   check", "디자인 리뉴얼", "디자인이 너무 평범해", "AI 슬롭", "デザインリニューアル",
   "AIっぽいデザインを直して". Do not use for usability/accessibility/UX review (use
-  ywc-ui-ux-review), new UI from scratch (use frontend-design/impeccable),
+  ywc-ui-ux-review), new UI from scratch (use ywc-frontend-coder or frontend-design/impeccable),
   backend or API review (use ywc-impl-review), product/business strategy
   review (use ywc-product-review), or persisting a preference without code
   changes (use ywc-review-learnings).
