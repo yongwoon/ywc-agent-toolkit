@@ -121,7 +121,7 @@ Verify the following conditions before starting:
 ```bash
 grep -qxF '.ywc-run-state.json' .gitignore 2>/dev/null || echo '.ywc-run-state.json' >> .gitignore
 RESOLVER_LAUNCHER="$(bash "${CODEX_HOME:-$HOME/.codex}/skills/scripts/select-resolver-launcher.sh" 2>&1)" || { echo "BLOCKED: ${RESOLVER_LAUNCHER#BLOCKED: }" >&2; exit 3; }
-STATE_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "scripts/update-state.py" python3)" || exit $?
+STATE_SCRIPT="$(bash "$RESOLVER_LAUNCHER" "scripts/update-state.py" python3)" || { echo "BLOCKED: resolver failed ($?)" >&2; exit 3; }
 python3 "$STATE_SCRIPT" init-parallel \
   --mode <local-merge|draft|per-task-pr|aggregate-pr> --tasks-dir <tasks-dir> \
   --waves '[{"wave":1,"tasks":["t-a","t-b"],"has_contract":true},{"wave":2,"tasks":["t-c"],"has_contract":false}]'

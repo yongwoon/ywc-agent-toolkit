@@ -766,6 +766,18 @@ run_script_test_suites() {
     fi
   done
 
+  # audit-worktrees decides which worktrees a pre-flight reports; a missed
+  # legacy path is a worktree nobody reviews before cleanup.
+  local audit_out
+  if [ ! -f scripts/test-audit-worktrees.sh ]; then
+    echo "ERROR: audit-worktrees test suite is missing: scripts/test-audit-worktrees.sh"
+    ERRORS=$((ERRORS + 1))
+  elif ! audit_out=$(bash scripts/test-audit-worktrees.sh 2>&1); then
+    echo "ERROR: audit-worktrees test suite failed: scripts/test-audit-worktrees.sh"
+    printf '%s\n' "$audit_out" | tail -n 20
+    ERRORS=$((ERRORS + 1))
+  fi
+
   # merge-dependabot scripts gate `--auto` merges on a remote-controlled
   # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
   local dependabot_test dependabot_out

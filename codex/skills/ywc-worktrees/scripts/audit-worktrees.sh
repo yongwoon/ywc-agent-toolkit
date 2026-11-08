@@ -3,6 +3,8 @@
 #
 # Audits the project worktree root used by ywc-worktrees. Resolution order:
 # .worktrees/ > CLAUDE.md worktree_root > --root > legacy ../worktree-<task>.
+# Registered legacy ../worktree-* worktrees are reported under any root, so
+# one left from before .worktrees/ existed is not silently ignored.
 #
 # Exit codes:
 #   0  Clean: no unexpected, stale, leaked, or missing worktrees
@@ -99,6 +101,7 @@ else
 fi
 
 ROOT_ABS=$(canonical_dir "$RESOLVED_ROOT")
+LEGACY_ABS=$(canonical_dir "..")
 if [ "$ROOT_KIND" = "standard" ]; then
   if [ ! -d "$ROOT_ABS" ]; then
     echo "FAIL: resolved worktree root does not exist: $ROOT_ABS"
@@ -115,13 +118,18 @@ if [ "$DO_PRUNE" -eq 1 ]; then
 fi
 
 ALL_WORKTREES=$(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print $2}' || true)
+# The first entry is the main checkout; a repo cloned as ../worktree-<x> must
+# never be reported as one of its own legacy worktrees.
+MAIN_WT=$(printf '%s\n' "$ALL_WORKTREES" | sed -n 1p)
 REGISTERED=""
 STALE=""
 while IFS= read -r WT_PATH; do
   [ -z "$WT_PATH" ] && continue
+  [ "$WT_PATH" = "$MAIN_WT" ] && continue
   case "$ROOT_KIND:$WT_PATH" in
     legacy:*/worktree-*) ;;
     standard:"$ROOT_ABS"/*) ;;
+    standard:"$LEGACY_ABS"/worktree-*) ;;
     *) continue ;;
   esac
 
