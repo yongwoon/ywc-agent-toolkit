@@ -55,7 +55,12 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "git commit --no-veri -m x", "git push --no-verif origin x",
                     "env -u X git commit -n", "sudo -u me git commit -n", "xargs -n 1 git commit -n",
                     'bash -c "git commit -n -m x"', "eval git commit -n -m x",
-                    "echo $(git commit -n -m x)", 'x="$(git commit -n -m y)"', "echo `git commit -n`"):
+                    "echo $(git commit -n -m x)", 'x="$(git commit -n -m y)"', "echo `git commit -n`",
+                    # reserved words, more wrappers, shell option clusters, process substitution, $'...'
+                    "{ git commit -n -m x; }", "if true; then git commit -n -m x; fi", "! git commit -n -m x",
+                    "while true; do git commit -n; done", "timeout 5 git commit -n -m x",
+                    "stdbuf -o0 git commit -n", "sudo bash -c 'git commit -n'", "bash -lc 'git commit -n -m x'",
+                    "cat <(git commit -n -m x)", f"git commit $'{NV}' -m x"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 
@@ -121,7 +126,14 @@ class ProtectSecretsTest(unittest.TestCase):
                  ("Glob", {"pattern": "**/.env*"}),
                  ("Glob", {"pattern": "**/*.pem"}),
                  ("Glob", {"pattern": "*", "path": "~/.ssh"}),
-                 ("Glob", {"pattern": ".ssh/id_*", "path": "~"})]
+                 ("Glob", {"pattern": ".ssh/id_*", "path": "~"}),
+                 ("Glob", {"pattern": "**/.{env,npmrc}"}),
+                 ("Glob", {"pattern": "**/.[e]nv"}),
+                 ("Glob", {"pattern": "**/id_{rsa,ed25519}"}),
+                 ("Glob", {"pattern": "**/id_*"}),
+                 ("Grep", {"pattern": "x", "glob": "{.env,a.ts}"}),
+                 ("Grep", {"pattern": "BEGIN", "path": "~"}),
+                 ("Grep", {"pattern": "x", "path": "/"})]
         for tool, ti in cases:
             with self.subTest(tool=tool, ti=ti):
                 self.assertEqual(self.check(tool, ti), "deny")
@@ -132,7 +144,14 @@ class ProtectSecretsTest(unittest.TestCase):
                  ("Grep", {"pattern": "x", "glob": "*.ts"}),
                  ("Glob", {"pattern": "**/*.md"}),
                  ("Glob", {"pattern": "**/.env.example"}),
-                 ("Glob", {"pattern": "src/**/*.py", "path": "/repo"})]
+                 ("Glob", {"pattern": "src/**/*.py", "path": "/repo"}),
+                 ("Glob", {"pattern": "**/*.json"}),
+                 ("Glob", {"pattern": "**/*.{ts,tsx}"}),
+                 ("Glob", {"pattern": "**/*"}),
+                 ("Glob", {"pattern": "**/package.json"}),
+                 ("Glob", {"pattern": "**/README*.md"}),
+                 ("Grep", {"pattern": "x", "path": "~", "glob": "*.md"}),
+                 ("Grep", {"pattern": "x", "path": "~", "type": "py"})]
         for tool, ti in cases:
             with self.subTest(tool=tool, ti=ti):
                 self.assertIsNone(self.check(tool, ti))

@@ -121,6 +121,8 @@ export CCH_SLA_WEBHOOK="https://hooks.slack.com/services/..."
 `.env`, SSH private key, credentials 파일 등에 대한 접근과 유출을 차단한다.
 파일 경로 패턴과 내용 패턴을 모두 검사한다.
 `Grep`은 `path`와 `glob`을, `Glob`은 `path`와 `pattern`을 검사한다. `~/.ssh`, `~/.aws` 같은 비밀 디렉터리와 `**/.env*` 같은 비밀 파일명 패턴을 검색하면 차단한다. `Grep`의 `pattern`은 파일 내용을 찾는 정규식이므로 검사하지 않는다.
+glob 패턴은 brace(`{a,b}`)를 펼쳐서 검사한다. 또 대표적인 비밀 파일명(`.env`, `id_rsa` 등)과 매칭되는지 확인하므로 `**/.[e]nv`나 `**/id_*`도 차단된다. 단, `*.json`처럼 `*`로 시작하는 확장자 필터는 리터럴 부분만 검사한다.
+home이나 `/` 전체를 대상으로 하는 `Grep`은 `glob`이나 `type`이 없으면 차단한다(`broad-search`).
 
 기존 설치에서 matcher가 `Read|Edit|Write|Bash`였다면 `install.sh --hooks protect-secrets`를 다시 실행한다. 기존 matcher 그룹에 있던 같은 명령은 제거되고 새 matcher로 옮겨진다.
 

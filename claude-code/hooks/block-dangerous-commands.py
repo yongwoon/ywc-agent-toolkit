@@ -120,7 +120,12 @@ WRAPPERS: dict[str, set[str]] = {
     "sudo": {"-u", "-g", "-h", "-p", "-C", "-D", "-U", "--user", "--group"},
     "command": set(), "time": set(), "nohup": set(), "exec": set(),
     "nice": {"-n"}, "xargs": {"-I", "-n", "-L", "-P", "-d", "-E", "-s", "-a"},
+    "timeout": {"-s", "-k", "--signal", "--kill-after"}, "stdbuf": {"-i", "-o", "-e"},
+    "ionice": {"-c", "-n", "-p"}, "doas": {"-u", "-C"}, "chronic": set(), "caffeinate": set(),
 }
+WRAPPER_POSITIONALS = {"timeout": 1}  # `timeout 5 git ...`: the duration precedes the command
+# Shell words that can precede a command in the same segment.
+RESERVED_WORDS = {"{", "}", "!", "if", "then", "else", "elif", "fi", "do", "done", "while", "until", "time"}
 
 
 def strip_heredocs(cmd: str) -> str:
@@ -144,6 +149,7 @@ def segments(cmd: str) -> list[list[str]] | None:
     an unquoted newline separates commands like `;` does.
     """
     text = strip_heredocs(cmd).replace("\\\n", " ")  # line continuations
+    text = re.sub(r"\$(['\"])", r"\1", text)  # $'...' / $"..." quoting → plain quotes
     lex = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
     lex.whitespace = " \t\r"
     lex.whitespace_split = True
@@ -152,9 +158,10 @@ def segments(cmd: str) -> list[list[str]] | None:
     try:
         for tok in lex:
             chars = set(tok)
-            if tok and chars <= SEPARATOR_CHARS | REDIRECT_CHARS and chars & set("<>"):
-                continue  # redirection operator
-            if tok and chars <= SEPARATOR_CHARS:
+            is_operator = bool(tok) and chars <= SEPARATOR_CHARS | REDIRECT_CHARS
+            if is_operator and chars & set("<>") and not chars & set("()"):
+                continue  # redirection operator; `<(` / `>(` start a process substitution
+            if is_operator:
                 if argv:
                     result.append(argv)
                 argv = []
@@ -171,13 +178,14 @@ def strip_prefix(argv: list[str]) -> list[str]:
     """Skip leading VAR=value assignments and wrappers (env, sudo, xargs, ...) with their options."""
     i = 0
     while i < len(argv):
-        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[i]):
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[i]) or argv[i] in RESERVED_WORDS:
             i += 1
         elif argv[i].rsplit("/", 1)[-1] in WRAPPERS:
-            takes_value = WRAPPERS[argv[i].rsplit("/", 1)[-1]]
+            name = argv[i].rsplit("/", 1)[-1]
             i += 1
             while i < len(argv) and argv[i].startswith("-"):
-                i += 2 if argv[i] in takes_value else 1
+                i += 2 if argv[i] in WRAPPERS[name] else 1
+            i += WRAPPER_POSITIONALS.get(name, 0)
         else:
             break
     return argv[i:]
@@ -227,11 +235,15 @@ def adds_everything(args: list[str]) -> bool:
 def nested_commands(argv: list[str]) -> list[str]:
     """Command text this segment runs indirectly: `bash -c`, `eval`, `$(...)`, backticks."""
     nested = [m.group(1) or m.group(2) or "" for m in SUBSTITUTION.finditer(" ".join(argv))]
-    name = argv[0].rsplit("/", 1)[-1] if argv else ""
-    if name in SHELLS and "-c" in argv[1:-1]:
-        nested.append(argv[argv.index("-c", 1) + 1])
+    cmd = strip_prefix(argv)
+    name = cmd[0].rsplit("/", 1)[-1] if cmd else ""
+    if name in SHELLS:
+        # -c may sit in a cluster (`bash -lc`); the script is the first non-option word after it
+        flags = [i for i, a in enumerate(cmd[1:], 1) if re.match(r"^-[A-Za-z]*c[A-Za-z]*$", a)]
+        if flags and flags[0] + 1 < len(cmd):
+            nested.append(cmd[flags[0] + 1])
     if name == "eval":
-        nested.append(" ".join(argv[1:]))
+        nested.append(" ".join(cmd[1:]))
     return nested
 
 
