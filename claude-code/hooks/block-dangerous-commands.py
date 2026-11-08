@@ -310,7 +310,8 @@ def env_split_string(argv: list[str], i: int) -> str | None:
             if len(opt) >= 3 and "--split-string".startswith(opt):
                 value = val if "=" in a else (argv[i + 1] if i + 1 < len(argv) else "")
                 return env_unescape(value) + " " + " ".join(argv[i + (1 if "=" in a else 2):])
-            takes_value = len(opt) >= 4 and ("--unset".startswith(opt) or "--chdir".startswith(opt))
+            # getopt_long: --u and --c are already unique among env's long options
+            takes_value = len(opt) >= 3 and ("--unset".startswith(opt) or "--chdir".startswith(opt))
             i += 2 if takes_value and "=" not in a else 1
             continue
         for j, ch in enumerate(a[1:], 1):
