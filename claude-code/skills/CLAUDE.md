@@ -403,7 +403,7 @@ A skill that calls its own script by a repo-relative script path does not resolv
 
 **(c2) Quoting** — always double-quote the expanded path, e.g. `"${CLAUDE_SKILL_DIR}/scripts/x.sh"`, so a space in `$HOME` or a plugin cache path stays one argument.
 
-**(d) Out of scope** — the shared scripts (`resolve-language.sh`, `poll-pr-reviews.sh`, `mark-complete.sh`) and the `"${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/…"` form keep their existing contract. README files and the maintainer tables in this file stay repo-relative because humans read them. Exception: `update-state.py` is called as `"${CLAUDE_SKILL_DIR}/../scripts/update-state.py"` (`"<skill-base-dir>/../scripts/update-state.py"` in references), since `scripts/install.sh` installs `claude-code/skills/scripts/` as the `scripts/` directory beside the skills and the repo-relative path does not resolve in an installed bundle.
+**(d) Shared scripts** — the `"${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/…"` form keeps its existing contract. README files and the maintainer tables in this file stay repo-relative because humans read them. The shared scripts in `claude-code/skills/scripts/` (`update-state.py`, `mark-complete.sh`, `poll-pr-reviews.sh`, `resolve-language.sh`) are called as `"${CLAUDE_SKILL_DIR}/../scripts/<name>"` (`"<skill-base-dir>/../scripts/<name>"` in references), since `scripts/install.sh` installs `claude-code/skills/scripts/` as the `scripts/` directory beside the skills and the repo-relative path does not resolve in an installed bundle.
 
 **(e) Skills that must be installed together** — a cross-skill script path resolves only when both skills sit side by side, so a partial install (`bash scripts/install.sh --cc <skill> ...`, handled by `run_cc_install` / `install_skill` in `scripts/install.sh`) must include both. The installer does not check these pairs: name both skills when installing partially. A skill-invocation dependency (the caller invokes the callee by name, no script path) still needs the callee installed, so it is listed separately. The table lists confirmed pairs only and is non-exhaustive for skill-invocation dependencies (for example `ywc-parallel-executor` and `ywc-sequential-executor` also invoke `ywc-finish-branch`).
 
@@ -511,7 +511,7 @@ language** of the documents, PR text, and commit messages they produce through t
 canonical procedure defined in `references/language-resolution.md`. Do not inline or
 approximate the precedence chain, code list, or `## Language Policy` section format in a
 SKILL.md body. The canonical mechanism is running the script — invoke
-`bash claude-code/skills/scripts/resolve-language.sh [--lang <code>]` on entering the branch
+`bash "${CLAUDE_SKILL_DIR}/../scripts/resolve-language.sh" [--lang <code>]` on entering the branch
 that needs the output language, not reading the reference file inline and not a bare
 hyperlink. `references/language-resolution.md` remains the human-maintained source of truth:
 it is not deprecated or removed — it defines exactly what the script implements, and is the

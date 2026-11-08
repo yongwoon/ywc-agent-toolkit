@@ -270,14 +270,14 @@ For `--mode normal-pr` and `--mode local-merge`:
 Use the shared marker script — it handles the `.gitignore` branch, the mandatory marker commit, and the post-move verification in one deterministic step (exits non-zero if anything failed):
 
 ```bash
-bash claude-code/skills/scripts/mark-complete.sh <tasks-dir> <task-name> [--push | --defer-push]
+bash "${CLAUDE_SKILL_DIR}/../scripts/mark-complete.sh" <tasks-dir> <task-name> [--push | --defer-push]
 ```
 
 The marker script runs `"${CLAUDE_SKILL_DIR}/../ywc-task-generator/scripts/compact-dependency-graph.py"` between the move and marker commit, using the same resolved `<tasks-dir>`, and stages the resulting graph when it is tracked. The heading-based compactor retroactively handles existing graphs: completed phases become `## Phase NNNNNN — done` plus a `- Completed: ...` bullet, while fully completed Parallel Execution Notes and Visual Dependency Graph sections are removed. In worktree mode, the script path may come from the main checkout, but `<tasks-dir>` must resolve inside `<path>`.
 
 Why a script, not inline git: `git mv` cannot stage a path inside a gitignored `<tasks-dir>` (the move produces no diff), so that case needs a plain `mv` plus an `--allow-empty` marker commit, while a tracked `<tasks-dir>` uses `git mv`. The script detects which applies. The `chore: mark <task-name> as completed` commit is **mandatory in both cases** — it is the `git log` audit boundary that humans, audit tooling, downstream skills, the Completion Report, and resume / replay all rely on to verify task completion at a specific commit. The script then verifies the move (destination exists, source gone, marker commit at HEAD) and exits non-zero if any check fails; **do not declare `DONE` on a non-zero exit** — investigate and retry.
 
-When `--worktree-path <path>` is set, run `mark-complete.sh` so its `git check-ignore` / `git mv` / `git commit` and post-move `git log` operate on the worktree (invoke it with the worktree as the working directory, e.g. `cd <path> && bash <repo>/claude-code/skills/scripts/mark-complete.sh …`); the `<tasks-dir>` move acts on `<path>/<tasks-dir>/…` directly, and the verification checks resolve against the worktree's HEAD (see [Worktree-path mode](#worktree-path-mode)).
+When `--worktree-path <path>` is set, run `mark-complete.sh` so its `git check-ignore` / `git mv` / `git commit` and post-move `git log` operate on the worktree (invoke it with the worktree as the working directory, e.g. `cd <path> && bash "${CLAUDE_SKILL_DIR}/../scripts/mark-complete.sh" …`); the `<tasks-dir>` move acts on `<path>/<tasks-dir>/…` directly, and the verification checks resolve against the worktree's HEAD (see [Worktree-path mode](#worktree-path-mode)).
 
 **Push strategy**: pass `--push` to `mark-complete.sh` for `--mode local-merge` and for `--mode normal-pr` when `--defer-push` is **not** set. Otherwise pass `--defer-push` (the script's default) so the caller can batch completion-marker commits and push them once at the end of the range. The caller is responsible for the eventual push when deferral is requested.
 

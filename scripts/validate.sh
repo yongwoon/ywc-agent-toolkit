@@ -538,6 +538,24 @@ check_agent_file() {
     echo "ERROR: agents/$base.md name '$declared_name' does not match filename"
     ERRORS=$((ERRORS + 1))
   fi
+
+  # score.py waives the trigger-positives floor on the `dispatch-only` tag alone,
+  # so the tag and the description must agree: a description that opens with
+  # "Dispatch-only:" or "Use only as" needs the tag, and the tag needs that opening.
+  local desc_head says_dispatch=0 has_tag=0
+  desc_head="$(awk 'NR > 1 && /^---$/ { exit }
+    /^description:/ { sub(/^description:[[:space:]]*([>|][-+]?)?[[:space:]]*/, ""); if ($0 != "") { print; exit } f = 1; next }
+    f && NF { sub(/^[[:space:]]+/, ""); print; exit }' "$file")"
+  case "$desc_head" in
+    "Dispatch-only:"* | "Use only as "*) says_dispatch=1 ;;
+  esac
+  if grep -Eq '^tags:.*[][[:space:],]dispatch-only([],[:space:]]|$)' "$file"; then
+    has_tag=1
+  fi
+  if [ "$says_dispatch" != "$has_tag" ]; then
+    echo "ERROR: agents/$base.md: description opening and the dispatch-only tag disagree (description dispatch-only=$says_dispatch, tag=$has_tag)"
+    ERRORS=$((ERRORS + 1))
+  fi
 }
 
 check_codex_agent_file() {

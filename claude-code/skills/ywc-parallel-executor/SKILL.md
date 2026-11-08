@@ -352,7 +352,7 @@ For each task in the wave **sequentially** (topological order within the wave) �
 **For `--per-task-pr`** — the merge already happened in (a) step 5, so do **not** call finish-branch (its `local-merge` would attempt a redundant merge, and its `normal-pr` assumes the feature branch is the current checkout, which it is not under the worktree model). Instead, run the same Mark Complete that finish-branch would, inline, then push immediately:
 
 ```bash
-bash claude-code/skills/scripts/mark-complete.sh <tasks-dir> <task-name> --push
+bash "${CLAUDE_SKILL_DIR}/../scripts/mark-complete.sh" <tasks-dir> <task-name> --push
 ```
 
 This is the same shared marker script `ywc-finish-branch` Step 7 uses. It moves the task into `completed/`, writes the mandatory `chore: mark <task-name> as completed` commit (handling the gitignored-`<tasks-dir>` case with a plain `mv` + `--allow-empty` commit), pushes the current branch — which under this flow is the synced base — and verifies the move (destination exists, source gone, marker at HEAD). A **non-zero exit** means the move or verification failed: mark the task `BLOCKED`, do not treat it as delivered. A `--per-task-pr` task is delivered only when its PR is merged (a step 5), local base is synced (a step 6), and this marker commit is pushed.

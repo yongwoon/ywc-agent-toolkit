@@ -22,7 +22,7 @@ no per-call prompt. Reading the policy back is a separate `--show` mode.
 This skill only **writes** the policy. How consuming skills **read and resolve** it (the
 precedence chain, code list, and section format) is defined once elsewhere:
 
-> After normalizing the input (below), run `bash claude-code/skills/scripts/resolve-language.sh --emit-section <code>`.
+> After normalizing the input (below), run `bash "${CLAUDE_SKILL_DIR}/../scripts/resolve-language.sh" --emit-section <code>`.
 > It prints the canonical `## Language Policy` section body (with `<code>` substituted) — write it verbatim into the target `CLAUDE.md`.
 
 ## Rationalization Defense

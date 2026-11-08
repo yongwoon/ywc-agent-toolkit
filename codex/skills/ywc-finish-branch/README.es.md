@@ -4,72 +4,74 @@
 
 # ywc-finish-branch
 
-Un Skill de Codex que entrega una Rama de Feature a su Rama Base en una sola llamada. Cubre Mark-PR-ready, CI Wait + Bot Review Polling, Merge (PR o Local), Post-Merge Verification, Mark Task Complete y Local Branch Cleanup.
+Una Habilidad de Codex que entrega una rama de características a su rama base en una sola llamada. Cubre Mark-PR-ready, CI Wait + Bot Review Polling, Merge (PR o Local), Post-Merge Verification, Mark Task Complete y Local Branch Cleanup.
 
 ## Descripción general
 
-Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequential-executor` y `ywc-parallel-executor` anteriormente incluían por separado. Dado una Rama de Feature para una Tarea con verificación exitosa, este Skill la lleva hasta el estado "completado".
+Una extracción de responsabilidad única de la lógica de entrega que `ywc-sequential-executor` y `ywc-parallel-executor` previamente alineaban por separado. Dada una rama de características para una tarea con verificación aprobada, esta Habilidad la lleva el resto del camino a "done".
 
-### Características principales
+### Características clave
 
-- **Despacho de modo en un lugar**: `normal-pr` / `local-merge` / `draft` / `skip-ci-wait` / `per-task-pr`
-- **Puerta dura post-merge**: confirma que el merge realmente se ejecutó vía `git log -1 --format="%s"`
-- **Definición de Hecho aplicada**: mueve el directorio de tarea a `<tasks-dir>/completed/` con una puerta de verificación
-- **Compatible con polling de revisión de bot**: `--bot-action sequential|parallel` coincide con la estrategia CI del llamador
-- **Modo worktree-path**: `--worktree-path <path>` ejecuta la entrega con `git -C <path>` para worktrees secuenciales de ejecución, mientras la creación/eliminación queda en el llamador
-- **Pass-through de idioma de PR**: `--pr-lang en|ja|ko|zh|es` crea títulos `[<TASK_NUMBER>] <translated-slug>` y pasa el mismo valor a `ywc-create-pr --lang <pr-lang>`, manteniendo sin cambios los machine identifiers
+- **Envío de modo en un solo lugar**: `normal-pr` / `local-merge` / `draft` / `skip-ci-wait` / `per-task-pr`
+- **Puerta difícil posterior a la fusión**: confirma que la fusión realmente se ejecutó a través de `git log -1 --format="%s"`
+- **Definición de Done aplicada**: mueve el directorio de tareas a `<tasks-dir>/completed/` con una puerta de verificación
+- **Compatible con sondeo de revisión de bot**: `--bot-action sequential|parallel` coincide con la estrategia de CI de la persona que llama
+- **Modo worktree-path**: `--worktree-path <path>` define el alcance de los comandos de entrega con `git -C <path>` para worktrees de nivel de ejecución secuencial, mientras que la creación/eliminación permanece con la persona que llama
+- **Paso de idioma de PR**: `--pr-lang en|ja|ko|zh|es` construye títulos `[<TASK_NUMBER>] <translated-slug>` y pasa el mismo valor a `ywc-create-pr` como `--lang <pr-lang>`, manteniendo identificadores de máquina sin cambios
 
 ## Uso
 
-### Por defecto (basado en PR)
+### Predeterminado (basado en PR)
 
 ```
-$ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop
+$ywc-finish-branch --mode normal-pr --branch feature/yk-000001-010-db-create-users \
+  --task-name yk-000001-010-db-create-users --base-branch develop
 ```
 
-### Merge Local
+Los nombres de tarea sin prefijo existentes (`000001-010-...`) y numéricos heredados (`001010-...`) permanecen válidos y se mueven utilizando sus nombres completos originales.
+
+### Fusión local
 
 ```
 $ywc-finish-branch --mode local-merge --branch feature/000001-010-db-create-users \
   --task-name 000001-010-db-create-users --base-branch main
 ```
 
-### Modo Range con push diferido
+### Modo de rango con empuje diferido
 
 ```
 $ywc-finish-branch --mode normal-pr --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --defer-push
 ```
 
-### Idioma del PR
+### Idioma de PR
 
 ```
 $ywc-finish-branch --mode normal-pr --branch feature/000001-010-db-create-users \
-  --task-name 000001-010-db-create-users --base-branch develop --pr-lang es
+  --task-name 000001-010-db-create-users --base-branch develop --pr-lang zh
 ```
 
 Valores admitidos: `en`, `ja`, `ko`, `zh`, `es`.
 
-### Modo worktree path
+### Modo worktree-path
 
 ```
 $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
   --task-name <task-name> --base-branch develop --worktree-path ../worktree-run
 ```
 
-### Disparadores en lenguaje natural
+### Activadores de lenguaje natural
 
 ```
-"finish branch"
-"deliver this branch"
+"terminar rama"
+"entregar esta rama"
 "branch 마무리"
 "ブランチ完了"
 ```
 
 ## Comparación de modos
 
-| Modo | PR | Espera CI | Merge | Marcar Completo | Limpieza |
+| Modo | PR | Espera de CI | Fusión | Marcar completado | Limpieza |
 | --- | --- | --- | --- | --- | --- |
 | `normal-pr` | sí (delega a `ywc-create-pr`) | sí | `gh pr merge --delete-branch` | sí | `git branch -d` |
 | `local-merge` | no | no | `git merge --no-ff` + push | sí | sí |
@@ -79,10 +81,10 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## Requisitos previos
 
-- CLI `gh` instalada y autenticada (modos basados en PR)
+- `gh` CLI instalado y autenticado (modos basados en PR)
 - Árbol de trabajo limpio
-- El llamador ya pasó su puerta de verificación (lint / typecheck / test)
-- Pre-autorización configurada en `Codex approval settings or the project-local policy file` (ver `references/local-merge-permissions.md`)
+- La persona que llama ya ha pasado su puerta de verificación (lint / typecheck / test)
+- Preautorización configurada en `Codex approval settings o el archivo de política local del proyecto` (ver `references/local-merge-permissions.md`)
 
 ## Herramientas utilizadas
 
@@ -90,9 +92,9 @@ $ywc-finish-branch --mode local-merge --branch feature/<task-name> \
 
 ## Integración
 
-- **Upstream**: `ywc-sequential-executor` (reemplaza sus Pasos 5–8), `ywc-parallel-executor` (reemplaza la porción de merge + mark-complete de los Pasos 4e–4f)
-- **Delegación interna**: `ywc-create-pr` (Paso 2), `ywc-handle-pr-reviews` (bucle de polling del Paso 4)
+- **Upstream**: `ywc-sequential-executor` (reemplaza sus pasos 5–8), `ywc-parallel-executor` (reemplaza la parte de fusión + marcar completado del paso 4e–4f)
+- **Delegación interna**: `ywc-create-pr` (Paso 2), `ywc-handle-pr-reviews` (Paso 4, bucle de sondeo de bot)
 
 ## Seguridad operativa
 
-La eliminación remota separada debe pasar estas guardas en orden: una allowlist de rama más `git check-ref-format "refs/heads/$branch"`, una única URL de push de `origin` fijada, un repositorio calificado con host vinculado mediante `env -u GH_HOST gh` (y su parent si es un fork), el tip remoto exacto, una comprobación incondicional de PR fusionado con la base prevista y el tip actual, cero PR abiertos como última comprobación, y un delete con lease de tip exacto. Queda una breve race window entre la comprobación de PR abiertos y el delete.
+La eliminación remota separada pasa estas protecciones en orden: una lista permitida de ramas más `git check-ref-format "refs/heads/$branch"`, una URL de inserción `origin` única anclada, un repositorio calificado por host vinculado a través de `env -u GH_HOST gh` (y su elemento padre para una bifurcación), la punta remota exacta, una verificación de PR fusionado incondicional en la base prevista y la punta actual, un recuento de PR abierto de cero como la última verificación y una eliminación de concesión de punta exacta. Permanece una pequeña ventana de carrera entre la verificación de PR abierto y la eliminación.
