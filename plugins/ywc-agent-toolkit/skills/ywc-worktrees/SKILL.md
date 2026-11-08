@@ -87,9 +87,10 @@ No side effects. Safe to call from `--dry-run` paths in upstream skills.
 
 ### `--mode create`
 
+0. Before the audit or any path is built, on both paths (new branch and `--existing-branch`): `--task-name` forms a path component, so it must match `^[A-Za-z0-9_-]+$` (the same allowlist as prune); otherwise `NEEDS_CONTEXT: invalid task name` with no git command.
 1. Run `--mode audit` before creation; stop on unexpected findings, then run `--mode resolve` internally to get the worktree root.
 2. Verify the target path `<root>/<task-name>` does not already exist. If it does, exit 1 with a descriptive error — never overwrite.
-3. For a new branch, validate the quoted branch/base with `git check-ref-format --branch`, resolve a commit at the exact local base ref or exact `origin` base ref, and run `git worktree add <resolved-path> -b <branch> <base-start-point>`. Missing/invalid/unreachable input is `NEEDS_CONTEXT`; other Git failures are `BLOCKED`.
+3. For a new branch, validate each of the branch and base in-process first — whole-string `^[A-Za-z0-9._/-]+$`, no leading `-`, no `..` — then with `git check-ref-format "refs/heads/<value>"`, before any other git command, resolve a commit at the exact local base ref or exact `origin` base ref, and run `git worktree add <resolved-path> -b <branch> <base-start-point>`. Missing/invalid/unreachable input is `NEEDS_CONTEXT`; other Git failures are `BLOCKED`.
 4. With `--existing-branch`, Read [references/existing-branch.md](references/existing-branch.md). It defines local/exact-origin lookup, checked-out/dirty/locked refusal, and the runnable command recipe; never replace the existing branch or infer a different remote.
 5. Verify the worktree was registered: `git worktree list --porcelain | grep <resolved-path>` returns a row.
 6. Print the resolved worktree path on stdout for the caller to capture.

@@ -107,7 +107,8 @@ def read_inputs(title_arg: str | None) -> list[tuple[int | None, str]]:
             continue
         if "\t" in line:
             num_str, _, title = line.partition("\t")
-            number = int(num_str) if num_str.strip().lstrip("#").isdigit() else None
+            digits = num_str.strip().lstrip("#")
+            number = int(digits) if digits.isdecimal() else None
             inputs.append((number, title))
         else:
             inputs.append((None, line))
