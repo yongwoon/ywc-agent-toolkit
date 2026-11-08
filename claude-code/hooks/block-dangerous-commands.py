@@ -294,6 +294,17 @@ def adds_everything(args: list[str]) -> bool:
 def nested_commands(argv: list[str]) -> list[str]:
     """Command text this segment runs indirectly: `bash -c`, `eval`, `$(...)`, backticks."""
     nested = [m.group(1) or m.group(2) or "" for m in SUBSTITUTION.finditer(" ".join(argv))]
+    # `env -S 'git commit -n'`: the split string is itself a command line.
+    for i, a in enumerate(argv):
+        if "env" not in (w.rsplit("/", 1)[-1] for w in argv[:i]):
+            continue
+        rest = " ".join(argv[i + 1:])
+        if a in ("-S", "--split-string") and i + 1 < len(argv):
+            nested.append(rest)
+        elif a.startswith("--split-string="):
+            nested.append(a.split("=", 1)[1] + " " + rest)
+        elif a.startswith("-S") and len(a) > 2:
+            nested.append(a[2:] + " " + rest)
     cmd = strip_prefix(argv)
     name = cmd[0].rsplit("/", 1)[-1] if cmd else ""
     if name in SHELLS:
