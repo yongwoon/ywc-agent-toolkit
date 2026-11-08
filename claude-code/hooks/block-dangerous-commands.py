@@ -294,15 +294,15 @@ def adds_everything(args: list[str]) -> bool:
 ENV_SHORT_WITH_VALUE = set("uCS")
 
 
-def env_split_string(argv: list[str]) -> str | None:
-    """The command line an `env -S` / `--split-string` runs, parsed like getopt: only the
-    options of the leading `env` itself (`-iS'...'`, `--split=...` prefixes) count."""
-    i = 0
-    while i < len(argv) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[i]):
-        i += 1
-    if i >= len(argv) or argv[i].rsplit("/", 1)[-1] != "env":
-        return None
-    i += 1
+def env_split_strings(argv: list[str]) -> list[str]:
+    """Split strings of every `env` word (`sudo env -S ...`, `timeout 5 env -S ...`)."""
+    return [s for k, w in enumerate(argv) if w.rsplit("/", 1)[-1] == "env"
+            for s in [env_split_string(argv, k + 1)] if s is not None]
+
+
+def env_split_string(argv: list[str], i: int) -> str | None:
+    """The command line an `env -S` / `--split-string` runs, parsed like getopt from
+    env's own options starting at argv[i] (`-iS'...'`, `--split=...` prefixes)."""
     while i < len(argv) and argv[i].startswith("-") and argv[i] != "--":
         a = argv[i]
         if a.startswith("--"):
@@ -310,7 +310,8 @@ def env_split_string(argv: list[str]) -> str | None:
             if len(opt) >= 3 and "--split-string".startswith(opt):
                 value = val if "=" in a else (argv[i + 1] if i + 1 < len(argv) else "")
                 return env_unescape(value) + " " + " ".join(argv[i + (1 if "=" in a else 2):])
-            i += 2 if opt in ("--unset", "--chdir") and "=" not in a else 1
+            takes_value = len(opt) >= 4 and ("--unset".startswith(opt) or "--chdir".startswith(opt))
+            i += 2 if takes_value and "=" not in a else 1
             continue
         for j, ch in enumerate(a[1:], 1):
             if ch in ENV_SHORT_WITH_VALUE:
@@ -324,17 +325,31 @@ def env_split_string(argv: list[str]) -> str | None:
     return None
 
 
+ENV_ESCAPES = {"_": " ", "t": "\t", "n": "\n", "r": "\r", "f": "\f", "v": "\v",
+               "\\": "\\\\", "#": "#", "$": "\\$", '"': '\\"', "'": "\\'"}
+
+
 def env_unescape(s: str) -> str:
-    """env -S escapes: `\\_` is a space, `\\c` ends the string; the rest is left to the tokenizer."""
-    return s.split("\\c", 1)[0].replace("\\_", " ")
+    """env -S escapes, left to right: `\\_` → space, `\\c` stops, `\\\\` stays one escaped
+    backslash for the tokenizer; unknown escapes are kept as written."""
+    out, i = [], 0
+    while i < len(s):
+        if s[i] == "\\" and i + 1 < len(s):
+            ch = s[i + 1]
+            if ch == "c":
+                break
+            out.append(ENV_ESCAPES.get(ch, s[i:i + 2]))
+            i += 2
+            continue
+        out.append(s[i])
+        i += 1
+    return "".join(out)
 
 
 def nested_commands(argv: list[str]) -> list[str]:
     """Command text this segment runs indirectly: `bash -c`, `eval`, `$(...)`, backticks."""
     nested = [m.group(1) or m.group(2) or "" for m in SUBSTITUTION.finditer(" ".join(argv))]
-    split = env_split_string(argv)
-    if split is not None:
-        nested.append(split)
+    nested.extend(env_split_strings(argv))
     cmd = strip_prefix(argv)
     name = cmd[0].rsplit("/", 1)[-1] if cmd else ""
     if name in SHELLS:

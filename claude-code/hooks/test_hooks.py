@@ -72,7 +72,10 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "env -S 'git commit -n -m x'", "env --split-string='git commit -n'",
                     "env -S'git commit -n'", "/usr/bin/env -S 'git' commit -n",
                     "env -iS'git commit -n'", "env --split='git commit -n'",
-                    "env -S 'git\\_commit\\_-n'", "env -u X -S 'git commit -n'"):
+                    "env -S 'git\\_commit\\_-n'", "env -u X -S 'git commit -n'",
+                    "sudo env -S 'git commit -n'", "timeout 5 env -S 'git commit -n'",
+                    "nice -n 5 env -S 'git commit -n'", "env --un X -S 'git commit -n'",
+                    "env -S 'git commit -m a\\\\c -n'"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 
