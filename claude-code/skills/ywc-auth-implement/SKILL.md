@@ -25,6 +25,7 @@ When tempted to bypass a rule, check this table first:
 | "MFA can be added in a follow-up task" | Deferring MFA is a valid outcome only when the user explicitly defers it during the policy interview with the risk stated back to them. Silently dropping it from the plan is not deferral, it is scope loss. |
 | "Security audit passed on the previous run, cache the recommendation now" | Caching eligibility is gated on E2E passing too, not audit alone (FR-5/FR-8). A Critical/High-clean audit with E2E still pending is `DONE_WITH_CONCERNS`, not cache-eligible. |
 | "The legal draft reads complete, present it as final" | Every ToS/Privacy Policy draft from `ywc-doc-writer` carries a "draft pending legal review" label for its entire lifetime in this flow — there is no state where this skill presents it as final. |
+| "The spec is converged — one `ywc-backend-coder` dispatch for the whole backend is faster" | A Medium/Large spec goes through `ywc-task-generator` first, and each generated task is its own dispatch. Its safety invariants keep a DB migration and a new library in separate tasks, so they are never bundled into one change with the code that uses them. |
 | "Just list the frameworks this skill supports so recommendations are consistent" | The spec explicitly forbids a fixed or "supported" stack list (AC5) — v1 ships zero stack playbooks and grows them only from audited, E2E-passed recommendations. A hardcoded list becomes stale and blocks legitimate stacks outside it. |
 
 **Violating the letter of these rules is violating the spirit.** An auth flow that skips interview categories, invents crypto, or caches before the security/E2E gates pass hands the user a plausible-looking but unverified implementation.
@@ -56,11 +57,21 @@ Recommend battle-tested libraries or managed services using only stack evidence 
 
 > **Action required when stack evidence is insufficient for a direct recommendation**: Read [references/generic-fallback.md](references/generic-fallback.md) for the fallback research procedure and playbook-caching mechanics.
 
-Pass the policy interview and library recommendation results to `/ywc-plan --no-converge` to generate a plan/spec (this skill owns the convergence decision). If `/ywc-plan` did not print a `✅ Plan ready:` or `✅ Spec drafted:` line in this run, stop here and report why it stopped; use only the path named in this run's handoff, never a `plan.md` or spec left over from an earlier run. If classified Medium or Large, run `/ywc-spec-ready --spec <path>`; if it does not return `DONE`, stop before Implementation Dispatch and report `BLOCKED` (or `NEEDS_CONTEXT` when the report names missing input) with its Completion Report. If classified Small, use the generated `plan.md` as-is. Pass the converged spec path (or the Small `plan.md` path) into every dispatch prompt below. Before dispatch, compare the MFA, session, and consent policy in the dispatch input (the converged spec, or the Small `plan.md`) with the Policy Interview Summary; if an approved or explicitly deferred item changed, get the user's approval and record it in the Policy Interview Summary (the summary every dispatch prompt and the E2E gate read), and do not dispatch until that approval is recorded. After an approved policy change, re-check that the library recommendation supports the approved policy; if it does not, update the recommendation, the dispatch input, and the Policy Interview Summary before any dispatch.
+Pass the policy interview and library recommendation results to `/ywc-plan --no-converge` to generate a plan/spec (this skill owns the convergence decision). If `/ywc-plan` did not print a `✅ Plan ready:` or `✅ Spec drafted:` line in this run, stop here and report why it stopped; use only the path named in this run's handoff, never a `plan.md` or spec left over from an earlier run. If classified Medium or Large, run `/ywc-spec-ready --spec <path>`; if it does not return `DONE`, stop before Implementation Dispatch and report `BLOCKED` (or `NEEDS_CONTEXT` when the report names missing input) with its Completion Report. If classified Small, use the generated `plan.md` as-is. If classified Medium or Large and `ywc-spec-ready` returned `DONE`, run `/ywc-task-generator <spec-path>`; if it does not finish with the new task directories, stop before Implementation Dispatch and report its status. Pass the converged spec path (or the Small `plan.md` path) into every dispatch prompt below. Before dispatch, compare the MFA, session, and consent policy in the dispatch input (the converged spec, or the Small `plan.md`) with the Policy Interview Summary; if an approved or explicitly deferred item changed, get the user's approval and record it in the Policy Interview Summary (the summary every dispatch prompt and the E2E gate read), and do not dispatch until that approval is recorded. After an approved policy change, re-check that the library recommendation supports the approved policy; if it does not, update the recommendation, the dispatch input, and the Policy Interview Summary before any dispatch.
 
 ## Implementation Dispatch
 
 Dispatch, do not implement. Each direct-dispatch prompt below instructs the agent to follow the `ywc-tdd-ritual` cycle and to run `ywc-verify-done` before claiming completion. `ywc-tdd-ritual` is a discipline the dispatched agent follows, not a nested dispatcher this skill calls.
+
+**Dispatch unit.**
+
+- **Small** — one backend and one frontend dispatch against `plan.md`. `ywc-plan` never classifies a change with a DB migration or a new library as Small.
+- **Medium/Large** — one dispatch per task directory that `ywc-task-generator` created in this run, in the order of `<tasks-dir>/dependency-graph.md`. Pick the prompt by the task's category: `ui` → the frontend prompt; every other category → the backend prompt.
+  - Append `Implement only the task at <tasks-dir>/<task-id>/ and read its files first.` to the prompt.
+  - Never merge two tasks into one dispatch. A `db` (migration) task and a `lib` (library introduction) task are each their own dispatch.
+  - Start a task only after every task it depends on has resolved to a clean integration state under the status rules in Security, E2E, and PR Gates.
+
+The legal-page dispatch is separate from the task dispatches and runs once.
 
 > **Action required before dispatching any subagent below**: Read [../references/subagent-status-actions.md](../references/subagent-status-actions.md) — every dispatch below must apply its §3.5 Return-payload contract verbatim.
 
@@ -160,8 +171,8 @@ E2E covers only interview-approved items (sign-up/sign-in/reset only if email/pa
 <library/service + evidence, or ywc-tech-research routing>
 
 ## Dispatched Subagents
-- ywc-backend-coder: <Status | summary>
-- ywc-frontend-coder: <Status | summary>
+- ywc-backend-coder: <Status | summary> (one line per task on the Medium/Large path)
+- ywc-frontend-coder: <Status | summary> (one line per task on the Medium/Large path)
 - ywc-doc-writer: <Status | summary>
 
 ## Security / E2E Gate
@@ -184,5 +195,5 @@ DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 ## Integration
 
 - **Upstream**: direct user invocation when an auth feature is requested.
-- **Downstream**: `ywc-plan --no-converge` → `ywc-spec-ready` (this skill calls them for plan/spec convergence); `Task(subagent_type: ywc-backend-coder\|ywc-frontend-coder)` for implementation, `Task(subagent_type: ywc-doc-writer)` for legal pages, `ywc-security-audit` and `ywc-e2e-test-strategy` for the delivery gates, `ywc-create-pr` for the non-blocking PR suggestion.
+- **Downstream**: `ywc-plan --no-converge` → `ywc-spec-ready` (this skill calls them for plan/spec convergence); `ywc-task-generator` (Medium/Large task split before dispatch); `Task(subagent_type: ywc-backend-coder\|ywc-frontend-coder)` for implementation, `Task(subagent_type: ywc-doc-writer)` for legal pages, `ywc-security-audit` and `ywc-e2e-test-strategy` for the delivery gates, `ywc-create-pr` for the non-blocking PR suggestion.
 - **Must not be paired with**: implementing application auth code directly in this skill's own context — that always routes through the named-agent dispatches above.

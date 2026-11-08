@@ -47,7 +47,26 @@ ywc-worktrees --mode create --task-name run-<slug> --branch <integration-branch>
 
 The worktree root itself is resolved by `ywc-worktrees`'s priority chain (`.worktrees/` > CLAUDE.md `worktree_root` > `--root` > `../` fallback); this skill adds **no** new root argument (FR-1.2).
 
-**Publish a newly created integration branch (`--local-merge` and PR modes)**: when §A7 W8 created `integration/run-<slug>` and the delivery mode is `normal-pr`, `--draft`, `--skip-ci-wait`, or `--local-merge`, first hold the name in a variable (`b="<integration-branch>"`) and run `rows=$(git -C "$WT" ls-remote origin "refs/heads/$b")`. A non-zero exit (network, authentication) → stop with `BLOCKED` quoting git's stderr. `ls-remote` patterns tail-match, so `refs/heads/feature/refs/heads/$b` can also print: decide existence only by an exact ref field, `printf '%s\n' "$rows" | awk -F'\t' -v r="refs/heads/$b" '$2==r{f=1} END{exit !f}'` (the name goes in through `-v`, never into the awk program text). The slug was settled before the audit (see Naming), so `b` contains only `[A-Za-z0-9_/-]` and is safe to pass as a shell argument. No exact line (no such remote branch) → run `git -C "$WT" push -u origin "$b"` right after capturing `$WT`; an exact line (a same-named branch already exists on origin, e.g. from another run) → stop with `BLOCKED: integration branch already exists on origin` and never push onto it. For PR modes, this push gives the per-task PRs a base on origin. For `--local-merge`, it lets the first `git pull origin <integration-branch>` in `ywc-finish-branch` succeed. A push failure is a `git push` rejection (allowed stop). Any stop here happens before `$WT/.ywc-run-state.json` exists, so Resume Detection cannot find this run and a re-run's `ywc-worktrees --mode create` exits 1 on the existing path: report the cleanup command `ywc-worktrees --mode prune --task-name run-<slug> --branch <integration-branch>` (run from the main checkout; it removes the worktree and the unpublished local branch) so the next run starts fresh. `--aggregate-pr` skips this push: it targets the real base.
+**Publish a newly created integration branch (`--local-merge` and PR modes)**: when §A7 W8 created `integration/run-<slug>` and the delivery mode is `normal-pr`, `--draft`, `--skip-ci-wait`, or `--local-merge`, claim the remote branch right after capturing `$WT` with one atomic create-only push. A separate existence check followed by a push is not enough: a concurrent run can publish the same name in between. A plain create-only push is not enough either: two runs that start from the same trunk tip would push the same SHA, and git reports `Everything up-to-date` (exit 0) without checking the lease. So each run pushes its own claim commit:
+
+```bash
+b="<integration-branch>"
+n=$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n'); test "${#n}" -eq 16 || exit 1
+c=$(git -C "$WT" commit-tree "HEAD^{tree}" -p HEAD -m "chore: claim ${b}" -m "Run-Nonce: ${n}") || exit 1
+git -C "$WT" push --force-with-lease="refs/heads/${b}:" origin "${c}:refs/heads/${b}" \
+  && git -C "$WT" merge --ff-only "$c" \
+  && git -C "$WT" branch --set-upstream-to="origin/${b}" "$b"
+```
+
+Run the block in one Bash call: shell variables do not survive between calls.
+
+Hold the name in `b`; the slug was settled before the audit (see Naming), so `b` contains only `[A-Za-z0-9_/-]` and is safe as a shell argument. Write every variable next to a `:` in braces (`"${c}:refs/heads/${b}"`): in zsh, `$c:r` is a history modifier. The nonce makes the claim commit's SHA unique to this run. The empty value after `refs/heads/${b}:` means "this ref must not exist", and the server applies that check and the ref creation as one update. `commit-tree` writes the commit object without moving the local branch, so a failed claim leaves the local `integration/run-<slug>` at its start point and the prune below can still delete it.
+
+- **Nonce or `commit-tree` failure** → stop with `BLOCKED` quoting the error.
+- **Push succeeds** → the block then fast-forwards the local branch to the claim commit and sets its upstream; a failure in either step → `BLOCKED` quoting git. The integration branch now starts with one empty claim commit, which the final integration→trunk PR carries. For PR modes, the published branch is the per-task PRs' base on origin. For `--local-merge`, it lets the first `git pull origin <integration-branch>` in `ywc-finish-branch` succeed.
+- **Push fails** → classify it once with `rows=$(git -C "$WT" ls-remote origin "refs/heads/${b}")` and an exact ref-field match, `printf '%s\n' "$rows" | awk -F'\t' -v r="refs/heads/${b}" '$2==r{f=1} END{exit !f}'`. `ls-remote` patterns tail-match, so `refs/heads/feature/refs/heads/${b}` can also print, and the name goes in through `-v`, never into the awk program text. An exact line (another run owns the name; git's push error says `stale info`) → `BLOCKED: integration branch already exists on origin`, and never push onto it. Otherwise → `BLOCKED` quoting the push's stderr (network, authentication, or a rejected push).
+
+Any stop here happens before `$WT/.ywc-run-state.json` exists, so Resume Detection cannot find this run and a re-run's `ywc-worktrees --mode create` exits 1 on the existing path: report the cleanup command `ywc-worktrees --mode prune --task-name run-<slug> --branch <integration-branch>` (run from the main checkout; it removes the worktree and the unpublished local branch) so the next run starts fresh. `--aggregate-pr` skips this claim: it targets the real base.
 
 ### 3. State file relocation + 2-stage Resume Detection (§A2)
 
@@ -107,6 +126,7 @@ A Docker stack started inside the worktree can collide with the host's existing 
 
 - **worktree path already exists** → `ywc-worktrees --mode create` exits 1; surface + stop, never overwrite.
 - **integration branch already checked out** → `git worktree add` fails loud; surface + stop.
+- **concurrent run claims the same integration branch** → only one claim push can create `refs/heads/integration/run-<slug>`; the other stops with `BLOCKED: integration branch already exists on origin` before any task runs.
 - **`--base-branch` is a trunk** → create a new `integration/run-<slug>`; never check the trunk itself into the worktree.
 - **run interrupted (BLOCKED / DONE_WITH_CONCERNS)** → worktree preserved, prune skipped, path reported; resume re-enters the worktree.
 - **stale worktree from a prior interrupted run** → the Pre-flight audit detects and (for genuinely leaked, non-preserved trees) cleans it; unresolved in-progress work is surfaced + stop.
