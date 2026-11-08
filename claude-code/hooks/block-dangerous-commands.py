@@ -142,6 +142,28 @@ def strip_heredocs(cmd: str) -> str:
     return "\n".join(out)
 
 
+def drop_dollar_quotes(text: str) -> str:
+    """`$'...'` / `$"..."` → plain quotes wherever bash would read them (`--$'no-verify'` too),
+    but not inside single or double quotes, where `$'` is literal text."""
+    out: list[str] = []
+    quote = ""
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch == "\\" and quote != "'":
+            out.append(text[i:i + 2])
+            i += 2
+            continue
+        if not quote and ch == "$" and text[i + 1:i + 2] in ("'", '"'):
+            i += 1
+            continue
+        if ch in ("'", '"') and quote in ("", ch):
+            quote = "" if quote else ch
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def segments(cmd: str) -> list[list[str]] | None:
     """argv per command segment, or None when the command cannot be tokenized.
 
@@ -149,8 +171,7 @@ def segments(cmd: str) -> list[list[str]] | None:
     an unquoted newline separates commands like `;` does.
     """
     text = strip_heredocs(cmd).replace("\\\n", " ")  # line continuations
-    # $'...' / $"..." quoting → plain quotes, only where `$` starts a word (not inside "a$'b").
-    text = re.sub(r"(?<![^\s;&|()])\$(['\"])", r"\1", text)
+    text = drop_dollar_quotes(text)
     lex = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
     lex.whitespace = " \t\r"
     lex.whitespace_split = True

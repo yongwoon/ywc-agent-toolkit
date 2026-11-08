@@ -160,6 +160,7 @@ SENSITIVE_DIRS: list[Pattern] = [
 ]
 GLOB_CHARS = re.compile(r'\*+|\?|\[[^\]]*\]')
 BRACE = re.compile(r'\{([^{}]*)\}')
+TYPE_FILTER = re.compile(r'^\*+(\.(\*|[^*?\[\]{}]+))?$')
 MAX_EXPANSIONS = 256
 # Concrete names that SENSITIVE_FILES catches; a glob that matches one of them
 # (`**/.[e]nv`, `**/id_*`) reaches secrets even when its literal part does not.
@@ -190,10 +191,10 @@ def expand_braces(pattern: str) -> list[str] | None:
 
 def name_glob_hits_secret(name_glob: str, safety_level: str) -> Pattern | None:
     base = name_glob.rsplit("/", 1)[-1]
-    # `*`, `*.json`, `*.ts`: a type filter whose literal suffix is already checked
+    # `*`, `*.*`, `*.json`: a plain type filter whose literal suffix is already checked
     # (`*.pem` → `.pem`); sampling it would deny every `**/*.json` listing.
-    # `*env` / `*_rsa` have a non-extension remainder and are sampled.
-    if not base or (base.startswith("*") and GLOB_CHARS.sub("", base)[:1] in ("", ".")):
+    # Anything else (`*env`, `*_rsa`, `*.[e]nv`, `?env`) is sampled.
+    if not base or TYPE_FILTER.match(base):
         return None
     for sample in SAMPLE_NAMES:
         if fnmatch.fnmatchcase(sample, base) and not is_allowlisted(sample):
@@ -236,7 +237,11 @@ def check_search(base: str | None, name: str | None, safety_level: str = SAFETY_
 def check_grep(tool_input: dict, safety_level: str = SAFETY_LEVEL, cwd: str = "") -> Pattern | None:
     """Grep's `pattern` is a content regex, so only the place and the file filter are checked."""
     path, glob = tool_input.get("path"), tool_input.get("glob")
-    narrows = (glob and set(glob) - set("*/.")) or tool_input.get("type")  # `*`, `**/*` narrow nothing
+    # A glob narrows only if every brace expansion keeps a literal name part (`*.md` → `md`);
+    # `*`, `**/*`, `?`, `[a-z]*` narrow nothing.
+    expansions = expand_braces(glob) if glob else None
+    narrows = bool(expansions) and all(re.sub(r'[/.]', "", GLOB_CHARS.sub("", e)) for e in expansions)
+    narrows = narrows or bool(tool_input.get("type"))
     if is_broad(path or cwd) and not narrows:  # no path → Grep searches the session cwd
         return BROAD_SEARCH
     return check_search(path, glob, safety_level)

@@ -61,7 +61,8 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "while true; do git commit -n; done", "timeout 5 git commit -n -m x",
                     "stdbuf -o0 git commit -n", "sudo bash -c 'git commit -n'", "bash -lc 'git commit -n -m x'",
                     "cat <(git commit -n -m x)", f"git commit $'{NV}' -m x",
-                    "bash -c -e 'git commit -n'", "bash -c -o pipefail -- 'git commit -n'"):
+                    "bash -c -e 'git commit -n'", "bash -c -o pipefail -- 'git commit -n'",
+                    "git commit -m x --$'no-verify'", "git commit -m x -$'n'"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 
@@ -78,7 +79,8 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     f"git commit -m \"$(cat <<'EOF'\nfix: x\n\nbody -n {NV}\nEOF\n)\"",
                     "git commit -Sn1234 -m x", "git commit -uno -m x",
                     "git commit --no-verbose -m x",
-                    "git commit -- -n"):
+                    "git commit -- -n",
+                    "git commit -m \"price is $'x -n'\"", "git commit -m 'a $\" -n'"):
             with self.subTest(cmd=cmd):
                 self.assert_allowed(cmd)
 
@@ -138,6 +140,10 @@ class ProtectSecretsTest(unittest.TestCase):
                  ("Grep", {"pattern": "x", "path": "~", "glob": "**/*"}),
                  ("Glob", {"pattern": "**/*env"}),
                  ("Glob", {"pattern": "**/*_rsa"}),
+                 ("Glob", {"pattern": "**/*.[e]nv"}),
+                 ("Glob", {"pattern": "**/?env"}),
+                 ("Grep", {"pattern": "x", "path": "~", "glob": "[a-z]*"}),
+                 ("Grep", {"pattern": "x", "path": "~", "glob": "?"}),
                  ("Glob", {"pattern": "{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}{a,b}"})]
         for tool, ti in cases:
             with self.subTest(tool=tool, ti=ti):

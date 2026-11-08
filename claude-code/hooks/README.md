@@ -56,6 +56,13 @@ Bash 명령이 실행되기 전 위험도를 판단해 차단한다.
 
 토큰화에 실패하면(따옴표 짝이 맞지 않는 경우 등) 그냥 허용하지 않고, 정규식으로 명령 전체를 검사한다.
 
+**한계**: 이 hook은 model의 실수를 막는 guardrail이지 sandbox가 아니다. 다음 경우는 잡지 않는다.
+
+- ANSI-C escape로 쓴 flag(`$'\x2dn'`)
+- shell alias / function, git alias(`git ci -n`)
+- 스크립트 파일 안에서 실행되는 명령(`./commit.sh`)
+- `core.hooksPath` 변경처럼 hook 자체를 끄는 설정
+
 **의존성**: `uv`, Python 3.11+
 
 ---
