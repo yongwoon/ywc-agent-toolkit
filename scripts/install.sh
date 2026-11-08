@@ -484,10 +484,17 @@ merge_hook_settings() {
   #   2. no .hooks[$event]      → create the event array
   #   3. no matching matcher    → append new matcher group
   #   4. matcher exists         → append command only if not already present
+  # A registry matcher change (e.g. protect-secrets adding Grep|Glob) first drops
+  # the same command from other matcher groups of this event, so it runs once.
   # shellcheck disable=SC2016  # $event/$matcher/$cmd are jq --arg variables, not bash
   local filter='
     .hooks //= {} |
     .hooks[$event] //= [] |
+    .hooks[$event] |= map(
+      if .matcher != $matcher and (.hooks | type) == "array" and (.hooks | any(.command == $cmd))
+      then (.hooks |= map(select(.command != $cmd))) | select(.hooks | length > 0)
+      else . end
+    ) |
     if (.hooks[$event] | any(.matcher == $matcher)) then
       .hooks[$event] |= map(
         if .matcher == $matcher then

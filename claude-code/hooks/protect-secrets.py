@@ -5,7 +5,7 @@
 # ///
 
 """
-Protect Secrets - PreToolUse Hook for Read|Edit|Write|Bash
+Protect Secrets - PreToolUse Hook for Read|Edit|Write|Bash|Grep|Glob
 Prevents reading, modifying, or exfiltrating sensitive files.
 Logs to: ~/.claude/hooks-logs/YYYY-MM-DD.jsonl
 
@@ -146,11 +146,46 @@ def check_bash_command(cmd: str, safety_level: str = SAFETY_LEVEL) -> Pattern | 
     return None
 
 
+# Grep / Glob search a directory, so a directory that only holds secrets is
+# itself sensitive. Matched anywhere in the path, critical level.
+SENSITIVE_DIRS: list[Pattern] = [
+    Pattern("critical", "ssh-dir",    re.compile(r'(?:^|\/)\.ssh(?:\/|$)'),               "SSH key directory"),
+    Pattern("critical", "aws-dir",    re.compile(r'(?:^|\/)\.aws(?:\/|$)'),               "AWS credentials directory"),
+    Pattern("critical", "gnupg-dir",  re.compile(r'(?:^|\/)\.gnupg(?:\/|$)'),             "GnuPG key directory"),
+    Pattern("critical", "kube-dir",   re.compile(r'(?:^|\/)\.kube(?:\/|$)'),              "Kubernetes credentials directory"),
+    Pattern("high",     "gcloud-dir", re.compile(r'(?:^|\/)\.config\/gcloud(?:\/|$)'),    "GCloud credentials directory"),
+    Pattern("high",     "azure-dir",  re.compile(r'(?:^|\/)\.azure(?:\/|$)'),             "Azure credentials directory"),
+]
+GLOB_CHARS = re.compile(r'\*+|\?|\[[^\]]*\]|\{[^}]*\}')
+
+
+def check_search(base: str | None, name: str | None, safety_level: str = SAFETY_LEVEL) -> Pattern | None:
+    """Check the searched directory and the file-name filter (Grep `glob`, Glob `pattern`)."""
+    base, name = base or "", name or ""
+    threshold = LEVELS.get(safety_level, 2)
+    candidates = [base, f"{base.rstrip('/')}/{name}" if base and name else name]
+    for c in candidates:
+        if not c or is_allowlisted(c):
+            continue
+        for p in SENSITIVE_DIRS:
+            if LEVELS[p.level] <= threshold and p.regex.search(c):
+                return p
+        # `**/.env*` → `/.env`: drop glob syntax so the file patterns can match the literal part.
+        hit = check_file_path(c, safety_level) or check_file_path(GLOB_CHARS.sub("", c), safety_level)
+        if hit:
+            return hit
+    return None
+
+
 def check(tool_name: str, tool_input: dict, safety_level: str = SAFETY_LEVEL) -> Pattern | None:
     if tool_name in ("Read", "Edit", "Write"):
         return check_file_path(tool_input.get("file_path", ""), safety_level)
     if tool_name == "Bash":
         return check_bash_command(tool_input.get("command", ""), safety_level)
+    if tool_name == "Grep":  # Grep's `pattern` is a content regex, not a file name
+        return check_search(tool_input.get("path"), tool_input.get("glob"), safety_level)
+    if tool_name == "Glob":
+        return check_search(tool_input.get("path"), tool_input.get("pattern"), safety_level)
     return None
 
 
@@ -160,20 +195,20 @@ def main() -> None:
         tool_name = data.get("tool_name", "")
         tool_input = data.get("tool_input", {})
 
-        if tool_name not in ("Read", "Edit", "Write", "Bash"):
+        if tool_name not in ("Read", "Edit", "Write", "Bash", "Grep", "Glob"):
             print("{}")
             return
 
         matched = check(tool_name, tool_input)
 
         if matched:
-            target = tool_input.get("file_path") or tool_input.get("command", "")[:100]
+            target = tool_input.get("file_path") or tool_input.get("command", "")[:100] or " ".join(str(tool_input.get(k) or "") for k in ("path", "glob", "pattern")).strip()
             log({
                 "level": "BLOCKED", "id": matched.id, "priority": matched.level,
                 "tool": tool_name, "target": target,
                 "session_id": data.get("session_id"), "cwd": data.get("cwd"),
             })
-            action = {"Read": "read", "Edit": "modify", "Write": "write to", "Bash": "execute"}[tool_name]
+            action = {"Read": "read", "Edit": "modify", "Write": "write to", "Bash": "execute", "Grep": "search", "Glob": "search"}[tool_name]
             print(json.dumps({
                 "hookSpecificOutput": {
                     "hookEventName": "PreToolUse",

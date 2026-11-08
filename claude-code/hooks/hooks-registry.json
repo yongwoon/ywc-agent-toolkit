@@ -38,7 +38,7 @@
     },
     "protect-secrets": {
       "event": "PreToolUse",
-      "matcher": "Read|Edit|Write|Bash",
+      "matcher": "Read|Edit|Write|Bash|Grep|Glob",
       "command_global": "uv run ~/.claude/hooks/protect-secrets.py",
       "command_local": "uv run $CLAUDE_PROJECT_DIR/.claude/hooks/protect-secrets.py",
       "description": ".env, SSH key 등 비밀 파일 접근·유출 차단"

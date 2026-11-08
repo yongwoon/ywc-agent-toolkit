@@ -1,0 +1,146 @@
+"""Stdin-driven tests for the PreToolUse hooks. Run: python3 claude-code/hooks/test_hooks.py"""
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+NV = "--no" + "-verify"  # keeps this file's own text from tripping no-verify guards
+
+
+def run_hook(name: str, tool: str, tool_input: dict) -> dict:
+    with tempfile.TemporaryDirectory() as home:  # logs go to $HOME/.claude/hooks-logs
+        r = subprocess.run(
+            [sys.executable, str(HERE / name)],
+            input=json.dumps({"tool_name": tool, "tool_input": tool_input}),
+            capture_output=True, text=True, env={**os.environ, "HOME": home}, check=True,
+        )
+    return json.loads(r.stdout)
+
+
+def decision(out: dict) -> str | None:
+    return out.get("hookSpecificOutput", {}).get("permissionDecision")
+
+
+def rule_id(out: dict) -> str:
+    return out.get("hookSpecificOutput", {}).get("permissionDecisionReason", "")
+
+
+class BlockDangerousCommandsTest(unittest.TestCase):
+    def bash(self, cmd: str) -> dict:
+        return run_hook("block-dangerous-commands.py", "Bash", {"command": cmd})
+
+    def assert_denied(self, cmd: str, rid: str) -> None:
+        out = self.bash(cmd)
+        self.assertEqual(decision(out), "deny", cmd)
+        self.assertIn(f"[{rid}]", rule_id(out), cmd)
+
+    def assert_allowed(self, cmd: str) -> None:
+        self.assertEqual(self.bash(cmd), {}, cmd)
+
+    # AC4
+    def test_skipping_hooks_is_denied(self):
+        for cmd in ("git commit -n -m x", "git commit -nm x", "git commit -anm x", f"git push {NV}",
+                    f"git commit {NV} -m x", "git -C repo commit -n -m x", "git -c a.b=c commit -n",
+                    "cd x && git commit -n -m y", "FOO=1 git commit -n",
+                    # multi-line forms: quoted strings span lines, unquoted newlines separate
+                    f"git commit -m \"$(cat <<'EOF'\nmsg\nEOF\n)\" {NV}",
+                    "git commit -m \"a\nb\" -n", f"git commit -m x \\\n {NV}",
+                    "echo start\ngit commit -n -m x",
+                    # abbreviations, wrappers, indirect execution
+                    "git commit --no-veri -m x", "git push --no-verif origin x",
+                    "env -u X git commit -n", "sudo -u me git commit -n", "xargs -n 1 git commit -n",
+                    'bash -c "git commit -n -m x"', "eval git commit -n -m x",
+                    "echo $(git commit -n -m x)", 'x="$(git commit -n -m y)"', "echo `git commit -n`"):
+            with self.subTest(cmd=cmd):
+                self.assert_denied(cmd, "git-no-verify")
+
+    def test_unrelated_n_flags_are_allowed(self):
+        for cmd in ("git add foo && git commit -m x && grep -n y z",
+                    "git push -n origin x", "git push -nu origin x",
+                    'sed -n 1,3p f; git commit -m "x"',
+                    '[ -n "$x" ] && git push origin main',
+                    f'git commit -m "drop {NV}"',
+                    "git commit -mnice", "git commit -m -n",
+                    "git commit -F msg.txt",
+                    f"git commit -F - <<'EOF'\nfix: x\n\nmention {NV} and -n here\nEOF",
+                    f"cat > s.py <<EOF\nrun('git commit {NV}')\nEOF\npython3 s.py",
+                    f"git commit -m \"$(cat <<'EOF'\nfix: x\n\nbody -n {NV}\nEOF\n)\"",
+                    "git commit -Sn1234 -m x", "git commit -uno -m x",
+                    "git commit --no-verbose -m x",
+                    "git commit -- -n"):
+            with self.subTest(cmd=cmd):
+                self.assert_allowed(cmd)
+
+    def test_untokenizable_command_falls_back_to_regex(self):
+        self.assert_denied("git commit -n -m 'unbalanced", "git-no-verify")
+        self.assert_allowed("grep -n 'unbalanced")
+
+    # AC5
+    def test_gh_merge_admin(self):
+        self.assert_denied("gh pr merge 12 --admin --merge", "gh-merge-admin")
+        self.assert_denied("gh -R o/r pr merge 1 --admin", "gh-merge-admin")
+        self.assert_denied("gh pr merge 1 --admin=true", "gh-merge-admin")
+        self.assert_allowed("gh pr merge 12 --auto --merge --match-head-commit abc")
+        self.assert_allowed('gh pr comment 12 --body "do not use --admin"')
+
+    # AC6
+    def test_git_add_all_asks(self):
+        for cmd in ("git add -A", "git add .", "git add --all", "git add -Av", "git add -- ."):
+            with self.subTest(cmd=cmd):
+                out = self.bash(cmd)
+                self.assertEqual(decision(out), "ask", cmd)
+                self.assertIn("[git-add-all]", rule_id(out))
+        for cmd in ("git add src/a.ts", "git add -p", "git add ./src", "git add -u"):
+            with self.subTest(cmd=cmd):
+                self.assert_allowed(cmd)
+
+    def test_deny_beats_ask(self):
+        self.assert_denied("git add -A && git commit -n -m x", "git-no-verify")
+
+    def test_existing_patterns_still_apply(self):
+        self.assert_denied("git push --force origin main", "git-force-main")
+        self.assert_allowed("git push --force-with-lease=refs/heads/b: origin c:refs/heads/b")
+
+
+class ProtectSecretsTest(unittest.TestCase):
+    def check(self, tool: str, tool_input: dict) -> str | None:
+        return decision(run_hook("protect-secrets.py", tool, tool_input))
+
+    # AC6b
+    def test_grep_and_glob_on_secret_places_are_denied(self):
+        cases = [("Grep", {"pattern": "x", "path": "~/.ssh"}),
+                 ("Grep", {"pattern": "x", "path": "/home/u/.aws/"}),
+                 ("Grep", {"pattern": "x", "glob": ".env*"}),
+                 ("Grep", {"pattern": "x", "path": "config/prod.pem"}),
+                 ("Glob", {"pattern": "**/.env"}),
+                 ("Glob", {"pattern": "**/.env*"}),
+                 ("Glob", {"pattern": "**/*.pem"}),
+                 ("Glob", {"pattern": "*", "path": "~/.ssh"}),
+                 ("Glob", {"pattern": ".ssh/id_*", "path": "~"})]
+        for tool, ti in cases:
+            with self.subTest(tool=tool, ti=ti):
+                self.assertEqual(self.check(tool, ti), "deny")
+
+    def test_ordinary_searches_are_allowed(self):
+        cases = [("Grep", {"pattern": "password|token|\\.env", "path": "src/"}),
+                 ("Grep", {"pattern": "x"}),
+                 ("Grep", {"pattern": "x", "glob": "*.ts"}),
+                 ("Glob", {"pattern": "**/*.md"}),
+                 ("Glob", {"pattern": "**/.env.example"}),
+                 ("Glob", {"pattern": "src/**/*.py", "path": "/repo"})]
+        for tool, ti in cases:
+            with self.subTest(tool=tool, ti=ti):
+                self.assertIsNone(self.check(tool, ti))
+
+    def test_read_behavior_unchanged(self):
+        self.assertEqual(self.check("Read", {"file_path": "/repo/.env"}), "deny")
+        self.assertIsNone(self.check("Read", {"file_path": "/repo/.env.example"}))
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=1)

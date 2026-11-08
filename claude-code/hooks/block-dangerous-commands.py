@@ -17,6 +17,7 @@ SAFETY_LEVEL: 'critical' | 'high' | 'strict'
 
 import json
 import re
+import shlex
 import sys
 from dataclasses import dataclass
 from datetime import datetime
@@ -87,6 +88,198 @@ def check_command(cmd: str, safety_level: str = SAFETY_LEVEL) -> Pattern | None:
     return None
 
 
+# ---- Segment-scoped rules ----------------------------------------------------
+# Whole-string regexes match a flag anywhere on the line, so `grep -n` next to
+# `git commit` looks like `git commit -n`. These rules tokenize each command
+# segment and look only at the argv of the command they target.
+
+@dataclass(frozen=True)
+class Rule:
+    level: str
+    id: str
+    decision: str  # "deny" | "ask"
+    reason: str
+
+
+NO_VERIFY = Rule("high", "git-no-verify", "deny", "skipping git hooks (--no-verify / commit -n)")
+GH_ADMIN = Rule("high", "gh-merge-admin", "deny", "gh pr merge --admin bypasses branch protection")
+GIT_ADD_ALL = Rule("high", "git-add-all", "ask", "git add -A / . stages every file; stage explicit paths")
+
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+SEPARATOR_CHARS = set(";&|()\n")
+REDIRECT_CHARS = set("<>&")
+SUBSTITUTION = re.compile(r"\$\((.*)\)|`([^`]*)`", re.S)
+SHELLS = {"bash", "sh", "zsh", "dash", "ksh"}
+GIT_OPTS_WITH_VALUE = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--config-env"}
+GH_OPTS_WITH_VALUE = {"-R", "--repo"}
+COMMIT_SHORT_WITH_VALUE = set("mFCct")  # the rest of the cluster (or the next word) is the value
+COMMIT_SHORT_OPTIONAL_VALUE = set("Su")  # only an attached value: -S<keyid>, -u<mode>
+# wrapper → its options that take a separate value
+WRAPPERS: dict[str, set[str]] = {
+    "env": {"-u", "-C", "-S", "--unset", "--chdir", "--split-string"},
+    "sudo": {"-u", "-g", "-h", "-p", "-C", "-D", "-U", "--user", "--group"},
+    "command": set(), "time": set(), "nohup": set(), "exec": set(),
+    "nice": {"-n"}, "xargs": {"-I", "-n", "-L", "-P", "-d", "-E", "-s", "-a"},
+}
+
+
+def strip_heredocs(cmd: str) -> str:
+    """Drop heredoc bodies; their text is data, not argv."""
+    out: list[str] = []
+    pending: list[str] = []
+    for line in cmd.split("\n"):
+        if pending:
+            if line.strip() == pending[0]:
+                pending.pop(0)
+            continue
+        out.append(line)
+        pending = [m.group(2) for m in HEREDOC.finditer(line)]
+    return "\n".join(out)
+
+
+def segments(cmd: str) -> list[list[str]] | None:
+    """argv per command segment, or None when the command cannot be tokenized.
+
+    The whole command is tokenized at once, so a quoted string may span lines;
+    an unquoted newline separates commands like `;` does.
+    """
+    text = strip_heredocs(cmd).replace("\\\n", " ")  # line continuations
+    lex = shlex.shlex(text, posix=True, punctuation_chars="();<>|&\n")
+    lex.whitespace = " \t\r"
+    lex.whitespace_split = True
+    result: list[list[str]] = []
+    argv: list[str] = []
+    try:
+        for tok in lex:
+            chars = set(tok)
+            if tok and chars <= SEPARATOR_CHARS | REDIRECT_CHARS and chars & set("<>"):
+                continue  # redirection operator
+            if tok and chars <= SEPARATOR_CHARS:
+                if argv:
+                    result.append(argv)
+                argv = []
+                continue
+            argv.append(tok)
+    except ValueError:
+        return None
+    if argv:
+        result.append(argv)
+    return result
+
+
+def strip_prefix(argv: list[str]) -> list[str]:
+    """Skip leading VAR=value assignments and wrappers (env, sudo, xargs, ...) with their options."""
+    i = 0
+    while i < len(argv):
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[i]):
+            i += 1
+        elif argv[i].rsplit("/", 1)[-1] in WRAPPERS:
+            takes_value = WRAPPERS[argv[i].rsplit("/", 1)[-1]]
+            i += 1
+            while i < len(argv) and argv[i].startswith("-"):
+                i += 2 if argv[i] in takes_value else 1
+        else:
+            break
+    return argv[i:]
+
+
+def skip_options(argv: list[str], with_value: set[str]) -> list[str]:
+    """argv after the command name, minus leading options (and their separate values)."""
+    i = 1
+    while i < len(argv) and argv[i].startswith("-"):
+        i += 2 if argv[i] in with_value else 1
+    return argv[i:]
+
+
+def is_no_verify(arg: str) -> bool:
+    # git accepts any unambiguous prefix; `--no-ve` would also match `--no-verbose`.
+    return arg.startswith("--no-veri") and "--no-verify".startswith(arg)
+
+
+def commit_skips_hooks(args: list[str]) -> bool:
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--":
+            return False
+        if is_no_verify(a):
+            return True
+        if re.match(r"^-[A-Za-z]", a):
+            for j, ch in enumerate(a[1:]):
+                if ch == "n":
+                    return True
+                if ch in COMMIT_SHORT_OPTIONAL_VALUE:
+                    break
+                if ch in COMMIT_SHORT_WITH_VALUE:
+                    if j == len(a) - 2:  # the value is the next word
+                        i += 1
+                    break
+        i += 1
+    return False
+
+
+def adds_everything(args: list[str]) -> bool:
+    cut = args.index("--") if "--" in args else len(args)
+    opts, paths = args[:cut], args[cut + 1:] if cut < len(args) else args
+    return "--all" in opts or any(re.match(r"^-[A-Za-z]*A", a) for a in opts) or "." in paths
+
+
+def nested_commands(argv: list[str]) -> list[str]:
+    """Command text this segment runs indirectly: `bash -c`, `eval`, `$(...)`, backticks."""
+    nested = [m.group(1) or m.group(2) or "" for m in SUBSTITUTION.finditer(" ".join(argv))]
+    name = argv[0].rsplit("/", 1)[-1] if argv else ""
+    if name in SHELLS and "-c" in argv[1:-1]:
+        nested.append(argv[argv.index("-c", 1) + 1])
+    if name == "eval":
+        nested.append(" ".join(argv[1:]))
+    return nested
+
+
+def check_segment(argv: list[str], depth: int) -> list[Rule]:
+    hits = [r for text in nested_commands(argv) if (r := check_text(text, depth + 1))]
+    cmd = strip_prefix(argv)
+    name = cmd[0].rsplit("/", 1)[-1] if cmd else ""
+    if name == "git":
+        rest = skip_options(cmd, GIT_OPTS_WITH_VALUE)
+        sub, args = (rest[0], rest[1:]) if rest else ("", [])
+        if sub == "commit" and commit_skips_hooks(args):
+            hits.append(NO_VERIFY)
+        elif sub == "push" and any(is_no_verify(a) for a in args):  # push -n is --dry-run
+            hits.append(NO_VERIFY)
+        elif sub == "add" and adds_everything(args):
+            hits.append(GIT_ADD_ALL)
+    elif name == "gh":
+        rest = skip_options(cmd, GH_OPTS_WITH_VALUE)
+        if rest[:2] == ["pr", "merge"] and any(a == "--admin" or a.startswith("--admin=") for a in rest[2:]):
+            hits.append(GH_ADMIN)
+    return hits
+
+
+FALLBACK = [  # used only when the command cannot be tokenized
+    (NO_VERIFY, re.compile(r"\bgit\b[^;&|]*\b(commit\b[^;&|]*(--no-veri|\s-[A-Za-z]*n)|push\b[^;&|]*--no-veri)")),
+    (GH_ADMIN, re.compile(r"\bgh\b[^;&|]*\bpr\s+merge\b[^;&|]*--admin")),
+    (GIT_ADD_ALL, re.compile(r"\bgit\s+add\s+(-A\b|--all\b|\.(\s|$))")),
+]
+MAX_DEPTH = 3
+
+
+def pick(hits: list[Rule]) -> Rule | None:
+    """Deny beats ask; within a decision, the first hit wins."""
+    return next((r for r in hits if r.decision == "deny"), hits[0] if hits else None)
+
+
+def check_text(cmd: str, depth: int = 0) -> Rule | None:
+    segs = segments(cmd) if depth <= MAX_DEPTH else None
+    if segs is None:
+        return pick([r for r, rx in FALLBACK if rx.search(cmd)])
+    return pick([r for argv in segs for r in check_segment(argv, depth)])
+
+
+def check_rules(cmd: str, safety_level: str = SAFETY_LEVEL) -> Rule | None:
+    rule = check_text(cmd)
+    return rule if rule and LEVELS[rule.level] <= LEVELS.get(safety_level, 2) else None
+
+
 def main() -> None:
     try:
         data = json.loads(sys.stdin.read())
@@ -96,8 +289,21 @@ def main() -> None:
 
         cmd = data.get("tool_input", {}).get("command", "")
         matched = check_command(cmd)
+        rule = None if matched else check_rules(cmd)
 
-        if matched:
+        if rule:
+            log({
+                "level": "BLOCKED" if rule.decision == "deny" else "ASK", "id": rule.id, "priority": rule.level,
+                "cmd": cmd, "session_id": data.get("session_id"), "cwd": data.get("cwd"),
+            })
+            print(json.dumps({
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": rule.decision,
+                    "permissionDecisionReason": f"{EMOJIS[rule.level]} [{rule.id}] {rule.reason}",
+                }
+            }))
+        elif matched:
             log({
                 "level": "BLOCKED", "id": matched.id, "priority": matched.level,
                 "cmd": cmd, "session_id": data.get("session_id"), "cwd": data.get("cwd"),
