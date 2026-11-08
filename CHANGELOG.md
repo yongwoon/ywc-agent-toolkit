@@ -11,6 +11,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * **ywc-create-pr:** cite related task or plan design background in generated PR bodies, with explicit `--plan-doc` and `--no-plan-ref` controls.
 * **ywc-task-generator:** automatically compact completed phases and resolved execution notes in `tasks/dependency-graph.md`.
 
+## [1.40.0](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.39.1...v1.40.0) (2026-11-08)
+
+
+### Added
+
+* add 16 mined recurring-defect entries (A-008..A-023) ([#229](https://github.com/yongwoon/ywc-agent-toolkit/issues/229)) ([96ad65f](https://github.com/yongwoon/ywc-agent-toolkit/commit/96ad65ff924904d55a56f49b78a47d5cf1df6f97))
+* add mined recurring-defect entries A-024..A-027 and review learnings L007..L014 ([#230](https://github.com/yongwoon/ywc-agent-toolkit/issues/230)) ([089fdb7](https://github.com/yongwoon/ywc-agent-toolkit/commit/089fdb715275de6d1a142c34e8d651963f4749a0))
+* **claude-code:** port upstream Issue 69 improvements and harden scan-secrets and finish-branch guards ([#214](https://github.com/yongwoon/ywc-agent-toolkit/issues/214)) ([e8830e3](https://github.com/yongwoon/ywc-agent-toolkit/commit/e8830e3d24944d3cab5770d562a7512bc4ab752b))
+* **codex:** adopt selected Issue 69 improvements ([#211](https://github.com/yongwoon/ywc-agent-toolkit/issues/211)) ([7dd8534](https://github.com/yongwoon/ywc-agent-toolkit/commit/7dd8534e65d8073e1270563c6655f6eb44bee5ba))
+* **codex:** Issue 69 반영 범위 확장 및 배포 통합 ([#213](https://github.com/yongwoon/ywc-agent-toolkit/issues/213)) ([46cafde](https://github.com/yongwoon/ywc-agent-toolkit/commit/46cafdeab65fb3f31df24f086ccef2cc2c43793d))
+* confine ywc-retro-lens reads with the protect-secrets hook (G7) ([#226](https://github.com/yongwoon/ywc-agent-toolkit/issues/226)) ([64c99bc](https://github.com/yongwoon/ywc-agent-toolkit/commit/64c99bc2367383ac0115bea047dddd40ca33d073))
+* enforce no-verify, admin merge and add-all guards with hooks (P2-a) ([#223](https://github.com/yongwoon/ywc-agent-toolkit/issues/223)) ([c61be37](https://github.com/yongwoon/ywc-agent-toolkit/commit/c61be37f66b0665f3773dca3d29e39f7cc7c58ed))
+
+
+### Fixed
+
+* address issue 215 mechanical follow-ups (scan-secrets, worktree prose, CI, agents README) ([#216](https://github.com/yongwoon/ywc-agent-toolkit/issues/216)) ([9e48916](https://github.com/yongwoon/ywc-agent-toolkit/commit/9e48916721e8f989d12ef49b3ba33166a5b57591))
+* classify dependabot security scope by open alerts, not PR text ([#227](https://github.com/yongwoon/ywc-agent-toolkit/issues/227)) ([a466237](https://github.com/yongwoon/ywc-agent-toolkit/commit/a46623727dc133aa6d3556c2023625566a894759))
+* fail closed on a backquote before a candidate comment in hook tokenizer ([#224](https://github.com/yongwoon/ywc-agent-toolkit/issues/224)) ([e4b4e4f](https://github.com/yongwoon/ywc-agent-toolkit/commit/e4b4e4f585d62d47ba95dce4db05b7859a502946))
+* harden ywc-merge-dependabot parallel-auto and its helper scripts ([#217](https://github.com/yongwoon/ywc-agent-toolkit/issues/217)) ([bee866c](https://github.com/yongwoon/ywc-agent-toolkit/commit/bee866c30def70b092774595838f80611c6b1d05))
+* name each collision impostor in the expected item's anti-trigger (L003) ([#225](https://github.com/yongwoon/ywc-agent-toolkit/issues/225)) ([b581f63](https://github.com/yongwoon/ywc-agent-toolkit/commit/b581f63e557146d899ad32f778f7d44940d27ee1))
+* resolve issue 215 design items (worktree claim, auth task split, retro-lens risk, P2-a plan) ([#220](https://github.com/yongwoon/ywc-agent-toolkit/issues/220)) ([27fd66e](https://github.com/yongwoon/ywc-agent-toolkit/commit/27fd66e81607a2a05301c4da64c74c3f7d793a6a))
+* speed up and harden scan-secrets (untracked read, patterns, redaction) ([#218](https://github.com/yongwoon/ywc-agent-toolkit/issues/218)) ([e47f848](https://github.com/yongwoon/ywc-agent-toolkit/commit/e47f8480244dc7f3bbb1130f0de21d85cd5c07b6))
+* tighten worktree and finish-branch guards, resolve update-state in installs ([#219](https://github.com/yongwoon/ywc-agent-toolkit/issues/219)) ([a98f3a0](https://github.com/yongwoon/ywc-agent-toolkit/commit/a98f3a030a6176d99ef22d81f979817982a2f15c)), closes [#215](https://github.com/yongwoon/ywc-agent-toolkit/issues/215)
+
+
+### Changed
+
+* issue 215 housekeeping (validator, retro-lens grounding, shared script paths, zh/es READMEs) ([#221](https://github.com/yongwoon/ywc-agent-toolkit/issues/221)) ([ddf5057](https://github.com/yongwoon/ywc-agent-toolkit/commit/ddf5057a55806e0c6621df52ec6ca33661e1528a))
+
 ## [1.39.1](https://github.com/yongwoon/ywc-agent-toolkit/compare/v1.39.0...v1.39.1) (2026-10-29)
 
 
