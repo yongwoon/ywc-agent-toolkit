@@ -104,7 +104,8 @@ class BlockDangerousCommandsTest(unittest.TestCase):
         for cmd in ("git commit -m fix#12 -n", "echo x # note\ngit commit -n -m y",
                     "git commit -m x # don't\ngit commit -n", "git commit -m x \\#y -n",
                     "git commit -m x;# c\ngit commit -n",
-                    "git commit -m x\r#c -n", "git commit -m x ${y:- #} -n"):
+                    "git commit -m x\r#c -n", "git commit -m x ${y:- #} -n",
+                    "echo } ${y:- #} ; git commit -m x -n"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
         for cmd in ('git commit -m "a#b -n"', "git commit -m x # -n",

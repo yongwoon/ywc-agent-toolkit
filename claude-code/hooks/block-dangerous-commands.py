@@ -186,9 +186,8 @@ def drop_dollar_quotes(text: str) -> str | None:
         if not quote and ch == "#" and i != escaped_end and (i == 0 or text[i - 1] in COMMENT_PRECEDERS):
             # A comment runs to the newline, which stays as the command separator. Dropping it here
             # keeps its quotes (`don't`) out of the quote tracking and leaves mid-word `#` alone.
-            before = "".join(out)
-            if before.count("${") > before.count("}"):
-                return None  # `#` inside ${...} is literal in bash, not a comment: fail closed to the regex fallback
+            if "${" in text[:i]:
+                return None  # `#` inside ${...} is literal in bash; we don't track nesting, so fail closed to the regex fallback
             nl = text.find("\n", i)
             i = len(text) if nl == -1 else nl
             continue
