@@ -796,6 +796,18 @@ run_script_test_suites() {
     ERRORS=$((ERRORS + 1))
   fi
 
+  # PreToolUse hooks enforce rules that skills otherwise state only in prose;
+  # the suite feeds JSON on stdin and asserts the decision. Offline, stdlib only.
+  local hooks_out
+  if [ ! -f claude-code/hooks/test_hooks.py ]; then
+    echo "ERROR: hook test suite is missing: claude-code/hooks/test_hooks.py"
+    ERRORS=$((ERRORS + 1))
+  elif ! hooks_out=$(python3 claude-code/hooks/test_hooks.py 2>&1); then
+    echo "ERROR: hook test suite failed: claude-code/hooks/test_hooks.py"
+    printf '%s\n' "$hooks_out" | tail -n 30
+    ERRORS=$((ERRORS + 1))
+  fi
+
   # merge-dependabot scripts gate `--auto` merges on a remote-controlled
   # baseRefName; the suite stubs `gh`/`sleep` and needs no network.
   local dependabot_test dependabot_out

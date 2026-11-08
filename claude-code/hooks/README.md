@@ -11,7 +11,7 @@
 | `cost-tracker.py` | `PostToolUse` + `Stop` | `*` / (없음) | tool 호출 로깅 및 세션 summary |
 | `notify-permission.py` | `Notification` | (없음) | permission 대기 시 Slack 알림 |
 | `permission_request.py` | `PermissionRequest` | (없음) | 읽기 전용 tool 및 안전한 Bash 자동 승인 |
-| `protect-secrets.py` | `PreToolUse` | `Read\|Edit\|Write\|Bash` | 비밀 파일 접근 차단 |
+| `protect-secrets.py` | `PreToolUse` | `Read\|Edit\|Write\|Bash\|Grep\|Glob` | 비밀 파일 접근 차단 |
 | `session_start.py` | `SessionStart` | (없음) | 세션 시작 시 context 주입 |
 
 ## 설치
@@ -45,6 +45,24 @@ Bash 명령이 실행되기 전 위험도를 판단해 차단한다.
 - **critical** — `rm -rf /`, `chmod 777 /` 등 즉시 차단
 - **high** — `sudo`, `dd`, `mkfs` 등 확인 요청
 - **strict** — 프로젝트 루트 밖 쓰기 시도 차단
+
+다음 세 규칙은 명령을 `;`, `&&`, `||`, `|` 단위로 나누고 `shlex`로 토큰화한 뒤, 대상 명령의 argv만 검사한다. heredoc 본문과 따옴표 안의 문자열은 검사하지 않는다. 그래서 `grep -n`이나 commit 메시지 속 `--no-verify` 같은 문자열 때문에 차단되지 않는다.
+
+| id | 결정 | 대상 |
+| --- | --- | --- |
+| `git-no-verify` | deny | `git commit`의 `--no-verify` 또는 `-n`(`-anm` 같은 묶음 포함), `git push --no-verify`. `git push -n`은 dry run이므로 허용 |
+| `gh-merge-admin` | deny | `gh pr merge --admin` |
+| `git-add-all` | ask | `git add -A` / `--all` / `.` |
+
+토큰화에 실패하면(따옴표 짝이 맞지 않는 경우 등) 그냥 허용하지 않고, 정규식으로 명령 전체를 검사한다.
+
+**한계**: 이 hook은 model의 실수를 막는 guardrail이지 sandbox가 아니다. 다음 경우는 잡지 않는다.
+
+- 부정 bracket class(`[!x]`)나 32자를 넘는 bracket class로 쓴 비밀 파일명
+- 변수 확장으로 숨긴 flag(`F=-n; git commit $F`, `env -S` 안의 `${VAR}`)
+- shell alias / function, git alias(`git ci -n`)
+- 스크립트 파일 안에서 실행되는 명령(`./commit.sh`)
+- `core.hooksPath` 변경처럼 hook 자체를 끄는 설정
 
 **의존성**: `uv`, Python 3.11+
 
@@ -106,10 +124,23 @@ export CCH_SLA_WEBHOOK="https://hooks.slack.com/services/..."
 
 ### protect-secrets.py
 
-`PreToolUse` / matcher: `Read|Edit|Write|Bash`
+`PreToolUse` / matcher: `Read|Edit|Write|Bash|Grep|Glob`
 
 `.env`, SSH private key, credentials 파일 등에 대한 접근과 유출을 차단한다.
 파일 경로 패턴과 내용 패턴을 모두 검사한다.
+`Grep`은 `path`와 `glob`을, `Glob`은 `path`와 `pattern`을 검사한다. `~/.ssh`, `~/.aws` 같은 비밀 디렉터리와 `**/.env*` 같은 비밀 파일명 패턴을 검색하면 차단한다. `Grep`의 `pattern`은 파일 내용을 찾는 정규식이므로 검사하지 않는다.
+glob 패턴은 brace(`{a,b}`)를 펼쳐서 검사한다. 또 대표적인 비밀 파일명(`.env`, `id_rsa` 등)과 매칭되는지 확인하므로 `**/.[e]nv`나 `**/id_*`도 차단된다. 단, `*.json`처럼 `*`로 시작하는 확장자 필터는 리터럴 부분만 검사한다.
+home이나 `/` 전체를 대상으로 하는 `Grep`은 `glob`이나 `type`이 없으면 차단한다(`broad-search`).
+
+기존 설치에서 matcher가 `Read|Edit|Write|Bash`였다면 `install.sh --hooks protect-secrets`를 다시 실행한다. 기존 matcher 그룹에 있던 같은 명령은 제거되고 새 matcher로 옮겨진다.
+
+## 테스트
+
+```bash
+python3 claude-code/hooks/test_hooks.py
+```
+
+stdin으로 JSON payload를 넣고 hook의 결정(deny / ask / 허용)을 검증한다. `scripts/validate.sh`가 실행한다.
 
 **의존성**: `uv`, Python 3.11+
 

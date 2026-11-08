@@ -5,7 +5,7 @@
 # ///
 
 """
-Protect Secrets - PreToolUse Hook for Read|Edit|Write|Bash
+Protect Secrets - PreToolUse Hook for Read|Edit|Write|Bash|Grep|Glob
 Prevents reading, modifying, or exfiltrating sensitive files.
 Logs to: ~/.claude/hooks-logs/YYYY-MM-DD.jsonl
 
@@ -15,7 +15,9 @@ SAFETY_LEVEL: 'critical' | 'high' | 'strict'
   strict   - + database configs, any config that might contain secrets
 """
 
+import fnmatch
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -146,11 +148,138 @@ def check_bash_command(cmd: str, safety_level: str = SAFETY_LEVEL) -> Pattern | 
     return None
 
 
-def check(tool_name: str, tool_input: dict, safety_level: str = SAFETY_LEVEL) -> Pattern | None:
+# Grep / Glob search a directory, so a directory that only holds secrets is
+# itself sensitive. Matched anywhere in the path, critical level.
+SENSITIVE_DIRS: list[Pattern] = [
+    Pattern("critical", "ssh-dir",    re.compile(r'(?:^|\/)\.ssh(?:\/|$)'),               "SSH key directory"),
+    Pattern("critical", "aws-dir",    re.compile(r'(?:^|\/)\.aws(?:\/|$)'),               "AWS credentials directory"),
+    Pattern("critical", "gnupg-dir",  re.compile(r'(?:^|\/)\.gnupg(?:\/|$)'),             "GnuPG key directory"),
+    Pattern("critical", "kube-dir",   re.compile(r'(?:^|\/)\.kube(?:\/|$)'),              "Kubernetes credentials directory"),
+    Pattern("high",     "gcloud-dir", re.compile(r'(?:^|\/)\.config\/gcloud(?:\/|$)'),    "GCloud credentials directory"),
+    Pattern("high",     "azure-dir",  re.compile(r'(?:^|\/)\.azure(?:\/|$)'),             "Azure credentials directory"),
+]
+GLOB_CHARS = re.compile(r'\*+|\?|\[[^\]]*\]')
+BRACE = re.compile(r'\{([^{}]*)\}')
+TYPE_FILTER = re.compile(r'^\*+(\.(\*|[^*?\[\]{}]+))?$')
+MAX_EXPANSIONS = 256
+# Concrete names that SENSITIVE_FILES catches; a glob that matches one of them
+# (`**/.[e]nv`, `**/id_*`) reaches secrets even when its literal part does not.
+SAMPLE_NAMES = [".env", ".env.local", ".env.production", ".envrc", "id_rsa", "id_ed25519", "id_ecdsa",
+                "server.pem", "server.key", "cert.p12", "credentials.json", "secrets.yaml", "secret.toml",
+                ".netrc", ".npmrc", ".pypirc", ".pgpass", ".my.cnf", ".htpasswd", ".vault-token",
+                "app.keystore", "service-account.json"]
+BROAD_SEARCH = Pattern("critical", "broad-search", re.compile(r'$^'),
+                       "content search over the home or root directory reaches secret files; narrow the path or add a glob/type")
+GLOB_TOO_COMPLEX = Pattern("critical", "glob-too-complex", re.compile(r'$^'),
+                           "brace expansion too large to check; use a simpler glob")
+
+
+BRACKET = re.compile(r'\[([^\]!^][^\]]*)\]')
+MAX_CLASS_CHARS = 32
+
+
+def bracket_to_braces(pattern: str) -> str:
+    """`[.]env` → `{.}env`, `[a-c]` → `{a,b,c}`, so the literal file rules see every spelling.
+    Negated or very wide classes are left alone; the sample-name check still covers them."""
+    def repl(m: re.Match) -> str:
+        body, chars, i = m.group(1), [], 0
+        while i < len(body):
+            if i + 2 < len(body) and body[i + 1] == "-":
+                chars.extend(chr(c) for c in range(ord(body[i]), ord(body[i + 2]) + 1))
+                i += 3
+            else:
+                chars.append(body[i])
+                i += 1
+        if len(chars) > MAX_CLASS_CHARS or any(c in ",{}" for c in chars):
+            return m.group(0)
+        return "{" + ",".join(dict.fromkeys(chars)) + "}"
+    return BRACKET.sub(repl, pattern)
+
+
+def expand_braces(pattern: str) -> list[str] | None:
+    """`a{b,c}d` → [abd, acd]; innermost braces first. None when over MAX_EXPANSIONS (fail closed)."""
+    out, todo = [], [bracket_to_braces(pattern)]
+    while todo:
+        if len(out) + len(todo) > MAX_EXPANSIONS:
+            return None
+        p = todo.pop()
+        m = BRACE.search(p)
+        if not m:
+            out.append(p)
+            continue
+        todo.extend(p[:m.start()] + alt + p[m.end():] for alt in m.group(1).split(","))
+    return out
+
+
+def name_glob_hits_secret(name_glob: str, safety_level: str) -> Pattern | None:
+    base = name_glob.rsplit("/", 1)[-1]
+    # `*`, `*.*`, `*.json`: a plain type filter whose literal suffix is already checked
+    # (`*.pem` → `.pem`); sampling it would deny every `**/*.json` listing.
+    # Anything else (`*env`, `*_rsa`, `*.[e]nv`, `?env`) is sampled.
+    if not base or TYPE_FILTER.match(base):
+        return None
+    for sample in SAMPLE_NAMES:
+        if fnmatch.fnmatchcase(sample, base) and not is_allowlisted(sample):
+            hit = check_file_path(sample, safety_level)
+            if hit:
+                return hit
+    return None
+
+
+def is_broad(base: str) -> bool:
+    if not base:
+        return False
+    home = Path.home().resolve(strict=False)
+    p = Path(os.path.expanduser(base)).resolve(strict=False)
+    return p == Path("/") or p == home or p == home.parent
+
+
+def check_search(base: str | None, name: str | None, safety_level: str = SAFETY_LEVEL) -> Pattern | None:
+    """Check the searched directory and the file-name filter (Grep `glob`, Glob `pattern`)."""
+    base, name = base or "", name or ""
+    threshold = LEVELS.get(safety_level, 2)
+    names = expand_braces(name) if name else [""]
+    if names is None:
+        return GLOB_TOO_COMPLEX
+    for n in names:
+        for c in (base, f"{base.rstrip('/')}/{n}" if base and n else n):
+            if not c or is_allowlisted(c):
+                continue
+            for p in SENSITIVE_DIRS:
+                if LEVELS[p.level] <= threshold and p.regex.search(c):
+                    return p
+            # `**/.env*` → `/.env`: drop glob syntax so the file patterns can match the literal part.
+            hit = (check_file_path(c, safety_level) or check_file_path(GLOB_CHARS.sub("", c), safety_level)
+                   or name_glob_hits_secret(c, safety_level))
+            if hit:
+                return hit
+    return None
+
+
+def check_grep(tool_input: dict, safety_level: str = SAFETY_LEVEL, cwd: str = "") -> Pattern | None:
+    """Grep's `pattern` is a content regex, so only the place and the file filter are checked."""
+    path, glob = tool_input.get("path"), tool_input.get("glob")
+    # A glob narrows only if every brace expansion keeps a literal name part (`*.md` → `md`);
+    # `*`, `**/*`, `?`, `[a-z]*` narrow nothing.
+    expansions = expand_braces(glob) if glob else None
+    # `!*.ts` excludes files, so a negated glob widens rather than narrows.
+    narrows = bool(expansions) and all(not e.startswith("!") and re.sub(r'[/.]', "", GLOB_CHARS.sub("", e))
+                                       for e in expansions)
+    narrows = narrows or bool(tool_input.get("type"))
+    if is_broad(path or cwd) and not narrows:  # no path → Grep searches the session cwd
+        return BROAD_SEARCH
+    return check_search(path, glob, safety_level)
+
+
+def check(tool_name: str, tool_input: dict, safety_level: str = SAFETY_LEVEL, cwd: str = "") -> Pattern | None:
     if tool_name in ("Read", "Edit", "Write"):
         return check_file_path(tool_input.get("file_path", ""), safety_level)
     if tool_name == "Bash":
         return check_bash_command(tool_input.get("command", ""), safety_level)
+    if tool_name == "Grep":
+        return check_grep(tool_input, safety_level, cwd)
+    if tool_name == "Glob":
+        return check_search(tool_input.get("path"), tool_input.get("pattern"), safety_level)
     return None
 
 
@@ -160,20 +289,21 @@ def main() -> None:
         tool_name = data.get("tool_name", "")
         tool_input = data.get("tool_input", {})
 
-        if tool_name not in ("Read", "Edit", "Write", "Bash"):
+        if tool_name not in ("Read", "Edit", "Write", "Bash", "Grep", "Glob"):
             print("{}")
             return
 
-        matched = check(tool_name, tool_input)
+        matched = check(tool_name, tool_input, cwd=data.get("cwd") or "")
 
         if matched:
-            target = tool_input.get("file_path") or tool_input.get("command", "")[:100]
+            search_keys = ("path", "glob") if tool_name == "Grep" else ("path", "pattern")  # Grep pattern may hold a secret
+            target = tool_input.get("file_path") or tool_input.get("command", "")[:100] or " ".join(str(tool_input.get(k) or "") for k in search_keys).strip()
             log({
                 "level": "BLOCKED", "id": matched.id, "priority": matched.level,
                 "tool": tool_name, "target": target,
                 "session_id": data.get("session_id"), "cwd": data.get("cwd"),
             })
-            action = {"Read": "read", "Edit": "modify", "Write": "write to", "Bash": "execute"}[tool_name]
+            action = {"Read": "read", "Edit": "modify", "Write": "write to", "Bash": "execute", "Grep": "search", "Glob": "search"}[tool_name]
             print(json.dumps({
                 "hookSpecificOutput": {
                     "hookEventName": "PreToolUse",

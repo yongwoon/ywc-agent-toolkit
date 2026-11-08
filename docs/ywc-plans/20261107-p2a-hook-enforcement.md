@@ -2,7 +2,7 @@
 
 > Scale: Medium
 > Parent: issue #215 (P2-a), `docs/ywc-plans/20261107-p1-hardening-before-main-pr.md:33`
-> Status: plan only. No hook is implemented by the PR that adds this file.
+> Status: first slice (G1, G2, G4, G7 secret paths) implemented for #222; see `claude-code/hooks/test_hooks.py`. G7 confinement and the Open Questions remain.
 
 ## Purpose
 
