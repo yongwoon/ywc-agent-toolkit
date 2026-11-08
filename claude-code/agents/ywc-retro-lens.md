@@ -73,10 +73,13 @@ knows. This residual risk is accepted (issue #215).
 When the toolkit's `protect-secrets.py` hook is installed
 (`bash scripts/install.sh --hooks protect-secrets`), it narrows this risk: it
 reads `agent_type` from the hook input and limits this agent's `Read`, `Grep`,
-and `Glob` to the `ywc-retro.*` run directory (which holds the copied
-transcript) and the repository Owner locations, denying everything else
-(rule `retro-lens-scope`, issue #222). Without the hook, or on a Claude Code
-version that does not send `agent_type`, the risk above applies unchanged.
+and `Glob` to any `ywc-retro.*` run directory under the temp dir (the current
+run's directory holds the copied transcript) and the repository Owner
+locations, denying everything else (rule `retro-lens-scope`, issue #222). The
+hook does not isolate runs: earlier `ywc-retro.*` outputs, or a transcript
+copy left by a run that failed before cleanup, stay readable. Without the
+hook, or on a Claude Code version that does not send `agent_type`, the risk
+above applies unchanged.
 
 ## Success Criteria
 
