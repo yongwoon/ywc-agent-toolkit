@@ -291,20 +291,50 @@ def adds_everything(args: list[str]) -> bool:
     return "--all" in opts or any(re.match(r"^-[A-Za-z]*A", a) for a in opts) or "." in paths
 
 
+ENV_SHORT_WITH_VALUE = set("uCS")
+
+
+def env_split_string(argv: list[str]) -> str | None:
+    """The command line an `env -S` / `--split-string` runs, parsed like getopt: only the
+    options of the leading `env` itself (`-iS'...'`, `--split=...` prefixes) count."""
+    i = 0
+    while i < len(argv) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", argv[i]):
+        i += 1
+    if i >= len(argv) or argv[i].rsplit("/", 1)[-1] != "env":
+        return None
+    i += 1
+    while i < len(argv) and argv[i].startswith("-") and argv[i] != "--":
+        a = argv[i]
+        if a.startswith("--"):
+            opt, _, val = a.partition("=")
+            if len(opt) >= 3 and "--split-string".startswith(opt):
+                value = val if "=" in a else (argv[i + 1] if i + 1 < len(argv) else "")
+                return env_unescape(value) + " " + " ".join(argv[i + (1 if "=" in a else 2):])
+            i += 2 if opt in ("--unset", "--chdir") and "=" not in a else 1
+            continue
+        for j, ch in enumerate(a[1:], 1):
+            if ch in ENV_SHORT_WITH_VALUE:
+                attached = a[j + 1:]
+                value = attached or (argv[i + 1] if i + 1 < len(argv) else "")
+                if ch == "S":
+                    return env_unescape(value) + " " + " ".join(argv[i + (1 if attached else 2):])
+                i += 0 if attached else 1
+                break
+        i += 1
+    return None
+
+
+def env_unescape(s: str) -> str:
+    """env -S escapes: `\\_` is a space, `\\c` ends the string; the rest is left to the tokenizer."""
+    return s.split("\\c", 1)[0].replace("\\_", " ")
+
+
 def nested_commands(argv: list[str]) -> list[str]:
     """Command text this segment runs indirectly: `bash -c`, `eval`, `$(...)`, backticks."""
     nested = [m.group(1) or m.group(2) or "" for m in SUBSTITUTION.finditer(" ".join(argv))]
-    # `env -S 'git commit -n'`: the split string is itself a command line.
-    for i, a in enumerate(argv):
-        if "env" not in (w.rsplit("/", 1)[-1] for w in argv[:i]):
-            continue
-        rest = " ".join(argv[i + 1:])
-        if a in ("-S", "--split-string") and i + 1 < len(argv):
-            nested.append(rest)
-        elif a.startswith("--split-string="):
-            nested.append(a.split("=", 1)[1] + " " + rest)
-        elif a.startswith("-S") and len(a) > 2:
-            nested.append(a[2:] + " " + rest)
+    split = env_split_string(argv)
+    if split is not None:
+        nested.append(split)
     cmd = strip_prefix(argv)
     name = cmd[0].rsplit("/", 1)[-1] if cmd else ""
     if name in SHELLS:

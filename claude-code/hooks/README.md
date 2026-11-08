@@ -59,6 +59,7 @@ Bash 명령이 실행되기 전 위험도를 판단해 차단한다.
 **한계**: 이 hook은 model의 실수를 막는 guardrail이지 sandbox가 아니다. 다음 경우는 잡지 않는다.
 
 - 부정 bracket class(`[!x]`)나 32자를 넘는 bracket class로 쓴 비밀 파일명
+- 변수 확장으로 숨긴 flag(`F=-n; git commit $F`, `env -S` 안의 `${VAR}`)
 - shell alias / function, git alias(`git ci -n`)
 - 스크립트 파일 안에서 실행되는 명령(`./commit.sh`)
 - `core.hooksPath` 변경처럼 hook 자체를 끄는 설정

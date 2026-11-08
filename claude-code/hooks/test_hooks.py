@@ -70,7 +70,9 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "git commit -m $'\\cß' -n", "git commit -m $'\\UFFFFFFFF' -n",
                     "git commit -m $'\\x' -n", "git commit -m $'end\\c' -n",
                     "env -S 'git commit -n -m x'", "env --split-string='git commit -n'",
-                    "env -S'git commit -n'", "/usr/bin/env -S 'git' commit -n"):
+                    "env -S'git commit -n'", "/usr/bin/env -S 'git' commit -n",
+                    "env -iS'git commit -n'", "env --split='git commit -n'",
+                    "env -S 'git\\_commit\\_-n'", "env -u X -S 'git commit -n'"):
             with self.subTest(cmd=cmd):
                 self.assert_denied(cmd, "git-no-verify")
 
@@ -89,7 +91,9 @@ class BlockDangerousCommandsTest(unittest.TestCase):
                     "git commit --no-verbose -m x",
                     "git commit -- -n",
                     "git commit -m \"price is $'x -n'\"", "git commit -m 'a $\" -n'",
-                    "git commit -m $'line1\\nline2 -n'", "git commit -m $'it\\'s -n'"):
+                    "git commit -m $'line1\\nline2 -n'", "git commit -m $'it\\'s -n'",
+                    "env git commit -Sabc -m x",  # git's -S<keyid>, not env's split string
+                    "env -S 'git commit -m x\\c -n'"):
             with self.subTest(cmd=cmd):
                 self.assert_allowed(cmd)
 
