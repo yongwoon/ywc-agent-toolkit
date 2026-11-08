@@ -244,7 +244,6 @@ class RetroLensConfinementTest(unittest.TestCase):
                   self.repo / ".claude" / "skills"):
             d.mkdir(parents=True)
         self.transcript.write_text("{}")
-        (self.repo / "docs" / "link").symlink_to(self.home)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -274,7 +273,6 @@ class RetroLensConfinementTest(unittest.TestCase):
             ("Read", {"file_path": str(self.repo / "src" / "app.py")}),
             ("Read", {"file_path": str(self.home / "notes.txt")}),
             ("Read", {"file_path": "/etc/hosts"}),
-            ("Read", {"file_path": str(self.repo / "docs" / "link" / "notes.txt")}),  # symlink out of docs/
             ("Read", {"file_path": str(self.repo / "docs" / ".." / "src" / "app.py")}),
             ("Read", {}),
             ("Read", {"file_path": str(self.transcript)}),  # every project's transcripts live here
@@ -288,10 +286,21 @@ class RetroLensConfinementTest(unittest.TestCase):
             ("Glob", {"pattern": "{docs,src}/*"}),
             ("Glob", {"pattern": "docs/{..,x}/{..,x}/src/*"}),  # `..` hidden in braces
             ("Glob", {"pattern": "~/notes/*", "path": str(self.repo / "docs")}),
+            ("Glob", {"pattern": "docs/**/\\.\\./\\.\\./src/*"}),  # escaped dots
+            ("Glob", {"pattern": "docs/**/[!x][!x]/src/*"}),  # negated class is not expanded
             ("Grep", {"pattern": "x", "path": str(self.repo / "docs"), "glob": "{..,x}/*"}),
             ("Bash", {"command": "cat docs/a.md"}),
         ]:
             self.assertEqual(self.check(tool, ti), "deny", (tool, ti))
+
+    def test_symlinks_leaving_scope_are_denied(self):
+        (self.repo / "docs" / "inside").symlink_to(self.repo / "claude-code", target_is_directory=True)
+        self.assertIsNone(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}))
+        (self.repo / "docs" / "link").symlink_to(self.home)
+        self.assertEqual(self.check("Read", {"file_path": str(self.repo / "docs" / "link" / "n.txt")}), "deny")
+        self.assertEqual(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}), "deny")
+        self.assertEqual(self.check("Glob", {"pattern": "docs/**/*.md"}), "deny")
+        self.assertIsNone(self.check("Read", {"file_path": str(self.repo / "docs" / "a.md")}))
 
     def test_home_cwd_does_not_open_home_dot_claude(self):
         (self.home / ".claude" / "skills").mkdir(parents=True)

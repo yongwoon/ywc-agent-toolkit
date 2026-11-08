@@ -139,7 +139,7 @@ home이나 `/` 전체를 대상으로 하는 `Grep`은 `glob`이나 `type`이 �
 
 `~/.claude/projects/`에는 모든 project의 transcript가 있으므로 범위에서 제외한다. `.claude/settings*.json`도 allow rule에 token이 들어 있을 수 있어서 제외한다.
 
-경로는 symlink를 따라 resolve한 뒤 검사한다. brace를 펼쳤을 때 `..`가 나오는 glob, `~`로 시작하는 glob, path 없는 `Grep`(repository 전체)은 차단한다. 판정 중 예외가 나면 이 agent에 한해 차단한다(fail closed). 다른 agent와 main thread에는 영향이 없다.
+경로는 symlink를 따라 resolve한 뒤 검사한다. `Grep` / `Glob`은 검색 대상 아래에 범위 밖을 가리키는 symlink가 하나라도 있으면 차단한다(20,000개 항목까지만 검사하고, 넘으면 차단한다). brace를 펼쳤을 때 `..`가 나오는 glob, `~`로 시작하는 glob, backslash나 `[`가 들어간 glob, path 없는 `Grep`(repository 전체)은 차단한다. 판정 중 예외가 나면 이 agent에 한해 차단한다(fail closed). 다른 agent와 main thread에는 영향이 없다.
 
 이 제한은 hook input에 `agent_type`을 넣어 주는 Claude Code 버전에서만 동작한다. 이 hook을 설치하지 않았거나 `agent_type`이 오지 않으면 제한이 적용되지 않는다.
 

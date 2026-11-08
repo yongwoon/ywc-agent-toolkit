@@ -318,10 +318,29 @@ def in_scope(target: Path, cwd: Path) -> bool:
 
 
 def escapes(pattern: str) -> bool:
-    """`docs/**/../../x` walks back out after the glob part; braces can hide the `..` (`{..,x}`)."""
+    """`docs/**/../../x` walks back out after the glob part; braces can hide the `..` (`{..,x}`),
+    and escapes or classes (`\\.\\.`, `[.][.]`) can spell it in ways this check does not parse."""
+    if pattern.startswith("~") or "\\" in pattern or "[" in pattern:
+        return True
     expansions = expand_braces(pattern)
-    return (expansions is None or pattern.startswith("~")
-            or any(".." in e.split("/") for e in expansions))
+    return expansions is None or any(".." in e.split("/") for e in expansions)
+
+
+MAX_WALK = 20000
+
+
+def links_out(root: Path, cwd: Path) -> bool:
+    """A search may follow a symlink under its root, so every link there must stay in scope."""
+    if not root.is_dir():
+        return False
+    seen = 0
+    for dirpath, dirnames, filenames in os.walk(root):  # does not descend into linked dirs
+        for name in dirnames + filenames:
+            seen += 1
+            q = Path(dirpath, name)
+            if seen > MAX_WALK or (q.is_symlink() and not in_scope(q, cwd)):
+                return True
+    return False
 
 
 def check_confinement(tool_name: str, tool_input: dict, cwd: str) -> Pattern | None:
@@ -344,7 +363,10 @@ def check_confinement(tool_name: str, tool_input: dict, cwd: str) -> Pattern | N
         else:
             return CONFINED  # the agent is granted Read/Grep/Glob only
         for t in targets:
-            if not t or not in_scope(base_dir / os.path.expanduser(t), base_dir):
+            target = base_dir / os.path.expanduser(t) if t else None
+            if target is None or not in_scope(target, base_dir):
+                return CONFINED
+            if tool_name != "Read" and links_out(target.resolve(), base_dir):
                 return CONFINED
         return None
     except Exception:
