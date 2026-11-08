@@ -302,6 +302,15 @@ class RetroLensConfinementTest(unittest.TestCase):
         self.assertEqual(self.check("Glob", {"pattern": "docs/**/*.md"}), "deny")
         self.assertIsNone(self.check("Read", {"file_path": str(self.repo / "docs" / "a.md")}))
 
+    def test_chained_and_cyclic_symlinks(self):
+        cc = self.repo / "claude-code"
+        cc.mkdir()
+        (cc / "loop").symlink_to(cc, target_is_directory=True)  # cycle must terminate
+        (self.repo / "docs" / "inside").symlink_to(cc, target_is_directory=True)
+        self.assertIsNone(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}))
+        (cc / "out").symlink_to(self.home)  # docs/inside → claude-code/out → $HOME
+        self.assertEqual(self.check("Grep", {"pattern": "x", "path": str(self.repo / "docs")}), "deny")
+
     def test_home_cwd_does_not_open_home_dot_claude(self):
         (self.home / ".claude" / "skills").mkdir(parents=True)
         (self.home / ".git").mkdir()

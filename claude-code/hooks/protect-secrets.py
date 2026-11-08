@@ -333,8 +333,14 @@ def links_out(root: Path, cwd: Path) -> bool:
     """A search may follow a symlink under its root, so every link there must stay in scope."""
     if not root.is_dir():
         return False
-    seen = 0
-    for dirpath, dirnames, filenames in os.walk(root):  # does not descend into linked dirs
+    seen, visited = 0, set()
+    # Follow links: an in-scope link to a dir can hold a second link that leads out (chained).
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in visited:  # link cycle, or a dir reached twice
+            dirnames[:] = []  # os.walk prunes only through in-place edits
+            continue
+        visited.add(real)
         for name in dirnames + filenames:
             seen += 1
             q = Path(dirpath, name)
